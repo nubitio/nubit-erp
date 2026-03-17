@@ -1,19 +1,20 @@
 import './CashRegisterPage.scss';
-import { Constants } from '@core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxForm } from '@core/form/DxForm';
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
+import { Constants } from '@core/common/Constants';
 import { cashRegisterEvents, createCashRegisterToolbar } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
-import { useNavigate } from 'react-router-dom';
-import { useMemo, useRef } from 'react';
+
+const API_URL = Constants.API_BASE_URL + 'cash-registers';
+const fields = CashRegisterFields();
 
 export const CashRegisterPage = () => {
   const navigate = useNavigate();
   const gridRef = useRef<DxDataGridEvents>(null);
-  const container = 'wrapper';
-  const API_URL = Constants.API_BASE_URL + 'cash-registers';
-  const fields = useMemo(() => CashRegisterFields(), []);
+
   const toolbar = createCashRegisterToolbar({
     onViewShifts: () => {
       const row = gridRef.current?.getSelectedRow();
@@ -23,22 +24,22 @@ export const CashRegisterPage = () => {
   });
 
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
         ref={gridRef}
-        id={'cash-register'}
-        title={'Cajas'}
+        id="cash-register"
+        title="Cajas"
         url={API_URL}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         selectionMode="single"
         fields={fields}
         events={cashRegisterEvents}
         toolbar={toolbar}
       />
       <DxDialog events={cashRegisterEvents}>
-        <DxForm url={API_URL} fields={fields} events={cashRegisterEvents} useIRI={true} />
+        <DxForm url={API_URL} fields={fields} events={cashRegisterEvents} />
       </DxDialog>
     </div>
   );

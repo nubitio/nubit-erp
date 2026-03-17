@@ -1,56 +1,50 @@
 import './PriceListPage.scss';
-import { priceListEndpoints } from '../api/priceListEndpoints';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { useRef } from 'react';
+import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { PriceListFields } from './PriceListFields';
-import { useMemo, useRef } from 'react';
+import { priceListEndpoints } from '../api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
 import { DataGrid } from 'devextreme-react';
-import { Column, DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import { Column, type DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
+import type { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@core/event/EventHook';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 import { usePriceListObservers } from '../model/usePriceListObservers';
 
+const EVENTS = {
+  ADD: 'price-list:add',
+  EDIT: 'price-list:edit',
+  DELETE: 'price-list:delete',
+  SAVE: 'price-list:save',
+  CANCEL: 'price-list:cancel',
+  SUCCESS: 'price-list:success',
+  LOADING: 'price-list:loading',
+};
+
+const PRICES_EVENT = {
+  ADD: 'price:add',
+  EDIT: 'price:edit',
+  DELETE: 'price:delete',
+  SAVE: 'price:save',
+  CANCEL: 'price:cancel',
+  SUCCESS: 'price:success',
+  LOADING: 'price:loading',
+};
+
+const API_URL = priceListEndpoints.list();
+const fields = PriceListFields();
+
 export const PriceListPage = () => {
   const [on, emit] = useEvents();
-  const container = 'wrapper';
-  const fields = useMemo(() => PriceListFields(), []);
   const gridRef = useRef<DxDataGridEvents | null>(null);
   const pricesRef = useRef<DataGridRef | null>(null);
   const pricesData = useRef<DataSource>(
-    new DataSource({
-      store: new ArrayStore({
-        key: 'id',
-        data: [],
-      }),
-    }),
+    new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
   );
-
-  const API_URL = priceListEndpoints.list();
-
-  const EVENTS = {
-    ADD: 'price-list:add',
-    EDIT: 'price-list:edit',
-    DELETE: 'price-list:delete',
-    SAVE: 'price-list:save',
-    CANCEL: 'price-list:cancel',
-    SUCCESS: 'price-list:success',
-    LOADING: 'price-list:loading',
-  };
-
-  const PRICES_EVENT = {
-    ADD: 'price:add',
-    EDIT: 'price:edit',
-    DELETE: 'price:delete',
-    SAVE: 'price:save',
-    CANCEL: 'price:cancel',
-    SUCCESS: 'price:success',
-    LOADING: 'price:loading',
-  };
 
   const toolbar = [
     {
@@ -67,26 +61,19 @@ export const PriceListPage = () => {
     },
   ];
 
-  usePriceListObservers({
-    on,
-    emit,
-    pricesEvent: PRICES_EVENT,
-    gridRef,
-    pricesRef,
-    pricesData,
-  });
+  usePriceListObservers({ on, emit, pricesEvent: PRICES_EVENT, gridRef, pricesRef, pricesData });
 
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
-        id={'price-list'}
+        id="price-list"
         ref={gridRef}
-        title={'Tarifas'}
+        title="Tarifas"
         toolbar={toolbar}
         url={API_URL}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         fields={fields}
         events={EVENTS}
       />
@@ -97,9 +84,9 @@ export const PriceListPage = () => {
         <DataGrid
           ref={pricesRef}
           dataSource={pricesData.current}
-          height={'100%'}
-          showBorders={true}
-          showRowLines={true}
+          height="100%"
+          showBorders
+          showRowLines
           onRowUpdated={(e: any) => {
             e.data.updated = true;
             e.component.saveEditData();

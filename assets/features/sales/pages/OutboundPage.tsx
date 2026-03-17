@@ -1,39 +1,33 @@
 import './OutboundPage.scss';
+import { useRef } from 'react';
 import { DxDataGrid } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@core/form/DxForm';
+import { DxForm, type DxFormEvents } from '@core/form/DxForm';
 import { Constants } from '@core/common/Constants';
 import { OutboundDetailFields, OutboundFields } from './OutboundFields';
-import { useMemo, useRef } from 'react';
 import { useEvents } from '@core/event/EventHook';
 import { outboundEvents, useOutboundFormObservers } from '@features/outbound';
 
+const API_URL = Constants.API_BASE_URL + 'movements';
+const fields = OutboundFields();
+const detailFields = OutboundDetailFields();
+
 export const OutboundPage = () => {
   const [on] = useEvents();
-  const container = 'wrapper';
-  const fields = useMemo(() => OutboundFields(), []);
-  const detailFields = useMemo(() => OutboundDetailFields(), []);
   const formRef = useRef<DxFormEvents>(null);
 
-  const API_URL = Constants.API_BASE_URL + 'movements';
-
-  useOutboundFormObservers({
-    on,
-    apiUrl: API_URL,
-    editEventName: outboundEvents.EDIT,
-    formRef,
-  });
+  useOutboundFormObservers({ on, apiUrl: API_URL, editEventName: outboundEvents.EDIT, formRef });
 
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
-        id={'outbound'}
-        title={'Salidas'}
+        id="outbound"
+        title="Salidas"
         url={API_URL + '?type=outbound'}
         detailUrl={API_URL + '/{id}/items'}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         fields={fields}
         detailFields={detailFields}
         events={outboundEvents}

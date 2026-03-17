@@ -1,47 +1,35 @@
 import './RolePage.scss';
-import { roleEndpoints } from '../api/roleEndpoints';
-import { useEvents } from '@core/event/EventHook';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { useRef } from 'react';
+import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { permissionEvents, roleEvents } from '@features/role';
 import { httpClient } from '@shared/api/HttpClient';
+import { roleEndpoints } from '../api/roleEndpoints';
 import { RoleFields } from './RoleFields';
-import { useMemo, useRef } from 'react';
 import toast from '@shared/lib/SharedUtils';
-import TreeView, { TreeViewRef } from 'devextreme-react/tree-view';
+import TreeView, { type TreeViewRef } from 'devextreme-react/tree-view';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 import { useRoleObservers } from '../model/useRoleObservers';
+import { useEvents } from '@core/event/EventHook';
 
 type RoleMenu = {
   id: number;
   text: string;
-  items: MenuItem[];
+  items: { id: number; text: string; selected: boolean }[];
 };
 
-type MenuItem = {
-  id: number;
-  text: string;
-  selected: boolean;
-};
+const API_URL = roleEndpoints.list();
+const fields = RoleFields();
 
 export const RolePage = () => {
   const [on, emit] = useEvents();
-  const container = 'wrapper';
-  const fields = useMemo(() => RoleFields(), []);
   const gridRef = useRef<DxDataGridEvents>(null);
   const treeRef = useRef<TreeViewRef>(null);
   const permissionsData = useRef<DataSource>(
-    new DataSource({
-      store: new ArrayStore({
-        key: 'id',
-        data: [],
-      }),
-    }),
+    new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
   );
-
-  const API_URL = roleEndpoints.list();
 
   const toolbar = [
     {
@@ -54,9 +42,7 @@ export const RolePage = () => {
           httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).subscribe((response) => {
             const store = permissionsData.current.store() as ArrayStore;
             store.clear();
-            response.data.forEach((item: any) => {
-              store.insert(item);
-            });
+            response.data.forEach((item: any) => store.insert(item));
             permissionsData.current.reload();
           });
         } else {
@@ -66,24 +52,18 @@ export const RolePage = () => {
     },
   ];
 
-  useRoleObservers({
-    on,
-    emit,
-    permissionEvents,
-    gridRef,
-    treeRef,
-  });
+  useRoleObservers({ on, emit, permissionEvents, gridRef, treeRef });
 
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
-        id={'roles'}
+        id="roles"
         ref={gridRef}
-        title={'Roles'}
+        title="Roles"
         url={API_URL}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         toolbar={toolbar}
         fields={fields}
         events={roleEvents}
@@ -95,7 +75,7 @@ export const RolePage = () => {
         <TreeView
           ref={treeRef}
           dataSource={permissionsData.current}
-          showCheckBoxesMode={'normal'}
+          showCheckBoxesMode="normal"
           selectByClick={true}
         />
       </DxDialog>
