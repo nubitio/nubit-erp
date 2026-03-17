@@ -12,7 +12,14 @@ export interface HydraProperty {
   '@id': string;
   '@type': string; // e.g. "rdf:Property", "Link"
   label: string;
-  range?: string; // e.g. "xmls:string", "#Company"
+  /**
+   * In real API Platform responses this can be:
+   *   - a plain string: "xmls:string", "#Company"
+   *   - an IRI object: { "@id": "http://www.w3.org/2001/XMLSchema#string" }
+   *   - null or undefined
+   * Use normalizeRange() in openApiParser.ts to safely extract a string.
+   */
+  range?: unknown;
 }
 
 export interface HydraSupportedProperty {
@@ -57,3 +64,33 @@ export interface HydraResourceSchema {
   apiUrl: string; // e.g. "/api/branches"
   fields: HydraFieldSchema[];
 }
+
+// ---------------------------------------------------------------------------
+// Raw OpenAPI 3.1 shapes (from /api/docs.json)
+// ---------------------------------------------------------------------------
+
+export interface OpenApiProperty {
+  type?: string;
+  format?: string;
+  readOnly?: boolean;
+  writeOnly?: boolean;
+  enum?: string[];
+}
+
+export interface OpenApiSchema {
+  properties?: Record<string, OpenApiProperty>;
+  required?: string[];
+}
+
+export interface OpenApiDoc {
+  openapi: string; // "3.x.x"
+  components: {
+    schemas: Record<string, OpenApiSchema>;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Discriminated union for the API discovery result
+// ---------------------------------------------------------------------------
+
+export type ApiDoc = { format: 'hydra'; doc: HydraApiDoc } | { format: 'openapi'; doc: OpenApiDoc };

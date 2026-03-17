@@ -1,4 +1,10 @@
-import type { HydraApiDoc, HydraResourceSchema, HydraFieldSchema } from './types';
+import type {
+  HydraApiDoc,
+  HydraResourceSchema,
+  HydraFieldSchema,
+  OpenApiDoc,
+  OpenApiProperty,
+} from './types';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -14,6 +20,43 @@ function deriveApiUrl(entrypointPropertyId: string): string {
   const snake = name.replace(/([A-Z])/g, '_$1').toLowerCase();
   const plural = snake.endsWith('s') ? snake : snake + 's';
   return `/api/${plural}`;
+}
+
+/**
+ * Safely extracts a string range from whatever `property.range` actually is.
+ *
+ * Real API Platform responses can return:
+ *   - a plain string: "xmls:string", "#Company"
+ *   - an IRI object: { "@id": "http://www.w3.org/2001/XMLSchema#string" }
+ *   - null or undefined
+ *   - rarely an array (ignored — returns undefined)
+ */
+export function normalizeRange(raw: unknown): string | undefined {
+  if (typeof raw === 'string') return raw;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const id = (raw as Record<string, unknown>)['@id'];
+    if (typeof id === 'string') return id;
+  }
+  return undefined;
+}
+
+/**
+ * Convert an OpenAPI property descriptor to a short-form xmls: range string.
+ */
+function mapOpenApiTypeToRange(prop: OpenApiProperty): string | undefined {
+  if (prop.format === 'date-time') return 'xmls:dateTime';
+  switch (prop.type) {
+    case 'integer':
+      return 'xmls:integer';
+    case 'number':
+      return 'xmls:decimal';
+    case 'boolean':
+      return 'xmls:boolean';
+    case 'string':
+      return 'xmls:string';
+    default:
+      return undefined;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -34,7 +77,8 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
   const entrypoint = doc.supportedClass.find((c) => c['@id'] === '#Entrypoint');
   if (entrypoint) {
     for (const sp of entrypoint.supportedProperty ?? []) {
-      const range = sp.property?.range; // e.g. "#Branch"
+      const rawRange = sp.property?.range;
+      const range = normalizeRange(rawRange); // safely handles string | object | null | undefined
       const propId = sp.property?.['@id']; // e.g. "#Entrypoint/branch"
       if (range && propId) {
         const className = range.replace('#', '');
@@ -58,7 +102,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
 
       fields.push({
         name: sp.title ?? sp.property?.label ?? '',
-        range: sp.property?.range,
+        range: normalizeRange(sp.property?.range),
         propertyType: sp.property?.['@type'] ?? 'rdf:Property',
         required: sp.required ?? false,
         readable,
@@ -69,6 +113,45 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
     result[className] = {
       className,
       apiUrl: urlMap[className] ?? `/api/${className.toLowerCase()}s`,
+      fields,
+    };
+  }
+
+  return result;
+}
+
+/**
+ * Parse a raw `/api/docs.json` OpenAPI 3.1 response into the same
+ * Record<className, HydraResourceSchema> output shape so that
+ * `useResourceSchema` can consume it transparently.
+ */
+export function parseOpenApiDoc(doc: OpenApiDoc): Record<string, HydraResourceSchema> {
+  const result: Record<string, HydraResourceSchema> = {};
+
+  for (const [className, schema] of Object.entries(doc.components?.schemas ?? {})) {
+    const fields: HydraFieldSchema[] = [];
+    const required = new Set(schema.required ?? []);
+
+    for (const [fieldName, prop] of Object.entries(schema.properties ?? {})) {
+      const readable = !prop.writeOnly;
+      const writeable = !prop.readOnly;
+
+      // Skip write-only fields (not readable in the UI)
+      if (!readable) continue;
+
+      fields.push({
+        name: fieldName,
+        range: mapOpenApiTypeToRange(prop), // convert OpenAPI type/format → xmls: string
+        propertyType: 'rdf:Property',
+        required: required.has(fieldName),
+        readable,
+        writeable,
+      });
+    }
+
+    result[className] = {
+      className,
+      apiUrl: `/api/${className.toLowerCase()}s`, // best-effort; no Entrypoint in OpenAPI
       fields,
     };
   }

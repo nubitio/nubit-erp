@@ -1,6 +1,6 @@
 import type { Field } from '../../field/Field';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
-import { parseHydraDoc } from './openApiParser';
+import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import { useHydraMetadata } from './useHydraMetadata';
 
 export type FieldOverride = Partial<Field> & { name: string };
@@ -16,19 +16,19 @@ export function useResourceSchema(
   manualFields?: Field[],
   overrides?: FieldOverride[],
 ): UseResourceSchemaResult {
-  const { doc, isLoading, error } = useHydraMetadata();
+  const { data, isLoading, error } = useHydraMetadata();
 
   // If manual fields provided, use them as-is (no Hydra needed)
   if (manualFields && manualFields.length > 0) {
     return { fields: manualFields, isLoading: false, error: undefined };
   }
 
-  if (!doc) {
+  if (!data) {
     return { fields: [], isLoading, error };
   }
 
-  // Parse the full Hydra doc into a resource map, then look up by apiUrl
-  const resourceMap = parseHydraDoc(doc);
+  // Parse the API doc (Hydra or OpenAPI) into a resource map, then look up by apiUrl
+  const resourceMap = data.format === 'hydra' ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
 
   // Find the resource schema whose apiUrl matches
   const resourceSchema = Object.values(resourceMap).find((r) => r.apiUrl === apiUrl);
@@ -36,7 +36,7 @@ export function useResourceSchema(
     return {
       fields: [],
       isLoading: false,
-      error: new Error(`No schema found for ${apiUrl} in Hydra API doc`),
+      error: new Error(`No schema found for ${apiUrl} in API doc`),
     };
   }
 
