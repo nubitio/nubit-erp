@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DxDialog } from './DxDialog';
-import { createCrudEvents } from '../../features/movement/model/createCrudEvents';
+import { createCrudEvents } from '@core/event/createCrudEvents';
 
 // ── Shared sample data ────────────────────────────────────────────────────────
 

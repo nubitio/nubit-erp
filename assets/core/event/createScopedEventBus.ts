@@ -1,4 +1,4 @@
-import { createCrudEvents } from '@features/movement';
+import { createCrudEvents } from './createCrudEvents';
 import type { FormEventNames } from '../event/EventTypes';
 
 /**

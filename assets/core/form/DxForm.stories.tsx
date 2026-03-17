@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DxForm } from './DxForm';
-import { createCrudEvents } from '../../features/movement/model/createCrudEvents';
+import { createCrudEvents } from '@core/event/createCrudEvents';
 import { identityField, textField, numberField, textareaField } from '../field/FieldBuilders';
 import type { Field } from '../field/Field';
 import type { FormLayout } from '../crud/FormLayout';

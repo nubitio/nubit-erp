@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MemoryRouter } from 'react-router-dom';
 import { DxDataGrid } from './DxDataGrid';
-import { createCrudEvents } from '../../features/movement/model/createCrudEvents';
+import { createCrudEvents } from '@core/event/createCrudEvents';
 import { identityField, textField, numberField } from '../field/FieldBuilders';
 import type { Field } from '../field/Field';
 
