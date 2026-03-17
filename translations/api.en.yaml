@@ -1,0 +1,450 @@
+# API field labels — English
+# Convention: {entity_snake_case}.{property_snake_case}.label
+
+payment_method:
+  name:
+    label: Name
+
+branch:
+  name:
+    label: Name
+  address:
+    label: Address
+  phone:
+    label: Phone
+  company:
+    label: Company
+
+cash_movement_category:
+  code:
+    label: Code
+  name:
+    label: Name
+  type:
+    label: Type
+
+category:
+  name:
+    label: Name
+  parent:
+    label: Parent category
+
+company:
+  ruc:
+    label: RUC
+  business_name:
+    label: Business name
+  trade_name:
+    label: Trade name
+  fiscal_address:
+    label: Fiscal address
+  phone:
+    label: Phone
+  logo:
+    label: Logo
+  ubigeo_code:
+    label: Ubigeo code
+  department:
+    label: Department
+  province:
+    label: Province
+  district:
+    label: District
+  bank_name:
+    label: Bank name
+  bank_account:
+    label: Bank account
+  bank_cci:
+    label: Bank CCI
+  detraccion_account:
+    label: Detraction account
+
+config:
+  name:
+    label: Name
+  value:
+    label: Value
+  type:
+    label: Type
+
+logistic_operation:
+  name:
+    label: Name
+  type:
+    label: Type
+
+media:
+  path:
+    label: Path
+
+price_list:
+  name:
+    label: Name
+
+product_stock:
+  product:
+    label: Product
+  warehouse:
+    label: Warehouse
+  stock:
+    label: Stock
+  min_stock:
+    label: Min. stock
+  created_at:
+    label: Created at
+  updated_at:
+    label: Updated at
+
+role:
+  name:
+    label: Name
+
+sunat_catalog:
+  catalog:
+    label: Catalog
+  code:
+    label: Code
+  description:
+    label: Description
+  percentage:
+    label: Percentage
+  active:
+    label: Active
+
+supplier:
+  ruc:
+    label: RUC
+  business_name:
+    label: Business name
+  fiscal_address:
+    label: Fiscal address
+  phone:
+    label: Phone
+
+tax_document_line:
+  line_number:
+    label: Line no.
+  product_id:
+    label: Product ID
+  product_code:
+    label: Product code
+  product_name:
+    label: Product name
+  product_uom:
+    label: Unit of measure
+  quantity:
+    label: Quantity
+  unit_price:
+    label: Unit price
+  unit_value:
+    label: Unit value
+  discount_amount:
+    label: Discount
+  taxed_amount:
+    label: Taxed amount
+  tax_amount:
+    label: Tax amount
+  tax_percentage:
+    label: Tax %
+  tax_type:
+    label: Tax type
+  total:
+    label: Total
+  created_at:
+    label: Created at
+
+ubigeo:
+  department:
+    label: Department
+  province:
+    label: Province
+  district:
+    label: District
+
+unit_of_measure:
+  name:
+    label: Name
+
+user:
+  username:
+    label: Username
+  plain_password:
+    label: Password
+  role:
+    label: Role
+
+voucher_series:
+  branch:
+    label: Branch
+  voucher_type:
+    label: Voucher type
+  series:
+    label: Series
+  associated_series:
+    label: Associated series
+
+voucher_type:
+  name:
+    label: Name
+
+warehouse:
+  name:
+    label: Name
+  branch:
+    label: Branch
+
+customer:
+  ruc:
+    label: RUC
+  business_name:
+    label: Business name
+
+product:
+  code:
+    label: Code
+  type:
+    label: Type
+  product_type:
+    label: Product type
+  product_kind:
+    label: Product kind
+  inventory_behavior:
+    label: Inventory behavior
+  sku:
+    label: SKU
+  barcode:
+    label: Barcode
+  track_inventory:
+    label: Track inventory
+  lot_tracking_strategy:
+    label: Lot tracking
+  base_unit:
+    label: Base unit
+  is_active:
+    label: Active
+  name:
+    label: Name
+  category:
+    label: Category
+  unit_of_measure:
+    label: Unit of measure
+  purchase_price:
+    label: Purchase price
+  sale_price:
+    label: Sale price
+  stock:
+    label: Stock
+  min_stock:
+    label: Min. stock
+  photo:
+    label: Photo
+  detraction_catalog:
+    label: Detraction catalog
+
+cash_shift:
+  cash_register:
+    label: Cash register
+  status:
+    label: Status
+  opening_balance:
+    label: Opening balance
+  closing_balance:
+    label: Closing balance
+  opened_by:
+    label: Opened by
+  closed_by:
+    label: Closed by
+  opened_at:
+    label: Opened at
+  closed_at:
+    label: Closed at
+  expected_amount:
+    label: Expected amount
+  counted_amount:
+    label: Counted amount
+  difference:
+    label: Difference
+  note:
+    label: Note
+  branch:
+    label: Branch
+
+cash_movement:
+  cash_shift:
+    label: Cash shift
+  cash_session:
+    label: Cash session
+  category:
+    label: Category
+  type:
+    label: Type
+  amount:
+    label: Amount
+  description:
+    label: Description
+  branch:
+    label: Branch
+
+cash_register:
+  branch:
+    label: Branch
+  name:
+    label: Name
+
+cash_session:
+  legacy_cash_shift_id:
+    label: Legacy shift ID
+  cash_register:
+    label: Cash register
+  branch:
+    label: Branch
+  opened_by:
+    label: Opened by
+  closed_by:
+    label: Closed by
+  status:
+    label: Status
+  opening_amount:
+    label: Opening amount
+  expected_amount:
+    label: Expected amount
+  counted_amount:
+    label: Counted amount
+  difference_amount:
+    label: Difference
+  opened_at:
+    label: Opened at
+  closed_at:
+    label: Closed at
+  close_note:
+    label: Close note
+  created_at:
+    label: Created at
+  updated_at:
+    label: Updated at
+
+user_notification:
+  type:
+    label: Type
+  severity:
+    label: Severity
+  title:
+    label: Title
+  body:
+    label: Body
+  action_url:
+    label: Action URL
+  read_at:
+    label: Read at
+  created_at:
+    label: Created at
+
+sale_item_record:
+  legacy_movimiento_detalle_id:
+    label: Legacy detail ID
+  line_no:
+    label: Line no.
+  product:
+    label: Product
+  qty:
+    label: Quantity
+  unit_price:
+    label: Unit price
+  gross_amount:
+    label: Gross amount
+  discount_amount:
+    label: Discount
+  tax_amount:
+    label: Tax amount
+  net_amount:
+    label: Net amount
+
+sale_record:
+  branch:
+    label: Branch
+  warehouse:
+    label: Warehouse
+  customer:
+    label: Customer
+  seller_user_id:
+    label: Seller
+  status:
+    label: Status
+  currency:
+    label: Currency
+  exchange_rate:
+    label: Exchange rate
+  subtotal:
+    label: Subtotal
+  discount_total:
+    label: Discount total
+  tax_total:
+    label: Tax total
+  grand_total:
+    label: Grand total
+  paid_total:
+    label: Paid total
+  change_total:
+    label: Change
+  balance_due:
+    label: Balance due
+  issued_at:
+    label: Issued at
+  created_at:
+    label: Created at
+  updated_at:
+    label: Updated at
+  tax_document_id:
+    label: Tax document ID
+  has_invoice:
+    label: Has invoice
+  invoice_full_number:
+    label: Invoice number
+  sunat_status:
+    label: SUNAT status
+  public_receipt_url:
+    label: Receipt URL
+  document_type:
+    label: Document type
+  payment_method:
+    label: Payment method
+  discount_percent:
+    label: Discount %
+  serie:
+    label: Series
+  numero:
+    label: Number
+  tax_rate:
+    label: Tax rate
+
+tax_document:
+  customer:
+    label: Customer
+  document_type:
+    label: Document type
+  issue_date:
+    label: Issue date
+  series:
+    label: Series
+  number:
+    label: Number
+  currency:
+    label: Currency
+  affected_document:
+    label: Affected document
+  reason_code:
+    label: Reason code
+  reason_description:
+    label: Reason description
+  total:
+    label: Total
+  void_ticket:
+    label: Void ticket
+  void_correlation:
+    label: Void correlation
+  sunat_status:
+    label: SUNAT status
+  sunat_message:
+    label: SUNAT message
+  digest:
+    label: Digest

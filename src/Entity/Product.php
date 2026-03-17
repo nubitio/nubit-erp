@@ -51,24 +51,29 @@ class Product
     private ?string $id = null;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.code.label')]
     #[ORM\Column(name: 'codigo', length: 255, nullable: true)]
     private ?string $code = null;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.type.label')]
     #[ORM\Column(name: 'tipo_id')]
     private int $type;
 
     /** @deprecated Use $productKind + $inventoryBehavior instead. Kept for backward compatibility. */
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.product_type.label')]
     #[ORM\Column(name: 'product_type', length: 20, options: ['default' => ProductType::STOCKABLE->value])]
     private string $productType = ProductType::STOCKABLE->value;
 
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.product_kind.label')]
     #[ORM\Column(name: 'product_kind', length: 10, options: ['default' => 'GOOD'])]
     private string $productKind = ProductKind::GOOD->value;
 
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.inventory_behavior.label')]
     #[ORM\Column(name: 'inventory_behavior', length: 12, options: ['default' => 'TRACKED'])]
     private string $inventoryBehavior = InventoryBehavior::TRACKED->value;
 
@@ -77,62 +82,75 @@ class Product
 
     #[Groups(['product:read', 'product:write'])]
     #[Assert\Length(max: 64)]
+    #[ApiProperty(description: 'product.sku.label')]
     #[ORM\Column(name: 'sku', length: 64, nullable: true, unique: true)]
     private ?string $sku = null;
 
     #[Groups(['product:read', 'product:write'])]
     #[Assert\Length(max: 64)]
+    #[ApiProperty(description: 'product.barcode.label')]
     #[ORM\Column(name: 'barcode', length: 64, nullable: true)]
     private ?string $barcode = null;
 
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.track_inventory.label')]
     #[ORM\Column(name: 'track_inventory', options: ['default' => true])]
     private bool $trackInventory = true;
 
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.lot_tracking_strategy.label')]
     #[ORM\Column(name: 'lot_tracking_strategy', length: 10, options: ['default' => 'NONE'])]
     private string $lotTrackingStrategy = LotTrackingStrategy::NONE->value;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.base_unit.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'base_unit_id', referencedColumnName: 'unidad_id', nullable: true)]
     private ?UnitOfMeasure $baseUnit = null;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.is_active.label')]
     #[ORM\Column(name: 'is_active', options: ['default' => true])]
     private bool $isActive = true;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'product:write', 'sale_item:read', 'sale_item_record:read'])]
+    #[ApiProperty(description: 'product.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.category.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id', nullable: false)]
     private Category $category;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.unit_of_measure.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id', nullable: false)]
     private UnitOfMeasure $unitOfMeasure;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.purchase_price.label')]
     #[ORM\Column(name: 'precio_compra', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $purchasePrice = null;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.sale_price.label')]
     #[ORM\Column(name: 'precio', type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $salePrice = '0.00';
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.stock.label')]
     #[ORM\Column(name: 'stock', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
     private ?string $stock = null;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'product.min_stock.label')]
     #[ORM\Column(name: 'stock_minimo', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
     private ?string $minStock = null;
 
@@ -147,11 +165,12 @@ class Product
     private Collection $stocks;
 
     #[Groups(['product:read', 'product:write'])]
+    #[ApiProperty(description: 'product.photo.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'imagen', referencedColumnName: 'id')]
     private ?Media $photo = null;
 
-    #[ApiProperty(readableLink: true)]
+    #[ApiProperty(readableLink: true, description: 'product.detraction_catalog.label')]
     #[Groups(['product:read', 'product:write'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'detraccion_catalog_id', referencedColumnName: 'id', nullable: true)]
@@ -473,7 +492,6 @@ class Product
 
     public function removeStock(ProductStock $stock): static
     {
-        // set the owning side to null (unless already changed)
         $this->stocks->removeElement($stock);
 
         return $this;

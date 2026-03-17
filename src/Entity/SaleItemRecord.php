@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -40,27 +41,33 @@ class SaleItemRecord
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'legacy_movimiento_detalle_id', type: 'integer', nullable: true, unique: true)]
+    #[ApiProperty(description: 'sale_item_record.legacy_movimiento_detalle_id.label')]
     private ?int $legacyMovimientoDetalleId = null;
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
+    #[ApiProperty(description: 'sale_item_record.line_no.label')]
     private int $lineNo = 0;
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: true)]
+    #[ApiProperty(description: 'sale_item_record.product.label')]
     private ?Product $product = null;
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
+    #[ApiProperty(description: 'sale_item_record.qty.label')]
     private string $qty = '0.000';
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'unit_price', type: Types::DECIMAL, precision: 12, scale: 4)]
+    #[ApiProperty(description: 'sale_item_record.unit_price.label')]
     private string $unitPrice = '0.0000';
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'gross_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
+    #[ApiProperty(description: 'sale_item_record.gross_amount.label')]
     private string $grossAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]
@@ -71,14 +78,17 @@ class SaleItemRecord
         scale: 2,
         options: ['default' => '0.00'],
     )]
+    #[ApiProperty(description: 'sale_item_record.discount_amount.label')]
     private string $discountAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'tax_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_item_record.tax_amount.label')]
     private string $taxAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'net_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
+    #[ApiProperty(description: 'sale_item_record.net_amount.label')]
     private string $netAmount = '0.00';
 
     #[ORM\Column(name: 'unit_cost_snapshot', type: Types::DECIMAL, precision: 12, scale: 4, nullable: true)]

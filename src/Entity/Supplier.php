@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SupplierRepository;
@@ -30,18 +31,22 @@ class Supplier
 
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe contener 11 dígitos.')]
+    #[ApiProperty(description: 'supplier.ruc.label')]
     #[ORM\Column(length: 11)]
     private string $ruc;
 
     #[Assert\NotBlank]
     #[Groups(['inbound:read', 'outbound:read'])]
+    #[ApiProperty(description: 'supplier.business_name.label')]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;
 
+    #[ApiProperty(description: 'supplier.fiscal_address.label')]
     #[ORM\Column(name: 'domicilio_fiscal', length: 255, nullable: true)]
     private ?string $fiscalAddress = null;
 
     #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]
+    #[ApiProperty(description: 'supplier.phone.label')]
     #[ORM\Column(name: 'telefono', length: 14, nullable: true)]
     private ?string $phone = null;
 

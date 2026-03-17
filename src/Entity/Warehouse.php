@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -51,10 +52,12 @@ class Warehouse
         'inbound:read',
         'outbound:read',
     ])]
+    #[ApiProperty(description: 'warehouse.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
 
     #[Groups(['warehouse:read'])]
+    #[ApiProperty(description: 'warehouse.branch.label')]
     #[ORM\ManyToOne(inversedBy: 'warehouses')]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
     private ?Branch $branch = null;
@@ -123,7 +126,6 @@ class Warehouse
 
     public function removeProductStock(ProductStock $productStock): static
     {
-        // set the owning side to null (unless already changed)
         $this->productStocks->removeElement($productStock);
 
         return $this;

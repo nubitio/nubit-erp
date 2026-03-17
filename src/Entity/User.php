@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Override;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -57,6 +58,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:create',
         'user:update',
     ])]
+    #[ApiProperty(description: 'user.username.label')]
     #[ORM\Column(length: 255)]
     private string $username;
 
@@ -67,6 +69,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:create',
         'user:update',
     ])]
+    #[ApiProperty(description: 'user.plain_password.label')]
     private ?string $plainPassword = null;
 
     #[Groups([
@@ -74,6 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:create',
         'user:update',
     ])]
+    #[ApiProperty(description: 'user.role.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
     private Role $role;
@@ -120,22 +124,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     #[Override]
     public function getUserIdentifier(): string
     {
         return $this->username;
     }
 
-    /**
-     * @return list<string>
-     *
-     * @see UserInterface
-     */
+    /** @return list<string> */
     #[Override]
     public function getRoles(): array
     {
@@ -151,9 +146,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return array_unique($roles);
     }
 
-    /**
-     * @see UserInterface
-     */
     #[Override]
     public function eraseCredentials(): void
     {

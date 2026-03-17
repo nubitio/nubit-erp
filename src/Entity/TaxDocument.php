@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
@@ -98,22 +99,27 @@ class TaxDocument
     #[ORM\ManyToOne(targetEntity: Customer::class)]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id', nullable: true)]
     #[Groups(['invoice:read'])]
+    #[ApiProperty(description: 'tax_document.customer.label')]
     private ?Customer $customer = null;
 
     #[ORM\Column(name: 'document_type', type: Types::STRING, length: 10)]
     #[Groups(['creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.document_type.label')]
     private string $documentType;
 
     #[ORM\Column(name: 'issue_date', type: Types::DATETIME_MUTABLE)]
     #[Groups(['creditnote:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document.issue_date.label')]
     private DateTimeInterface $issueDate;
 
     #[ORM\Column(name: 'series', type: Types::STRING, length: 10)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.series.label')]
     private string $series;
 
     #[ORM\Column(name: 'number', type: Types::STRING, length: 20)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.number.label')]
     private string $number;
 
     #[ORM\Column(name: 'payment_method', type: Types::INTEGER, nullable: true)]
@@ -121,6 +127,7 @@ class TaxDocument
 
     #[Groups(['invoice:read', 'creditnote:read'])]
     #[ORM\Column(name: 'currency', type: Types::STRING, length: 3, nullable: true)]
+    #[ApiProperty(description: 'tax_document.currency.label')]
     private ?string $currency = null;
 
     #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 14, scale: 6, nullable: true)]
@@ -164,38 +171,47 @@ class TaxDocument
 
     #[ORM\Column(name: 'affected_document', type: Types::STRING, length: 50, nullable: true)]
     #[Groups(['creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.affected_document.label')]
     private ?string $affectedDocument = null;
 
     #[ORM\Column(name: 'reason_code', type: Types::STRING, length: 10, nullable: true)]
     #[Groups(['creditnote:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document.reason_code.label')]
     private ?string $reasonCode = null;
 
     #[ORM\Column(name: 'reason_description', type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['creditnote:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document.reason_description.label')]
     private ?string $reasonDescription = null;
 
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.total.label')]
     private string $total = '0.00';
 
     #[ORM\Column(name: 'void_ticket', type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['invoice:read'])]
+    #[ApiProperty(description: 'tax_document.void_ticket.label')]
     private ?string $voidTicket = null;
 
     #[ORM\Column(name: 'void_correlation', type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['invoice:read'])]
+    #[ApiProperty(description: 'tax_document.void_correlation.label')]
     private ?string $voidCorrelation = null;
 
     #[ORM\Column(name: 'sunat_status', type: Types::STRING, length: 50, nullable: true)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.sunat_status.label')]
     private ?string $sunatStatus = null;
 
     #[ORM\Column(name: 'sunat_message', type: Types::TEXT, nullable: true)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.sunat_message.label')]
     private ?string $sunatMessage = null;
 
     #[ORM\Column(name: 'digest', type: Types::TEXT, nullable: true)]
     #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.digest.label')]
     private ?string $digest = null;
 
     /**

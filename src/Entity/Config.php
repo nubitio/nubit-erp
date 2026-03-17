@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ConfigRepository;
@@ -21,12 +22,15 @@ class Config
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[ApiProperty(description: 'config.name.label')]
     private string $name;
 
     #[ORM\Column(length: 255)]
+    #[ApiProperty(description: 'config.value.label')]
     private string $value;
 
     #[ORM\Column(enumType: ConfigType::class)]
+    #[ApiProperty(description: 'config.type.label')]
     private ConfigType $type;
 
     public function getId(): ?int

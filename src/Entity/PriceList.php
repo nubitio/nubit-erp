@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -51,6 +52,7 @@ class PriceList
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ApiProperty(description: 'price_list.name.label')]
     #[ORM\Column(length: 255)]
     private string $name;
 

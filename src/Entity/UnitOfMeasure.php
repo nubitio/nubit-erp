@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\UnitOfMeasureRepository;
@@ -25,6 +26,7 @@ class UnitOfMeasure
     private ?int $id = null;
 
     #[Groups(['product:read'])]
+    #[ApiProperty(description: 'unit_of_measure.name.label')]
     #[ORM\Column(length: 255)]
     private string $name;
 

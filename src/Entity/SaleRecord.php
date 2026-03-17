@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -79,11 +80,13 @@ class SaleRecord
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    #[ApiProperty(description: 'sale_record.branch.label')]
     private ?Branch $branch = null;
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\ManyToOne(targetEntity: Warehouse::class)]
     #[ORM\JoinColumn(name: 'warehouse_id', referencedColumnName: 'almacen_id', nullable: true)]
+    #[ApiProperty(description: 'sale_record.warehouse.label')]
     private ?Warehouse $warehouse = null;
 
     #[ORM\Column(name: 'cash_register_id', type: 'integer', nullable: true)]
@@ -95,18 +98,22 @@ class SaleRecord
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\ManyToOne(targetEntity: Customer::class)]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id', nullable: true)]
+    #[ApiProperty(description: 'sale_record.customer.label')]
     private ?Customer $customer = null;
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'seller_user_id', type: 'integer', nullable: true)]
+    #[ApiProperty(description: 'sale_record.seller_user_id.label')]
     private ?int $sellerUserId = null;
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'status', type: 'string', length: 30, options: ['default' => 'COMPLETED'])]
+    #[ApiProperty(description: 'sale_record.status.label')]
     private string $status = 'COMPLETED';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'currency', type: 'string', length: 3, options: ['default' => 'PEN'])]
+    #[ApiProperty(description: 'sale_record.currency.label')]
     private string $currency = 'PEN';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
@@ -117,38 +124,47 @@ class SaleRecord
         scale: 6,
         options: ['default' => '1.000000'],
     )]
+    #[ApiProperty(description: 'sale_record.exchange_rate.label')]
     private string $exchangeRate = '1.000000';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'subtotal', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.subtotal.label')]
     private string $subtotal = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'discount_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.discount_total.label')]
     private string $discountTotal = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'tax_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.tax_total.label')]
     private string $taxTotal = '0.00';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'grand_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.grand_total.label')]
     private string $grandTotal = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'paid_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.paid_total.label')]
     private string $paidTotal = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'change_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.change_total.label')]
     private string $changeTotal = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'balance_due', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ApiProperty(description: 'sale_record.balance_due.label')]
     private string $balanceDue = '0.00';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'issued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ApiProperty(description: 'sale_record.issued_at.label')]
     private ?DateTimeInterface $issuedAt = null;
 
     #[Groups(['sale_record:read'])]
@@ -158,10 +174,12 @@ class SaleRecord
         nullable: true,
         options: ['default' => 'CURRENT_TIMESTAMP'],
     )]
+    #[ApiProperty(description: 'sale_record.created_at.label')]
     private ?DateTimeInterface $createdAt = null;
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ApiProperty(description: 'sale_record.updated_at.label')]
     private ?DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(name: 'deleted_at', type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -187,43 +205,54 @@ class SaleRecord
     // ── Transient fields enriched by SaleV2Provider ──────────────────────────
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.tax_document_id.label')]
     private ?string $taxDocumentId = null;
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.has_invoice.label')]
     private bool $hasInvoice = false;
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.invoice_full_number.label')]
     private ?string $invoiceFullNumber = null;
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.sunat_status.label')]
     private ?string $sunatStatus = null;
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.public_receipt_url.label')]
     private ?string $publicReceiptUrl = null;
 
     #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'sale_record.document_type.label')]
     private ?string $documentType = null;
 
     /** Resolved from sale_payments by provider */
     #[Groups(['sale_record:read', 'sale_record:write'])]
+    #[ApiProperty(description: 'sale_record.payment_method.label')]
     private ?PaymentMethod $paymentMethod = null;
 
     /** Computed on read: discount_total / (subtotal + discount_total) * 100; accepted on write. */
     #[Groups(['sale_record:read', 'sale_record:write'])]
+    #[ApiProperty(description: 'sale_record.discount_percent.label')]
     private ?string $discountPercent = null;
 
     #[ORM\Column(name: 'serie', type: 'string', length: 10, nullable: true)]
     #[Groups(['sale:read'])]
+    #[ApiProperty(description: 'sale_record.serie.label')]
     private ?string $serie = null;
 
     #[ORM\Column(name: 'numero', type: 'string', length: 20, nullable: true)]
     #[Groups(['sale:read'])]
+    #[ApiProperty(description: 'sale_record.numero.label')]
     private ?string $numero = null;
 
     // ── Write-only transient fields ───────────────────────────────────────────
 
     // no ORM annotation — transient
     #[Groups(['sale:read'])]
+    #[ApiProperty(description: 'sale_record.tax_rate.label')]
     private ?string $taxRate = null;
 
     #[Groups(['sale_record:write'])]

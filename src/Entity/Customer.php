@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CustomerRepository;
@@ -28,11 +29,13 @@ class Customer
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^\d{8,11}$/', message: 'El RUC/DNI debe contener entre 8 y 11 dígitos.')]
     #[Groups(['sale:read', 'invoice:read', 'sale_record:read'])]
+    #[ApiProperty(description: 'customer.ruc.label')]
     #[ORM\Column(length: 11, unique: true)]
     private string $ruc;
 
     #[Assert\NotBlank]
     #[Groups(['sale:read', 'invoice:read', 'sale_record:read'])]
+    #[ApiProperty(description: 'customer.business_name.label')]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;
 

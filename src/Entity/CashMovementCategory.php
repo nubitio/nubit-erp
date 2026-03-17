@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use RuntimeException;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementCategoryRepository;
@@ -49,14 +50,17 @@ class CashMovementCategory
 
     #[ORM\Column(length: 50, unique: true)]
     #[Groups(['Default', 'cash_movement:read'])]
+    #[ApiProperty(description: 'cash_movement_category.code.label')]
     private string $code;
 
     #[ORM\Column(length: 255)]
     #[Groups(['Default', 'cash_movement:read'])]
+    #[ApiProperty(description: 'cash_movement_category.name.label')]
     private string $name;
 
     #[ORM\Column(length: 20, enumType: CashMovementType::class)]
     #[Groups(['Default', 'cash_movement:read'])]
+    #[ApiProperty(description: 'cash_movement_category.type.label')]
     private CashMovementType $type;
 
     #[ORM\Column(name: 'is_system', options: ['default' => true])]

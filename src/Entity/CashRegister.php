@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -84,10 +85,12 @@ class CashRegister
     #[Groups(['cash_register:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: false)]
+    #[ApiProperty(description: 'cash_register.branch.label')]
     private Branch $branch;
 
     #[Groups(['cash_register:read'])]
     #[ORM\Column(length: 255)]
+    #[ApiProperty(description: 'cash_register.name.label')]
     private string $name;
 
     public function getId(): ?int
