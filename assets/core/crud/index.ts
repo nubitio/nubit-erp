@@ -2,7 +2,12 @@ export { defineResource } from './defineResource';
 export { useCrudPage } from './useCrudPage';
 export { CrudPage } from './CrudPage';
 export { SmartCrudPage } from './SmartCrudPage';
-export type { ResourceConfig, FieldsFactory, ResourcePermissions } from './ResourceConfig';
+export type {
+  ResourceConfig,
+  FieldsFactory,
+  ResourcePermissions,
+  ResourceRouting,
+} from './ResourceConfig';
 export type { FieldDef } from '../field/Field';
 export { usePermissions } from './usePermissions';
 export type { ResolvedPermissions } from './usePermissions';
@@ -23,3 +28,5 @@ export { DialogStoreProvider } from './DialogStoreProvider';
 export { useCrudDialogStore } from './useCrudDialogStore';
 export type { DialogState, DialogMode, DialogActions, DialogSlice } from './dialogStore';
 export * from './hydra';
+export * from './rules';
+export * from './routing';
