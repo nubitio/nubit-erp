@@ -35,7 +35,10 @@ export function useCrudPage<T extends Record<string, unknown> = Record<string, u
     }
     return resource.fields as unknown as Field[];
   }, [resource.fields]); // eslint-disable-line react-hooks/exhaustive-deps
-  const permissions = usePermissions(resource as ResourceConfig);
+  const permissions = usePermissions(
+    resource as ResourceConfig,
+    resource._supportedOperations ?? [],
+  );
 
   const identityFieldName = useMemo(() => {
     const resolved =

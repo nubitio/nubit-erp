@@ -15,7 +15,11 @@ async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
   if (!res.ok) throw new Error(`Failed to load Hydra API doc: ${res.status} ${res.statusText}`);
   const json = (await res.json()) as HydraApiDoc;
   // Validate that it looks like a Hydra ApiDocumentation
-  if (json['@type'] !== 'ApiDocumentation' || !Array.isArray(json.supportedClass)) {
+  const jsonType = json['@type'] as string;
+  if (
+    (jsonType !== 'ApiDocumentation' && jsonType !== 'hydra:ApiDocumentation') ||
+    !Array.isArray(json['supportedClass'])
+  ) {
     throw new Error('useHydraMetadata: response is not a valid Hydra ApiDocumentation');
   }
   return json;

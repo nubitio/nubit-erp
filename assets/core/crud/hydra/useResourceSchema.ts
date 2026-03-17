@@ -9,6 +9,14 @@ export interface UseResourceSchemaResult {
   fields: Field[];
   isLoading: boolean;
   error: Error | undefined;
+  /**
+   * HTTP methods supported by this resource class, derived from
+   * `hydra:supportedOperation` in the Hydra API doc.
+   * e.g. ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+   * Empty array when no operation info is available (Hydra not used, or
+   * manual fields supplied — the caller should fall back to platform defaults).
+   */
+  supportedOperations: string[];
 }
 
 /**
@@ -27,11 +35,11 @@ export function useResourceSchema(
   const { data, isLoading, error } = useSchemaContext();
 
   if (manualFields && manualFields.length > 0) {
-    return { fields: manualFields, isLoading: false, error: undefined };
+    return { fields: manualFields, isLoading: false, error: undefined, supportedOperations: [] };
   }
 
   if (!data) {
-    return { fields: [], isLoading, error };
+    return { fields: [], isLoading, error, supportedOperations: [] };
   }
 
   const resourceMap = data.format === 'hydra' ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
@@ -45,12 +53,18 @@ export function useResourceSchema(
       fields: [],
       isLoading: false,
       error: new Error(`No schema found for ${apiUrl} in API doc`),
+      supportedOperations: [],
     };
   }
 
   const inferred = mapHydraSchemaToFields(resourceSchema);
   const merged = overrides ? mergeOverrides(inferred, overrides) : inferred;
-  return { fields: merged, isLoading: false, error: undefined };
+  return {
+    fields: merged,
+    isLoading: false,
+    error: undefined,
+    supportedOperations: resourceSchema.supportedOperations ?? [],
+  };
 }
 
 export function mergeOverrides(inferred: Field[], overrides: FieldOverride[]): Field[] {

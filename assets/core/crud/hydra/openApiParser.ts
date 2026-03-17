@@ -128,6 +128,26 @@ function extractSearchMappings(cls: HydraApiDoc['supportedClass'][number]): Hydr
 }
 
 /**
+ * Extract the HTTP method names from `supportedOperation` on a HydraClass.
+ * Returns an uppercase string array, e.g. ['GET', 'POST', 'PATCH', 'DELETE'].
+ * Returns an empty array when the class has no `supportedOperation` block.
+ *
+ * Wire format (confirmed from /api/docs.jsonld): compact key `supportedOperation`
+ * (no `hydra:` prefix). API Platform compact context strips the namespace prefix.
+ *
+ * Accepts both `hydra:method` and `method` field names inside each operation entry
+ * to be safe across different API Platform serialisation variants.
+ */
+function extractSupportedOperations(cls: HydraApiDoc['supportedClass'][number]): string[] {
+  const operations = cls['supportedOperation'];
+  if (!operations || operations.length === 0) return [];
+
+  return operations
+    .map((op) => (op['hydra:method'] ?? op['method'] ?? '').toUpperCase())
+    .filter(Boolean);
+}
+
+/**
  * Parse a raw `/api/docs.jsonld` Hydra JSON-LD response into a typed
  * Record<className, HydraResourceSchema>.
  *
@@ -138,7 +158,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
 
   // Build URL map from the Entrypoint class
   const urlMap: Record<string, string> = {};
-  const entrypoint = doc.supportedClass.find((c) => c['@id'] === '#Entrypoint');
+  const entrypoint = doc['supportedClass'].find((c) => c['@id'] === '#Entrypoint');
   if (entrypoint) {
     for (const sp of entrypoint.supportedProperty ?? []) {
       const rawRange = sp.property?.range;
@@ -151,7 +171,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
     }
   }
 
-  for (const cls of doc.supportedClass) {
+  for (const cls of doc['supportedClass']) {
     if (cls['@id'] === '#Entrypoint') continue;
 
     const className = cls['@id'].replace('#', '');
@@ -175,6 +195,8 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
         // (sp.title / sp['hydra:title']), NOT from sp.property which only
         // carries the raw technical property name in its `label` field.
         'hydra:title': sp['title'] ?? sp['hydra:title'] ?? undefined,
+        // Forward x-crud hints injected by TranslatedDocumentationNormalizer.
+        crudHints: sp['x-crud'],
       });
     }
 
@@ -190,6 +212,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
         )}`,
       fields,
       searchMappings: extractSearchMappings(cls),
+      supportedOperations: extractSupportedOperations(cls),
     };
   }
 

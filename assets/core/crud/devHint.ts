@@ -3,18 +3,33 @@
  * mode when SmartCrudPage has auto-inferred fields from the Hydra API doc.
  *
  * Rules:
- *  - Only runs when `import.meta.env.DEV` is `true`.
+ *  - Only runs on local development hostnames (localhost, 127.0.0.1, *.localhost,
+ *    192.168.x.x). This runtime check replaces `import.meta.env.DEV` so the hint
+ *    fires even when Vite builds a production bundle but Symfony's APP_ENV is
+ *    "dev" (i.e. the Vite dev server is not wired up and DEV is always false).
  *  - Fires at most once per resource URL across the entire app lifetime
  *    (module-level Set prevents duplicate logs on re-renders or StrictMode
  *    double-invocation).
  *  - Uses `console.info` prefixed with `[SmartCRUD]`.
- *  - Is a complete no-op in production builds (tree-shakeable).
+ *  - Is a no-op on non-local hostnames (e.g. staging, production).
  */
 
 import type { Field } from '../field/Field';
 
-/** Tracks resource URLs that have already been hinted to avoid duplicate logs. */
-const hintedUrls = new Set<string>();
+/**
+ * Returns true when running on a local development hostname.
+ * Works regardless of Vite build mode (`import.meta.env.DEV`).
+ */
+function isDevEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  return (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.localhost') ||
+    host.startsWith('192.168.')
+  );
+}
 
 /**
  * Derives a one-line field descriptor string for use in the hint snippet.
@@ -33,10 +48,7 @@ function fieldToHintLine(field: Field): string {
  * @param fields      - The auto-inferred `Field[]` resolved by useResourceSchema.
  */
 export function logDevHint(resourceUrl: string, fields: Field[]): void {
-  if (!import.meta.env.DEV) return;
-
-  if (hintedUrls.has(resourceUrl)) return;
-  hintedUrls.add(resourceUrl);
+  if (!isDevEnvironment()) return;
 
   // Exclude hidden identity fields from the hint — developers should not need
   // to manually define the system-generated id field in their resource config.

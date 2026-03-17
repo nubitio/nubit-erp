@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc } from './openApiParser';
 import { FieldType } from '../../field/FieldType';
-import type { HydraResourceSchema, HydraApiDoc } from './types';
+import type { HydraResourceSchema, HydraApiDoc, CrudHints } from './types';
 
 /** A realistic HydraResourceSchema covering all mapping rule branches */
 const productSchema: HydraResourceSchema = {
@@ -976,7 +976,7 @@ describe('mapHydraSchemaToFields — filterable from hydra:search mappings', () 
     expect(descField!.filterable).toBe(false);
   });
 
-  it('all fields are filterable: false when schema has no searchMappings', () => {
+  it('all fields are filterable: true when schema has no searchMappings', () => {
     const schemaNoSearch: HydraResourceSchema = {
       className: 'Thing',
       apiUrl: '/api/things',
@@ -995,10 +995,10 @@ describe('mapHydraSchemaToFields — filterable from hydra:search mappings', () 
     const fields = mapHydraSchemaToFields(schemaNoSearch);
     const titleField = fields.find((f) => f.name === 'title');
     expect(titleField).toBeDefined();
-    expect(titleField!.filterable).toBe(false);
+    expect(titleField!.filterable).toBe(true);
   });
 
-  it('all fields are filterable: false when searchMappings is an empty array', () => {
+  it('all fields are filterable: true when searchMappings is an empty array', () => {
     const schemaEmptySearch: HydraResourceSchema = {
       className: 'Thing',
       apiUrl: '/api/things',
@@ -1017,7 +1017,7 @@ describe('mapHydraSchemaToFields — filterable from hydra:search mappings', () 
     const fields = mapHydraSchemaToFields(schemaEmptySearch);
     const titleField = fields.find((f) => f.name === 'title');
     expect(titleField).toBeDefined();
-    expect(titleField!.filterable).toBe(false);
+    expect(titleField!.filterable).toBe(true);
   });
 
   it('filterable:true is set correctly on non-text field types (e.g. integer)', () => {
@@ -1465,5 +1465,268 @@ describe('parseHydraDoc — SLICE-002 integration: outer title flows to hydra:ti
     // The label must be the translated outer title, not the raw inner label
     expect(nameField!.label).toBe('Nombre');
     expect(nameField!.label).not.toBe('name');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SLICE-004 T2 — x-crud hints override inferred field values
+// ---------------------------------------------------------------------------
+
+/** Minimal helper to build a HydraResourceSchema with one non-id field */
+function makeSchemaWithHints(
+  fieldName: string,
+  hints: CrudHints | undefined,
+  searchMappings?: HydraResourceSchema['searchMappings'],
+): HydraResourceSchema {
+  return {
+    className: 'Widget',
+    apiUrl: '/api/widgets',
+    fields: [
+      {
+        name: fieldName,
+        range: 'xmls:string',
+        propertyType: 'rdf:Property',
+        required: false,
+        readable: true,
+        writeable: true,
+        crudHints: hints,
+      },
+    ],
+    searchMappings,
+  };
+}
+
+describe('mapHydraSchemaToFields — x-crud hints', () => {
+  // -------------------------------------------------------------------------
+  // filterable overrides
+  // -------------------------------------------------------------------------
+
+  it('x-crud.filterable: false overrides the filterable:true default (empty searchMappings)', () => {
+    // When searchMappings is empty, inference sets filterable=true for all fields.
+    // The hint must be able to override this to false.
+    const schema = makeSchemaWithHints('title', { filterable: false }, []);
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.filterable).toBe(false);
+  });
+
+  it('x-crud.filterable: true overrides filterable:false (field not in searchMappings)', () => {
+    // When searchMappings contains other fields but NOT this one,
+    // inference sets filterable=false. The hint must override this to true.
+    const schema = makeSchemaWithHints('title', { filterable: true }, [
+      { property: 'other', variable: 'other', required: false },
+    ]);
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.filterable).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // sortable override
+  // -------------------------------------------------------------------------
+
+  it('x-crud.sortable: false sets the field as non-sortable', () => {
+    // Default sortable from builder is true; hint must override to false.
+    const schema = makeSchemaWithHints('title', { sortable: false });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.sortable).toBe(false);
+  });
+
+  it('x-crud.sortable: true preserves sortable when already true (no regression)', () => {
+    const schema = makeSchemaWithHints('title', { sortable: true });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f!.sortable).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // hidden override
+  // -------------------------------------------------------------------------
+
+  it('x-crud.hidden: true hides the field (visible: false)', () => {
+    const schema = makeSchemaWithHints('title', { hidden: true });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.visible).toBe(false);
+  });
+
+  it('x-crud.hidden: false leaves the field visible (no change from default)', () => {
+    const schema = makeSchemaWithHints('title', { hidden: false });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    // hidden:false should NOT hide the field; visible default is true
+    expect(f!.visible).toBe(true);
+  });
+
+  // -------------------------------------------------------------------------
+  // order override
+  // -------------------------------------------------------------------------
+
+  it('x-crud.order: 2 sets the column order to 2', () => {
+    const schema = makeSchemaWithHints('title', { order: 2 });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.order).toBe(2);
+  });
+
+  it('x-crud.order: 0 sets the column order to 0', () => {
+    const schema = makeSchemaWithHints('title', { order: 0 });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f!.order).toBe(0);
+  });
+
+  // -------------------------------------------------------------------------
+  // width override
+  // -------------------------------------------------------------------------
+
+  it('x-crud.width: 120 sets the column width to 120', () => {
+    const schema = makeSchemaWithHints('title', { width: 120 });
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    expect(f!.width).toBe(120);
+  });
+
+  // -------------------------------------------------------------------------
+  // No regression when x-crud is absent
+  // -------------------------------------------------------------------------
+
+  it('absent x-crud leaves inferred values unchanged (no regression)', () => {
+    // No crudHints → all defaults from inference apply.
+    const schema = makeSchemaWithHints('title', undefined, []);
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'title');
+    expect(f).toBeDefined();
+    // No searchMappings (empty array) → filterable defaults to true
+    expect(f!.filterable).toBe(true);
+    // Default sortable from builder is true
+    expect(f!.sortable).toBe(true);
+    // Default visible is true
+    expect(f!.visible).toBe(true);
+    // No order set
+    expect(f!.order).toBeUndefined();
+    // No width set
+    expect(f!.width).toBeUndefined();
+  });
+
+  // -------------------------------------------------------------------------
+  // Integration: parseHydraDoc forwards x-crud to crudHints
+  // -------------------------------------------------------------------------
+
+  it('parseHydraDoc forwards x-crud from the raw doc into field crudHints', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Category',
+          '@type': 'Class',
+          title: 'Category',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'Nombre',
+              required: false,
+              readable: true,
+              writeable: true,
+              'x-crud': { filterable: true, sortable: true, order: 0 },
+            },
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/parent',
+                '@type': 'Link',
+                label: 'parent',
+                range: '#Category',
+              },
+              title: 'Categoría padre',
+              required: false,
+              readable: true,
+              writeable: true,
+              'x-crud': { filterable: true, sortable: false, order: 1 },
+            },
+          ],
+        },
+      ],
+    };
+
+    const resources = parseHydraDoc(doc);
+    const nameSchema = resources['Category'].fields.find((f) => f.name === 'name');
+    const parentSchema = resources['Category'].fields.find((f) => f.name === 'parent');
+
+    expect(nameSchema?.crudHints).toEqual({ filterable: true, sortable: true, order: 0 });
+    expect(parentSchema?.crudHints).toEqual({ filterable: true, sortable: false, order: 1 });
+  });
+
+  it('end-to-end: parseHydraDoc + mapHydraSchemaToFields applies x-crud hints', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Category',
+          '@type': 'Class',
+          title: 'Category',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'Nombre',
+              required: false,
+              readable: true,
+              writeable: true,
+              'x-crud': { filterable: true, sortable: true, order: 0 },
+            },
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/parent',
+                '@type': 'Link',
+                label: 'parent',
+                range: '#Category',
+              },
+              title: 'Categoría padre',
+              required: false,
+              readable: true,
+              writeable: true,
+              'x-crud': { filterable: true, sortable: false, order: 1 },
+            },
+          ],
+        },
+      ],
+    };
+
+    const resources = parseHydraDoc(doc);
+    const fields = mapHydraSchemaToFields(resources['Category']);
+
+    const nameField = fields.find((f) => f.name === 'name');
+    const parentField = fields.find((f) => f.name === 'parent');
+
+    expect(nameField?.filterable).toBe(true);
+    expect(nameField?.sortable).toBe(true);
+    expect(nameField?.order).toBe(0);
+
+    expect(parentField?.filterable).toBe(true);
+    expect(parentField?.sortable).toBe(false);
+    expect(parentField?.order).toBe(1);
   });
 });

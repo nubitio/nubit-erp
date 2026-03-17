@@ -232,6 +232,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         setCellValue={field.onChange}
         width={field.width}
         minWidth={field.minWidth}
+        visibleIndex={field.order}
         editorOptions={editorOptions}
         editCellComponent={field.contentRender}
         dataType={field.valueType}
