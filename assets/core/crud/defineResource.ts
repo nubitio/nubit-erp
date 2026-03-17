@@ -13,14 +13,10 @@ function deriveId(apiUrl: string): string {
   return last.split('?')[0];
 }
 
-// ---------------------------------------------------------------------------
-// Overload signatures
-// ---------------------------------------------------------------------------
-
-/** Overload 1 — Zero config: derive id from URL, title/fields left empty (for SLICE-005 Hydra). */
+/** Overload 1 — Zero config: derive id from URL. */
 export function defineResource(apiUrl: string): ResourceConfig;
 
-/** Overload 2 — URL + partial overrides (for SLICE-005 Hydra). */
+/** Overload 2 — URL + partial overrides. */
 export function defineResource<T extends Record<string, unknown>>(
   apiUrl: string,
   overrides: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },
@@ -31,9 +27,6 @@ export function defineResource<T extends Record<string, unknown> = Record<string
   config: ResourceConfig<T>,
 ): ResourceConfig<T>;
 
-// ---------------------------------------------------------------------------
-// Implementation
-// ---------------------------------------------------------------------------
 export function defineResource<T extends Record<string, unknown> = Record<string, unknown>>(
   configOrUrl: ResourceConfig<T> | string,
   overrides?: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },

@@ -1,5 +1,5 @@
 import type { Field } from '../../field/Field';
-import type { HydraResourceSchema, HydraFieldSchema } from './types';
+import type { HydraResourceSchema } from './types';
 import {
   textField,
   numberField,
@@ -8,11 +8,34 @@ import {
   noneField,
 } from '../../field/FieldBuilders';
 import { datetimeField } from '../../field/FieldBuilders';
-import type { FieldType } from '../../field/FieldType';
+import { pluralize } from './openApiParser';
 
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
+/**
+ * Returns true when the given `range` string declares an XSD integer type.
+ * Supports both short-form `xmls:` prefixes and full XSD IRIs.
+ *
+ * Used to decide whether the `id` field should be a `numberField()` (integer
+ * primary key) or a `textField()` (UUID / string primary key — safe default).
+ */
+function isIntegerRange(range: string | undefined): boolean {
+  if (!range) return false;
+
+  // Full XSD IRI  — e.g. http://www.w3.org/2001/XMLSchema#integer
+  if (range.startsWith('http://www.w3.org/2001/XMLSchema#')) {
+    const local = range.split('#').pop() ?? '';
+    return local === 'integer' || local === 'int' || local === 'long';
+  }
+
+  // Short-form  — e.g. xmls:integer / xsd:int
+  return (
+    range === 'xmls:integer' ||
+    range === 'xmls:int' ||
+    range === 'xmls:long' ||
+    range === 'xsd:integer' ||
+    range === 'xsd:int' ||
+    range === 'xsd:long'
+  );
+}
 
 /**
  * Convert a camelCase or snake_case field name to a human-readable label.
@@ -75,16 +98,16 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
   return 'text';
 }
 
-// ---------------------------------------------------------------------------
-// Public mapper
-// ---------------------------------------------------------------------------
-
 /**
  * Map a single HydraResourceSchema to an array of Field objects using the
  * existing field builder utilities.
  *
  * Mapping rules (in priority order):
- *  1. name === 'id' or name === '@id'  → skip (return null)
+ *  1. name === 'id' or name === '@id'  → always emit as a hidden identity field
+ *                                         (visible: false, readonly: true, isIdentity: true)
+ *                                         Required so DevExtreme's keyExpr resolves correctly
+ *                                         and E1042 ("Row focusing requires the key field") is
+ *                                         never thrown.
  *  2. readable: false                  → skip (already filtered upstream, but defensive)
  *  3. writeable: false (display-only)  → noneField
  *  4. range resolves to 'boolean'      → switchField
@@ -94,16 +117,46 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
  *  8. range resolves to 'entity' OR propertyType === 'Link' → entityField
  *  9. range resolves to 'text' OR fallback  → textField
  *
+ * For each field, `filterable` is set to `true` when the field's property name
+ * appears in `schema.searchMappings` (from `hydra:search`), otherwise `false`.
+ *
+ * After processing all schema fields, if no `id` field was found in the schema,
+ * a synthetic hidden identity field is injected so the grid always has a key.
+ *
  * @pure — no React, no hooks, no side effects.
  */
 export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
   const fields: Field[] = [];
 
+  // Build a fast lookup set of filterable property names from hydra:search mappings.
+  const filterableProperties = new Set((schema.searchMappings ?? []).map((m) => m.property));
+
+  // Track whether the schema contained an explicit id / @id field.
+  let hasIdField = false;
+
   for (const fieldSchema of schema.fields) {
     const { name, range, propertyType, required, readable, writeable } = fieldSchema;
 
-    // Rule 1 — skip identity fields
+    // Rule 1 — identity fields: always emit as hidden, read-only, identity field.
+    // Type selection: use numberField() ONLY when the schema explicitly declares an
+    // XSD integer range.  For string/absent/unknown range (including UUID primary keys),
+    // default to textField() to prevent DevExtreme coercing the key to NaN.  (BUG-011)
     if (name === 'id' || name === '@id') {
+      hasIdField = true;
+      const idBase = isIntegerRange(range)
+        ? numberField().name('id').label('Id').required(false).precision(0).build()
+        : textField().name('id').label('Id').required(false).build();
+      const idField: Field = {
+        ...idBase,
+        isIdentity: true,
+        visible: false,
+        readonly: true,
+        filterable: false,
+        sortable: false,
+        hideable: false,
+        visibleOnForm: false,
+      };
+      fields.push(idField);
       continue;
     }
 
@@ -112,11 +165,16 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
       continue;
     }
 
-    const label = toLabel(name);
+    // Prefer the backend-provided hydra:title (translated label) when present and
+    // non-empty; fall back to the auto-capitalised property name.
+    const hydraTitle = fieldSchema['hydra:title'];
+    const label = hydraTitle && hydraTitle.trim() !== '' ? hydraTitle : toLabel(name);
+    const filterable = filterableProperties.has(name);
 
     // Rule 3 — display-only (writeable: false) → noneField
     if (!writeable) {
-      fields.push(noneField().name(name).label(label).required(required).build());
+      const built = noneField().name(name).label(label).required(required).build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
@@ -124,46 +182,80 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
 
     // Rule 4 — boolean → switchField
     if (tag === 'boolean') {
-      fields.push(switchField().name(name).label(label).required(required).build());
+      const built = switchField().name(name).label(label).required(required).build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
     // Rule 5 — date-time → datetimeField
     if (tag === 'dateTime') {
-      fields.push(datetimeField().name(name).label(label).required(required).build());
+      const built = datetimeField().name(name).label(label).required(required).build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
     // Rule 6 — integer → numberField with precision 0
     if (tag === 'integer') {
-      fields.push(numberField().name(name).label(label).required(required).precision(0).build());
+      const built = numberField().name(name).label(label).required(required).precision(0).build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
     // Rule 7 — decimal → numberField
     if (tag === 'decimal') {
-      fields.push(numberField().name(name).label(label).required(required).build());
+      const built = numberField().name(name).label(label).required(required).build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
     // Rule 8 — entity reference (range starts with '#' / http IRI) or Link type → entityField
     if (tag === 'entity' || propertyType === 'Link') {
       const resourceClass = range ? range.replace('#', '') : '';
-      // Derive a guessed API URL from the class name; pages may override via useResourceSchema
+      // Derive a guessed API URL from the class name using proper English pluralization.
+      // e.g. Category → /api/categories, Branch → /api/branches, Product → /api/products
       const url = resourceClass
-        ? `/api/${resourceClass
-            .replace(/([A-Z])/g, '_$1')
-            .toLowerCase()
-            .replace(/^_/, '')}s`
+        ? `/api/${pluralize(
+            resourceClass
+              .replace(/([A-Z])/g, '_$1')
+              .toLowerCase()
+              .replace(/^_/, ''),
+          )}`
         : '';
-      fields.push(
-        entityField(url, 'id', 'name').name(name).label(label).required(required).build(),
-      );
+      const built = entityField(url, 'id', 'name')
+        .name(name)
+        .label(label)
+        .required(required)
+        .build();
+      fields.push({ ...built, filterable });
       continue;
     }
 
     // Rule 9 — xmls:string and unknown → textField (safe fallback)
-    fields.push(textField().name(name).label(label).required(required).build());
+    const built = textField().name(name).label(label).required(required).build();
+    fields.push({ ...built, filterable });
+  }
+
+  // If the schema had no explicit id / @id property, inject a synthetic hidden
+  // identity field so DevExtreme always has a valid keyExpr to bind to.
+  //
+  // Use textField() — never numberField() — because UUIDs, slugs, and IRIs are
+  // all strings.  A schema that genuinely uses a numeric id WILL have an explicit
+  // id property with xsd:integer range, which is handled by Rule 1 above.
+  // Defaulting to string prevents DevExtreme from coercing UUID keys to NaN.
+  // (BUG-011)
+  if (!hasIdField) {
+    const syntheticId: Field = {
+      ...textField().name('id').label('Id').required(false).build(),
+      isIdentity: true,
+      visible: false,
+      readonly: true,
+      filterable: false,
+      sortable: false,
+      hideable: false,
+      visibleOnForm: false,
+    };
+    // Prepend so it appears first (conventional key position).
+    fields.unshift(syntheticId);
   }
 
   return fields;

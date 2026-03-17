@@ -1,7 +1,5 @@
 /**
- * Unit tests for SLICE-005 Wave 1 (BUG-001 fix):
- *   - HydraToFieldMapper (mapHydraSchemaToFields)
- *   - openApiParser (parseHydraDoc)
+ * Unit tests for HydraToFieldMapper (mapHydraSchemaToFields) and openApiParser (parseHydraDoc).
  */
 
 import { describe, it, expect } from 'vitest';
@@ -9,10 +7,6 @@ import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc } from './openApiParser';
 import { FieldType } from '../../field/FieldType';
 import type { HydraResourceSchema, HydraApiDoc } from './types';
-
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
 
 /** A realistic HydraResourceSchema covering all mapping rule branches */
 const productSchema: HydraResourceSchema = {
@@ -110,24 +104,37 @@ const productSchema: HydraResourceSchema = {
   ],
 };
 
-// ---------------------------------------------------------------------------
-// Helper: find a field by name in the mapped output
-// ---------------------------------------------------------------------------
 function findField(fields: ReturnType<typeof mapHydraSchemaToFields>, name: string) {
   return fields.find((f) => f.name === name);
 }
 
-// ---------------------------------------------------------------------------
-// mapHydraSchemaToFields — Rule 1: skip id / @id
-// ---------------------------------------------------------------------------
-
-describe('mapHydraSchemaToFields — Rule 1: skip id and @id', () => {
-  it('does not include a field named "id"', () => {
+describe('mapHydraSchemaToFields — Rule 1: id and @id always emitted as hidden identity field', () => {
+  it('includes a field named "id" in the output', () => {
     const fields = mapHydraSchemaToFields(productSchema);
-    expect(findField(fields, 'id')).toBeUndefined();
+    expect(findField(fields, 'id')).toBeDefined();
   });
 
-  it('does not include a field named "@id"', () => {
+  it('"id" field has visible: false (not rendered as a column)', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    expect(findField(fields, 'id')!.visible).toBe(false);
+  });
+
+  it('"id" field has readonly: true (not editable in DxForm)', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    expect(findField(fields, 'id')!.readonly).toBe(true);
+  });
+
+  it('"id" field has isIdentity: true', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    expect(findField(fields, 'id')!.isIdentity).toBe(true);
+  });
+
+  it('"id" field has visibleOnForm: false (not rendered in DxForm)', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    expect(findField(fields, 'id')!.visibleOnForm).toBe(false);
+  });
+
+  it('includes a field named "@id" as hidden identity when schema uses @id', () => {
     const schema: HydraResourceSchema = {
       className: 'Foo',
       apiUrl: '/api/foos',
@@ -150,14 +157,14 @@ describe('mapHydraSchemaToFields — Rule 1: skip id and @id', () => {
         },
       ],
     };
+    // Note: @id is normalised to "id" in our emitted field
     const fields = mapHydraSchemaToFields(schema);
-    expect(findField(fields, '@id')).toBeUndefined();
+    const idField = findField(fields, 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.visible).toBe(false);
+    expect(idField!.isIdentity).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 2: readable: false → skip
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — Rule 2: readable:false → skipped', () => {
   it('does not include a field with readable:false', () => {
@@ -189,10 +196,6 @@ describe('mapHydraSchemaToFields — Rule 2: readable:false → skipped', () => 
   });
 });
 
-// ---------------------------------------------------------------------------
-// Rule 3: writeable: false → noneField (display-only)
-// ---------------------------------------------------------------------------
-
 describe('mapHydraSchemaToFields — Rule 3: writeable:false → noneField', () => {
   it('maps a writeable:false field to FieldType.NONE', () => {
     const fields = mapHydraSchemaToFields(productSchema);
@@ -215,10 +218,6 @@ describe('mapHydraSchemaToFields — Rule 3: writeable:false → noneField', () 
   });
 });
 
-// ---------------------------------------------------------------------------
-// Rule 4: range=xmls:boolean → switchField
-// ---------------------------------------------------------------------------
-
 describe('mapHydraSchemaToFields — Rule 4: xmls:boolean → switchField', () => {
   it('maps range=xmls:boolean to FieldType.SWITCH', () => {
     const fields = mapHydraSchemaToFields(productSchema);
@@ -227,10 +226,6 @@ describe('mapHydraSchemaToFields — Rule 4: xmls:boolean → switchField', () =
     expect(f!.type).toBe(FieldType.SWITCH);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 5: range=xmls:dateTime → datetimeField
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — Rule 5: xmls:dateTime → datetimeField', () => {
   it('maps a writeable xmls:dateTime field to FieldType.DATETIME', () => {
@@ -249,7 +244,8 @@ describe('mapHydraSchemaToFields — Rule 5: xmls:dateTime → datetimeField', (
       ],
     };
     const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].type).toBe(FieldType.DATETIME);
+    const f = fields.find((x) => x.name === 'startAt');
+    expect(f!.type).toBe(FieldType.DATETIME);
   });
 
   it('writeable:false dateTime still maps to NONE (Rule 3 takes priority)', () => {
@@ -258,10 +254,6 @@ describe('mapHydraSchemaToFields — Rule 5: xmls:dateTime → datetimeField', (
     expect(f!.type).toBe(FieldType.NONE);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 6: range=xmls:integer → numberField with precision 0
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — Rule 6: xmls:integer → numberField', () => {
   it('maps range=xmls:integer to FieldType.NUMBER', () => {
@@ -278,10 +270,6 @@ describe('mapHydraSchemaToFields — Rule 6: xmls:integer → numberField', () =
   });
 });
 
-// ---------------------------------------------------------------------------
-// Rule 7: range=xmls:decimal → numberField
-// ---------------------------------------------------------------------------
-
 describe('mapHydraSchemaToFields — Rule 7: xmls:decimal → numberField', () => {
   it('maps range=xmls:decimal to FieldType.NUMBER', () => {
     const fields = mapHydraSchemaToFields(productSchema);
@@ -290,10 +278,6 @@ describe('mapHydraSchemaToFields — Rule 7: xmls:decimal → numberField', () =
     expect(f!.type).toBe(FieldType.NUMBER);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 8: range starts with '#' → entityField
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — Rule 8: "#Class" range → entityField', () => {
   it('maps a range starting with "#" to FieldType.ENTITY', () => {
@@ -304,10 +288,6 @@ describe('mapHydraSchemaToFields — Rule 8: "#Class" range → entityField', ()
   });
 });
 
-// ---------------------------------------------------------------------------
-// Rule 8b: propertyType=Link → entityField
-// ---------------------------------------------------------------------------
-
 describe('mapHydraSchemaToFields — Rule 8b: propertyType=Link → entityField', () => {
   it('maps a propertyType="Link" field to FieldType.ENTITY', () => {
     const fields = mapHydraSchemaToFields(productSchema);
@@ -316,10 +296,6 @@ describe('mapHydraSchemaToFields — Rule 8b: propertyType=Link → entityField'
     expect(f!.type).toBe(FieldType.ENTITY);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 9: xmls:string (default) → textField
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — Rule 9: xmls:string → textField', () => {
   it('maps range=xmls:string (no special format) to FieldType.TEXT', () => {
@@ -335,10 +311,6 @@ describe('mapHydraSchemaToFields — Rule 9: xmls:string → textField', () => {
     expect(f!.type).toBe(FieldType.TEXT);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Rule 9 fallback: unknown range → textField
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — fallback: unknown range → textField', () => {
   it('maps an unrecognised range to FieldType.TEXT as safe fallback', () => {
@@ -364,13 +336,10 @@ describe('mapHydraSchemaToFields — fallback: unknown range → textField', () 
       ],
     };
     const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].type).toBe(FieldType.TEXT);
+    const f = fields.find((x) => x.name === 'mystery');
+    expect(f!.type).toBe(FieldType.TEXT);
   });
 });
-
-// ---------------------------------------------------------------------------
-// required flag
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — required flag', () => {
   it('sets required=true for fields with required:true', () => {
@@ -403,7 +372,8 @@ describe('mapHydraSchemaToFields — required flag', () => {
       ],
     };
     const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].required).toBe(true);
+    const f = fields.find((x) => x.name === 'category');
+    expect(f!.required).toBe(true);
   });
 
   it('required=true propagates to numberField', () => {
@@ -422,13 +392,10 @@ describe('mapHydraSchemaToFields — required flag', () => {
       ],
     };
     const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].required).toBe(true);
+    const f = fields.find((x) => x.name === 'amount');
+    expect(f!.required).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// label generation
-// ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — label generation', () => {
   it('camelCase field name is converted to a human-readable label', () => {
@@ -447,7 +414,8 @@ describe('mapHydraSchemaToFields — label generation', () => {
       ],
     };
     const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].label).toBe('Published On');
+    const f = fields.find((x) => x.name === 'publishedOn');
+    expect(f!.label).toBe('Published On');
   });
 
   it('single-word field keeps first letter capitalised', () => {
@@ -457,21 +425,21 @@ describe('mapHydraSchemaToFields — label generation', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// edge cases
-// ---------------------------------------------------------------------------
-
 describe('mapHydraSchemaToFields — edge cases', () => {
-  it('returns an empty array for a schema with no fields', () => {
+  it('returns only the synthetic hidden id field for a schema with no fields', () => {
     const schema: HydraResourceSchema = {
       className: 'Empty',
       apiUrl: '/api/empties',
       fields: [],
     };
-    expect(mapHydraSchemaToFields(schema)).toEqual([]);
+    const fields = mapHydraSchemaToFields(schema);
+    expect(fields).toHaveLength(1);
+    expect(fields[0].name).toBe('id');
+    expect(fields[0].isIdentity).toBe(true);
+    expect(fields[0].visible).toBe(false);
   });
 
-  it('returns an empty array for a schema whose only field is id', () => {
+  it('returns only the hidden id field for a schema whose only field is id', () => {
     const schema: HydraResourceSchema = {
       className: 'IdOnly',
       apiUrl: '/api/id-only',
@@ -486,13 +454,53 @@ describe('mapHydraSchemaToFields — edge cases', () => {
         },
       ],
     };
-    expect(mapHydraSchemaToFields(schema)).toEqual([]);
+    const fields = mapHydraSchemaToFields(schema);
+    expect(fields).toHaveLength(1);
+    expect(fields[0].name).toBe('id');
+    expect(fields[0].isIdentity).toBe(true);
+    expect(fields[0].visible).toBe(false);
   });
 });
 
-// ===========================================================================
-// parseHydraDoc tests
-// ===========================================================================
+describe('mapHydraSchemaToFields — Rule 8: entityField URL pluralization', () => {
+  function makeEntitySchema(range: string): HydraResourceSchema {
+    return {
+      className: 'Host',
+      apiUrl: '/api/hosts',
+      fields: [
+        {
+          name: 'ref',
+          range,
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+  }
+
+  it('Category → /api/categories (consonant+y → ies)', () => {
+    const fields = mapHydraSchemaToFields(makeEntitySchema('#Category'));
+    const f = fields.find((x) => x.name === 'ref');
+    expect(f!.type).toBe(FieldType.ENTITY);
+    expect(f!.url).toBe('/api/categories');
+  });
+
+  it('Branch → /api/branches (ch → es)', () => {
+    const fields = mapHydraSchemaToFields(makeEntitySchema('#Branch'));
+    const f = fields.find((x) => x.name === 'ref');
+    expect(f!.type).toBe(FieldType.ENTITY);
+    expect(f!.url).toBe('/api/branches');
+  });
+
+  it('Product → /api/products (regular → s)', () => {
+    const fields = mapHydraSchemaToFields(makeEntitySchema('#Product'));
+    const f = fields.find((x) => x.name === 'ref');
+    expect(f!.type).toBe(FieldType.ENTITY);
+    expect(f!.url).toBe('/api/products');
+  });
+});
 
 const validHydraDoc: HydraApiDoc = {
   '@id': '/api/docs.jsonld',
@@ -633,10 +641,6 @@ const validHydraDoc: HydraApiDoc = {
   ],
 };
 
-// ---------------------------------------------------------------------------
-// Happy path
-// ---------------------------------------------------------------------------
-
 describe('parseHydraDoc — happy path', () => {
   it('returns a resource map with one entry per non-Entrypoint class', () => {
     const resources = parseHydraDoc(validHydraDoc);
@@ -743,10 +747,6 @@ describe('parseHydraDoc — happy path', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// deriveApiUrl — URL derivation from camelCase Entrypoint property names
-// ---------------------------------------------------------------------------
-
 describe('parseHydraDoc — apiUrl derivation', () => {
   function makeDocWithEntrypoint(propId: string, range: string): HydraApiDoc {
     return {
@@ -791,10 +791,6 @@ describe('parseHydraDoc — apiUrl derivation', () => {
     expect(parseHydraDoc(doc)['Product'].apiUrl).toBe('/api/products');
   });
 });
-
-// ---------------------------------------------------------------------------
-// parseHydraDoc — fields shape
-// ---------------------------------------------------------------------------
 
 describe('parseHydraDoc — fields shape', () => {
   it('each field has a name string', () => {
@@ -919,5 +915,555 @@ describe('parseHydraDoc — fields shape', () => {
     };
     const resources = parseHydraDoc(doc);
     expect(resources['Thing'].fields[0].required).toBe(false);
+  });
+});
+
+describe('mapHydraSchemaToFields — filterable from hydra:search mappings', () => {
+  /** Schema with searchMappings for "name" and "status" */
+  const schemaWithSearch: HydraResourceSchema = {
+    className: 'Item',
+    apiUrl: '/api/items',
+    fields: [
+      {
+        name: 'name',
+        range: 'xmls:string',
+        propertyType: 'rdf:Property',
+        required: false,
+        readable: true,
+        writeable: true,
+      },
+      {
+        name: 'status',
+        range: 'xmls:string',
+        propertyType: 'rdf:Property',
+        required: false,
+        readable: true,
+        writeable: true,
+      },
+      {
+        name: 'description',
+        range: 'xmls:string',
+        propertyType: 'rdf:Property',
+        required: false,
+        readable: true,
+        writeable: true,
+      },
+    ],
+    searchMappings: [
+      { property: 'name', variable: 'name', required: false },
+      { property: 'status', variable: 'status', required: false },
+    ],
+  };
+
+  it('field with matching searchMapping has filterable: true', () => {
+    const fields = mapHydraSchemaToFields(schemaWithSearch);
+    const nameField = fields.find((f) => f.name === 'name');
+    expect(nameField).toBeDefined();
+    expect(nameField!.filterable).toBe(true);
+  });
+
+  it('second field with matching searchMapping also has filterable: true', () => {
+    const fields = mapHydraSchemaToFields(schemaWithSearch);
+    const statusField = fields.find((f) => f.name === 'status');
+    expect(statusField).toBeDefined();
+    expect(statusField!.filterable).toBe(true);
+  });
+
+  it('field without a matching searchMapping has filterable: false', () => {
+    const fields = mapHydraSchemaToFields(schemaWithSearch);
+    const descField = fields.find((f) => f.name === 'description');
+    expect(descField).toBeDefined();
+    expect(descField!.filterable).toBe(false);
+  });
+
+  it('all fields are filterable: false when schema has no searchMappings', () => {
+    const schemaNoSearch: HydraResourceSchema = {
+      className: 'Thing',
+      apiUrl: '/api/things',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+      // searchMappings absent
+    };
+    const fields = mapHydraSchemaToFields(schemaNoSearch);
+    const titleField = fields.find((f) => f.name === 'title');
+    expect(titleField).toBeDefined();
+    expect(titleField!.filterable).toBe(false);
+  });
+
+  it('all fields are filterable: false when searchMappings is an empty array', () => {
+    const schemaEmptySearch: HydraResourceSchema = {
+      className: 'Thing',
+      apiUrl: '/api/things',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+      searchMappings: [],
+    };
+    const fields = mapHydraSchemaToFields(schemaEmptySearch);
+    const titleField = fields.find((f) => f.name === 'title');
+    expect(titleField).toBeDefined();
+    expect(titleField!.filterable).toBe(false);
+  });
+
+  it('filterable:true is set correctly on non-text field types (e.g. integer)', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Price',
+      apiUrl: '/api/prices',
+      fields: [
+        {
+          name: 'amount',
+          range: 'xmls:integer',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+      searchMappings: [{ property: 'amount', variable: 'amount', required: false }],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const amountField = fields.find((f) => f.name === 'amount');
+    expect(amountField).toBeDefined();
+    expect(amountField!.filterable).toBe(true);
+    expect(amountField!.type).toBe(FieldType.NUMBER);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-010 — synthetic id field injection when schema has no explicit id
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — BUG-010: synthetic id injection', () => {
+  it('schema with no explicit id field still emits an id field', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+  });
+
+  it('synthetic id field is marked visible: false', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField!.visible).toBe(false);
+  });
+
+  it('synthetic id field is marked readOnly: true', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField!.readonly).toBe(true);
+  });
+
+  it('synthetic id field is marked isIdentity: true', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('synthetic id field is marked visibleOnForm: false', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField!.visibleOnForm).toBe(false);
+  });
+
+  it('synthetic id is prepended (first field) when not in schema', () => {
+    const schema: HydraResourceSchema = {
+      className: 'NoId',
+      apiUrl: '/api/no-ids',
+      fields: [
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    expect(fields[0].name).toBe('id');
+    expect(fields[0].isIdentity).toBe(true);
+  });
+
+  it('explicit id in schema is emitted with visible: false and readOnly: true', () => {
+    // productSchema has name='id', range='xmls:integer'
+    const fields = mapHydraSchemaToFields(productSchema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.visible).toBe(false);
+    expect(idField!.readonly).toBe(true);
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('explicit id in schema is not duplicated when schema already has id', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    const idFields = fields.filter((f) => f.name === 'id');
+    expect(idFields).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-011 — id field type depends on declared range; safe default is string
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — BUG-011: id field type resolution', () => {
+  /** Build a minimal schema with an explicit id property at the given range */
+  function schemaWithIdRange(range: string | undefined): HydraResourceSchema {
+    return {
+      className: 'Item',
+      apiUrl: '/api/items',
+      fields: [
+        {
+          name: 'id',
+          range,
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+  }
+
+  it('explicit id with range xmls:integer → identity field has type "number"', () => {
+    const fields = mapHydraSchemaToFields(schemaWithIdRange('xmls:integer'));
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.NUMBER);
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('explicit id with range xmls:string → identity field has type "text"', () => {
+    const fields = mapHydraSchemaToFields(schemaWithIdRange('xmls:string'));
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.TEXT);
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('explicit id with no declared range → identity field has type "text" (safe default)', () => {
+    const fields = mapHydraSchemaToFields(schemaWithIdRange(undefined));
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.TEXT);
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('schema with NO id property → synthetic injected id has type "text" (never number)', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Category',
+      apiUrl: '/api/categories',
+      fields: [
+        {
+          name: 'name',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.TEXT);
+    expect(idField!.isIdentity).toBe(true);
+    // UUID / string keys must not be coerced to NaN by DevExtreme
+    expect(idField!.type).not.toBe(FieldType.NUMBER);
+  });
+
+  it('explicit id with full XSD IRI integer range → identity field has type "number"', () => {
+    const fields = mapHydraSchemaToFields(
+      schemaWithIdRange('http://www.w3.org/2001/XMLSchema#integer'),
+    );
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.NUMBER);
+    expect(idField!.isIdentity).toBe(true);
+  });
+
+  it('explicit id with anyURI range → identity field has type "text" (UUID-safe default)', () => {
+    const fields = mapHydraSchemaToFields(schemaWithIdRange('xmls:anyURI'));
+    const idField = fields.find((f) => f.name === 'id');
+    expect(idField).toBeDefined();
+    expect(idField!.type).toBe(FieldType.TEXT);
+    expect(idField!.isIdentity).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SLICE-002 — hydra:title label preference
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — SLICE-002: hydra:title label preference', () => {
+  it('uses hydra:title as the field label when present and non-empty', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Category',
+      apiUrl: '/api/categories',
+      fields: [
+        {
+          name: 'name',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+          'hydra:title': 'Nombre',
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'name');
+    expect(f).toBeDefined();
+    expect(f!.label).toBe('Nombre');
+  });
+
+  it('falls back to capitalised property name when hydra:title is absent', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Category',
+      apiUrl: '/api/categories',
+      fields: [
+        {
+          name: 'name',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+          // no 'hydra:title'
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'name');
+    expect(f).toBeDefined();
+    expect(f!.label).toBe('Name');
+  });
+
+  it('falls back to capitalised property name when hydra:title is an empty string', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Category',
+      apiUrl: '/api/categories',
+      fields: [
+        {
+          name: 'name',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+          'hydra:title': '',
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    const f = fields.find((x) => x.name === 'name');
+    expect(f).toBeDefined();
+    expect(f!.label).toBe('Name');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SLICE-002 integration — parseHydraDoc picks up the translated title from the
+// OUTER SupportedProperty wrapper, not from the inner property.label
+// ---------------------------------------------------------------------------
+
+describe('parseHydraDoc — SLICE-002 integration: outer title flows to hydra:title', () => {
+  it('parseHydraDoc copies the outer SupportedProperty title into field hydra:title', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Category',
+          '@type': 'Class',
+          title: 'Category',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                // inner property — only has the raw technical name as label
+                '@id': '#Category/name',
+                '@type': 'rdf:Property',
+                label: 'name', // ← raw name, NOT translated
+                range: 'xmls:string',
+              },
+              // outer SupportedProperty — has the translated title
+              title: 'Nombre', // ← translated label we want
+              required: false,
+              readable: true,
+              writeable: true,
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    const nameField = resources['Category'].fields.find((f) => f.name === 'name');
+    expect(nameField).toBeDefined();
+    expect(nameField!['hydra:title']).toBe('Nombre');
+  });
+
+  it('end-to-end: parseHydraDoc + mapHydraSchemaToFields produces label "Nombre"', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Category',
+          '@type': 'Class',
+          title: 'Category',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'Nombre',
+              required: false,
+              readable: true,
+              writeable: true,
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    const fields = mapHydraSchemaToFields(resources['Category']);
+    const nameField = fields.find((f) => f.name === 'name');
+    expect(nameField).toBeDefined();
+    expect(nameField!.label).toBe('Nombre');
+  });
+
+  it('inner property.label does NOT leak into field.label (only outer title is used)', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Category',
+          '@type': 'Class',
+          title: 'Category',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Category/name',
+                '@type': 'rdf:Property',
+                label: 'name', // raw technical name — must NOT become the label
+                range: 'xmls:string',
+              },
+              title: 'Nombre', // translated — must become the label
+              required: false,
+              readable: true,
+              writeable: true,
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    const fields = mapHydraSchemaToFields(resources['Category']);
+    const nameField = fields.find((f) => f.name === 'name');
+    expect(nameField).toBeDefined();
+    // The label must be the translated outer title, not the raw inner label
+    expect(nameField!.label).toBe('Nombre');
+    expect(nameField!.label).not.toBe('name');
   });
 });

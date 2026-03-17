@@ -1,9 +1,9 @@
 import type { Field } from '../../field/Field';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
-import { useHydraMetadata } from './useHydraMetadata';
+import { useSchemaContext } from './SchemaContext';
 
-export type FieldOverride = Partial<Field> & { name: string };
+export type FieldOverride = Partial<Field> & { key: string };
 
 export interface UseResourceSchemaResult {
   fields: Field[];
@@ -24,9 +24,8 @@ export function useResourceSchema(
   manualFields?: Field[],
   overrides?: FieldOverride[],
 ): UseResourceSchemaResult {
-  const { data, isLoading, error } = useHydraMetadata();
+  const { data, isLoading, error } = useSchemaContext();
 
-  // If manual fields provided, use them as-is (no Hydra needed)
   if (manualFields && manualFields.length > 0) {
     return { fields: manualFields, isLoading: false, error: undefined };
   }
@@ -35,13 +34,9 @@ export function useResourceSchema(
     return { fields: [], isLoading, error };
   }
 
-  // Parse the API doc (Hydra or OpenAPI) into a resource map, then look up by apiUrl.
-  // Normalize both sides to strip leading slashes so that 'api/categories' and
-  // '/api/categories' resolve to the same schema entry.
   const resourceMap = data.format === 'hydra' ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
   const normalizedInput = normalizeUrl(apiUrl);
 
-  // Find the resource schema whose apiUrl matches (ignoring leading slash)
   const resourceSchema = Object.values(resourceMap).find(
     (r) => normalizeUrl(r.apiUrl) === normalizedInput,
   );
@@ -60,7 +55,11 @@ export function useResourceSchema(
 
 export function mergeOverrides(inferred: Field[], overrides: FieldOverride[]): Field[] {
   return inferred.map((field) => {
-    const override = overrides.find((o) => o.name === field.name);
-    return override ? { ...field, ...override } : field;
+    // Match override by `key` discriminator (maps to field.name).
+    const override = overrides.find((o) => o.key === field.name);
+    if (!override) return field;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { key: _discardedKey, ...overrideProps } = override;
+    return { ...field, ...overrideProps };
   });
 }

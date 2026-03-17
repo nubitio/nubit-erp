@@ -3,13 +3,10 @@ import type {
   HydraResourceSchema,
   HydraFieldSchema,
   HydraSupportedProperty,
+  HydraSearchMapping,
   OpenApiDoc,
   OpenApiProperty,
 } from './types';
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
 
 /**
  * Pluralizes an English word (snake_case or lowercase) with common rules.
@@ -21,7 +18,7 @@ import type {
  * - Everything else                   → append 's'
  *     warehouse → warehouses, product → products
  */
-function pluralize(word: string): string {
+export function pluralize(word: string): string {
   if (word.endsWith('y') && !['ay', 'ey', 'iy', 'oy', 'uy'].some((v) => word.endsWith(v))) {
     return word.slice(0, -1) + 'ies';
   }
@@ -102,9 +99,33 @@ function technicalName(sp: HydraSupportedProperty): string {
   return sp.property?.label ?? sp.title ?? '';
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
+/**
+ * Extract `hydra:search` mappings from a HydraClass.
+ * Returns an empty array if the class has no `hydra:search` block,
+ * or if any mapping entry is missing the required `hydra:property` field.
+ * Never throws.
+ */
+function extractSearchMappings(cls: HydraApiDoc['supportedClass'][number]): HydraSearchMapping[] {
+  const searchBlock = cls['hydra:search'];
+  if (!searchBlock) return [];
+
+  const mappings = searchBlock['hydra:mapping'] ?? [];
+  const result: HydraSearchMapping[] = [];
+
+  for (const mapping of mappings) {
+    const property = mapping['hydra:property'];
+    const variable = mapping['hydra:variable'];
+    if (!property || !variable) continue; // skip incomplete entries
+
+    result.push({
+      property,
+      variable,
+      required: mapping['hydra:required'] ?? false,
+    });
+  }
+
+  return result;
+}
 
 /**
  * Parse a raw `/api/docs.jsonld` Hydra JSON-LD response into a typed
@@ -150,6 +171,10 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
         required: sp.required ?? false,
         readable,
         writeable,
+        // Read the translated label from the OUTER SupportedProperty wrapper
+        // (sp.title / sp['hydra:title']), NOT from sp.property which only
+        // carries the raw technical property name in its `label` field.
+        'hydra:title': sp['title'] ?? sp['hydra:title'] ?? undefined,
       });
     }
 
@@ -164,6 +189,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
             .replace(/^_/, ''),
         )}`,
       fields,
+      searchMappings: extractSearchMappings(cls),
     };
   }
 

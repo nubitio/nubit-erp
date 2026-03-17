@@ -37,12 +37,19 @@ async function fetchOpenApiDoc(url: string): Promise<OpenApiDoc> {
 }
 
 /**
+ * Stable query key used by useHydraMetadata.
+ * Export this so that consumers (e.g. SmartCrudPage retry button) can
+ * invalidate exactly the right query without coupling to an internal string.
+ */
+export const API_DOC_QUERY_KEY = ['api-doc-discovery'] as const;
+
+/**
  * Waterfall discovery:
  *   1. Try /api/docs.jsonld (prefer Hydra — richer type info)
  *   2. Fall back to /api/docs.json (OpenAPI 3.1)
- *   3. Return null if both fail
+ *   3. Throw an Error if both fail so React Query sets isError = true
  */
-async function fetchApiDoc(): Promise<ApiDoc | null> {
+async function fetchApiDoc(): Promise<ApiDoc> {
   // 1. Try Hydra JSON-LD first
   try {
     const doc = await fetchHydraDoc(JSONLD_URL);
@@ -56,21 +63,25 @@ async function fetchApiDoc(): Promise<ApiDoc | null> {
     const doc = await fetchOpenApiDoc(JSON_URL);
     return { format: 'openapi', doc };
   } catch {
-    // both failed
+    // both failed — fall through to throw
   }
 
-  return null;
+  // Both endpoints failed: throw so React Query sets isError = true
+  throw new Error(
+    `Failed to load API documentation from ${JSONLD_URL} and ${JSON_URL}. ` +
+      'Make sure the API server is running.',
+  );
 }
 
 export interface UseHydraMetadataResult {
-  data: ApiDoc | null | undefined;
+  data: ApiDoc | undefined;
   isLoading: boolean;
   error: Error | undefined;
 }
 
 export function useHydraMetadata(): UseHydraMetadataResult {
-  const { data, error, isPending } = useQuery<ApiDoc | null, Error>({
-    queryKey: ['api-doc-discovery'],
+  const { data, error, isPending } = useQuery<ApiDoc, Error>({
+    queryKey: API_DOC_QUERY_KEY,
     queryFn: fetchApiDoc,
     staleTime: isDev ? 0 : 5 * 60_000, // 0 in dev, 5 min in prod
     refetchOnWindowFocus: isDev,
@@ -80,5 +91,4 @@ export function useHydraMetadata(): UseHydraMetadataResult {
   return { data, isLoading: isPending, error: error ?? undefined };
 }
 
-// Re-export parsers so consumers can use them with the raw docs
 export { parseHydraDoc, parseOpenApiDoc };
