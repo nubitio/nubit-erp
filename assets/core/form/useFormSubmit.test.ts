@@ -4,10 +4,6 @@ import { FieldType } from '../field/FieldType';
 import { FieldBuilder } from '../field/FieldBuilder';
 import type { Field } from '../field/Field';
 
-// ---------------------------------------------------------------------------
-// Module mocks — must be declared before any imports that pull them in
-// ---------------------------------------------------------------------------
-
 vi.mock('devextreme-react/data-grid', () => ({ DataGridRef: class {} }));
 vi.mock('devextreme-react/form', () => ({ FormRef: class {} }));
 vi.mock('devextreme/data/array_store', () => ({ default: class {} }));
@@ -21,10 +17,6 @@ vi.mock('../../shared/api/HttpClient', () => ({
     delete: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
   },
 }));
-
-// ---------------------------------------------------------------------------
-// Helper: instantiate the hook with minimal refs and no real HTTP
-// ---------------------------------------------------------------------------
 
 const makeSubmitter = (fields: Field[] = [], overrides: Record<string, any> = {}) => {
   const refs = {
@@ -51,10 +43,6 @@ const makeSubmitter = (fields: Field[] = [], overrides: Record<string, any> = {}
   );
 };
 
-// ---------------------------------------------------------------------------
-// Helpers to build minimal Field objects
-// ---------------------------------------------------------------------------
-
 const entityField = () =>
   new FieldBuilder()
     .type(FieldType.ENTITY)
@@ -79,12 +67,7 @@ const noneField = (isIdentity = false) => {
   return b.build();
 };
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe('useFormSubmit › serializeFields', () => {
-  // 1. ENTITY field with object value → serializes to IRI string
   it('ENTITY field with object value serializes to IRI string', () => {
     const field = entityField();
     const { serializeFields } = makeSubmitter([field]);
@@ -94,7 +77,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(result.customer).toBe('/api/customers/5');
   });
 
-  // 2. ENTITY field with number value → serializes to IRI string
   it('ENTITY field with number value serializes to IRI string', () => {
     const field = entityField();
     const { serializeFields } = makeSubmitter([field]);
@@ -104,7 +86,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(result.customer).toBe('/api/customers/3');
   });
 
-  // 3. ENTITY field with null → removes field from payload
   it('ENTITY field with null removes the field from payload', () => {
     const field = entityField();
     const { serializeFields } = makeSubmitter([field]);
@@ -114,7 +95,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect('customer' in result).toBe(false);
   });
 
-  // 4. ENTITY field with sentinel -999 → removes field from payload
   it('ENTITY field with sentinel -999 removes the field from payload', () => {
     const field = entityField();
     const { serializeFields } = makeSubmitter([field]);
@@ -124,7 +104,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect('customer' in result).toBe(false);
   });
 
-  // 5. ENTITY field multiple:true with array of objects → serializes each to IRI
   it('ENTITY field multiple:true with array of objects serializes each item to IRI', () => {
     const field = new FieldBuilder()
       .type(FieldType.ENTITY)
@@ -147,7 +126,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(result.tags).toEqual(['/api/tags/1', '/api/tags/2']);
   });
 
-  // 6. DATE field with valid date → returns ISO-8601 string with Z suffix
   it('DATE field with valid date returns UTC ISO-8601 string ending with Z', () => {
     const field = dateField();
     const { serializeFields } = makeSubmitter([field]);
@@ -160,7 +138,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(result.issuedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  // 7. DATE field with null → removes field from payload
   it('DATE field with null removes the field from payload', () => {
     const field = dateField();
     const { serializeFields } = makeSubmitter([field]);
@@ -170,7 +147,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect('issuedAt' in result).toBe(false);
   });
 
-  // 8. NUMBER field with sendAsString:true → returns string with 2 decimals
   it('NUMBER field with sendAsString:true returns string with 2 decimal places', () => {
     const field = numberField(true, 2);
     const { serializeFields } = makeSubmitter([field]);
@@ -180,7 +156,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(result.qty).toBe('12.50');
   });
 
-  // 9. NUMBER field normal → returns JS number
   it('NUMBER field without sendAsString returns a JS number', () => {
     const field = numberField(false);
     const { serializeFields } = makeSubmitter([field]);
@@ -191,7 +166,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect(typeof result.qty).toBe('number');
   });
 
-  // 10. NONE field non-identity → removes field from payload
   it('NONE field that is not identity removes the field from payload', () => {
     const field = noneField(false);
     const { serializeFields } = makeSubmitter([field]);
@@ -201,7 +175,6 @@ describe('useFormSubmit › serializeFields', () => {
     expect('status' in result).toBe(false);
   });
 
-  // 11. NONE field identity → keeps the field in payload
   it('NONE field that is identity keeps the field in payload', () => {
     const field = noneField(true);
     const { serializeFields } = makeSubmitter([field]);
@@ -209,5 +182,83 @@ describe('useFormSubmit › serializeFields', () => {
     const result = serializeFields({ status: 42 });
 
     expect(result.status).toBe(42);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-014: entity relation fields must always send the JSON-LD IRI in the body
+// ---------------------------------------------------------------------------
+
+describe('useFormSubmit › serializeFields › BUG-014 IRI serialization', () => {
+  const parentEntityField = () =>
+    new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('parent')
+      .url('/api/categories')
+      .valueField('id')
+      .label('Categoría Padre')
+      .build();
+
+  it('ENTITY field with IRI string value preserves the IRI in the PATCH body', () => {
+    const field = parentEntityField();
+    const { serializeFields } = makeSubmitter([field]);
+
+    const result = serializeFields({
+      parent: '/api/categories/550e8400-e29b-41d4-a716-446655440000',
+    });
+
+    expect(result.parent).toBe('/api/categories/550e8400-e29b-41d4-a716-446655440000');
+  });
+
+  it('ENTITY field with full Hydra object extracts @id and sends as IRI', () => {
+    const field = parentEntityField();
+    const { serializeFields } = makeSubmitter([field]);
+
+    const result = serializeFields({
+      parent: {
+        '@id': '/api/categories/550e8400-e29b-41d4-a716-446655440000',
+        id: 1,
+        name: 'Root',
+      },
+    });
+
+    expect(result.parent).toBe('/api/categories/550e8400-e29b-41d4-a716-446655440000');
+    // Must NOT contain the raw integer id
+    expect(result.parent).not.toBe('/api/categories/1');
+    expect(result.parent).not.toBe(1);
+  });
+
+  it('ENTITY field with raw integer value is converted to IRI path, not sent as bare integer', () => {
+    const field = parentEntityField();
+    const { serializeFields } = makeSubmitter([field]);
+
+    const result = serializeFields({ parent: 1 });
+
+    // Must be a string (IRI path), never the bare integer 1
+    expect(typeof result.parent).toBe('string');
+    expect(result.parent).not.toBe(1);
+    expect(result.parent).toMatch(/^\/api\/categories\//);
+  });
+
+  it('ENTITY multiple field with Hydra objects extracts @id from each item', () => {
+    const field = new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('tags')
+      .url('/api/tags')
+      .valueField('id')
+      .label('Tags')
+      .multiple(true)
+      .build();
+
+    const { serializeFields } = makeSubmitter([field]);
+
+    const result = serializeFields({
+      tags: [
+        { '@id': '/api/tags/uuid-aaa', id: 1, name: 'A' },
+        { '@id': '/api/tags/uuid-bbb', id: 2, name: 'B' },
+      ],
+    });
+
+    expect(result.tags).toEqual(['/api/tags/uuid-aaa', '/api/tags/uuid-bbb']);
   });
 });

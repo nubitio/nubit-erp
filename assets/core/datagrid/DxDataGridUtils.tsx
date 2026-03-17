@@ -20,7 +20,6 @@ import React from 'react';
 
 export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) => {
   return items?.map((item: ToolbarButtonItem | ToolbarButtonItem[], index) => {
-    // object or array
     if (item instanceof Array) {
       return (
         <Item location="after" locateInMenu="auto" key={index}>
@@ -169,6 +168,39 @@ const buildValidationRules = (field: Field) => {
   });
 };
 
+/**
+ * Builds a `calculateDisplayValue` function for ENTITY columns.
+ *
+ * When the API returns a nested object for a relation field (e.g.
+ * `{ id: "uuid", name: "OTROS" }`), DevExtreme's DataGrid would normally
+ * render `[object Object]`.  This function extracts the human-readable
+ * display text using `field.textField` (e.g. `'name'`).
+ *
+ * Priority:
+ *  1. `val[field.textField]`  — the configured display property
+ *  2. `val['name']`           — safe fallback for Hydra entities
+ *  3. `String(val)`           — last-resort coercion (never shows [object Object])
+ *
+ * When the cell value is already a primitive (IRI string, null, undefined),
+ * it is returned as-is so existing plain-string IRIs continue to work.
+ */
+export function buildEntityDisplayValue(
+  field: Field,
+): (rowData: Record<string, unknown>) => string {
+  return (rowData: Record<string, unknown>): string => {
+    const val = rowData[field.name];
+    if (val !== null && val !== undefined && typeof val === 'object') {
+      const obj = val as Record<string, unknown>;
+      const display = obj[field.textField] ?? obj['name'];
+      if (display !== undefined && display !== null) {
+        return String(display);
+      }
+      return String(val);
+    }
+    return val != null ? String(val) : '';
+  };
+}
+
 export const buildColumns = (fields: Field[], forceLookup = false) => {
   return fields.map((field: Field, index) => {
     const clone = { ...field };
@@ -177,6 +209,15 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     if (forceLookup && field.type === FieldType.NONE) return null;
     if (forceLookup) clone.filterable = true;
     const editorOptions = buildEditorOptions(clone);
+
+    // For ENTITY fields without a custom formatter, provide a calculateDisplayValue
+    // that extracts the human-readable label from nested relation objects.
+    // This prevents "[object Object]" when the API returns embedded entities.
+    const entityDisplayValue =
+      field.type === FieldType.ENTITY && !field.formatter
+        ? buildEntityDisplayValue(field)
+        : undefined;
+
     return (
       <Column
         key={index}
@@ -187,6 +228,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         allowFiltering={field.filterable}
         allowHiding={field.hideable}
         cellRender={field.formatter}
+        calculateDisplayValue={entityDisplayValue}
         setCellValue={field.onChange}
         width={field.width}
         minWidth={field.minWidth}

@@ -349,6 +349,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
           className="grid theme-dependent"
           noDataText={noDataText}
           focusedRowEnabled
+          keyExpr={getIdField(options.fields) || undefined}
           height="100%"
           width="100%"
           dataSource={data}

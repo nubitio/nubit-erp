@@ -223,8 +223,38 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       if (field.type === FieldType.ENTITY) {
         const type = typeof row[field.name];
         if (type === 'string') {
+          // Server returned an IRI string like "/api/categories/uuid".
+          // Extract the last path segment as the key so that DevExtreme's
+          // byKey lookup calls GET /api/categories/uuid (not the full IRI path).
           const value = row[field.name].split('/').pop();
-          row[field.name] = { id: value };
+          row[field.name] = { [field.valueField]: value };
+        }
+        if (type === 'object' && row[field.name] !== null) {
+          // Server returned a full Hydra entity object.
+          // Two cases:
+          //
+          // Case A — Hydra object with @id (e.g. { "@id": "/api/categories/uuid", "id": 1, "name": "Root" })
+          //   Normalise to { [valueField]: lastSegment } so DevExtreme's byKey
+          //   lookup works (GET /api/categories/uuid) and serializeFields
+          //   reconstructs the correct IRI — preventing BUG-014 where the raw
+          //   integer id 1 was used to build /api/categories/1.
+          //
+          // Case B — plain nested object without @id (e.g. { "id": "uuid", "name": "OTROS" })
+          //   Use field.valueField directly (e.g. obj.id) so the SelectBox can
+          //   match the value to its datasource — fixes BUG-015.
+          const atId: unknown = row[field.name]['@id'];
+          if (typeof atId === 'string') {
+            const lastSegment = atId.split('/').pop() ?? atId;
+            row[field.name] = { [field.valueField]: lastSegment };
+          } else {
+            // Case B: plain object — extract the valueField directly
+            const directValue: unknown = (row[field.name] as Record<string, unknown>)[
+              field.valueField
+            ];
+            if (directValue !== undefined && directValue !== null) {
+              row[field.name] = { [field.valueField]: directValue };
+            }
+          }
         }
         if (row[field.name] === null || row[field.name] === undefined) {
           row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
