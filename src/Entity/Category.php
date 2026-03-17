@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,6 +18,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'categoria')]
 #[ApiResource(
+    operations: [new GetCollection()],
     normalizationContext: ['groups' => ['category:read']],
     filters: [DevExtremeFilter::class],
 )]
@@ -36,12 +38,30 @@ class Category
         'category:read',
         'product:read',
     ])]
-    #[ApiProperty(description: 'category.name.label')]
+    #[ApiProperty(
+        description: 'category.name.label',
+        openapiContext: [
+            'x-crud' => [
+                'filterable' => true,
+                'sortable'   => true,
+                'order'      => 0,
+            ],
+        ],
+    )]
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 
     #[Groups(['category:read'])]
-    #[ApiProperty(description: 'category.parent.label')]
+    #[ApiProperty(
+        description: 'category.parent.label',
+        openapiContext: [
+            'x-crud' => [
+                'filterable' => true,
+                'sortable'   => false,
+                'order'      => 1,
+            ],
+        ],
+    )]
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
     private ?self $parent = null;

@@ -4,16 +4,25 @@ declare(strict_types=1);
 
 namespace App\ApiPlatform;
 
+use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
+use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Metadata\Resource\Factory\ResourceNameCollectionFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Decorates the API Platform Hydra documentation normalizer so that
- * ApiProperty description strings that look like translation keys
- * (e.g. "category.name.label") are resolved to their translated text
- * and written into hydra:title — the field the frontend reads for
- * human-readable property labels.
+ * Decorates the API Platform Hydra documentation normalizer so that:
+ *
+ *  1. ApiProperty description strings that look like translation keys
+ *     (e.g. "category.name.label") are resolved to their translated text
+ *     and written into hydra:title — the field the frontend reads for
+ *     human-readable property labels.
+ *
+ *  2. ApiProperty openapiContext entries that contain an "x-crud" key are
+ *     forwarded into each hydra:supportedProperty entry so the frontend can
+ *     read CRUD UI hints (filterable, sortable, hidden, order, width) from
+ *     the single /api/docs.jsonld endpoint without a second fetch.
  *
  * Register in services.yaml:
  *
@@ -24,13 +33,26 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *           $translator: '@translator'
  *           $requestStack: '@request_stack'
  *           $apiLocale: '%env(APP_API_LOCALE)%'
+ *
+ * The remaining constructor arguments are autowired.
  */
 final class TranslatedDocumentationNormalizer implements NormalizerInterface
 {
+    /**
+     * Lazily-built map of short class name (e.g. "Category") → FQCN
+     * (e.g. "App\Entity\Category").  Populated on first use.
+     *
+     * @var array<string, string>|null
+     */
+    private ?array $shortNameToClass = null;
+
     public function __construct(
         private readonly NormalizerInterface $inner,
         private readonly TranslatorInterface $translator,
         private readonly RequestStack $requestStack,
+        private readonly PropertyMetadataFactoryInterface $propertyMetadataFactory,
+        private readonly ResourceNameCollectionFactoryInterface $resourceNameCollectionFactory,
+        private readonly ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory,
         private readonly string $apiLocale = 'auto',
     ) {
     }
@@ -55,6 +77,14 @@ final class TranslatedDocumentationNormalizer implements NormalizerInterface
                     continue;
                 }
 
+                // Resolve the FQCN for this Hydra class entry so we can call
+                // PropertyMetadataFactoryInterface::create($fqcn, $propertyName).
+                // The "@id" is "#ShortName", e.g. "#Category".
+                $classId = $class['@id'] ?? null;
+                $fqcn = \is_string($classId)
+                    ? ($this->resolveShortNameToClass(\ltrim($classId, '#')) ?? null)
+                    : null;
+
                 $propertiesKey = $prefix . 'supportedProperty';
                 if (!isset($class[$propertiesKey]) || !\is_array($class[$propertiesKey])) {
                     continue;
@@ -68,6 +98,7 @@ final class TranslatedDocumentationNormalizer implements NormalizerInterface
                     $descriptionKey = $prefix . 'description';
                     $titleKey = $prefix . 'title';
 
+                    // ── 1. Translate description key → hydra:title ──────────────
                     if (
                         isset($supportedProperty[$descriptionKey])
                         && \is_string($supportedProperty[$descriptionKey])
@@ -84,6 +115,14 @@ final class TranslatedDocumentationNormalizer implements NormalizerInterface
                         // (trans() returns the key itself when no translation is found).
                         if ($translated !== $supportedProperty[$descriptionKey]) {
                             $supportedProperty[$titleKey] = $translated;
+                        }
+                    }
+
+                    // ── 2. Forward x-crud hints from openapiContext ─────────────
+                    if ($fqcn !== null) {
+                        $propertyName = $this->extractPropertyName($supportedProperty, $prefix);
+                        if ($propertyName !== null) {
+                            $this->injectXCrud($fqcn, $propertyName, $supportedProperty);
                         }
                     }
                 }
@@ -137,5 +176,88 @@ final class TranslatedDocumentationNormalizer implements NormalizerInterface
         }
 
         return $this->translator->getLocale();
+    }
+
+    /**
+     * Extract the property name from a hydra:supportedProperty entry.
+     *
+     * API Platform puts the raw property name in:
+     *   - $supportedProperty[$prefix.'property']['label']   (preferred)
+     *   - $supportedProperty[$prefix.'property']['@id']     (fallback: "#ShortName/propName")
+     *
+     * @param array<mixed> $supportedProperty
+     */
+    private function extractPropertyName(array $supportedProperty, string $prefix): ?string
+    {
+        $propKey = $prefix . 'property';
+        if (!isset($supportedProperty[$propKey]) || !\is_array($supportedProperty[$propKey])) {
+            return null;
+        }
+
+        $propData = $supportedProperty[$propKey];
+
+        // Preferred: the "label" key contains exactly the property name.
+        if (isset($propData['label']) && \is_string($propData['label'])) {
+            return $propData['label'];
+        }
+
+        // Fallback: parse "#ShortName/propertyName" from the @id.
+        if (isset($propData['@id']) && \is_string($propData['@id'])) {
+            $slashPos = \strpos($propData['@id'], '/');
+            if ($slashPos !== false) {
+                return \substr($propData['@id'], $slashPos + 1);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * If the given property has an openapiContext with an "x-crud" key, inject
+     * it as a top-level key on the hydra:supportedProperty entry.
+     *
+     * @param array<mixed> $supportedProperty
+     */
+    private function injectXCrud(string $fqcn, string $propertyName, array &$supportedProperty): void
+    {
+        try {
+            $metadata = $this->propertyMetadataFactory->create($fqcn, $propertyName);
+        } catch (\Throwable) {
+            // Property not found or metadata unavailable — skip silently.
+            return;
+        }
+
+        $openapiContext = $metadata->getOpenapiContext();
+        if (!\is_array($openapiContext) || !isset($openapiContext['x-crud'])) {
+            return;
+        }
+
+        $supportedProperty['x-crud'] = $openapiContext['x-crud'];
+    }
+
+    /**
+     * Resolves a Hydra short class name (e.g. "Category") to its FQCN
+     * (e.g. "App\Entity\Category") by lazily building a map from all
+     * registered API Platform resources.
+     *
+     * Returns null when no resource with the given short name is registered.
+     */
+    private function resolveShortNameToClass(string $shortName): ?string
+    {
+        if ($this->shortNameToClass === null) {
+            $this->shortNameToClass = [];
+            foreach ($this->resourceNameCollectionFactory->create() as $resourceClass) {
+                $metadataCollection = $this->resourceMetadataCollectionFactory->create($resourceClass);
+                foreach ($metadataCollection as $metadata) {
+                    $name = $metadata->getShortName();
+                    if (\is_string($name) && $name !== '') {
+                        $this->shortNameToClass[$name] = $resourceClass;
+                        break; // first operation in the collection carries the short name
+                    }
+                }
+            }
+        }
+
+        return $this->shortNameToClass[$shortName] ?? null;
     }
 }
