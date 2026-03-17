@@ -29,7 +29,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
 #[ORM\Table(name: 'tax_document')]
 #[ApiResource(
-    shortName: 'TaxDocument',
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
     denormalizationContext: ['groups' => ['invoice:write', 'creditnote:write']],
     filters: [DevExtremeFilter::class],
@@ -37,7 +36,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
     processor: TaxDocumentProcessor::class,
 )]
 #[ApiResource(
-    shortName: 'TaxDocument',
     operations: [
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',

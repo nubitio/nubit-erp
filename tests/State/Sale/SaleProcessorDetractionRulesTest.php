@@ -13,7 +13,6 @@ final class SaleProcessorDetractionRulesTest extends TestCase
     {
         $calculator = (new \ReflectionClass(DetractionCalculator::class))->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod(DetractionCalculator::class, 'getThreshold');
-        $method->setAccessible(true);
 
         self::assertSame(0.0, $method->invoke($calculator, '008'));
         self::assertSame(0.0, $method->invoke($calculator, '016'));
@@ -25,7 +24,6 @@ final class SaleProcessorDetractionRulesTest extends TestCase
     {
         $calculator = (new \ReflectionClass(DetractionCalculator::class))->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod(DetractionCalculator::class, 'getThreshold');
-        $method->setAccessible(true);
 
         self::assertSame(700.0, $method->invoke($calculator, '037'));
         self::assertSame(700.0, $method->invoke($calculator, '999'));

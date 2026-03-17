@@ -13,7 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashMovementCategoryRepository::class)]
-#[ORM\Table(name: 'cash_movement_category', uniqueConstraints: [new ORM\UniqueConstraint(columns: ['code'])])]
+#[ORM\Table(name: 'cash_movement_category')]
+#[ORM\UniqueConstraint(columns: ['code'])]
 #[ApiResource(
     exceptionToStatus: [
         RuntimeException::class => 400,

@@ -48,7 +48,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
      * @throws ServiceException
      */
     #[Override]
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $isNew = !$data->getId();
 

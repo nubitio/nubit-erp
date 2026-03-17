@@ -12,7 +12,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 final readonly class OnboardingService
@@ -30,7 +30,7 @@ final readonly class OnboardingService
         private SubdomainValidator $subdomainValidator,
         private MessageBusInterface $messageBus,
         private SubscriptionManager $subscriptionManager,
-        #[TaggedIterator('app.payment_gateway')]
+        #[AutowireIterator('app.payment_gateway')]
         iterable $gatewayIterator,
     ) {
         $map = [];

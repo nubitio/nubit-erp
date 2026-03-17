@@ -204,7 +204,7 @@
                                     {% for key in ['users','customers','products','invoices','branches','storage_mb'] %}
                                         <div class="col-md-4">
                                             <div class="text-muted small text-capitalize">{{ key|replace({'_':' '}) }}</div>
-                                            <div class="fw-semibold">{{ plan.limits[key] ?? -1 == -1 ? '∞ unlimited' : plan.limits[key] ?? -1 }}</div>
+                                            <div class="fw-semibold">{{ (plan.limits[key] ?? -1) == -1 ? '∞ unlimited' : (plan.limits[key] ?? -1) }}</div>
                                         </div>
                                     {% endfor %}
                                 </div>
