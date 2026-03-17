@@ -1,14 +1,13 @@
 import type { Field } from '../../field/Field';
-import type { HydraResourceSchema } from './types';
+import type { HydraResourceSchema, HydraFieldSchema } from './types';
 import {
   textField,
   numberField,
   switchField,
-  enumField,
   entityField,
   noneField,
 } from '../../field/FieldBuilders';
-import { datetimeField, dateField } from '../../field/FieldBuilders';
+import { datetimeField } from '../../field/FieldBuilders';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -38,102 +37,83 @@ function toLabel(name: string): string {
  *
  * Mapping rules (in priority order):
  *  1. name === 'id' or name === '@id'  → skip (return null)
- *  2. readOnly: true                   → noneField (display-only / label)
- *  3. type === 'boolean'               → switchField
- *  4. type === 'string' && format === 'date-time'  → datetimeField
- *  5. type === 'string' && format === 'date'       → dateField
- *  6. type === 'string' && enum                    → enumField
- *  7. type === 'string' && format === 'uri' && x-resource → entityField
- *  8. type === 'integer'               → numberField (integer precision)
- *  9. type === 'number'                → numberField
- * 10. type === 'string' (default)      → textField
- * 11. type === 'array'                 → skip (multiselect — TODO SLICE-006)
- * 12. anything else                    → textField (safe fallback)
- *
- * Also sets `required: true` on fields whose name appears in schema.required.
+ *  2. readable: false                  → skip (already filtered upstream, but defensive)
+ *  3. writeable: false (display-only)  → noneField
+ *  4. range === 'xmls:boolean'         → switchField
+ *  5. range === 'xmls:dateTime'        → datetimeField
+ *  6. range === 'xmls:integer'         → numberField with precision(0)
+ *  7. range === 'xmls:decimal'         → numberField
+ *  8. range starts with '#' (entity ref) OR propertyType === 'Link' → entityField
+ *  9. range === 'xmls:string' OR fallback  → textField
  *
  * @pure — no React, no hooks, no side effects.
  */
 export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
   const fields: Field[] = [];
 
-  for (const [propName, propSchema] of Object.entries(schema.properties)) {
+  for (const fieldSchema of schema.fields) {
+    const { name, range, propertyType, required, readable, writeable } = fieldSchema;
+
     // Rule 1 — skip identity fields
-    if (propName === 'id' || propName === '@id') {
+    if (name === 'id' || name === '@id') {
       continue;
     }
 
-    const isRequired = schema.required.includes(propName);
-    const label = toLabel(propName);
-
-    // Rule 2 — readOnly fields become display-only (label/none)
-    if (propSchema.readOnly === true) {
-      fields.push(noneField().name(propName).label(label).required(isRequired).build());
+    // Rule 2 — defensive: skip non-readable fields (should be filtered by parser)
+    if (!readable) {
       continue;
     }
 
-    // Rule 3 — boolean → switchField
-    if (propSchema.type === 'boolean') {
-      fields.push(switchField().name(propName).label(label).required(isRequired).build());
+    const label = toLabel(name);
+
+    // Rule 3 — display-only (writeable: false) → noneField
+    if (!writeable) {
+      fields.push(noneField().name(name).label(label).required(required).build());
       continue;
     }
 
-    // Rule 4 — date-time → datetimeField
-    if (propSchema.type === 'string' && propSchema.format === 'date-time') {
-      fields.push(datetimeField().name(propName).label(label).required(isRequired).build());
+    // Rule 4 — boolean → switchField
+    if (range === 'xmls:boolean') {
+      fields.push(switchField().name(name).label(label).required(required).build());
       continue;
     }
 
-    // Rule 5 — date → dateField
-    if (propSchema.type === 'string' && propSchema.format === 'date') {
-      fields.push(dateField().name(propName).label(label).required(isRequired).build());
+    // Rule 5 — date-time → datetimeField
+    if (range === 'xmls:dateTime') {
+      fields.push(datetimeField().name(name).label(label).required(required).build());
       continue;
     }
 
-    // Rule 6 — enum string → enumField
-    if (propSchema.type === 'string' && Array.isArray(propSchema.enum)) {
-      const xLabels = propSchema['x-labels'] ?? {};
-      const options = propSchema.enum.map((value) => ({
-        value,
-        text: xLabels[value] ?? value,
-      }));
-      fields.push(enumField(options).name(propName).label(label).required(isRequired).build());
+    // Rule 6 — integer → numberField with precision 0
+    if (range === 'xmls:integer') {
+      fields.push(numberField().name(name).label(label).required(required).precision(0).build());
       continue;
     }
 
-    // Rule 7 — uri string with x-resource → entityField
-    if (propSchema.type === 'string' && propSchema.format === 'uri' && propSchema['x-resource']) {
+    // Rule 7 — decimal → numberField
+    if (range === 'xmls:decimal') {
+      fields.push(numberField().name(name).label(label).required(required).build());
+      continue;
+    }
+
+    // Rule 8 — entity reference (range starts with '#') or Link type → entityField
+    if ((range && range.startsWith('#')) || propertyType === 'Link') {
+      const resourceClass = range ? range.replace('#', '') : '';
+      // Derive a guessed API URL from the class name; pages may override via useResourceSchema
+      const url = resourceClass
+        ? `/api/${resourceClass
+            .replace(/([A-Z])/g, '_$1')
+            .toLowerCase()
+            .replace(/^_/, '')}s`
+        : '';
       fields.push(
-        entityField(propSchema['x-resource'], 'id', 'name')
-          .name(propName)
-          .label(label)
-          .required(isRequired)
-          .build(),
+        entityField(url, 'id', 'name').name(name).label(label).required(required).build(),
       );
       continue;
     }
 
-    // Rule 8 — integer → numberField
-    if (propSchema.type === 'integer') {
-      fields.push(
-        numberField().name(propName).label(label).required(isRequired).precision(0).build(),
-      );
-      continue;
-    }
-
-    // Rule 9 — number → numberField
-    if (propSchema.type === 'number') {
-      fields.push(numberField().name(propName).label(label).required(isRequired).build());
-      continue;
-    }
-
-    // Rule 11 — array → skip (TODO SLICE-006)
-    if (propSchema.type === 'array') {
-      continue;
-    }
-
-    // Rule 10 + 12 — string (default) and anything else → textField
-    fields.push(textField().name(propName).label(label).required(isRequired).build());
+    // Rule 9 — xmls:string and unknown → textField (safe fallback)
+    fields.push(textField().name(name).label(label).required(required).build());
   }
 
   return fields;
