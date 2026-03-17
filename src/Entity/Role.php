@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\RoleRepository;
@@ -24,6 +25,7 @@ class Role
     private ?int $id = null;
 
     #[Groups(['user:read'])]
+    #[ApiProperty(description: 'role.name.label')]
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 

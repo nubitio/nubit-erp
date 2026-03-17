@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\VoucherSeriesRepository;
@@ -26,20 +27,24 @@ class VoucherSeries
     private ?int $id = null;
 
     #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_series.branch.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id', nullable: false)]
     private Branch $branch;
 
     #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_series.voucher_type.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'codigo', nullable: false)]
     private VoucherType $voucherType;
 
     #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_series.series.label')]
     #[ORM\Column(name: 'serie', length: 6)]
     private string $series;
 
     #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_series.associated_series.label')]
     #[ORM\Column(name: 'serie_asociada', length: 6, nullable: true)]
     private ?string $associatedSeries = null;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\UbigeoRepository;
@@ -26,14 +27,17 @@ class Ubigeo
     private string $code;
 
     #[Groups(['ubigeo:read'])]
+    #[ApiProperty(description: 'ubigeo.department.label')]
     #[ORM\Column(name: 'departamento', length: 255, nullable: true)]
     private ?string $department = null;
 
     #[Groups(['ubigeo:read'])]
+    #[ApiProperty(description: 'ubigeo.province.label')]
     #[ORM\Column(name: 'provincia', length: 255, nullable: true)]
     private ?string $province = null;
 
     #[Groups(['ubigeo:read'])]
+    #[ApiProperty(description: 'ubigeo.district.label')]
     #[ORM\Column(name: 'distrito', length: 255, nullable: true)]
     private ?string $district = null;
 

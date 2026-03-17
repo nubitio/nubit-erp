@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CategoryRepository;
@@ -35,10 +36,12 @@ class Category
         'category:read',
         'product:read',
     ])]
+    #[ApiProperty(description: 'category.name.label')]
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 
     #[Groups(['category:read'])]
+    #[ApiProperty(description: 'category.parent.label')]
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
     private ?self $parent = null;
@@ -103,7 +106,6 @@ class Category
 
     public function removeChild(self $child): static
     {
-        // set the owning side to null (unless already changed)
         if ($this->children->removeElement($child) && $child->getParent() === $this) {
             $child->setParent(null);
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use DateTimeImmutable;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -71,57 +72,70 @@ class CashShift
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[ApiProperty(description: 'cash_shift.cash_register.label')]
     private CashRegister $cashRegister;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(enumType: CashShiftStatus::class)]
+    #[ApiProperty(description: 'cash_shift.status.label')]
     private CashShiftStatus $status;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ApiProperty(description: 'cash_shift.opening_balance.label')]
     private string $openingBalance = '0.00';
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_shift.closing_balance.label')]
     private ?string $closingBalance = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
+    #[ApiProperty(description: 'cash_shift.opened_by.label')]
     private User $openedBy;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'closed_by', referencedColumnName: 'usuario_id')]
+    #[ApiProperty(description: 'cash_shift.closed_by.label')]
     private ?User $closedBy = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column]
+    #[ApiProperty(description: 'cash_shift.opened_at.label')]
     private DateTimeImmutable $openedAt;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
+    #[ApiProperty(description: 'cash_shift.closed_at.label')]
     private ?DateTimeImmutable $closedAt = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_shift.expected_amount.label')]
     private ?string $expectedAmount = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_shift.counted_amount.label')]
     private ?string $countedAmount = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_shift.difference.label')]
     private ?string $difference = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ApiProperty(description: 'cash_shift.note.label')]
     private ?string $note = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    #[ApiProperty(description: 'cash_shift.branch.label')]
     private ?Branch $branch = null;
 
     public function getId(): ?int

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SunatCatalogRepository;
@@ -25,22 +26,27 @@ class SunatCatalog
     private ?int $id = null;
 
     #[Groups(['product:read', 'sunat_catalog:read'])]
+    #[ApiProperty(description: 'sunat_catalog.catalog.label')]
     #[ORM\Column(name: 'catalog', type: 'integer')]
     private int $catalog;
 
     #[Groups(['product:read', 'sunat_catalog:read'])]
+    #[ApiProperty(description: 'sunat_catalog.code.label')]
     #[ORM\Column(name: 'code', length: 10)]
     private string $code;
 
     #[Groups(['product:read', 'sunat_catalog:read'])]
+    #[ApiProperty(description: 'sunat_catalog.description.label')]
     #[ORM\Column(name: 'description', length: 255)]
     private string $description;
 
     #[Groups(['product:read', 'sunat_catalog:read'])]
+    #[ApiProperty(description: 'sunat_catalog.percentage.label')]
     #[ORM\Column(name: 'percentage', type: 'float', nullable: true)]
     private ?float $percentage = null;
 
     #[Groups(['product:read', 'sunat_catalog:read'])]
+    #[ApiProperty(description: 'sunat_catalog.active.label')]
     #[ORM\Column(name: 'active', type: 'boolean', options: ['default' => true])]
     private bool $active = true;
 

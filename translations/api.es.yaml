@@ -1,0 +1,450 @@
+# Etiquetas de campos API — Español
+# Convención: {entity_snake_case}.{property_snake_case}.label
+
+payment_method:
+  name:
+    label: Nombre
+
+branch:
+  name:
+    label: Nombre
+  address:
+    label: Dirección
+  phone:
+    label: Teléfono
+  company:
+    label: Empresa
+
+cash_movement_category:
+  code:
+    label: Código
+  name:
+    label: Nombre
+  type:
+    label: Tipo
+
+category:
+  name:
+    label: Nombre
+  parent:
+    label: Categoría padre
+
+company:
+  ruc:
+    label: RUC
+  business_name:
+    label: Razón social
+  trade_name:
+    label: Nombre comercial
+  fiscal_address:
+    label: Dirección fiscal
+  phone:
+    label: Teléfono
+  logo:
+    label: Logo
+  ubigeo_code:
+    label: Código ubigeo
+  department:
+    label: Departamento
+  province:
+    label: Provincia
+  district:
+    label: Distrito
+  bank_name:
+    label: Banco
+  bank_account:
+    label: Cuenta bancaria
+  bank_cci:
+    label: CCI
+  detraccion_account:
+    label: Cuenta detracciones
+
+config:
+  name:
+    label: Nombre
+  value:
+    label: Valor
+  type:
+    label: Tipo
+
+logistic_operation:
+  name:
+    label: Nombre
+  type:
+    label: Tipo
+
+media:
+  path:
+    label: Ruta
+
+price_list:
+  name:
+    label: Nombre
+
+product_stock:
+  product:
+    label: Producto
+  warehouse:
+    label: Almacén
+  stock:
+    label: Stock
+  min_stock:
+    label: Stock mínimo
+  created_at:
+    label: Creado el
+  updated_at:
+    label: Actualizado el
+
+role:
+  name:
+    label: Nombre
+
+sunat_catalog:
+  catalog:
+    label: Catálogo
+  code:
+    label: Código
+  description:
+    label: Descripción
+  percentage:
+    label: Porcentaje
+  active:
+    label: Activo
+
+supplier:
+  ruc:
+    label: RUC
+  business_name:
+    label: Razón social
+  fiscal_address:
+    label: Dirección fiscal
+  phone:
+    label: Teléfono
+
+tax_document_line:
+  line_number:
+    label: Ítem N.°
+  product_id:
+    label: ID producto
+  product_code:
+    label: Código producto
+  product_name:
+    label: Nombre producto
+  product_uom:
+    label: Unidad medida
+  quantity:
+    label: Cantidad
+  unit_price:
+    label: Precio unitario
+  unit_value:
+    label: Valor unitario
+  discount_amount:
+    label: Descuento
+  taxed_amount:
+    label: Monto gravado
+  tax_amount:
+    label: IGV
+    tax_percentage:
+      label: '% IGV'
+  tax_type:
+    label: Tipo impuesto
+  total:
+    label: Total
+  created_at:
+    label: Creado el
+
+ubigeo:
+  department:
+    label: Departamento
+  province:
+    label: Provincia
+  district:
+    label: Distrito
+
+unit_of_measure:
+  name:
+    label: Nombre
+
+user:
+  username:
+    label: Usuario
+  plain_password:
+    label: Contraseña
+  role:
+    label: Rol
+
+voucher_series:
+  branch:
+    label: Sucursal
+  voucher_type:
+    label: Tipo comprobante
+  series:
+    label: Serie
+  associated_series:
+    label: Serie asociada
+
+voucher_type:
+  name:
+    label: Nombre
+
+warehouse:
+  name:
+    label: Nombre
+  branch:
+    label: Sucursal
+
+customer:
+  ruc:
+    label: RUC
+  business_name:
+    label: Razón social
+
+product:
+  code:
+    label: Código
+  type:
+    label: Tipo
+  product_type:
+    label: Tipo producto
+  product_kind:
+    label: Clase producto
+  inventory_behavior:
+    label: Comportamiento inventario
+  sku:
+    label: SKU
+  barcode:
+    label: Código de barras
+  track_inventory:
+    label: Controlar inventario
+  lot_tracking_strategy:
+    label: Rastreo por lote
+  base_unit:
+    label: Unidad base
+  is_active:
+    label: Activo
+  name:
+    label: Nombre
+  category:
+    label: Categoría
+  unit_of_measure:
+    label: Unidad medida
+  purchase_price:
+    label: Precio compra
+  sale_price:
+    label: Precio venta
+  stock:
+    label: Stock
+  min_stock:
+    label: Stock mínimo
+  photo:
+    label: Foto
+  detraction_catalog:
+    label: Catálogo detracción
+
+cash_shift:
+  cash_register:
+    label: Caja
+  status:
+    label: Estado
+  opening_balance:
+    label: Saldo apertura
+  closing_balance:
+    label: Saldo cierre
+  opened_by:
+    label: Abierto por
+  closed_by:
+    label: Cerrado por
+  opened_at:
+    label: Abierto el
+  closed_at:
+    label: Cerrado el
+  expected_amount:
+    label: Monto esperado
+  counted_amount:
+    label: Monto contado
+  difference:
+    label: Diferencia
+  note:
+    label: Nota
+  branch:
+    label: Sucursal
+
+cash_movement:
+  cash_shift:
+    label: Turno de caja
+  cash_session:
+    label: Sesión de caja
+  category:
+    label: Categoría
+  type:
+    label: Tipo
+  amount:
+    label: Monto
+  description:
+    label: Descripción
+  branch:
+    label: Sucursal
+
+cash_register:
+  branch:
+    label: Sucursal
+  name:
+    label: Nombre
+
+cash_session:
+  legacy_cash_shift_id:
+    label: ID turno legacy
+  cash_register:
+    label: Caja
+  branch:
+    label: Sucursal
+  opened_by:
+    label: Abierto por
+  closed_by:
+    label: Cerrado por
+  status:
+    label: Estado
+  opening_amount:
+    label: Monto apertura
+  expected_amount:
+    label: Monto esperado
+  counted_amount:
+    label: Monto contado
+  difference_amount:
+    label: Diferencia
+  opened_at:
+    label: Abierto el
+  closed_at:
+    label: Cerrado el
+  close_note:
+    label: Nota de cierre
+  created_at:
+    label: Creado el
+  updated_at:
+    label: Actualizado el
+
+user_notification:
+  type:
+    label: Tipo
+  severity:
+    label: Severidad
+  title:
+    label: Título
+  body:
+    label: Mensaje
+  action_url:
+    label: URL de acción
+  read_at:
+    label: Leído el
+  created_at:
+    label: Creado el
+
+sale_item_record:
+  legacy_movimiento_detalle_id:
+    label: ID detalle legacy
+  line_no:
+    label: Ítem N.°
+  product:
+    label: Producto
+  qty:
+    label: Cantidad
+  unit_price:
+    label: Precio unitario
+  gross_amount:
+    label: Monto bruto
+  discount_amount:
+    label: Descuento
+  tax_amount:
+    label: IGV
+  net_amount:
+    label: Monto neto
+
+sale_record:
+  branch:
+    label: Sucursal
+  warehouse:
+    label: Almacén
+  customer:
+    label: Cliente
+  seller_user_id:
+    label: Vendedor
+  status:
+    label: Estado
+  currency:
+    label: Moneda
+  exchange_rate:
+    label: Tipo de cambio
+  subtotal:
+    label: Subtotal
+  discount_total:
+    label: Descuento total
+  tax_total:
+    label: IGV total
+  grand_total:
+    label: Total
+  paid_total:
+    label: Total pagado
+  change_total:
+    label: Vuelto
+  balance_due:
+    label: Saldo pendiente
+  issued_at:
+    label: Fecha emisión
+  created_at:
+    label: Creado el
+  updated_at:
+    label: Actualizado el
+  tax_document_id:
+    label: ID comprobante
+  has_invoice:
+    label: Tiene comprobante
+  invoice_full_number:
+    label: N.° comprobante
+  sunat_status:
+    label: Estado SUNAT
+  public_receipt_url:
+    label: URL recibo
+  document_type:
+    label: Tipo documento
+  payment_method:
+    label: Forma de pago
+  discount_percent:
+    label: Descuento %
+  serie:
+    label: Serie
+  numero:
+    label: Número
+  tax_rate:
+    label: Tasa IGV
+
+tax_document:
+  customer:
+    label: Cliente
+  document_type:
+    label: Tipo documento
+  issue_date:
+    label: Fecha emisión
+  series:
+    label: Serie
+  number:
+    label: Número
+  currency:
+    label: Moneda
+  affected_document:
+    label: Documento afectado
+  reason_code:
+    label: Código motivo
+  reason_description:
+    label: Motivo
+  total:
+    label: Total
+  void_ticket:
+    label: Ticket anulación
+  void_correlation:
+    label: Correlativo anulación
+  sunat_status:
+    label: Estado SUNAT
+  sunat_message:
+    label: Mensaje SUNAT
+  digest:
+    label: Digest

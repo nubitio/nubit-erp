@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\VoucherTypeRepository;
@@ -23,6 +24,7 @@ class VoucherType
     private string $code;
 
     #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_type.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\BranchRepository;
@@ -39,18 +40,22 @@ class Branch
         'voucher_series:read',
         'cash_register:read',
     ])]
+    #[ApiProperty(description: 'branch.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
 
     #[Groups(['branch:read'])]
+    #[ApiProperty(description: 'branch.address.label')]
     #[ORM\Column(name: 'direccion', length: 255, nullable: true)]
     private ?string $address = null;
 
     #[Groups(['branch:read'])]
+    #[ApiProperty(description: 'branch.phone.label')]
     #[ORM\Column(name: 'telefono', length: 255, nullable: true)]
     private ?string $phone = null;
 
     #[Groups(['branch:read'])]
+    #[ApiProperty(description: 'branch.company.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'empresa_id', referencedColumnName: 'empresa_id', nullable: false)]
     private Company $company;
@@ -139,7 +144,6 @@ class Branch
 
     public function removeWarehouse(Warehouse $warehouse): static
     {
-        // set the owning side to null (unless already changed)
         if ($this->warehouses->removeElement($warehouse) && $warehouse->getBranch() === $this) {
             $warehouse->setBranch(null);
         }

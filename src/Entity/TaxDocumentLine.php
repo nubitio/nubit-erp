@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -47,62 +48,77 @@ class TaxDocumentLine
     private TaxDocument $taxDocument;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.line_number.label')]
     #[ORM\Column(name: 'line_number', type: Types::INTEGER)]
     private int $lineNumber;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.product_id.label')]
     #[ORM\Column(name: 'product_id', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productId = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.product_code.label')]
     #[ORM\Column(name: 'product_code', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productCode = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.product_name.label')]
     #[ORM\Column(name: 'product_name', type: Types::STRING, length: 255)]
     private string $productName;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.product_uom.label')]
     #[ORM\Column(name: 'product_uom', type: Types::STRING, length: 20, nullable: true)]
     private ?string $productUom = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.quantity.label')]
     #[ORM\Column(name: 'quantity', type: Types::DECIMAL, precision: 10, scale: 6, options: ['default' => 0])]
     private string $quantity = '0.000000';
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(description: 'tax_document_line.unit_price.label')]
     #[ORM\Column(name: 'unit_price', type: Types::DECIMAL, precision: 12, scale: 6, options: ['default' => 0])]
     private string $unitPrice = '0.000000';
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.unit_value.label')]
     #[ORM\Column(name: 'unit_value', type: Types::DECIMAL, precision: 12, scale: 6, nullable: true)]
     private ?string $unitValue = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.discount_amount.label')]
     #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $discountAmount = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.taxed_amount.label')]
     #[ORM\Column(name: 'taxed_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxedAmount = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.tax_amount.label')]
     #[ORM\Column(name: 'tax_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxAmount = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.tax_percentage.label')]
     #[ORM\Column(name: 'tax_percentage', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxPercentage = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.tax_type.label')]
     #[ORM\Column(name: 'tax_type', type: Types::STRING, length: 4, nullable: true)]
     private ?string $taxType = null;
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.total.label')]
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => 0])]
     private string $total = '0.00';
 
     #[Groups(['tax_document_line:read'])]
+    #[ApiProperty(description: 'tax_document_line.created_at.label')]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTimeImmutable $createdAt;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PaymentMethodRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -30,6 +31,7 @@ class PaymentMethod
         'sale:read',
         'sale_record:read',
     ])]
+    #[ApiProperty(description: 'payment_method.name.label')]
     #[ORM\Column(length: 255)]
     private string $name;
 

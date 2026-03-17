@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use DateTimeImmutable;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CashSessionRepository;
@@ -31,26 +32,31 @@ class CashSession
      */
     #[Groups(['cash_session:read'])]
     #[ORM\Column(nullable: true)]
+    #[ApiProperty(description: 'cash_session.legacy_cash_shift_id.label')]
     private ?int $legacyCashShiftId = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\ManyToOne(targetEntity: CashRegister::class)]
     #[ORM\JoinColumn(name: 'cash_register_id', referencedColumnName: 'id', nullable: false)]
+    #[ApiProperty(description: 'cash_session.cash_register.label')]
     private CashRegister $cashRegister;
 
     #[Groups(['cash_session:read'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: false)]
+    #[ApiProperty(description: 'cash_session.branch.label')]
     private Branch $branch;
 
     #[Groups(['cash_session:read'])]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
+    #[ApiProperty(description: 'cash_session.opened_by.label')]
     private User $openedBy;
 
     #[Groups(['cash_session:read'])]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'closed_by', referencedColumnName: 'usuario_id', nullable: true)]
+    #[ApiProperty(description: 'cash_session.closed_by.label')]
     private ?User $closedBy = null;
 
     /**
@@ -58,42 +64,52 @@ class CashSession
      */
     #[Groups(['cash_session:read'])]
     #[ORM\Column(length: 20)]
+    #[ApiProperty(description: 'cash_session.status.label')]
     private string $status = 'OPEN';
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
+    #[ApiProperty(description: 'cash_session.opening_amount.label')]
     private string $openingAmount = '0.00';
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_session.expected_amount.label')]
     private ?string $expectedAmount = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_session.counted_amount.label')]
     private ?string $countedAmount = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    #[ApiProperty(description: 'cash_session.difference_amount.label')]
     private ?string $differenceAmount = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column]
+    #[ApiProperty(description: 'cash_session.opened_at.label')]
     private DateTimeImmutable $openedAt;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(nullable: true)]
+    #[ApiProperty(description: 'cash_session.closed_at.label')]
     private ?DateTimeImmutable $closedAt = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(length: 255, nullable: true)]
+    #[ApiProperty(description: 'cash_session.close_note.label')]
     private ?string $closeNote = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column]
+    #[ApiProperty(description: 'cash_session.created_at.label')]
     private DateTimeImmutable $createdAt;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column(nullable: true)]
+    #[ApiProperty(description: 'cash_session.updated_at.label')]
     private ?DateTimeImmutable $updatedAt = null;
 
     public function getId(): ?int

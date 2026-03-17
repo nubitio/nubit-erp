@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use DateTimeImmutable;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -52,6 +53,7 @@ class CashMovement
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
+    #[ApiProperty(description: 'cash_movement.cash_shift.label')]
     private ?CashShift $cashShift = null;
 
     /**
@@ -60,23 +62,28 @@ class CashMovement
      * This property is intentionally kept PHP-only (no ORM column mapping) for now.
      */
     #[Groups(['cash_movement:read'])]
+    #[ApiProperty(description: 'cash_movement.cash_session.label')]
     private ?CashSession $cashSession = null;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true)]
+    #[ApiProperty(description: 'cash_movement.category.label')]
     private ?CashMovementCategory $category = null;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(enumType: CashMovementType::class)]
+    #[ApiProperty(description: 'cash_movement.type.label')]
     private CashMovementType $type;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ApiProperty(description: 'cash_movement.amount.label')]
     private string $amount = '0.00';
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
+    #[ApiProperty(description: 'cash_movement.description.label')]
     private string $description;
 
     #[ORM\Column]
@@ -85,6 +92,7 @@ class CashMovement
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    #[ApiProperty(description: 'cash_movement.branch.label')]
     private ?Branch $branch = null;
 
     public function getId(): ?int

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CompanyRepository;
@@ -32,6 +33,7 @@ class Company
 
     #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe tener 11 dígitos')]
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.ruc.label')]
     #[ORM\Column(length: 11)]
     private string $ruc;
 
@@ -39,56 +41,69 @@ class Company
         'company:read',
         'branch:read',
     ])]
+    #[ApiProperty(description: 'company.business_name.label')]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.trade_name.label')]
     #[ORM\Column(name: 'nombre_comercial', length: 255, nullable: true)]
     private ?string $tradeName = null;
 
     #[Assert\NotBlank]
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.fiscal_address.label')]
     #[ORM\Column(name: 'domicilio_fiscal', length: 255)]
     private string $fiscalAddress;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.phone.label')]
     #[ORM\Column(name: 'telefono', length: 10, nullable: true)]
     private ?string $phone = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.logo.label')]
     #[ORM\OneToOne]
     #[ORM\JoinColumn(name: 'logo', referencedColumnName: 'id', nullable: true)]
     private ?Media $logo = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.ubigeo_code.label')]
     #[ORM\Column(name: 'ubigeo', length: 255, nullable: true)]
     private ?string $ubigeoCode = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.department.label')]
     #[ORM\Column(name: 'departamento', length: 255, nullable: true)]
     private ?string $department = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.province.label')]
     #[ORM\Column(name: 'provincia', length: 255, nullable: true)]
     private ?string $province = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.district.label')]
     #[ORM\Column(name: 'distrito', length: 255, nullable: true)]
     private ?string $district = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.bank_name.label')]
     #[ORM\Column(name: 'bank_name', length: 255, nullable: true)]
     private ?string $bankName = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.bank_account.label')]
     #[ORM\Column(name: 'bank_account', length: 50, nullable: true)]
     private ?string $bankAccount = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.bank_cci.label')]
     #[ORM\Column(name: 'bank_cci', length: 50, nullable: true)]
     private ?string $bankCci = null;
 
     #[Groups(['company:read'])]
+    #[ApiProperty(description: 'company.detraccion_account.label')]
     #[ORM\Column(name: 'detraccion_account', length: 50, nullable: true)]
     private ?string $detraccionAccount = null;
 

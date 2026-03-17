@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use DateTimeImmutable;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProductStockRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,28 +25,34 @@ class ProductStock
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ApiProperty(description: 'product_stock.product.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\ManyToOne(inversedBy: 'stocks')]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: false)]
     private Product $product;
 
+    #[ApiProperty(description: 'product_stock.warehouse.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\ManyToOne(inversedBy: 'productStocks')]
     #[ORM\JoinColumn(name: 'warehouse_id', referencedColumnName: 'almacen_id', nullable: false)]
     private Warehouse $warehouse;
 
+    #[ApiProperty(description: 'product_stock.stock.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\Column(type: 'decimal', precision: 12, scale: 3, options: ['comment' => 'float'])]
     private string $stock = '0.000';
 
+    #[ApiProperty(description: 'product_stock.min_stock.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'min_stock', type: 'decimal', precision: 12, scale: 3, options: ['comment' => 'float'])]
     private string $minStock = '0.000';
 
+    #[ApiProperty(description: 'product_stock.created_at.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'created_at')]
     private DateTimeImmutable $createdAt;
 
+    #[ApiProperty(description: 'product_stock.updated_at.label')]
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?DateTimeImmutable $updatedAt = null;

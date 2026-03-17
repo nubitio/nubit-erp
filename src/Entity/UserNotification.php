@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
@@ -68,30 +69,37 @@ class UserNotification
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'type', type: Types::STRING, length: 50)]
+    #[ApiProperty(description: 'user_notification.type.label')]
     private string $type;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'severity', type: Types::STRING, length: 10)]
+    #[ApiProperty(description: 'user_notification.severity.label')]
     private string $severity;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'title', type: Types::STRING, length: 200)]
+    #[ApiProperty(description: 'user_notification.title.label')]
     private string $title;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'body', type: Types::TEXT)]
+    #[ApiProperty(description: 'user_notification.body.label')]
     private string $body;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'action_url', type: Types::STRING, length: 500, nullable: true)]
+    #[ApiProperty(description: 'user_notification.action_url.label')]
     private ?string $actionUrl = null;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'read_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ApiProperty(description: 'user_notification.read_at.label')]
     private ?DateTimeImmutable $readAt = null;
 
     #[Groups(['user_notification:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
+    #[ApiProperty(description: 'user_notification.created_at.label')]
     private DateTimeImmutable $createdAt;
 
     public function __construct()

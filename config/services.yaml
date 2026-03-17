@@ -110,3 +110,11 @@ services:
 
   GuzzleHttp\ClientInterface:
     class: GuzzleHttp\Client
+
+  App\ApiPlatform\TranslatedDocumentationNormalizer:
+    decorates: api_platform.hydra.normalizer.documentation
+    arguments:
+      $inner: '@.inner'
+      $translator: '@translator'
+      $requestStack: '@request_stack'
+      $apiLocale: '%env(APP_API_LOCALE)%'

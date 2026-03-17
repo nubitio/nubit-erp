@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ArrayObject;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -67,6 +68,7 @@ class Media
         'company:read',
         'product:read',
     ])]
+    #[ApiProperty(description: 'media.path.label')]
     #[ORM\Column(length: 255)]
     private string $path;
 

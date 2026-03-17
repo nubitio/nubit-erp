@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\LogisticOperationRepository;
@@ -26,9 +27,11 @@ class LogisticOperation
     private ?string $id = null;
 
     #[Groups(['inbound:read', 'outbound:read'])]
+    #[ApiProperty(description: 'logistic_operation.name.label')]
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 
+    #[ApiProperty(description: 'logistic_operation.type.label')]
     #[ORM\Column(name: 'tipo_id')]
     private int $type;
 
