@@ -16,6 +16,24 @@ import type { DialogMode } from './dialogStore';
 
 interface CrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
   resource: ResourceConfig<T>;
+  /**
+   * Called whenever any form field value changes.
+   * Receives a snapshot of the full current form data object.
+   * Wire this to SmartCrudPage's formData state for reactive rule evaluation.
+   */
+  onFormDataChange?: (data: Record<string, unknown>) => void;
+  /**
+   * When provided, open the edit dialog for this record on mount.
+   * Enables URL deep-linking (e.g. /products/42 → edit record 42).
+   * Defaults to null — existing behaviour unchanged when omitted.
+   */
+  initialRecordId?: string | number | null;
+  /**
+   * When true, open the add dialog on mount.
+   * Enables URL deep-linking (e.g. /products/new → open add dialog).
+   * Defaults to false — existing behaviour unchanged when omitted.
+   */
+  initialIsNew?: boolean;
 }
 
 /**
@@ -24,14 +42,25 @@ interface CrudPageProps<T extends Record<string, unknown> = Record<string, unkno
  */
 export const CrudPage = <T extends Record<string, unknown> = Record<string, unknown>>({
   resource,
+  onFormDataChange,
+  initialRecordId,
+  initialIsNew,
 }: CrudPageProps<T>) => (
   <DialogStoreProvider>
-    <CrudPageInner resource={resource} />
+    <CrudPageInner
+      resource={resource}
+      onFormDataChange={onFormDataChange}
+      initialRecordId={initialRecordId}
+      initialIsNew={initialIsNew}
+    />
   </DialogStoreProvider>
 );
 
 const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknown>>({
   resource,
+  onFormDataChange,
+  initialRecordId = null,
+  initialIsNew = false,
 }: CrudPageProps<T>) => {
   const { t } = useCoreTranslation();
   const { events, fields, formRef, permissions, selectionState, presetState } =
@@ -103,6 +132,21 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
 
   React.useEffect(() => {
     wireEventsRef.current();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Deep-link: open the appropriate dialog on mount when routing props are provided.
+  // This effect runs once after the event bus is wired so the dialog store is ready.
+  // Guards ensure existing behaviour is completely unchanged when props are omitted.
+  React.useEffect(() => {
+    if (initialRecordId != null) {
+      // Open edit dialog for the given record id.
+      // Row data is minimal (just the identity) — the form will fetch the full
+      // record via the EDIT event handler in DxForm (getData / detailUrl).
+      openDialog('edit', { id: initialRecordId });
+    } else if (initialIsNew) {
+      openDialog('add', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -252,6 +296,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
             onDeleteSuccess={resource.onDeleteSuccess}
             onDeleteError={resource.onDeleteError}
             formLayout={resource.formLayout}
+            onFieldDataChanged={onFormDataChange}
           />
         </DxDialog>
       )}

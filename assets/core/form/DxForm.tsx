@@ -1,5 +1,6 @@
 import './DxForm.scss';
 import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
+import type { FieldDataChangedEvent } from 'devextreme/ui/form';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
@@ -50,6 +51,12 @@ export interface DxFormOptions {
   onLoadingChange?: (loading: boolean) => void;
   /** Optional layout descriptor: when set, renders fields inside tabs or collapsible sections. */
   formLayout?: FormLayout;
+  /**
+   * Called whenever any form field value changes.
+   * Receives a snapshot of the full current form data object.
+   * Use this to implement reactive rules (visibleWhen / disabledWhen / computed).
+   */
+  onFieldDataChanged?: (formData: Record<string, unknown>) => void;
 }
 
 export interface DxFormEvents {
@@ -427,9 +434,27 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   }));
 
   const renderForm = () => {
+    /**
+     * Stable handler for DevExtreme Form's onFieldDataChanged event.
+     * Reads the full formData snapshot from the form instance and forwards it
+     * to the optional `onFieldDataChanged` prop — enabling reactive rule evaluation
+     * (visibleWhen / disabledWhen / computed) in SmartCrudPage.
+     */
+    const handleFieldDataChanged = options.onFieldDataChanged
+      ? (e: FieldDataChangedEvent) => {
+          const snapshot = (e.component.option('formData') ?? {}) as Record<string, unknown>;
+          options.onFieldDataChanged!(snapshot);
+        }
+      : undefined;
+
     if ((options.detailFields?.length ?? 0) > 0) {
       return (
-        <Form ref={formRef} className={options.className} labelMode={'floating'}>
+        <Form
+          ref={formRef}
+          className={options.className}
+          labelMode={'floating'}
+          onFieldDataChanged={handleFieldDataChanged}
+        >
           <Item itemType="group" colCount={4}>
             <GroupItem>{buildFields(options.fields)}</GroupItem>
             <GroupItem colSpan={3}>
@@ -492,7 +517,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       const allAssigned = tabs.flatMap((t) => t.fields);
       const overflow = remainingFields(allAssigned);
       return (
-        <Form ref={formRef} className={options.className} labelMode={'floating'}>
+        <Form
+          ref={formRef}
+          className={options.className}
+          labelMode={'floating'}
+          onFieldDataChanged={handleFieldDataChanged}
+        >
           <TabbedItem>
             {tabs.map((tab) => (
               <Tab key={tab.label} title={tab.label} icon={tab.icon}>
@@ -511,7 +541,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       const allAssigned = sections.flatMap((s) => s.fields);
       const overflow = remainingFields(allAssigned);
       return (
-        <Form ref={formRef} className={options.className} labelMode={'floating'}>
+        <Form
+          ref={formRef}
+          className={options.className}
+          labelMode={'floating'}
+          onFieldDataChanged={handleFieldDataChanged}
+        >
           {sections.map((section) => (
             // caption is used as the item name so itemOption(section.label, ...) works
             <GroupItem key={section.label} caption={section.label}>
@@ -525,7 +560,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
     // ── Default flat layout ───────────────────────────────────────────────────
     return (
-      <Form ref={formRef} className={options.className} labelMode={'floating'}>
+      <Form
+        ref={formRef}
+        className={options.className}
+        labelMode={'floating'}
+        onFieldDataChanged={handleFieldDataChanged}
+      >
         <GroupItem>{buildFields(options.fields)}</GroupItem>
       </Form>
     );

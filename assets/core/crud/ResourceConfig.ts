@@ -16,6 +16,25 @@ export type FieldsFactory<T extends Record<string, unknown> = Record<string, unk
   formRef: RefObject<DxFormEvents | null>,
 ) => FieldDef<T>[];
 
+/**
+ * URL-based deep-linking and filter sync configuration for SmartCrudPage.
+ * All fields are optional — if `routing` is absent, no URL behaviour is applied.
+ */
+export interface ResourceRouting {
+  /**
+   * URL param name for deep-linking a specific record.
+   * e.g. `routeParam: 'id'` →  `/products/42`  opens record 42 in the edit dialog
+   *                          →  `/products/new`  opens the add dialog
+   */
+  routeParam?: string;
+
+  /**
+   * When true, grid filter state is synced to URL query params.
+   * e.g. `?name=foo&status=active`
+   */
+  syncFiltersToUrl?: boolean;
+}
+
 /** Raw permission spec: each entry may be a static boolean or a zero-arg callable. */
 export interface ResourcePermissions {
   canAdd?: boolean | (() => boolean);
@@ -73,4 +92,6 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   defaultPreset?: string;
   /** Optional audit trail configuration. When enabled, shows a "Historial" button and panel. */
   auditTrail?: AuditTrailConfig;
+  /** Optional URL routing configuration — enables deep-linking and filter sync. */
+  routing?: ResourceRouting;
 }

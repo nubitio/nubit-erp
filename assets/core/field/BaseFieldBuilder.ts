@@ -344,6 +344,35 @@ export class BaseFieldBuilder {
     return this;
   }
 
+  // ---------------------------------------------------------------------------
+  // Declarative rules (SLICE-006)
+  // ---------------------------------------------------------------------------
+
+  visibleWhen(fn: (formData: Record<string, unknown>) => boolean): this {
+    this._field.visibleWhen = fn;
+    return this;
+  }
+
+  disabledWhen(fn: (formData: Record<string, unknown>) => boolean): this {
+    this._field.disabledWhen = fn;
+    return this;
+  }
+
+  computed(fn: (formData: Record<string, unknown>) => unknown): this {
+    this._field.computed = fn;
+    return this;
+  }
+
+  dependsOn(fields: string[]): this {
+    this._field.dependsOn = fields;
+    return this;
+  }
+
+  permissions(perms: { visible?: string[]; editable?: string[] }): this {
+    this._field.permissions = perms;
+    return this;
+  }
+
   build(): Field {
     return { ...this._field };
   }

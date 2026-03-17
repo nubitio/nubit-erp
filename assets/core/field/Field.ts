@@ -74,6 +74,30 @@ export interface Field {
   multiple: boolean;
   editorOptions: any | undefined;
   sendAsString: boolean;
+
+  // ---------------------------------------------------------------------------
+  // Declarative rules (SLICE-006) — all optional, do NOT break existing fields
+  // ---------------------------------------------------------------------------
+
+  /** Returns true when the field should be visible */
+  visibleWhen?: (formData: Record<string, unknown>) => boolean;
+
+  /** Returns true when the field should be disabled (read-only in form) */
+  disabledWhen?: (formData: Record<string, unknown>) => boolean;
+
+  /** Derived value — field is rendered as read-only with this computed value */
+  computed?: (formData: Record<string, unknown>) => unknown;
+
+  /** When listed fields change, reload this field's options (entityField / enumField) */
+  dependsOn?: string[];
+
+  /** UI-only RBAC — field is hidden/readonly based on user roles */
+  permissions?: {
+    /** Roles that can SEE this field. Omit = visible to all. */
+    visible?: string[];
+    /** Roles that can EDIT this field. Omit = editable by all who can see it. */
+    editable?: string[];
+  };
 }
 
 /**
