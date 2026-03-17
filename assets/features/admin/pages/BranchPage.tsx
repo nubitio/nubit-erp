@@ -1,14 +1,15 @@
 import './BranchPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { branchEvents } from '@features/branch';
 import { BranchFields } from './BranchFields';
 import { branchEndpoints } from '../api/adminEndpoints';
 
 export const BranchPage = () => {
   const container = 'wrapper';
-  const fields = BranchFields();
+  const fields = useMemo(() => BranchFields(), []);
 
   const API_URL = branchEndpoints.list();
 

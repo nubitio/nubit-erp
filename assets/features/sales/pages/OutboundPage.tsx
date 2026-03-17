@@ -1,18 +1,18 @@
 import './OutboundPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@platform/form/DxForm';
-import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@core/form/DxForm';
+import { Constants } from '@core/common/Constants';
 import { OutboundDetailFields, OutboundFields } from './OutboundFields';
-import { useRef } from 'react';
-import { useEvents } from '@platform/event/EventHook';
+import { useMemo, useRef } from 'react';
+import { useEvents } from '@core/event/EventHook';
 import { outboundEvents, useOutboundFormObservers } from '@features/outbound';
 
 export const OutboundPage = () => {
   const [on] = useEvents();
   const container = 'wrapper';
-  const fields = OutboundFields();
-  const detailFields = OutboundDetailFields();
+  const fields = useMemo(() => OutboundFields(), []);
+  const detailFields = useMemo(() => OutboundDetailFields(), []);
   const formRef = useRef<DxFormEvents>(null);
 
   const API_URL = Constants.API_BASE_URL + 'movements';

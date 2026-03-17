@@ -17,7 +17,7 @@ import ScrollView from 'devextreme-react/scroll-view';
 import { currencyFormatter, decimalFormatter } from '@widgets/dashboard/formatters';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
-import { userInformation } from '@platform/common/UserInformation';
+import { userInformation } from '@core/common/UserInformation';
 import { useScreenSize } from '@utils/media-query';
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {

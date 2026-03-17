@@ -1,5 +1,5 @@
-import { Field } from '@platform/field/Field';
-import { identityField, textField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { identityField, textField } from '@core/field/FieldBuilders';
 
 export const RoleFields = () => {
   const fields: Field[] = [];

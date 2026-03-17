@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import type { CartItem, PosItem } from './types';
 import { IGV_RATE, nowUtcIso, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';

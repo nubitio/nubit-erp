@@ -4,6 +4,7 @@ import {
   ColumnFixing,
   DataGridRef,
   DataGridTypes,
+  Editing,
   Export,
   FilterRow,
   Item,
@@ -29,6 +30,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { jsPDF as JsPdf } from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Workbook } from 'exceljs';
@@ -51,8 +53,8 @@ export interface DxDataGridOptions {
   url: string;
   detailUrl?: string;
   fields: Field[];
-  detailFields?: Field[] | ((parentRow: any) => Field[]);
-  columns?: any[];
+  detailFields?: Field[] | ((parentRow: Record<string, unknown>) => Field[]);
+  columns?: DataGridTypes.Column[];
   toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
   events?: DataGridEventNames;
   allowAdd?: boolean;
@@ -79,6 +81,17 @@ export interface DxDataGridOptions {
   filterRow?: boolean;
   manualLoad?: boolean;
   beforeToolbar?: () => ReactNode;
+  /**
+   * DevExtreme inline editing mode.
+   * - `'popup'` (default) — grid delegates editing to the external DxDialog.
+   * - `'row'` | `'cell'` | `'batch'` — DevExtreme inline editing enabled within the grid.
+   */
+  editMode?: 'popup' | 'row' | 'cell' | 'batch';
+  /**
+   * When provided as a non-null array, only columns whose `dataField` matches an entry in this
+   * list will be visible. When `null` or `undefined`, all columns are shown (existing behaviour).
+   */
+  visibleColumns?: string[] | null;
 }
 
 export interface DxDataGridEvents {
@@ -111,6 +124,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const [data, setData] = useState<Store | null>(null);
   const viewMode = options.mode ?? 'full';
   const [on, emit] = useEvents();
+  const navigate = useNavigate();
   const noDataText = 'No hay registros para mostrar';
 
   const refresh = () => {
@@ -201,8 +215,8 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   }, []);
 
   const renderDetail = useCallback(
-    (e: any) => {
-      const detailUrl = options.detailUrl?.replace('{id}', e.key);
+    (e: { key: unknown; data: Record<string, unknown> }) => {
+      const detailUrl = options.detailUrl?.replace('{id}', String(e.key));
       const fields =
         typeof options.detailFields === 'function'
           ? options.detailFields(e.data)
@@ -279,6 +293,34 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     emit(DATA_GRID_EVENTS.SELECTION_CHANGED, e.selectedRowsData);
   };
 
+  /**
+   * Apply column-preset visibility whenever `visibleColumns` changes.
+   * When the prop is a non-null array we iterate over all columns and toggle their `visible`
+   * option based on whether the column's dataField is included in the list.
+   * When it is null/undefined we restore all columns to visible (no restriction).
+   */
+  useEffect(() => {
+    const instance = gridRef.current?.instance();
+    if (!instance) return;
+    const cols = instance.getVisibleColumns();
+    if (options.visibleColumns != null) {
+      cols.forEach((col) => {
+        const field = col.dataField;
+        if (field) {
+          instance.columnOption(field, 'visible', options.visibleColumns!.includes(field));
+        }
+      });
+    } else {
+      // Restore visibility for all field columns
+      cols.forEach((col) => {
+        if (col.dataField) {
+          instance.columnOption(col.dataField, 'visible', true);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.visibleColumns]);
+
   useImperativeHandle(ref, () => ({
     showLoading,
     hideLoading,
@@ -351,7 +393,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                   if (options.onBack) {
                     options.onBack();
                   } else {
-                    window.history.back();
+                    navigate(-1);
                   }
                 }}
               />
@@ -414,6 +456,16 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             type="localStorage"
             storageKey={'datagrid-' + options.id}
           />
+          {(options.editMode === 'row' ||
+            options.editMode === 'cell' ||
+            options.editMode === 'batch') && (
+            <Editing
+              mode={options.editMode}
+              allowUpdating={options.allowEdit ?? true}
+              allowDeleting={options.allowDelete ?? true}
+              allowAdding={options.allowAdd ?? true}
+            />
+          )}
           {buildColumns(options.fields)}
           <Summary>{buildSummary(options.summaryFields)}</Summary>
           <MasterDetail enabled={!!options.detailFields} render={renderDetail} />

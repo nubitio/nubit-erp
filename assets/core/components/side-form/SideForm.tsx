@@ -9,12 +9,20 @@ import { httpClient } from '../../../shared/api/HttpClient';
 import LoadPanel from 'devextreme-react/load-panel';
 import { Field } from '../../field/Field';
 
+interface SideFormEvents {
+  EDIT?: string;
+  SAVE?: string;
+  CANCEL?: string;
+  SUCCESS?: string;
+  LOADING?: string;
+}
+
 type SideFormProps = {
   title?: string;
   sub: number | string | undefined;
   url: string;
   fields: Field[];
-  events: any;
+  events: SideFormEvents;
 };
 
 export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => {
@@ -28,25 +36,27 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
   };
 
   const onEditClick = () => {
-    emit(props.events?.EDIT, { row: formRef.current?.getFormData() });
+    if (props.events?.EDIT) emit(props.events.EDIT, { row: formRef.current?.getFormData() });
     toggleEditing();
   };
 
   const onSaveClick = () => {
-    emit(props.events?.SAVE);
+    if (props.events?.SAVE) emit(props.events.SAVE);
   };
 
   const onCancelClick = () => {
-    emit(props.events?.CANCEL);
+    if (props.events?.CANCEL) emit(props.events.CANCEL);
     toggleEditing();
   };
 
   const setupObservers = () => {
-    on(props.events?.SUCCESS, () => {
-      setEditing(false);
-      loadData();
-    });
-    on<boolean>(props.events?.LOADING, (isLoading) => setLoading(isLoading));
+    if (props.events?.SUCCESS)
+      on(props.events.SUCCESS, () => {
+        setEditing(false);
+        loadData();
+      });
+    if (props.events?.LOADING)
+      on<boolean>(props.events.LOADING, (isLoading) => setLoading(isLoading));
   };
 
   const loadData = () => {

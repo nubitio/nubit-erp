@@ -1,6 +1,6 @@
 import { httpClient } from '@shared/api/HttpClient';
 import AppResponse from '@shared/api/AppResponse';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 
 export class TaxDocumentService {
   consultDocument(documentId: string) {

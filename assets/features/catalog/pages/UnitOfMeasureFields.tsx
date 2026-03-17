@@ -1,4 +1,4 @@
-import { Field } from '@platform/field/Field';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   numberField,
@@ -6,7 +6,7 @@ import {
   textField,
   selectField,
   switchField,
-} from '@platform/field/FieldBuilders';
+} from '@core/field/FieldBuilders';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 

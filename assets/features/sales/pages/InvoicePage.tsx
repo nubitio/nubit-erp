@@ -1,10 +1,10 @@
 import './InvoicePage.scss';
-import { Constants } from '@platform/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { Constants } from '@core/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   createInvoiceToolbar,
   invoiceEvents,
@@ -18,8 +18,12 @@ import toast from '@shared/lib/SharedUtils';
 
 export const InvoicePage = () => {
   const container = 'wrapper';
-  const fields = InvoiceFields();
-  const detailFields = (parentRow: any) => InvoiceDetailFields(parentRow?.currency ?? 'PEN');
+  const fields = useMemo(() => InvoiceFields(), []);
+  const detailFields = useMemo(
+    () => (parentRow: Record<string, unknown>) =>
+      InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
+    [],
+  );
   const gridRef = useRef<DxDataGridEvents>(null);
 
   const API_URL = Constants.API_BASE_URL + 'tax-documents';
@@ -29,7 +33,8 @@ export const InvoicePage = () => {
     showLoading: (message?: string) => gridRef.current?.showLoading(message),
     hideLoading: () => gridRef.current?.hideLoading(),
     refreshGrid: () => gridRef.current?.refresh(),
-    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => toast(message, type),
+    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
+      toast(message, type),
   };
 
   const toolbar = createInvoiceToolbar({

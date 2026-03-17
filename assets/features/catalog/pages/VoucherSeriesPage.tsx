@@ -1,14 +1,15 @@
 import './VoucherSeriesPage.scss';
-import { Constants } from '@platform/common/Constants';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { Constants } from '@core/common/Constants';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { voucherSeriesEvents } from '@features/voucherSeries';
 import { VoucherSeriesFields } from './VoucherSeriesFields';
 
 export const VoucherSeriesPage = () => {
   const container = 'wrapper';
-  const fields = VoucherSeriesFields();
+  const fields = useMemo(() => VoucherSeriesFields(), []);
 
   const API_URL = Constants.API_BASE_URL + 'voucher-series';
 

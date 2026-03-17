@@ -1,8 +1,8 @@
 import { type RefObject } from 'react';
-import { Field } from '@platform/field/Field';
-import { identityField, textField, textareaField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { identityField, textField, textareaField } from '@core/field/FieldBuilders';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import { DxFormEvents } from '@platform/form/DxForm';
+import { DxFormEvents } from '@core/form/DxForm';
 import { consultService } from '@features/consult';
 
 export const SupplierFields = (formRef: RefObject<DxFormEvents | null>) => {

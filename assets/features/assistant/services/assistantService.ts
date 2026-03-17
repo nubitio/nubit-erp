@@ -1,5 +1,5 @@
 import { lastValueFrom } from 'rxjs';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { httpClient } from '@shared/api/HttpClient';
 import ApiResponse from '@shared/api/ApiResponse';
 

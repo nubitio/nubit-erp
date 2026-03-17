@@ -2,7 +2,7 @@ import { firstValueFrom } from 'rxjs';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import type { PaymentMethodOption, WarehouseOption } from './types';
 import { extractCollection, isCashPaymentMethod } from './posHelpers';
 import { useOfflineCatalog } from '@offline/hooks/useOfflineCatalog';

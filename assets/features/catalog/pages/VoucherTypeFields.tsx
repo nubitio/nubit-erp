@@ -1,5 +1,5 @@
-import { Field } from '@platform/field/Field';
-import { textField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { textField } from '@core/field/FieldBuilders';
 
 export const VoucherTypeFields = () => {
   const fields: Field[] = [];

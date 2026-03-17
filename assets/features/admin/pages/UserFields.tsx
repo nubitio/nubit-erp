@@ -1,11 +1,11 @@
-import { Field } from '@platform/field/Field';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
   textField,
   passwordField,
-} from '@platform/field/FieldBuilders';
-import { Constants } from '@platform/common/Constants';
+} from '@core/field/FieldBuilders';
+import { Constants } from '@core/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const UserFields = () => {

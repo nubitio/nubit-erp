@@ -1,19 +1,19 @@
 import './InboundPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@platform/form/DxForm';
-import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@core/form/DxForm';
+import { Constants } from '@core/common/Constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
-import { useRef } from 'react';
-import { useEvents } from '@platform/event/EventHook';
+import { useMemo, useRef } from 'react';
+import { useEvents } from '@core/event/EventHook';
 import { purchasesEvents, usePurchasesFormObservers } from '@features/purchases/model';
 
 export const PurchasesPage = () => {
   const [on] = useEvents();
   const formRef = useRef<DxFormEvents>(null);
   const container = 'wrapper';
-  const fields = PurchasesFields();
-  const detailFields = PurchasesDetailFields();
+  const fields = useMemo(() => PurchasesFields(), []);
+  const detailFields = useMemo(() => PurchasesDetailFields(), []);
 
   const API_URL = Constants.API_BASE_URL + 'movements';
 

@@ -1,14 +1,15 @@
 import './OperationPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { operationEvents } from '@features/operation';
 import { OperationFields } from './OperationFields';
 import { operationEndpoints } from '../api/catalogEndpoints';
 
 export const OperationPage = () => {
   const container = 'wrapper';
-  const fields = OperationFields();
+  const fields = useMemo(() => OperationFields(), []);
 
   const API_URL = operationEndpoints.list();
 

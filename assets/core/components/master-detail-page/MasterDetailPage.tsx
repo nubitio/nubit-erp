@@ -2,6 +2,7 @@ import './MasterDetailPage.scss';
 import React from 'react';
 import { Item, Toolbar } from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
+import { useNavigate } from 'react-router-dom';
 
 type MasterDetailViewProps = {
   title: string;
@@ -12,6 +13,7 @@ type MasterDetailViewProps = {
 
 export const MasterDetailPage = (props: MasterDetailViewProps) => {
   const container = 'wrapper';
+  const navigate = useNavigate();
 
   return (
     <div id={container} className="panels-wrapper">
@@ -21,7 +23,7 @@ export const MasterDetailPage = (props: MasterDetailViewProps) => {
             <Button
               icon="ph ph-arrow-left"
               onClick={() => {
-                window.history.back();
+                navigate(-1);
               }}
             />
           </Item>

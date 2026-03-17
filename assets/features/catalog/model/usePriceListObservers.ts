@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DataGridRef } from 'devextreme-react/data-grid';
 import { httpClient } from '@shared/api/HttpClient';
 import { priceListEndpoints } from '../api/priceListEndpoints';

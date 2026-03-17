@@ -1,11 +1,11 @@
-import { Field } from '@platform/field/Field';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   currencyField,
   datetimeField,
   enumField,
   textareaField,
-} from '@platform/field/FieldBuilders';
+} from '@core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 

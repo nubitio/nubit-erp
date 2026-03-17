@@ -1,5 +1,5 @@
-import { Field } from '@platform/field/Field';
-import { identityField, enumField, textField, switchField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { identityField, enumField, textField, switchField } from '@core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 

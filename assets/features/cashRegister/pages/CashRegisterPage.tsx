@@ -1,19 +1,19 @@
 import './CashRegisterPage.scss';
-import { Constants } from '@platform/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxForm } from '@platform/form/DxForm';
-import { DxDialog } from '@platform/dialog/DxDialog';
+import { Constants } from '@core/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxForm } from '@core/form/DxForm';
+import { DxDialog } from '@core/dialog/DxDialog';
 import { cashRegisterEvents, createCashRegisterToolbar } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 export const CashRegisterPage = () => {
   const navigate = useNavigate();
   const gridRef = useRef<DxDataGridEvents>(null);
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'cash-registers';
-  const fields = CashRegisterFields();
+  const fields = useMemo(() => CashRegisterFields(), []);
   const toolbar = createCashRegisterToolbar({
     onViewShifts: () => {
       const row = gridRef.current?.getSelectedRow();

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { LIMA_TZ } from '@shared/lib/DateUtils';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import type { PaymentMethodOption, PosItem } from './types';
 
 export const IGV_RATE = 0.18;

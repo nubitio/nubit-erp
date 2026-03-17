@@ -1,6 +1,6 @@
 import { httpClient } from '@shared/api/HttpClient';
 import AuthResponse from '@shared/api/AuthResponse';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 
 class AuthService {
   login(username: string, password: string) {

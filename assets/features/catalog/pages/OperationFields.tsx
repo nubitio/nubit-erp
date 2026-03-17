@@ -1,5 +1,5 @@
-import { Field } from '@platform/field/Field';
-import { identityField, enumField, textField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { identityField, enumField, textField } from '@core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const OperationFields = () => {

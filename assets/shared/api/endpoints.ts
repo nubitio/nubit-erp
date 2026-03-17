@@ -1,4 +1,4 @@
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 
 const BASE = Constants.API_BASE_URL;
 

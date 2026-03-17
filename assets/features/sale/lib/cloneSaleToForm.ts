@@ -1,5 +1,5 @@
 import { forkJoin, map, of, switchMap } from 'rxjs';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { httpClient } from '@shared/api/HttpClient';
 
 type EmitFn = (eventName: string, payload?: any) => void;

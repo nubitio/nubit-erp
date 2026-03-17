@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 
 export interface CashRegisterDashboardDto {
   id: number;

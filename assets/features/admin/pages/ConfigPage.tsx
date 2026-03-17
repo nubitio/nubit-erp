@@ -1,14 +1,15 @@
 import './ConfigPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { configEvents } from '@features/config';
 import { ConfigFields } from './ConfigFields';
 import { configEndpoints } from '../api/adminEndpoints';
 
 export const ConfigPage = () => {
   const container = 'wrapper';
-  const fields = ConfigFields();
+  const fields = useMemo(() => ConfigFields(), []);
 
   const API_URL = configEndpoints.list();
 

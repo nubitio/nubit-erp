@@ -1,17 +1,17 @@
 import './CompanyPage.scss';
 import { companyEndpoints } from '../api/companyEndpoints';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@core/form/DxForm';
 import { companyEvents } from '@features/company';
 import { CompanyFields } from './CompanyFields';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useCompanyObservers } from '../model/useCompanyObservers';
 
 export const CompanyPage = () => {
   const container = 'wrapper';
   const formRef = useRef<DxFormEvents | null>(null);
-  const fields = CompanyFields(formRef);
+  const fields = useMemo(() => CompanyFields(formRef), [formRef]);
 
   const API_URL = companyEndpoints.list();
 

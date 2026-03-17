@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { DATA_GRID_EVENTS } from '@platform/datagrid/DxDataGrid';
-import { FORM_EVENTS } from '@platform/form/DxForm';
+import { DATA_GRID_EVENTS } from '@core/datagrid/DxDataGrid';
+import { FORM_EVENTS } from '@core/form/DxForm';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

@@ -1,14 +1,15 @@
 import './WarehousePage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { warehouseEvents } from '@features/warehouse';
 import { WarehouseFields } from './WarehouseFields';
 import { warehouseEndpoints } from '../api/catalogEndpoints';
 
 export const WarehousePage = () => {
   const container = 'wrapper';
-  const fields = WarehouseFields();
+  const fields = useMemo(() => WarehouseFields(), []);
 
   const API_URL = warehouseEndpoints.list();
 

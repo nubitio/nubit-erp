@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 import cashRegisterService from '../services/cashRegisterService';

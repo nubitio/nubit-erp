@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { FORM_EVENTS, type DxFormEvents } from '@platform/form/DxForm';
+import { FORM_EVENTS, type DxFormEvents } from '@core/form/DxForm';
 import { httpClient } from '@shared/api/HttpClient';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

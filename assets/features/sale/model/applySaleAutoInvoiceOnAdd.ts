@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { DxFormEvents } from '@platform/form/DxForm';
+import type { DxFormEvents } from '@core/form/DxForm';
 import { Setting, settings } from '@assets/Settings';
 
 export const applySaleAutoInvoiceOnAdd = async (formRef: RefObject<DxFormEvents | null>) => {
