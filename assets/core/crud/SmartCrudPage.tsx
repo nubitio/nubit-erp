@@ -177,8 +177,18 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
   // Step 6: Render CrudPage with processed fields
   // ---------------------------------------------------------------------------
 
+  // Normalize apiUrl — ensure it always starts with '/' so axios treats it as
+  // an absolute path regardless of the current page URL.
+  // e.g. CategoryPage passes 'api/categories' (no leading slash); without this
+  // normalization the browser resolves it relative to the current page, which
+  // produces incorrect URLs like '/some-page/api/categories'.
+  const normalizedApiUrl = resource.apiUrl.startsWith('/')
+    ? resource.apiUrl
+    : `/${resource.apiUrl}`;
+
   const resolvedResource: ResourceConfig<T> = {
     ...(hasManualFields ? resource : { ...resource, fields }),
+    apiUrl: normalizedApiUrl,
     fields: processedFields,
   };
 
