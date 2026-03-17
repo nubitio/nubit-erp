@@ -1,5 +1,5 @@
 import './DxForm.scss';
-import Form, { FormRef, GroupItem, Item } from 'devextreme-react/form';
+import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
@@ -20,6 +20,7 @@ import { FormEventNames } from '../event/EventTypes';
 import { buildField } from './FormUtils';
 import { DateUtils } from '../../shared/lib/DateUtils';
 import toast from '../../shared/lib/SharedUtils';
+import type { FormLayout } from '../crud/FormLayout';
 
 export interface DxFormOptions {
   className?: string;
@@ -47,6 +48,8 @@ export interface DxFormOptions {
   onDeleteError?: (error?: any) => void;
   /** Called whenever the loading state changes (true = started, false = finished). */
   onLoadingChange?: (loading: boolean) => void;
+  /** Optional layout descriptor: when set, renders fields inside tabs or collapsible sections. */
+  formLayout?: FormLayout;
 }
 
 export interface DxFormEvents {
@@ -164,6 +167,20 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       return buildField(field, index, options.editable ?? true, uploadedFiles, formRef);
     });
   };
+
+  /**
+   * Returns the subset of `fields` whose `name` is included in `names`.
+   * Preserves the original `fields` array order.
+   */
+  const pickFields = (names: string[]): Field[] =>
+    options.fields.filter((f) => names.includes(f.name));
+
+  /**
+   * Returns fields that are NOT present in any of the provided name groups.
+   * Used to collect "overflow" fields not assigned to any tab or section.
+   */
+  const remainingFields = (assignedNames: string[]): Field[] =>
+    options.fields.filter((f) => !assignedNames.includes(f.name));
 
   const buildEmptyRow = (fields: Field[]) => {
     const row: any = {};
@@ -291,6 +308,28 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const setupObserversRef = useRef(setupObservers);
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
+
+  /**
+   * After the form mounts, apply `collapsible` / `collapsed` options to GroupItem sections.
+   * The DevExtreme React wrapper for GroupItem does not expose these as JSX props, so we use
+   * the imperative `itemOption` API once the form has rendered.
+   */
+  useEffect(() => {
+    if (options.formLayout?.type !== 'sections') return;
+    options.formLayout.sections.forEach((section) => {
+      try {
+        formRef.current
+          ?.instance()
+          .itemOption(section.label, 'collapsible', section.collapsible ?? false);
+        if (section.defaultCollapsed) {
+          formRef.current?.instance().itemOption(section.label, 'collapsed', true);
+        }
+      } catch {
+        // itemOption may fail if the section name is not registered; ignore silently
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setupObserversRef.current();
@@ -445,13 +484,51 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
           </Item>
         </Form>
       );
-    } else {
+    }
+
+    // ── Tabs layout ──────────────────────────────────────────────────────────
+    if (options.formLayout?.type === 'tabs') {
+      const { tabs } = options.formLayout;
+      const allAssigned = tabs.flatMap((t) => t.fields);
+      const overflow = remainingFields(allAssigned);
       return (
         <Form ref={formRef} className={options.className} labelMode={'floating'}>
-          <GroupItem>{buildFields(options.fields)}</GroupItem>
+          <TabbedItem>
+            {tabs.map((tab) => (
+              <Tab key={tab.label} title={tab.label} icon={tab.icon}>
+                {buildFields(pickFields(tab.fields))}
+              </Tab>
+            ))}
+            {overflow.length > 0 && <Tab title="Otros">{buildFields(overflow)}</Tab>}
+          </TabbedItem>
         </Form>
       );
     }
+
+    // ── Sections layout ──────────────────────────────────────────────────────
+    if (options.formLayout?.type === 'sections') {
+      const { sections } = options.formLayout;
+      const allAssigned = sections.flatMap((s) => s.fields);
+      const overflow = remainingFields(allAssigned);
+      return (
+        <Form ref={formRef} className={options.className} labelMode={'floating'}>
+          {sections.map((section) => (
+            // caption is used as the item name so itemOption(section.label, ...) works
+            <GroupItem key={section.label} caption={section.label}>
+              {buildFields(pickFields(section.fields))}
+            </GroupItem>
+          ))}
+          {overflow.length > 0 && <GroupItem>{buildFields(overflow)}</GroupItem>}
+        </Form>
+      );
+    }
+
+    // ── Default flat layout ───────────────────────────────────────────────────
+    return (
+      <Form ref={formRef} className={options.className} labelMode={'floating'}>
+        <GroupItem>{buildFields(options.fields)}</GroupItem>
+      </Form>
+    );
   };
 
   // eslint-disable-next-line react-hooks/refs -- renderForm accesses data.current (DevExtreme ArrayStore) used as DataGrid dataSource; intentional mutable ref
