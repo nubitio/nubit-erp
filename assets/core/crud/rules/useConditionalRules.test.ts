@@ -1,16 +1,4 @@
 // @vitest-environment jsdom
-/**
- * Unit tests for SLICE-006 — useConditionalRules hook
- *
- * Coverage:
- *   - defaults when no rules set
- *   - visibleWhen (hidden / visible)
- *   - disabledWhen (disabled / enabled)
- *   - computed value evaluation
- *   - re-evaluation when formData changes
- *   - multiple fields with mixed rules
- */
-
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { act } from 'react';
@@ -18,10 +6,6 @@ import { useState } from 'react';
 import type { Field } from '../../field/Field';
 import { FieldType } from '../../field/FieldType';
 import { useConditionalRules } from './useConditionalRules';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function makeField(overrides: Partial<Field> = {}): Field {
   return {
@@ -81,10 +65,6 @@ function makeField(overrides: Partial<Field> = {}): Field {
     ...overrides,
   };
 }
-
-// ---------------------------------------------------------------------------
-// useConditionalRules
-// ---------------------------------------------------------------------------
 
 describe('useConditionalRules', () => {
   it('returns visible=true and disabled=false when no rules are set', () => {
