@@ -1,16 +1,4 @@
 import './CategoryPage.scss';
-import {defineResource, SmartCrudPage} from '@core/crud';
-import {categoryEndpoints} from '../api/catalogEndpoints';
-import {CategoryFields} from './CategoryFields';
+import { defineResource, SmartCrudPage } from '@core/crud';
 
-const categoryResource = defineResource({
-  id: 'category',
-  title: 'Categorias',
-  apiUrl: categoryEndpoints.list(),
-  fields: CategoryFields(),
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
-});
-
-export const CategoryPage = () => <SmartCrudPage resource={defineResource('api/categories')}/>;
+export const CategoryPage = () => <SmartCrudPage resource={defineResource('api/categories')} />;
