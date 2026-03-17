@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\AI\Service;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use DateTimeInterface;
 use App\Core\Context\TenantContext;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
@@ -39,14 +42,14 @@ final readonly class SessionContextBuilder
         $userName = (string) ($payload['username'] ?? 'desconocido');
         $role = $this->resolveRoleLabel((int) ($payload['role'] ?? 0));
         $rawBranchId = $payload['branchId'] ?? null;
-        $branchId = ($rawBranchId !== null && $rawBranchId !== false && $rawBranchId !== '') ? (string) $rawBranchId : null;
+        $branchId = (in_array($rawBranchId, [null, false, ''], true)) ? null : (string) $rawBranchId;
         $rawBranchName = $payload['branchName'] ?? null;
-        $branchName = ($rawBranchName !== null && $rawBranchName !== false && $rawBranchName !== '') ? (string) $rawBranchName : null;
+        $branchName = (in_array($rawBranchName, [null, false, ''], true)) ? null : (string) $rawBranchName;
 
         [$cashRegisterId, $cashSessionStatus] = $this->resolveCashSession($branchId);
 
         $tenantName = $this->tenantContext->getTenantName() ?? 'desconocido';
-        $now = (new \DateTimeImmutable('now', new \DateTimeZone('America/Lima')))->format(\DateTimeInterface::ATOM);
+        $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'))->format(DateTimeInterface::ATOM);
 
         return implode("\n", [
             '## Contexto de sesión actual',

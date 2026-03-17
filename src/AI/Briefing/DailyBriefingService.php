@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\AI\Briefing;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Throwable;
 use App\Core\Cache\CacheManager;
 use Doctrine\DBAL\Connection;
 use Psr\Cache\InvalidArgumentException;
@@ -43,8 +46,8 @@ final readonly class DailyBriefingService
      */
     public function generate(string $tenantName): string
     {
-        $date = (new \DateTimeImmutable('now', new \DateTimeZone('America/Lima')))->format('Y-m-d');
-        $cacheKey = "briefing.{$tenantName}.{$date}";
+        $date = new DateTimeImmutable('now', new DateTimeZone('America/Lima'))->format('Y-m-d');
+        $cacheKey = sprintf('briefing.%s.%s', $tenantName, $date);
 
         try {
             $cached = $this->cacheManager->get($cacheKey);
@@ -56,8 +59,8 @@ final readonly class DailyBriefingService
 
                 return $cached;
             }
-        } catch (InvalidArgumentException $e) {
-            $this->logger->warning('DailyBriefingService: cache read failed', ['exception' => $e->getMessage()]);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $this->logger->warning('DailyBriefingService: cache read failed', ['exception' => $invalidArgumentException->getMessage()]);
         }
 
         $data = $this->gatherData($date);
@@ -70,8 +73,8 @@ final readonly class DailyBriefingService
 
         try {
             $this->cacheManager->set($cacheKey, $briefing, self::CACHE_TTL);
-        } catch (InvalidArgumentException $e) {
-            $this->logger->warning('DailyBriefingService: cache write failed', ['exception' => $e->getMessage()]);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            $this->logger->warning('DailyBriefingService: cache write failed', ['exception' => $invalidArgumentException->getMessage()]);
         }
 
         return $briefing;
@@ -95,7 +98,7 @@ final readonly class DailyBriefingService
      */
     private function gatherData(string $date): array
     {
-        $yesterday = (new \DateTimeImmutable($date, new \DateTimeZone('America/Lima')))
+        $yesterday = new DateTimeImmutable($date, new DateTimeZone('America/Lima'))
             ->modify('-1 day')
             ->format('Y-m-d');
 
@@ -122,8 +125,8 @@ final readonly class DailyBriefingService
             );
 
             return (float) $value;
-        } catch (\Throwable $e) {
-            $this->logger->debug('DailyBriefingService: sales total query failed', ['exception' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            $this->logger->debug('DailyBriefingService: sales total query failed', ['exception' => $throwable->getMessage()]);
 
             return 0.0;
         }
@@ -140,8 +143,8 @@ final readonly class DailyBriefingService
             );
 
             return (int) $value;
-        } catch (\Throwable $e) {
-            $this->logger->debug('DailyBriefingService: sales count query failed', ['exception' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            $this->logger->debug('DailyBriefingService: sales count query failed', ['exception' => $throwable->getMessage()]);
 
             return 0;
         }
@@ -173,8 +176,8 @@ final readonly class DailyBriefingService
                 ],
                 $rows
             );
-        } catch (\Throwable $e) {
-            $this->logger->debug('DailyBriefingService: top products query failed', ['exception' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            $this->logger->debug('DailyBriefingService: top products query failed', ['exception' => $throwable->getMessage()]);
 
             return [];
         }
@@ -191,8 +194,8 @@ final readonly class DailyBriefingService
             );
 
             return (int) $value;
-        } catch (\Throwable $e) {
-            $this->logger->debug('DailyBriefingService: low stock count query failed', ['exception' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            $this->logger->debug('DailyBriefingService: low stock count query failed', ['exception' => $throwable->getMessage()]);
 
             return 0;
         }
@@ -201,7 +204,7 @@ final readonly class DailyBriefingService
     private function fetchSunatRejections(): int
     {
         try {
-            $since = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+            $since = new DateTimeImmutable('now', new DateTimeZone('UTC'))
                 ->modify('-24 hours')
                 ->format('Y-m-d H:i:s');
 
@@ -214,8 +217,8 @@ final readonly class DailyBriefingService
             );
 
             return (int) $value;
-        } catch (\Throwable $e) {
-            $this->logger->debug('DailyBriefingService: SUNAT rejections query failed', ['exception' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            $this->logger->debug('DailyBriefingService: SUNAT rejections query failed', ['exception' => $throwable->getMessage()]);
 
             return 0;
         }
@@ -230,7 +233,7 @@ final readonly class DailyBriefingService
             );
 
             return (bool) $value;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -250,14 +253,14 @@ final readonly class DailyBriefingService
             $str = (string) $value;
 
             return $str !== '' ? $str : null;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
 
     private function isPaydayWeek(string $date): bool
     {
-        $day = (int) (new \DateTimeImmutable($date))->format('j');
+        $day = (int) new DateTimeImmutable($date)->format('j');
 
         // Typical Peruvian payday windows: last week of month (day ≥ 25) or first week (day ≤ 7)
         return $day >= 25 || $day <= 7;
@@ -306,10 +309,10 @@ final readonly class DailyBriefingService
             ]);
 
             return self::DEFAULT_MESSAGE;
-        } catch (\Throwable $e) {
+        } catch (Throwable $throwable) {
             $this->logger->error('DailyBriefingService: AI call failed', [
                 'tenant'    => $tenantName,
-                'exception' => $e->getMessage(),
+                'exception' => $throwable->getMessage(),
             ]);
 
             return self::DEFAULT_MESSAGE;

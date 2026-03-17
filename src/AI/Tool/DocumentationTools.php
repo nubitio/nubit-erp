@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use Throwable;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use App\AI\Knowledge\KnowledgeRetriever;
 use App\AI\Knowledge\KnowledgeIndex;
@@ -34,12 +35,13 @@ final readonly class DocumentationTools
     {
         $sections = $this->retriever->search($query);
 
-        if (empty($sections)) {
+        if ($sections === []) {
             try {
                 $this->index->build();
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // ignore
             }
+
             return 'No se encontró información específica para tu consulta. '
                 . 'Intenta ser más concreto o revisa el manual en docs/.';
         }

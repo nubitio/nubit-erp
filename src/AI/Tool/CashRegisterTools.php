@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use DateTimeInterface;
 use App\Core\Exception\ServiceException;
 use App\Dto\Assistant\CashRegisterStatusDto;
 use App\Entity\CashRegister;
@@ -57,9 +58,9 @@ final readonly class CashRegisterTools
             $register->getName(),
             $status,
             $latestShift?->getId(),
-            $latestShift?->getOpenedAt()?->format(\DateTimeInterface::ATOM),
+            $latestShift?->getOpenedAt()?->format(DateTimeInterface::ATOM),
             $latestShift?->getOpenedBy()?->getUsername(),
-            $latestShift?->getClosedAt()?->format(\DateTimeInterface::ATOM),
+            $latestShift?->getClosedAt()?->format(DateTimeInterface::ATOM),
             $openingBalance !== null ? (float) $openingBalance : null,
             $expectedAmount !== null ? (float) $expectedAmount : null,
             $countedAmount !== null ? (float) $countedAmount : null,

@@ -58,14 +58,12 @@ final readonly class ProductTools
             $product->getName(),
             $this->productStockRepository->getTotalStockForProduct($product),
             $fallbackStock !== null ? (float) $fallbackStock : null,
-            array_map(static function (ProductStock $stock): ProductWarehouseStockDto {
-                return new ProductWarehouseStockDto(
-                    (string) $stock->getWarehouse()->getId(),
-                    $stock->getWarehouse()->getName(),
-                    $stock->getStock(),
-                    $stock->getMinStock(),
-                );
-            }, $stocks),
+            array_map(static fn (ProductStock $stock): ProductWarehouseStockDto => new ProductWarehouseStockDto(
+                (string) $stock->getWarehouse()->getId(),
+                $stock->getWarehouse()->getName(),
+                $stock->getStock(),
+                $stock->getMinStock(),
+            ), $stocks),
         );
     }
 }

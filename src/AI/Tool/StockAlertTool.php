@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use DateTimeImmutable;
 use App\AI\Context\BranchContextInterface;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
@@ -18,7 +19,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 )]
 final readonly class StockAlertTool
 {
-    private const MAX_LIMIT = 100;
+    private const int MAX_LIMIT = 100;
 
     public function __construct(
         private Connection $connection,
@@ -73,9 +74,9 @@ final readonly class StockAlertTool
         }
 
         // Compute 30-day sales velocity for each product
-        $productIds = array_map(static fn (array $r): string => (string) $r['product_id'], $rows);
-        $thirtyDaysAgo = (new \DateTimeImmutable('-30 days'))->format('Y-m-d H:i:s');
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $productIds = array_map(static fn (array $r): string => $r['product_id'], $rows);
+        $thirtyDaysAgo = new DateTimeImmutable('-30 days')->format('Y-m-d H:i:s');
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 
         $velocitySql = <<<SQL
             SELECT
@@ -120,11 +121,11 @@ final readonly class StockAlertTool
             $alerts[] = [
                 'product_id' => $pid,
                 'product_name' => (string) $row['product_name'],
-                'sku' => isset($row['sku']) ? (string) $row['sku'] : null,
+                'sku' => $row['sku'] ?? null,
                 'qty_on_hand' => $qtyOnHand,
                 'min_stock' => (float) $row['min_stock'],
                 'days_to_stockout' => $daysToStockout,
-                'unit' => isset($row['unit']) ? (string) $row['unit'] : '',
+                'unit' => $row['unit'] ?? '',
             ];
         }
 
@@ -136,9 +137,11 @@ final readonly class StockAlertTool
             if ($da === null && $db === null) {
                 return 0;
             }
+
             if ($da === null) {
                 return 1;
             }
+
             if ($db === null) {
                 return -1;
             }
