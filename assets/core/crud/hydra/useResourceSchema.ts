@@ -11,6 +11,14 @@ export interface UseResourceSchemaResult {
   error: Error | undefined;
 }
 
+/**
+ * Normalizes an API URL by stripping any leading slash so that
+ * 'api/categories' and '/api/categories' are treated as equal.
+ */
+function normalizeUrl(url: string): string {
+  return url.startsWith('/') ? url.slice(1) : url;
+}
+
 export function useResourceSchema(
   apiUrl: string,
   manualFields?: Field[],
@@ -27,11 +35,16 @@ export function useResourceSchema(
     return { fields: [], isLoading, error };
   }
 
-  // Parse the API doc (Hydra or OpenAPI) into a resource map, then look up by apiUrl
+  // Parse the API doc (Hydra or OpenAPI) into a resource map, then look up by apiUrl.
+  // Normalize both sides to strip leading slashes so that 'api/categories' and
+  // '/api/categories' resolve to the same schema entry.
   const resourceMap = data.format === 'hydra' ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
+  const normalizedInput = normalizeUrl(apiUrl);
 
-  // Find the resource schema whose apiUrl matches
-  const resourceSchema = Object.values(resourceMap).find((r) => r.apiUrl === apiUrl);
+  // Find the resource schema whose apiUrl matches (ignoring leading slash)
+  const resourceSchema = Object.values(resourceMap).find(
+    (r) => normalizeUrl(r.apiUrl) === normalizedInput,
+  );
   if (!resourceSchema) {
     return {
       fields: [],
