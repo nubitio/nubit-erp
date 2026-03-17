@@ -1,7 +1,7 @@
 import { FieldType } from './FieldType';
 import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
-import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import { FormatterFn, GridOnChangeFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 
 export type LoadOption = Record<string, any>;
 
@@ -75,3 +75,21 @@ export interface Field {
   editorOptions: any | undefined;
   sendAsString: boolean;
 }
+
+/**
+ * Generic extension of `Field` that narrows `defaultValue` and `onChange`
+ * to the value types of a specific resource record type `T`.
+ *
+ * Use `FieldDef<T>` when you want type-safe field definitions for a known
+ * resource shape. Falls back to `Record<string, unknown>` when `T` is omitted.
+ *
+ * `defaultValue` and `onChange` are re-declared with generic-aware types;
+ * all other `Field` properties are inherited unchanged.
+ */
+export type FieldDef<T extends Record<string, unknown> = Record<string, unknown>> = Omit<
+  Field,
+  'defaultValue' | 'onChange'
+> & {
+  defaultValue?: T[keyof T] | (() => T[keyof T]);
+  onChange?: ((value: T[keyof T]) => void | Promise<void>) | GridOnChangeFn;
+};
