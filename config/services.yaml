@@ -12,6 +12,7 @@ parameters:
   tenant_rate_limit: '300'
   tenant_rate_window: '60'
   tenant_plans: '%kernel.project_dir%/config/tenant_plans.php'
+  app.api_base_url: '%env(APP_API_BASE_URL)%'
 
 services:
   # default configuration for services in *this* file
@@ -83,6 +84,18 @@ services:
   App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
   App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'
+
+  App\State\Mcp\ReadHydraResourceProcessor:
+    arguments:
+      $apiBaseUrl: '%app.api_base_url%'
+
+  App\State\Mcp\InvokeHydraOperationProcessor:
+    arguments:
+      $apiBaseUrl: '%app.api_base_url%'
+
+  App\State\Mcp\ApiDocsProvider:
+    arguments:
+      $apiBaseUrl: '%app.api_base_url%'
 
   Symfony\Component\Messenger\Middleware\DispatchAfterCurrentBusMiddleware:
     tags:
