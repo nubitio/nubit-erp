@@ -11,14 +11,40 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
+ * Pluralizes an English word (snake_case or lowercase) with common rules.
+ *
+ * - Words ending in a consonant + 'y'  → replace 'y' with 'ies'
+ *     category  → categories, company → companies
+ * - Words ending in s/x/z/ch/sh       → append 'es'
+ *     branch    → branches, box → boxes
+ * - Everything else                   → append 's'
+ *     warehouse → warehouses, product → products
+ */
+function pluralize(word: string): string {
+  if (word.endsWith('y') && !['ay', 'ey', 'iy', 'oy', 'uy'].some((v) => word.endsWith(v))) {
+    return word.slice(0, -1) + 'ies';
+  }
+  if (
+    word.endsWith('s') ||
+    word.endsWith('x') ||
+    word.endsWith('z') ||
+    word.endsWith('ch') ||
+    word.endsWith('sh')
+  ) {
+    return word + 'es';
+  }
+  return word + 's';
+}
+
+/**
  * Derives the API URL from an Entrypoint property ID.
- * "#Entrypoint/branch"              -> "/api/branches"
+ * "#Entrypoint/branch"               -> "/api/branches"
  * "#Entrypoint/cashMovementCategory" -> "/api/cash_movement_categories"
  */
 function deriveApiUrl(entrypointPropertyId: string): string {
   const name = entrypointPropertyId.split('/').pop() ?? '';
   const snake = name.replace(/([A-Z])/g, '_$1').toLowerCase();
-  const plural = snake.endsWith('s') ? snake : snake + 's';
+  const plural = snake.endsWith('s') ? snake : pluralize(snake);
   return `/api/${plural}`;
 }
 

@@ -660,8 +660,8 @@ describe('parseHydraDoc — happy path', () => {
 
   it('apiUrl for Category is derived from Entrypoint property "#Entrypoint/category"', () => {
     const resources = parseHydraDoc(validHydraDoc);
-    // deriveApiUrl: "category" → snake "category" → already doesn't end in 's' → "categorys"
-    expect(resources['Category'].apiUrl).toBe('/api/categorys');
+    // deriveApiUrl: "category" → snake "category" → consonant+'y' ending → "categories"
+    expect(resources['Category'].apiUrl).toBe('/api/categories');
   });
 
   it('fields array includes all readable properties', () => {
@@ -775,15 +775,15 @@ describe('parseHydraDoc — apiUrl derivation', () => {
     };
   }
 
-  it('derives /api/branchs from "#Entrypoint/branch"', () => {
+  it('derives /api/branches from "#Entrypoint/branch"', () => {
     const doc = makeDocWithEntrypoint('#Entrypoint/branch', '#Branch');
-    // deriveApiUrl: "branch" → snake "branch" → doesn't end in 's' → "branchs"
-    expect(parseHydraDoc(doc)['Branch'].apiUrl).toBe('/api/branchs');
+    // deriveApiUrl: "branch" → snake "branch" → ends in 'ch' → "branches"
+    expect(parseHydraDoc(doc)['Branch'].apiUrl).toBe('/api/branches');
   });
 
-  it('derives /api/cash_movement_categorys from "#Entrypoint/cashMovementCategory"', () => {
+  it('derives /api/cash_movement_categories from "#Entrypoint/cashMovementCategory"', () => {
     const doc = makeDocWithEntrypoint('#Entrypoint/cashMovementCategory', '#CashMovementCategory');
-    expect(parseHydraDoc(doc)['CashMovementCategory'].apiUrl).toBe('/api/cash_movement_categorys');
+    expect(parseHydraDoc(doc)['CashMovementCategory'].apiUrl).toBe('/api/cash_movement_categories');
   });
 
   it('derives /api/products from "#Entrypoint/product"', () => {
