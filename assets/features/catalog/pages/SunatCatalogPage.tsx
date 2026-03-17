@@ -1,6 +1,7 @@
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxForm } from '@platform/form/DxForm';
-import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { useMemo } from 'react';
+import { DxForm } from '@core/form/DxForm';
+import { DxDialog } from '@core/dialog/DxDialog';
 import { sunatCatalogEvents } from '@features/sunatCatalog';
 import { SunatCatalogFields } from './SunatCatalogFields';
 import { sunatCatalogEndpoints } from '../api/catalogEndpoints';
@@ -8,7 +9,7 @@ import { sunatCatalogEndpoints } from '../api/catalogEndpoints';
 export const SunatCatalogPage = () => {
   const container = 'wrapper';
   const API_URL = sunatCatalogEndpoints.list();
-  const fields = SunatCatalogFields();
+  const fields = useMemo(() => SunatCatalogFields(), []);
   return (
     <div id={container}>
       <DxDataGrid

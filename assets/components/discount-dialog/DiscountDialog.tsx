@@ -2,7 +2,7 @@ import { NumberBox, Popup } from 'devextreme-react';
 import { ToolbarItem } from 'devextreme-react/popup';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '../../shared/lib/NumberUtils';
-import { useEvents } from '@platform/event/EventHook';
+import { useEvents } from '@core/event/EventHook';
 
 export enum DiscountDialogEvent {
   OPEN = 'discount:dialog:open',

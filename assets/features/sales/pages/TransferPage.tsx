@@ -1,14 +1,15 @@
 import './TransferPage.scss';
-import { Constants } from '@platform/common/Constants';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { Constants } from '@core/common/Constants';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { transferEvents } from '@features/transfer';
 import { TransferFields } from './TransferFields';
 
 export const TransferPage = () => {
   const container = 'wrapper';
-  const fields = TransferFields();
+  const fields = useMemo(() => TransferFields(), []);
 
   const API_URL = Constants.API_BASE_URL + 'transfers';
 

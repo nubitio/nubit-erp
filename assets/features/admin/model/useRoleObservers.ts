@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { TreeViewRef } from 'devextreme-react/tree-view';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';

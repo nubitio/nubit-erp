@@ -1,5 +1,5 @@
-import { Constants } from '@platform/common/Constants';
-import { Field } from '@platform/field/Field';
+import { Constants } from '@core/common/Constants';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
@@ -10,7 +10,7 @@ import {
   selectField,
   textareaField,
   textField,
-} from '@platform/field/FieldBuilders';
+} from '@core/field/FieldBuilders';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';

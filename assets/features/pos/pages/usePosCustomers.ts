@@ -1,7 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { Subscription } from 'rxjs';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import type { CustomerOption } from './types';
 import { buildCustomersUrl, extractCollection, CUSTOMER_PAGE_SIZE } from './posHelpers';
 

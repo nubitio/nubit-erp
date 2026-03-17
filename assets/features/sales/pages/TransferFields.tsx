@@ -1,12 +1,12 @@
-import { Constants } from '@platform/common/Constants';
-import { Field } from '@platform/field/Field';
+import { Constants } from '@core/common/Constants';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
   dateField,
   noneField,
   textareaField,
-} from '@platform/field/FieldBuilders';
+} from '@core/field/FieldBuilders';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';

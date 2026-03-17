@@ -1,12 +1,12 @@
 import './CreditNotePage.scss';
-import { Constants } from '@platform/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { Constants } from '@core/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@core/form/DxForm';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import toast from '@shared/lib/SharedUtils';
-import { useEvents } from '@platform/event/EventHook';
+import { useEvents } from '@core/event/EventHook';
 import {
   createCreditNoteToolbar,
   creditNoteEvents,
@@ -21,8 +21,8 @@ import {
 export const CreditNotePage = () => {
   const [on] = useEvents();
   const container = 'wrapper';
-  const fields = CreditNoteFields();
-  const detailFields = CreditNoteDetailFields();
+  const fields = useMemo(() => CreditNoteFields(), []);
+  const detailFields = useMemo(() => CreditNoteDetailFields(), []);
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();

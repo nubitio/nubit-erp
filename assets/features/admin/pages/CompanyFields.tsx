@@ -1,16 +1,16 @@
 import { type RefObject } from 'react';
-import { Field } from '@platform/field/Field';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
   imageField,
   enumField,
   textField,
-} from '@platform/field/FieldBuilders';
-import { DxFormEvents } from '@platform/form/DxForm';
+} from '@core/field/FieldBuilders';
+import { DxFormEvents } from '@core/form/DxForm';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {

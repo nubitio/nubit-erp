@@ -1,6 +1,6 @@
 import { ConsultInfoDto } from '../../../dto/consult.info.dto';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 
 export class ConsultService {
   consultRuc(ruc: string) {

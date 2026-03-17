@@ -1,6 +1,6 @@
-import { Constants } from '@platform/common/Constants';
-import { DxFormEvents } from '@platform/form/DxForm';
-import { Field } from '@platform/field/Field';
+import { Constants } from '@core/common/Constants';
+import { DxFormEvents } from '@core/form/DxForm';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
@@ -11,8 +11,8 @@ import {
   selectField,
   textareaField,
   noneField,
-} from '@platform/field/FieldBuilders';
-import { userInformation } from '@platform/common/UserInformation';
+} from '@core/field/FieldBuilders';
+import { userInformation } from '@core/common/UserInformation';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { httpClient } from '@shared/api/HttpClient';

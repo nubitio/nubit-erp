@@ -1,16 +1,16 @@
 import './PriceListPage.scss';
 import { priceListEndpoints } from '../api/priceListEndpoints';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { PriceListFields } from './PriceListFields';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { DataGrid } from 'devextreme-react';
 import { Column, DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { useEvents } from '@platform/event/EventHook';
+import { useEvents } from '@core/event/EventHook';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 import { usePriceListObservers } from '../model/usePriceListObservers';
@@ -18,7 +18,7 @@ import { usePriceListObservers } from '../model/usePriceListObservers';
 export const PriceListPage = () => {
   const [on, emit] = useEvents();
   const container = 'wrapper';
-  const fields = PriceListFields();
+  const fields = useMemo(() => PriceListFields(), []);
   const gridRef = useRef<DxDataGridEvents | null>(null);
   const pricesRef = useRef<DataGridRef | null>(null);
   const pricesData = useRef<DataSource>(

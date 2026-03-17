@@ -1,13 +1,13 @@
-import { Constants } from '@platform/common/Constants';
-import { userInformation } from '@platform/common/UserInformation';
-import { Field } from '@platform/field/Field';
+import { Constants } from '@core/common/Constants';
+import { userInformation } from '@core/common/UserInformation';
+import { Field } from '@core/field/Field';
 import {
   identityField,
   entityField,
   dateField,
   numberField,
   textareaField,
-} from '@platform/field/FieldBuilders';
+} from '@core/field/FieldBuilders';
 import { productService } from '@features/product';
 import { ProductDto } from '@dto/product.dto';
 import { SharedUtils } from '@shared/lib/SharedUtils';

@@ -1,5 +1,5 @@
 import * as qz from 'qz-tray';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { saleService } from '../services/saleService';
 
 type QzInvoicePrinter = {

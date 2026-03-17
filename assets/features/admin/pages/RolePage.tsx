@@ -1,13 +1,13 @@
 import './RolePage.scss';
 import { roleEndpoints } from '../api/roleEndpoints';
-import { useEvents } from '@platform/event/EventHook';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useEvents } from '@core/event/EventHook';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { permissionEvents, roleEvents } from '@features/role';
 import { httpClient } from '@shared/api/HttpClient';
 import { RoleFields } from './RoleFields';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import TreeView, { TreeViewRef } from 'devextreme-react/tree-view';
 import DataSource from 'devextreme/data/data_source';
@@ -29,7 +29,7 @@ type MenuItem = {
 export const RolePage = () => {
   const [on, emit] = useEvents();
   const container = 'wrapper';
-  const fields = RoleFields();
+  const fields = useMemo(() => RoleFields(), []);
   const gridRef = useRef<DxDataGridEvents>(null);
   const treeRef = useRef<TreeViewRef>(null);
   const permissionsData = useRef<DataSource>(

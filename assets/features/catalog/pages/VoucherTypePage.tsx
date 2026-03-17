@@ -1,14 +1,15 @@
 import './VoucherTypePage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { voucherTypeEvents } from '@features/voucherType';
 import { VoucherTypeFields } from './VoucherTypeFields';
 import { voucherTypeEndpoints } from '../api/catalogEndpoints';
 
 export const VoucherTypePage = () => {
   const container = 'wrapper';
-  const fields = VoucherTypeFields();
+  const fields = useMemo(() => VoucherTypeFields(), []);
 
   const API_URL = voucherTypeEndpoints.list();
 

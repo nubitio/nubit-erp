@@ -1,14 +1,15 @@
 import './UserPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
+import { useMemo } from 'react';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
 import { userEvents } from '@features/user';
 import { UserFields } from './UserFields';
 import { userEndpoints } from '../api/adminEndpoints';
 
 export const UserPage = () => {
   const container = 'wrapper';
-  const fields = UserFields();
+  const fields = useMemo(() => UserFields(), []);
 
   const API_URL = userEndpoints.list();
 

@@ -4,7 +4,7 @@ import { ProductDto } from '../../../dto/product.dto';
 import { httpClient } from '@shared/api/HttpClient';
 import GridData from '../../../types/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { ProductStockDto } from '../../../dto/product.stock.dto';
 
 class ProductService {

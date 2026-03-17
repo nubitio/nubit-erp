@@ -13,7 +13,7 @@ import { menuService } from '../../../features/navigation';
 import './SideNavigationMenu.scss';
 
 import * as events from 'devextreme/events';
-import { userInformation } from '@platform/common/UserInformation';
+import { userInformation } from '@core/common/UserInformation';
 
 export type SideNavigationItem = {
   expanded: boolean;

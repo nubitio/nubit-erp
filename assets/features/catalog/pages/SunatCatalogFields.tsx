@@ -1,5 +1,5 @@
-import { Field } from '@platform/field/Field';
-import { identityField, numberField, textField, switchField } from '@platform/field/FieldBuilders';
+import { Field } from '@core/field/Field';
+import { identityField, numberField, textField, switchField } from '@core/field/FieldBuilders';
 
 export const SunatCatalogFields = () => {
   const fields: Field[] = [];

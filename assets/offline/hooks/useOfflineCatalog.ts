@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { getCachedProducts, getLastProductsSyncAt, persistProducts } from '@offline/catalog';
 import type { Category, PosItem } from '@features/pos/pages/types';

@@ -1,15 +1,16 @@
 import './PaymentMethodPage.scss';
+import { useMemo } from 'react';
 import { PaymentMethodFields } from './PaymentMethodFields';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxForm } from '@platform/form/DxForm';
-import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxForm } from '@core/form/DxForm';
+import { DxDialog } from '@core/dialog/DxDialog';
 import { paymentMethodEvents } from '@features/paymentMethod';
 import { paymentMethodEndpoints } from '../api/catalogEndpoints';
 
 export const PaymentMethodPage = () => {
   const container = 'wrapper';
   const API_URL = paymentMethodEndpoints.list();
-  const fields = PaymentMethodFields();
+  const fields = useMemo(() => PaymentMethodFields(), []);
   return (
     <div id={container}>
       <DxDataGrid

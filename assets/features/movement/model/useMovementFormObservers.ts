@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { FORM_EVENTS, type DxFormEvents } from '@platform/form/DxForm';
+import { FORM_EVENTS, type DxFormEvents } from '@core/form/DxForm';
 import { loadMovementItemsOnEdit } from '../lib/loadMovementItemsOnEdit';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

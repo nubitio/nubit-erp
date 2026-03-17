@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
@@ -41,6 +42,7 @@ export function POSOperatorHeader({
   outboxSales,
   onRetrySale,
 }: POSOperatorHeaderProps) {
+  const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
@@ -79,7 +81,7 @@ export function POSOperatorHeader({
         <button
           type="button"
           className="pos-operator-header__back"
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           aria-label="Salir del POS"
         >
           <i className="ph ph-arrow-left" aria-hidden="true" />

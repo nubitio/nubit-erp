@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
-import { useEvents } from '@platform/event/EventHook';
+import { DxFormEvents, FORM_EVENTS } from '@core/form/DxForm';
+import { useEvents } from '@core/event/EventHook';
 import { httpClient } from '@shared/api/HttpClient';
 import { companyEndpoints } from '../api/companyEndpoints';
 

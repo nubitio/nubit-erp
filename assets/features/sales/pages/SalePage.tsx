@@ -1,10 +1,10 @@
 import './SalePage.scss';
-import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
-import { DxForm, DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
-import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxForm, DxFormEvents, FORM_EVENTS } from '@core/form/DxForm';
+import { DxDialog } from '@core/dialog/DxDialog';
 import { saleEndpoints } from '../api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DiscountDialog, DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
 import {
   applySaleAutoInvoiceOnAdd,
@@ -19,7 +19,7 @@ import {
 } from '@features/sale';
 import { CustomerPage, CustomerFields } from '@features/catalog/pages/customers';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
-import { useEvents } from '@platform/event/EventHook';
+import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';
 import { prompt } from '@widgets/library/prompt-dialog/PromptDialog';
 
@@ -33,15 +33,25 @@ export const SalePage = () => {
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
 
+  const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
+
   const container = 'wrapper';
-  const fields = SaleFields(formRef.current, {
-    onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
-    onOpenDiscount: ({ total, discountPercent }) =>
-      emit(DiscountDialogEvent.OPEN, { total, discountPercent }),
-  });
-  const detailFields = SaleDetailFields(formRef.current);
-  const gridDetailFields = (parentRow: any) =>
-    SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
+  const fields = useMemo(
+    () =>
+      SaleFields(formRef.current, {
+        onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
+        onOpenDiscount: ({ total, discountPercent }) =>
+          emit(DiscountDialogEvent.OPEN, { total, discountPercent }),
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const detailFields = useMemo(() => SaleDetailFields(formRef.current), []);
+  const gridDetailFields = useMemo(
+    () => (parentRow: Record<string, unknown>) =>
+      SaleDetailFields(formRef.current, (parentRow?.currency as string) ?? 'PEN'),
+    [],
+  );
 
   const API_URL = saleEndpoints.list();
 
@@ -152,7 +162,7 @@ export const SalePage = () => {
         <DxForm
           ref={customerFormRef}
           url={CustomerPage.API_URL}
-          fields={CustomerFields(customerFormRef)}
+          fields={customerFields}
           events={CustomerPage.EVENTS}
         />
       </DxDialog>

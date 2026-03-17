@@ -1,15 +1,16 @@
 import './CashMovementCategoryPage.scss';
+import { useMemo } from 'react';
 import { CashMovementCategoryFields } from './CashMovementCategoryFields';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm } from '@platform/form/DxForm';
-import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@core/datagrid/DxDataGrid';
+import { DxDialog } from '@core/dialog/DxDialog';
+import { DxForm } from '@core/form/DxForm';
+import { Constants } from '@core/common/Constants';
 import { cashMovementCategoryEvents } from '@features/cashRegister';
 
 export const CashMovementCategoryPage = () => {
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'cash-movement-categories';
-  const fields = CashMovementCategoryFields();
+  const fields = useMemo(() => CashMovementCategoryFields(), []);
   return (
     <div id={container}>
       <DxDataGrid

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { DxFormEvents } from '@platform/form/DxForm';
+import type { DxFormEvents } from '@core/form/DxForm';
 import { useMovementFormObservers } from '@features/movement/model/useMovementFormObservers';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

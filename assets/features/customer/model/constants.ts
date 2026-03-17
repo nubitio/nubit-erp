@@ -1,4 +1,4 @@
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { createCrudEvents } from '@features/movement';
 
 export const customerEvents = createCrudEvents('customer');

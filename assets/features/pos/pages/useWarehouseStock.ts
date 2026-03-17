@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import type { CartItem, PosItem } from './types';
 import { toOptionalNumber } from './posHelpers';
 

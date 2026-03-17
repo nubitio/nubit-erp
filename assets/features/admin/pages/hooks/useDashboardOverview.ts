@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { Constants } from '@core/common/Constants';
 import { DashboardData } from '@features/admin/pages/types';
 
 const initialData: DashboardData = {
