@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use DateTimeInterface;
 use App\AI\Repository\SunatRejectionQueryInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
@@ -17,7 +18,7 @@ final readonly class SunatStatusTool
     /**
      * Maps well-known SUNAT response codes to human-readable Spanish labels.
      */
-    private const CODE_LABELS = [
+    private const array CODE_LABELS = [
         '0100' => 'Error de validación de datos',
         '0109' => 'El número de RUC no existe en SUNAT',
         '0111' => 'El RUC del emisor no está activo',
@@ -64,6 +65,7 @@ final readonly class SunatStatusTool
             $code = $event->getCode() ?? 'UNKNOWN';
             $codeCounts[$code] = ($codeCounts[$code] ?? 0) + 1;
         }
+
         arsort($codeCounts);
         $top5 = array_slice($codeCounts, 0, 5, true);
 
@@ -73,7 +75,7 @@ final readonly class SunatStatusTool
             $codeStr = (string) $code;
             $summary[] = [
                 'code' => $codeStr,
-                'label' => self::resolveCodeLabel($codeStr),
+                'label' => $this->resolveCodeLabel($codeStr),
                 'count' => $count,
             ];
         }
@@ -91,7 +93,7 @@ final readonly class SunatStatusTool
                 'document_type' => $doc->getDocumentType(),
                 'response_code' => $event->getCode() ?? 'UNKNOWN',
                 'response_description' => $event->getMessage(),
-                'issued_at' => $doc->getIssueDate()->format(\DateTimeInterface::ATOM),
+                'issued_at' => $doc->getIssueDate()->format(DateTimeInterface::ATOM),
             ];
         }
 
@@ -101,7 +103,7 @@ final readonly class SunatStatusTool
         ];
     }
 
-    private static function resolveCodeLabel(string $code): string
+    private function resolveCodeLabel(string $code): string
     {
         return self::CODE_LABELS[$code] ?? sprintf('Error SUNAT código %s', $code);
     }

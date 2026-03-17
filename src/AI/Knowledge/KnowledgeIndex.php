@@ -127,6 +127,7 @@ final class KnowledgeIndex
             if ('' === trim($contents)) {
                 continue;
             }
+
             $docs[] = [
                 'path' => $file->getRelativePathname(),
                 'content' => $contents,
@@ -150,10 +151,12 @@ final class KnowledgeIndex
                 if ('' === $text) {
                     continue;
                 }
+
                 $tokens = $this->tokenize($text);
                 if ([] === $tokens) {
                     continue;
                 }
+
                 $chunks[] = [
                     'source' => $doc['path'],
                     'title' => $section['title'],
@@ -181,6 +184,7 @@ final class KnowledgeIndex
                 if ($buffer !== []) {
                     $sections[] = ['title' => $currentTitle, 'text' => trim(implode("\n", $buffer))];
                 }
+
                 $currentTitle = $m[1];
                 $buffer = [];
             } else {
@@ -231,7 +235,7 @@ final class KnowledgeIndex
             $vector[$token] = $tf * ($idf[$token] ?? 0.0);
         }
 
-        $norm = sqrt(array_sum(array_map(static fn ($v) => $v ** 2, $vector))) ?: 1;
+        $norm = sqrt(array_sum(array_map(static fn (float $v): float => $v ** 2, $vector))) ?: 1;
         foreach ($vector as $token => $weight) {
             $vector[$token] = $weight / $norm;
         }
@@ -246,13 +250,18 @@ final class KnowledgeIndex
     {
         $text = mb_strtolower($text);
         $text = preg_replace('/[^a-z0-9áéíóúñü ]/u', ' ', $text) ?? $text;
+
         $parts = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
         $stop = $this->stopWords();
         $counts = [];
         foreach ($parts as $part) {
-            if (isset($stop[$part]) || mb_strlen($part) < 3) {
+            if (isset($stop[$part])) {
                 continue;
             }
+            if (mb_strlen($part) < 3) {
+                continue;
+            }
+
             $counts[$part] = ($counts[$part] ?? 0) + 1;
         }
 

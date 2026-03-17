@@ -42,7 +42,7 @@ final readonly class KnowledgeRetriever
             ];
         }
 
-        usort($scored, static fn ($a, $b) => $b['score'] <=> $a['score']);
+        usort($scored, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
 
         return array_slice($scored, 0, $limit);
     }
@@ -64,8 +64,8 @@ final readonly class KnowledgeRetriever
             }
         }
 
-        $normA = sqrt(array_sum(array_map(static fn ($v) => $v ** 2, $a))) ?: 1;
-        $normB = sqrt(array_sum(array_map(static fn ($v) => $v ** 2, $b))) ?: 1;
+        $normA = sqrt(array_sum(array_map(static fn ($v): float => $v ** 2, $a))) ?: 1;
+        $normB = sqrt(array_sum(array_map(static fn ($v): float => $v ** 2, $b))) ?: 1;
 
         return $dot / ($normA * $normB);
     }
@@ -84,7 +84,7 @@ final readonly class KnowledgeRetriever
             $vector[$token] = $tf * ($idf[$token] ?? 0.0);
         }
 
-        $norm = sqrt(array_sum(array_map(static fn ($v) => $v ** 2, $vector))) ?: 1;
+        $norm = sqrt(array_sum(array_map(static fn (float $v): float => $v ** 2, $vector))) ?: 1;
         foreach ($vector as $token => $weight) {
             $vector[$token] = $weight / $norm;
         }
@@ -99,6 +99,7 @@ final readonly class KnowledgeRetriever
     {
         $text = mb_strtolower($text);
         $text = preg_replace('/[^a-z0-9áéíóúñü ]/u', ' ', $text) ?? $text;
+
         $parts = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
 
         $counts = [];
@@ -106,6 +107,7 @@ final readonly class KnowledgeRetriever
             if (mb_strlen($part) < 3) {
                 continue;
             }
+
             $counts[$part] = ($counts[$part] ?? 0) + 1;
         }
 

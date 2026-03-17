@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use Throwable;
+use App\Entity\TimeDimension;
+use DateTimeInterface;
 use App\Dto\Assistant\RecentSaleDto;
 use App\Repository\SalesAnalyticsRepository;
 use App\Repository\TimeDimensionRepository;
@@ -79,7 +82,7 @@ final readonly class SaleTools
 
         try {
             return new DateTimeImmutable($date);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -98,7 +101,7 @@ final readonly class SaleTools
         $fromId = (int) $from->format('Ymd');
         $toId = (int) $to->format('Ymd');
 
-        /** @var list<\App\Entity\TimeDimension> $dimensions */
+        /** @var list<TimeDimension> $dimensions */
         $dimensions = $this->timeDimensionRepository->createQueryBuilder('td')
             ->where('td.id >= :fromId')
             ->andWhere('td.id <= :toId')
@@ -157,12 +160,13 @@ final readonly class SaleTools
         ];
     }
 
-    private function isLastDayOfMonth(\App\Entity\TimeDimension $dim): bool
+    private function isLastDayOfMonth(TimeDimension $dim): bool
     {
         $date = $dim->getDate();
-        if ($date === null) {
+        if (!$date instanceof DateTimeInterface) {
             return false;
         }
+
         $dayOfMonth = (int) $date->format('j');
         $daysInMonth = (int) $date->format('t');
 
@@ -170,7 +174,7 @@ final readonly class SaleTools
     }
 
     /**
-     * @param list<\App\Entity\TimeDimension> $dimensions
+     * @param list<TimeDimension> $dimensions
      */
     private function buildPeriodLabel(DateTimeImmutable $from, DateTimeImmutable $to, array $dimensions): string
     {
@@ -184,14 +188,7 @@ final readonly class SaleTools
         $week = $first?->getWeek();
         $monthName = $first?->getMonthName();
         $year = $from->format('Y');
-
-        $hasHoliday = false;
-        foreach ($dimensions as $dim) {
-            if ($dim->isHoliday() === true) {
-                $hasHoliday = true;
-                break;
-            }
-        }
+        $hasHoliday = array_any($dimensions, fn ($dim): bool => $dim->isHoliday() === true);
 
         $qualifier = $hasHoliday ? 'semana con feriado' : 'semana normal';
 

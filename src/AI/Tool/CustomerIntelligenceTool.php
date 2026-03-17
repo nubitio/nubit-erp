@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use App\AI\Context\BranchContextInterface;
 use Doctrine\DBAL\Connection;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -87,18 +89,18 @@ final readonly class CustomerIntelligenceTool
         $avgTicket = $totalPurchases > 0 ? round($totalSpent / $totalPurchases, 2) : 0.0;
 
         $firstPurchaseDate = $stats['first_purchase_date'] !== null
-            ? (new \DateTimeImmutable((string) $stats['first_purchase_date']))->format(\DateTimeInterface::ATOM)
-            : (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
+            ? new DateTimeImmutable((string) $stats['first_purchase_date'])->format(DateTimeInterface::ATOM)
+            : new DateTimeImmutable()->format(DateTimeInterface::ATOM);
 
         $lastPurchaseDate = $stats['last_purchase_date'] !== null
-            ? (new \DateTimeImmutable((string) $stats['last_purchase_date']))->format(\DateTimeInterface::ATOM)
-            : (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
+            ? new DateTimeImmutable((string) $stats['last_purchase_date'])->format(DateTimeInterface::ATOM)
+            : new DateTimeImmutable()->format(DateTimeInterface::ATOM);
 
         // Days since last purchase
         $lastPurchaseDt = $stats['last_purchase_date'] !== null
-            ? new \DateTimeImmutable((string) $stats['last_purchase_date'])
-            : new \DateTimeImmutable();
-        $daysSince = (int) $lastPurchaseDt->diff(new \DateTimeImmutable())->days;
+            ? new DateTimeImmutable((string) $stats['last_purchase_date'])
+            : new DateTimeImmutable();
+        $daysSince = (int) $lastPurchaseDt->diff(new DateTimeImmutable())->days;
 
         // Top 5 products by total quantity purchased
         $topProductsSql = <<<SQL
@@ -120,13 +122,11 @@ final readonly class CustomerIntelligenceTool
         /** @var list<array{product_name: string|null, qty: string, times_purchased: string}> $topProductRows */
         $topProductRows = $this->connection->fetchAllAssociative($topProductsSql, $params);
 
-        $topProducts = array_map(static function (array $row): array {
-            return [
-                'product_name' => $row['product_name'] !== null ? (string) $row['product_name'] : '(sin nombre)',
-                'qty' => round((float) $row['qty'], 3),
-                'times_purchased' => (int) $row['times_purchased'],
-            ];
-        }, $topProductRows);
+        $topProducts = array_map(static fn (array $row): array => [
+            'product_name' => $row['product_name'] !== null ? (string) $row['product_name'] : '(sin nombre)',
+            'qty' => round((float) $row['qty'], 3),
+            'times_purchased' => (int) $row['times_purchased'],
+        ], $topProductRows);
 
         // Frequency classification
         $frequency = $this->classifyFrequency($totalPurchases, $firstPurchaseDate, $lastPurchaseDate);
@@ -195,6 +195,7 @@ final readonly class CustomerIntelligenceTool
         if ($len === 11) {
             return 'RUC';
         }
+
         if ($len === 8) {
             return 'DNI';
         }
@@ -215,8 +216,8 @@ final readonly class CustomerIntelligenceTool
             return 'inactivo';
         }
 
-        $first = new \DateTimeImmutable($firstPurchaseDate);
-        $last = new \DateTimeImmutable($lastPurchaseDate);
+        $first = new DateTimeImmutable($firstPurchaseDate);
+        $last = new DateTimeImmutable($lastPurchaseDate);
 
         $diffDays = (int) $first->diff($last)->days;
 

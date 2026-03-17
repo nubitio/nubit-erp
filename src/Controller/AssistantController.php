@@ -69,7 +69,7 @@ class AssistantController extends AbstractController
             'attachments_count' => \count($data->attachments),
             'message_preview' => array_slice(
                 array_map(
-                    static fn (AssistantMessageInput $m) => $m->content,
+                    static fn (AssistantMessageInput $m): string => $m->content,
                     $data->messages
                 ),
                 0,
@@ -141,22 +141,28 @@ class AssistantController extends AbstractController
         }
 
         foreach ($imageAttachments as $attachment) {
-            if (null === $attachment->s3Url || '' === $attachment->s3Url) {
+            if (null === $attachment->s3Url) {
                 continue;
             }
+            if ('' === $attachment->s3Url) {
+                continue;
+            }
+
             $contentParts[] = new ImageUrl($attachment->s3Url);
         }
 
         foreach ($textAttachments as $attachment) {
             $name = trim($attachment->name);
             $mimeType = trim($attachment->mimeType);
-
-            if ('' === $name || '' === $mimeType) {
+            if ('' === $name) {
+                continue;
+            }
+            if ('' === $mimeType) {
                 continue;
             }
 
-            $urlPart = $attachment->s3Url !== null ? " — {$attachment->s3Url}" : '';
-            $contentParts[] = new Text("[Attachment: {$name} ({$mimeType}){$urlPart}]");
+            $urlPart = $attachment->s3Url !== null ? ' — ' . $attachment->s3Url : '';
+            $contentParts[] = new Text(sprintf('[Attachment: %s (%s)%s]', $name, $mimeType, $urlPart));
         }
 
         return Message::ofUser(...$contentParts);
