@@ -1,34 +1,21 @@
 import './CustomerPage.scss';
-import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
-import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { CrudPage, defineResource } from '@core/crud';
 import { customerApiUrl, customerEvents } from '@features/customer';
 import { CustomerFields } from './CustomerFields';
-import { useRef } from 'react';
 
-export const CustomerPage = () => {
-  const formRef = useRef<DxFormEvents | null>(null);
-  const container = 'wrapper';
-  const fields = CustomerFields(formRef);
+const customerResource = defineResource({
+  id: 'customer',
+  title: 'Clientes',
+  apiUrl: customerApiUrl,
+  fields: (formRef) => CustomerFields(formRef),
+  events: customerEvents,
+  allowAdd: true,
+  allowEdit: true,
+  allowDelete: true,
+});
 
-  return (
-    <div id={container}>
-      <DxDataGrid
-        id={'customer'}
-        title={'Clientes'}
-        url={customerApiUrl}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
-        fields={fields}
-        events={customerEvents}
-      />
-      <DxDialog events={customerEvents}>
-        <DxForm ref={formRef} url={customerApiUrl} fields={fields} events={customerEvents} />
-      </DxDialog>
-    </div>
-  );
-};
+export const CustomerPage = () => <CrudPage resource={customerResource} />;
 
+// Static properties consumed by SalePage — must stay as module-level singletons.
 CustomerPage.EVENTS = customerEvents;
 CustomerPage.API_URL = customerApiUrl;

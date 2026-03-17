@@ -1,8 +1,8 @@
 import { type RefObject } from 'react';
-import { Constants } from '@platform/common/Constants';
-import { DxFormEvents } from '@platform/form/DxForm';
-import { Field } from '@platform/field/Field';
-import { entityField, textField, textareaField } from '@platform/field/FieldBuilders';
+import { Constants } from '@core/common/Constants';
+import { DxFormEvents } from '@core/form/DxForm';
+import { Field } from '@core/field/Field';
+import { entityField, textField, textareaField } from '@core/field/FieldBuilders';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';

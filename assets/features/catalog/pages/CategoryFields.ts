@@ -1,6 +1,6 @@
-import { Constants } from '@platform/common/Constants';
-import { Field } from '@platform/field/Field';
-import { identityField, entityField, textField } from '@platform/field/FieldBuilders';
+import { Constants } from '@core/common/Constants';
+import { Field } from '@core/field/Field';
+import { identityField, entityField, textField } from '@core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const CategoryFields = () => {
