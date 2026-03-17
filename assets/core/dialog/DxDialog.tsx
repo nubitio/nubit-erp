@@ -22,6 +22,10 @@ export interface DxDialogOptions {
   negativeText?: string;
   footerVisible?: boolean;
   fitContent?: boolean;
+  /** When provided, controls the popup visibility externally (controlled mode). */
+  isOpen?: boolean;
+  /** Called when the popup requests to be hidden (controlled mode). */
+  onClose?: () => void;
 }
 
 export interface DxDialogEvents {
@@ -39,23 +43,29 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
     }
   }, [options.title]);
   const width = options.width ?? 480;
-  const [visible, setVisible] = useState<boolean>(options.visible ?? false);
+
+  // Controlled mode: isOpen prop drives visibility; uncontrolled: internal state.
+  const isControlled = options.isOpen !== undefined;
+  const [internalVisible, setInternalVisible] = useState<boolean>(options.visible ?? false);
+  const visible = isControlled ? (options.isOpen ?? false) : internalVisible;
+
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { isXSmall } = useScreenSize();
   const [on, emit] = useEvents();
 
   const open = (title?: string) => {
-    setVisible(true);
+    if (!isControlled) setInternalVisible(true);
     if (!title) return;
     setTitle(title);
   };
 
   const close = () => {
-    setVisible(false);
+    if (!isControlled) setInternalVisible(false);
   };
 
   const onCancelClick = () => {
     close();
+    if (options.onClose) options.onClose();
     if (options.events?.CANCEL) emit(options.events.CANCEL);
   };
 
@@ -103,7 +113,9 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
         onHiding={(e) => {
           if (isProcessing) {
             e.cancel = true;
+            return;
           }
+          if (options.onClose) options.onClose();
         }}
         wrapperAttr={{ id: dialogId, class: options.fitContent ? 'fit-content' : 'form-popup' }}
       >
