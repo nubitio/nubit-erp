@@ -12,7 +12,7 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * Manages subscription changes (upgrade, downgrade, gateway switch) for existing tenants.
@@ -29,7 +29,7 @@ final readonly class SubscriptionService
         private ConnectionRegistry $connectionRegistry,
         private SubscriptionManager $subscriptionManager,
         private LoggerInterface $logger,
-        #[TaggedIterator('app.payment_gateway')]
+        #[AutowireIterator('app.payment_gateway')]
         iterable $gatewayIterator,
     ) {
         $map = [];

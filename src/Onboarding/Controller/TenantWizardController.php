@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -23,7 +23,7 @@ final class TenantWizardController extends AbstractController
         private readonly AccountService $accountService,
         private readonly SubdomainValidator $subdomainValidator,
         private readonly OnboardingService $onboardingService,
-        private readonly RateLimiterFactory $onboardingTenantCreationLimiter,
+        private readonly RateLimiterFactoryInterface $onboardingTenantCreationLimiter,
     ) {
     }
 

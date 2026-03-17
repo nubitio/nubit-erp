@@ -8,7 +8,7 @@ use App\Onboarding\Payment\PaymentGatewayInterface;
 use App\Onboarding\Payment\WebhookProcessor;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,7 +22,7 @@ final class WebhookController extends AbstractController
      * @param iterable<PaymentGatewayInterface> $gatewayIterator
      */
     public function __construct(
-        #[TaggedIterator('app.payment_gateway')]
+        #[AutowireIterator('app.payment_gateway')]
         iterable $gatewayIterator,
         private readonly WebhookProcessor $webhookProcessor,
         private readonly LoggerInterface $logger,

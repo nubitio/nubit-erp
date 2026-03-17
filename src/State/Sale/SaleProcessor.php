@@ -75,7 +75,7 @@ readonly class SaleProcessor implements ProcessorInterface
      * @throws Exception
      */
     #[Override]
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->logger->info('Starting sale processing', [
             'sale_id' => $data->getId(),

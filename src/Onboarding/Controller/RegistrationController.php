@@ -9,15 +9,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class RegistrationController extends AbstractController
 {
     public function __construct(
         private readonly AccountService $accountService,
-        private readonly RateLimiterFactory $onboardingRegistrationLimiter,
-        private readonly RateLimiterFactory $onboardingVerificationLimiter,
+        private readonly RateLimiterFactoryInterface $onboardingRegistrationLimiter,
+        private readonly RateLimiterFactoryInterface $onboardingVerificationLimiter,
     ) {
     }
 
