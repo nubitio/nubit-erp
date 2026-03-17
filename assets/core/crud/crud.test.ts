@@ -47,7 +47,7 @@ vi.mock('../form/DxForm', () => ({
 // Mock scss imports
 vi.mock('./CrudPage.scss', () => ({}));
 
-// Mock createCrudEvents from @features/movement
+// Mock createCrudEvents from @core/event/createCrudEvents (canonical location)
 const mockCreateCrudEvents = vi.fn((id: string) => ({
   ADD: `${id}:add`,
   EDIT: `${id}:edit`,
@@ -58,7 +58,7 @@ const mockCreateCrudEvents = vi.fn((id: string) => ({
   LOADING: `${id}:loading`,
 }));
 
-vi.mock('@features/movement', () => ({
+vi.mock('@core/event/createCrudEvents', () => ({
   createCrudEvents: (id: string) => mockCreateCrudEvents(id),
 }));
 

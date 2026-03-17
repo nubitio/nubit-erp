@@ -1,10 +1,9 @@
-export const createCrudEvents = <TPrefix extends string>(prefix: TPrefix) =>
-  ({
-    ADD: `${prefix}:add`,
-    EDIT: `${prefix}:edit`,
-    DELETE: `${prefix}:delete`,
-    SAVE: `${prefix}:save`,
-    CANCEL: `${prefix}:cancel`,
-    SUCCESS: `${prefix}:success`,
-    LOADING: `${prefix}:loading`,
-  }) as const;
+/**
+ * Re-export from `@core/event/createCrudEvents`.
+ *
+ * The implementation was moved to `core/` to eliminate the circular dependency
+ * where `core/event/createScopedEventBus` imported from `@features/movement`.
+ * All existing importers of `@features/movement` or this file continue to work
+ * without modification.
+ */
+export { createCrudEvents } from '@core/event/createCrudEvents';
