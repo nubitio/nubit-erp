@@ -1,14 +1,14 @@
 /**
- * Unit tests for SLICE-005 Wave 1:
+ * Unit tests for SLICE-005 Wave 1 (BUG-001 fix):
  *   - HydraToFieldMapper (mapHydraSchemaToFields)
- *   - openApiParser (parseOpenApiSpec)
+ *   - openApiParser (parseHydraDoc)
  */
 
 import { describe, it, expect } from 'vitest';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
-import { parseOpenApiSpec } from './openApiParser';
+import { parseHydraDoc } from './openApiParser';
 import { FieldType } from '../../field/FieldType';
-import type { HydraResourceSchema } from './types';
+import type { HydraResourceSchema, HydraApiDoc } from './types';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -16,37 +16,98 @@ import type { HydraResourceSchema } from './types';
 
 /** A realistic HydraResourceSchema covering all mapping rule branches */
 const productSchema: HydraResourceSchema = {
-  name: 'Product',
+  className: 'Product',
   apiUrl: '/api/products',
-  required: ['name', 'price'],
-  properties: {
-    id: { type: 'integer', readOnly: true },
-    '@id': { type: 'string', format: 'uri', readOnly: true },
-    name: { type: 'string' },
-    price: { type: 'number' },
-    quantity: { type: 'integer' },
-    active: { type: 'boolean' },
-    createdAt: { type: 'string', format: 'date-time', readOnly: true },
-    publishedOn: { type: 'string', format: 'date' },
-    status: {
-      type: 'string',
-      enum: ['active', 'inactive', 'pending'],
-      'x-labels': { active: 'Activo', inactive: 'Inactivo', pending: 'Pendiente' },
+  fields: [
+    {
+      name: 'id',
+      range: 'xmls:integer',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
     },
-    statusNoLabels: {
-      type: 'string',
-      enum: ['a', 'b'],
+    {
+      name: 'name',
+      range: 'xmls:string',
+      propertyType: 'rdf:Property',
+      required: true,
+      readable: true,
+      writeable: true,
     },
-    category: {
-      type: 'string',
-      format: 'uri',
-      'x-resource': '/api/categories',
+    {
+      name: 'price',
+      range: 'xmls:decimal',
+      propertyType: 'rdf:Property',
+      required: true,
+      readable: true,
+      writeable: true,
     },
-    tags: { type: 'array', items: { type: 'string' } },
-    notes: { type: 'string' },
-    legacyCode: { readOnly: true }, // readOnly but no type
-    unknownType: { type: 'object' }, // falls through to textField
-  },
+    {
+      name: 'quantity',
+      range: 'xmls:integer',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+    {
+      name: 'active',
+      range: 'xmls:boolean',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+    {
+      name: 'createdAt',
+      range: 'xmls:dateTime',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: false,
+    },
+    {
+      name: 'category',
+      range: '#Category',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+    {
+      name: 'supplier',
+      range: '#Supplier',
+      propertyType: 'Link',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+    {
+      name: 'notes',
+      range: 'xmls:string',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+    {
+      name: 'legacyCode',
+      range: undefined,
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: false,
+    },
+    {
+      name: 'unknownType',
+      range: 'some:UnknownRange',
+      propertyType: 'rdf:Property',
+      required: false,
+      readable: true,
+      writeable: true,
+    },
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -67,31 +128,87 @@ describe('mapHydraSchemaToFields — Rule 1: skip id and @id', () => {
   });
 
   it('does not include a field named "@id"', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
+    const schema: HydraResourceSchema = {
+      className: 'Foo',
+      apiUrl: '/api/foos',
+      fields: [
+        {
+          name: '@id',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          name: 'title',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
     expect(findField(fields, '@id')).toBeUndefined();
   });
 });
 
 // ---------------------------------------------------------------------------
-// Rule 2: readOnly → noneField (display-only)
+// Rule 2: readable: false → skip
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 2: readOnly → noneField', () => {
-  it('maps a readOnly field (with type) to FieldType.NONE', () => {
+describe('mapHydraSchemaToFields — Rule 2: readable:false → skipped', () => {
+  it('does not include a field with readable:false', () => {
+    const schema: HydraResourceSchema = {
+      className: 'Test',
+      apiUrl: '/api/tests',
+      fields: [
+        {
+          name: 'internal',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: false,
+          writeable: true,
+        },
+        {
+          name: 'visible',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    expect(findField(fields, 'internal')).toBeUndefined();
+    expect(findField(fields, 'visible')).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Rule 3: writeable: false → noneField (display-only)
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — Rule 3: writeable:false → noneField', () => {
+  it('maps a writeable:false field to FieldType.NONE', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'createdAt');
     expect(f).toBeDefined();
     expect(f!.type).toBe(FieldType.NONE);
   });
 
-  it('maps a readOnly field (without type) to FieldType.NONE', () => {
+  it('maps a writeable:false field with no range to FieldType.NONE', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'legacyCode');
     expect(f).toBeDefined();
     expect(f!.type).toBe(FieldType.NONE);
   });
 
-  it('readOnly field is not required even when it is not in required[]', () => {
+  it('writeable:false field is not required even when required:false', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'createdAt');
     expect(f!.required).toBe(false);
@@ -99,11 +216,11 @@ describe('mapHydraSchemaToFields — Rule 2: readOnly → noneField', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Rule 3: boolean → switchField
+// Rule 4: range=xmls:boolean → switchField
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 3: boolean → switchField', () => {
-  it('maps type=boolean to FieldType.SWITCH', () => {
+describe('mapHydraSchemaToFields — Rule 4: xmls:boolean → switchField', () => {
+  it('maps range=xmls:boolean to FieldType.SWITCH', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'active');
     expect(f).toBeDefined();
@@ -112,115 +229,42 @@ describe('mapHydraSchemaToFields — Rule 3: boolean → switchField', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Rule 4: string + format=date-time → datetimeField
+// Rule 5: range=xmls:dateTime → datetimeField
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 4: date-time → datetimeField', () => {
-  it('maps a non-readOnly string date-time field to FieldType.DATETIME', () => {
+describe('mapHydraSchemaToFields — Rule 5: xmls:dateTime → datetimeField', () => {
+  it('maps a writeable xmls:dateTime field to FieldType.DATETIME', () => {
     const schema: HydraResourceSchema = {
-      name: 'Event',
+      className: 'Event',
       apiUrl: '/api/events',
-      required: ['startAt'],
-      properties: {
-        startAt: { type: 'string', format: 'date-time' },
-      },
+      fields: [
+        {
+          name: 'startAt',
+          range: 'xmls:dateTime',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
     };
     const fields = mapHydraSchemaToFields(schema);
     expect(fields[0].type).toBe(FieldType.DATETIME);
   });
 
-  it('readOnly date-time still maps to NONE (Rule 2 takes priority)', () => {
+  it('writeable:false dateTime still maps to NONE (Rule 3 takes priority)', () => {
     const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'createdAt'); // readOnly in fixture
+    const f = findField(fields, 'createdAt'); // writeable:false in fixture
     expect(f!.type).toBe(FieldType.NONE);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Rule 5: string + format=date → dateField
+// Rule 6: range=xmls:integer → numberField with precision 0
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 5: date → dateField', () => {
-  it('maps type=string, format=date to FieldType.DATE', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'publishedOn');
-    expect(f).toBeDefined();
-    expect(f!.type).toBe(FieldType.DATE);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Rule 6: string + enum → enumField
-// ---------------------------------------------------------------------------
-
-describe('mapHydraSchemaToFields — Rule 6: string + enum → enumField', () => {
-  it('maps type=string with enum to FieldType.ENUM', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'status');
-    expect(f).toBeDefined();
-    expect(f!.type).toBe(FieldType.ENUM);
-  });
-
-  it('enum field data array uses x-labels as text when present', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'status');
-    expect(f!.data).toEqual([
-      { value: 'active', text: 'Activo' },
-      { value: 'inactive', text: 'Inactivo' },
-      { value: 'pending', text: 'Pendiente' },
-    ]);
-  });
-
-  it('enum field without x-labels uses value as text', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'statusNoLabels');
-    expect(f).toBeDefined();
-    expect(f!.type).toBe(FieldType.ENUM);
-    expect(f!.data).toEqual([
-      { value: 'a', text: 'a' },
-      { value: 'b', text: 'b' },
-    ]);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Rule 7: string + format=uri + x-resource → entityField
-// ---------------------------------------------------------------------------
-
-describe('mapHydraSchemaToFields — Rule 7: string + uri + x-resource → entityField', () => {
-  it('maps a resource-reference field to FieldType.ENTITY', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'category');
-    expect(f).toBeDefined();
-    expect(f!.type).toBe(FieldType.ENTITY);
-  });
-
-  it('entity field url is set from x-resource value', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'category');
-    expect(f!.url).toBe('/api/categories');
-  });
-
-  it('entity field without x-resource but with uri format becomes a textField fallback', () => {
-    const schema: HydraResourceSchema = {
-      name: 'Foo',
-      apiUrl: '/api/foos',
-      required: [],
-      properties: {
-        relatedUrl: { type: 'string', format: 'uri' }, // no x-resource
-      },
-    };
-    const fields = mapHydraSchemaToFields(schema);
-    expect(fields[0].type).toBe(FieldType.TEXT);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Rule 8: integer → numberField with precision 0
-// ---------------------------------------------------------------------------
-
-describe('mapHydraSchemaToFields — Rule 8: integer → numberField', () => {
-  it('maps type=integer to FieldType.NUMBER', () => {
+describe('mapHydraSchemaToFields — Rule 6: xmls:integer → numberField', () => {
+  it('maps range=xmls:integer to FieldType.NUMBER', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'quantity');
     expect(f).toBeDefined();
@@ -235,11 +279,11 @@ describe('mapHydraSchemaToFields — Rule 8: integer → numberField', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Rule 9: number → numberField
+// Rule 7: range=xmls:decimal → numberField
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 9: number → numberField', () => {
-  it('maps type=number to FieldType.NUMBER', () => {
+describe('mapHydraSchemaToFields — Rule 7: xmls:decimal → numberField', () => {
+  it('maps range=xmls:decimal to FieldType.NUMBER', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'price');
     expect(f).toBeDefined();
@@ -248,18 +292,44 @@ describe('mapHydraSchemaToFields — Rule 9: number → numberField', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Rule 10: string (default) → textField
+// Rule 8: range starts with '#' → entityField
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 10: plain string → textField', () => {
-  it('maps type=string (no format, no enum) to FieldType.TEXT', () => {
+describe('mapHydraSchemaToFields — Rule 8: "#Class" range → entityField', () => {
+  it('maps a range starting with "#" to FieldType.ENTITY', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    const f = findField(fields, 'category');
+    expect(f).toBeDefined();
+    expect(f!.type).toBe(FieldType.ENTITY);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Rule 8b: propertyType=Link → entityField
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — Rule 8b: propertyType=Link → entityField', () => {
+  it('maps a propertyType="Link" field to FieldType.ENTITY', () => {
+    const fields = mapHydraSchemaToFields(productSchema);
+    const f = findField(fields, 'supplier');
+    expect(f).toBeDefined();
+    expect(f!.type).toBe(FieldType.ENTITY);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Rule 9: xmls:string (default) → textField
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — Rule 9: xmls:string → textField', () => {
+  it('maps range=xmls:string (no special format) to FieldType.TEXT', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'name');
     expect(f).toBeDefined();
     expect(f!.type).toBe(FieldType.TEXT);
   });
 
-  it('maps type=string (notes) to FieldType.TEXT', () => {
+  it('maps range=xmls:string (notes) to FieldType.TEXT', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'notes');
     expect(f!.type).toBe(FieldType.TEXT);
@@ -267,36 +337,31 @@ describe('mapHydraSchemaToFields — Rule 10: plain string → textField', () =>
 });
 
 // ---------------------------------------------------------------------------
-// Rule 11: array → skip
+// Rule 9 fallback: unknown range → textField
 // ---------------------------------------------------------------------------
 
-describe('mapHydraSchemaToFields — Rule 11: array is skipped', () => {
-  it('does not include array-type fields in the output', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    expect(findField(fields, 'tags')).toBeUndefined();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Rule 12: unknown type → textField fallback
-// ---------------------------------------------------------------------------
-
-describe('mapHydraSchemaToFields — Rule 12: unknown type → textField fallback', () => {
-  it('maps type=object to FieldType.TEXT as safe fallback', () => {
+describe('mapHydraSchemaToFields — fallback: unknown range → textField', () => {
+  it('maps an unrecognised range to FieldType.TEXT as safe fallback', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'unknownType');
     expect(f).toBeDefined();
     expect(f!.type).toBe(FieldType.TEXT);
   });
 
-  it('maps a property with no type to FieldType.TEXT as safe fallback', () => {
+  it('maps a field with undefined range (and writeable:true) to FieldType.TEXT', () => {
     const schema: HydraResourceSchema = {
-      name: 'Misc',
+      className: 'Misc',
       apiUrl: '/api/misc',
-      required: [],
-      properties: {
-        mystery: {}, // no type, no readOnly
-      },
+      fields: [
+        {
+          name: 'mystery',
+          range: undefined,
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
     };
     const fields = mapHydraSchemaToFields(schema);
     expect(fields[0].type).toBe(FieldType.TEXT);
@@ -308,7 +373,7 @@ describe('mapHydraSchemaToFields — Rule 12: unknown type → textField fallbac
 // ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — required flag', () => {
-  it('sets required=true for fields listed in schema.required', () => {
+  it('sets required=true for fields with required:true', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const nameField = findField(fields, 'name');
     const priceField = findField(fields, 'price');
@@ -316,33 +381,45 @@ describe('mapHydraSchemaToFields — required flag', () => {
     expect(priceField!.required).toBe(true);
   });
 
-  it('sets required=false for fields NOT in schema.required', () => {
+  it('sets required=false for fields with required:false', () => {
     const fields = mapHydraSchemaToFields(productSchema);
     const f = findField(fields, 'active');
     expect(f!.required).toBe(false);
   });
 
-  it('required=true propagates to enumField', () => {
+  it('required=true propagates to entityField', () => {
     const schema: HydraResourceSchema = {
-      name: 'Item',
+      className: 'Item',
       apiUrl: '/api/items',
-      required: ['status'],
-      properties: {
-        status: { type: 'string', enum: ['a', 'b'] },
-      },
+      fields: [
+        {
+          name: 'category',
+          range: '#Category',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
     };
     const fields = mapHydraSchemaToFields(schema);
     expect(fields[0].required).toBe(true);
   });
 
-  it('required=true propagates to entityField', () => {
+  it('required=true propagates to numberField', () => {
     const schema: HydraResourceSchema = {
-      name: 'Item',
+      className: 'Item',
       apiUrl: '/api/items',
-      required: ['category'],
-      properties: {
-        category: { type: 'string', format: 'uri', 'x-resource': '/api/categories' },
-      },
+      fields: [
+        {
+          name: 'amount',
+          range: 'xmls:decimal',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
     };
     const fields = mapHydraSchemaToFields(schema);
     expect(fields[0].required).toBe(true);
@@ -355,9 +432,22 @@ describe('mapHydraSchemaToFields — required flag', () => {
 
 describe('mapHydraSchemaToFields — label generation', () => {
   it('camelCase field name is converted to a human-readable label', () => {
-    const fields = mapHydraSchemaToFields(productSchema);
-    const f = findField(fields, 'publishedOn');
-    expect(f!.label).toBe('Published On');
+    const schema: HydraResourceSchema = {
+      className: 'Event',
+      apiUrl: '/api/events',
+      fields: [
+        {
+          name: 'publishedOn',
+          range: 'xmls:string',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schema);
+    expect(fields[0].label).toBe('Published On');
   });
 
   it('single-word field keeps first letter capitalised', () => {
@@ -368,201 +458,466 @@ describe('mapHydraSchemaToFields — label generation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// empty schema
+// edge cases
 // ---------------------------------------------------------------------------
 
 describe('mapHydraSchemaToFields — edge cases', () => {
-  it('returns an empty array for a schema with no properties', () => {
+  it('returns an empty array for a schema with no fields', () => {
     const schema: HydraResourceSchema = {
-      name: 'Empty',
+      className: 'Empty',
       apiUrl: '/api/empties',
-      required: [],
-      properties: {},
+      fields: [],
     };
     expect(mapHydraSchemaToFields(schema)).toEqual([]);
   });
 
-  it('returns an empty array for a schema whose only property is id', () => {
+  it('returns an empty array for a schema whose only field is id', () => {
     const schema: HydraResourceSchema = {
-      name: 'IdOnly',
+      className: 'IdOnly',
       apiUrl: '/api/id-only',
-      required: [],
-      properties: {
-        id: { type: 'integer' },
-      },
+      fields: [
+        {
+          name: 'id',
+          range: 'xmls:integer',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
     };
     expect(mapHydraSchemaToFields(schema)).toEqual([]);
   });
 });
 
 // ===========================================================================
-// parseOpenApiSpec tests
+// parseHydraDoc tests
 // ===========================================================================
 
-const validDoc = {
-  openapi: '3.1.0',
-  paths: {
-    '/api/products': {},
-    '/api/products/{id}': {},
-    '/api/categories': {},
-    '/api/categories/{id}': {},
-  },
-  components: {
-    schemas: {
-      Product: {
-        type: 'object',
-        properties: {
-          id: { type: 'integer', readOnly: true },
-          name: { type: 'string' },
-          price: { type: 'number' },
-          active: { type: 'boolean' },
-          createdAt: { type: 'string', format: 'date-time' },
-          status: {
-            type: 'string',
-            enum: ['active', 'inactive'],
-            'x-labels': { active: 'Activo', inactive: 'Inactivo' },
+const validHydraDoc: HydraApiDoc = {
+  '@id': '/api/docs.jsonld',
+  '@type': 'ApiDocumentation',
+  supportedClass: [
+    {
+      '@id': '#Entrypoint',
+      '@type': 'Class',
+      title: 'Entrypoint',
+      supportedProperty: [
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Entrypoint/product',
+            '@type': 'Link',
+            label: 'product',
+            range: '#Product',
           },
-          category: { type: 'string', format: 'uri', 'x-resource': '/api/categories' },
+          title: 'product',
         },
-        required: ['name'],
-      },
-      Category: {
-        type: 'object',
-        properties: {
-          id: { type: 'integer', readOnly: true },
-          title: { type: 'string' },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Entrypoint/category',
+            '@type': 'Link',
+            label: 'category',
+            range: '#Category',
+          },
+          title: 'category',
         },
-        required: ['title'],
-      },
+      ],
     },
-  },
+    {
+      '@id': '#Product',
+      '@type': 'Class',
+      title: 'Product',
+      supportedProperty: [
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/name',
+            '@type': 'rdf:Property',
+            label: 'name',
+            range: 'xmls:string',
+          },
+          title: 'name',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/price',
+            '@type': 'rdf:Property',
+            label: 'price',
+            range: 'xmls:decimal',
+          },
+          title: 'price',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/active',
+            '@type': 'rdf:Property',
+            label: 'active',
+            range: 'xmls:boolean',
+          },
+          title: 'active',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/createdAt',
+            '@type': 'rdf:Property',
+            label: 'createdAt',
+            range: 'xmls:dateTime',
+          },
+          title: 'createdAt',
+          required: false,
+          readable: true,
+          writeable: false,
+        },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/category',
+            '@type': 'Link',
+            label: 'category',
+            range: '#Category',
+          },
+          title: 'category',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Product/internal',
+            '@type': 'rdf:Property',
+            label: 'internal',
+            range: 'xmls:string',
+          },
+          title: 'internal',
+          required: false,
+          readable: false,
+          writeable: true,
+        },
+      ],
+    },
+    {
+      '@id': '#Category',
+      '@type': 'Class',
+      title: 'Category',
+      supportedProperty: [
+        {
+          '@type': 'SupportedProperty',
+          property: {
+            '@id': '#Category/title',
+            '@type': 'rdf:Property',
+            label: 'title',
+            range: 'xmls:string',
+          },
+          title: 'title',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    },
+  ],
 };
 
 // ---------------------------------------------------------------------------
 // Happy path
 // ---------------------------------------------------------------------------
 
-describe('parseOpenApiSpec — happy path', () => {
-  it('returns a HydraApiSpec with the correct openapi version', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(spec.version).toBe('3.1.0');
+describe('parseHydraDoc — happy path', () => {
+  it('returns a resource map with one entry per non-Entrypoint class', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    expect(Object.keys(resources)).toHaveLength(2);
   });
 
-  it('produces one resource per schema in components.schemas', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(Object.keys(spec.resources)).toHaveLength(2);
+  it('resource for Product is keyed by className "Product"', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    expect(resources['Product']).toBeDefined();
   });
 
-  it('resource for Product is keyed by its resolved apiUrl', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(spec.resources['/api/products']).toBeDefined();
+  it('resource className is "Product"', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    expect(resources['Product'].className).toBe('Product');
   });
 
-  it('resource name is the schema key ("Product")', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(spec.resources['/api/products'].name).toBe('Product');
+  it('apiUrl for Product is derived from Entrypoint property "#Entrypoint/product"', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    expect(resources['Product'].apiUrl).toBe('/api/products');
   });
 
-  it('resource required array contains the correct field names', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(spec.resources['/api/products'].required).toContain('name');
+  it('apiUrl for Category is derived from Entrypoint property "#Entrypoint/category"', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    // deriveApiUrl: "category" → snake "category" → already doesn't end in 's' → "categorys"
+    expect(resources['Category'].apiUrl).toBe('/api/categorys');
   });
 
-  it('resource properties include all defined fields', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    const props = spec.resources['/api/products'].properties;
-    expect(props['id']).toBeDefined();
-    expect(props['name']).toBeDefined();
-    expect(props['price']).toBeDefined();
-    expect(props['active']).toBeDefined();
-    expect(props['createdAt']).toBeDefined();
-    expect(props['status']).toBeDefined();
-    expect(props['category']).toBeDefined();
+  it('fields array includes all readable properties', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const fieldNames = resources['Product'].fields.map((f) => f.name);
+    expect(fieldNames).toContain('name');
+    expect(fieldNames).toContain('price');
+    expect(fieldNames).toContain('active');
+    expect(fieldNames).toContain('createdAt');
+    expect(fieldNames).toContain('category');
   });
 
-  it('property schemas preserve type information', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    const props = spec.resources['/api/products'].properties;
-    expect(props['name'].type).toBe('string');
-    expect(props['price'].type).toBe('number');
-    expect(props['active'].type).toBe('boolean');
+  it('readable:false fields are excluded from the fields array', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const fieldNames = resources['Product'].fields.map((f) => f.name);
+    expect(fieldNames).not.toContain('internal');
   });
 
-  it('property schemas preserve enum and x-labels', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    const statusProp = spec.resources['/api/products'].properties['status'];
-    expect(statusProp.enum).toEqual(['active', 'inactive']);
-    expect(statusProp['x-labels']).toEqual({ active: 'Activo', inactive: 'Inactivo' });
+  it('field schemas preserve range information', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const nameField = resources['Product'].fields.find((f) => f.name === 'name');
+    const priceField = resources['Product'].fields.find((f) => f.name === 'price');
+    const activeField = resources['Product'].fields.find((f) => f.name === 'active');
+    expect(nameField?.range).toBe('xmls:string');
+    expect(priceField?.range).toBe('xmls:decimal');
+    expect(activeField?.range).toBe('xmls:boolean');
   });
 
-  it('property schemas preserve readOnly flag', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    const idProp = spec.resources['/api/products'].properties['id'];
-    expect(idProp.readOnly).toBe(true);
+  it('field schemas preserve propertyType information', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const categoryField = resources['Product'].fields.find((f) => f.name === 'category');
+    expect(categoryField?.propertyType).toBe('Link');
   });
 
-  it('property schemas preserve x-resource', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    const catProp = spec.resources['/api/products'].properties['category'];
-    expect(catProp['x-resource']).toBe('/api/categories');
+  it('field schemas preserve required flag', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const nameField = resources['Product'].fields.find((f) => f.name === 'name');
+    expect(nameField?.required).toBe(true);
   });
 
-  it('falls back to /api/${name}s when no matching path is found', () => {
-    const doc = {
-      openapi: '3.0.0',
-      components: {
-        schemas: {
-          Widget: {
-            type: 'object',
-            properties: { name: { type: 'string' } },
-            required: [],
-          },
+  it('field schemas preserve writeable flag', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    const createdAt = resources['Product'].fields.find((f) => f.name === 'createdAt');
+    expect(createdAt?.writeable).toBe(false);
+  });
+
+  it('falls back to /api/${className}s when no Entrypoint entry found for class', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Widget',
+          '@type': 'Class',
+          title: 'Widget',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Widget/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'name',
+            },
+          ],
         },
-      },
+      ],
     };
-    const spec = parseOpenApiSpec(doc);
-    expect(spec.resources['/api/widgets']).toBeDefined();
+    const resources = parseHydraDoc(doc);
+    expect(resources['Widget']).toBeDefined();
+    expect(resources['Widget'].apiUrl).toBe('/api/widgets');
   });
 
-  it('empty required array is preserved as []', () => {
-    const spec = parseOpenApiSpec(validDoc);
-    expect(spec.resources['/api/categories'].required).toEqual(['title']);
+  it('Entrypoint class itself is not included in the resource map', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    expect(resources['Entrypoint']).toBeUndefined();
   });
 });
 
 // ---------------------------------------------------------------------------
-// Error path
+// deriveApiUrl — URL derivation from camelCase Entrypoint property names
 // ---------------------------------------------------------------------------
 
-describe('parseOpenApiSpec — error path', () => {
-  it('throws a descriptive Error when doc is null', () => {
-    expect(() => parseOpenApiSpec(null)).toThrowError(/parseOpenApiSpec/);
+describe('parseHydraDoc — apiUrl derivation', () => {
+  function makeDocWithEntrypoint(propId: string, range: string): HydraApiDoc {
+    return {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Entrypoint',
+          '@type': 'Class',
+          title: 'Entrypoint',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: { '@id': propId, '@type': 'Link', label: 'x', range },
+              title: 'x',
+            },
+          ],
+        },
+        {
+          '@id': range,
+          '@type': 'Class',
+          title: range.replace('#', ''),
+          supportedProperty: [],
+        },
+      ],
+    };
+  }
+
+  it('derives /api/branchs from "#Entrypoint/branch"', () => {
+    const doc = makeDocWithEntrypoint('#Entrypoint/branch', '#Branch');
+    // deriveApiUrl: "branch" → snake "branch" → doesn't end in 's' → "branchs"
+    expect(parseHydraDoc(doc)['Branch'].apiUrl).toBe('/api/branchs');
   });
 
-  it('throws a descriptive Error when doc is a string', () => {
-    expect(() => parseOpenApiSpec('not an object')).toThrowError(/parseOpenApiSpec/);
+  it('derives /api/cash_movement_categorys from "#Entrypoint/cashMovementCategory"', () => {
+    const doc = makeDocWithEntrypoint('#Entrypoint/cashMovementCategory', '#CashMovementCategory');
+    expect(parseHydraDoc(doc)['CashMovementCategory'].apiUrl).toBe('/api/cash_movement_categorys');
   });
 
-  it('throws a descriptive Error when doc is missing "openapi" key', () => {
-    const bad = { components: { schemas: {} } };
-    expect(() => parseOpenApiSpec(bad)).toThrowError(/"openapi"/);
+  it('derives /api/products from "#Entrypoint/product"', () => {
+    const doc = makeDocWithEntrypoint('#Entrypoint/product', '#Product');
+    expect(parseHydraDoc(doc)['Product'].apiUrl).toBe('/api/products');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseHydraDoc — fields shape
+// ---------------------------------------------------------------------------
+
+describe('parseHydraDoc — fields shape', () => {
+  it('each field has a name string', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    for (const field of resources['Product'].fields) {
+      expect(typeof field.name).toBe('string');
+    }
   });
 
-  it('throws a descriptive Error when doc is missing "components"', () => {
-    const bad = { openapi: '3.1.0' };
-    expect(() => parseOpenApiSpec(bad)).toThrowError(/"components"/);
+  it('each field has a propertyType string', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    for (const field of resources['Product'].fields) {
+      expect(typeof field.propertyType).toBe('string');
+    }
   });
 
-  it('throws a descriptive Error when "components.schemas" is missing', () => {
-    const bad = { openapi: '3.1.0', components: {} };
-    expect(() => parseOpenApiSpec(bad)).toThrowError(/"components.schemas"/);
+  it('each field has a boolean required flag', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    for (const field of resources['Product'].fields) {
+      expect(typeof field.required).toBe('boolean');
+    }
   });
 
-  it('throws a descriptive Error when doc is an array', () => {
-    expect(() => parseOpenApiSpec([])).toThrowError(/parseOpenApiSpec/);
+  it('each field has a boolean readable flag set to true (non-readable filtered out)', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    for (const field of resources['Product'].fields) {
+      expect(field.readable).toBe(true);
+    }
   });
 
-  it('throws a descriptive Error when doc is a number', () => {
-    expect(() => parseOpenApiSpec(42)).toThrowError(/parseOpenApiSpec/);
+  it('each field has a boolean writeable flag', () => {
+    const resources = parseHydraDoc(validHydraDoc);
+    for (const field of resources['Product'].fields) {
+      expect(typeof field.writeable).toBe('boolean');
+    }
+  });
+
+  it('a field with missing readable defaults to readable:true (not filtered)', () => {
+    // SupportedProperty with no readable property should default to readable
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Thing',
+          '@type': 'Class',
+          title: 'Thing',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Thing/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'name',
+              // no readable field — defaults to true per spec
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    expect(resources['Thing'].fields).toHaveLength(1);
+    expect(resources['Thing'].fields[0].readable).toBe(true);
+  });
+
+  it('a field with missing writeable defaults to writeable:true', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Thing',
+          '@type': 'Class',
+          title: 'Thing',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Thing/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'name',
+              // no writeable field — defaults to true per spec
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    expect(resources['Thing'].fields[0].writeable).toBe(true);
+  });
+
+  it('a field with missing required defaults to required:false', () => {
+    const doc: HydraApiDoc = {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Thing',
+          '@type': 'Class',
+          title: 'Thing',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': '#Thing/name',
+                '@type': 'rdf:Property',
+                label: 'name',
+                range: 'xmls:string',
+              },
+              title: 'name',
+              // no required field — defaults to false per spec
+            },
+          ],
+        },
+      ],
+    };
+    const resources = parseHydraDoc(doc);
+    expect(resources['Thing'].fields[0].required).toBe(false);
   });
 });

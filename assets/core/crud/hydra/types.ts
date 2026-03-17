@@ -1,32 +1,59 @@
 /**
- * TypeScript types that model an API Platform OpenAPI 3.1 / Hydra spec.
+ * TypeScript types that model a Hydra JSON-LD API documentation response.
  *
  * These are pure data types — no React, no hooks, no side effects.
  */
 
-/** Raw shape of a property from components.schemas[X].properties[Y] */
+// ---------------------------------------------------------------------------
+// Raw Hydra JSON-LD shapes (from /api/docs.jsonld)
+// ---------------------------------------------------------------------------
+
+export interface HydraProperty {
+  '@id': string;
+  '@type': string; // e.g. "rdf:Property", "Link"
+  label: string;
+  range?: string; // e.g. "xmls:string", "#Company"
+}
+
+export interface HydraSupportedProperty {
+  '@type': 'SupportedProperty';
+  property: HydraProperty;
+  title: string;
+  required?: boolean;
+  readable?: boolean;
+  writeable?: boolean;
+}
+
+export interface HydraClass {
+  '@id': string; // e.g. "#Branch"
+  '@type': string; // e.g. "Class"
+  title: string;
+  supportedProperty: HydraSupportedProperty[];
+}
+
+export interface HydraApiDoc {
+  '@id': string;
+  '@type': 'ApiDocumentation';
+  supportedClass: HydraClass[];
+}
+
+// ---------------------------------------------------------------------------
+// Internal normalized types (used by mapper and ResourceSchema)
+// ---------------------------------------------------------------------------
+
+/** Normalized field descriptor derived from a HydraSupportedProperty */
 export interface HydraFieldSchema {
-  type?: string; // "string" | "integer" | "number" | "boolean" | "array" | "object"
-  format?: string; // "date-time" | "date" | "uri" | ...
-  enum?: string[]; // present when it's an enum field
-  'x-labels'?: Record<string, string>; // { "active": "Activo", "inactive": "Inactivo" }
-  'x-resource'?: string; // "/api/categories" — for entity reference fields
-  readOnly?: boolean;
-  items?: { $ref?: string; type?: string }; // for array fields
-  description?: string;
-  nullable?: boolean;
+  name: string;
+  range?: string; // from property.range — e.g. "xmls:string", "#Company"
+  propertyType: string; // from property["@type"] — "rdf:Property" | "Link"
+  required: boolean;
+  readable: boolean;
+  writeable: boolean;
 }
 
-/** A single resource schema extracted from components.schemas */
+/** Normalized resource descriptor derived from a HydraClass */
 export interface HydraResourceSchema {
-  name: string; // e.g. "Product"
-  apiUrl: string; // e.g. "/api/products"
-  properties: Record<string, HydraFieldSchema>;
-  required: string[];
-}
-
-/** The full parsed API spec — one HydraResourceSchema per top-level resource */
-export interface HydraApiSpec {
-  version: string; // openapi version string
-  resources: Record<string, HydraResourceSchema>; // keyed by apiUrl, e.g. "/api/products"
+  className: string; // e.g. "Branch"
+  apiUrl: string; // e.g. "/api/branches"
+  fields: HydraFieldSchema[];
 }
