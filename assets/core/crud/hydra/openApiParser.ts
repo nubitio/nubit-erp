@@ -2,6 +2,7 @@ import type {
   HydraApiDoc,
   HydraResourceSchema,
   HydraFieldSchema,
+  HydraSupportedProperty,
   OpenApiDoc,
   OpenApiProperty,
 } from './types';
@@ -85,6 +86,22 @@ function mapOpenApiTypeToRange(prop: OpenApiProperty): string | undefined {
   }
 }
 
+/**
+ * Extracts the technical property name from a HydraSupportedProperty.
+ *
+ * The technical name (used in API JSON payloads) is found in sp.property['@id'],
+ * which looks like "#Branch/businessName" or "#Category/name".
+ * We extract the part after the last '/'.
+ *
+ * Fallback chain: @id suffix → property.label → title → ''
+ */
+function technicalName(sp: HydraSupportedProperty): string {
+  const fromId = sp.property?.['@id']?.split('/').pop();
+  if (fromId && fromId !== '') return fromId;
+  // fallback chain: label → title
+  return sp.property?.label ?? sp.title ?? '';
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -127,7 +144,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
       if (!readable) continue;
 
       fields.push({
-        name: sp.title ?? sp.property?.label ?? '',
+        name: technicalName(sp),
         range: normalizeRange(sp.property?.range),
         propertyType: sp.property?.['@type'] ?? 'rdf:Property',
         required: sp.required ?? false,
@@ -138,7 +155,14 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
 
     result[className] = {
       className,
-      apiUrl: urlMap[className] ?? `/api/${className.toLowerCase()}s`,
+      apiUrl:
+        urlMap[className] ??
+        `/api/${pluralize(
+          className
+            .replace(/([A-Z])/g, '_$1')
+            .toLowerCase()
+            .replace(/^_/, ''),
+        )}`,
       fields,
     };
   }
@@ -177,7 +201,12 @@ export function parseOpenApiDoc(doc: OpenApiDoc): Record<string, HydraResourceSc
 
     result[className] = {
       className,
-      apiUrl: `/api/${className.toLowerCase()}s`, // best-effort; no Entrypoint in OpenAPI
+      apiUrl: `/api/${pluralize(
+        className
+          .replace(/([A-Z])/g, '_$1')
+          .toLowerCase()
+          .replace(/^_/, ''),
+      )}`, // best-effort; no Entrypoint in OpenAPI
       fields,
     };
   }
