@@ -7,8 +7,13 @@ namespace App\State\Purchase;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Core\Security\Auth\BranchContextService;
+use App\Entity\Branch;
 use App\Entity\Purchase;
+use App\Entity\User;
+use App\Repository\BranchRepository;
 use Override;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Uid\Uuid;
 
@@ -26,6 +31,9 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private ProcessorInterface $persistProcessor,
         #[Autowire(service: 'api_platform.doctrine.orm.state.remove_processor')]
         private ProcessorInterface $removeProcessor,
+        private Security $security,
+        private BranchContextService $branchContextService,
+        private BranchRepository $branchRepository,
     ) {
     }
 
@@ -39,6 +47,33 @@ readonly class PurchaseProcessor implements ProcessorInterface
         // Assign UUID v7 on new entity (when $data->getId() is null)
         if ($data instanceof Purchase && $data->getId() === null) {
             $data->setId(Uuid::v7()->toRfc4122());
+        }
+
+        // Auto-populate fields that the form does not send
+        if ($data instanceof Purchase) {
+            // 1. Set buyerUser from the authenticated user
+            if ($data->getBuyerUser() === null) {
+                $user = $this->security->getUser();
+                if ($user instanceof User) {
+                    $data->setBuyerUser($user);
+                }
+            }
+
+            // 2. Default issuedAt to now if not provided
+            if ($data->getIssuedAt() === null) {
+                $data->setIssuedAt(new \DateTime());
+            }
+
+            // 3. Set branch from the current JWT session context (branch is not on User entity)
+            if ($data->getBranch() === null) {
+                $branchId = $this->branchContextService->getCurrentBranchId();
+                if ($branchId !== null) {
+                    $branch = $this->branchRepository->find($branchId);
+                    if ($branch instanceof Branch) {
+                        $data->setBranch($branch);
+                    }
+                }
+            }
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
