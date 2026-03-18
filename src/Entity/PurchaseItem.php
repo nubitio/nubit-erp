@@ -12,7 +12,9 @@ use App\Repository\PurchaseItemRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[ORM\Entity(repositoryClass: PurchaseItemRepository::class)]
 #[ORM\Table(name: 'goods_receipt_items')]
@@ -75,6 +77,7 @@ class PurchaseItem
     private ?string $uomSnapshot = null;
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
+    #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
     #[ApiProperty(description: 'purchase_item.qty.label')]
     private string|int|float $qty = '0.000';
