@@ -212,6 +212,11 @@ class TaxDocument
     #[ApiProperty(description: 'tax_document.digest.label')]
     private ?string $digest = null;
 
+    #[ORM\Column(name: 'cdr_path', type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['invoice:read', 'creditnote:read'])]
+    #[ApiProperty(description: 'tax_document.cdr_path.label')]
+    private ?string $cdrPath = null;
+
     /**
      * @var Collection<int, TaxDocumentLine>
      */
@@ -653,6 +658,18 @@ class TaxDocument
     public function setDigest(?string $digest): self
     {
         $this->digest = $digest;
+
+        return $this;
+    }
+
+    public function getCdrPath(): ?string
+    {
+        return $this->cdrPath;
+    }
+
+    public function setCdrPath(?string $cdrPath): self
+    {
+        $this->cdrPath = $cdrPath;
 
         return $this;
     }

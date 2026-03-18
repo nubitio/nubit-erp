@@ -72,6 +72,7 @@ readonly class CreditNoteService
                     $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
+                $creditNote->setCdrPath($docDir . '/R-' . $response->name . '.zip');
             } else {
                 // SUNAT did not return the CDR zip inline — attempt to fetch it via consult
                 try {
@@ -118,17 +119,16 @@ readonly class CreditNoteService
             }
 
             $cdrZip = $consultResponse->getCdrZip();
-            if (!in_array($cdrZip, [null, '', '0'], true)) {
+            if ($consultResponse->getCdrResponse()?->isAccepted() && !in_array($cdrZip, [null, '', '0'], true)) {
                 $decoded = base64_decode($cdrZip);
                 if ($decoded !== '') {
                     $companyId = $this->companyContext->getId();
                     $docFullName = $companyId . '-'
                         . $creditNote->getDocumentType() . '-'
                         . $consultResponse->getCdrResponse()->getId();
-                    $this->fileManager->write(
-                        Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
-                        $decoded
-                    );
+                    $cdrPath = Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip';
+                    $this->fileManager->write($cdrPath, $decoded);
+                    $creditNote->setCdrPath($cdrPath);
                 }
             }
 

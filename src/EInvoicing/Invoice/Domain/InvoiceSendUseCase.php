@@ -63,6 +63,7 @@ readonly class InvoiceSendUseCase
                     $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
+                $taxDocument->setCdrPath($docDir . '/R-' . $response->name . '.zip');
                 $recoveredByConsult = false;
                 $retryable = false;
             } else {
@@ -86,6 +87,7 @@ readonly class InvoiceSendUseCase
                                 Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
                                 $cdr
                             );
+                            $taxDocument->setCdrPath(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip');
                             $recoveredByConsult = true;
                         } else {
                             $sunatStatus = 'pendiente';

@@ -53,6 +53,7 @@ readonly class InvoiceConsultUseCase
                     Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
                     $cdr
                 );
+                $taxDocument->setCdrPath(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip');
             } else {
                 $sunatStatus = $consultResponse->getError()?->getCode();
                 $sunatMessage = $consultResponse->getError()?->getMessage();
