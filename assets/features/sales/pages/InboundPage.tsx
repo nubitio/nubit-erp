@@ -9,10 +9,10 @@ import { purchasesEvents } from '@features/purchases/model';
 const purchasesResource = defineResource({
   id: 'purchases',
   title: 'Compras',
-  apiUrl: Constants.API_BASE_URL + 'movements?type=purchases',
+  apiUrl: Constants.API_BASE_URL + 'purchases',
   fields: PurchasesFields(),
   detailFields: PurchasesDetailFields(),
-  detailUrl: Constants.API_BASE_URL + 'movements/{id}/items',
+  detailUrl: Constants.API_BASE_URL + 'purchases/{id}/items',
   events: purchasesEvents,
   sort: [{ selector: 'date_created', desc: true }],
   dialogWidth: 900,
