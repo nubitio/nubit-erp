@@ -3,7 +3,7 @@ import { Button } from 'devextreme-react';
 import type { SelectionChangedEvent } from 'devextreme/ui/data_grid';
 import { DxDataGrid } from '../datagrid/DxDataGrid';
 import { DxDialog } from '../dialog/DxDialog';
-import { DxForm } from '../form/DxForm';
+import { DxForm, FORM_EVENTS } from '../form/DxForm';
 import { useCrudPage } from './useCrudPage';
 import { dispatch, useEvents } from '../event/EventHook';
 import type { ResourceConfig } from './ResourceConfig';
@@ -142,6 +142,23 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     } else if (initialIsNew) {
       openDialog('add', null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subscribe to detail-grid row mutation events and call onDetailRowsChanged when defined.
+  // The callback receives `formRef` so it can imperatively update header-form fields
+  // (e.g. recalculate a `total` from line items).
+  // Cleanup is handled automatically by useEvents' own unmount effect.
+  const onDetailRowsChangedRef = React.useRef(resource.onDetailRowsChanged);
+  onDetailRowsChangedRef.current = resource.onDetailRowsChanged;
+
+  React.useEffect(() => {
+    if (!onDetailRowsChangedRef.current) return;
+
+    const handler = () => onDetailRowsChangedRef.current?.(formRef);
+    on(FORM_EVENTS.ROW_ADDED, handler);
+    on(FORM_EVENTS.ROW_UPDATED, handler);
+    on(FORM_EVENTS.ROW_REMOVED, handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
