@@ -38,7 +38,7 @@ export const InboundFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'warehouses', '@id', 'name')
+    entityField(Constants.API_BASE_URL + 'warehouses', '_iri', 'name')
       .name('warehouse')
       .label('Almacen')
       .filters([
@@ -52,7 +52,7 @@ export const InboundFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'suppliers', '@id', 'businessName')
+    entityField(Constants.API_BASE_URL + 'suppliers', '_iri', 'businessName')
       .name('supplier')
       .label('Proveedor')
       .build(),
@@ -77,7 +77,7 @@ export const InboundDetailFields = () => {
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'products', '@id', 'name')
+    entityField(Constants.API_BASE_URL + 'products', '_iri', 'name')
       .name('product')
       .label('Producto')
       .minWidth(200)
