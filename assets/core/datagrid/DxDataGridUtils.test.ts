@@ -229,4 +229,19 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
     expect(typeof props['calculateDisplayValue']).toBe('function');
   });
+
+  // BUG-009: IRI-valued entity fields (@id valueField) must NOT use calculateDisplayValue
+  // so the DevExtreme <Lookup> can resolve the IRI → display name via its data source.
+  it('does NOT attach calculateDisplayValue when valueField is "@id" (IRI-based lookup)', () => {
+    const fields: Field[] = [
+      makeEntityField({ visible: true, formatter: undefined, valueField: '@id' }),
+    ];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(props['calculateDisplayValue']).toBeUndefined();
+  });
 });

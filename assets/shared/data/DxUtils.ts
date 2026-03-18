@@ -27,7 +27,10 @@ class DxUtils {
   }
 
   private async fetchById(url: string, id: any, loadOptions: any): Promise<any> {
-    const subscription = httpClient.get<any>(`${url}/${id}`);
+    // When id is already an absolute IRI path (e.g. "/api/warehouses/uuid"),
+    // call it directly instead of appending it to the base url.
+    const resolvedUrl = typeof id === 'string' && id.startsWith('/') ? id : `${url}/${id}`;
+    const subscription = httpClient.get<any>(resolvedUrl);
 
     return lastValueFrom(subscription)
       .then((response: ApiResponse<any>) => {
