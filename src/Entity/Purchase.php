@@ -189,11 +189,12 @@ class Purchase
     /**
      * @var Collection<int, PurchaseItem>
      */
-    #[Groups(['purchase:read'])]
+    #[Groups(['purchase:read', 'purchase:write'])]
     #[ORM\OneToMany(
         targetEntity: PurchaseItem::class,
         mappedBy: 'purchase',
         cascade: ['persist', 'remove'],
+        orphanRemoval: true,
     )]
     private Collection $items;
 

@@ -43,12 +43,12 @@ class PurchaseItem
     #[ApiProperty(description: 'purchase_item.legacy_movimiento_detalle_id.label')]
     private ?int $legacyMovimientoDetalleId = null;
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
     #[ApiProperty(description: 'purchase_item.line_no.label')]
     private int $lineNo = 0;
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: true)]
     #[ApiProperty(description: 'purchase_item.product.label')]
@@ -74,27 +74,27 @@ class PurchaseItem
     #[ApiProperty(description: 'purchase_item.uom_snapshot.label')]
     private ?string $uomSnapshot = null;
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
     #[ApiProperty(description: 'purchase_item.qty.label')]
     private string $qty = '0.000';
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'unit_cost', type: Types::DECIMAL, precision: 12, scale: 4)]
     #[ApiProperty(description: 'purchase_item.unit_cost.label')]
     private string $unitCost = '0.0000';
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'gross_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
     #[ApiProperty(description: 'purchase_item.gross_amount.label')]
     private string $grossAmount = '0.00';
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'tax_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     #[ApiProperty(description: 'purchase_item.tax_amount.label')]
     private string $taxAmount = '0.00';
 
-    #[Groups(['purchase_item:read'])]
+    #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'total_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
     #[ApiProperty(description: 'purchase_item.total_amount.label')]
     private string $totalAmount = '0.00';

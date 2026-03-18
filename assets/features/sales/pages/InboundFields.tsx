@@ -38,10 +38,9 @@ export const InboundFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(Constants.API_BASE_URL + 'warehouses', '@id', 'name')
       .name('warehouse')
       .label('Almacen')
-      .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
       .filters([
         {
           field: 'branch',
@@ -49,15 +48,13 @@ export const InboundFields = () => {
           value: userInformation().currentBranchId,
         },
       ])
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .required(true)
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'suppliers', 'id', 'businessName')
+    entityField(Constants.API_BASE_URL + 'suppliers', '@id', 'businessName')
       .name('supplier')
       .label('Proveedor')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .build(),
   );
   fields.push(textareaField().name('note').label('Glosa').build());
@@ -80,11 +77,10 @@ export const InboundDetailFields = () => {
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
+    entityField(Constants.API_BASE_URL + 'products', '@id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(200)
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
         row.product = product;

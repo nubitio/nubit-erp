@@ -213,8 +213,12 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     // For ENTITY fields without a custom formatter, provide a calculateDisplayValue
     // that extracts the human-readable label from nested relation objects.
     // This prevents "[object Object]" when the API returns embedded entities.
+    //
+    // Exception: when valueField === '@id', the stored value is a full IRI string.
+    // In that case we skip calculateDisplayValue and let the DevExtreme <Lookup>
+    // (built by buildLookup) resolve the display name via its own data source.
     const entityDisplayValue =
-      field.type === FieldType.ENTITY && !field.formatter
+      field.type === FieldType.ENTITY && !field.formatter && field.valueField !== '@id'
         ? buildEntityDisplayValue(field)
         : undefined;
 

@@ -74,6 +74,15 @@ readonly class PurchaseProcessor implements ProcessorInterface
                     }
                 }
             }
+
+            // 4. Ensure each item's owning-side back-reference is set before Doctrine persist.
+            //    API Platform may denormalise items directly into the collection without calling
+            //    addItem(), so the ManyToOne foreign key would be left null.
+            foreach ($data->getItems() as $item) {
+                if ($item->getPurchase() !== $data) {
+                    $item->setPurchase($data);
+                }
+            }
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
