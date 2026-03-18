@@ -32,7 +32,7 @@ export const InboundFields = () => {
   );
   fields.push(
     dateField()
-      .name('issued_at')
+      .name('issuedAt')
       .label('Fecha')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .build(),
@@ -63,7 +63,7 @@ export const InboundFields = () => {
   fields.push(textareaField().name('note').label('Glosa').build());
   fields.push(
     currencyField()
-      .name('grand_total')
+      .name('grandTotal')
       .label('Total')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
@@ -88,7 +88,7 @@ export const InboundDetailFields = () => {
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
         row.product = product;
-        row.unit_cost = 0;
+        row.unitCost = 0;
         this.defaultSetCellValue(row, product, currentRow);
       })
       .sortable(false)
@@ -102,7 +102,7 @@ export const InboundDetailFields = () => {
       .align('center')
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.total_amount = currentRow.unit_cost * value;
+        row.totalAmount = currentRow.unitCost * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
       .required(true)
@@ -112,12 +112,12 @@ export const InboundDetailFields = () => {
   );
   fields.push(
     currencyField()
-      .name('unit_cost')
+      .name('unitCost')
       .label('Precio unitario')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.total_amount = currentRow.qty * value;
+        row.totalAmount = currentRow.qty * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
       .sortable(false)
@@ -125,7 +125,7 @@ export const InboundDetailFields = () => {
   );
   fields.push(
     currencyField()
-      .name('total_amount')
+      .name('totalAmount')
       .label('Precio total')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)
