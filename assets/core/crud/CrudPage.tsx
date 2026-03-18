@@ -283,6 +283,8 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
         editMode={resource.editMode}
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
+        detailUrl={resource.detailUrl}
+        detailFields={resource.detailFields}
       />
       {!isInlineEditMode && (
         <DxDialog
