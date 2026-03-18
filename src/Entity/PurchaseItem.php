@@ -77,7 +77,7 @@ class PurchaseItem
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
     #[ApiProperty(description: 'purchase_item.qty.label')]
-    private string $qty = '0.000';
+    private string|int|float $qty = '0.000';
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'unit_cost', type: Types::DECIMAL, precision: 12, scale: 4)]
@@ -257,10 +257,10 @@ class PurchaseItem
 
     public function getQty(): string
     {
-        return $this->qty;
+        return (string) $this->qty;
     }
 
-    public function setQty(int|string $qty): static
+    public function setQty(int|float|string $qty): static
     {
         $this->qty = (string) $qty;
 
