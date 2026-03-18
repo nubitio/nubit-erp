@@ -29,6 +29,7 @@ import {
   buildSummary,
   buildToolbar,
   buildEntityDisplayValue,
+  buildEntityCellValue,
   getIdField,
 } from './DxDataGridUtils';
 import { FieldBuilder } from '../field/FieldBuilder';
@@ -219,7 +220,9 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
     expect(props['calculateDisplayValue']).toBeUndefined();
   });
 
-  it('attaches calculateDisplayValue when the entity field has no formatter', () => {
+  it('attaches calculateCellValue (not calculateDisplayValue) when entity field uses valueField="id"', () => {
+    // BUG-011: UUID-mode lookup ('id' valueField) must use calculateCellValue to
+    // extract the UUID from IRI strings, allowing the Lookup to resolve the display name.
     const fields: Field[] = [makeEntityField({ visible: true, formatter: undefined })];
 
     const result = buildColumns(fields);
@@ -227,7 +230,10 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
 
     expect(React.isValidElement(element)).toBe(true);
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
-    expect(typeof props['calculateDisplayValue']).toBe('function');
+    // calculateDisplayValue must NOT be set for 'id' valueField — calculateCellValue handles it
+    expect(props['calculateDisplayValue']).toBeUndefined();
+    // calculateCellValue MUST be set to handle IRI → UUID extraction
+    expect(typeof props['calculateCellValue']).toBe('function');
   });
 
   // BUG-009: IRI-valued entity fields (@id valueField) must NOT use calculateDisplayValue
@@ -260,5 +266,108 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
     expect(React.isValidElement(element)).toBe(true);
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
     expect(props['calculateDisplayValue']).toBeUndefined();
+  });
+
+  it('attaches calculateDisplayValue (not calculateCellValue) for entity fields with non-id valueField', () => {
+    // Fields that use a custom valueField (not 'id', '@id', or '_iri') still use
+    // calculateDisplayValue for rendering nested objects.
+    const fields: Field[] = [
+      makeEntityField({ visible: true, formatter: undefined, valueField: 'code' }),
+    ];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(typeof props['calculateDisplayValue']).toBe('function');
+    expect(props['calculateCellValue']).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-011: buildEntityCellValue — IRI → UUID extraction for id-based lookups
+// ---------------------------------------------------------------------------
+
+describe('DxDataGridUtils › buildEntityCellValue', () => {
+  it('extracts UUID from an IRI string', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: '/api/categories/abc-uuid-123' })).toBe('abc-uuid-123');
+  });
+
+  it('returns a plain UUID string as-is (no double-extraction)', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: 'abc-uuid-123' })).toBe('abc-uuid-123');
+  });
+
+  it('extracts id from a full entity object', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    const result = fn({ parent: { id: 'abc-uuid-123', name: 'Category' } });
+    expect(result).toBe('abc-uuid-123');
+  });
+
+  it('returns null for a null value', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: null })).toBeNull();
+  });
+
+  it('returns undefined for a missing value', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: undefined })).toBeUndefined();
+  });
+
+  it('handles nested IRI with multiple path segments correctly', () => {
+    const field = makeEntityField();
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: '/api/warehouses/550e8400-e29b-41d4-a716-446655440000' })).toBe(
+      '550e8400-e29b-41d4-a716-446655440000',
+    );
+  });
+
+  it('attaches calculateCellValue to column when valueField is "id" and no formatter', () => {
+    const fields: Field[] = [makeEntityField({ visible: true })];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(typeof props['calculateCellValue']).toBe('function');
+  });
+
+  it('does NOT attach calculateCellValue when a formatter is set', () => {
+    const customFormatter = vi.fn();
+    const fields: Field[] = [makeEntityField({ visible: true, formatter: customFormatter })];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(props['calculateCellValue']).toBeUndefined();
+  });
+
+  it('does NOT attach calculateCellValue when valueField is "_iri"', () => {
+    const fields: Field[] = [
+      makeEntityField({ visible: true, formatter: undefined, valueField: '_iri' }),
+    ];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(props['calculateCellValue']).toBeUndefined();
   });
 });
