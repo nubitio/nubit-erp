@@ -74,7 +74,26 @@ class DxUtils {
     defaultFilterRules: FilterDescriptor[] = [],
     defaultSortRules: SortDescriptor<any>[] = [],
     options: LoadOption[] = [],
+    iriMode: boolean = false,
   ): CustomStore {
+    /**
+     * IRI mode: the API stores relation values as full IRIs (e.g. "/api/warehouses/uuid").
+     * DevExtreme cannot use "@id" as a valueExpr key because "@" is not a valid JS identifier
+     * in dot-notation access paths used by some DX code paths.
+     *
+     * When iriMode=true, each loaded item gets a synthetic "_iri" field copied from "@id":
+     *   { "@id": "/api/warehouses/uuid", "name": "Almacén Central", "_iri": "/api/warehouses/uuid" }
+     *
+     * The lookup is then configured with valueExpr="_iri" / displayExpr="name", so:
+     *  - valueExpr "_iri" matches the full IRI stored in the parent record
+     *  - displayExpr renders the human-readable name
+     *  - no "@" character is ever used as a JS property accessor
+     */
+    const addIriField = (item: Record<string, unknown>): Record<string, unknown> => ({
+      ...item,
+      _iri: item['@id'],
+    });
+
     return new CustomStore({
       key: idField,
       load: (loadOptions) => {
@@ -101,10 +120,16 @@ class DxUtils {
             }
           }
         });
+        if (iriMode) {
+          return this.fetchAll(url, loadOptions).then((result) => ({
+            ...result,
+            data: result.data.map(addIriField),
+          }));
+        }
         return this.fetchAll(url, loadOptions);
       },
       byKey: (key) => {
-        const id = typeof key === 'object' ? key[idField] : key;
+        const id = typeof key === 'object' ? (key as Record<string, unknown>)[idField] : key;
         if (id === undefined) return Promise.resolve(null);
         const loadOptions: Record<string, unknown> = {};
         options.forEach((option) => {
@@ -114,6 +139,11 @@ class DxUtils {
             }
           }
         });
+        if (iriMode) {
+          return this.fetchById(byKeyUrl ?? url, id, loadOptions).then((item) =>
+            item != null ? addIriField(item) : item,
+          );
+        }
         return this.fetchById(byKeyUrl ?? url, id, loadOptions);
       },
     });

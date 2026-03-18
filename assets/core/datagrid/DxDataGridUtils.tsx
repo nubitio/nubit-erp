@@ -58,6 +58,11 @@ const buildLookup = (field: Field): React.JSX.Element | null => {
   if (!field.filterable) return null;
   let lookup: React.JSX.Element | null = null;
   if (field.type === FieldType.ENTITY) {
+    // When valueField is "_iri", the lookup data source must inject a synthetic
+    // "_iri" field (copied from "@id") on every loaded item so that DevExtreme
+    // can match full IRI values (e.g. "/api/warehouses/uuid") without ever using
+    // "@id" as a JS dot-notation property accessor.
+    const iriMode = field.valueField === '_iri';
     lookup = (
       <Lookup
         dataSource={{
@@ -68,6 +73,7 @@ const buildLookup = (field: Field): React.JSX.Element | null => {
             field.filters,
             [],
             [],
+            iriMode,
           ),
           paginate: true,
           pageSize: 10,
@@ -214,11 +220,15 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     // that extracts the human-readable label from nested relation objects.
     // This prevents "[object Object]" when the API returns embedded entities.
     //
-    // Exception: when valueField === '@id', the stored value is a full IRI string.
-    // In that case we skip calculateDisplayValue and let the DevExtreme <Lookup>
-    // (built by buildLookup) resolve the display name via its own data source.
+    // Exceptions — skip calculateDisplayValue when:
+    //  • valueField === '@id': the stored value is a full IRI; let the <Lookup> resolve it.
+    //  • valueField === '_iri': IRI-mode lookup (BUG-010); the <Lookup> resolves the name
+    //    via its iriMode dataSource (which maps "@id" → "_iri" on every loaded item).
     const entityDisplayValue =
-      field.type === FieldType.ENTITY && !field.formatter && field.valueField !== '@id'
+      field.type === FieldType.ENTITY &&
+      !field.formatter &&
+      field.valueField !== '@id' &&
+      field.valueField !== '_iri'
         ? buildEntityDisplayValue(field)
         : undefined;
 

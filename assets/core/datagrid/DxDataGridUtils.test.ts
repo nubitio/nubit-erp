@@ -244,4 +244,21 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
     expect(props['calculateDisplayValue']).toBeUndefined();
   });
+
+  // BUG-010: IRI-mode lookup (_iri valueField) must NOT use calculateDisplayValue.
+  // The <Lookup> resolves the display name via its iriMode dataSource (which maps
+  // "@id" → "_iri" on every loaded item). calculateDisplayValue would return the
+  // raw IRI string instead of the human-readable name.
+  it('does NOT attach calculateDisplayValue when valueField is "_iri" (iriMode lookup)', () => {
+    const fields: Field[] = [
+      makeEntityField({ visible: true, formatter: undefined, valueField: '_iri' }),
+    ];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(props['calculateDisplayValue']).toBeUndefined();
+  });
 });

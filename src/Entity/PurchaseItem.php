@@ -260,9 +260,9 @@ class PurchaseItem
         return $this->qty;
     }
 
-    public function setQty(string $qty): static
+    public function setQty(int|string $qty): static
     {
-        $this->qty = $qty;
+        $this->qty = (string) $qty;
 
         return $this;
     }
