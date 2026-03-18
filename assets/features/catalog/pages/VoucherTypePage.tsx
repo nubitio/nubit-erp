@@ -1,17 +1,18 @@
 import './VoucherTypePage.scss';
-import { CrudPage, defineResource } from '@core/crud';
+import { SmartCrudPage, defineResource } from '@core/crud';
 import { voucherTypeEvents } from '@features/voucherType';
-import { VoucherTypeFields } from './VoucherTypeFields';
 import { voucherTypeEndpoints } from '../api/catalogEndpoints';
 
 const resource = defineResource({
   id: 'voucherType',
   title: 'Tipos de comprobante',
   apiUrl: voucherTypeEndpoints.list(),
-  fields: VoucherTypeFields(),
+  fields: [],
   events: voucherTypeEvents,
   allowAdd: true,
   allowEdit: true,
   allowDelete: true,
 });
-export const VoucherTypePage = () => <CrudPage resource={resource} />;
+export const VoucherTypePage = () => (
+  <SmartCrudPage resource={resource} fieldOverrides={[{ key: 'code', isIdentity: true }]} />
+);
