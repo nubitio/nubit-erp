@@ -8,7 +8,7 @@ import {
   noneField,
 } from '../../field/FieldBuilders';
 import { datetimeField } from '../../field/FieldBuilders';
-import { pluralize } from './openApiParser';
+import { pluralize, toSnakeCase } from './openApiParser';
 
 /**
  * Returns true when the given `range` string declares an XSD integer type.
@@ -143,9 +143,17 @@ function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
  * After processing all schema fields, if no `id` field was found in the schema,
  * a synthetic hidden identity field is injected so the grid always has a key.
  *
+ * @param schema - The Hydra resource schema to map.
+ * @param urlLookup - Optional lookup function to resolve the API URL for a related
+ *   entity class. When provided, Rule 8 uses this before falling back to the
+ *   automatic pluralization heuristic. Example: `(cls) => resourceMap[cls]?.apiUrl`
+ *
  * @pure — no React, no hooks, no side effects.
  */
-export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
+export function mapHydraSchemaToFields(
+  schema: HydraResourceSchema,
+  urlLookup?: (className: string) => string | undefined,
+): Field[] {
   const fields: Field[] = [];
 
   // Build a fast lookup set of filterable property names from hydra:search mappings.
@@ -241,15 +249,11 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
     // Rule 8 — entity reference (range starts with '#' / http IRI) or Link type → entityField
     if (tag === 'entity' || propertyType === 'Link') {
       const resourceClass = range ? range.replace('#', '') : '';
-      // Derive a guessed API URL from the class name using proper English pluralization.
+      // Derive the API URL: prefer the urlLookup (from the resource map) before
+      // falling back to automatic pluralization heuristic.
       // e.g. Category → /api/categories, Branch → /api/branches, Product → /api/products
       const url = resourceClass
-        ? `/api/${pluralize(
-            resourceClass
-              .replace(/([A-Z])/g, '_$1')
-              .toLowerCase()
-              .replace(/^_/, ''),
-          )}`
+        ? (urlLookup?.(resourceClass) ?? `/api/${pluralize(toSnakeCase(resourceClass))}`)
         : '';
       const built = entityField(url, 'id', 'name')
         .name(name)
