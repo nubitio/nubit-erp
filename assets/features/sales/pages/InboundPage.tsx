@@ -22,8 +22,8 @@ const purchasesResource = defineResource({
   allowDelete: true,
   onDetailRowsChanged: (formRef: RefObject<DxFormEvents | null>) => {
     const rows = formRef.current?.getDetailData() ?? [];
-    const total = rows.reduce((sum: number, row: any) => sum + (row.total_amount ?? 0), 0);
-    formRef.current?.setFieldValue('grand_total', Number(total));
+    const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);
+    formRef.current?.setFieldValue('grandTotal', Number(total));
   },
 });
 
