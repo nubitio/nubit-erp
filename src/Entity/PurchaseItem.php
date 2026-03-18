@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[ORM\Entity(repositoryClass: PurchaseItemRepository::class)]
 #[ORM\Table(name: 'goods_receipt_items')]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     uriTemplate: '/purchases/{id}/items.{_format}',
     operations: [new GetCollection()],
@@ -156,6 +157,24 @@ class PurchaseItem
     )]
     #[ApiProperty(description: 'purchase_item.last_modified_at.label')]
     private ?DateTimeInterface $lastModifiedAt = null;
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnPersist(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTime();
+        }
+        if ($this->lastModifiedAt === null) {
+            $this->lastModifiedAt = new \DateTime();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function setTimestampsOnUpdate(): void
+    {
+        $this->updatedAt = new \DateTime();
+        $this->lastModifiedAt = new \DateTime();
+    }
 
     public function getId(): ?int
     {
