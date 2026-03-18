@@ -57,7 +57,10 @@ export function useResourceSchema(
     };
   }
 
-  const inferred = mapHydraSchemaToFields(resourceSchema);
+  const inferred = mapHydraSchemaToFields(
+    resourceSchema,
+    (className) => resourceMap[className]?.apiUrl,
+  );
   const merged = overrides ? mergeOverrides(inferred, overrides) : inferred;
   return {
     fields: merged,

@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
-import { parseHydraDoc } from './openApiParser';
+import { parseHydraDoc, toSnakeCase, pluralize } from './openApiParser';
 import { FieldType } from '../../field/FieldType';
 import type { HydraResourceSchema, HydraApiDoc, CrudHints } from './types';
 
@@ -1728,5 +1728,220 @@ describe('mapHydraSchemaToFields — x-crud hints', () => {
     expect(parentField?.filterable).toBe(true);
     expect(parentField?.sortable).toBe(false);
     expect(parentField?.order).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REFAC-001 — toSnakeCase() utility
+// ---------------------------------------------------------------------------
+
+describe('toSnakeCase — REFAC-001', () => {
+  it('converts PascalCase "Category" to "category"', () => {
+    expect(toSnakeCase('Category')).toBe('category');
+  });
+
+  it('converts PascalCase "CashMovementCategory" to "cash_movement_category"', () => {
+    expect(toSnakeCase('CashMovementCategory')).toBe('cash_movement_category');
+  });
+
+  it('converts camelCase "cashMovementCategory" to "cash_movement_category"', () => {
+    expect(toSnakeCase('cashMovementCategory')).toBe('cash_movement_category');
+  });
+
+  it('leaves already-lowercase "product" unchanged', () => {
+    expect(toSnakeCase('product')).toBe('product');
+  });
+
+  it('converts "Status" to "status" (singular ending in s)', () => {
+    expect(toSnakeCase('Status')).toBe('status');
+  });
+
+  it('converts "Address" to "address" (singular ending in s)', () => {
+    expect(toSnakeCase('Address')).toBe('address');
+  });
+
+  it('converts "Branch" to "branch"', () => {
+    expect(toSnakeCase('Branch')).toBe('branch');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REFAC-001 — deriveApiUrl via parseHydraDoc: Status / Address bug fix
+// ---------------------------------------------------------------------------
+
+describe('deriveApiUrl (via parseHydraDoc) — REFAC-001: singular-ending-in-s bug fix', () => {
+  /** Build a minimal HydraApiDoc with one Entrypoint property + matching class */
+  function makeDocWithEntrypointProp(propName: string, className: string): HydraApiDoc {
+    return {
+      '@id': '/api/docs.jsonld',
+      '@type': 'ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Entrypoint',
+          '@type': 'Class',
+          title: 'Entrypoint',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              property: {
+                '@id': `#Entrypoint/${propName}`,
+                '@type': 'Link',
+                label: propName,
+                range: `#${className}`,
+              },
+              title: propName,
+            },
+          ],
+        },
+        {
+          '@id': `#${className}`,
+          '@type': 'Class',
+          title: className,
+          supportedProperty: [],
+        },
+      ],
+    };
+  }
+
+  it('"status" entrypoint prop (singular ending in s) → /api/statuses (not /api/status)', () => {
+    const doc = makeDocWithEntrypointProp('status', 'Status');
+    expect(parseHydraDoc(doc)['Status'].apiUrl).toBe('/api/statuses');
+  });
+
+  it('"address" entrypoint prop (singular ending in s) → /api/addresses', () => {
+    const doc = makeDocWithEntrypointProp('address', 'Address');
+    expect(parseHydraDoc(doc)['Address'].apiUrl).toBe('/api/addresses');
+  });
+
+  it('"category" entrypoint prop → /api/categories', () => {
+    const doc = makeDocWithEntrypointProp('category', 'Category');
+    expect(parseHydraDoc(doc)['Category'].apiUrl).toBe('/api/categories');
+  });
+
+  it('"branch" entrypoint prop → /api/branches', () => {
+    const doc = makeDocWithEntrypointProp('branch', 'Branch');
+    expect(parseHydraDoc(doc)['Branch'].apiUrl).toBe('/api/branches');
+  });
+
+  it('"purchase" entrypoint prop (singular) → /api/purchases (correct pluralization)', () => {
+    const doc = makeDocWithEntrypointProp('purchase', 'Purchase');
+    expect(parseHydraDoc(doc)['Purchase'].apiUrl).toBe('/api/purchases');
+  });
+
+  it('"sales" entrypoint prop (already plural) → /api/sales (no double-pluralization)', () => {
+    const doc = makeDocWithEntrypointProp('sales', 'Sale');
+    expect(parseHydraDoc(doc)['Sale'].apiUrl).toBe('/api/sales');
+  });
+
+  it('"transfers" entrypoint prop (already plural) → /api/transfers', () => {
+    const doc = makeDocWithEntrypointProp('transfers', 'Transfer');
+    expect(parseHydraDoc(doc)['Transfer'].apiUrl).toBe('/api/transfers');
+  });
+
+  it('"movements" entrypoint prop (already plural) → /api/movements', () => {
+    const doc = makeDocWithEntrypointProp('movements', 'Movement');
+    expect(parseHydraDoc(doc)['Movement'].apiUrl).toBe('/api/movements');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REFAC-001 — urlLookup optional parameter in mapHydraSchemaToFields
+// ---------------------------------------------------------------------------
+
+describe('mapHydraSchemaToFields — REFAC-001: urlLookup optional parameter', () => {
+  /** Schema with a Category entity reference field */
+  const schemaWithEntityRef: HydraResourceSchema = {
+    className: 'Product',
+    apiUrl: '/api/products',
+    fields: [
+      {
+        name: 'category',
+        range: '#Category',
+        propertyType: 'rdf:Property',
+        required: false,
+        readable: true,
+        writeable: true,
+      },
+    ],
+  };
+
+  it('without urlLookup: entity field URL is derived by automatic pluralization', () => {
+    const fields = mapHydraSchemaToFields(schemaWithEntityRef);
+    const f = fields.find((x) => x.name === 'category');
+    expect(f).toBeDefined();
+    expect(f!.type).toBe(FieldType.ENTITY);
+    // Automatic: Category → snake "category" → plural "categories"
+    expect(f!.url).toBe('/api/categories');
+  });
+
+  it('with urlLookup returning a URL: entity field uses that URL', () => {
+    const urlLookup = (className: string) => {
+      if (className === 'Category') return '/api/custom-categories';
+      return undefined;
+    };
+    const fields = mapHydraSchemaToFields(schemaWithEntityRef, urlLookup);
+    const f = fields.find((x) => x.name === 'category');
+    expect(f).toBeDefined();
+    expect(f!.type).toBe(FieldType.ENTITY);
+    expect(f!.url).toBe('/api/custom-categories');
+  });
+
+  it('with urlLookup returning undefined: entity field falls back to automatic pluralization', () => {
+    const urlLookup = (_className: string) => undefined;
+    const fields = mapHydraSchemaToFields(schemaWithEntityRef, urlLookup);
+    const f = fields.find((x) => x.name === 'category');
+    expect(f).toBeDefined();
+    expect(f!.type).toBe(FieldType.ENTITY);
+    expect(f!.url).toBe('/api/categories');
+  });
+
+  it('with urlLookup: unknown class falls back to automatic URL, known class uses lookup', () => {
+    const urlLookup = (className: string) => {
+      const map: Record<string, string> = { Category: '/api/categories-v2' };
+      return map[className];
+    };
+    const schemaMulti: HydraResourceSchema = {
+      className: 'Item',
+      apiUrl: '/api/items',
+      fields: [
+        {
+          name: 'category',
+          range: '#Category',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+        {
+          name: 'supplier',
+          range: '#Supplier',
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+    const fields = mapHydraSchemaToFields(schemaMulti, urlLookup);
+    const categoryField = fields.find((x) => x.name === 'category');
+    const supplierField = fields.find((x) => x.name === 'supplier');
+    // Category found in lookup
+    expect(categoryField!.url).toBe('/api/categories-v2');
+    // Supplier not in lookup → automatic: Supplier → supplier → suppliers
+    expect(supplierField!.url).toBe('/api/suppliers');
+  });
+
+  it('urlLookup is passed from useResourceSchema via resourceMap (integration pattern)', () => {
+    // Simulate the pattern used in useResourceSchema.ts:
+    // urlLookup = (className) => resourceMap[className]?.apiUrl
+    const resourceMap = {
+      Category: { apiUrl: '/api/categories', className: 'Category', fields: [] },
+    };
+    const urlLookup = (className: string) =>
+      (resourceMap as Record<string, { apiUrl: string } | undefined>)[className]?.apiUrl;
+
+    const fields = mapHydraSchemaToFields(schemaWithEntityRef, urlLookup);
+    const f = fields.find((x) => x.name === 'category');
+    expect(f!.url).toBe('/api/categories');
   });
 });

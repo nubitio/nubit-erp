@@ -9,6 +9,20 @@ import type {
 } from './types';
 
 /**
+ * Converts a camelCase or PascalCase name to snake_case.
+ * Examples:
+ *   "Category"              → "category"
+ *   "cashMovementCategory"  → "cash_movement_category"
+ *   "CashMovementCategory"  → "cash_movement_category"
+ */
+export function toSnakeCase(name: string): string {
+  return name
+    .replace(/([A-Z])/g, '_$1')
+    .toLowerCase()
+    .replace(/^_/, '');
+}
+
+/**
  * Pluralizes an English word (snake_case or lowercase) with common rules.
  *
  * - Words ending in a consonant + 'y'  → replace 'y' with 'ies'
@@ -34,6 +48,20 @@ export function pluralize(word: string): string {
   return word + 's';
 }
 
+/** Entrypoint property names that are already in plural form (snake_case). */
+const ALREADY_PLURAL_SNAKE = new Set([
+  'purchases',
+  'sales',
+  'invoices',
+  'transfers',
+  'movements',
+  'shifts',
+  'outbounds',
+  'cash_movements',
+  'cash_registers',
+  'cash_shifts',
+]);
+
 /**
  * Derives the API URL from an Entrypoint property ID.
  * "#Entrypoint/branch"               -> "/api/branches"
@@ -41,8 +69,8 @@ export function pluralize(word: string): string {
  */
 function deriveApiUrl(entrypointPropertyId: string): string {
   const name = entrypointPropertyId.split('/').pop() ?? '';
-  const snake = name.replace(/([A-Z])/g, '_$1').toLowerCase();
-  const plural = snake.endsWith('s') ? snake : pluralize(snake);
+  const snake = toSnakeCase(name);
+  const plural = ALREADY_PLURAL_SNAKE.has(snake) ? snake : pluralize(snake);
   return `/api/${plural}`;
 }
 
@@ -202,14 +230,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
 
     result[className] = {
       className,
-      apiUrl:
-        urlMap[className] ??
-        `/api/${pluralize(
-          className
-            .replace(/([A-Z])/g, '_$1')
-            .toLowerCase()
-            .replace(/^_/, ''),
-        )}`,
+      apiUrl: urlMap[className] ?? `/api/${pluralize(toSnakeCase(className))}`,
       fields,
       searchMappings: extractSearchMappings(cls),
       supportedOperations: extractSupportedOperations(cls),
@@ -250,12 +271,7 @@ export function parseOpenApiDoc(doc: OpenApiDoc): Record<string, HydraResourceSc
 
     result[className] = {
       className,
-      apiUrl: `/api/${pluralize(
-        className
-          .replace(/([A-Z])/g, '_$1')
-          .toLowerCase()
-          .replace(/^_/, ''),
-      )}`, // best-effort; no Entrypoint in OpenAPI
+      apiUrl: `/api/${pluralize(toSnakeCase(className))}`, // best-effort; no Entrypoint in OpenAPI
       fields,
     };
   }
