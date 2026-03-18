@@ -207,6 +207,47 @@ export function buildEntityDisplayValue(
   };
 }
 
+/**
+ * Builds a `calculateCellValue` function for ENTITY columns whose `valueField`
+ * is `'id'` (UUID-based lookups).
+ *
+ * The API returns relation fields as IRI strings (e.g. `"/api/warehouses/uuid"`),
+ * but the DevExtreme Lookup is configured with `valueExpr='id'` and its data store
+ * is keyed by UUID.  Without this transform, the Lookup cannot match the IRI to a
+ * store entry and the grid cell shows the raw IRI instead of the display name.
+ *
+ * This function handles three cases:
+ *  - IRI string (`"/api/products/uuid"`) → extracts UUID via `split('/').pop()`
+ *  - UUID string (already extracted) → returns as-is
+ *  - Object with an `id` field (e.g. full entity from onChange) → returns `obj.id`
+ *
+ * Only applied when:
+ *  - the field is an ENTITY type
+ *  - `valueField === 'id'`      (UUID-based; not IRI-mode or @id-mode)
+ *  - no custom formatter is set (formatters own the cell rendering entirely)
+ */
+export function buildEntityCellValue(field: Field): (rowData: Record<string, unknown>) => unknown {
+  return (rowData: Record<string, unknown>): unknown => {
+    const val = rowData[field.name];
+    if (val === null || val === undefined) return val;
+    if (typeof val === 'string') {
+      if (val.startsWith('/')) {
+        // IRI string from API — extract the last path segment (UUID)
+        return val.split('/').pop() ?? val;
+      }
+      // Already a UUID — return as-is
+      return val;
+    }
+    if (typeof val === 'object') {
+      // Full entity object (e.g. set via onChange) — extract the id field
+      const obj = val as Record<string, unknown>;
+      const id = obj[field.valueField] ?? obj['id'];
+      if (id !== undefined && id !== null) return String(id);
+    }
+    return val;
+  };
+}
+
 export const buildColumns = (fields: Field[], forceLookup = false) => {
   return fields.map((field: Field, index) => {
     const clone = { ...field };
@@ -224,12 +265,23 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     //  • valueField === '@id': the stored value is a full IRI; let the <Lookup> resolve it.
     //  • valueField === '_iri': IRI-mode lookup (BUG-010); the <Lookup> resolves the name
     //    via its iriMode dataSource (which maps "@id" → "_iri" on every loaded item).
+    //  • valueField === 'id': UUID-mode lookup (BUG-011); calculateCellValue handles
+    //    IRI → UUID extraction so the <Lookup> can resolve the display name by UUID.
     const entityDisplayValue =
       field.type === FieldType.ENTITY &&
       !field.formatter &&
       field.valueField !== '@id' &&
-      field.valueField !== '_iri'
+      field.valueField !== '_iri' &&
+      field.valueField !== 'id'
         ? buildEntityDisplayValue(field)
+        : undefined;
+
+    // For ENTITY columns using UUID as valueExpr ('id'), the API returns IRI strings
+    // (e.g. "/api/warehouses/uuid"). Extract the UUID so the Lookup can match it
+    // against the store entries keyed by 'id' and display the human-readable name.
+    const entityCellValue =
+      field.type === FieldType.ENTITY && !field.formatter && field.valueField === 'id'
+        ? buildEntityCellValue(field)
         : undefined;
 
     return (
@@ -243,6 +295,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         allowHiding={field.hideable}
         cellRender={field.formatter}
         calculateDisplayValue={entityDisplayValue}
+        calculateCellValue={entityCellValue}
         setCellValue={field.onChange}
         width={field.width}
         minWidth={field.minWidth}
