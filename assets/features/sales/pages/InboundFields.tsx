@@ -8,6 +8,7 @@ import {
   dateField,
   numberField,
   textareaField,
+  textField,
 } from '@core/field/FieldBuilders';
 import { productService } from '@features/product';
 import { ProductDto } from '@dto/product.dto';
@@ -20,39 +21,25 @@ export const InboundFields = () => {
 
   fields.push(identityField().label('ID').build());
   fields.push(
-    numberField()
-      .name('tipo_id')
-      .label('Tipo id')
-      .defaultValue(1)
+    textField()
+      .name('branch')
+      .label('Sucursal')
+      .defaultValue('/api/branches/' + userInformation().currentBranchId)
       .hidden(true)
       .visible(false)
+      .visibleOnForm(false)
       .build(),
   );
   fields.push(
     dateField()
-      .name('fecha')
+      .name('issued_at')
       .label('Fecha')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'logistic-operations', 'id', 'name')
-      .name('operacion')
-      .label('Operacion')
-      .filters([
-        {
-          field: 'type',
-          operator: '=',
-          value: 1,
-        },
-      ])
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
-      .required(true)
-      .build(),
-  );
-  fields.push(
     entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
-      .name('almacen')
+      .name('warehouse')
       .label('Almacen')
       .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
       .filters([
@@ -68,15 +55,15 @@ export const InboundFields = () => {
   );
   fields.push(
     entityField(Constants.API_BASE_URL + 'suppliers', 'id', 'businessName')
-      .name('proveedor')
+      .name('supplier')
       .label('Proveedor')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .build(),
   );
-  fields.push(textareaField().name('glosa').label('Glosa').build());
+  fields.push(textareaField().name('note').label('Glosa').build());
   fields.push(
     currencyField()
-      .name('total')
+      .name('grand_total')
       .label('Total')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
@@ -94,14 +81,14 @@ export const InboundDetailFields = () => {
   fields.push(identityField().build());
   fields.push(
     entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
-      .name('producto')
+      .name('product')
       .label('Producto')
       .minWidth(200)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
-        row.producto = product;
-        row.precio_unitario = 0;
+        row.product = product;
+        row.unit_cost = 0;
         this.defaultSetCellValue(row, product, currentRow);
       })
       .sortable(false)
@@ -110,12 +97,12 @@ export const InboundDetailFields = () => {
   );
   fields.push(
     numberField()
-      .name('cantidad')
+      .name('qty')
       .label('Cantidad')
       .align('center')
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.precio_total = currentRow.precio_unitario * value;
+        row.total_amount = currentRow.unit_cost * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
       .required(true)
@@ -125,12 +112,12 @@ export const InboundDetailFields = () => {
   );
   fields.push(
     currencyField()
-      .name('precio_unitario')
+      .name('unit_cost')
       .label('Precio unitario')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.precio_total = currentRow.cantidad * value;
+        row.total_amount = currentRow.qty * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
       .sortable(false)
@@ -138,7 +125,7 @@ export const InboundDetailFields = () => {
   );
   fields.push(
     currencyField()
-      .name('precio_total')
+      .name('total_amount')
       .label('Precio total')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)

@@ -211,6 +211,9 @@ class Purchase
         if ($this->lastModifiedAt === null) {
             $this->lastModifiedAt = new \DateTime();
         }
+        if ($this->issuedAt === null) {
+            $this->issuedAt = new \DateTime();
+        }
     }
 
     #[ORM\PreUpdate]
