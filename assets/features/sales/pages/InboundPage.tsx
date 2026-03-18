@@ -1,65 +1,33 @@
 import './InboundPage.scss';
-import { useRef } from 'react';
-import { DxDataGrid } from '@core/datagrid/DxDataGrid';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm, type DxFormEvents } from '@core/form/DxForm';
+import type { RefObject } from 'react';
+import { CrudPage, defineResource } from '@core/crud';
+import type { DxFormEvents } from '@core/form/DxForm';
 import { Constants } from '@core/common/Constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
-import { useEvents } from '@core/event/EventHook';
-import { purchasesEvents, usePurchasesFormObservers } from '@features/purchases/model';
+import { purchasesEvents } from '@features/purchases/model';
 
-const API_URL = Constants.API_BASE_URL + 'movements';
-const fields = PurchasesFields();
-const detailFields = PurchasesDetailFields();
-
-export const PurchasesPage = () => {
-  const [on] = useEvents();
-  const formRef = useRef<DxFormEvents>(null);
-
-  const setTotal = () => {
+const purchasesResource = defineResource({
+  id: 'purchases',
+  title: 'Compras',
+  apiUrl: Constants.API_BASE_URL + 'movements?type=purchases',
+  fields: PurchasesFields(),
+  detailFields: PurchasesDetailFields(),
+  detailUrl: Constants.API_BASE_URL + 'movements/{id}/items',
+  events: purchasesEvents,
+  sort: [{ selector: 'date_created', desc: true }],
+  dialogWidth: 900,
+  dialogHeight: 600,
+  allowAdd: true,
+  allowEdit: true,
+  allowDelete: true,
+  onDetailRowsChanged: (formRef: RefObject<DxFormEvents | null>) => {
     const rows = formRef.current?.getDetailData() ?? [];
-    let total = 0;
-    rows.forEach((row: any) => {
-      total += row.precio_total;
-    });
+    const total = rows.reduce((sum: number, row: any) => sum + (row.precio_total ?? 0), 0);
     formRef.current?.setFieldValue('total', Number(total));
-  };
+  },
+});
 
-  usePurchasesFormObservers({
-    on,
-    apiUrl: API_URL,
-    editEventName: purchasesEvents.EDIT,
-    formRef,
-    onDetailRowsChanged: setTotal,
-  });
-
-  return (
-    <div id="wrapper">
-      <DxDataGrid
-        id="purchases"
-        title="Compras"
-        url={API_URL + '?type=purchases'}
-        detailUrl={API_URL + '/{id}/items'}
-        allowAdd
-        allowEdit
-        allowDelete
-        fields={fields}
-        detailFields={detailFields}
-        events={purchasesEvents}
-        sort={[{ selector: 'date_created', desc: true }]}
-      />
-      <DxDialog width={900} height={600} events={purchasesEvents}>
-        <DxForm
-          ref={formRef}
-          url={API_URL}
-          fields={fields}
-          detailFields={detailFields}
-          events={purchasesEvents}
-        />
-      </DxDialog>
-    </div>
-  );
-};
+export const PurchasesPage = () => <CrudPage resource={purchasesResource} />;
 
 // Backward-compatible alias while routes/menu migrate from /inbound to /purchases.
 export const InboundPage = PurchasesPage;

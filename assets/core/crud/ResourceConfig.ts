@@ -95,6 +95,14 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   /** Optional URL routing configuration — enables deep-linking and filter sync. */
   routing?: ResourceRouting;
   /**
+   * Called whenever a detail-grid row is added, updated, or removed.
+   * Use this to recompute header-form fields that depend on detail data
+   * (e.g., recalculating a `total` field from line items).
+   *
+   * @param formRef - ref to the DxForm instance (call `formRef.current?.setFieldValue(...)` etc.)
+   */
+  onDetailRowsChanged?: (formRef: RefObject<DxFormEvents | null>) => void;
+  /**
    * Internal: HTTP methods inferred from `hydra:supportedOperation` in the API doc.
    * Populated automatically by SmartCrudPage from useResourceSchema.
    * Do NOT set this manually — it is overridden by any explicit `allowX` / `permissions` config.
