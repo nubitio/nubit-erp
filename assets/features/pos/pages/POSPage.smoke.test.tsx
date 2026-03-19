@@ -52,7 +52,7 @@ vi.mock('@features/sale', () => ({
   }),
 }));
 
-vi.mock('@platform/common/UserInformation', () => ({
+vi.mock('@core/common/UserInformation', () => ({
   userInformation: () => ({
     currentBranchId: '1',
     currentBranchName: 'Test Branch',
