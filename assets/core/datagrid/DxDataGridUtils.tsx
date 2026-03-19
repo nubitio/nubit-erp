@@ -301,7 +301,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         minWidth={field.minWidth}
         visibleIndex={field.order}
         editorOptions={editorOptions}
-        editCellComponent={field.contentRender}
+        editCellComponent={field.contentRender as React.ComponentType<unknown> | undefined}
         dataType={field.valueType}
         format={field.format}
         filterValue={field.filterValue}

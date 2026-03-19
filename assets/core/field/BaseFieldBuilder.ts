@@ -1,3 +1,4 @@
+import React from 'react';
 import { FieldType } from './FieldType';
 import { Field, LoadOption } from './Field';
 import { FilterRule } from '../common/FilterRule';
@@ -141,12 +142,12 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  filterValue(filterValue: any): this {
+  filterValue(filterValue: string | number | boolean | Date | null | undefined): this {
     this._field.filterValue = filterValue;
     return this;
   }
 
-  data(data: any[]): this {
+  data(data: Array<Record<string, unknown>>): this {
     this._field.data = data;
     return this;
   }
@@ -171,7 +172,9 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  defaultValue(defaultValue: any): this {
+  defaultValue(
+    defaultValue: string | number | boolean | Date | null | undefined | (() => unknown),
+  ): this {
     this._field.defaultValue = defaultValue;
     return this;
   }
@@ -216,12 +219,12 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  accept(value: any): this {
+  accept(value: string | null | undefined): this {
     this._field.accept = value;
     return this;
   }
 
-  buttons(value: any[]): this {
+  buttons(value: Array<Record<string, unknown>>): this {
     this._field.buttons = value;
     return this;
   }
@@ -256,7 +259,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  contentRender(value: string | ((...args: unknown[]) => unknown) | null) {
+  contentRender(value: string | ((...args: unknown[]) => React.ReactNode) | null | undefined) {
     this._field.contentRender = value;
     return this;
   }
@@ -334,7 +337,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  editorOptions(param: any): this {
+  editorOptions(param: Record<string, unknown>): this {
     this._field.editorOptions = param;
     return this;
   }

@@ -121,7 +121,8 @@ describe('SaleFields', () => {
     const fields = SaleFields(null, { onOpenAddCustomer });
 
     const customerField = fields.find((f) => f.name === 'customer');
-    const addButton = customerField?.buttons?.find((b: any) => b.name === 'add');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const addButton = customerField?.buttons?.find((b: any) => b.name === 'add') as any;
 
     addButton?.options?.onClick({});
 
@@ -181,7 +182,8 @@ describe('SaleFields', () => {
     const fields = SaleFields(null);
 
     const customerField = fields.find((f) => f.name === 'customer');
-    const addButton = customerField?.buttons?.find((b: any) => b.name === 'add');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const addButton = customerField?.buttons?.find((b: any) => b.name === 'add') as any;
 
     expect(() => addButton?.options?.onClick({})).not.toThrow();
   });

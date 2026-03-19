@@ -62,7 +62,8 @@ export const buildField = (
         if (field.mode !== 'remote' && Array.isArray(field.data) && field.data.length === 1) {
           const single = field.data[0];
           const v = field.multiple ? [single[field.valueField]] : single[field.valueField];
-          field.defaultValue = v;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          field.defaultValue = v as any;
           formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
         } else if (field.url) {
           // For remote stores, load up to 2 items (so we can detect "exactly 1" without fetching all)
@@ -268,7 +269,8 @@ export const buildField = (
       helpText={field.helpText}
       colSpan={field.col ?? 12}
       visible={field.visibleOnForm}
-      render={field.contentRender}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render={field.contentRender as any}
       cssClass={className}
     >
       {buildTemplate(field)}

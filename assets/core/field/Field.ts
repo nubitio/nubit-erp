@@ -2,6 +2,7 @@ import { FieldType } from './FieldType';
 import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, GridOnChangeFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import React from 'react';
 
 export type LoadOption = Record<string, any>;
 
@@ -42,8 +43,8 @@ export interface Field {
     | 'notcontains'
     | 'startswith'
     | undefined;
-  filterValue: any;
-  data: any[];
+  filterValue: string | number | boolean | Date | null | undefined;
+  data: Array<Record<string, unknown>>;
   formatter: FormatterFn | undefined;
   itemFormatter: ItemFormatterFn | undefined;
   visible: boolean;
@@ -60,19 +61,19 @@ export interface Field {
   hidden: boolean;
   required: boolean;
   precision: number;
-  accept: any;
-  buttons: any[];
+  accept: string | null | undefined;
+  buttons: Array<Record<string, unknown>>;
   hidingPriority: number | undefined;
   searchEnabled: boolean;
   searchExpr: string[] | null;
   fixed: boolean;
   fixedPosition: 'left' | 'right' | undefined;
   helpText: string | undefined;
-  contentRender: any;
+  contentRender: string | ((...args: unknown[]) => React.ReactNode) | null | undefined;
   visibleOnForm: boolean;
   maxLength: number | undefined;
   multiple: boolean;
-  editorOptions: any | undefined;
+  editorOptions: Record<string, unknown> | undefined;
   sendAsString: boolean;
   /**
    * Column display order hint (maps to DevExtreme `visibleIndex`).
