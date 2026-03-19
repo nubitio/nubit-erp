@@ -11,9 +11,6 @@ export default defineConfig({
     alias: {
       '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
       '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
-      // TODO REFAC-002: rename @platform -> @core (259 active imports)
-      '@platform': fileURLToPath(new URL('./assets/core', import.meta.url)),
-      // Preferred alias for new code — points to the same directory as @platform
       '@core': fileURLToPath(new URL('./assets/core', import.meta.url)),
       '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
       '@widgets': fileURLToPath(new URL('./assets/components', import.meta.url)),

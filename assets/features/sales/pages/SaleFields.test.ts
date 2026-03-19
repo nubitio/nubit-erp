@@ -4,13 +4,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Module mocks — must be declared before the module under test is imported
 // ---------------------------------------------------------------------------
 
-vi.mock('@platform/common/Constants', () => ({
+vi.mock('@core/common/Constants', () => ({
   Constants: {
     API_BASE_URL: '/api/',
   },
 }));
 
-vi.mock('@platform/common/UserInformation', () => ({
+vi.mock('@core/common/UserInformation', () => ({
   userInformation: vi.fn(() => ({
     currentUserId: 1,
     currentUserName: 'test',

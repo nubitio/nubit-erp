@@ -6,7 +6,7 @@ import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { Card } from '@widgets';
 import SelectBox from 'devextreme-react/select-box';
 import { DateUtils } from '@shared/lib/DateUtils';
-import {Constants} from "@platform/common/Constants";
+import { Constants } from '@core/common/Constants';
 
 const reportTypes = [
   { value: 'sale-by-product', text: 'Ventas por producto' },
