@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
-import { parseHydraDoc, toSnakeCase, pluralize } from './openApiParser';
+import { parseHydraDoc, toSnakeCase, toDashCase, pluralize } from './openApiParser';
 import { FieldType } from '../../field/FieldType';
 import type { HydraResourceSchema, HydraApiDoc, CrudHints } from './types';
 
@@ -777,13 +777,13 @@ describe('parseHydraDoc — apiUrl derivation', () => {
 
   it('derives /api/branches from "#Entrypoint/branch"', () => {
     const doc = makeDocWithEntrypoint('#Entrypoint/branch', '#Branch');
-    // deriveApiUrl: "branch" → snake "branch" → ends in 'ch' → "branches"
+    // deriveApiUrl: "branch" → dash "branch" → ends in 'ch' → "branches"
     expect(parseHydraDoc(doc)['Branch'].apiUrl).toBe('/api/branches');
   });
 
-  it('derives /api/cash_movement_categories from "#Entrypoint/cashMovementCategory"', () => {
+  it('derives /api/cash-movement-categories from "#Entrypoint/cashMovementCategory"', () => {
     const doc = makeDocWithEntrypoint('#Entrypoint/cashMovementCategory', '#CashMovementCategory');
-    expect(parseHydraDoc(doc)['CashMovementCategory'].apiUrl).toBe('/api/cash_movement_categories');
+    expect(parseHydraDoc(doc)['CashMovementCategory'].apiUrl).toBe('/api/cash-movement-categories');
   });
 
   it('derives /api/products from "#Entrypoint/product"', () => {
@@ -1766,6 +1766,44 @@ describe('toSnakeCase — REFAC-001', () => {
 });
 
 // ---------------------------------------------------------------------------
+// SPEC-002 — toDashCase() utility (AC-1)
+// ---------------------------------------------------------------------------
+
+describe('toDashCase — SPEC-002 AC-1', () => {
+  it('converts PascalCase "Category" to "category"', () => {
+    expect(toDashCase('Category')).toBe('category');
+  });
+
+  it('converts PascalCase "SunatCatalog" to "sunat-catalog"', () => {
+    expect(toDashCase('SunatCatalog')).toBe('sunat-catalog');
+  });
+
+  it('converts PascalCase "VoucherSeries" to "voucher-series"', () => {
+    expect(toDashCase('VoucherSeries')).toBe('voucher-series');
+  });
+
+  it('converts PascalCase "VoucherType" to "voucher-type"', () => {
+    expect(toDashCase('VoucherType')).toBe('voucher-type');
+  });
+
+  it('converts PascalCase "ProductStock" to "product-stock"', () => {
+    expect(toDashCase('ProductStock')).toBe('product-stock');
+  });
+
+  it('converts PascalCase "CashMovementCategory" to "cash-movement-category"', () => {
+    expect(toDashCase('CashMovementCategory')).toBe('cash-movement-category');
+  });
+
+  it('converts camelCase "cashMovementCategory" to "cash-movement-category"', () => {
+    expect(toDashCase('cashMovementCategory')).toBe('cash-movement-category');
+  });
+
+  it('leaves already-lowercase "product" unchanged', () => {
+    expect(toDashCase('product')).toBe('product');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // REFAC-001 — deriveApiUrl via parseHydraDoc: Status / Address bug fix
 // ---------------------------------------------------------------------------
 
@@ -1870,7 +1908,7 @@ describe('mapHydraSchemaToFields — REFAC-001: urlLookup optional parameter', (
     const f = fields.find((x) => x.name === 'category');
     expect(f).toBeDefined();
     expect(f!.type).toBe(FieldType.ENTITY);
-    // Automatic: Category → snake "category" → plural "categories"
+    // Automatic: Category → dash "category" → plural "categories"
     expect(f!.url).toBe('/api/categories');
   });
 

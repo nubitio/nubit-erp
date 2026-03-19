@@ -160,3 +160,77 @@ describe('DxUtils › getDataStore › iriMode=true (BUG-010)', () => {
     expect(getSpy).not.toHaveBeenCalled();
   });
 });
+
+describe('DxUtils › getDataStore › searchOperation stripping (AC-9 / AC-14)', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('strips searchOperation before sending the HTTP request (AC-9)', async () => {
+    const item = { id: 1, name: 'Laptop' };
+    vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse([item]));
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore('/api/product-stocks', 'id');
+    const { load } = getStoreConfig(store);
+    await load({ filter: [], sort: [], searchOperation: 'contains' });
+
+    const sentParams = getSpy.mock.calls[0][1]?.params as Record<string, unknown>;
+    expect(sentParams).not.toHaveProperty('searchOperation');
+  });
+
+  it('strips searchValue when searchExpr is absent', async () => {
+    const item = { id: 1, name: 'Laptop' };
+    vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse([item]));
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore('/api/product-stocks', 'id');
+    const { load } = getStoreConfig(store);
+    await load({ filter: [], sort: [], searchOperation: 'contains', searchValue: 'lap' });
+
+    const sentParams = getSpy.mock.calls[0][1]?.params as Record<string, unknown>;
+    expect(sentParams).not.toHaveProperty('searchOperation');
+    expect(sentParams).not.toHaveProperty('searchValue');
+  });
+
+  it('keeps searchValue when searchExpr is also present', async () => {
+    const item = { id: 1, name: 'Laptop' };
+    vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse([item]));
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore('/api/product-stocks', 'id');
+    const { load } = getStoreConfig(store);
+    await load({
+      filter: [],
+      sort: [],
+      searchOperation: 'contains',
+      searchExpr: 'name',
+      searchValue: 'lap',
+    });
+
+    const sentParams = getSpy.mock.calls[0][1]?.params as Record<string, unknown>;
+    expect(sentParams).not.toHaveProperty('searchOperation');
+    expect(sentParams).toHaveProperty('searchExpr', 'name');
+    expect(sentParams).toHaveProperty('searchValue', 'lap');
+  });
+
+  it('forwards filter, sort, skip, take, requireTotalCount unchanged (AC-14)', async () => {
+    const item = { id: 1, name: 'Laptop' };
+    vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse([item]));
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore('/api/product-stocks', 'id');
+    const { load } = getStoreConfig(store);
+    await load({
+      filter: [['name', '=', 'Laptop']],
+      sort: [{ selector: 'name', desc: false }],
+      skip: 0,
+      take: 20,
+      requireTotalCount: true,
+    });
+
+    const sentParams = getSpy.mock.calls[0][1]?.params as Record<string, unknown>;
+    expect(sentParams).toHaveProperty('skip', 0);
+    expect(sentParams).toHaveProperty('take', 20);
+    expect(sentParams).toHaveProperty('requireTotalCount', true);
+    expect(sentParams).not.toHaveProperty('searchOperation');
+  });
+});

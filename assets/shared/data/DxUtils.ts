@@ -120,6 +120,19 @@ class DxUtils {
             }
           }
         });
+
+        // Strip DevExtreme-internal params not declared in the backend filter.
+        // DevExtreme unconditionally appends searchOperation=contains to every
+        // DataSource request (including plain list fetches); API Platform uses
+        // strict parameter whitelisting and returns 404 for unknown params.
+        // searchValue is only meaningful when paired with searchExpr — drop it
+        // when searchExpr is absent to avoid sending a dangling param.
+        const opts = loadOptions as Record<string, unknown>;
+        delete opts['searchOperation'];
+        if (opts['searchExpr'] === undefined) {
+          delete opts['searchValue'];
+        }
+
         if (iriMode) {
           return this.fetchAll(url, loadOptions).then((result) => ({
             ...result,
