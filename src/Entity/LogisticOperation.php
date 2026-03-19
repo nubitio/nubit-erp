@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'operacion')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class LogisticOperation
 {

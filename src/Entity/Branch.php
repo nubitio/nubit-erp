@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['branch:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Branch
 {

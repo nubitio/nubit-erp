@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['tax_document_line:read']],
     paginationEnabled: false,
+    mercure: true,
 )]
 #[ORM\Entity(repositoryClass: TaxDocumentLineRepository::class)]
 #[ORM\Table(name: 'tax_document_line')]

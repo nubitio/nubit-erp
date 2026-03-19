@@ -103,6 +103,17 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
    */
   onDetailRowsChanged?: (formRef: RefObject<DxFormEvents | null>) => void;
   /**
+   * Enable or disable real-time Mercure subscription for this resource.
+   *
+   * - `true` (default): `SmartCrudPage` opens an SSE subscription to the Mercure hub
+   *   and refreshes the grid automatically when another session modifies the resource.
+   * - `false`: disables the Mercure subscription for this resource. The grid still
+   *   refreshes via the existing RxJS event bus for operations in the same session.
+   *
+   * Has no effect if the Mercure hub URL has not been discovered (graceful degradation).
+   */
+  mercure?: boolean;
+  /**
    * Internal: HTTP methods inferred from `hydra:supportedOperation` in the API doc.
    * Populated automatically by SmartCrudPage from useResourceSchema.
    * Do NOT set this manually — it is overridden by any explicit `allowX` / `permissions` config.

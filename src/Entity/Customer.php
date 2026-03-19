@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'cliente')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
 class Customer

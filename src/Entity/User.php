@@ -43,6 +43,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     filters: [
         DevExtremeFilter::class,
     ],
+    mercure: true,
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 
 import { HashRouter as Router, useLocation } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
+import { MercureProvider, MercureManager } from '@core/mercure';
 
 function RootApp() {
   const { user, loading } = useAuth();
@@ -42,8 +43,18 @@ export const EfactApp = () => {
   const screenSizeClass = useScreenSizeClass();
   const themeContext = useThemeContext();
 
+  // Reactive hub URL: updated by MercureManager whenever the Axios interceptor
+  // discovers the `Link: <url>; rel="mercure"` header in any API response.
+  const [mercureHubUrl, setMercureHubUrl] = useState<string | null>(MercureManager.getHubUrl());
+
   useEffect(() => {
     configureDevExtreme();
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to hub URL changes discovered by the Axios response interceptor.
+    // Returns an unsubscribe function used as the cleanup.
+    return MercureManager.onHubUrlChange(setMercureHubUrl);
   }, []);
 
   return (
@@ -52,17 +63,19 @@ export const EfactApp = () => {
         <AuthProvider>
           <ConnectivityProvider>
             <OutboxSyncProvider>
-              <NavigationProvider>
-                <div className={`app ${screenSizeClass}`}>
-                  {themeContext.isLoaded ? (
-                    <Suspense fallback={<LoadPanel visible />}>
-                      <RootApp />
-                    </Suspense>
-                  ) : (
-                    ''
-                  )}
-                </div>
-              </NavigationProvider>
+              <MercureProvider hubUrl={mercureHubUrl}>
+                <NavigationProvider>
+                  <div className={`app ${screenSizeClass}`}>
+                    {themeContext.isLoaded ? (
+                      <Suspense fallback={<LoadPanel visible />}>
+                        <RootApp />
+                      </Suspense>
+                    ) : (
+                      ''
+                    )}
+                  </div>
+                </NavigationProvider>
+              </MercureProvider>
             </OutboxSyncProvider>
           </ConnectivityProvider>
         </AuthProvider>

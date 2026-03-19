@@ -16,6 +16,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\UniqueConstraint(name: 'product_warehouse_unique', columns: ['product_id', 'warehouse_id'])]
 #[ApiResource(
     normalizationContext: ['groups' => ['product_stock:read']],
+    mercure: true,
 )]
 class ProductStock
 {

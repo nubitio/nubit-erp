@@ -24,6 +24,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['sale_item_record:read']],
     paginationEnabled: false,
+    mercure: true,
 )]
 #[ORM\Entity(repositoryClass: SaleItemRecordRepository::class)]
 #[ORM\Table(name: 'sale_items')]

@@ -22,6 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['warehouse:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[ApiResource(
     uriTemplate: '/branches/{id}/warehouses',
@@ -32,7 +33,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
             fromClass: Branch::class,
         ),
     ],
-    provider: WarehousesByBranchProvider::class
+    provider: WarehousesByBranchProvider::class,
+    mercure: true,
 )]
 class Warehouse
 {

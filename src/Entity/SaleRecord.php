@@ -64,6 +64,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DevExtremeFilter::class],
     provider: SaleV2Provider::class,
     processor: SaleProcessor::class,
+    mercure: true,
 )]
 class SaleRecord
 {

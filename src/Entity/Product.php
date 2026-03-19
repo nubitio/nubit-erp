@@ -29,6 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => ['product:read']],
     denormalizationContext: ['groups' => ['product:write']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[ApiResource(
     uriTemplate: 'products/{id}/stock/{warehouseId}',
@@ -38,6 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false
         ),
     ],
+    mercure: true,
 )]
 #[AppAssert\UniqueEntity(fields: ['code'], message: 'Ya existe un producto con el mismo código.')]
 #[AppAssert\UniqueEntity(fields: ['name'], message: 'Ya existe un producto con el mismo nombre.')]

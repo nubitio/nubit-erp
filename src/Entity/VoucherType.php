@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'tipo_comprobante')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class VoucherType
 {

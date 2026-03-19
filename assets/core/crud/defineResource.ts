@@ -13,10 +13,17 @@ function deriveId(apiUrl: string): string {
   return last.split('?')[0];
 }
 
-/** Overload 1 — Zero config: derive id from URL. */
+/**
+ * Overload 1 — Zero config: derive id from URL.
+ * `mercure` defaults to `true` (opt-in) when not specified.
+ */
 export function defineResource(apiUrl: string): ResourceConfig;
 
-/** Overload 2 — URL + partial overrides. */
+/**
+ * Overload 2 — URL + partial overrides.
+ * Pass `mercure: false` to disable real-time Mercure subscription for this resource.
+ * When omitted, `mercure` is effectively `true` (opt-in by default).
+ */
 export function defineResource<T extends Record<string, unknown>>(
   apiUrl: string,
   overrides: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },

@@ -31,7 +31,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: CashRegisterDashboardProvider::class,
         ),
     ],
-    paginationEnabled: false
+    paginationEnabled: false,
+    mercure: true,
 )]
 #[ApiResource(
     shortName: 'CashRegister',
@@ -43,6 +44,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: CashRegisterOpenProcessor::class,
         ),
     ],
+    mercure: true,
 )]
 #[ApiResource(
     shortName: 'CashRegister',
@@ -55,6 +57,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     paginationEnabled: false,
+    mercure: true,
 )]
 #[ApiResource(
     shortName: 'CashRegister',
@@ -73,11 +76,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     paginationEnabled: true,
+    mercure: true,
 )]
 #[ApiResource(
     shortName: 'CashRegister',
     normalizationContext: ['groups' => ['cash_register:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class CashRegister
 {

@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'proveedor')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un proveedor con este RUC.')]
 class Supplier

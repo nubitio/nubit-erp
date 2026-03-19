@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Config
 {

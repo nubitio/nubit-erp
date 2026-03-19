@@ -51,6 +51,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriTemplate: '/media/{id}',
         ),
     ],
+    mercure: true,
 )]
 class Media
 {

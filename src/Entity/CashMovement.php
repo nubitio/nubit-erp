@@ -41,6 +41,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: CashMovementWriteProcessor::class,
         ),
     ],
+    mercure: true,
 )]
 class CashMovement
 {

@@ -21,6 +21,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [new GetCollection()],
     normalizationContext: ['groups' => ['category:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Category
 {
