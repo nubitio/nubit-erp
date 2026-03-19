@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Button } from 'devextreme-react';
 import type { SelectionChangedEvent } from 'devextreme/ui/data_grid';
 import { DxDataGrid } from '../datagrid/DxDataGrid';
@@ -13,6 +13,7 @@ import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { DialogStoreProvider } from './DialogStoreProvider';
 import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 
 interface CrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
   resource: ResourceConfig<T>;
@@ -75,6 +76,10 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
 
   const [selectedRowId, setSelectedRowId] = useState<string | number | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    action: BulkAction | null;
+  }>({ open: false, action: null });
 
   const {
     isOpen: dialogIsOpen,
@@ -190,18 +195,27 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     return typeof apiUrl === 'function' ? apiUrl(selectedRowId) : `${apiUrl}${selectedRowId}`;
   }, [resource.auditTrail, selectedRowId]);
 
-  const handleBulkAction = async (action: BulkAction) => {
-    if (action.confirmMessage) {
-      // eslint-disable-next-line no-alert
-      const confirmed = window.confirm(action.confirmMessage);
-      if (!confirmed) return;
-    }
-    await action.onAction(selectionState.selectedIds);
-    selectionState.clearSelection();
-    if (events.SUCCESS) {
-      dispatch(events.SUCCESS);
-    }
-  };
+  const executeBulkAction = useCallback(
+    async (action: BulkAction) => {
+      await action.onAction(selectionState.selectedIds);
+      selectionState.clearSelection();
+      if (events.SUCCESS) {
+        dispatch(events.SUCCESS);
+      }
+    },
+    [selectionState, events],
+  );
+
+  const handleBulkAction = useCallback(
+    (action: BulkAction) => {
+      if (action.confirmMessage) {
+        setConfirmState({ open: true, action });
+      } else {
+        void executeBulkAction(action);
+      }
+    },
+    [executeBulkAction],
+  );
 
   /** Preset selector rendered as a toolbar slot via `beforeToolbar`. */
   const renderPresetSelector = hasPresets
@@ -321,6 +335,18 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
           onClose={() => setAuditOpen(false)}
         />
       )}
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Confirmar acción"
+        message={confirmState.action?.confirmMessage ?? ''}
+        variant="warning"
+        onConfirm={() => {
+          const action = confirmState.action;
+          setConfirmState({ open: false, action: null });
+          if (action) void executeBulkAction(action);
+        }}
+        onCancel={() => setConfirmState({ open: false, action: null })}
+      />
     </div>
   );
 };
