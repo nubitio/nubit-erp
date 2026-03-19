@@ -8,7 +8,7 @@ import {
   noneField,
 } from '../../field/FieldBuilders';
 import { datetimeField } from '../../field/FieldBuilders';
-import { pluralize, toSnakeCase } from './openApiParser';
+import { pluralize, toDashCase } from './openApiParser';
 
 /**
  * Returns true when the given `range` string declares an XSD integer type.
@@ -253,7 +253,7 @@ export function mapHydraSchemaToFields(
       // falling back to automatic pluralization heuristic.
       // e.g. Category → /api/categories, Branch → /api/branches, Product → /api/products
       const url = resourceClass
-        ? (urlLookup?.(resourceClass) ?? `/api/${pluralize(toSnakeCase(resourceClass))}`)
+        ? (urlLookup?.(resourceClass) ?? `/api/${pluralize(toDashCase(resourceClass))}`)
         : '';
       const built = entityField(url, 'id', 'name')
         .name(name)

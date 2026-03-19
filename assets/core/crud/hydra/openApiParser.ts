@@ -14,12 +14,31 @@ import type {
  *   "Category"              → "category"
  *   "cashMovementCategory"  → "cash_movement_category"
  *   "CashMovementCategory"  → "cash_movement_category"
+ *
+ * @deprecated No longer used for URL generation — use {@link toDashCase} instead.
+ *   Kept exported for backward compatibility with test files.
  */
 export function toSnakeCase(name: string): string {
   return name
     .replace(/([A-Z])/g, '_$1')
     .toLowerCase()
     .replace(/^_/, '');
+}
+
+/**
+ * Converts a camelCase or PascalCase name to dash-case.
+ * Mirrors API Platform's DashPathSegmentNameGenerator behaviour.
+ * Examples:
+ *   "Category"              → "category"
+ *   "SunatCatalog"          → "sunat-catalog"
+ *   "CashMovementCategory"  → "cash-movement-category"
+ *   "cashMovementCategory"  → "cash-movement-category"
+ */
+export function toDashCase(name: string): string {
+  return name
+    .replace(/([A-Z])/g, '-$1')
+    .toLowerCase()
+    .replace(/^-/, '');
 }
 
 /**
@@ -48,8 +67,8 @@ export function pluralize(word: string): string {
   return word + 's';
 }
 
-/** Entrypoint property names that are already in plural form (snake_case). */
-const ALREADY_PLURAL_SNAKE = new Set([
+/** Entrypoint property names that are already in plural form (dash-case). */
+const ALREADY_PLURAL = new Set([
   'purchases',
   'sales',
   'invoices',
@@ -57,20 +76,20 @@ const ALREADY_PLURAL_SNAKE = new Set([
   'movements',
   'shifts',
   'outbounds',
-  'cash_movements',
-  'cash_registers',
-  'cash_shifts',
+  'cash-movements',
+  'cash-registers',
+  'cash-shifts',
 ]);
 
 /**
  * Derives the API URL from an Entrypoint property ID.
  * "#Entrypoint/branch"               -> "/api/branches"
- * "#Entrypoint/cashMovementCategory" -> "/api/cash_movement_categories"
+ * "#Entrypoint/cashMovementCategory" -> "/api/cash-movement-categories"
  */
 function deriveApiUrl(entrypointPropertyId: string): string {
   const name = entrypointPropertyId.split('/').pop() ?? '';
-  const snake = toSnakeCase(name);
-  const plural = ALREADY_PLURAL_SNAKE.has(snake) ? snake : pluralize(snake);
+  const dashed = toDashCase(name);
+  const plural = ALREADY_PLURAL.has(dashed) ? dashed : pluralize(dashed);
   return `/api/${plural}`;
 }
 
@@ -230,7 +249,7 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
 
     result[className] = {
       className,
-      apiUrl: urlMap[className] ?? `/api/${pluralize(toSnakeCase(className))}`,
+      apiUrl: urlMap[className] ?? `/api/${pluralize(toDashCase(className))}`,
       fields,
       searchMappings: extractSearchMappings(cls),
       supportedOperations: extractSupportedOperations(cls),
@@ -271,7 +290,7 @@ export function parseOpenApiDoc(doc: OpenApiDoc): Record<string, HydraResourceSc
 
     result[className] = {
       className,
-      apiUrl: `/api/${pluralize(toSnakeCase(className))}`, // best-effort; no Entrypoint in OpenAPI
+      apiUrl: `/api/${pluralize(toDashCase(className))}`, // best-effort; no Entrypoint in OpenAPI
       fields,
     };
   }

@@ -24,6 +24,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashRegisterRepository::class)]
 #[ApiResource(
+    shortName: 'CashRegister',
     operations: [
         new GetCollection(
             uriTemplate: '/cash-registers/dashboard',
@@ -33,6 +34,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     paginationEnabled: false
 )]
 #[ApiResource(
+    shortName: 'CashRegister',
     operations: [
         new Post(
             uriTemplate: '/cash-registers/{id}/open',
@@ -43,6 +45,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
 )]
 #[ApiResource(
+    shortName: 'CashRegister',
     operations: [
         new Post(
             uriTemplate: '/cash-registers/{id}/close',
@@ -54,6 +57,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     paginationEnabled: false,
 )]
 #[ApiResource(
+    shortName: 'CashRegister',
     operations: [
         new GetCollection(
             uriTemplate: '/cash-registers/{id}/shifts',
@@ -71,6 +75,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     paginationEnabled: true,
 )]
 #[ApiResource(
+    shortName: 'CashRegister',
     normalizationContext: ['groups' => ['cash_register:read']],
     filters: [DevExtremeFilter::class],
 )]
