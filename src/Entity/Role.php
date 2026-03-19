@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'rol')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Role
 {

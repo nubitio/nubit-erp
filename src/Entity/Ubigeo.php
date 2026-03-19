@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
     shortName: 'Ubigeo',
     normalizationContext: ['groups' => ['ubigeo:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Ubigeo
 {

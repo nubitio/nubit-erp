@@ -36,6 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     paginationEnabled: false,
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -45,6 +46,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: UserNotificationReadProcessor::class,
         ),
     ],
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -55,6 +57,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: UserNotificationReadAllProcessor::class,
         ),
     ],
+    mercure: true,
 )]
 class UserNotification
 {

@@ -9,7 +9,7 @@ services:
       redis:
         condition: service_healthy
     expose:
-      - "80"
+      - '80'
     environment:
       # Application settings
       APP_ENV: ${APP_ENV}
@@ -58,29 +58,33 @@ services:
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
+      # Mercure hub — integrated in FrankenPHP/Caddy (SLICE-014)
+      MERCURE_URL: 'http://localhost/.well-known/mercure'
+      MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
     volumes:
       - app-var:/app/var
       - app-public-uploads:/app/public/uploads
 
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
 
     networks:
       - default
       - shared
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   worker_async:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
@@ -93,7 +97,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SKIP_MIGRATIONS: "true"
+      SKIP_MIGRATIONS: 'true'
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
@@ -126,7 +130,7 @@ services:
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     volumes:
       - app-var:/app/var
     networks:
@@ -140,9 +144,9 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "php",
-          "-r",
+          'CMD',
+          'php',
+          '-r',
           "exit((int)!str_contains(file_get_contents('/proc/1/cmdline'), 'messenger:consume'));",
         ]
       interval: 30s
@@ -161,7 +165,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SKIP_MIGRATIONS: "true"
+      SKIP_MIGRATIONS: 'true'
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
@@ -193,7 +197,7 @@ services:
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     volumes:
       - app-var:/app/var
     networks:
@@ -207,9 +211,9 @@ services:
     healthcheck:
       test:
         [
-          "CMD",
-          "php",
-          "-r",
+          'CMD',
+          'php',
+          '-r',
           "exit((int)!str_contains(file_get_contents('/proc/1/cmdline'), 'messenger:consume'));",
         ]
       interval: 30s
@@ -219,9 +223,9 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.145.0
-    user: "0:0"
+    user: '0:0'
     restart: unless-stopped
-    command: ["--config", "/etc/otelcol-contrib/config.yaml"]
+    command: ['--config', '/etc/otelcol-contrib/config.yaml']
     volumes:
       - /opt/efact/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -242,22 +246,22 @@ services:
     networks:
       - default
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:13133/']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   database:
     image: mariadb:11.4
     restart: unless-stopped
     ports:
-      - "${DB_BIND_IP:-127.0.0.1}:${DB_PORT:-3306}:3306"
+      - '${DB_BIND_IP:-127.0.0.1}:${DB_PORT:-3306}:3306'
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: efact
@@ -279,16 +283,16 @@ services:
     networks:
       - default
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   redis:
     image: redis:8-alpine
@@ -303,16 +307,16 @@ services:
     networks:
       - default
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
 volumes:
   app-var:

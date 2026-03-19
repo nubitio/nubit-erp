@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     exceptionToStatus: [
         RuntimeException::class => 400,
     ],
+    mercure: true,
 )]
 #[ORM\HasLifecycleCallbacks]
 class CashMovementCategory

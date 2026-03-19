@@ -8,6 +8,7 @@ import toast from '../lib/SharedUtils';
 import { dispatch } from '../../core/event/EventHook';
 import { Constants } from '../../core/common/Constants';
 import { StorageUtils } from '../lib/StorageUtils';
+import mercureManager from '../../core/mercure/MercureManager';
 
 /**
  * Serializes request params to bracket-notation query strings.
@@ -90,6 +91,28 @@ class HttpClient {
     this.setupInterceptors();
   }
 
+  /**
+   * Regex to extract the Mercure hub URL from a `Link` header value.
+   *
+   * Handles multiple link relations separated by commas, e.g.:
+   *   `<https://host/.well-known/mercure>; rel="mercure", </api/products>; rel="self"`
+   */
+  private static readonly MERCURE_LINK_RE = /<([^>]+)>;\s*rel="mercure"/;
+
+  /**
+   * Parse the `Link` response header and, if a `rel="mercure"` entry is found,
+   * notify `MercureManager` with the hub URL (idempotent — no-op if already set).
+   */
+  private discoverMercureHub(linkHeader: string | undefined): void {
+    if (!linkHeader || mercureManager.getHubUrl() !== null) {
+      return;
+    }
+    const match = HttpClient.MERCURE_LINK_RE.exec(linkHeader);
+    if (match?.[1]) {
+      mercureManager.setHubUrl(match[1]);
+    }
+  }
+
   private setupInterceptors = () => {
     this.axiosClient.interceptors.request.use((config) => {
       config.headers['Accept-Language'] = this.locale;
@@ -101,6 +124,18 @@ class HttpClient {
         delete config.params.take;
       }
       return config;
+    });
+
+    // Hub discovery interceptor — reads the `Link` header from every successful response.
+    // Must be registered BEFORE the error interceptor so it runs first on success.
+    this.axiosClient.interceptors.response.use((response) => {
+      try {
+        const linkHeader = response.headers['link'] as string | undefined;
+        this.discoverMercureHub(linkHeader);
+      } catch {
+        // Never interrupt the normal response flow
+      }
+      return response;
     });
 
     this.axiosClient.interceptors.response.use(

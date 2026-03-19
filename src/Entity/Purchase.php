@@ -42,6 +42,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DevExtremeFilter::class],
     provider:  PurchaseProvider::class,
     processor: PurchaseProcessor::class,
+    mercure: true,
 )]
 class Purchase
 {

@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     normalizationContext: ['groups' => ['company:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class Company
 {

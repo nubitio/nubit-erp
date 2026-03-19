@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     shortName: 'VoucherSerie',
     normalizationContext: ['groups' => ['voucher_series:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class VoucherSeries
 {

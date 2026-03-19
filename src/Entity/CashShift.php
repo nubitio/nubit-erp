@@ -24,6 +24,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -41,6 +42,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['cash_movement:read']],
     paginationEnabled: false,
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -49,7 +51,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: CashShiftClosureSummaryProvider::class,
         ),
     ],
-    paginationEnabled: false
+    paginationEnabled: false,
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -60,6 +63,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     paginationEnabled: false,
+    mercure: true,
 )]
 class CashShift
 {

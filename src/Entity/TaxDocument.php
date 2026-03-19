@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DevExtremeFilter::class],
     provider: TaxDocumentProvider::class,
     processor: TaxDocumentProcessor::class,
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -67,7 +68,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
             fromProperty: 'id',
             fromClass: TaxDocument::class
         ),
-    ]
+    ],
+    mercure: true,
 )]
 class TaxDocument
 {

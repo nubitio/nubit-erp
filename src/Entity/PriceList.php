@@ -22,6 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'price_list')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 #[ApiResource(
     operations: [
@@ -43,7 +44,8 @@ use Doctrine\ORM\Mapping as ORM;
             output: ApiResponse::class,
             processor: PriceListProcessor::class,
         ),
-    ]
+    ],
+    mercure: true,
 )]
 class PriceList
 {

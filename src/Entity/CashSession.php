@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_session:read']],
     filters: [DevExtremeFilter::class],
+    mercure: true,
 )]
 class CashSession
 {

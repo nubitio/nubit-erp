@@ -27,6 +27,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
     ],
     normalizationContext: ['groups' => ['purchase_item:read']],
     paginationEnabled: false,
+    mercure: true,
 )]
 class PurchaseItem
 {

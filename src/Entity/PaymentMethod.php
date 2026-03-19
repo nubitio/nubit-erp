@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
-#[ApiResource]
+#[ApiResource(mercure: true)]
 class PaymentMethod
 {
     final public const int CASH = 1;

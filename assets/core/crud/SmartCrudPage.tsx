@@ -12,6 +12,9 @@ import { useConditionalRules } from './rules/useConditionalRules';
 import { useDependsOn } from './rules/useDependsOn';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
+import { createScopedEventBus } from '../event/createScopedEventBus';
+import { dispatch } from '../event/EventHook';
+import { useMercureSubscription } from '@core/mercure';
 
 function CrudSkeleton() {
   return (
@@ -72,6 +75,16 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
 }: SmartCrudPageProps<T>) {
   const queryClient = useQueryClient();
 
+  // Stable event bus: reuse resource.events if provided, otherwise create a
+  // scoped one once per resource.id. This allows SmartCrudPage to dispatch
+  // events (e.g. SUCCESS for Mercure refresh) on the same bus that CrudPage
+  // and DxDataGrid listen to.
+  const events = useMemo(
+    () => resource.events ?? createScopedEventBus(resource.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [resource.id],
+  );
+
   // Determine whether the consumer supplied manual fields.
   // `fields` can be Field[], FieldDef<T>[], or FieldsFactory<T> (function).
   // We only treat it as "manual" when it is a non-empty static array.
@@ -119,6 +132,20 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
   useDependsOn(permissionFilteredFields, formData);
 
   const routingState = useRouting(resource.routing);
+
+  // Real-time Mercure subscription: refresh the grid when another session
+  // modifies the resource. Dispatches SUCCESS on the shared event bus so
+  // DxDataGrid calls gridRef.current?.instance().refresh() automatically.
+  // Enabled by default; opt-out with `defineResource({ mercure: false })`.
+  useMercureSubscription(
+    resource.apiUrl,
+    () => {
+      if (events.SUCCESS) {
+        dispatch(events.SUCCESS);
+      }
+    },
+    resource.mercure !== false,
+  );
 
   const processedFields: Field[] = React.useMemo(() => {
     return permissionFilteredFields
@@ -181,6 +208,9 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     apiUrl: normalizedApiUrl,
     fields: processedFields,
     _supportedOperations: supportedOperations,
+    // Inject the stable event bus so CrudPage/DxDataGrid share the same
+    // event names that SmartCrudPage dispatches (e.g. SUCCESS for Mercure refresh).
+    events,
   };
 
   return (
