@@ -1,7 +1,9 @@
+import React from 'react';
 import { FieldType } from './FieldType';
 import { Field, LoadOption } from './Field';
 import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
+import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 
 export class FieldBuilder {
   private readonly _field: Field;
@@ -195,12 +197,12 @@ export class FieldBuilder {
     return this;
   }
 
-  filterValue(filterValue: any): FieldBuilder {
+  filterValue(filterValue: string | number | boolean | Date | null | undefined): FieldBuilder {
     this._field.filterValue = filterValue;
     return this;
   }
 
-  data(data: any[]): FieldBuilder {
+  data(data: Array<Record<string, unknown>>): FieldBuilder {
     this._field.data = data;
     return this;
   }
@@ -210,12 +212,12 @@ export class FieldBuilder {
     return this;
   }
 
-  formatter(formatter: any): FieldBuilder {
+  formatter(formatter: FormatterFn): FieldBuilder {
     this._field.formatter = formatter;
     return this;
   }
 
-  itemFormatter(itemFormatter: any): FieldBuilder {
+  itemFormatter(itemFormatter: ItemFormatterFn): FieldBuilder {
     this._field.itemFormatter = itemFormatter;
     return this;
   }
@@ -225,22 +227,24 @@ export class FieldBuilder {
     return this;
   }
 
-  defaultValue(defaultValue: any): FieldBuilder {
+  defaultValue(
+    defaultValue: string | number | boolean | Date | null | undefined | (() => unknown),
+  ): FieldBuilder {
     this._field.defaultValue = defaultValue;
     return this;
   }
 
-  onChange(onChange: any): FieldBuilder {
+  onChange(onChange: OnChangeFn): FieldBuilder {
     this._field.onChange = onChange;
     return this;
   }
 
-  onSelect(onSelect: any): FieldBuilder {
+  onSelect(onSelect: (e: unknown) => void): FieldBuilder {
     this._field.onSelect = onSelect;
     return this;
   }
 
-  onClick(onClick: any): FieldBuilder {
+  onClick(onClick: (e: unknown) => void): FieldBuilder {
     this._field.onClick = onClick;
     return this;
   }
@@ -275,12 +279,12 @@ export class FieldBuilder {
     return this;
   }
 
-  accept(value: any): FieldBuilder {
+  accept(value: string | null | undefined): FieldBuilder {
     this._field.accept = value;
     return this;
   }
 
-  buttons(value: any[]): FieldBuilder {
+  buttons(value: Array<Record<string, unknown>>): FieldBuilder {
     this._field.buttons = value;
     return this;
   }
@@ -315,7 +319,7 @@ export class FieldBuilder {
     return this;
   }
 
-  contentRender(value: string | ((...args: unknown[]) => unknown) | null) {
+  contentRender(value: string | ((...args: unknown[]) => React.ReactNode) | null | undefined) {
     this._field.contentRender = value;
     return this;
   }
@@ -335,7 +339,7 @@ export class FieldBuilder {
     return this;
   }
 
-  editorOptions(param: any) {
+  editorOptions(param: Record<string, unknown>) {
     this._field.editorOptions = param;
     return this;
   }
