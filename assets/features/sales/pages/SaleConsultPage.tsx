@@ -1,4 +1,3 @@
-import './SaleConsultPage.scss';
 import DateBox from 'devextreme-react/date-box';
 import { Button } from 'devextreme-react';
 import { useRef, useState } from 'react';

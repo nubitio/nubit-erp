@@ -1,4 +1,3 @@
-import './CustomerPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { customerApiUrl, customerEvents } from '@features/customer';
 

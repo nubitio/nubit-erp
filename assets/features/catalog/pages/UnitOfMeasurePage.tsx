@@ -1,4 +1,3 @@
-import './UnitOfMeasure.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { unitOfMeasureEvents } from '@features/unitOfMeasure';
 import { unitOfMeasureEndpoints } from '../api/catalogEndpoints';

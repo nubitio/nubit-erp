@@ -1,4 +1,3 @@
-import './DxForm.scss';
 import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
 import type { FieldDataChangedEvent } from 'devextreme/ui/form';
 import { Field } from '../field/Field';

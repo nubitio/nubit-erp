@@ -1,4 +1,3 @@
-import './ProductPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { Constants } from '@core/common/Constants';
 

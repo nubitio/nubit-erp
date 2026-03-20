@@ -1,4 +1,3 @@
-import './PriceListPage.scss';
 import { useRef } from 'react';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';

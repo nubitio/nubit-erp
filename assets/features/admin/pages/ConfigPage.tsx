@@ -1,4 +1,3 @@
-import './ConfigPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { configEvents } from '@features/config';
 import { configEndpoints } from '../api/adminEndpoints';

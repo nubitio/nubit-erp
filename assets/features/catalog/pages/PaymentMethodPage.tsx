@@ -1,4 +1,3 @@
-import './PaymentMethodPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { paymentMethodEvents } from '@features/paymentMethod';
 import { paymentMethodEndpoints } from '../api/catalogEndpoints';

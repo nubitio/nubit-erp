@@ -1,4 +1,3 @@
-import './OperationPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { operationEvents } from '@features/operation';
 import { operationEndpoints } from '../api/catalogEndpoints';

@@ -1,4 +1,3 @@
-import './OutboundPage.scss';
 import { useRef } from 'react';
 import { DxDataGrid } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';

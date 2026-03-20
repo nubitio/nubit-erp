@@ -1,4 +1,3 @@
-import './InvoicePage.scss';
 import { useRef } from 'react';
 import { Constants } from '@core/common/Constants';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';

@@ -1,4 +1,3 @@
-import './UserPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { userEvents } from '@features/user';
 import { userEndpoints } from '../api/adminEndpoints';
