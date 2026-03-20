@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { SettingDto } from '../../../dto/setting.dto';
+import { SettingDto } from '@shared/api/setting.dto';
 import { Constants } from '@core/common/Constants';
 
 class SettingsService {

@@ -1,0 +1,119 @@
+@use 'variables' as *;
+@use 'sass:color';
+
+.metric-card {
+  --metric-accent: var(--accent-color);
+  --metric-accent-soft: rgba(69, 90, 255, 0.1);
+  --metric-accent-muted: rgba(69, 90, 255, 0.07);
+
+  position: relative;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-background);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 128px;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+
+  // left accent bar — colour identity per category
+  &::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--metric-accent);
+    pointer-events: none;
+  }
+
+  &::after {
+    display: none;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--metric-accent);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .metric-card__title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--texteditor-label-color);
+    font-weight: 600;
+  }
+
+  .metric-card__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--base-text-color);
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+
+  .metric-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--texteditor-label-color);
+    margin-top: auto;
+  }
+
+  .metric-card__delta {
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--metric-accent-muted);
+    color: var(--metric-accent);
+    font-weight: 700;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+
+    &.up {
+      background: color.change(#15803d, $alpha: 0.12);
+      color: #15803d;
+    }
+
+    &.down {
+      background: color.change(#be123c, $alpha: 0.12);
+      color: #be123c;
+    }
+  }
+}
+
+$metric-accents: (
+  'blue': #0e7a50,
+  'green': #047857,
+  'yellow': #b45309,
+  'rose': #be123c,
+  'purple': #6d28d9,
+  'gray': #4b5563,
+);
+
+@each $name, $accent in $metric-accents {
+  .metric-card.accent-#{$name} {
+    --metric-accent: #{$accent};
+    --metric-accent-soft: #{color.change($accent, $alpha: 0.1)};
+    --metric-accent-muted: #{color.change($accent, $alpha: 0.07)};
+  }
+}

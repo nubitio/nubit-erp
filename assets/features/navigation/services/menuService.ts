@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { SideNavigationItem } from '../../../components/library/side-navigation-menu/SideNavigationMenu';
+import { SideNavigationItem } from '@shared/ui/library/side-navigation-menu/SideNavigationMenu';
 import { Constants } from '@core/common/Constants';
 
 class MenuService {

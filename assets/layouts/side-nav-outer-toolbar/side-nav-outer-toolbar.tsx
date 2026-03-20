@@ -7,14 +7,14 @@ import { TreeViewTypes } from 'devextreme-react/tree-view';
 
 import { useNavigate } from 'react-router';
 
-import { AppHeader, SideNavigationMenu, AppFooter } from '../../components';
-import { useScreenSize } from '../../utils/media-query';
+import { AppHeader, SideNavigationMenu, AppFooter } from '@shared/ui';
+import { useScreenSize } from '@utils/media-query';
 import { useMenuPatch } from '../../utils/patches';
 
 import type { SideNavToolbarProps } from '../../types';
 
 import './side-nav-outer-toolbar.scss';
-import { SideNavigationItem } from '../../components/library/side-navigation-menu/SideNavigationMenu';
+import { SideNavigationItem } from '@shared/ui/library/side-navigation-menu/SideNavigationMenu';
 
 enum MenuOpenState {
   Closed = 1,

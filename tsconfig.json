@@ -22,13 +22,9 @@
       "@core/*": ["assets/core/*"],
       "@features/*": ["assets/features/*"],
       "@pages/*": ["assets/pages/*"],
-      "@widgets": ["assets/components"],
-      "@widgets/*": ["assets/components/*"],
       "@layouts/*": ["assets/layouts/*"],
-      "@contexts/*": ["assets/contexts/*"],
       "@utils/*": ["assets/utils/*"],
       "@theme/*": ["assets/theme/*"],
-      "@dto/*": ["assets/dto/*"],
       "@types/*": ["assets/types/*"],
       "@assets/*": ["assets/*"],
       "@offline/*": ["assets/offline/*"]

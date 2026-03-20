@@ -2,7 +2,7 @@ import { Settings } from 'luxon';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { EfactApp } from './EfactApp';
+import { EfactApp } from '@app/shell/EfactApp';
 import { ErrorBoundary } from '@shared/components';
 import './i18n';
 import './app.scss';

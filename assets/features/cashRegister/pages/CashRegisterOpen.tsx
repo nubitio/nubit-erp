@@ -1,4 +1,4 @@
-import { Card } from '../../../components';
+import { Card } from '@shared/ui';
 import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { useRef, useState } from 'react';
 import { Button } from 'devextreme-react';

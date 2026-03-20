@@ -5,7 +5,7 @@ import { DxDialog } from '@core/dialog/DxDialog';
 import { saleEndpoints } from '../api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DiscountDialog, DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
+import { DiscountDialog, DiscountDialogEvent } from '@shared/ui/discount-dialog/DiscountDialog';
 import {
   applySaleAutoInvoiceOnAdd,
   cloneSaleToForm,
@@ -21,7 +21,7 @@ import { CustomerPage, CustomerFields } from '@features/catalog/pages/customers'
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';
-import { prompt } from '@widgets/library/prompt-dialog/PromptDialog';
+import { prompt } from '@shared/ui/library/prompt-dialog/PromptDialog';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();

@@ -6,7 +6,7 @@ import { API_DOC_QUERY_KEY } from './hydra/useHydraMetadata';
 import type { ResourceConfig } from './ResourceConfig';
 import type { Field } from '../field/Field';
 import type { FieldOverride } from './hydra/useResourceSchema';
-import { useAuth } from '../../contexts/auth';
+import { useAuth } from '@app/contexts/auth';
 import { useFieldPermissions } from './rules/useFieldPermissions';
 import { useConditionalRules } from './rules/useConditionalRules';
 import { useDependsOn } from './rules/useDependsOn';

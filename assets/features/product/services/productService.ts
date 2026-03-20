@@ -1,11 +1,11 @@
 import { lastValueFrom } from 'rxjs';
 import type { LoadOptions } from 'devextreme/data/load_options';
-import { ProductDto } from '../../../dto/product.dto';
+import { ProductDto } from '@features/product/types/product.dto';
 import { httpClient } from '@shared/api/HttpClient';
 import GridData from '../../../types/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
 import { Constants } from '@core/common/Constants';
-import { ProductStockDto } from '../../../dto/product.stock.dto';
+import { ProductStockDto } from '@features/product/types/product.stock.dto';
 
 class ProductService {
   getAll(loadOptions: LoadOptions): Promise<GridData<ProductDto>> {

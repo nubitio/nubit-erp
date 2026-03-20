@@ -11,7 +11,7 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 import './LoginForm.scss';
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
-import { BranchPicker } from '@widgets/utils/branch-picker/BranchPicker';
+import { BranchPicker } from '@shared/ui/utils/branch-picker/BranchPicker';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 
 interface BranchOption {
