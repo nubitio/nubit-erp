@@ -266,79 +266,6 @@ samp {
   border: none;
 }
 
-.status-commission {
-  @include status-contact(#0e7a50);
-}
-
-.status-salaried {
-  @include status-contact(#2eb52c);
-}
-
-.status-terminated {
-  @include status-contact(#de8e8c);
-}
-
-@mixin item-field($status-color) {
-  color: $status-color;
-
-  &.dx-texteditor {
-    .item-editor-input {
-      color: $status-color;
-      padding-left: 0;
-    }
-  }
-}
-
-.item-editor-field .item-field,
-.item-field {
-  &.item-open {
-    @include item-field(#505ed9);
-  }
-
-  &.item-in-progress {
-    @include item-field(#34aa95);
-  }
-
-  &.item-deferred {
-    @include item-field(#969696);
-  }
-
-  &.item-completed {
-    @include item-field(#2b9029);
-  }
-
-  &.item-low {
-    @include item-field(#d3a268);
-  }
-
-  &.item-normal {
-    @include item-field(#6fbaca);
-  }
-
-  &.item-high {
-    @include item-field(#ff5722);
-  }
-
-  span {
-    font-size: 13px;
-  }
-}
-
-.item-editor-field {
-  display: flex;
-  padding-left: var(--list-padding-left);
-
-  .item-field {
-    align-self: flex-end;
-  }
-}
-
-.messages-content {
-  padding: 20px;
-  border-top: 1px solid var(--border-color);
-  background-color: var(--base-bg);
-}
-
 .dx-theme-fluent-typography {
   font-family: 'Inter', sans-serif;
 }
@@ -535,16 +462,4 @@ samp {
   .right-side-panel.open {
     background-color: var(--base-bg);
   }
-}
-
-.d-flex {
-  display: flex;
-}
-
-.align-items-center {
-  align-items: center;
-}
-
-.justify-content-center {
-  justify-content: center;
 }

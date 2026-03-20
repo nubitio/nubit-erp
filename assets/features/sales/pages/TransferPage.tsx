@@ -1,4 +1,3 @@
-import './TransferPage.scss';
 import { Constants } from '@core/common/Constants';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { transferEvents } from '@features/transfer';

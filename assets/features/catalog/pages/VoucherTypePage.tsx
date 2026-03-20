@@ -1,4 +1,3 @@
-import './VoucherTypePage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { voucherTypeEvents } from '@features/voucherType';
 import { voucherTypeEndpoints } from '../api/catalogEndpoints';

@@ -1,23 +1,5 @@
 // Self-hosted Inter — replaces Google Fonts link in base.html.twig (CSP compliance)
-@import "@fontsource/inter/latin-400.css";
-@import "@fontsource/inter/latin-500.css";
-@import "@fontsource/inter/latin-600.css";
-@import "@fontsource/inter/latin-700.css";
-
-body {
-  margin: 0;
-  font-family: var(--font-family-sans, 'Inter', system-ui, sans-serif);
-  color: var(--text-primary, inherit);
-  background: var(--surface-0, inherit);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: var(--font-family-mono, 'source-code-pro', 'Menlo', 'Monaco', 'Consolas');
-}
-
-.view-wrapper {
-  display: flex;
-  overflow: hidden;
-}
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';

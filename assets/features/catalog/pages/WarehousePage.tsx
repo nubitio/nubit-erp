@@ -1,4 +1,3 @@
-import './WarehousePage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { warehouseEvents } from '@features/warehouse';
 import { warehouseEndpoints } from '../api/catalogEndpoints';

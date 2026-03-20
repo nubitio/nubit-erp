@@ -1,4 +1,3 @@
-import './InboundPage.scss';
 import type { RefObject } from 'react';
 import { CrudPage, defineResource } from '@core/crud';
 import type { DxFormEvents } from '@core/form/DxForm';

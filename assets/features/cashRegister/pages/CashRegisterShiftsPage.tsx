@@ -1,4 +1,3 @@
-import './CashRegisterShiftsPage.scss';
 import { useParams } from 'react-router-dom';
 import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';

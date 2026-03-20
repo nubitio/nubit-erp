@@ -50,7 +50,7 @@ export class SharedUtils {
   static imageFormatter(imageUrl?: string, alt?: string) {
     if (imageUrl) {
       return (
-        <div className="d-flex align-items-center justify-content-center">
+        <div className="flex items-center justify-center">
           <a href={imageUrl} target="_blank" rel="noreferrer">
             <img
               src={imageUrl}
@@ -67,7 +67,7 @@ export class SharedUtils {
       const avatarInitials = SharedUtils.getAvatarInitials(name);
 
       return (
-        <div className="d-flex align-items-center justify-content-center">
+        <div className="flex items-center justify-center">
           <div
             style={{
               width: '30px',
@@ -162,7 +162,7 @@ export class SharedUtils {
   static tagsFormatter(value: any, name: string) {
     if (value && value.length > 0) {
       return (
-        <div className="d-flex flex-wrap">
+        <div className="flex flex-wrap">
           {value.map((item: any) => (
             <span
               key={item.id}

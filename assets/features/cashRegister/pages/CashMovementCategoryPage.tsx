@@ -1,4 +1,3 @@
-import './CashMovementCategoryPage.scss';
 import { Constants } from '@core/common/Constants';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { cashMovementCategoryEvents } from '@features/cashRegister';

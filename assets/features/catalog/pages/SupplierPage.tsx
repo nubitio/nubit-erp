@@ -1,4 +1,3 @@
-import './SupplierPage.scss';
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { supplierEvents } from '@features/supplier';
 import { supplierEndpoints } from '../api/catalogEndpoints';

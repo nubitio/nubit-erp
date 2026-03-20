@@ -1,20 +1,3 @@
-.form-popup .dx-toolbar-center {
-  width: 100%;
-}
-
-.form-popup-buttons-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--popup-toolbar-item-spacing);
-
-  &.flex-buttons {
-    .dx-button {
-      flex: 1;
-    }
-  }
-}
-
 // Remove the popup's own scrollbar so only the iframe scrolls.
 .sale-print-preview-popup {
   .dx-popup-content {

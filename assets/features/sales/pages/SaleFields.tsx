@@ -172,7 +172,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
           const url = `/receipt/${cell.data.id}/ticket?format=a4`;
           return (
             <a href={url} className="text-reset" target="_blank" rel="noreferrer">
-              <i className="ph ph-file-pdf text-primary" /> {cell.value}
+              <i className="ph ph-file-pdf text-emerald-700" /> {cell.value}
             </a>
           );
         }

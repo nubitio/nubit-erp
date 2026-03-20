@@ -1,4 +1,3 @@
-import './CashRegisterPage.scss';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
