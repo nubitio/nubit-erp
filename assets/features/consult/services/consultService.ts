@@ -1,4 +1,4 @@
-import { ConsultInfoDto } from '../../../dto/consult.info.dto';
+import { ConsultInfoDto } from '@shared/api/consult.info.dto';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@core/common/Constants';
 

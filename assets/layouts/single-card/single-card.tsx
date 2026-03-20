@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ScrollView from 'devextreme-react/scroll-view';
-import { Card } from '../../components';
+import { Card } from '@shared/ui';
 
 import type { SingleCardProps } from '../../types';
 

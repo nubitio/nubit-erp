@@ -7,7 +7,7 @@ import { IGV_RATE, nowUtcIso, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
-import { useCurrencySettings } from '@assets/hooks/useCurrencySettings';
+import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
 
 type UsePosCheckoutParams = {
   tenantId: string;

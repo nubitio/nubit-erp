@@ -29,7 +29,7 @@ vi.mock('react-router-dom', () => ({
   useLocation: vi.fn(),
 }));
 
-vi.mock('@contexts/auth', () => ({
+vi.mock('@app/contexts/auth', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -45,7 +45,7 @@ vi.mock('@features/cashRegister', () => ({
 
 import { useQuerySuggestions } from './useQuerySuggestions';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@contexts/auth';
+import { useAuth } from '@app/contexts/auth';
 import { cashboxService } from '@features/cashRegister';
 
 const mockUseLocation = useLocation as ReturnType<typeof vi.fn>;

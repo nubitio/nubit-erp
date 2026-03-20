@@ -3,7 +3,7 @@ import './POSPage.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { userInformation } from '@core/common/UserInformation';
-import { Setting, settings } from '@assets/Settings';
+import { Setting, settings } from '@app/Settings';
 import { createQzInvoicePrinter } from '@features/sale';
 import { ThemeContext } from '@assets/theme/theme';
 import { POSOperatorHeader } from './POSOperatorHeader';

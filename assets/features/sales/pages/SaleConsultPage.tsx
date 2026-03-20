@@ -3,7 +3,7 @@ import DateBox from 'devextreme-react/date-box';
 import { Button } from 'devextreme-react';
 import { useRef, useState } from 'react';
 import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
-import { Card } from '@widgets';
+import { Card } from '@shared/ui';
 import SelectBox from 'devextreme-react/select-box';
 import { DateUtils } from '@shared/lib/DateUtils';
 import { Constants } from '@core/common/Constants';

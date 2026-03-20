@@ -9,7 +9,7 @@ import {
   textareaField,
 } from '@core/field/FieldBuilders';
 import { productService } from '@features/product';
-import { ProductDto } from '@dto/product.dto';
+import { ProductDto } from '@features/product/types/product.dto';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 

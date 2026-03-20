@@ -60,7 +60,7 @@ vi.mock('@features/product', () => ({
   },
 }));
 
-vi.mock('@assets/common/GetStockUseCase', () => ({
+vi.mock('@features/pos/lib/GetStockUseCase', () => ({
   GetStockUseCase: vi.fn(() => Promise.resolve({ stock: 100 })),
 }));
 
