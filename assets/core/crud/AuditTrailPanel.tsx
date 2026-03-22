@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import type { AuditEntry } from './AuditTrail';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 
@@ -89,19 +90,17 @@ export function AuditTrailPanel({
 
   useEffect(() => {
     if (!visible || url === null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset local async state when panel closes or no record is selected
       setFetchState({ status: 'idle' });
       return;
     }
 
     let cancelled = false;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- transition request state before subscribing to the async HTTP response
     setFetchState({ status: 'loading' });
 
-    fetch(url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<AuditEntry[]>;
-      })
+    httpRequestData<AuditEntry[]>(businessHttpClient.get(url))
       .then((entries) => {
         if (!cancelled) setFetchState({ status: 'success', entries });
       })

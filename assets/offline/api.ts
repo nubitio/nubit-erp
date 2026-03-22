@@ -1,3 +1,5 @@
+import { exceptionalFetch } from '@shared/api/network';
+
 export interface ApiRequestConfig {
   method: string;
   url: string;
@@ -34,13 +36,17 @@ const parseErrorMessage = (payload: any, fallback: string) => {
 
 const refreshAuthToken = async (): Promise<boolean> => {
   try {
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Accept-Language': (typeof navigator !== 'undefined' && navigator.language) || 'es',
+    const response = await exceptionalFetch(
+      '/api/auth/refresh',
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Accept-Language': (typeof navigator !== 'undefined' && navigator.language) || 'es',
+        },
       },
-    });
+      'offline-runtime',
+    );
     return response.ok;
   } catch {
     return false;
@@ -54,12 +60,16 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
   };
 
   const makeRequest = () =>
-    fetch(config.url, {
-      method: config.method,
-      headers,
-      credentials: 'include',
-      body: config.body === undefined ? undefined : JSON.stringify(config.body),
-    });
+    exceptionalFetch(
+      config.url,
+      {
+        method: config.method,
+        headers,
+        credentials: 'include',
+        body: config.body === undefined ? undefined : JSON.stringify(config.body),
+      },
+      'offline-runtime',
+    );
 
   try {
     let response = await makeRequest();

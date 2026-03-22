@@ -16,7 +16,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 // Hoist mocks — these run BEFORE any module-level code in the imports below.
-vi.mock('@assets/Settings', () => ({
+vi.mock('@app/Settings', () => ({
   Setting: {
     AUTO_INVOICE: 'app_option_auto_invoice',
     CHECK_STOCK: 'app_option_check_stock',

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { exceptionalFetch } from '@shared/api/network';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import type { HydraApiDoc, OpenApiDoc, ApiDoc } from './types';
 
@@ -11,7 +12,11 @@ const isDev = import.meta.env.DEV;
  * Returns the typed HydraApiDoc on success, or throws on failure.
  */
 async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
-  const res = await fetch(url, isDev ? {} : { cache: 'force-cache' });
+  const res = await exceptionalFetch(
+    url,
+    isDev ? {} : { cache: 'force-cache' },
+    'api-documentation',
+  );
   if (!res.ok) throw new Error(`Failed to load Hydra API doc: ${res.status} ${res.statusText}`);
   const json = (await res.json()) as HydraApiDoc;
   // Validate that it looks like a Hydra ApiDocumentation
@@ -30,7 +35,11 @@ async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
  * Returns the typed OpenApiDoc on success, or throws on failure.
  */
 async function fetchOpenApiDoc(url: string): Promise<OpenApiDoc> {
-  const res = await fetch(url, isDev ? {} : { cache: 'force-cache' });
+  const res = await exceptionalFetch(
+    url,
+    isDev ? {} : { cache: 'force-cache' },
+    'api-documentation',
+  );
   if (!res.ok) throw new Error(`Failed to load OpenAPI doc: ${res.status} ${res.statusText}`);
   const json = (await res.json()) as OpenApiDoc;
   // Validate that it looks like an OpenAPI 3.x doc

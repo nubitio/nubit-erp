@@ -1,23 +1,17 @@
 import type { AppRouteDefinition } from '@app/router/types';
-import {
-  CreditNotePage,
-  InboundPage,
-  InvoicePage,
-  OutboundPage,
-  PurchasesPage,
-  SaleConsultPage,
-  SalePage,
-  TransferPage,
-} from './route-pages';
+import { invoiceRoutes } from '@features/invoice/routes';
+import { outboundRoutes } from '@features/outbound/routes';
+import { purchasesRoutes } from '@features/purchases/routes';
+import { saleRoutes } from '@features/sale/routes';
+import { transferRoutes } from '@features/transfer/routes';
+import { CreditNotePage, SaleConsultPage } from './route-pages';
 
 export const salesRoutes: AppRouteDefinition[] = [
+  ...saleRoutes,
+  ...invoiceRoutes,
+  ...outboundRoutes,
+  ...transferRoutes,
+  ...purchasesRoutes,
   { path: '/credit-note', element: CreditNotePage },
-  { path: '/purchases', element: PurchasesPage },
-  // Deprecated alias kept for backward compatibility.
-  { path: '/inbound', element: InboundPage },
-  { path: '/invoice', element: InvoicePage },
-  { path: '/outbound', element: OutboundPage },
-  { path: '/sale', element: SalePage },
   { path: '/sale-consult', element: SaleConsultPage },
-  { path: '/transfer', element: TransferPage },
 ];

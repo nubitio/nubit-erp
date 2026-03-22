@@ -1,8 +1,9 @@
-export { AppHeader } from './library/app-header/AppHeader';
-export { AppFooter } from './library/app-footer/AppFooter';
+// eslint-disable-next-line no-restricted-imports -- temporary facade to preserve shared import paths during shell migration
+export { AppHeader, AppFooter } from '../../app/shell/components';
 export { Card } from './library/card-auth/Card';
 export { LoginForm } from './library/login-form/LoginForm';
-export { SideNavigationMenu } from './library/side-navigation-menu/SideNavigationMenu';
+// eslint-disable-next-line no-restricted-imports -- temporary facade to preserve shared import paths during shell migration
+export { SideNavigationMenu } from '../../app/shell/components';
 export { UserAvatar } from './library/user-avatar/UserAvatar';
 
 export { ToolbarAnalytics } from './utils/toolbar-analytics/ToolbarAnalytics';

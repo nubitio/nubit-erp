@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DataGridRef } from 'devextreme-react/data-grid';
-import { httpClient } from '@shared/api/HttpClient';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import { priceListEndpoints } from '../api/priceListEndpoints';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
@@ -51,26 +51,35 @@ export const usePriceListObservers = ({
         toast('Debe seleccionar una tarifa', 'warning');
         return;
       }
-      httpClient.get<any>(priceListEndpoints.prices(selectedRow.id)).subscribe({
-        next: (response) => {
-          prices.current?.instance().beginCustomLoading('Cargando precios...');
+
+      prices.current?.instance().beginCustomLoading('Cargando precios...');
+
+      void httpRequestData<any[]>(
+        businessHttpClient.get<any[]>(priceListEndpoints.prices(selectedRow.id)),
+      )
+        .then((items) => {
           const store = data.current.store() as ArrayStore;
           store.clear();
-          response.data.forEach((item: any) => {
+          items.forEach((item: any) => {
             store.insert(item);
           });
           data.current.reload();
-          prices.current?.instance().endCustomLoading();
-        },
-        error: () => {
-          prices.current?.instance().endCustomLoading();
+        })
+        .catch(() => {
           toast('No se pudieron cargar los precios', 'error');
-        },
-      });
+        })
+        .finally(() => {
+          prices.current?.instance().endCustomLoading();
+        });
     });
 
     onEvent(ev.SAVE, () => {
       const selectedRow = grid.current?.getSelectedRow();
+      if (!selectedRow) {
+        toast('Debe seleccionar una tarifa', 'warning');
+        return;
+      }
+
       const pricesPayload: any[] = [];
       const updatedPrices = prices.current?.instance().getDataSource().items();
       updatedPrices?.forEach((item: any) => {
@@ -84,19 +93,18 @@ export const usePriceListObservers = ({
         toast('No se han realizado cambios', 'warning');
         return;
       }
-      httpClient
-        .post<AppResponse>(priceListEndpoints.updatePrices(), {
+      void httpRequestData<AppResponse>(
+        businessHttpClient.post<AppResponse>(priceListEndpoints.updatePrices(), {
           priceListId: selectedRow.id,
           prices: pricesPayload,
+        }),
+      )
+        .then((response) => {
+          toast(response.message, 'success');
+          emitEvent(ev.SUCCESS);
         })
-        .subscribe({
-          next: (response) => {
-            toast(response.data.message, 'success');
-            emitEvent(ev.SUCCESS);
-          },
-          error: () => {
-            toast('No se pudieron guardar los precios', 'error');
-          },
+        .catch(() => {
+          toast('No se pudieron guardar los precios', 'error');
         });
     });
   }, []);

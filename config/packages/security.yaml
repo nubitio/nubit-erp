@@ -69,6 +69,7 @@ security:
         - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
+        - { path: '^/api/test/e2e/(seed|reset)', roles: PUBLIC_ACCESS }
         - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }
         - { path: ^/api/sales/report, roles: ROLE_USER }

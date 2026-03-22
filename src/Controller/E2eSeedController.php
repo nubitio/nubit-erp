@@ -33,7 +33,7 @@ class E2eSeedController extends AbstractController
 
     public function seed(): JsonResponse
     {
-        if ($this->getParameter('kernel.environment') !== 'test') {
+        if (!\in_array($this->getParameter('kernel.environment'), ['dev', 'test'], true)) {
             throw new NotFoundHttpException();
         }
 
@@ -48,7 +48,7 @@ class E2eSeedController extends AbstractController
 
     public function reset(): JsonResponse
     {
-        if ($this->getParameter('kernel.environment') !== 'test') {
+        if (!\in_array($this->getParameter('kernel.environment'), ['dev', 'test'], true)) {
             throw new NotFoundHttpException();
         }
 

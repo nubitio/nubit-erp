@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const networkMocks = vi.hoisted(() => ({
+  businessHttpClient: {
+    get: vi.fn(),
+  },
+  httpRequestData: vi.fn(() => Promise.resolve([])),
+}));
+
 // ---------------------------------------------------------------------------
 // Module mocks — must be declared before the module under test is imported
 // ---------------------------------------------------------------------------
@@ -20,7 +27,7 @@ vi.mock('@core/common/UserInformation', () => ({
   })),
 }));
 
-vi.mock('@assets/Settings', () => ({
+vi.mock('@app/Settings', () => ({
   Setting: {
     AUTO_INVOICE: 'app_option_auto_invoice',
     CHECK_STOCK: 'app_option_check_stock',
@@ -48,10 +55,9 @@ vi.mock('@shared/lib/NumberUtils', () => ({
   },
 }));
 
-vi.mock('@shared/api/HttpClient', () => ({
-  httpClient: {
-    get: vi.fn(() => ({ subscribe: vi.fn() })),
-  },
+vi.mock('@shared/api/network', () => ({
+  businessHttpClient: networkMocks.businessHttpClient,
+  httpRequestData: networkMocks.httpRequestData,
 }));
 
 vi.mock('@features/product', () => ({
@@ -64,21 +70,13 @@ vi.mock('@features/pos/lib/GetStockUseCase', () => ({
   GetStockUseCase: vi.fn(() => Promise.resolve({ stock: 100 })),
 }));
 
-vi.mock('@features/catalog/pages/customers', () => ({
+vi.mock('@features/customer', () => ({
   CustomerPage: {},
 }));
 
 vi.mock('devextreme/ui/notify', () => ({
   default: vi.fn(),
 }));
-
-vi.mock('rxjs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('rxjs')>();
-  return {
-    ...actual,
-    lastValueFrom: vi.fn(() => Promise.resolve({ data: [] })),
-  };
-});
 
 // ---------------------------------------------------------------------------
 // Import the module under test AFTER all mocks are set up
@@ -91,6 +89,11 @@ import { SaleFields, SaleDetailFields, setTotal } from './SaleFields';
 // ---------------------------------------------------------------------------
 
 describe('SaleFields', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    networkMocks.httpRequestData.mockResolvedValue([]);
+  });
+
   // 1. SaleFields(null) returns array with 'id' field as identity
   it('returns an array of fields with the id field marked as identity', () => {
     const fields = SaleFields(null);
@@ -186,6 +189,34 @@ describe('SaleFields', () => {
     const addButton = customerField?.buttons?.find((b: any) => b.name === 'add') as any;
 
     expect(() => addButton?.options?.onClick({})).not.toThrow();
+  });
+
+  it('loads canonical price list data and refreshes changed detail rows', async () => {
+    const reloadDetailData = vi.fn();
+    const detailData = [
+      {
+        unitPrice: 10,
+        qty: 2,
+        netAmount: 20,
+        product: { id: 7 },
+      },
+    ];
+    const mockForm = {
+      getDetailData: vi.fn(() => detailData),
+      reloadDetailData,
+    };
+
+    networkMocks.httpRequestData.mockResolvedValueOnce([{ id: 7, price: 15 }] as any);
+
+    const fields = SaleFields(mockForm as any);
+    const priceListField = fields.find((f) => f.name === 'price_list') as any;
+
+    await priceListField?.onChange?.({ value: 3 }, undefined, undefined);
+
+    expect(networkMocks.businessHttpClient.get).toHaveBeenCalledWith('price-list/3/get');
+    expect(detailData[0].unitPrice).toBe(15);
+    expect(detailData[0].netAmount).toBe(30);
+    expect(reloadDetailData).toHaveBeenCalledTimes(1);
   });
 });
 

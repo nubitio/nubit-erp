@@ -1,7 +1,6 @@
-import { firstValueFrom } from 'rxjs';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { httpClient } from '@shared/api/HttpClient';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import { Constants } from '@core/common/Constants';
 import type { PaymentMethodOption, WarehouseOption } from './types';
 import { extractCollection, isCashPaymentMethod } from './posHelpers';
@@ -24,10 +23,11 @@ export function usePosPaymentMethods() {
   return useQuery<PaymentMethodOption[], Error>({
     queryKey: ['pos-payment-methods'],
     queryFn: () =>
-      firstValueFrom(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API Platform response shape varies
-        httpClient.get<any>(`${Constants.API_BASE_URL}payment-methods?itemsPerPage=100&page=1`),
-      ).then((response) => mapPaymentMethods(response.data)),
+      httpRequestData<any>(
+        businessHttpClient.get<any>(
+          `${Constants.API_BASE_URL}payment-methods?itemsPerPage=100&page=1`,
+        ),
+      ).then((responseData) => mapPaymentMethods(responseData)),
     staleTime: 5 * 60 * 1000,
     placeholderData: [],
   });
@@ -47,11 +47,10 @@ export function usePosWarehouses(currentBranchId: string) {
   return useQuery<WarehouseOption[], Error>({
     queryKey: ['pos-warehouses', currentBranchId],
     queryFn: () =>
-      firstValueFrom(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API Platform response shape varies
-        httpClient.get<any>(`${Constants.API_BASE_URL}warehouses?itemsPerPage=100&page=1`),
-      ).then((response) => {
-        const list = mapWarehouses(response.data);
+      httpRequestData<any>(
+        businessHttpClient.get<any>(`${Constants.API_BASE_URL}warehouses?itemsPerPage=100&page=1`),
+      ).then((responseData) => {
+        const list = mapWarehouses(responseData);
         const filteredByBranch =
           currentBranchId === ''
             ? list

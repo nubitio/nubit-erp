@@ -23,8 +23,9 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * ── Environment variables ──────────────────────────────────────────────────
  *   E2E_BASE_URL    default: http://efact-web  (Docker) | http://localhost:8080 (host)
- *   E2E_USERNAME    default: admin@test.com
- *   E2E_PASSWORD    default: password
+ *   E2E_USERNAME    optional; auto-seeded when omitted
+ *   E2E_PASSWORD    optional; auto-seeded when omitted
+ *   E2E_SALE_ID     optional; auto-seeded when omitted
  *
  * ── Note on Host header ────────────────────────────────────────────────────
  * We do NOT set extraHTTPHeaders.Host here. Chromium rejects page.goto() when
@@ -39,6 +40,7 @@ export default defineConfig({
 
   // Run tests sequentially — the happy-path is a stateful flow
   fullyParallel: false,
+  workers: 1,
 
   // Retry once on CI to catch flaky selectors; no retries locally
   retries: isCI ? 1 : 0,

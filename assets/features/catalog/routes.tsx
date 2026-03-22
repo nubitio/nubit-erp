@@ -1,11 +1,11 @@
 import type { AppRouteDefinition } from '@app/router/types';
+import { customerRoutes } from '@features/customer/routes';
+import { productRoutes } from '@features/product/routes';
 import {
   CategoryPage,
-  CustomerPage,
   OperationPage,
   PaymentMethodPage,
   PriceListPage,
-  ProductPage,
   SunatCatalogPage,
   SupplierPage,
   UnitOfMeasurePage,
@@ -15,9 +15,9 @@ import {
 } from './route-pages';
 
 export const catalogRoutes: AppRouteDefinition[] = [
-  { path: '/product', element: ProductPage },
+  ...productRoutes,
   { path: '/category', element: CategoryPage },
-  { path: '/customer', element: CustomerPage },
+  ...customerRoutes,
   { path: '/warehouse', element: WarehousePage },
   { path: '/price-list', element: PriceListPage },
   { path: '/supplier', element: SupplierPage },
