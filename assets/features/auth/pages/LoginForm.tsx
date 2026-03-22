@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Form, {
   ButtonItem,
   ButtonOptions,
@@ -12,6 +13,7 @@ import './LoginForm.scss';
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
 import { BranchPicker } from '@shared/ui/utils/branch-picker/BranchPicker';
+import { getRedirectFromSearch, toHashHref } from '@shared/lib/authRedirect';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 
 interface BranchOption {
@@ -20,6 +22,7 @@ interface BranchOption {
 }
 
 export const LoginForm = () => {
+  const location = useLocation();
   const formRef = useRef<FormRef | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +30,7 @@ export const LoginForm = () => {
   const [showLocalPicker, setShowLocalPicker] = useState(false);
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const redirectPath = getRedirectFromSearch(location.search) ?? '/';
 
   useEffect(() => {
     const editor = formRef.current?.instance().getEditor('username');
@@ -39,23 +43,26 @@ export const LoginForm = () => {
     }
   }, [submitError]);
 
-  const applyBranchAndRedirect = useCallback((branch: BranchOption) => {
-    authService.selectBranch(branch.id).subscribe({
-      next: () => {
-        branchService.setSelectedBranchId(branch.id);
-        branchService.setSelectedBranchName(branch.name);
-        window.location.href = '/';
-      },
-      error: (err) => {
-        const message =
-          err?.response?.data?.detail ||
-          err?.response?.data?.message ||
-          'No se pudo seleccionar el local. Inténtalo nuevamente.';
-        setSubmitError(message);
-        setLoading(false);
-      },
-    });
-  }, []);
+  const applyBranchAndRedirect = useCallback(
+    (branch: BranchOption) => {
+      authService.selectBranch(branch.id).subscribe({
+        next: () => {
+          branchService.setSelectedBranchId(branch.id);
+          branchService.setSelectedBranchName(branch.name);
+          window.location.href = toHashHref(redirectPath);
+        },
+        error: (err) => {
+          const message =
+            err?.response?.data?.detail ||
+            err?.response?.data?.message ||
+            'No se pudo seleccionar el local. Inténtalo nuevamente.';
+          setSubmitError(message);
+          setLoading(false);
+        },
+      });
+    },
+    [redirectPath],
+  );
 
   const onSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -194,6 +201,7 @@ export const LoginForm = () => {
         visible={showLocalPicker}
         setVisible={setShowLocalPicker}
         initialBranches={branchOptions}
+        redirectPath={redirectPath}
       />
     </form>
   );
