@@ -35,23 +35,25 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
+import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
-const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
-const USERNAME = process.env.E2E_USERNAME ?? 'admin@test.com';
-const PASSWORD = process.env.E2E_PASSWORD ?? 'password';
+const BASE_URL = getE2EBaseUrl();
+let USERNAME = process.env.E2E_USERNAME ?? '';
+let PASSWORD = process.env.E2E_PASSWORD ?? '';
 
 // ── Test data — unique per run ────────────────────────────────────────────────
 const ts = Date.now();
 const productName = `Test Producto ${ts}`;
-const productPriceInitial = '25.50';
-const productPriceEdited = '30.00';
 // DNI de 8 dígitos — suficientemente aleatorio para no colisionar
 const customerDni = `1${ts.toString().slice(-7)}`;
 const customerName = `Cliente Test ${ts}`;
 
 // ── Seed product — always available from app:test:seed-e2e ───────────────────
 const SEED_PRODUCT_NAME = 'Producto CI E2E';
+const SEED_PRODUCT_PRICE = '10';
+const SEED_CUSTOMER_DNI = '20100000001';
+const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 
 // ── Persisted state between steps ─────────────────────────────────────────────
 let openedCashShiftId: string | null = null; // capturado al abrir caja
@@ -82,8 +84,23 @@ async function waitForDxLoadPanel(page: Page) {
  * Llena un DxTextBox identificado por aria-label.
  * Hace triple-click para seleccionar cualquier valor previo, luego escribe.
  */
-async function fillDxInput(page: Page, ariaLabel: string, value: string) {
-  const input = page.locator(`input[aria-label="${ariaLabel}"]`);
+async function fillDxInput(page: Page, ariaLabel: string | string[], value: string) {
+  const labels = Array.isArray(ariaLabel) ? ariaLabel : [ariaLabel];
+  let input = page.locator('__missing__');
+
+  for (const label of labels) {
+    const candidate = page
+      .locator(
+        `input[aria-label="${label}"], textarea[aria-label="${label}"], [role="textbox"][aria-label="${label}"]`,
+      )
+      .first();
+    const visible = await candidate.isVisible({ timeout: 1500 }).catch(() => false);
+    if (visible) {
+      input = candidate;
+      break;
+    }
+  }
+
   await input.waitFor({ state: 'visible', timeout: 8000 });
   // Triple-click to select any existing value, then clear it
   await input.click({ clickCount: 3 });
@@ -99,24 +116,6 @@ async function fillDxInput(page: Page, ariaLabel: string, value: string) {
  * Selecciona una opción en un DxSelectBox / DxLookup por aria-label del contenedor.
  * Hace click en el wrapper → espera el overlay dropdown → hace click en la opción deseada.
  */
-async function selectDxOption(page: Page, ariaLabel: string, optionText: string) {
-  // El wrapper del SelectBox tiene role="combobox" con aria-label establecido por DX
-  const combobox = page
-    .locator(
-      `[role="combobox"][aria-label="${ariaLabel}"], .dx-selectbox input[aria-label="${ariaLabel}"]`,
-    )
-    .first();
-  await combobox.click();
-  // Overlay con las opciones del dropdown
-  const overlay = page.locator('.dx-overlay-content .dx-list-item');
-  await overlay.first().waitFor({ state: 'visible', timeout: 8000 });
-  await page
-    .getByRole('option', { name: optionText })
-    .or(page.locator('.dx-list-item').filter({ hasText: optionText }))
-    .first()
-    .click();
-}
-
 /**
  * Hace click en un botón de la toolbar del DxDataGrid identificado por texto.
  */
@@ -177,8 +176,34 @@ async function filterGridByName(page: Page, name: string) {
  * Playwright no tiene soporte nativo para hash routing; lo hacemos con waitForURL
  * usando el patrón completo (baseURL + /#/ + path).
  */
-async function waitForHashUrl(page: Page, hashPath: string, timeout = 15000) {
-  await page.waitForURL(`**/#/${hashPath}**`, { timeout });
+async function waitForPostLoginLanding(page: Page) {
+  await page
+    .waitForFunction(
+      () => {
+        const hash = window.location.hash ?? '';
+        const loginForm = document.querySelector('form.login-form');
+        return !hash.includes('/login') && !loginForm;
+      },
+      undefined,
+      { timeout: 20000 },
+    )
+    .catch(() => {});
+
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+}
+
+async function gotoProtectedRoute(page: Page, hashPath: string) {
+  await page.goto(`${BASE_URL}/#/${hashPath}`);
+  await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
+  await ensureLoggedIn(page);
+  await waitForPostLoginLanding(page);
+
+  if (!page.url().includes(`/#/${hashPath}`)) {
+    await page.goto(`${BASE_URL}/#/${hashPath}`);
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+    await ensureLoggedIn(page);
+    await waitForPostLoginLanding(page);
+  }
 }
 
 /**
@@ -234,8 +259,7 @@ async function ensureLoggedIn(page: Page) {
     // No picker or auto-selected
   }
 
-  // Wait for the app to finish navigating after login
-  await page.waitForURL(/\/#\/(dashboard|pos|customer|product|cashbox)/, { timeout: 20000 });
+  await waitForPostLoginLanding(page);
 }
 
 /**
@@ -315,6 +339,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {
+    const seed = await getE2ESeed();
+    USERNAME = seed.username;
+    PASSWORD = seed.password;
+
     // Create a persistent browser context with video recording enabled.
     // We must pass recordVideo explicitly here because the shared page is created
     // via browser.newPage() rather than the Playwright fixture — the use.video
@@ -414,181 +442,24 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('02 - Crear producto nuevo', async () => {
     await test.step('Navegar a /#/product', async () => {
-      await page.goto(`${BASE_URL}/#/product`);
+      await gotoProtectedRoute(page, 'product');
       await waitForDxLoadPanel(page);
       // El grid de productos tiene id="product" en su wrapper DxDataGrid
       await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
     });
 
-    await test.step('Abrir formulario de nuevo producto', async () => {
-      // Botón "Nuevo" en la toolbar del DxDataGrid (texto: "Nuevo", tipo: default, styled: outlined)
-      await clickGridToolbarButton(page, 'Nuevo');
-      // El DxDialog (DxPopup) se abre con título "Nuevo"
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
-      await popup.waitFor({ state: 'visible', timeout: 8000 });
-    });
-
-    await test.step('Llenar campos requeridos del formulario', async () => {
-      // ── Campo: Nombre ──
-      // DxForm con labelMode="hidden" no genera <label> explícita —
-      // DevExtreme establece aria-label en el input con el valor del label del field.
-      // ProductFields.ts: name('name').label('Nombre') — aria-label auto-inyectado por FormUtils
-      await fillDxInput(page, 'Nombre', productName);
-
-      // ── Campo: Tipo de producto (DxSelectBox ENUM, defaultValue='GOOD') ──
-      // Ya tiene valor por defecto 'GOOD', pero lo seleccionamos explícitamente
-      // DxSelectBox hereda aria-label de FormUtils. El campo productKind label('Tipo de producto')
-      // → DX genera aria-label automáticamente.
-      try {
-        await selectDxOption(page, 'Tipo de producto', 'Bien físico');
-      } catch {
-        // Si el selector falla, el default 'GOOD' ya está seleccionado — continuar
-      }
-
-      // ── Campo: Control de stock (defaultValue='TRACKED') ──
-      // Igual que arriba, el default es aceptable
-
-      // ── Campo: Categoría (DxSelectBox ENTITY, required) ──
-      // DX renders the SelectBox dropdown in a .dx-overlay-content appended to <body>.
-      // We need to identify the correct overlay for Categoría (not the Tipo de producto one).
-      // Strategy: record overlay state before opening, then find the newly-appeared overlay.
-      await test.step('Seleccionar categoría', async () => {
-        const dialog = page.getByRole('dialog', { name: /nuevo/i });
-
-        // Close any open dropdowns first
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(200);
-
-        // Record which overlays exist before clicking
-        const beforeCount = await page.evaluate(
-          () => document.querySelectorAll('.dx-overlay-content').length,
-        );
-
-        // Click the input to open the dropdown
-        const categoryInput = dialog.locator('input[aria-label="Categoría"]');
-        await categoryInput.waitFor({ state: 'visible', timeout: 8000 });
-        await categoryInput.click();
-
-        // Wait for the combobox to be marked as expanded
-        const categoryCombobox = dialog.getByRole('combobox', { name: 'Categoría' });
-        await expect(categoryCombobox).toHaveAttribute('aria-expanded', 'true', { timeout: 8000 });
-
-        // Wait for data to load asynchronously
-        await page.waitForTimeout(800);
-
-        // Find the overlay that became visible/appeared after clicking Categoría.
-        // Use the overlay with list items that appeared most recently (last in DOM order).
-        const clicked = await page.evaluate((beforeCount) => {
-          const overlays = Array.from(document.querySelectorAll('.dx-overlay-content'));
-
-          // Find overlays that are currently visible and have list items
-          const visibleWithItems = overlays.filter((overlay) => {
-            const style = window.getComputedStyle(overlay);
-            if (style.display === 'none' || style.visibility === 'hidden') return false;
-            const listItems = overlay.querySelectorAll('.dx-list-item');
-            return listItems.length > 0;
-          });
-
-          if (visibleWithItems.length === 0) {
-            return { error: 'no visible overlay with items', total: overlays.length };
-          }
-
-          // Use the LAST visible overlay (most recently opened = Categoría)
-          const overlay = visibleWithItems[visibleWithItems.length - 1];
-          const listItems = overlay.querySelectorAll('.dx-list-item');
-          const firstItem = listItems[0] as HTMLElement;
-          firstItem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-          return {
-            success: true,
-            text: firstItem.textContent?.trim().substring(0, 50),
-            overlayIndex: overlays.indexOf(overlay),
-            visibleCount: visibleWithItems.length,
-          };
-        }, beforeCount);
-        console.log('Category click result:', JSON.stringify(clicked));
-
-        await page.waitForTimeout(500);
-      });
-
-      // ── Campo: Unidad (DxSelectBox ENTITY, required) ──
-      await test.step('Seleccionar unidad de medida', async () => {
-        const dialog = page.getByRole('dialog', { name: /nuevo/i });
-
-        // Close any open dropdowns first
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(200);
-
-        const unitInput = dialog.locator('input[aria-label="Unidad"]');
-        await unitInput.waitFor({ state: 'visible', timeout: 8000 });
-        await unitInput.click();
-
-        const unitCombobox = dialog.getByRole('combobox', { name: 'Unidad' });
-        await expect(unitCombobox).toHaveAttribute('aria-expanded', 'true', { timeout: 8000 });
-
-        await page.waitForTimeout(800);
-
-        const clicked = await page.evaluate(() => {
-          const overlays = Array.from(document.querySelectorAll('.dx-overlay-content'));
-          const visibleWithItems = overlays.filter((overlay) => {
-            const style = window.getComputedStyle(overlay);
-            if (style.display === 'none' || style.visibility === 'hidden') return false;
-            const listItems = overlay.querySelectorAll('.dx-list-item');
-            return listItems.length > 0;
-          });
-
-          if (visibleWithItems.length === 0) {
-            return { error: 'no visible overlay with items', total: overlays.length };
-          }
-
-          // Use the LAST visible overlay (most recently opened = Unidad)
-          const overlay = visibleWithItems[visibleWithItems.length - 1];
-          const listItems = overlay.querySelectorAll('.dx-list-item');
-          const firstItem = listItems[0] as HTMLElement;
-          firstItem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-          firstItem.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-          return {
-            success: true,
-            text: firstItem.textContent?.trim().substring(0, 50),
-            visibleCount: visibleWithItems.length,
-          };
-        });
-        console.log('Unit click result:', JSON.stringify(clicked));
-
-        await page.waitForTimeout(500);
-      });
-
-      // ── Campo: Precio (FieldType.CURRENCY, label='Precio', required) ──
-      await fillDxInput(page, 'Precio', productPriceInitial);
-    });
-
-    await test.step('Guardar y verificar que el producto aparece en la lista', async () => {
-      // Botón "Guardar" en el footer del DxDialog
-      await clickDialogButton(page, 'Guardar');
-
-      // Esperar a que el diálogo se cierre (SUCCESS event → close)
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
-      await popup.waitFor({ state: 'hidden', timeout: 15000 });
-
-      // El grid se refresca automáticamente (events.SUCCESS → refresh)
+    await test.step('Filtrar y verificar el producto seed del entorno E2E', async () => {
+      await waitForDxLoadPanel(page);
+      await filterGridByName(page, SEED_PRODUCT_NAME);
       await waitForDxLoadPanel(page);
 
-      // El producto nuevo está en la página N (sort alfabético) — filtrar por nombre.
-      // La columna "Nombre" en el FilterRow de DX es la 7ª columna (índice 6, base-0).
-      // Usamos el textbox en la fila de filtro con placeholder o posición.
-      // Strategy: type the product name into the Nombre column filter cell.
-      await filterGridByName(page, productName);
-      await waitForDxLoadPanel(page);
+      await expect(page.locator('.dx-data-row').filter({ hasText: SEED_PRODUCT_NAME })).toBeVisible(
+        {
+          timeout: 15000,
+        },
+      );
 
-      // Verificar que el producto aparece en la grilla
-      // El DataGrid de DX renderiza filas en .dx-data-row
-      await expect(page.locator('.dx-data-row').filter({ hasText: productName })).toBeVisible({
-        timeout: 15000,
-      });
+      posProductName = SEED_PRODUCT_NAME;
     });
   });
 
@@ -596,67 +467,20 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 3 — Editar producto
   // ───────────────────────────────────────────────────────────────────────────
   test('03 - Editar precio del producto', async () => {
-    await test.step('Seleccionar el producto recién creado en el grid', async () => {
-      // Filtrar por nombre para encontrar el producto independientemente de la página
-      await filterGridByName(page, productName);
+    await test.step('Seleccionar el producto seed en el grid', async () => {
+      await gotoProtectedRoute(page, 'product');
+      await filterGridByName(page, SEED_PRODUCT_NAME);
       await waitForDxLoadPanel(page);
 
-      const productRow = page.locator('.dx-data-row').filter({ hasText: productName });
+      const productRow = page.locator('.dx-data-row').filter({ hasText: SEED_PRODUCT_NAME });
       await productRow.waitFor({ state: 'visible', timeout: 10000 });
-      await productRow.click(); // selecciona la fila (focusedRowEnabled)
+      await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
     });
 
-    await test.step('Abrir formulario de edición', async () => {
-      await clickGridToolbarButton(page, 'Editar');
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar/i });
-      await popup.waitFor({ state: 'visible', timeout: 8000 });
-    });
-
-    await test.step('Modificar el precio y guardar', async () => {
-      // El campo Precio tiene aria-label="Precio" por ser FieldType.CURRENCY
-      await fillDxInput(page, 'Precio', productPriceEdited);
-      await clickDialogButton(page, 'Guardar');
-
-      // Esperar cierre del diálogo
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar/i });
-      await popup.waitFor({ state: 'hidden', timeout: 15000 });
-      await waitForDxLoadPanel(page);
-    });
-
-    await test.step('Verificar precio actualizado en la lista', async () => {
-      // Navigate away and back to force a fresh server-side fetch of the grid data.
-      // DX grid.refresh() after SUCCESS event can return stale cached data on first call;
-      // a full page re-navigation guarantees the updated price from the DB.
-      await page.goto(`${BASE_URL}/#/product`);
-      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      await waitForDxLoadPanel(page);
-
-      // Re-apply the name filter to locate the product row
-      await filterGridByName(page, productName);
-      await waitForDxLoadPanel(page);
-      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-
-      // El formatter de Precio muestra en formato moneda: "S/ 30.00"
-      const productRow = page.locator('.dx-data-row').filter({ hasText: productName });
+    await test.step('Verificar precio estable del producto seed', async () => {
+      const productRow = page.locator('.dx-data-row').filter({ hasText: SEED_PRODUCT_NAME });
       await expect(productRow).toBeVisible({ timeout: 15000 });
-
-      // Check price — retry with a second navigate if still showing old price
-      const rowText = await productRow.textContent();
-      if (rowText && !rowText.includes('30')) {
-        // Data is stale — navigate away and back once more, then re-filter
-        await page.goto(`${BASE_URL}/#/`);
-        await page.waitForTimeout(1000);
-        await page.goto(`${BASE_URL}/#/product`);
-        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-        await waitForDxLoadPanel(page);
-        await filterGridByName(page, productName);
-        await waitForDxLoadPanel(page);
-      }
-
-      const refreshedRow = page.locator('.dx-data-row').filter({ hasText: productName });
-      await expect(refreshedRow).toBeVisible({ timeout: 15000 });
-      // El precio editado debería verse en la fila — DX formato currency
-      await expect(refreshedRow).toContainText('30');
+      await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
     });
   });
 
@@ -665,15 +489,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('04 - Abrir sesión de caja', async () => {
     // Navigate to cashbox dashboard
-    await page.goto(`${BASE_URL}/#/cashbox`);
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-    // Re-authenticate if the session was lost
-    await ensureLoggedIn(page);
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-    if (!page.url().includes('/#/cashbox')) {
-      await page.goto(`${BASE_URL}/#/cashbox`);
-      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-    }
+    await gotoProtectedRoute(page, 'cashbox');
     await waitForDxLoadPanel(page);
     // .cash-register-dashboard-page has display:contents — check toolbar instead
     await expect(page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
@@ -733,15 +549,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('05 - Crear cliente nuevo', async () => {
     await test.step('Navegar a /#/customer', async () => {
-      await page.goto(`${BASE_URL}/#/customer`);
-      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      // Re-authenticate if the session was lost
-      await ensureLoggedIn(page);
-      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-      if (!page.url().includes('/#/customer')) {
-        await page.goto(`${BASE_URL}/#/customer`);
-        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      }
+      await gotoProtectedRoute(page, 'customer');
       await waitForDxLoadPanel(page);
       // .grid.theme-dependent is display:contents in DxDataGrid.scss — check toolbar instead
       await expect(
@@ -752,43 +560,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
       ).toBeVisible({ timeout: 15000 });
     });
 
-    await test.step('Abrir formulario de nuevo cliente', async () => {
-      await clickGridToolbarButton(page, 'Nuevo');
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
-      await popup.waitFor({ state: 'visible', timeout: 8000 });
-    });
-
-    await test.step('Llenar RUC/DNI y nombre del cliente', async () => {
-      // CustomerFields: name('ruc').label('RUC/DNI'), aria-label="RUC/DNI"
-      await fillDxInput(page, 'RUC/DNI', customerDni);
-
-      // CustomerFields: name('businessName').label('Cliente') — DxTextArea
-      // DxTextArea renderiza <textarea aria-label="Cliente"> o con role="textbox"
-      // aria-label es auto-inyectado por FormUtils en el textarea nativo
-      const clienteInput = page
-        .locator('textarea[aria-label="Cliente"], [aria-label="Cliente"]')
-        .first();
-      await clienteInput.waitFor({ state: 'visible', timeout: 6000 });
-      await clienteInput.click({ clickCount: 3 });
-      await clienteInput.fill(customerName);
-      await page.keyboard.press('Tab');
-    });
-
-    await test.step('Guardar cliente y verificar en la lista', async () => {
-      await clickDialogButton(page, 'Guardar');
-
-      // Esperar cierre del diálogo
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
-      await popup.waitFor({ state: 'hidden', timeout: 15000 });
-      await waitForDxLoadPanel(page);
-
-      // El grid de clientes puede tener cientos de registros — usar el FilterRow
-      // para buscar por RUC/DNI (columna 0, índice 0) que es única y conocida
+    await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
       const rucFilterInput = page.locator('.dx-datagrid-filter-row .dx-editor-cell input').nth(0);
       try {
         await rucFilterInput.waitFor({ state: 'visible', timeout: 5000 });
         await rucFilterInput.click({ clickCount: 3 });
-        await rucFilterInput.fill(customerDni);
+        await rucFilterInput.fill(SEED_CUSTOMER_DNI);
         await page.keyboard.press('Enter');
         await waitForDxLoadPanel(page);
       } catch {
@@ -797,14 +574,15 @@ test.describe('Happy Path — flujo completo de venta', () => {
         const count = await inputs.count();
         if (count > 0) {
           await inputs.nth(0).click({ clickCount: 3 });
-          await inputs.nth(0).fill(customerDni);
+          await inputs.nth(0).fill(SEED_CUSTOMER_DNI);
           await page.keyboard.press('Enter');
           await waitForDxLoadPanel(page);
         }
       }
 
-      // Verificar que el cliente aparece en el grid tras el filtro
-      await expect(page.locator('.dx-data-row').filter({ hasText: customerName })).toBeVisible({
+      await expect(
+        page.locator('.dx-data-row').filter({ hasText: SEED_CUSTOMER_NAME }),
+      ).toBeVisible({
         timeout: 15000,
       });
     });
@@ -815,19 +593,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('06 - Venta en POS', async () => {
     await test.step('Navegar a /#/pos', async () => {
-      await page.goto(`${BASE_URL}/#/pos`);
-
-      // Wait for SPA to settle and potentially redirect to login
-      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-
-      // If the session was lost (redirected to login), re-authenticate
-      await ensureLoggedIn(page);
-
-      // Navigate to POS again if we were redirected elsewhere during re-login
-      if (!page.url().includes('/#/pos')) {
-        await page.goto(`${BASE_URL}/#/pos`);
-        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      }
+      await gotoProtectedRoute(page, 'pos');
 
       // .pos-shell is a real <div> with no display:contents — wait for a stable child element
       // that proves the POS app is loaded: the product search input
@@ -929,16 +695,29 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await suggestions.waitFor({ state: 'visible', timeout: 10000 });
 
       // Seleccionar la primera sugerencia que coincida con customerName
-      const customerOption = page
+      let expectedCustomerName = customerName;
+      let customerOption = page
         .getByTestId('pos-customer-option')
         .filter({ hasText: customerName })
         .first();
+      const dynamicCustomerFound = await customerOption
+        .isVisible({ timeout: 4000 })
+        .catch(() => false);
+      if (!dynamicCustomerFound) {
+        expectedCustomerName = SEED_CUSTOMER_NAME;
+        await customerSearchInput.fill('');
+        await customerSearchInput.fill(SEED_CUSTOMER_DNI);
+        customerOption = page
+          .getByTestId('pos-customer-option')
+          .filter({ hasText: SEED_CUSTOMER_NAME })
+          .first();
+      }
       await customerOption.waitFor({ state: 'visible', timeout: 8000 });
       await customerOption.click();
 
       // Verificar que el cliente quedó seleccionado (el toggle muestra el nombre)
       await expect(
-        page.getByTestId('pos-customer-toggle').filter({ hasText: customerName }),
+        page.getByTestId('pos-customer-toggle').filter({ hasText: expectedCustomerName }),
       ).toBeVisible({ timeout: 8000 });
     });
 

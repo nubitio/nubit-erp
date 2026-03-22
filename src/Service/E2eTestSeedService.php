@@ -42,6 +42,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 final class E2eTestSeedService implements E2eTestSeedServiceInterface
 {
     private const string E2E_USERNAME = 'ci_e2e_user';
+    private const string E2E_PASSWORD = 'CiE2E.123!';
     private const string E2E_BRANCH_NAME = 'CI E2E Branch';
     private const string E2E_CUSTOMER_RUC = '20100000001';
     private const string E2E_CUSTOMER_NAME = 'Cliente CI E2E';
@@ -75,8 +76,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     {
         $this->ensureInitialSetup();
 
-        $password = $this->generatePassword();
-        $user = $this->upsertE2eUser($password);
+        $user = $this->upsertE2eUser(self::E2E_PASSWORD);
 
         $branch = $this->upsertBranch();
         $warehouse = $this->upsertWarehouse($branch);
@@ -90,7 +90,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         return [
             'username' => $user->getUsername(),
-            'password' => $password,
+            'password' => self::E2E_PASSWORD,
             'saleId' => (string) $sale->getId(),
         ];
     }
@@ -420,10 +420,5 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->flush();
 
         return $cashRegister;
-    }
-
-    private function generatePassword(): string
-    {
-        return rtrim(strtr(base64_encode(random_bytes(12)), '+/', '-_'), '=');
     }
 }
