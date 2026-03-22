@@ -1,6 +1,5 @@
-import { forkJoin, map, of, switchMap } from 'rxjs';
 import { Constants } from '@core/common/Constants';
-import { httpClient } from '@shared/api/HttpClient';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 
 type EmitFn = (eventName: string, payload?: any) => void;
 
@@ -19,25 +18,18 @@ export const cloneSaleToForm = ({
 }: CloneSaleToFormParams) => {
   emit(loadingEventName, true);
 
-  httpClient
-    .get<any>(`${Constants.API_BASE_URL}sales/${saleId}`)
-    .pipe(
-      switchMap((saleResponse) =>
-        forkJoin({
-          sale: of(saleResponse),
-          items: httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/items`),
-        }),
-      ),
-      map(({ sale, items }) => ({
-        ...sale.data,
-        writeItems: items.data,
-      })),
-    )
-    .subscribe({
-      next: (data) => {
-        emit(addEventName, data);
-      },
-      complete: () => emit(loadingEventName, false),
-      error: () => emit(loadingEventName, false),
-    });
+  void Promise.all([
+    httpRequestData<any>(businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`)),
+    httpRequestData<any>(
+      businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/items`),
+    ),
+  ])
+    .then(([sale, items]) => {
+      emit(addEventName, {
+        ...sale,
+        writeItems: items,
+      });
+    })
+    .catch(() => undefined)
+    .finally(() => emit(loadingEventName, false));
 };

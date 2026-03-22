@@ -58,11 +58,13 @@ vi.mock('@features/movement', () => ({
 // Imports — after mocks are registered
 // ---------------------------------------------------------------------------
 import { renderHook, render, screen, waitFor } from '@testing-library/react';
+import { of } from 'rxjs';
 import { usePermissions } from './usePermissions';
 import { createScopedEventBus } from '../event/createScopedEventBus';
 import { useSelectionState } from './useSelectionState';
 import { useColumnPreset } from './useColumnPreset';
 import { AuditTrailPanel } from './AuditTrailPanel';
+import { businessHttpClient } from '@shared/api/network';
 import type { ResourceConfig } from './ResourceConfig';
 import type { AuditEntry } from './AuditTrail';
 import type { ColumnPreset } from './ColumnPreset';
@@ -446,6 +448,7 @@ describe('useColumnPreset', () => {
 // ---------------------------------------------------------------------------
 
 const noop = () => undefined;
+const apiResponse = <T>(data: T) => ({ data, headers: {} });
 
 // Initialise i18next + react-i18next once for the AuditTrailPanel suite.
 // AuditTrailPanel now uses useCoreTranslation() (SLICE-005), so the 'core'
@@ -465,6 +468,10 @@ beforeAll(async () => {
 });
 
 describe('AuditTrailPanel', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -507,15 +514,22 @@ describe('AuditTrailPanel', () => {
   });
 
   it('shows loading state immediately before fetch resolves', async () => {
-    // fetch that stalls until we resolve it — allows us to assert the loading UI
-    let resolveFetch!: (value: unknown) => void;
-    const pendingFetch = new Promise((res) => {
-      resolveFetch = res;
+    let resolveRequest!: (value: ReturnType<typeof apiResponse<AuditEntry[]>>) => void;
+    const pendingRequest = new Promise<ReturnType<typeof apiResponse<AuditEntry[]>>>((res) => {
+      resolveRequest = res;
     });
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => pendingFetch),
-    );
+    vi.spyOn(businessHttpClient, 'get').mockReturnValueOnce({
+      subscribe: (observer: {
+        next?: (value: { data: AuditEntry[] }) => void;
+        error?: (error: unknown) => void;
+      }) => {
+        pendingRequest.then(
+          (value) => observer.next?.(value),
+          (error) => observer.error?.(error),
+        );
+        return { unsubscribe: () => undefined };
+      },
+    } as never);
 
     render(
       React.createElement(AuditTrailPanel, {
@@ -531,8 +545,8 @@ describe('AuditTrailPanel', () => {
     // Settle the promise inside act() so React can flush the resulting state update
     // without triggering the "not wrapped in act" warning.
     await act(async () => {
-      resolveFetch({ ok: false, status: 500 });
-      await pendingFetch;
+      resolveRequest(apiResponse([]));
+      await pendingRequest;
     });
   });
 
@@ -556,15 +570,7 @@ describe('AuditTrailPanel', () => {
       },
     ];
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(entries),
-        }),
-      ),
-    );
+    vi.spyOn(businessHttpClient, 'get').mockReturnValueOnce(of(apiResponse(entries)) as never);
 
     render(
       React.createElement(AuditTrailPanel, {
@@ -586,15 +592,12 @@ describe('AuditTrailPanel', () => {
   });
 
   it('renders error state when fetch fails', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: false,
-          status: 500,
-        }),
-      ),
-    );
+    vi.spyOn(businessHttpClient, 'get').mockReturnValueOnce({
+      subscribe: (observer: { error?: (error: unknown) => void }) => {
+        observer.error?.(new Error('HTTP 500'));
+        return { unsubscribe: () => undefined };
+      },
+    } as never);
 
     render(
       React.createElement(AuditTrailPanel, {
@@ -610,15 +613,7 @@ describe('AuditTrailPanel', () => {
   });
 
   it('renders empty-list message when fetch returns an empty array', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve([]),
-        }),
-      ),
-    );
+    vi.spyOn(businessHttpClient, 'get').mockReturnValueOnce(of(apiResponse([])) as never);
 
     render(
       React.createElement(AuditTrailPanel, {
@@ -642,15 +637,7 @@ describe('AuditTrailPanel', () => {
       changes: {},
     };
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve([entry]),
-        }),
-      ),
-    );
+    vi.spyOn(businessHttpClient, 'get').mockReturnValueOnce(of(apiResponse([entry])) as never);
 
     const customRenderer = (e: AuditEntry) =>
       React.createElement('div', { 'data-testid': `custom-${e.id}` }, `Custom: ${e.user}`);

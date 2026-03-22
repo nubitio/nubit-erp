@@ -45,16 +45,18 @@ echo "[e2e-entrypoint] Seed response: ${SEED_RESPONSE}"
 # (no jq available in the Playwright image by default)
 E2E_USERNAME=$(echo "$SEED_RESPONSE" | grep -o '"username":"[^"]*"' | cut -d'"' -f4)
 E2E_PASSWORD=$(echo "$SEED_RESPONSE" | grep -o '"password":"[^"]*"' | cut -d'"' -f4)
+E2E_SALE_ID=$(echo "$SEED_RESPONSE" | grep -o '"saleId":"[^"]*"' | cut -d'"' -f4)
 
-if [ -z "$E2E_USERNAME" ] || [ -z "$E2E_PASSWORD" ]; then
-  echo "[e2e-entrypoint] ERROR: Could not parse credentials from seed response."
+if [ -z "$E2E_USERNAME" ] || [ -z "$E2E_PASSWORD" ] || [ -z "$E2E_SALE_ID" ]; then
+  echo "[e2e-entrypoint] ERROR: Could not parse E2E seed payload from seed response."
   echo "[e2e-entrypoint] Response was: ${SEED_RESPONSE}"
   exit 1
 fi
 
 export E2E_USERNAME
 export E2E_PASSWORD
-echo "[e2e-entrypoint] E2E credentials ready: username=${E2E_USERNAME}"
+export E2E_SALE_ID
+echo "[e2e-entrypoint] E2E seed ready: username=${E2E_USERNAME} saleId=${E2E_SALE_ID}"
 
 # ── 5. Start Vite dev server in the background ────────────────────────────────
 # The PHP app shell loads assets from http://localhost:5173 (vite-plugin-symfony).

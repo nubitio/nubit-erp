@@ -1,6 +1,5 @@
 export { AsyncState } from './async-state/AsyncState';
 export { AppToolbar } from './toolbar/AppToolbar';
 export { Card } from './library/card-auth/Card';
-export { AppHeader } from './library/app-header/AppHeader';
-export { AppFooter } from './library/app-footer/AppFooter';
-export { SideNavigationMenu } from './library/side-navigation-menu/SideNavigationMenu';
+// eslint-disable-next-line no-restricted-imports -- temporary facade to preserve shared import paths during shell migration
+export { AppHeader, AppFooter, SideNavigationMenu } from '../../app/shell/components';

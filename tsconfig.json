@@ -14,13 +14,16 @@
     "noImplicitAny": true,
     "baseUrl": ".",
     "paths": {
+      // Canonical frontend layer aliases (ADR-015)
       "@app/*": ["assets/app/*"],
-      "@shared/*": ["assets/shared/*"],
-      // TODO REFAC-002: rename @platform -> @core (259 active imports)
-      "@platform/*": ["assets/core/*"],
-      // Preferred alias for new code — points to the same directory as @platform
       "@core/*": ["assets/core/*"],
+      "@shared/*": ["assets/shared/*"],
       "@features/*": ["assets/features/*"],
+
+      // Legacy compatibility aliases - keep temporary while imports migrate
+      "@platform/*": ["assets/core/*"],
+
+      // Supporting aliases outside the canonical layer set
       "@pages/*": ["assets/pages/*"],
       "@layouts/*": ["assets/layouts/*"],
       "@utils/*": ["assets/utils/*"],

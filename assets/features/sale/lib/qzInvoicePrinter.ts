@@ -1,5 +1,6 @@
 import * as qz from 'qz-tray';
 import { Constants } from '@core/common/Constants';
+import { exceptionalFetch } from '@shared/api/network';
 import { saleService } from '../services/saleService';
 
 type QzInvoicePrinter = {
@@ -37,7 +38,11 @@ export const createQzInvoicePrinter = (): QzInvoicePrinter => {
 
     qz.security.setCertificatePromise(
       (resolve: (value: string) => void, reject: (reason?: any) => void) => {
-        fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
+        exceptionalFetch(
+          `${Constants.API_BASE_URL}qz/certificate`,
+          { cache: 'no-store' },
+          'sdk-required',
+        )
           .then((response) => {
             if (!response.ok) {
               throw new Error('No se pudo cargar el certificado de QZ Tray.');
@@ -51,11 +56,15 @@ export const createQzInvoicePrinter = (): QzInvoicePrinter => {
 
     qz.security.setSignaturePromise((toSign: string) => {
       return (resolve: (value: string) => void, reject: (reason?: any) => void) => {
-        fetch(`${Constants.API_BASE_URL}qz/sign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: toSign }),
-        })
+        exceptionalFetch(
+          `${Constants.API_BASE_URL}qz/sign`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: toSign }),
+          },
+          'sdk-required',
+        )
           .then((response) => {
             if (!response.ok) {
               throw new Error('No se pudo firmar el mensaje de QZ Tray.');

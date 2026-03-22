@@ -1,6 +1,2 @@
-import React from 'react';
-import './AppFooter.scss';
-
-export const AppFooter = ({ ...rest }) => {
-  return <footer className="footer" {...rest} />;
-};
+// eslint-disable-next-line no-restricted-imports -- temporary compatibility wrapper while shell exports move to @app
+export { AppFooter } from '../../../../app/shell/components/AppFooter';

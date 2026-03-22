@@ -15,15 +15,13 @@ import {
 import { userInformation } from '@core/common/UserInformation';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { httpClient } from '@shared/api/HttpClient';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import { productService } from '@features/product';
 import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { lastValueFrom } from 'rxjs';
-import { CustomerPage } from '@features/catalog/pages/customers';
 
 let priceList: PriceListItemDto[] = [];
 let selectedWarehouseId = '';
@@ -110,9 +108,9 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .valueType('number')
       .visible(false)
       .onChange(async (event: any) => {
-        priceList = await lastValueFrom(
-          httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
-        ).then((response) => response.data);
+        priceList = await httpRequestData<PriceListItemDto[]>(
+          businessHttpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
+        );
         const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: any) => {
           const actualPrice = item.unitPrice;

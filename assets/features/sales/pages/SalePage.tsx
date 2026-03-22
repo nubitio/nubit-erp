@@ -17,7 +17,7 @@ import {
   useSalePrintPreview,
   useSalePageObservers,
 } from '@features/sale';
-import { CustomerPage, CustomerFields } from '@features/catalog/pages/customers';
+import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';

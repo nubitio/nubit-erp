@@ -1,8 +1,6 @@
 import { productService } from '../../product';
-import { lastValueFrom } from 'rxjs';
+import { httpRequestData } from '@shared/api/network';
 
 export const GetStockUseCase = async (productId: string, warehouseId: string) => {
-  return await lastValueFrom(productService.getStock(productId, warehouseId)).then(
-    (response) => response.data,
-  );
+  return httpRequestData(productService.getStock(productId, warehouseId));
 };

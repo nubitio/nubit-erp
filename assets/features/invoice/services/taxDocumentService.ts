@@ -1,26 +1,30 @@
-import { httpClient } from '@shared/api/HttpClient';
+import { businessHttpClient } from '@shared/api/network';
 import AppResponse from '@shared/api/AppResponse';
 import { Constants } from '@core/common/Constants';
 
 export class TaxDocumentService {
   consultDocument(documentId: string) {
-    return httpClient.get<AppResponse>(
+    return businessHttpClient.get<AppResponse>(
       `${Constants.API_BASE_URL}tax-documents/${documentId}/consult`,
     );
   }
 
   sendDocument(documentId: string) {
-    return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${documentId}/send`);
+    return businessHttpClient.post<AppResponse>(
+      `${Constants.API_BASE_URL}tax-documents/${documentId}/send`,
+    );
   }
 
   validateDocument(documentId: string) {
-    return httpClient.post<AppResponse>(
+    return businessHttpClient.post<AppResponse>(
       `${Constants.API_BASE_URL}tax-documents/${documentId}/validate`,
     );
   }
 
   sendEmail(documentId: string) {
-    return httpClient.post<any>(`${Constants.API_BASE_URL}tax-documents/${documentId}/email`);
+    return businessHttpClient.post<any>(
+      `${Constants.API_BASE_URL}tax-documents/${documentId}/email`,
+    );
   }
 }
 

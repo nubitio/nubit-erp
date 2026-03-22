@@ -1,5 +1,5 @@
 // Catalog feature barrel
-// Re-exports route definitions and all public page components organized by sub-feature.
+// Temporary composition for residual catalog routes plus public sub-feature exports.
 export { catalogRoutes } from './routes';
 
 // Sub-feature barrels (use these for direct page/field imports)

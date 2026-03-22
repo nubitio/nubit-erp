@@ -6,20 +6,28 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import react from '@vitejs/plugin-react';
 
+const frontendAliases = {
+  // Canonical frontend layer aliases (ADR-015)
+  '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
+  '@core': fileURLToPath(new URL('./assets/core', import.meta.url)),
+  '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
+  '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
+
+  // Legacy compatibility aliases - keep temporary while imports migrate
+  '@platform': fileURLToPath(new URL('./assets/core', import.meta.url)),
+
+  // Supporting aliases outside the canonical layer set
+  '@layouts': fileURLToPath(new URL('./assets/layouts', import.meta.url)),
+  '@utils': fileURLToPath(new URL('./assets/utils', import.meta.url)),
+  '@theme': fileURLToPath(new URL('./assets/theme', import.meta.url)),
+  '@types': fileURLToPath(new URL('./assets/types', import.meta.url)),
+  '@assets': fileURLToPath(new URL('./assets', import.meta.url)),
+  '@offline': fileURLToPath(new URL('./assets/offline', import.meta.url)),
+};
+
 export default defineConfig({
   resolve: {
-    alias: {
-      '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
-      '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
-      '@core': fileURLToPath(new URL('./assets/core', import.meta.url)),
-      '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
-      '@layouts': fileURLToPath(new URL('./assets/layouts', import.meta.url)),
-      '@utils': fileURLToPath(new URL('./assets/utils', import.meta.url)),
-      '@theme': fileURLToPath(new URL('./assets/theme', import.meta.url)),
-      '@types': fileURLToPath(new URL('./assets/types', import.meta.url)),
-      '@assets': fileURLToPath(new URL('./assets', import.meta.url)),
-      '@offline': fileURLToPath(new URL('./assets/offline', import.meta.url)),
-    },
+    alias: frontendAliases,
   },
   server: {
     host: '0.0.0.0',

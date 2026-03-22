@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { exceptionalFetch } from '@shared/api/network';
 
 type ConnectivityStatus = 'online' | 'offline' | 'checking';
 
@@ -17,12 +18,16 @@ const pingBackend = async () => {
   const abortController = new AbortController();
   const timeout = window.setTimeout(() => abortController.abort(), 4000);
   try {
-    const response = await fetch('/health', {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'include',
-      signal: abortController.signal,
-    });
+    const response = await exceptionalFetch(
+      '/health',
+      {
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'include',
+        signal: abortController.signal,
+      },
+      'browser-native-api',
+    );
     return response.ok;
   } catch {
     return false;

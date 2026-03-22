@@ -135,3 +135,8 @@ services:
       $translator: '@translator'
       $requestStack: '@request_stack'
       $apiLocale: '%env(APP_API_LOCALE)%'
+
+  App\Infrastructure\Mercure\E2eTolerantHub:
+    decorates: mercure.hub.default
+    arguments:
+      $inner: '@App\Infrastructure\Mercure\E2eTolerantHub.inner'

@@ -1,4 +1,4 @@
-// Sales feature barrel — public API
+// Sales feature barrel — temporary composition/orchestration API
 // Pages (lazy wrappers used by the router are in route-pages.tsx)
 export { SalePage } from './pages/SalePage';
 export { InvoicePage } from './pages/InvoicePage';

@@ -10,6 +10,7 @@ import { dataSource, useApi } from './useApi';
 import { AppToolbar } from '../../shared/ui/toolbar/AppToolbar';
 import { QuerySuggestionChips } from './components/QuerySuggestionChips';
 import type { AssistantAttachmentPayload } from './services/assistantService';
+import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
 // Note: DevExtreme 25.2 introduces LoadPanel indicatorOptions={{ animationType: "sparkle" }}
 // and LoadIndicator animationType="sparkle". When a LoadPanel or LoadIndicator is added to
@@ -206,11 +207,9 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
           uploadFile: async (file: File): Promise<void> => {
             const formData = new FormData();
             formData.append('file', file);
-            const response = await fetch('/api/media', { method: 'POST', body: formData });
-            if (!response.ok) {
-              throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
-            }
-            const data = (await response.json()) as { id: string; path: string };
+            const data = await httpRequestData<{ id: string; path: string }>(
+              businessHttpClient.post('/api/media', formData),
+            );
             uploadedFilesRef.current.set(file.name, {
               mediaId: data.id,
               mimeType: file.type,
