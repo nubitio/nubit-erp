@@ -242,10 +242,13 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
         const state = fieldStates.find((s) => s.name === field.name);
         if (!state) return field;
 
-        // If the field should not be visible, we will filter it out below
-        if (!state.visible) return null;
-
         const updated: Field = { ...field };
+
+        // Conditional visibility is driven by live form data, so it should only
+        // affect the dialog form. Grid column visibility remains controlled by
+        // the static field definition / Hydra metadata.
+        updated.visibleOnForm = state.visible;
+        updated.hidden = !state.visible;
 
         // Apply disabled state
         if (state.disabled) {

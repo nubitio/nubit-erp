@@ -7,9 +7,12 @@ namespace App\Entity;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
@@ -23,11 +26,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
 #[ApiResource(
-    filters: [DevExtremeFilter::class],
-    mercure: true,
-)]
-#[ApiResource(
     operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Patch(),
+        new Delete(),
         new GetCollection(
             uriTemplate: '/cash-shifts/{id}/movements',
             uriVariables: [
@@ -36,33 +40,24 @@ use Symfony\Component\Serializer\Attribute\Groups;
                     fromClass: CashShift::class,
                 ),
             ],
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_movement:read']],
             output: CashMovement::class,
             provider: CashShiftMovementsProvider::class,
         ),
-    ],
-    normalizationContext: ['groups' => ['cash_movement:read']],
-    paginationEnabled: false,
-    mercure: true,
-)]
-#[ApiResource(
-    operations: [
         new GetCollection(
             uriTemplate: '/cash-shifts/{id}/summary',
+            paginationEnabled: false,
             provider: CashShiftClosureSummaryProvider::class,
         ),
-    ],
-    paginationEnabled: false,
-    mercure: true,
-)]
-#[ApiResource(
-    operations: [
         new Get(
             uriTemplate: '/cash-shifts/{id}/x-report',
-            provider: CashShiftXReportProvider::class,
+            paginationEnabled: false,
             output: CashShiftXReportDto::class,
+            provider: CashShiftXReportProvider::class,
         ),
     ],
-    paginationEnabled: false,
+    filters: [DevExtremeFilter::class],
     mercure: true,
 )]
 class CashShift

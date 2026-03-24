@@ -104,6 +104,33 @@ describe('useConditionalRules', () => {
     expect(result.current[0].visible).toBe(true);
   });
 
+  it('preserves form-hidden fields as hidden by default', () => {
+    const fields: Field[] = [
+      makeField({
+        name: 'type',
+        visibleOnForm: false,
+      }),
+    ];
+
+    const { result } = renderHook(() => useConditionalRules(fields, {}));
+
+    expect(result.current[0].visible).toBe(false);
+  });
+
+  it('does not re-show form-hidden fields when visibleWhen becomes true', () => {
+    const fields: Field[] = [
+      makeField({
+        name: 'type',
+        visibleOnForm: false,
+        visibleWhen: (data) => data.productKind === 'GOOD',
+      }),
+    ];
+
+    const { result } = renderHook(() => useConditionalRules(fields, { productKind: 'GOOD' }));
+
+    expect(result.current[0].visible).toBe(false);
+  });
+
   it('applies disabledWhen — field disabled when condition true', () => {
     const fields: Field[] = [
       makeField({

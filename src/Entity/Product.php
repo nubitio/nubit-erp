@@ -6,7 +6,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
@@ -26,19 +30,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'producto')]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Patch(),
+        new Delete(),
+        new Get(
+            uriTemplate: 'products/{id}/stock/{warehouseId}',
+            controller: ProductStockController::class,
+            read: false,
+        ),
+    ],
     normalizationContext: ['groups' => ['product:read']],
     denormalizationContext: ['groups' => ['product:write']],
     filters: [DevExtremeFilter::class],
-    mercure: true,
-)]
-#[ApiResource(
-    uriTemplate: 'products/{id}/stock/{warehouseId}',
-    operations: [
-        new Get(
-            controller: ProductStockController::class,
-            read: false
-        ),
-    ],
     mercure: true,
 )]
 #[AppAssert\UniqueEntity(fields: ['code'], message: 'Ya existe un producto con el mismo código.')]
@@ -151,7 +157,7 @@ class Product
     #[ORM\Column(name: 'stock', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
     private ?string $stock = null;
 
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ApiProperty(description: 'product.min_stock.label')]
     #[ORM\Column(name: 'stock_minimo', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
     private ?string $minStock = null;
