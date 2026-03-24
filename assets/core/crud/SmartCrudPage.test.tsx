@@ -9,9 +9,10 @@ import type { ResourceConfig } from './ResourceConfig';
 import { SmartCrudFieldContractError } from './fieldContract';
 import { dispatch } from '../event/EventHook';
 
-const { capturedResources, useResourceSchemaMock } = vi.hoisted(() => ({
+const { capturedResources, useResourceSchemaMock, useConditionalRulesMock } = vi.hoisted(() => ({
   capturedResources: [] as Array<ResourceConfig<Record<string, unknown>>>,
   useResourceSchemaMock: vi.fn(),
+  useConditionalRulesMock: vi.fn(() => []),
 }));
 
 vi.mock('./CrudPage', () => ({
@@ -34,7 +35,7 @@ vi.mock('./rules/useFieldPermissions', () => ({
 }));
 
 vi.mock('./rules/useConditionalRules', () => ({
-  useConditionalRules: () => [],
+  useConditionalRules: (...args: unknown[]) => (useConditionalRulesMock as any)(...args),
 }));
 
 vi.mock('./rules/useDependsOn', () => ({
@@ -136,6 +137,8 @@ describe('SmartCrudPage', () => {
   beforeEach(() => {
     capturedResources.length = 0;
     useResourceSchemaMock.mockReset();
+    useConditionalRulesMock.mockReset();
+    useConditionalRulesMock.mockReturnValue([]);
   });
 
   it('applies canonical operation semantics at runtime without hiding grid visibility', () => {
@@ -219,5 +222,33 @@ describe('SmartCrudPage', () => {
     expect(
       screen.getByText(/Synthetic field 'email' collides with an inferred Hydra field\./),
     ).toBeTruthy();
+  });
+
+  it('applies conditional visibility to the form without hiding grid columns', () => {
+    useResourceSchemaMock.mockReturnValue({
+      fields: [makeField('inventoryBehavior')],
+      isLoading: false,
+      error: undefined,
+      supportedOperations: ['GET', 'POST', 'PATCH'],
+    });
+    (useConditionalRulesMock as any).mockReturnValue([
+      { name: 'inventoryBehavior', visible: false, disabled: false, computedValue: undefined },
+    ]);
+
+    render(
+      React.createElement(SmartCrudPage, {
+        resource: {
+          id: 'products',
+          title: 'Products',
+          apiUrl: '/api/products',
+          fields: [],
+        },
+      }),
+    );
+
+    const field = (capturedResources.at(-1)!.fields as Field[])[0];
+    expect(field.visible).toBe(true);
+    expect(field.visibleOnForm).toBe(false);
+    expect(field.hidden).toBe(true);
   });
 });

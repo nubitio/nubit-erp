@@ -1,41 +1,287 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
-import type { FieldOverride } from '@core/crud/hydra/useResourceSchema';
+import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract';
 import { Constants } from '@core/common/Constants';
+import type { Field } from '@core/field/Field';
+import { enumField, imageField } from '@core/field/FieldBuilders';
+import React from 'react';
 
-const productResource = defineResource({
+interface ProductRecord extends Record<string, unknown> {
+  id: string;
+  code: string | null;
+  type: number;
+  productType: string;
+  productKind: 'GOOD' | 'SERVICE' | 'DIGITAL';
+  inventoryBehavior: 'TRACKED' | 'NOT_TRACKED' | 'COMPOSITE';
+  trackInventory: boolean;
+  sku: string | null;
+  barcode: string | null;
+  lotTrackingStrategy: 'NONE' | 'FIFO' | 'FEFO';
+  name: string;
+  category: unknown;
+  baseUnit: unknown;
+  unitOfMeasure: unknown;
+  purchasePrice: string | null;
+  salePrice: string;
+  stock: string | null;
+  minStock: string | null;
+  stocks: unknown[];
+  photo: unknown;
+  detractionCatalog: unknown;
+}
+
+function toPatch(field: Field): SmartCrudFieldPatch<ProductRecord> {
+  const { name: _name, ...patch } = field;
+  void _name;
+
+  return patch as SmartCrudFieldPatch<ProductRecord>;
+}
+
+function renderProductPhoto(photo: { path?: string } | null | undefined, name: string) {
+  const size = 36;
+
+  if (photo?.path) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+        <a href={photo.path} target="_blank" rel="noreferrer">
+          <img
+            src={photo.path}
+            alt={name}
+            style={{
+              width: size,
+              height: size,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              display: 'block',
+              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.18)',
+            }}
+          />
+        </a>
+      </div>
+    );
+  }
+
+  const initials =
+    name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || 'PR';
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+      <div
+        title={name}
+        aria-label={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+          color: '#1e3a8a',
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+        }}
+      >
+        {initials}
+      </div>
+    </div>
+  );
+}
+
+function renderDetractionText(
+  detraction: { code?: string; description?: string } | null | undefined,
+) {
+  if (!detraction) {
+    return '';
+  }
+
+  const code = detraction.code?.trim();
+  const description = detraction.description?.trim();
+
+  if (code && description) {
+    return `${code} - ${description}`;
+  }
+
+  return code ?? description ?? '';
+}
+
+function renderDetractionOption(item: unknown) {
+  const detraction = item as
+    | { code?: string; description?: string; percentage?: number | null }
+    | null
+    | undefined;
+  const code = detraction?.code?.trim();
+  const description = detraction?.description?.trim();
+  const percentage = detraction?.percentage;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2 }}>
+      {code ? <strong style={{ color: '#1e3a8a' }}>{code}</strong> : null}
+      <span>{description ?? code ?? ''}</span>
+      {typeof percentage === 'number' ? (
+        <span style={{ color: '#475569', fontSize: 12 }}>{percentage}%</span>
+      ) : null}
+    </div>
+  );
+}
+
+const productKindPatch = toPatch(
+  enumField([
+    { value: 'GOOD', text: 'Bien' },
+    { value: 'SERVICE', text: 'Servicio' },
+    { value: 'DIGITAL', text: 'Digital' },
+  ])
+    .name('productKind')
+    .label('Clase de producto')
+    .required(true)
+    .build(),
+);
+
+const inventoryBehaviorPatch = toPatch(
+  enumField([
+    { value: 'TRACKED', text: 'Inventario controlado' },
+    { value: 'NOT_TRACKED', text: 'Sin control de inventario' },
+    { value: 'COMPOSITE', text: 'Compuesto' },
+  ])
+    .name('inventoryBehavior')
+    .label('Comportamiento de inventario')
+    .required(true)
+    .build(),
+);
+
+const lotTrackingStrategyPatch = toPatch(
+  enumField([
+    { value: 'NONE', text: 'Sin lotes' },
+    { value: 'FIFO', text: 'FIFO' },
+    { value: 'FEFO', text: 'FEFO' },
+  ])
+    .name('lotTrackingStrategy')
+    .label('Estrategia de lotes')
+    .required(true)
+    .build(),
+);
+
+const photoPatch = toPatch(
+  imageField(Constants.API_BASE_URL)
+    .name('photo')
+    .label('Imagen')
+    .width(120)
+    .formatter((e) =>
+      renderProductPhoto(
+        (e.value as { path?: string } | null | undefined) ?? undefined,
+        String(e.data?.name ?? 'Producto'),
+      ),
+    )
+    .visibleOnForm(true)
+    .build(),
+);
+
+const productResource = defineResource<ProductRecord>({
   id: 'product',
   title: 'Productos',
   apiUrl: Constants.API_BASE_URL + 'products',
   fields: [],
+  fieldContract: defineFields<ProductRecord>({
+    source: 'hydra',
+    strategy: 'augment',
+    directives: [
+      { kind: 'override', key: 'code', patch: { order: 0, width: 140 } },
+      { kind: 'override', key: 'name', patch: { order: 1, width: 260 } },
+      { kind: 'override', key: 'category', patch: { order: 2, width: 180 } },
+      {
+        kind: 'override',
+        key: 'type',
+        patch: {
+          order: 3,
+          visible: false,
+          visibleOnForm: false,
+          required: true,
+          computed: (formData) => (formData.productKind === 'GOOD' ? 1 : 2),
+        },
+      },
+      {
+        kind: 'override',
+        key: 'productKind',
+        patch: { ...productKindPatch, order: 3, width: 170, defaultValue: 'GOOD' },
+      },
+      {
+        kind: 'override',
+        key: 'inventoryBehavior',
+        patch: {
+          ...inventoryBehaviorPatch,
+          order: 4,
+          width: 220,
+          visibleWhen: (formData) => formData.productKind === 'GOOD',
+        },
+      },
+      { kind: 'override', key: 'sku', patch: { order: 5, width: 140 } },
+      { kind: 'override', key: 'barcode', patch: { order: 6, width: 160 } },
+      {
+        kind: 'override',
+        key: 'lotTrackingStrategy',
+        patch: {
+          ...lotTrackingStrategyPatch,
+          order: 7,
+          width: 150,
+          visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'unitOfMeasure',
+        patch: { order: 8, width: 160, defaultValue: 1 },
+      },
+      {
+        kind: 'override',
+        key: 'purchasePrice',
+        patch: { order: 9, width: 130, visibleOnForm: false },
+      },
+      { kind: 'override', key: 'salePrice', patch: { order: 10, width: 130 } },
+      { kind: 'override', key: 'stock', patch: { order: 11, width: 120, visibleOnForm: false } },
+      {
+        kind: 'override',
+        key: 'minStock',
+        patch: {
+          order: 12,
+          width: 130,
+          visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
+        },
+      },
+      { kind: 'override', key: 'photo', patch: { ...photoPatch, order: 13 } },
+      {
+        kind: 'override',
+        key: 'detractionCatalog',
+        patch: {
+          order: 14,
+          width: 280,
+          visible: true,
+          visibleOnForm: true,
+          visibleWhen: (formData) => formData.productKind === 'GOOD',
+          textField: 'description',
+          filters: [{ field: 'catalog', operator: '=', value: 54 }],
+          itemFormatter: renderDetractionOption,
+          formatter: (e) =>
+            renderDetractionText(
+              (e.value as { code?: string; description?: string } | null) ?? null,
+            ),
+        },
+      },
+      { kind: 'override', key: 'productType', patch: { visible: false, visibleOnForm: false } },
+      { kind: 'override', key: 'trackInventory', patch: { visible: false, visibleOnForm: false } },
+      { kind: 'override', key: 'baseUnit', patch: { visible: false, visibleOnForm: false } },
+      { kind: 'override', key: 'stocks', patch: { visible: false, visibleOnForm: false } },
+    ],
+  }),
   allowAdd: true,
   allowEdit: true,
   allowDelete: true,
   sort: [{ selector: 'name', desc: false }],
 });
 
-const productFieldOverrides: FieldOverride[] = [
-  { key: 'code', order: 0, width: 140 },
-  { key: 'type', order: 1, width: 140 },
-  { key: 'sku', order: 2, width: 140 },
-  { key: 'barcode', order: 3, width: 160 },
-  { key: 'purchasePrice', order: 4, width: 130 },
-  { key: 'stock', order: 5, width: 120 },
-  { key: 'name', order: 6, width: 260 },
-  { key: 'category', order: 7, width: 180 },
-  { key: 'salePrice', order: 8, width: 130 },
-  { key: 'productType', visible: false },
-  { key: 'productClass', visible: false },
-  { key: 'inventoryBehavior', visible: false },
-  { key: 'controlInventory', visible: false },
-  { key: 'batchTracking', visible: false },
-  { key: 'baseUnit', visible: false },
-  { key: 'unitOfMeasure', visible: false },
-  { key: 'stockMinimum', visible: false },
-  { key: 'stocks', visible: false },
-  { key: 'photo', visible: false },
-  { key: 'detractionCatalog', visible: false },
-];
-
-export const ProductPage = () => (
-  <SmartCrudPage resource={productResource} fieldOverrides={productFieldOverrides} />
-);
+export const ProductPage = () => <SmartCrudPage resource={productResource} />;

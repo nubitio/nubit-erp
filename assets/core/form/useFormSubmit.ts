@@ -75,6 +75,19 @@ export const useFormSubmit = (
       formData[file.name] = file.iri;
     });
 
+    // Apply computed fields before transport-specific serialization so hidden
+    // derived values are still submitted even when they are not rendered in the form.
+    options.fields.forEach((field: Field) => {
+      if (!field.computed) {
+        return;
+      }
+
+      const computedValue = field.computed(formData);
+      if (computedValue !== undefined) {
+        formData[field.name] = computedValue;
+      }
+    });
+
     options.fields.forEach((field: Field) => {
       if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
         const val = formData[field.name];

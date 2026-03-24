@@ -6,8 +6,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Api\ConsultInvoice;
 use App\Controller\Api\SendInvoiceEmail;
@@ -29,15 +32,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
 #[ORM\Table(name: 'tax_document')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
-    denormalizationContext: ['groups' => ['invoice:write', 'creditnote:write']],
-    filters: [DevExtremeFilter::class],
-    provider: TaxDocumentProvider::class,
-    processor: TaxDocumentProcessor::class,
-    mercure: true,
-)]
-#[ApiResource(
     operations: [
+        new GetCollection(provider: TaxDocumentProvider::class),
+        new Post(processor: TaxDocumentProcessor::class),
+        new Get(provider: TaxDocumentProvider::class),
+        new Patch(processor: TaxDocumentProcessor::class),
+        new Delete(processor: TaxDocumentProcessor::class),
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
             controller: ConsultInvoice::class,
@@ -69,6 +69,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
             fromClass: TaxDocument::class
         ),
     ],
+    normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
+    denormalizationContext: ['groups' => ['invoice:write', 'creditnote:write']],
+    filters: [DevExtremeFilter::class],
     mercure: true,
 )]
 class TaxDocument

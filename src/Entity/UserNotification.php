@@ -9,8 +9,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\State\Notification\UserNotificationProvider;
 use App\Repository\UserNotificationRepository;
+use App\State\Notification\UserNotificationProvider;
 use App\State\Notification\UserNotificationReadAllProcessor;
 use App\State\Notification\UserNotificationReadProcessor;
 use DateTimeImmutable;
@@ -18,12 +18,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-/**
- * Per-user in-app notification stored in the tenant DB.
- *
- * read_at = NULL  → unread
- * read_at = !NULL → read (timestamp when marked)
- */
 #[ORM\Entity(repositoryClass: UserNotificationRepository::class)]
 #[ORM\Table(name: 'user_notification')]
 #[ORM\Index(name: 'idx_user_notification_user', columns: ['user_id', 'read_at', 'created_at'])]
@@ -34,22 +28,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['user_notification:read']],
             provider: UserNotificationProvider::class,
         ),
-    ],
-    paginationEnabled: false,
-    mercure: true,
-)]
-#[ApiResource(
-    operations: [
         new Patch(
             uriTemplate: '/user-notifications/{id}/read',
             normalizationContext: ['groups' => ['user_notification:read']],
             processor: UserNotificationReadProcessor::class,
         ),
-    ],
-    mercure: true,
-)]
-#[ApiResource(
-    operations: [
         new Post(
             uriTemplate: '/user-notifications/read-all',
             input: false,
@@ -58,6 +41,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     mercure: true,
+    paginationEnabled: false,
 )]
 class UserNotification
 {

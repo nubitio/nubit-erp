@@ -6,8 +6,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
@@ -21,11 +24,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PriceListRepository::class)]
 #[ORM\Table(name: 'price_list')]
 #[ApiResource(
-    filters: [DevExtremeFilter::class],
-    mercure: true,
-)]
-#[ApiResource(
     operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Patch(),
+        new Delete(),
         new GetCollection(
             uriTemplate: '/price-lists/{id}/prices',
             uriVariables: [
@@ -45,6 +49,7 @@ use Doctrine\ORM\Mapping as ORM;
             processor: PriceListProcessor::class,
         ),
     ],
+    filters: [DevExtremeFilter::class],
     mercure: true,
 )]
 class PriceList

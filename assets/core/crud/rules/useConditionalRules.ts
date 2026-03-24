@@ -29,7 +29,9 @@ export function useConditionalRules(
     const hasData = Object.keys(formData).length > 0;
 
     return fields.map((field) => {
-      const visible = hasData && field.visibleWhen ? field.visibleWhen(formData) : true;
+      const baseVisible = field.visibleOnForm;
+      const visible =
+        hasData && field.visibleWhen ? baseVisible && field.visibleWhen(formData) : baseVisible;
       const disabled = hasData && field.disabledWhen ? field.disabledWhen(formData) : false;
       const computedValue = hasData && field.computed ? field.computed(formData) : undefined;
       return { name: field.name, visible, disabled, computedValue };

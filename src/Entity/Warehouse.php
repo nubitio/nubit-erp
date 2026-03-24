@@ -6,8 +6,12 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\WarehouseRepository;
 use App\State\Warehouse\WarehousesByBranchProvider;
@@ -20,20 +24,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: WarehouseRepository::class)]
 #[ORM\Table(name: 'almacen')]
 #[ApiResource(
-    normalizationContext: ['groups' => ['warehouse:read']],
-    filters: [DevExtremeFilter::class],
-    mercure: true,
-)]
-#[ApiResource(
-    uriTemplate: '/branches/{id}/warehouses',
-    operations: [new GetCollection()],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'id',
-            fromClass: Branch::class,
+    operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Patch(),
+        new Delete(),
+        new GetCollection(
+            uriTemplate: '/branches/{id}/warehouses',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: Branch::class,
+                ),
+            ],
+            provider: WarehousesByBranchProvider::class,
         ),
     ],
-    provider: WarehousesByBranchProvider::class,
+    normalizationContext: ['groups' => ['warehouse:read']],
+    filters: [DevExtremeFilter::class],
     mercure: true,
 )]
 class Warehouse

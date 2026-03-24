@@ -11,32 +11,35 @@ use ApiPlatform\Metadata\Link;
 use App\Controller\ConsultController;
 
 #[ApiResource(
-    uriTemplate: '/consults/dni/{id}',
     shortName: 'Consult',
-    description: 'Retrieves DNI info.',
-    operations: [new Get(read: false)],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'id',
-            fromClass: ConsultResource::class,
+    operations: [
+        new Get(
+            uriTemplate: '/consults/dni/{id}',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: ConsultResource::class,
+                ),
+            ],
+            defaults: ['docType' => 'dni'],
+            controller: ConsultController::class,
+            description: 'Retrieves DNI info.',
+            read: false,
+        ),
+        new Get(
+            uriTemplate: '/consults/ruc/{id}',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: ConsultResource::class,
+                ),
+            ],
+            defaults: ['docType' => 'ruc'],
+            controller: ConsultController::class,
+            description: 'Retrieves RUC info.',
+            read: false,
         ),
     ],
-    defaults: ['docType' => 'dni'],
-    controller: ConsultController::class
-)]
-#[ApiResource(
-    uriTemplate: '/consults/ruc/{id}',
-    shortName: 'Consult',
-    description: 'Retrieves RUC info.',
-    operations: [new Get(read: false)],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'id',
-            fromClass: ConsultResource::class,
-        ),
-    ],
-    defaults: ['docType' => 'ruc'],
-    controller: ConsultController::class
 )]
 class ConsultResource
 {

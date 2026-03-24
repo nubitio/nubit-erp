@@ -6,8 +6,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
@@ -28,40 +31,22 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new GetCollection(
             uriTemplate: '/cash-registers/dashboard',
+            paginationEnabled: false,
             provider: CashRegisterDashboardProvider::class,
         ),
-    ],
-    paginationEnabled: false,
-    mercure: true,
-)]
-#[ApiResource(
-    shortName: 'CashRegister',
-    operations: [
         new Post(
             uriTemplate: '/cash-registers/{id}/open',
             input: CashRegisterOpenDto::class,
             output: CashShift::class,
             processor: CashRegisterOpenProcessor::class,
         ),
-    ],
-    mercure: true,
-)]
-#[ApiResource(
-    shortName: 'CashRegister',
-    operations: [
         new Post(
             uriTemplate: '/cash-registers/{id}/close',
+            paginationEnabled: false,
             input: CashRegisterCloseDto::class,
             output: ApiResponse::class,
             processor: CashRegisterCloseProcessor::class,
         ),
-    ],
-    paginationEnabled: false,
-    mercure: true,
-)]
-#[ApiResource(
-    shortName: 'CashRegister',
-    operations: [
         new GetCollection(
             uriTemplate: '/cash-registers/{id}/shifts',
             uriVariables: [
@@ -70,16 +55,17 @@ use Symfony\Component\Serializer\Attribute\Groups;
                     fromClass: CashRegister::class,
                 ),
             ],
+            paginationEnabled: true,
             normalizationContext: ['groups' => ['cash_session:read']],
             output: CashSession::class,
             provider: CashRegisterShiftsProvider::class,
         ),
+        new GetCollection(uriTemplate: '/cash-registers'),
+        new Post(uriTemplate: '/cash-registers'),
+        new Get(uriTemplate: '/cash-registers/{id}'),
+        new Patch(uriTemplate: '/cash-registers/{id}'),
+        new Delete(uriTemplate: '/cash-registers/{id}'),
     ],
-    paginationEnabled: true,
-    mercure: true,
-)]
-#[ApiResource(
-    shortName: 'CashRegister',
     normalizationContext: ['groups' => ['cash_register:read']],
     filters: [DevExtremeFilter::class],
     mercure: true,
