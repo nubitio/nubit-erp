@@ -2,8 +2,8 @@ import type { Field } from '../../field/Field';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import { useSchemaContext } from './SchemaContext';
-
-export type FieldOverride = Partial<Field> & { key: string };
+import type { SmartCrudFieldContract, SmartCrudRecord } from '../fieldContract';
+import { resolveSmartCrudFields, type FieldOverride } from '../resolveSmartCrudFields';
 
 export interface UseResourceSchemaResult {
   fields: Field[];
@@ -27,12 +27,38 @@ function normalizeUrl(url: string): string {
   return url.startsWith('/') ? url.slice(1) : url;
 }
 
-export function useResourceSchema(
+export function useResourceSchema<T extends SmartCrudRecord = Record<string, unknown>>(
   apiUrl: string,
   manualFields?: Field[],
   overrides?: FieldOverride[],
+  fieldContract?: SmartCrudFieldContract<T>,
 ): UseResourceSchemaResult {
   const { data, isLoading, error } = useSchemaContext();
+
+  const resolveWithRuntimeErrors = (
+    resolver: () => Field[],
+    supportedOperations: string[] = [],
+  ): UseResourceSchemaResult => {
+    try {
+      return {
+        fields: resolver(),
+        isLoading: false,
+        error: undefined,
+        supportedOperations,
+      };
+    } catch (runtimeError) {
+      return {
+        fields: [],
+        isLoading: false,
+        error: runtimeError instanceof Error ? runtimeError : new Error(String(runtimeError)),
+        supportedOperations,
+      };
+    }
+  };
+
+  if (fieldContract?.source === 'manual') {
+    return resolveWithRuntimeErrors(() => resolveSmartCrudFields({ contract: fieldContract }));
+  }
 
   if (manualFields && manualFields.length > 0) {
     return { fields: manualFields, isLoading: false, error: undefined, supportedOperations: [] };
@@ -61,22 +87,17 @@ export function useResourceSchema(
     resourceSchema,
     (className) => resourceMap[className]?.apiUrl,
   );
-  const merged = overrides ? mergeOverrides(inferred, overrides) : inferred;
-  return {
-    fields: merged,
-    isLoading: false,
-    error: undefined,
-    supportedOperations: resourceSchema.supportedOperations ?? [],
-  };
+
+  return resolveWithRuntimeErrors(
+    () =>
+      resolveSmartCrudFields({
+        baselineFields: inferred,
+        contract: fieldContract,
+        legacyOverrides: fieldContract ? undefined : overrides,
+      }),
+    resourceSchema.supportedOperations ?? [],
+  );
 }
 
-export function mergeOverrides(inferred: Field[], overrides: FieldOverride[]): Field[] {
-  return inferred.map((field) => {
-    // Match override by `key` discriminator (maps to field.name).
-    const override = overrides.find((o) => o.key === field.name);
-    if (!override) return field;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { key: _discardedKey, ...overrideProps } = override;
-    return { ...field, ...overrideProps };
-  });
-}
+export type { FieldOverride };
+export { mergeOverrides } from '../resolveSmartCrudFields';

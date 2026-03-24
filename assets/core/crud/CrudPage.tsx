@@ -66,6 +66,10 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   const { t } = useCoreTranslation();
   const { events, fields, formRef, permissions, selectionState, presetState } =
     useCrudPage(resource);
+  const datagridFields = useMemo(
+    () => fields.filter((field) => field.isIdentity || field.visible !== false),
+    [fields],
+  );
 
   const isInlineEditMode =
     resource.editMode === 'row' || resource.editMode === 'cell' || resource.editMode === 'batch';
@@ -280,7 +284,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
         id={resource.id}
         title={resource.title}
         url={resource.apiUrl}
-        fields={fields}
+        fields={datagridFields}
         events={events}
         allowAdd={permissions.canAdd}
         allowEdit={permissions.canEdit}
