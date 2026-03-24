@@ -7,6 +7,7 @@ import type { BulkAction } from './BulkAction';
 import type { FormLayout } from './FormLayout';
 import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
+import type { SmartCrudFieldContract } from './fieldContract';
 
 /**
  * Generic factory that receives a form ref and returns typed field definitions.
@@ -48,7 +49,18 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   id: string;
   title: string;
   apiUrl: string;
+  /**
+   * Legacy/manual field entrypoint.
+   * Prefer `fieldContract` for canonical SmartCrud authoring; this remains as
+   * a compatibility path for manual screens and in-flight migrations.
+   */
   fields: Field[] | FieldDef<T>[] | FieldsFactory<T>;
+  /**
+   * Canonical production field contract for SmartCrud.
+   * SmartCrud runtime treats this as authoritative over legacy
+   * `fields` + `fieldOverrides` combinations whenever it is present.
+   */
+  fieldContract?: SmartCrudFieldContract<T>;
   /** Optional: inject a pre-existing event bus (e.g. a module-level singleton).
    *  When omitted, `useCrudPage` creates fresh events via `createCrudEvents(id)`. */
   events?: FormEventNames;

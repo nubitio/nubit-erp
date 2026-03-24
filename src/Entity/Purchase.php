@@ -16,6 +16,7 @@ use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\PurchaseRepository;
 use App\State\Purchase\PurchaseProcessor;
 use App\State\Purchase\PurchaseProvider;
+use App\State\Purchase\PurchaseSoftDeleteProcessor;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -35,7 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(),
         new Put(),
         new Patch(),
-        new Delete(),
+        new Delete(processor: PurchaseSoftDeleteProcessor::class, output: false),
     ],
     normalizationContext:   ['groups' => ['purchase:read']],
     denormalizationContext: ['groups' => ['purchase:write']],

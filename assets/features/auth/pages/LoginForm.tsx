@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { flushSync } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Form, {
   ButtonItem,
   ButtonOptions,
@@ -13,7 +14,8 @@ import './LoginForm.scss';
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
 import { BranchPicker } from '@shared/ui/utils/branch-picker/BranchPicker';
-import { getRedirectFromSearch, toHashHref } from '@shared/lib/authRedirect';
+import { resolveLoginRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
+import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 
 interface BranchOption {
@@ -23,6 +25,7 @@ interface BranchOption {
 
 export const LoginForm = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const formRef = useRef<FormRef | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +33,9 @@ export const LoginForm = () => {
   const [showLocalPicker, setShowLocalPicker] = useState(false);
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const redirectPath = getRedirectFromSearch(location.search) ?? '/';
+  const [redirectPath] = useState(() =>
+    resolveLoginRedirect(location.search, window.location.hash),
+  );
 
   useEffect(() => {
     const editor = formRef.current?.instance().getEditor('username');
@@ -49,7 +54,13 @@ export const LoginForm = () => {
         next: () => {
           branchService.setSelectedBranchId(branch.id);
           branchService.setSelectedBranchName(branch.name);
-          window.location.href = toHashHref(redirectPath);
+          const nextPath = resolvePostLoginRedirect(redirectPath);
+
+          flushSync(() => {
+            requestAuthSessionSync();
+          });
+
+          navigate(nextPath, { replace: true });
         },
         error: (err) => {
           const message =
@@ -61,7 +72,7 @@ export const LoginForm = () => {
         },
       });
     },
-    [redirectPath],
+    [navigate, redirectPath],
   );
 
   const onSubmit = useCallback(

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'devextreme-react';
 import List from 'devextreme-react/list';
 import { Popup, PopupRef, ToolbarItem } from 'devextreme-react/popup';
@@ -6,7 +8,8 @@ import ArrayStore from 'devextreme/data/array_store';
 
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
-import { getHashRouterPath, toHashHref } from '@shared/lib/authRedirect';
+import { resolveBranchSelectionRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
+import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@utils/media-query';
 
@@ -31,6 +34,7 @@ export const BranchPicker = ({
   redirectPath,
 }: BranchPickerProps) => {
   const ref = useRef<PopupRef>(null);
+  const navigate = useNavigate();
   const { isXSmall } = useScreenSize();
   const [dataSource, setDataSource] = useState<ArrayStore | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -62,7 +66,15 @@ export const BranchPicker = ({
         branchService.setSelectedBranchId(selectedBranch.id);
         branchService.setSelectedBranchName(selectedBranch.name);
         close();
-        window.location.href = toHashHref(redirectPath ?? getHashRouterPath(window.location.hash));
+        const nextPath = redirectPath
+          ? resolvePostLoginRedirect(redirectPath)
+          : resolveBranchSelectionRedirect(undefined, window.location.search, window.location.hash);
+
+        flushSync(() => {
+          requestAuthSessionSync();
+        });
+
+        navigate(nextPath, { replace: true });
       },
       error: () => {
         setSelecting(false);
@@ -71,7 +83,7 @@ export const BranchPicker = ({
         setSelecting(false);
       },
     });
-  }, [selectedBranch, selecting, close, redirectPath]);
+  }, [selectedBranch, selecting, close, navigate, redirectPath]);
 
   const loadBranchData = useCallback((data: Branch[]) => {
     setDataSource(

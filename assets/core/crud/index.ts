@@ -8,6 +8,44 @@ export type {
   ResourcePermissions,
   ResourceRouting,
 } from './ResourceConfig';
+export {
+  defineFieldContract,
+  defineFields,
+  validateFieldContract,
+  SmartCrudFieldContractError,
+} from './fieldContract';
+export { validateHydraFieldResolutionInput, validateResolvedFieldNames } from './fieldValidation';
+export {
+  applyFieldOperationSemantics,
+  collectOperationSemanticsIssues,
+  normalizeFieldOperationSemantics,
+  resolveFieldOperationSemantics,
+  SmartCrudFieldOperationSemanticsError,
+} from './fieldOperationSemantics';
+export { resolveSmartCrudFields } from './resolveSmartCrudFields';
+export type {
+  SmartCrudFieldContract,
+  SmartCrudFieldOperation,
+  SmartCrudFieldOperationBehavior,
+  SmartCrudFieldOperationState,
+  SmartCrudFieldPatch,
+  SmartCrudFieldResolutionStrategy,
+  SmartCrudFieldSourceMode,
+  SmartCrudHydraFieldContract,
+  SmartCrudHydraFieldDirective,
+  SmartCrudManualField,
+  SmartCrudManualFieldContract,
+  SmartCrudModelFieldKey,
+  SmartCrudRecord,
+} from './fieldContract';
+export type { FieldOverride } from './resolveSmartCrudFields';
+export type {
+  SmartCrudFieldOperationFlag,
+  SmartCrudNormalizedFieldOperationSemantics,
+  SmartCrudResolvedFieldOperationSemantics,
+  SmartCrudResolvedFieldOperationState,
+  SmartCrudOperation,
+} from './fieldOperationSemantics';
 export type { FieldDef } from '../field/Field';
 export { usePermissions } from './usePermissions';
 export type { ResolvedPermissions } from './usePermissions';

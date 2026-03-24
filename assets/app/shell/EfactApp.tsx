@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 import LoadPanel from 'devextreme-react/load-panel';
 
-import { useAuth } from '@app/contexts/auth';
+import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '../../utils/media-query';
 import { Content } from './Content';
 import { useThemeContext } from '../../theme/theme';
@@ -18,11 +18,12 @@ import { FullScreenContent } from './FullScreenContent';
 import { MercureManager } from '@core/mercure';
 import { AppProviders } from '../AppProviders';
 
-function RootApp() {
+export function RootApp() {
   const { user, loading } = useAuth();
   const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
+  const hasCommittedSession = hasCommittedAuthSession();
 
-  if (loading) {
+  if (loading || (!user && hasCommittedSession)) {
     return <LoadPanel visible />;
   }
 

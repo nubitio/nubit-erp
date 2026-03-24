@@ -3,6 +3,29 @@ import type { AuthContextType, User } from '../../types';
 import { StorageUtils } from '../../shared/lib/StorageUtils';
 import { branchService } from '../../features/branch';
 import { authService } from '../../features/auth';
+import { subscribeToAuthSessionSync } from '@shared/lib/authSessionSync';
+
+function hasCommittedBranchContext(): boolean {
+  return branchService.hasSelectedBranch() && branchService.hasSelectedBranchName();
+}
+
+function getStoredAuthenticatedUser(): User | undefined {
+  if (!hasCommittedBranchContext()) {
+    return undefined;
+  }
+
+  const storedUser = StorageUtils.getItem('user') as User | null;
+
+  if (!storedUser?.username) {
+    return undefined;
+  }
+
+  return storedUser;
+}
+
+export function hasCommittedAuthSession(): boolean {
+  return getStoredAuthenticatedUser() !== undefined;
+}
 
 function AuthProvider(props: React.PropsWithChildren<unknown>) {
   const [user, setUser] = useState<User>();
@@ -10,15 +33,19 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
 
   useEffect(() => {
     (async function () {
-      if (branchService.hasSelectedBranch()) {
-        const storedUser = StorageUtils.getItem('user') as User | null;
-        if (storedUser?.username) {
-          setUser(storedUser);
-        }
-      }
-
+      setUser(getStoredAuthenticatedUser());
       setLoading(false);
     })();
+  }, []);
+
+  useEffect(() => {
+    const subscription = subscribeToAuthSessionSync(() => {
+      setUser(getStoredAuthenticatedUser());
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = useCallback(

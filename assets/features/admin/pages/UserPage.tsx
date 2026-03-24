@@ -1,15 +1,4 @@
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { userEvents } from '@features/user';
-import { userEndpoints } from '../api/adminEndpoints';
+import { SmartCrudPage } from '@core/crud';
+import { userResource } from './userResource';
 
-const resource = defineResource({
-  id: 'user',
-  title: 'Usuarios',
-  apiUrl: userEndpoints.list(),
-  fields: [],
-  events: userEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
-});
-export const UserPage = () => <SmartCrudPage resource={resource} />;
+export const UserPage = () => <SmartCrudPage resource={userResource} />;

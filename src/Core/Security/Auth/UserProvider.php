@@ -29,12 +29,11 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
     {
         $user = $this->entityManager->getRepository(User::class)->findOneBy([
             'username' => $identifier,
+            'deletedAt' => null,
         ]);
 
         if (!$user instanceof User) {
-            throw new UserNotFoundException(
-                sprintf('User "%s" does not exist.', $identifier)
-            );
+            throw new UserNotFoundException();
         }
 
         return $user;

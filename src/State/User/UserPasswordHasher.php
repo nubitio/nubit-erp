@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\State\User;
 
 use Override;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use ApiPlatform\Validator\Exception\ValidationException;
 use App\Entity\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -32,11 +36,19 @@ final readonly class UserPasswordHasher implements ProcessorInterface
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if (!$data->getPlainPassword()) {
+        $plainPassword = $data->getPlainPassword();
+
+        if ($operation instanceof Post && (null === $plainPassword || '' === $plainPassword)) {
+            throw new ValidationException(new ConstraintViolationList([
+                new ConstraintViolation('This value should not be blank.', null, [], $data, 'plainPassword', null),
+            ]));
+        }
+
+        if (null === $plainPassword || '' === $plainPassword) {
             return $this->processor->process($data, $operation, $uriVariables, $context);
         }
 
-        $hashedPassword = $this->passwordHasher->hashPassword($data, $data->getPlainPassword());
+        $hashedPassword = $this->passwordHasher->hashPassword($data, $plainPassword);
 
         $data->setPassword($hashedPassword);
         $data->eraseCredentials();

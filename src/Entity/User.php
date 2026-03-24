@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use Override;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -15,6 +16,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\UserRepository;
+use App\State\User\UserSoftDeleteProcessor;
 use App\State\User\UserPasswordHasher;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\EquatableInterface;
@@ -32,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(),
         new Put(processor: UserPasswordHasher::class),
         new Patch(processor: UserPasswordHasher::class),
-        new Delete(),
+        new Delete(processor: UserSoftDeleteProcessor::class, output: false),
     ],
     normalizationContext: [
         'groups' => ['user:read'],
@@ -70,6 +72,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:create',
         'user:update',
     ])]
+    #[Assert\NotBlank(groups: ['user:create'])]
+    #[Assert\Length(min: 6, max: 255)]
     #[ApiProperty(description: 'user.plain_password.label')]
     private ?string $plainPassword = null;
 
@@ -82,6 +86,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
     private Role $role;
+
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true, options: ['default' => null])]
+    private ?DateTimeImmutable $deletedAt = null;
 
     public function getId(): ?int
     {
@@ -118,7 +125,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return $this->plainPassword;
     }
 
-    public function setPlainPassword(string $plainPassword): static
+    public function setPlainPassword(?string $plainPassword): static
     {
         $this->plainPassword = $plainPassword;
 
@@ -167,6 +174,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     public function setRole(?Role $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }
