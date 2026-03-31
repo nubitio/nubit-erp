@@ -1,6 +1,6 @@
 import { taxDocumentService } from '@features/invoice';
 
-type CreditNoteRow = {
+export type CreditNoteRow = {
   id: string;
   sunatStatus?: string;
   publicReceiptUrl?: string;

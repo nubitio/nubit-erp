@@ -64,7 +64,7 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
     httpClient
       .get(props.url + '/' + props.sub)
       .subscribe((response) => {
-        formRef.current?.setValues(response.data);
+        formRef.current?.setValues(response.data as Record<string, unknown>);
       })
       .add(() => setLoading(false));
   };

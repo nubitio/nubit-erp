@@ -5,7 +5,12 @@ export default class ApiResponse<T> {
   data: T;
 
   constructor(response: AxiosResponse<T>) {
-    this.headers = response.headers;
+    this.headers = Object.fromEntries(
+      Object.entries(response.headers).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value.join(', ') : String(value ?? ''),
+      ]),
+    );
     this.data = response.data;
   }
 }

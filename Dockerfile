@@ -67,7 +67,7 @@ EXPOSE 80 443
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+    CMD sh -lc 'status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health || true); [ "$status" = "200" ] || [ "$status" = "503" ]'
 
 # Common entrypoint (used by all stages)
 ENTRYPOINT ["/entrypoint.sh"]

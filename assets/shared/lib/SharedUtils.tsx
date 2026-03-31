@@ -141,36 +141,43 @@ export class SharedUtils {
   }
 
   static validateRUC(ruc: string | number): boolean {
-    const rucCopy = ruc;
     const validStartWith = [10, 15, 16, 17, 20];
-    const rucPart = ruc.toString().substring(0, 2);
-    if (ruc.length !== 11 || !validStartWith.includes(parseInt(rucPart))) return false;
+    const rucString = String(ruc);
+    const rucPart = rucString.substring(0, 2);
+    if (rucString.length !== 11 || !validStartWith.includes(parseInt(rucPart, 10))) return false;
 
+    const digits = rucString.split('').map((digit) => Number(digit));
     let sum = 0;
     for (let i = 0; i < 11; i++) {
       if (i !== 0) {
         const factor = (i % 7) + ((i / 7) | 0) + 1;
-        sum += (ruc % 10) * factor;
+        sum += digits[10 - i] * factor;
       }
-      ruc = (ruc / 10) | 0;
     }
     const mod = sum % 11;
     const res = 11 - mod;
-    return rucCopy % 10 === res % 10;
+    return digits[10] === res % 10;
   }
 
   static tagsFormatter(value: Array<Record<string, unknown>> | null | undefined, name: string) {
     if (value && value.length > 0) {
       return (
         <div className="flex flex-wrap">
-          {value.map((item: Record<string, unknown>) => (
-            <span
-              key={item.id}
-              className="badge badge-outlined rounded-pill text-bg-primary me-1 mb-1"
-            >
-              {item[name]}
-            </span>
-          ))}
+          {value.map((item: Record<string, unknown>, index) => {
+            const key =
+              typeof item.id === 'string' || typeof item.id === 'number' ? item.id : index;
+            const label =
+              typeof item[name] === 'string' || typeof item[name] === 'number' ? item[name] : '';
+
+            return (
+              <span
+                key={key}
+                className="badge badge-outlined rounded-pill text-bg-primary me-1 mb-1"
+              >
+                {label}
+              </span>
+            );
+          })}
         </div>
       );
     } else {

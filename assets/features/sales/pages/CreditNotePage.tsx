@@ -6,6 +6,7 @@ import { DxForm, type DxFormEvents } from '@core/form/DxForm';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@core/event/EventHook';
+import type { CreditNoteRow } from '@features/creditNote/lib/creditNoteActions';
 import {
   creditNoteEvents,
   runOpenCreditNoteReceiptAction,
@@ -30,7 +31,7 @@ export const CreditNotePage = () => {
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => gridRef.current?.getSelectedRow(),
+      getSelectedRow: () => gridRef.current?.getSelectedRow() as CreditNoteRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),

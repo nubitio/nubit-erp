@@ -15,8 +15,9 @@ export function useCurrencySettings() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initialising derived state from cached settings on mount; no reactive trigger available
     setCurrency(resolved);
 
-    if (rateSetting?.value && Number(rateSetting.value) > 0) {
-      setExchangeRate(rateSetting.value);
+    const rateValue = rateSetting?.value;
+    if ((typeof rateValue === 'string' || typeof rateValue === 'number') && Number(rateValue) > 0) {
+      setExchangeRate(String(rateValue));
     }
   }, []);
 

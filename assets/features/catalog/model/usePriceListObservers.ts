@@ -23,6 +23,10 @@ type UsePriceListObserversParams = {
   pricesData: React.RefObject<DataSource>;
 };
 
+type SelectedPriceListRow = {
+  id: string | number;
+};
+
 export const usePriceListObservers = ({
   on,
   emit,
@@ -46,7 +50,7 @@ export const usePriceListObservers = ({
     } = callbacksRef.current;
 
     onEvent(ev.ADD, () => {
-      const selectedRow = grid.current?.getSelectedRow();
+      const selectedRow = grid.current?.getSelectedRow() as SelectedPriceListRow | undefined;
       if (!selectedRow) {
         toast('Debe seleccionar una tarifa', 'warning');
         return;
@@ -74,7 +78,7 @@ export const usePriceListObservers = ({
     });
 
     onEvent(ev.SAVE, () => {
-      const selectedRow = grid.current?.getSelectedRow();
+      const selectedRow = grid.current?.getSelectedRow() as SelectedPriceListRow | undefined;
       if (!selectedRow) {
         toast('Debe seleccionar una tarifa', 'warning');
         return;

@@ -98,7 +98,7 @@ export interface DxDataGridEvents {
   refresh: () => void;
   reset: () => void;
   getVisibleRows: () => DataGridTypes.Row[] | undefined;
-  getSelectedRowKey: () => unknown;
+  getSelectedRowKey: () => string | number | undefined;
   getSelectedRow: () => Record<string, unknown> | undefined;
   getSelectedRowKeys: () => unknown[];
   getSelectedRows: () => Record<string, unknown>[];
@@ -154,8 +154,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     gridRef.current?.instance().resetOption('focusedRowKey');
   };
 
-  const onExporting = (e: DataGridTypes.ExportingEvent) =>
-    handleDataGridExport(e, options.title);
+  const onExporting = (e: DataGridTypes.ExportingEvent) => handleDataGridExport(e, options.title);
 
   const onAddClick = () => {
     if (options.events?.ADD) emit(options.events?.ADD);
@@ -240,7 +239,8 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const getSelectedRowKey = () => {
-    return gridRef.current?.instance().getSelectedRowKeys()[0];
+    const key = gridRef.current?.instance().getSelectedRowKeys()[0];
+    return typeof key === 'string' || typeof key === 'number' ? key : undefined;
   };
 
   const getSelectedRow = () => {
@@ -248,11 +248,11 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const getSelectedRowKeys = () => {
-    return gridRef.current?.instance().getSelectedRowKeys();
+    return gridRef.current?.instance().getSelectedRowKeys() ?? [];
   };
 
   const getSelectedRows = () => {
-    return gridRef.current?.instance().getSelectedRowsData();
+    return (gridRef.current?.instance().getSelectedRowsData() ?? []) as Record<string, unknown>[];
   };
 
   const setDataSource = (dataSource: Store | null) => {

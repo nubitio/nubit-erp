@@ -19,6 +19,11 @@ type RoleMenu = {
   items: { id: number; text: string; selected: boolean }[];
 };
 
+type SelectedRole = {
+  id: string | number;
+  name?: string;
+};
+
 const API_URL = roleEndpoints.list();
 const fields = RoleFields();
 
@@ -35,7 +40,7 @@ export const RolePage = () => {
       text: 'Permisos',
       type: 'info',
       onClick: () => {
-        const row = gridRef.current?.getSelectedRow();
+        const row = gridRef.current?.getSelectedRow() as SelectedRole | undefined;
         if (row) {
           emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
           httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).subscribe((response) => {

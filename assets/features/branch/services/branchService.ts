@@ -14,7 +14,8 @@ class BranchService {
    * Get the currently selected branch ID
    */
   getSelectedBranchId(): string | null {
-    return StorageUtils.getItem(BranchService.SELECTED_BRANCH_ID);
+    const branchId = StorageUtils.getItem(BranchService.SELECTED_BRANCH_ID);
+    return typeof branchId === 'string' ? branchId : null;
   }
 
   /**
@@ -43,7 +44,8 @@ class BranchService {
   }
 
   getSelectedBranchName(): string | null {
-    return StorageUtils.getItem(BranchService.SELECTED_BRANCH_NAME);
+    const branchName = StorageUtils.getItem(BranchService.SELECTED_BRANCH_NAME);
+    return typeof branchName === 'string' ? branchName : null;
   }
 
   clearSelectedBranchName(): void {
