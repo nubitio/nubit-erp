@@ -4,6 +4,7 @@ import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
+import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
 import {
   invoiceEvents,
   runConsultInvoiceCdrAction,
@@ -24,7 +25,7 @@ export const InvoicePage = () => {
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => gridRef.current?.getSelectedRow(),
+      getSelectedRow: () => gridRef.current?.getSelectedRow() as InvoiceRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),

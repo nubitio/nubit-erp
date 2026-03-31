@@ -115,7 +115,10 @@ export const SalePage = () => {
   };
 
   const toolbar = createSaleToolbar({
-    getSelectedSaleId: () => gridRef.current?.getSelectedRowKey(),
+    getSelectedSaleId: () => {
+      const saleId = gridRef.current?.getSelectedRowKey();
+      return saleId != null ? String(saleId) : undefined;
+    },
     onPreview: salePrintPreview.openPreview,
     onPrint: print,
     onVoid: voidSale,

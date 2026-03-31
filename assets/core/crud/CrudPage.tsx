@@ -406,9 +406,17 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
             detailUrl={resolvedResource.detailUrl}
             detailPropertyName={resolvedResource.detailPropertyName}
             format={resolvedResource.format}
-            onSaveSuccess={resolvedResource.onSaveSuccess}
+            onSaveSuccess={
+              resolvedResource.onSaveSuccess
+                ? (response) => resolvedResource.onSaveSuccess?.(response as T)
+                : undefined
+            }
             onSaveError={resolvedResource.onSaveError}
-            onDeleteSuccess={resolvedResource.onDeleteSuccess}
+            onDeleteSuccess={
+              resolvedResource.onDeleteSuccess
+                ? (response) => resolvedResource.onDeleteSuccess?.(response as T)
+                : undefined
+            }
             onDeleteError={resolvedResource.onDeleteError}
             formLayout={resolvedResource.formLayout}
             computedValues={computedValues}

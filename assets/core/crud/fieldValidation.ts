@@ -6,15 +6,6 @@ import {
 
 type SmartCrudRecord = object;
 
-type SmartCrudFieldPatchLike = object & {
-  operation?: SmartCrudFieldOperationBehavior;
-};
-
-type SmartCrudManualFieldLike = object & {
-  name: string;
-  operation?: SmartCrudFieldOperationBehavior;
-};
-
 type SmartCrudHydraDirectiveLike<T extends SmartCrudRecord> =
   | { kind: 'override'; key: Extract<keyof T, string>; patch: SmartCrudFieldPatchLike }
   | { kind: 'remove'; key: Extract<keyof T, string> }
@@ -121,6 +112,17 @@ const FIELD_KEYS = [
   'dependsOn',
   'permissions',
 ] as const;
+
+type SmartCrudFieldShape = Partial<Record<(typeof FIELD_KEYS)[number], unknown>>;
+
+type SmartCrudFieldPatchLike = SmartCrudFieldShape & {
+  operation?: SmartCrudFieldOperationBehavior;
+};
+
+type SmartCrudManualFieldLike = SmartCrudFieldShape & {
+  name: string;
+  operation?: SmartCrudFieldOperationBehavior;
+};
 const MANUAL_FIELD_KEYS = [...FIELD_KEYS, 'operation'] as const;
 const FIELD_PATCH_KEYS = MANUAL_FIELD_KEYS.filter((key) => key !== 'name');
 

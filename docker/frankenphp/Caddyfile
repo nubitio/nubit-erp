@@ -8,11 +8,6 @@
     }
     # Increase default timeouts for slow operations
     grace_period 30s
-    # Mercure hub — module bundled in FrankenPHP binary (SLICE-014)
-    mercure {
-        publisher_jwt {$MERCURE_JWT_SECRET}
-        subscriber_jwt {$MERCURE_JWT_SECRET}
-    }
 }
 
 {$SERVER_NAME:localhost}
@@ -68,9 +63,6 @@ route {
         file_server
         header Cache-Control "public, max-age=604800"
     }
-
-    # Mercure SSE endpoint — must be before php_server (SLICE-014)
-    mercure
 
     # Pass PHP requests to FrankenPHP
     php_server {

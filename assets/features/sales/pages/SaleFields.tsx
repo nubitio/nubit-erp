@@ -188,9 +188,9 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .defaultValue(0)
       .readonly(true)
       .onClick((_e: any) => {
-        const total = form?.getFieldValue('grandTotal');
-        let discountPercent = form?.getFieldValue('discountPercent');
-        discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
+        const total = Number(form?.getFieldValue('grandTotal') ?? 0);
+        const rawDiscountPercent = form?.getFieldValue('discountPercent');
+        const discountPercent = rawDiscountPercent ? Number(rawDiscountPercent) / 100 : 0;
         callbacks?.onOpenDiscount?.({ total, discountPercent });
       })
       .onChange((_e: any) => {

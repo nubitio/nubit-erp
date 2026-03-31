@@ -1,6 +1,6 @@
 import { taxDocumentService } from '../services/taxDocumentService';
 
-type InvoiceRow = {
+export type InvoiceRow = {
   id: string;
   sunatStatus?: string;
   publicReceiptUrl?: string;
@@ -58,7 +58,9 @@ export const runSendInvoiceEmailAction = (deps: ActionDeps) => {
   });
 };
 
-export const runOpenInvoiceReceiptAction = (deps: Pick<ActionDeps, 'getSelectedRow' | 'notify'>) => {
+export const runOpenInvoiceReceiptAction = (
+  deps: Pick<ActionDeps, 'getSelectedRow' | 'notify'>,
+) => {
   withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
     if (!selectedRow.publicReceiptUrl) {
       deps.notify('El comprobante no tiene URL pública disponible', 'warning');
