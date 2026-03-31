@@ -1,7 +1,7 @@
 export default interface AuthResponse {
   token?: string;
   refreshToken?: string;
-  user?: any;
+  user?: Record<string, unknown>;
   branch?: {
     id: string;
     name: string | null;

@@ -4,6 +4,7 @@ import { appRoutes } from './app-routes';
 import { SideNavOuterToolbar as SideNavBarLayout } from '../../layouts';
 import { userInformation } from '../../core/common/UserInformation';
 import { SchemaProvider } from '../../core/crud/hydra/SchemaContext';
+import { RouteErrorBoundary } from '../../shared/components/RouteErrorBoundary';
 
 export const Content = () => {
   const defaultPath = userInformation().currentUserRoleId === 3 ? '/pos' : '/dashboard';
@@ -13,7 +14,11 @@ export const Content = () => {
       <SideNavBarLayout title={userInformation().currentBranchName}>
         <Routes>
           {appRoutes.map(({ path, element }) => (
-            <Route key={path} path={path} element={element} />
+            <Route
+              key={path}
+              path={path}
+              element={<RouteErrorBoundary>{element}</RouteErrorBoundary>}
+            />
           ))}
           <Route path="*" element={<Navigate to={defaultPath} />} />
         </Routes>

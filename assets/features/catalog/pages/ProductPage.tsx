@@ -278,9 +278,6 @@ const productResource = defineResource<ProductRecord>({
       { kind: 'override', key: 'stocks', patch: { visible: false, visibleOnForm: false } },
     ],
   }),
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
   sort: [{ selector: 'name', desc: false }],
 });
 

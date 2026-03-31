@@ -31,7 +31,11 @@ export function useFieldPermissions(fields: Field[], userRoles: string[]): Field
         return acc; // omit the field entirely
       }
       if (perms.editable && !perms.editable.some((r) => userRoles.includes(r))) {
-        acc.push({ ...field, disabledWhen: () => true }); // force disabled
+        // RBAC disabled is absolute: the user lacks the required role, so the field
+        // is unconditionally disabled. Any existing `disabledWhen` is intentionally
+        // superseded — role-based restrictions always take precedence over
+        // data-driven conditional rules.
+        acc.push({ ...field, disabledWhen: () => true });
         return acc;
       }
       acc.push(field);

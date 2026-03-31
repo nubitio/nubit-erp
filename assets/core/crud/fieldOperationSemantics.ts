@@ -219,20 +219,38 @@ export function normalizeFieldOperationSemantics(
   return semantics;
 }
 
+/**
+ * Validates field operation semantics and returns any issues found,
+ * without throwing. Uses the same validation logic as
+ * `normalizeFieldOperationSemantics` but collects issues instead of
+ * throwing `SmartCrudFieldOperationSemanticsError`.
+ */
 export function collectOperationSemanticsIssues(
   owner: string,
   behavior: SmartCrudFieldOperationBehavior | undefined,
 ): string[] {
-  try {
-    normalizeFieldOperationSemantics(behavior, owner);
-    return [];
-  } catch (error) {
-    if (error instanceof SmartCrudFieldOperationSemanticsError) {
-      return error.issues;
-    }
+  if (!behavior) return [];
 
-    throw error;
+  const semantics = createEmptySemantics();
+  const issues: string[] = [];
+  const allowedOperations = normalizeOnly(behavior.only);
+
+  if (allowedOperations) {
+    const allowedOperationSet = new Set(allowedOperations);
+    OPERATIONS.forEach((operation) => {
+      applyProperty(semantics, issues, owner, operation, 'visible', allowedOperationSet.has(operation), 'only');
+    });
   }
+
+  applyFlagInput(semantics, issues, owner, 'visible', behavior.visible);
+  applyFlagInput(semantics, issues, owner, 'required', behavior.required);
+  applyFlagInput(semantics, issues, owner, 'readonly', behavior.readonly);
+  applyFlagInput(semantics, issues, owner, 'disabled', behavior.disabled);
+  applyStateInput(semantics, issues, owner, 'create', behavior.create);
+  applyStateInput(semantics, issues, owner, 'edit', behavior.edit);
+
+  issues.push(...validateResolvedSemantics(owner, semantics));
+  return issues;
 }
 
 function resolveBaseVisibility(field: Partial<SmartCrudFieldOperationDefaults>): boolean {
@@ -282,12 +300,15 @@ export function applyFieldOperationSemantics<T extends Record<string, unknown>>(
   operation: SmartCrudFieldOperation,
   behavior: SmartCrudFieldOperationBehavior | undefined,
   owner = `Field '${field.name}'`,
+  target: 'grid' | 'form' = 'grid',
 ): FieldDef<T> {
   const resolved = resolveFieldOperationSemantics(field, behavior, owner)[operation];
 
   return {
     ...field,
-    visible: resolved.visible,
+    ...(target === 'form'
+      ? { visibleOnForm: resolved.visible }
+      : { visible: resolved.visible }),
     hidden: !resolved.visible,
     required: resolved.required,
     readonly: resolved.readonly,
@@ -295,20 +316,12 @@ export function applyFieldOperationSemantics<T extends Record<string, unknown>>(
   };
 }
 
+/** @deprecated Use `applyFieldOperationSemantics` with `target: 'form'` instead. */
 export function applyFieldOperationFormSemantics<T extends Record<string, unknown>>(
   field: FieldDef<T>,
   operation: SmartCrudFieldOperation,
   behavior: SmartCrudFieldOperationBehavior | undefined,
   owner = `Field '${field.name}'`,
 ): FieldDef<T> {
-  const resolved = resolveFieldOperationSemantics(field, behavior, owner)[operation];
-
-  return {
-    ...field,
-    visibleOnForm: resolved.visible,
-    hidden: !resolved.visible,
-    required: resolved.required,
-    readonly: resolved.readonly,
-    disabled: resolved.disabled,
-  };
+  return applyFieldOperationSemantics(field, operation, behavior, owner, 'form');
 }

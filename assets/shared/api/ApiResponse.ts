@@ -1,7 +1,7 @@
 import { AxiosResponse } from 'axios';
 
 export default class ApiResponse<T> {
-  headers: any;
+  headers: Record<string, string>;
   data: T;
 
   constructor(response: AxiosResponse<T>) {

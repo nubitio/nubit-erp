@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: supplierEndpoints.list(),
   fields: [],
   events: supplierEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const SupplierPage = () => <SmartCrudPage resource={resource} />;

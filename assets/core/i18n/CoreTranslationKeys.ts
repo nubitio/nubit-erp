@@ -1,11 +1,11 @@
 export interface CoreTranslationKeys {
-  'crudPage.selectedCount': string; // "{{count}} seleccionados"
-  'crudPage.auditTrailButton': string; // "Historial"
-  'crudPage.allColumns': string; // "Todas"
-  'crudPage.columnsLabel': string; // "Columnas:"
-  'crudPage.dialogTitleAdd': string; // "Nuevo"
-  'crudPage.dialogTitleEdit': string; // "Editar"
-  'crudPage.dialogTitleView': string; // "Ver"
+  'crudPage.selectedCount': string;
+  'crudPage.auditTrailButton': string;
+  'crudPage.allColumns': string;
+  'crudPage.columnsLabel': string;
+  'crudPage.dialogTitleAdd': string;
+  'crudPage.dialogTitleEdit': string;
+  'crudPage.dialogTitleView': string;
   'auditTrail.title': string;
   'auditTrail.closeButton': string;
   'auditTrail.selectRecord': string;
@@ -15,4 +15,20 @@ export interface CoreTranslationKeys {
   'auditTrail.action.create': string;
   'auditTrail.action.update': string;
   'auditTrail.action.delete': string;
+  'form.detailRequired': string;
+  'form.detailEmpty': string;
+  'form.validationError': string;
+  'form.loading': string;
+  'form.groupOther': string;
+  'grid.noRecords': string;
+  'grid.selectRequired': string;
+  'grid.loading': string;
+  'grid.buttonNew': string;
+  'grid.buttonEdit': string;
+  'grid.buttonDelete': string;
+  'grid.buttonRefresh': string;
+  'dialog.buttonCancel': string;
+  'dialog.buttonSave': string;
+  'dialog.confirmDelete': string;
+  'dialog.confirmDeleteTitle': string;
 }

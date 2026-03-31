@@ -1,0 +1,126 @@
+import { MutableRefObject } from 'react';
+import { FormRef } from 'devextreme-react/form';
+import { DataGridRef } from 'devextreme-react/data-grid';
+import ArrayStore from 'devextreme/data/array_store';
+import toast from '../../shared/lib/SharedUtils';
+import { Field } from '../field/Field';
+import { normalizeFormData } from './DxFormDataTransform';
+import type { DxFormEvents } from './DxForm';
+
+type FormRecord = Record<string, unknown>;
+
+export interface UseDxFormApiRefs {
+  formRef: MutableRefObject<FormRef | null>;
+  gridRef: MutableRefObject<DataGridRef | null>;
+  isEdit: MutableRefObject<boolean>;
+}
+
+/**
+ * Imperative API methods for DxForm, exposed via `useImperativeHandle`.
+ *
+ * Extracted from DxForm to reduce component size while keeping a stable
+ * API surface — callers use `DxFormEvents` as before.
+ */
+export function useDxFormApi(
+  refs: UseDxFormApiRefs,
+  fields: Field[],
+): DxFormEvents {
+  const { formRef, gridRef, isEdit } = refs;
+
+  const getFormData = () => {
+    return formRef.current?.instance().option('formData');
+  };
+
+  const getFieldValue = (field: string) => {
+    return formRef.current?.instance().getEditor(field)?.option('value');
+  };
+
+  const setFieldValue = (field: string, value: unknown) => {
+    formRef.current?.instance().getEditor(field)?.option('value', value);
+  };
+
+  const setReadonly = (field: string, value: boolean) => {
+    formRef.current?.instance().getEditor(field)?.option('readOnly', value);
+  };
+
+  const setDisabled = (field: string, value: boolean) => {
+    formRef.current?.instance().getEditor(field)?.option('disabled', value);
+  };
+
+  const getDetailData = () => {
+    return gridRef.current?.instance().getDataSource().items();
+  };
+
+  const setValues = (data: FormRecord) => {
+    const row = normalizeFormData(data, fields);
+    formRef.current?.instance().option('formData', row);
+  };
+
+  const setDetailData = (data: FormRecord[]) => {
+    const store = gridRef.current?.instance().getDataSource().store() as ArrayStore;
+    store.clear();
+    data.forEach((row) => {
+      store.insert(row);
+    });
+    reloadDetailData();
+  };
+
+  const reloadDetailData = () => {
+    gridRef.current?.instance().getDataSource().reload();
+  };
+
+  const setError = (field: string, message: string) => {
+    if (field === 'items') {
+      toast(message, 'error');
+      return;
+    }
+    const editor = formRef.current?.instance().getEditor(field);
+    editor?.option({
+      isValid: false,
+      validationError: { message },
+    });
+  };
+
+  const showField = (field: string) => {
+    formRef.current?.instance().itemOption(field, 'visible', true);
+  };
+
+  const hideField = (field: string) => {
+    formRef.current?.instance().itemOption(field, 'visible', false);
+  };
+
+  const enableValidation = (field: string) => {
+    formRef.current?.instance().getEditor(field)?.option('isValid', true);
+  };
+
+  const disableValidation = (field: string) => {
+    formRef.current?.instance().getEditor(field)?.option('isValid', false);
+  };
+
+  const validate = () => {
+    return formRef.current?.instance().validate()?.isValid ?? true;
+  };
+
+  const setIsEdit = (value: boolean) => {
+    isEdit.current = value;
+  };
+
+  return {
+    getFormData,
+    getFieldValue,
+    setFieldValue,
+    getDetailData,
+    setDetailData,
+    reloadDetailData,
+    setValues,
+    setReadonly,
+    setDisabled,
+    validate,
+    setError,
+    showField,
+    hideField,
+    enableValidation,
+    disableValidation,
+    setIsEdit,
+  };
+}

@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: sunatCatalogEndpoints.list(),
   fields: [],
   events: sunatCatalogEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const SunatCatalogPage = () => <SmartCrudPage resource={resource} />;

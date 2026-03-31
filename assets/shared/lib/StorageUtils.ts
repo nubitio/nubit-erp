@@ -1,5 +1,5 @@
 export class StorageUtils {
-  static getItem(key: string): any {
+  static getItem(key: string): unknown {
     const item = localStorage.getItem(key);
     if (item) {
       return JSON.parse(item);
@@ -7,7 +7,7 @@ export class StorageUtils {
     return null;
   }
 
-  static setItem(key: string, value: any): void {
+  static setItem(key: string, value: unknown): void {
     if (value === null || value === undefined) {
       return;
     }

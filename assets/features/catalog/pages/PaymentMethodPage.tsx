@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: paymentMethodEndpoints.list(),
   fields: [],
   events: paymentMethodEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const PaymentMethodPage = () => <SmartCrudPage resource={resource} />;

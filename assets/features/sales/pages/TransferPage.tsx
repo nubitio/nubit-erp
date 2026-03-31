@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: Constants.API_BASE_URL + 'transfers',
   fields: [],
   events: transferEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const TransferPage = () => <SmartCrudPage resource={resource} />;

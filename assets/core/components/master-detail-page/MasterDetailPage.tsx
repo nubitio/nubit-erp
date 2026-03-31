@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 type MasterDetailViewProps = {
   title: string;
   showBackButton?: boolean;
-  leftComponent: any;
-  rightComponent: any;
+  leftComponent: React.ReactNode;
+  rightComponent: React.ReactNode;
 };
 
 export const MasterDetailPage = (props: MasterDetailViewProps) => {

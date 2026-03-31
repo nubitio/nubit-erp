@@ -45,32 +45,32 @@ export class DateUtils {
     return date.toLocaleDateString('es-PE', { timeZone: LIMA_TZ, ...formatOptions });
   }
 
-  static addDays(fieldValue: any, number: number): Date {
+  static addDays(fieldValue: string | number | Date, number: number): Date {
     const date = new Date(fieldValue);
     date.setDate(date.getDate() + number);
     return date;
   }
 
-  static addMonths(fieldValue: any, number: number) {
+  static addMonths(fieldValue: string | number | Date, number: number) {
     const date = new Date(fieldValue);
     date.setMonth(date.getMonth() + number);
     return date;
   }
 
-  static addYears(fieldValue: any, number: number) {
+  static addYears(fieldValue: string | number | Date, number: number) {
     const date = new Date(fieldValue);
     date.setFullYear(date.getFullYear() + number);
     return date;
   }
 
-  static dayDiff(startDate: any, endDate: any) {
+  static dayDiff(startDate: string | number | Date, endDate: string | number | Date) {
     const dateStart = new Date(startDate);
     const dateEnd = new Date(endDate);
     const timeDiff = Math.abs(dateEnd.getTime() - dateStart.getTime());
     return Math.ceil(timeDiff / (1000 * 3600 * 24));
   }
 
-  static monthDiff(startDate: any, endDate: any) {
+  static monthDiff(startDate: string | number | Date, endDate: string | number | Date) {
     const dateStart = new Date(startDate);
     const dateEnd = new Date(endDate);
     let months = (dateEnd.getFullYear() - dateStart.getFullYear()) * 12;

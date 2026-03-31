@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: Constants.API_BASE_URL + 'cash-movement-categories',
   fields: [],
   events: cashMovementCategoryEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const CashMovementCategoryPage = () => <SmartCrudPage resource={resource} />;
