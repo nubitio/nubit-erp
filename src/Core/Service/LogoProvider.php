@@ -24,16 +24,24 @@ readonly class LogoProvider
      */
     public function __invoke(): string
     {
-        $company = $this->connection->fetchAssociative('SELECT logo FROM empresa LIMIT 1');
+        try {
+            $company = $this->connection->fetchAssociative('SELECT logo FROM empresa LIMIT 1');
+        } catch (Exception) {
+            return '';
+        }
 
         if (!$company) {
             return '';
         }
 
-        $media = $this->connection->fetchAssociative(
-            'SELECT path FROM media WHERE id = :id',
-            ['id' => $company['logo']]
-        );
+        try {
+            $media = $this->connection->fetchAssociative(
+                'SELECT path FROM media WHERE id = :id',
+                ['id' => $company['logo']]
+            );
+        } catch (Exception) {
+            return '';
+        }
 
         if (!$media) {
             return '';
