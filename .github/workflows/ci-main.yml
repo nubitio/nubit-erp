@@ -129,13 +129,32 @@ jobs:
 
       - name: Run database migrations for e2e
         run: |
-          docker compose exec -T -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:control-plane:migrate --no-interaction
-          docker compose exec -T -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console doctrine:migrations:migrate --no-interaction
+          docker compose exec -T \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            -e CONTROL_PLANE_DATABASE_URL="${CONTROL_PLANE_DATABASE_URL}" \
+            -e OTEL_TRACES_EXPORTER=none \
+            -e OTEL_LOGS_EXPORTER=none \
+            -e OTEL_METRICS_EXPORTER=none \
+            web php bin/console app:control-plane:migrate --no-interaction
+          docker compose exec -T \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            -e CONTROL_PLANE_DATABASE_URL="${CONTROL_PLANE_DATABASE_URL}" \
+            -e OTEL_TRACES_EXPORTER=none \
+            -e OTEL_LOGS_EXPORTER=none \
+            -e OTEL_METRICS_EXPORTER=none \
+            web php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Seed E2E data on-the-fly
         run: |
           set -euo pipefail
-          SEED_OUTPUT=$(docker compose exec -T -e E2E_SEED_ENABLED=1 -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:test:seed-e2e)
+          SEED_OUTPUT=$(docker compose exec -T \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            -e CONTROL_PLANE_DATABASE_URL="${CONTROL_PLANE_DATABASE_URL}" \
+            -e E2E_SEED_ENABLED=1 \
+            -e OTEL_TRACES_EXPORTER=none \
+            -e OTEL_LOGS_EXPORTER=none \
+            -e OTEL_METRICS_EXPORTER=none \
+            web php bin/console app:test:seed-e2e)
           echo "$SEED_OUTPUT"
           E2E_SEED_JSON=$(echo "$SEED_OUTPUT" | grep -Eo '\{.*"saleId".*\}' | tail -n 1)
           test -n "$E2E_SEED_JSON"
@@ -157,7 +176,15 @@ jobs:
 
       - name: Cleanup E2E seeded data
         if: always()
-        run: docker compose exec -T -e E2E_SEED_ENABLED=1 -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:test:reset-e2e || true
+        run: |
+          docker compose exec -T \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            -e CONTROL_PLANE_DATABASE_URL="${CONTROL_PLANE_DATABASE_URL}" \
+            -e E2E_SEED_ENABLED=1 \
+            -e OTEL_TRACES_EXPORTER=none \
+            -e OTEL_LOGS_EXPORTER=none \
+            -e OTEL_METRICS_EXPORTER=none \
+            web php bin/console app:test:reset-e2e || true
 
       - name: Stop full stack
         if: always()
