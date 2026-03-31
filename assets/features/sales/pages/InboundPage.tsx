@@ -16,9 +16,6 @@ const purchasesResource = defineResource({
   sort: [{ selector: 'createdAt', desc: true }],
   dialogWidth: 900,
   dialogHeight: 600,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
   onDetailRowsChanged: (formRef: RefObject<DxFormEvents | null>) => {
     const rows = formRef.current?.getDetailData() ?? [];
     const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);

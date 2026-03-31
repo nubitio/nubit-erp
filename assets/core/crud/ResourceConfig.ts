@@ -72,9 +72,13 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   mode?: 'normal' | 'minimal';
   paging?: boolean;
   stateStoring?: boolean;
+  /** @deprecated Use `permissions.canAdd` instead. */
   allowAdd?: boolean;
+  /** @deprecated Use `permissions.canEdit` instead. */
   allowEdit?: boolean;
+  /** @deprecated Use `permissions.canDelete` instead. */
   allowDelete?: boolean;
+  /** @deprecated Use `permissions.canExport` instead. */
   allowExport?: boolean;
   /** Fine-grained RBAC permission overrides. Each entry takes precedence over the
    *  corresponding `allowX` boolean alias. May be static or a callable that is

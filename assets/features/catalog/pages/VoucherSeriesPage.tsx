@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: Constants.API_BASE_URL + 'voucher-series',
   fields: [],
   events: voucherSeriesEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const VoucherSeriesPage = () => <SmartCrudPage resource={resource} />;

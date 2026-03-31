@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: unitOfMeasureEndpoints.list(),
   fields: [],
   events: unitOfMeasureEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const UnitOfMeasurePage = () => <SmartCrudPage resource={resource} />;

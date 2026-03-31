@@ -7,9 +7,6 @@ const customerResource = defineResource({
   apiUrl: customerApiUrl,
   fields: [],
   events: customerEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 
 export const CustomerPage = () => <SmartCrudPage resource={customerResource} />;

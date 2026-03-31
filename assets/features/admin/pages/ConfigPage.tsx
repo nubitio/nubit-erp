@@ -9,9 +9,6 @@ const resource = defineResource({
   apiUrl: configEndpoints.list(),
   fields: [],
   events: configEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const ConfigPage = () => (
   <SmartCrudPage

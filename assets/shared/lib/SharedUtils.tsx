@@ -140,7 +140,7 @@ export class SharedUtils {
     return `${dialog}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  static validateRUC(ruc: any): boolean {
+  static validateRUC(ruc: string | number): boolean {
     const rucCopy = ruc;
     const validStartWith = [10, 15, 16, 17, 20];
     const rucPart = ruc.toString().substring(0, 2);
@@ -159,11 +159,11 @@ export class SharedUtils {
     return rucCopy % 10 === res % 10;
   }
 
-  static tagsFormatter(value: any, name: string) {
+  static tagsFormatter(value: Array<Record<string, unknown>> | null | undefined, name: string) {
     if (value && value.length > 0) {
       return (
         <div className="flex flex-wrap">
-          {value.map((item: any) => (
+          {value.map((item: Record<string, unknown>) => (
             <span
               key={item.id}
               className="badge badge-outlined rounded-pill text-bg-primary me-1 mb-1"
@@ -178,7 +178,7 @@ export class SharedUtils {
     }
   }
 
-  static htmlFormatter(value: any) {
+  static htmlFormatter(value: string | null | undefined) {
     if (value) {
       return (
         <div className="text-truncate" style={{ maxWidth: '200px' }}>
@@ -190,26 +190,22 @@ export class SharedUtils {
     }
   }
 
-  static billStatusFormatter(value: any) {
-    if (value === null || value === undefined || value === '') {
-      value = -1;
-    } else {
-      value = Number(value);
-    }
-    if (value === -1) {
+  static billStatusFormatter(value: string | number | null | undefined) {
+    const code = value === null || value === undefined || value === '' ? -1 : Number(value);
+    if (code === -1) {
       return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
-    } else if (value === 0) {
+    } else if (code === 0) {
       return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>;
-    } else if (value < 2000) {
+    } else if (code < 2000) {
       return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
-    } else if (value >= 2000 && value < 4000) {
+    } else if (code >= 2000 && code < 4000) {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
-    } else if (value >= 4000) {
+    } else if (code >= 4000) {
       return <span className="badge badge-outlined rounded-pill text-bg-secondary">OBSERVADO</span>;
     }
   }
 
-  static saleStatusFormatter(sale: any) {
+  static saleStatusFormatter(sale: Record<string, unknown> | null | undefined) {
     const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2 || sale?.status === 'VOIDED';
     if (isVoided) {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">ANULADO</span>;

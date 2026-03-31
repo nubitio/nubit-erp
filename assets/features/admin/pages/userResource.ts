@@ -40,7 +40,4 @@ export const userResource = defineResource<UserRecord>({
     ],
   }),
   events: userEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });

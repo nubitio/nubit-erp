@@ -29,6 +29,9 @@ class MercureManager {
     if (this.hubUrl === url) {
       return;
     }
+    // Close all existing EventSource connections before switching URLs —
+    // they are bound to the old hub and would never receive cleanup otherwise.
+    this.disconnectAll();
     this.hubUrl = url;
     this.hubUrlListeners.forEach((cb) => cb(url));
   }
@@ -137,6 +140,19 @@ class MercureManager {
       entry.eventSource.close();
       this.topics.delete(topic);
     }
+  }
+
+  /**
+   * Close all active EventSource connections and clear the topic map.
+   *
+   * Called internally when the hub URL changes so stale connections
+   * bound to the previous hub are not leaked.
+   */
+  disconnectAll(): void {
+    this.topics.forEach((entry) => {
+      entry.eventSource.close();
+    });
+    this.topics.clear();
   }
 }
 

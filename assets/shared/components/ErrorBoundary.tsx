@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
-  /** Optional custom fallback UI; overrides the default error screen. */
-  fallback?: ReactNode;
+  /** Optional custom fallback UI; overrides the default error screen.
+   *  Can be a static ReactNode or a render function receiving the caught error. */
+  fallback?: ReactNode | ((error: Error | null) => ReactNode);
   /**
    * When this value changes the error state is reset, allowing recovery after
    * a route or context change (e.g. pass `useLocation().pathname` from the
@@ -122,7 +123,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     // Consumer-supplied fallback takes precedence.
     if (this.props.fallback !== undefined) {
-      return this.props.fallback;
+      return typeof this.props.fallback === 'function'
+        ? this.props.fallback(this.state.error)
+        : this.props.fallback;
     }
 
     return <ErrorFallback error={this.state.error} onReload={this.handleReload} />;

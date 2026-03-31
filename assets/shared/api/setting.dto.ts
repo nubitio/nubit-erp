@@ -1,5 +1,5 @@
 export interface SettingDto {
   id: number;
   name: string;
-  value: any;
+  value: string | number | boolean | null;
 }

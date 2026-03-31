@@ -8,8 +8,5 @@ const resource = defineResource({
   apiUrl: branchEndpoints.list(),
   fields: [],
   events: branchEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const BranchPage = () => <SmartCrudPage resource={resource} />;

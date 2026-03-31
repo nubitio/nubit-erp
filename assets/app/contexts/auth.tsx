@@ -88,7 +88,16 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
   return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;
 }
 
-const AuthContext = createContext<AuthContextType>({ loading: false } as AuthContextType);
+function throwNoProvider(): never {
+  throw new Error('useAuth must be used within an AuthProvider');
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: undefined,
+  loading: false,
+  signIn: throwNoProvider,
+  signOut: throwNoProvider,
+});
 const useAuth = () => useContext(AuthContext);
 
 export { AuthProvider, useAuth };
