@@ -33,9 +33,9 @@ vi.mock('../dialog/DxDialog', () => ({
 }));
 
 vi.mock('../form/DxForm', () => ({
-  DxForm: React.forwardRef((_props: any, _ref: any) =>
-    React.createElement('div', { 'data-testid': 'dx-form' }),
-  ),
+  DxForm: React.forwardRef(function MockDxForm(_props: any, _ref: any) {
+    return React.createElement('div', { 'data-testid': 'dx-form' });
+  }),
 }));
 
 vi.mock('./CrudPage.scss', () => ({}));

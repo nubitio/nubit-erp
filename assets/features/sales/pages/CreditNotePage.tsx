@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { Constants } from '@core/common/Constants';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
@@ -7,7 +7,6 @@ import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@core/event/EventHook';
 import {
-  createCreditNoteToolbar,
   creditNoteEvents,
   runOpenCreditNoteReceiptAction,
   runSendCreditNoteToSunatAction,
@@ -29,22 +28,44 @@ export const CreditNotePage = () => {
 
   useCreditNoteRelatedDocumentObserver({ on, apiUrl: API_URL, formRef });
 
-  const actionDeps = {
-    getSelectedRow: () => gridRef.current?.getSelectedRow(),
-    showLoading: (message?: string) => gridRef.current?.showLoading(message),
-    hideLoading: () => gridRef.current?.hideLoading(),
-    refreshGrid: () => gridRef.current?.refresh(),
-    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
-      toast(message, type),
-  };
+  const actionDeps = useMemo(
+    () => ({
+      getSelectedRow: () => gridRef.current?.getSelectedRow(),
+      showLoading: (message?: string) => gridRef.current?.showLoading(message),
+      hideLoading: () => gridRef.current?.hideLoading(),
+      refreshGrid: () => gridRef.current?.refresh(),
+      notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
+        toast(message, type),
+    }),
+    [],
+  );
 
-  const toolbar = createCreditNoteToolbar({
-    onSendSunat: () => runSendCreditNoteToSunatAction(actionDeps),
-    onSendEmail: () => toast('Funcionalidad no implementada', 'warning'),
-    onView: () => runOpenCreditNoteReceiptAction(actionDeps),
-    onConsultCdr: () => runConsultCreditNoteCdrAction(actionDeps),
-    onConsultCpe: () => runConsultCreditNoteCpeAction(actionDeps),
-  });
+  const toolbar = useMemo(
+    () => [
+      {
+        text: 'Enviar a SUNAT',
+        type: 'info',
+        onClick: () => runSendCreditNoteToSunatAction(actionDeps),
+      },
+      {
+        text: 'Enviar por correo',
+        type: 'success',
+        onClick: () => toast('Funcionalidad no implementada', 'warning'),
+      },
+      { text: 'Ver', type: 'primary', onClick: () => runOpenCreditNoteReceiptAction(actionDeps) },
+      {
+        text: 'Consulta CDR',
+        type: 'warning',
+        onClick: () => runConsultCreditNoteCdrAction(actionDeps),
+      },
+      {
+        text: 'Consulta CPE',
+        type: 'success',
+        onClick: () => runConsultCreditNoteCpeAction(actionDeps),
+      },
+    ],
+    [actionDeps],
+  );
 
   return (
     <div id="wrapper">

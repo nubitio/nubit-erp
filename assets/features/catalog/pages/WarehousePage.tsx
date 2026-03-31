@@ -8,8 +8,7 @@ const resource = defineResource({
   apiUrl: warehouseEndpoints.list(),
   fields: [],
   events: warehouseEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
-export const WarehousePage = () => <SmartCrudPage resource={resource} />;
+export const WarehousePage = () => (
+  <SmartCrudPage resource={resource} fieldOverrides={[{ key: 'productStocks', hidden: true }]} />
+);

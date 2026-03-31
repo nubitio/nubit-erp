@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
@@ -26,8 +26,8 @@ export const RolePage = () => {
   const [on, emit] = useEvents();
   const gridRef = useRef<DxDataGridEvents>(null);
   const treeRef = useRef<TreeViewRef>(null);
-  const permissionsData = useRef<DataSource>(
-    new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
+  const [permissionsData] = useState(
+    () => new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
   );
 
   const toolbar = [
@@ -39,10 +39,10 @@ export const RolePage = () => {
         if (row) {
           emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
           httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).subscribe((response) => {
-            const store = permissionsData.current.store() as ArrayStore;
+            const store = permissionsData.store() as ArrayStore;
             store.clear();
-            response.data.forEach((item: any) => store.insert(item));
-            permissionsData.current.reload();
+            response.data.forEach((item: RoleMenu) => store.insert(item));
+            permissionsData.reload();
           });
         } else {
           toast('Debe seleccionar un rol', 'error');
@@ -73,7 +73,7 @@ export const RolePage = () => {
       <DxDialog events={permissionEvents}>
         <TreeView
           ref={treeRef}
-          dataSource={permissionsData.current}
+          dataSource={permissionsData}
           showCheckBoxesMode="normal"
           selectByClick={true}
         />

@@ -9,6 +9,7 @@ import { DialogEventNames } from '../event/EventTypes';
 import LoadIndicator from 'devextreme-react/load-indicator';
 import LoadPanel from 'devextreme-react/load-panel';
 import { SharedUtils } from '../utils/SharedUtils';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
 
 export interface DxDialogOptions {
   title?: string;
@@ -34,9 +35,9 @@ export interface DxDialogEvents {
 }
 
 export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
-  const dialogIdRef = useRef<string>(SharedUtils.generateId('dialog'));
-  const dialogId = dialogIdRef.current;
-  const [title, setTitle] = useState<string>(options.title ?? 'Nuevo');
+  const { t } = useCoreTranslation();
+  const [dialogId] = useState(() => SharedUtils.generateId('dialog'));
+  const [title, setTitle] = useState<string>(options.title ?? t('crudPage.dialogTitleAdd'));
   useEffect(() => {
     if (options.title) {
       setTitle(options.title);
@@ -75,9 +76,11 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
 
   const setupObservers = () => {
     if (options.events?.ADD)
-      on<any>(options.events.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
+      on<{ title?: string } | undefined>(options.events.ADD, (payload) =>
+        open(payload?.title ?? t('crudPage.dialogTitleAdd')),
+      );
 
-    if (options.events?.EDIT) on(options.events.EDIT, () => open('Editar'));
+    if (options.events?.EDIT) on(options.events.EDIT, () => open(t('crudPage.dialogTitleEdit')));
 
     if (options.events?.LOADING)
       on<boolean>(options.events.LOADING, (isLoading) => setIsProcessing(isLoading));
@@ -123,7 +126,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
           <ToolbarItem toolbar="bottom" location="after">
             <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
               <Button
-                text={options.negativeText ?? 'Cancelar'}
+                text={options.negativeText ?? t('dialog.buttonCancel')}
                 stylingMode="outlined"
                 onClick={onCancelClick}
                 disabled={isProcessing}
@@ -136,7 +139,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
                 className="dialog-save-button"
               >
                 <LoadIndicator className="button-indicator" visible={isProcessing} />
-                <span className="dx-button-text">{options.positiveText ?? 'Guardar'}</span>
+                <span className="dx-button-text">{options.positiveText ?? t('dialog.buttonSave')}</span>
               </Button>
             </div>
           </ToolbarItem>
