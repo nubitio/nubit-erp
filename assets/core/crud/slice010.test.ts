@@ -30,9 +30,9 @@ vi.mock('../dialog/DxDialog', () => ({
 }));
 
 vi.mock('../form/DxForm', () => ({
-  DxForm: React.forwardRef((_props: unknown, _ref: unknown) =>
-    React.createElement('div', { 'data-testid': 'dx-form' }),
-  ),
+  DxForm: React.forwardRef(function MockDxForm(_props: unknown, _ref: unknown) {
+    return React.createElement('div', { 'data-testid': 'dx-form' });
+  }),
   FORM_EVENTS: {
     ROW_ADDED: 'form:row.added',
     ROW_UPDATED: 'form:row.updated',

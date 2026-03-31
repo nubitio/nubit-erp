@@ -8,10 +8,13 @@ const resource = defineResource({
   apiUrl: voucherTypeEndpoints.list(),
   fields: [],
   events: voucherTypeEvents,
-  allowAdd: true,
-  allowEdit: true,
-  allowDelete: true,
 });
 export const VoucherTypePage = () => (
-  <SmartCrudPage resource={resource} fieldOverrides={[{ key: 'code', isIdentity: true }]} />
+  <SmartCrudPage
+    resource={resource}
+    fieldOverrides={[
+      { key: 'id', isIdentity: false, visible: false, visibleOnForm: false },
+      { key: 'code', isIdentity: true },
+    ]}
+  />
 );

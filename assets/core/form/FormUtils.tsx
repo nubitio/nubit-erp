@@ -22,13 +22,14 @@ import { Template } from 'devextreme-react/core/template';
 
 export const buildField = (
   field: Field,
-  key: any,
+  key: number | string,
   isEditable: boolean = true,
   uploadedFiles: MutableRefObject<UploadedFile[]> = { current: [] },
   formRef: MutableRefObject<FormRef | null> = { current: null },
 ) => {
   if (field.type === FieldType.NONE) return null;
-  let editorOptions: any = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DevExtreme editor options bag varies by widget type
+  let editorOptions: Record<string, any> = {};
   if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
     // Create a store instance so we can query a small page to decide auto-selection
     const store = dxUtils.getDataStore(
@@ -82,13 +83,13 @@ export const buildField = (
                 formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
               }
             })
-            .catch((_err: any) => {
-              // Non-blocking: ignore when auto-select cannot resolve
+            .catch((err: unknown) => {
+              console.warn(`[DxForm] auto-select failed for "${field.name}":`, err);
             });
         }
       }
-    } catch (_e) {
-      // Ignore optional auto-select setup failures.
+    } catch (err) {
+      console.warn(`[DxForm] auto-select setup failed for "${field.name}":`, err);
     }
   }
   if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
@@ -110,7 +111,7 @@ export const buildField = (
         accept: field.accept,
         uploadUrl: field.url,
         name: 'file',
-        onBeforeSend: (_e: any) => {},
+        onBeforeSend: () => {},
         onUploaded: (e: any) => {
           const response = JSON.parse(e.request.response);
           uploadedFiles.current.push({
@@ -220,7 +221,8 @@ export const buildField = (
   };
   // Spread field.editorOptions but extract inputAttr to avoid it overwriting
   // the merged value computed above.
-  const { inputAttr: _discardedInputAttr, ...restEditorOptions } = field.editorOptions ?? {};
+  const restEditorOptions = { ...(field.editorOptions ?? {}) };
+  delete restEditorOptions.inputAttr;
   editorOptions = {
     ...editorOptions,
     maxLength: field.maxLength,
@@ -229,7 +231,9 @@ export const buildField = (
     onFocusIn: field.onClick,
     onValueChanged: (e: any) => {
       dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
-      field.onChange && (field.onChange as FormOnChangeFn)(e.value);
+      if (field.onChange) {
+        (field.onChange as FormOnChangeFn)(e.value);
+      }
     },
     onKeyPress: field.onKeyPress,
     onItemClick: field.onSelect,

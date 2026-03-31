@@ -1,11 +1,10 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { Constants } from '@core/common/Constants';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import {
-  createInvoiceToolbar,
   invoiceEvents,
   runConsultInvoiceCdrAction,
   runConsultInvoiceCpeAction,
@@ -23,22 +22,44 @@ const detailFields = (parentRow: Record<string, unknown>) =>
 export const InvoicePage = () => {
   const gridRef = useRef<DxDataGridEvents>(null);
 
-  const actionDeps = {
-    getSelectedRow: () => gridRef.current?.getSelectedRow(),
-    showLoading: (message?: string) => gridRef.current?.showLoading(message),
-    hideLoading: () => gridRef.current?.hideLoading(),
-    refreshGrid: () => gridRef.current?.refresh(),
-    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
-      toast(message, type),
-  };
+  const actionDeps = useMemo(
+    () => ({
+      getSelectedRow: () => gridRef.current?.getSelectedRow(),
+      showLoading: (message?: string) => gridRef.current?.showLoading(message),
+      hideLoading: () => gridRef.current?.hideLoading(),
+      refreshGrid: () => gridRef.current?.refresh(),
+      notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
+        toast(message, type),
+    }),
+    [],
+  );
 
-  const toolbar = createInvoiceToolbar({
-    onSendSunat: () => runSendInvoiceToSunatAction(actionDeps),
-    onSendEmail: () => runSendInvoiceEmailAction(actionDeps),
-    onView: () => runOpenInvoiceReceiptAction(actionDeps),
-    onConsultCdr: () => runConsultInvoiceCdrAction(actionDeps),
-    onConsultCpe: () => runConsultInvoiceCpeAction(actionDeps),
-  });
+  const toolbar = useMemo(
+    () => [
+      {
+        text: 'Enviar a SUNAT',
+        type: 'info',
+        onClick: () => runSendInvoiceToSunatAction(actionDeps),
+      },
+      {
+        text: 'Enviar por correo',
+        type: 'success',
+        onClick: () => runSendInvoiceEmailAction(actionDeps),
+      },
+      { text: 'Ver', type: 'primary', onClick: () => runOpenInvoiceReceiptAction(actionDeps) },
+      {
+        text: 'Consulta CDR',
+        type: 'warning',
+        onClick: () => runConsultInvoiceCdrAction(actionDeps),
+      },
+      {
+        text: 'Consulta CPE',
+        type: 'success',
+        onClick: () => runConsultInvoiceCpeAction(actionDeps),
+      },
+    ],
+    [actionDeps],
+  );
 
   return (
     <div id="wrapper" className="invoice-page">

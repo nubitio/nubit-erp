@@ -29,7 +29,11 @@ describe('useMercureHub', () => {
     const hubUrl = 'https://hub.example.com/.well-known/mercure';
 
     const wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(MercureProvider, { hubUrl, children });
+      React.createElement(
+        MercureProvider,
+        { hubUrl } as React.ComponentProps<typeof MercureProvider>,
+        children,
+      );
 
     const { result } = renderHook(() => useMercureHub(), { wrapper });
 
@@ -38,7 +42,11 @@ describe('useMercureHub', () => {
 
   it('with MercureProvider hubUrl=null → returns null (hub not yet discovered)', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(MercureProvider, { hubUrl: null, children });
+      React.createElement(
+        MercureProvider,
+        { hubUrl: null } as React.ComponentProps<typeof MercureProvider>,
+        children,
+      );
 
     const { result } = renderHook(() => useMercureHub(), { wrapper });
 
@@ -49,7 +57,11 @@ describe('useMercureHub', () => {
     let hubUrl: string | null = null;
 
     const wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(MercureProvider, { hubUrl, children });
+      React.createElement(
+        MercureProvider,
+        { hubUrl } as React.ComponentProps<typeof MercureProvider>,
+        children,
+      );
 
     const { result, rerender } = renderHook(() => useMercureHub(), { wrapper });
 
