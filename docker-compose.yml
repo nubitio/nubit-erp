@@ -20,6 +20,8 @@ services:
       - 'host.docker.internal:host-gateway'
     environment:
       SERVER_NAME: ':80'
+      DATABASE_URL: '${DATABASE_URL:-mysql://demo:${MYSQL_PASSWORD:-changeme}@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
+      CONTROL_PLANE_DATABASE_URL: '${CONTROL_PLANE_DATABASE_URL:-mysql://efact:${MYSQL_PASSWORD:-changeme}@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
       CADDY_GLOBAL_OPTIONS: 'auto_https off'
       QZ_CERT_PATH: '/app/var/qz/qz_cert.pem'
       QZ_PRIVATE_KEY_PATH: '/app/var/qz/qz_private.key'
@@ -118,7 +120,7 @@ services:
     profiles:
       - e2e
 
-###> symfony/mercure-bundle ###
+  ###> symfony/mercure-bundle ###
   mercure:
     image: dunglas/mercure
     restart: unless-stopped
@@ -133,7 +135,7 @@ services:
     # Comment the following line to disable the development mode
     command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
     healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost/healthz"]
+      test: ['CMD', 'curl', '-f', 'https://localhost/healthz']
       timeout: 5s
       retries: 5
       start_period: 60s
@@ -146,10 +148,10 @@ volumes:
   app-var:
   app-public-uploads:
 
-###> symfony/mercure-bundle ###
+  ###> symfony/mercure-bundle ###
   mercure_data:
   mercure_config:
-###< symfony/mercure-bundle ###
+  ###< symfony/mercure-bundle ###
   db-data:
 
 configs:
