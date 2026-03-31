@@ -4,22 +4,44 @@ import { FieldType } from '../field/FieldType';
 import { FieldBuilder } from '../field/FieldBuilder';
 import type { Field } from '../field/Field';
 
+const { confirmMock, postMock, patchMock, deleteMock } = vi.hoisted(() => ({
+  confirmMock: vi.fn(() => Promise.resolve(false)),
+  postMock: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
+  patchMock: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
+  deleteMock: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
+}));
+
 vi.mock('devextreme-react/data-grid', () => ({ DataGridRef: class {} }));
 vi.mock('devextreme-react/form', () => ({ FormRef: class {} }));
 vi.mock('devextreme/data/array_store', () => ({ default: class {} }));
 vi.mock('devextreme/ui/dialog', () => ({
-  confirm: vi.fn(() => Promise.resolve(false)),
+  confirm: confirmMock,
 }));
 vi.mock('../i18n/useCoreTranslation', () => ({
   useCoreTranslation: () => ({ t: (key: string) => key }),
 }));
 vi.mock('../../shared/api/HttpClient', () => ({
   httpClient: {
-    post: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
-    patch: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
-    delete: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
+    post: postMock,
+    patch: patchMock,
+    delete: deleteMock,
   },
 }));
+
+const createSubscription = (callbacks?: {
+  next?: (value: unknown) => void;
+  error?: (error: unknown) => void;
+}) => ({
+  subscribe: vi.fn(
+    (observer: { next?: (value: unknown) => void; error?: (error: unknown) => void }) => {
+      callbacks?.next?.({ data: { ok: true } });
+      callbacks?.error?.({ message: 'boom' });
+      if (callbacks?.next) observer.next?.({ data: { ok: true } });
+      if (callbacks?.error) observer.error?.({ message: 'boom' });
+      return { add: vi.fn((finalize?: () => void) => finalize?.()) };
+    },
+  ),
+});
 
 const useMakeSubmitter = (fields: Field[] = [], overrides: Partial<UseFormSubmitOptions> = {}) => {
   const refs: UseFormSubmitRefs = {
@@ -69,6 +91,9 @@ const noneField = (isIdentity = false) => {
   if (isIdentity) b.isIdentity(true);
   return b.build();
 };
+
+const idField = () =>
+  new FieldBuilder().type(FieldType.NONE).name('id').label('Id').isIdentity(true).build();
 
 describe('useFormSubmit › serializeFields', () => {
   it('ENTITY field with object value serializes to IRI string', () => {
@@ -185,6 +210,161 @@ describe('useFormSubmit › serializeFields', () => {
     const result = serializeFields({ status: 42 });
 
     expect(result.status).toBe(42);
+  });
+});
+
+describe('useFormSubmit › mutations', () => {
+  it('handleSave aborts when validation fails', () => {
+    const emit = vi.fn();
+    const submitter = useFormSubmit(
+      {
+        url: '/api/test',
+        fields: [idField()],
+        detailPropertyName: 'items',
+      },
+      {
+        formRef: { current: null },
+        gridRef: { current: null },
+        uploadedFiles: { current: [] },
+        isEdit: { current: false },
+      },
+      emit,
+      vi.fn(),
+      () => false,
+    );
+
+    submitter.handleSave();
+
+    expect(postMock).not.toHaveBeenCalled();
+    expect(patchMock).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
+  });
+
+  it('handleSave posts serialized form data and toggles loading state', () => {
+    postMock.mockReturnValueOnce(createSubscription({ next: () => {} }) as any);
+    const emit = vi.fn();
+    const onSaveSuccess = vi.fn();
+    const onLoadingChange = vi.fn();
+
+    const submitter = useFormSubmit(
+      {
+        url: '/api/test',
+        fields: [idField(), numberField()],
+        detailPropertyName: 'items',
+        events: { LOADING: 'loading', SUCCESS: 'success' } as any,
+        onSaveSuccess,
+        onLoadingChange,
+      },
+      {
+        formRef: {
+          current: {
+            instance: () => ({ option: () => ({ id: 5, qty: '7' }) }),
+          } as any,
+        },
+        gridRef: { current: null },
+        uploadedFiles: { current: [] },
+        isEdit: { current: false },
+      },
+      emit,
+      vi.fn(),
+      () => true,
+    );
+
+    submitter.handleSave();
+
+    expect(postMock).toHaveBeenCalledWith('/api/test', { id: 5, qty: 7 });
+    expect(emit).toHaveBeenCalledWith('loading', true);
+    expect(emit).toHaveBeenCalledWith('success', { data: { ok: true } });
+    expect(emit).toHaveBeenCalledWith('loading', false);
+    expect(onSaveSuccess).toHaveBeenCalledWith({ data: { ok: true } });
+    expect(onLoadingChange).toHaveBeenNthCalledWith(1, true);
+    expect(onLoadingChange).toHaveBeenNthCalledWith(2, false);
+  });
+
+  it('handleSave patches existing records and reports save errors', () => {
+    patchMock.mockReturnValueOnce(createSubscription({ error: () => {} }) as any);
+    const onSaveError = vi.fn();
+    const onLoadingChange = vi.fn();
+
+    const submitter = useFormSubmit(
+      {
+        url: '/api/test',
+        fields: [idField(), numberField()],
+        detailPropertyName: 'items',
+        events: { LOADING: 'loading' } as any,
+        onSaveError,
+        onLoadingChange,
+      },
+      {
+        formRef: {
+          current: {
+            instance: () => ({ option: () => ({ id: 9, qty: '3' }) }),
+          } as any,
+        },
+        gridRef: { current: null },
+        uploadedFiles: { current: [] },
+        isEdit: { current: true },
+      },
+      vi.fn(),
+      vi.fn(),
+      () => true,
+    );
+
+    submitter.handleSave();
+
+    expect(patchMock).toHaveBeenCalledWith('/api/test/9', { id: 9, qty: 3 });
+    expect(onSaveError).toHaveBeenCalledWith({ message: 'boom' });
+    expect(onLoadingChange).toHaveBeenNthCalledWith(1, true);
+    expect(onLoadingChange).toHaveBeenNthCalledWith(2, false);
+  });
+
+  it('handleDelete stops when confirmation is cancelled', async () => {
+    confirmMock.mockResolvedValueOnce(false);
+    const submitter = useMakeSubmitter([idField()]);
+
+    submitter.handleDelete({ row: { id: 4 } });
+    await Promise.resolve();
+
+    expect(deleteMock).not.toHaveBeenCalled();
+  });
+
+  it('handleDelete deletes confirmed rows and fires success callback', async () => {
+    confirmMock.mockResolvedValueOnce(true);
+    deleteMock.mockReturnValueOnce(createSubscription({ next: () => {} }) as any);
+    const emit = vi.fn();
+    const onDeleteSuccess = vi.fn();
+    const onLoadingChange = vi.fn();
+
+    const submitter = useFormSubmit(
+      {
+        url: '/api/test',
+        fields: [idField()],
+        detailPropertyName: 'items',
+        events: { LOADING: 'loading', SUCCESS: 'success' } as any,
+        onDeleteSuccess,
+        onLoadingChange,
+      },
+      {
+        formRef: { current: null },
+        gridRef: { current: null },
+        uploadedFiles: { current: [] },
+        isEdit: { current: false },
+      },
+      emit,
+      vi.fn(),
+      () => true,
+    );
+
+    submitter.handleDelete({ row: { id: 4 } });
+    await Promise.resolve();
+
+    expect(deleteMock).toHaveBeenCalledWith('/api/test/4');
+    expect(emit).toHaveBeenCalledWith('loading', true);
+    expect(emit).toHaveBeenCalledWith('success', { data: { ok: true } });
+    expect(emit).toHaveBeenCalledWith('loading', false);
+    expect(onDeleteSuccess).toHaveBeenCalledWith({ data: { ok: true } });
+    expect(onLoadingChange).toHaveBeenNthCalledWith(1, true);
+    expect(onLoadingChange).toHaveBeenNthCalledWith(2, false);
   });
 });
 
