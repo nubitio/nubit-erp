@@ -27,7 +27,7 @@ jobs:
 
       - name: Start backend stack
         run: |
-          docker compose up -d database redis web
+          docker compose up -d database redis otel-collector web
 
       - name: Install backend dependencies
         run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
@@ -116,7 +116,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start full stack
-        run: docker compose up -d database redis web vite
+        run: docker compose up -d database redis otel-collector web vite
 
       - name: Install dependencies for e2e
         run: |

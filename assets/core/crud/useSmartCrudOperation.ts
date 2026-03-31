@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useReducer, useCallback, useEffect } from 'react';
 import type { Subscription } from 'rxjs';
 import type { FormEventNames } from '../event/EventTypes';
 import { useEvents } from '../event/EventHook';
@@ -15,6 +15,44 @@ export interface SmartCrudOperationState {
   handleFormDataChange: (data: Record<string, unknown>) => void;
 }
 
+type CrudState = Pick<SmartCrudOperationState, 'activeOperation' | 'formData'>;
+
+type CrudAction =
+  | { type: 'sync-routing'; routingState: RoutingSnapshot }
+  | { type: 'set-form-data'; data: Record<string, unknown> }
+  | { type: 'create' }
+  | { type: 'edit' }
+  | { type: 'reset' };
+
+function stateFromRouting(routingState: RoutingSnapshot): CrudState {
+  if (routingState.initialRecordId != null) {
+    return { activeOperation: 'edit', formData: null };
+  }
+
+  if (routingState.initialIsNew) {
+    return { activeOperation: 'create', formData: {} };
+  }
+
+  return { activeOperation: null, formData: null };
+}
+
+function crudReducer(state: CrudState, action: CrudAction): CrudState {
+  switch (action.type) {
+    case 'sync-routing':
+      return stateFromRouting(action.routingState);
+    case 'set-form-data':
+      return { ...state, formData: action.data };
+    case 'create':
+      return { activeOperation: 'create', formData: {} };
+    case 'edit':
+      return { activeOperation: 'edit', formData: null };
+    case 'reset':
+      return { activeOperation: null, formData: null };
+    default:
+      return state;
+  }
+}
+
 /**
  * Owns the `activeOperation` + `formData` state pair and keeps them in sync
  * with routing changes and the resource event bus (ADD / EDIT / CANCEL / SUCCESS).
@@ -28,34 +66,26 @@ export function useSmartCrudOperation(
 ): SmartCrudOperationState {
   const [on] = useEvents();
 
-  const [formData, setFormData] = useState<Record<string, unknown> | null>(null);
-  const [activeOperation, setActiveOperation] = useState<SmartCrudOperation | null>(() => {
-    if (routingState.initialRecordId != null) return 'edit';
-    if (routingState.initialIsNew) return 'create';
-    return null;
-  });
+  const [{ activeOperation, formData }, dispatchState] = useReducer(
+    crudReducer,
+    routingState,
+    stateFromRouting,
+  );
 
   // Stable callback — avoids re-rendering CrudPage on every setState call
   const handleFormDataChange = useCallback((data: Record<string, unknown>) => {
-    setFormData(data);
+    dispatchState({ type: 'set-form-data', data });
   }, []);
 
   // Sync from routing state changes
   useEffect(() => {
-    if (routingState.initialRecordId != null) {
-      setFormData(null);
-      setActiveOperation('edit');
-      return;
-    }
-
-    if (routingState.initialIsNew) {
-      setFormData({});
-      setActiveOperation('create');
-      return;
-    }
-
-    setFormData(null);
-    setActiveOperation(null);
+    dispatchState({
+      type: 'sync-routing',
+      routingState: {
+        initialRecordId: routingState.initialRecordId,
+        initialIsNew: routingState.initialIsNew,
+      },
+    });
   }, [routingState.initialIsNew, routingState.initialRecordId]);
 
   // Sync from event bus (ADD / EDIT / CANCEL / SUCCESS)
@@ -65,8 +95,7 @@ export function useSmartCrudOperation(
     if (events.ADD) {
       subscriptions.push(
         on(events.ADD, () => {
-          setFormData({});
-          setActiveOperation('create');
+          dispatchState({ type: 'create' });
         }),
       );
     }
@@ -74,8 +103,7 @@ export function useSmartCrudOperation(
     if (events.EDIT) {
       subscriptions.push(
         on(events.EDIT, () => {
-          setFormData(null);
-          setActiveOperation('edit');
+          dispatchState({ type: 'edit' });
         }),
       );
     }
@@ -83,8 +111,7 @@ export function useSmartCrudOperation(
     if (events.CANCEL) {
       subscriptions.push(
         on(events.CANCEL, () => {
-          setFormData(null);
-          setActiveOperation(null);
+          dispatchState({ type: 'reset' });
         }),
       );
     }
@@ -92,8 +119,7 @@ export function useSmartCrudOperation(
     if (events.SUCCESS) {
       subscriptions.push(
         on(events.SUCCESS, () => {
-          setFormData(null);
-          setActiveOperation(null);
+          dispatchState({ type: 'reset' });
         }),
       );
     }
