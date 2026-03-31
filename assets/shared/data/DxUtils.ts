@@ -8,6 +8,22 @@ import { DxFilterRule } from '@core/common/FilterRule';
 import { LoadOption } from '@core/field/Field';
 
 class DxUtils {
+  private findPreloadedItem(
+    loadOptions: Record<string, unknown>,
+    idField: string,
+    id: unknown,
+  ): Record<string, unknown> | null {
+    const prependData = Array.isArray(loadOptions.prependData)
+      ? (loadOptions.prependData as Array<Record<string, unknown>>)
+      : [];
+    const appendData = Array.isArray(loadOptions.appendData)
+      ? (loadOptions.appendData as Array<Record<string, unknown>>)
+      : [];
+    const candidates = [...prependData, ...appendData];
+
+    return candidates.find((item) => item[idField] === id || item['@id'] === id) ?? null;
+  }
+
   private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
     const subscription = httpClient.get<any[]>(url, { params: loadOptions });
 
@@ -26,7 +42,17 @@ class DxUtils {
     });
   }
 
-  private async fetchById(url: string, id: any, loadOptions: any): Promise<any> {
+  private async fetchById(
+    url: string,
+    id: any,
+    loadOptions: any,
+    idField: string = 'id',
+  ): Promise<any> {
+    const preloadedItem = this.findPreloadedItem(loadOptions, idField, id);
+    if (preloadedItem) {
+      return preloadedItem;
+    }
+
     // When id is already an absolute IRI path (e.g. "/api/warehouses/uuid"),
     // call it directly instead of appending it to the base url.
     const resolvedUrl = typeof id === 'string' && id.startsWith('/') ? id : `${url}/${id}`;
@@ -37,9 +63,7 @@ class DxUtils {
         return response.data;
       })
       .catch(() => {
-        if (loadOptions.prependData) {
-          return loadOptions.prependData;
-        }
+        return this.findPreloadedItem(loadOptions, idField, id);
       });
   }
 
@@ -153,11 +177,11 @@ class DxUtils {
           }
         });
         if (iriMode) {
-          return this.fetchById(byKeyUrl ?? url, id, loadOptions).then((item) =>
+          return this.fetchById(byKeyUrl ?? url, id, loadOptions, idField).then((item) =>
             item != null ? addIriField(item) : item,
           );
         }
-        return this.fetchById(byKeyUrl ?? url, id, loadOptions);
+        return this.fetchById(byKeyUrl ?? url, id, loadOptions, idField);
       },
     });
   }

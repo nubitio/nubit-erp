@@ -1,5 +1,4 @@
 import { useRef, useMemo } from 'react';
-import { createScopedEventBus } from '../event/createScopedEventBus';
 import { usePermissions } from './usePermissions';
 import { useSelectionState } from './useSelectionState';
 import { useColumnPreset } from './useColumnPreset';
@@ -10,11 +9,13 @@ import type { ResourceConfig, FieldsFactory } from './ResourceConfig';
 import type { ResolvedPermissions } from './usePermissions';
 import type { SelectionState } from './useSelectionState';
 import type { ColumnPresetState } from './useColumnPreset';
+import { resolveCrudResource, type ResolvedCrudResource } from './resolveCrudResource';
 
 export function useCrudPage<T extends Record<string, unknown> = Record<string, unknown>>(
   resource: ResourceConfig<T>,
 ): {
   events: FormEventNames;
+  resource: ResolvedCrudResource<T>;
   fields: Field[];
   formRef: React.RefObject<DxFormEvents | null>;
   permissions: ResolvedPermissions;
@@ -23,32 +24,40 @@ export function useCrudPage<T extends Record<string, unknown> = Record<string, u
   };
   presetState: ColumnPresetState;
 } {
-  const events = useMemo(
-    () => resource.events ?? createScopedEventBus(resource.id),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [resource.id],
-  );
+  const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
+  const events = resolvedResource.events;
   const formRef = useRef<DxFormEvents | null>(null);
   const fields = useMemo(() => {
-    if (typeof resource.fields === 'function') {
-      return (resource.fields as FieldsFactory<T>)(formRef) as unknown as Field[];
+    if (typeof resolvedResource.fields === 'function') {
+      // eslint-disable-next-line react-hooks/refs -- fields factories intentionally receive the live form ref contract
+      return (resolvedResource.fields as FieldsFactory<T>)(formRef) as unknown as Field[];
     }
-    return resource.fields as unknown as Field[];
-  }, [resource.fields]); // eslint-disable-line react-hooks/exhaustive-deps
+    return resolvedResource.fields as unknown as Field[];
+  }, [resolvedResource.fields]); // eslint-disable-line react-hooks/exhaustive-deps
   const permissions = usePermissions(
-    resource as ResourceConfig,
-    resource._supportedOperations ?? [],
+    resolvedResource as ResourceConfig,
+    resolvedResource._supportedOperations ?? [],
   );
 
   const identityFieldName = useMemo(() => {
     const resolved =
-      typeof resource.fields === 'function' ? fields : (resource.fields as unknown as Field[]);
+      typeof resolvedResource.fields === 'function'
+        ? fields
+        : (resolvedResource.fields as unknown as Field[]);
     const identityField = resolved.find((f) => f.isIdentity);
     return identityField?.name ?? 'id';
-  }, [fields, resource.fields]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fields, resolvedResource.fields]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectionState = useSelectionState(identityFieldName);
-  const presetState = useColumnPreset(resource as ResourceConfig);
+  const presetState = useColumnPreset(resolvedResource as ResourceConfig);
 
-  return { events, fields, formRef, permissions, selectionState, presetState };
+  return {
+    events,
+    resource: resolvedResource,
+    fields,
+    formRef,
+    permissions,
+    selectionState,
+    presetState,
+  };
 }

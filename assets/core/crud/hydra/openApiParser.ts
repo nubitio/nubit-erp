@@ -100,10 +100,22 @@ function deriveApiUrl(entrypointPropertyId: string): string {
  *   - a plain string: "xmls:string", "#Company"
  *   - an IRI object: { "@id": "http://www.w3.org/2001/XMLSchema#string" }
  *   - null or undefined
- *   - rarely an array (ignored — returns undefined)
+ *   - a Hydra collection range array where the resource class lives under
+ *     `owl:equivalentClass.owl:allValuesFrom.@id`
  */
 export function normalizeRange(raw: unknown): string | undefined {
   if (typeof raw === 'string') return raw;
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (!item || typeof item !== 'object') continue;
+      const equivalentClass = (item as Record<string, unknown>)['owl:equivalentClass'];
+      if (!equivalentClass || typeof equivalentClass !== 'object') continue;
+      const allValuesFrom = (equivalentClass as Record<string, unknown>)['owl:allValuesFrom'];
+      if (!allValuesFrom || typeof allValuesFrom !== 'object') continue;
+      const id = (allValuesFrom as Record<string, unknown>)['@id'];
+      if (typeof id === 'string') return id;
+    }
+  }
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     const id = (raw as Record<string, unknown>)['@id'];
     if (typeof id === 'string') return id;
@@ -194,6 +206,31 @@ function extractSupportedOperations(cls: HydraApiDoc['supportedClass'][number]):
     .filter(Boolean);
 }
 
+function extractEntrypointCollectionOperations(doc: HydraApiDoc): Record<string, string[]> {
+  const entrypoint = doc['supportedClass'].find((c) => c['@id'] === '#Entrypoint');
+  if (!entrypoint) {
+    return {};
+  }
+
+  const collectionOperations: Record<string, string[]> = {};
+
+  for (const sp of entrypoint.supportedProperty ?? []) {
+    const rawRange = sp.property?.range;
+    const range = normalizeRange(rawRange);
+    if (!range) {
+      continue;
+    }
+
+    const className = range.replace('#', '');
+    const operations = sp.property?.supportedOperation ?? [];
+    collectionOperations[className] = operations
+      .map((op) => (op['hydra:method'] ?? op['method'] ?? '').toUpperCase())
+      .filter(Boolean);
+  }
+
+  return collectionOperations;
+}
+
 /**
  * Parse a raw `/api/docs.jsonld` Hydra JSON-LD response into a typed
  * Record<className, HydraResourceSchema>.
@@ -202,6 +239,7 @@ function extractSupportedOperations(cls: HydraApiDoc['supportedClass'][number]):
  */
 export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSchema> {
   const result: Record<string, HydraResourceSchema> = {};
+  const collectionOperationsMap = extractEntrypointCollectionOperations(doc);
 
   // Build URL map from the Entrypoint class
   const urlMap: Record<string, string> = {};
@@ -252,7 +290,12 @@ export function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSch
       apiUrl: urlMap[className] ?? `/api/${pluralize(toDashCase(className))}`,
       fields,
       searchMappings: extractSearchMappings(cls),
-      supportedOperations: extractSupportedOperations(cls),
+      supportedOperations: Array.from(
+        new Set([
+          ...(collectionOperationsMap[className] ?? []),
+          ...extractSupportedOperations(cls),
+        ]),
+      ),
     };
   }
 

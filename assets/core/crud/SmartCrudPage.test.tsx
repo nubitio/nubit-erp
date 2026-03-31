@@ -8,15 +8,30 @@ import { FieldType } from '../field/FieldType';
 import type { ResourceConfig } from './ResourceConfig';
 import { SmartCrudFieldContractError } from './fieldContract';
 import { dispatch } from '../event/EventHook';
+import type { FieldState } from './rules/useConditionalRules';
 
-const { capturedResources, useResourceSchemaMock, useConditionalRulesMock } = vi.hoisted(() => ({
+const {
+  capturedResources,
+  capturedCrudProps,
+  useResourceSchemaMock,
+  useConditionalRulesMock,
+  useFieldPermissionsMock,
+} = vi.hoisted(() => ({
   capturedResources: [] as Array<ResourceConfig<Record<string, unknown>>>,
+  capturedCrudProps: [] as Array<Record<string, unknown>>,
   useResourceSchemaMock: vi.fn(),
-  useConditionalRulesMock: vi.fn(() => []),
+  useConditionalRulesMock: vi.fn<
+    (fields: Field[], formData: Record<string, unknown> | null) => FieldState[]
+  >(() => []),
+  useFieldPermissionsMock: vi.fn((fields: Field[], _roles: string[]) => fields),
 }));
 
 vi.mock('./CrudPage', () => ({
-  CrudPage: ({ resource }: { resource: ResourceConfig<Record<string, unknown>> }) => {
+  CrudPage: (
+    props: { resource: ResourceConfig<Record<string, unknown>> } & Record<string, unknown>,
+  ) => {
+    capturedCrudProps.push(props);
+    const { resource } = props;
     capturedResources.push(resource);
     return React.createElement('div', { 'data-testid': 'crud-page' });
   },
@@ -26,16 +41,13 @@ vi.mock('./hydra/useResourceSchema', () => ({
   useResourceSchema: (...args: unknown[]) => useResourceSchemaMock(...args),
 }));
 
-vi.mock('@app/contexts/auth', () => ({
-  useAuth: () => ({ user: null }),
-}));
-
 vi.mock('./rules/useFieldPermissions', () => ({
-  useFieldPermissions: (fields: Field[]) => fields,
+  useFieldPermissions: (fields: Field[], roles: string[]) => useFieldPermissionsMock(fields, roles),
 }));
 
 vi.mock('./rules/useConditionalRules', () => ({
-  useConditionalRules: (...args: unknown[]) => (useConditionalRulesMock as any)(...args),
+  useConditionalRules: (fields: Field[], formData: Record<string, unknown> | null) =>
+    useConditionalRulesMock(fields, formData),
 }));
 
 vi.mock('./rules/useDependsOn', () => ({
@@ -72,6 +84,7 @@ vi.mock('@features/movement', () => ({
 }));
 
 import { SmartCrudPage } from './SmartCrudPage';
+import { SmartCrudRolesProvider } from './SmartCrudRolesContext';
 
 function makeField(name: string, overrides: Partial<Field> & { operation?: unknown } = {}): Field {
   return {
@@ -136,9 +149,12 @@ function makeField(name: string, overrides: Partial<Field> & { operation?: unkno
 describe('SmartCrudPage', () => {
   beforeEach(() => {
     capturedResources.length = 0;
+    capturedCrudProps.length = 0;
     useResourceSchemaMock.mockReset();
     useConditionalRulesMock.mockReset();
+    useFieldPermissionsMock.mockReset();
     useConditionalRulesMock.mockReturnValue([]);
+    useFieldPermissionsMock.mockImplementation((fields: Field[], _roles: string[]) => fields);
   });
 
   it('applies canonical operation semantics at runtime without hiding grid visibility', () => {
@@ -231,7 +247,7 @@ describe('SmartCrudPage', () => {
       error: undefined,
       supportedOperations: ['GET', 'POST', 'PATCH'],
     });
-    (useConditionalRulesMock as any).mockReturnValue([
+    useConditionalRulesMock.mockReturnValue([
       { name: 'inventoryBehavior', visible: false, disabled: false, computedValue: undefined },
     ]);
 
@@ -250,5 +266,57 @@ describe('SmartCrudPage', () => {
     expect(field.visible).toBe(true);
     expect(field.visibleOnForm).toBe(false);
     expect(field.hidden).toBe(true);
+  });
+
+  it('reads roles from the SmartCrud roles provider instead of app auth', () => {
+    useResourceSchemaMock.mockReturnValue({
+      fields: [makeField('inventoryBehavior')],
+      isLoading: false,
+      error: undefined,
+      supportedOperations: ['GET'],
+    });
+
+    render(
+      React.createElement(
+        SmartCrudRolesProvider,
+        { roles: ['admin', 'manager'] },
+        React.createElement(SmartCrudPage, {
+          resource: {
+            id: 'products',
+            title: 'Products',
+            apiUrl: '/api/products',
+            fields: [],
+          },
+        }),
+      ),
+    );
+
+    expect(useFieldPermissionsMock).toHaveBeenCalled();
+    expect(useFieldPermissionsMock.mock.calls.at(-1)?.[1]).toEqual(['admin', 'manager']);
+  });
+
+  it('passes computed values down to CrudPage for live form synchronization', () => {
+    useResourceSchemaMock.mockReturnValue({
+      fields: [makeField('total')],
+      isLoading: false,
+      error: undefined,
+      supportedOperations: ['GET'],
+    });
+    useConditionalRulesMock.mockReturnValue([
+      { name: 'total', visible: true, disabled: false, computedValue: 118 },
+    ]);
+
+    render(
+      React.createElement(SmartCrudPage, {
+        resource: {
+          id: 'products',
+          title: 'Products',
+          apiUrl: '/api/products',
+          fields: [],
+        },
+      }),
+    );
+
+    expect(capturedCrudProps.at(-1)?.computedValues).toEqual({ total: 118 });
   });
 });

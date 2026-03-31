@@ -24,12 +24,43 @@ import type { ResourceConfig } from './ResourceConfig';
 // Fixtures
 // ---------------------------------------------------------------------------
 
-/** Minimal HydraApiDoc with no Entrypoint (URL derivation not under test here). */
-function makeDoc(operations: Array<{ 'hydra:method'?: string; method?: string }>): HydraApiDoc {
+type HydraOperationFixture = { 'hydra:method'?: string; method?: string };
+
+/** Minimal HydraApiDoc with optional Entrypoint collection operations. */
+function makeDoc(
+  operations: HydraOperationFixture[],
+  entrypointOperations: HydraOperationFixture[] = [],
+): HydraApiDoc {
   return {
     '@id': '/api/docs.jsonld',
     '@type': 'ApiDocumentation',
     supportedClass: [
+      {
+        '@id': '#Entrypoint',
+        '@type': 'Class',
+        title: 'Entrypoint',
+        supportedProperty: [
+          {
+            '@type': 'SupportedProperty',
+            title: 'category',
+            property: {
+              '@id': '#Entrypoint/category',
+              '@type': 'Link',
+              label: 'category',
+              range: [
+                { '@id': 'Collection' },
+                {
+                  'owl:equivalentClass': {
+                    'owl:onProperty': { '@id': 'member' },
+                    'owl:allValuesFrom': { '@id': '#Category' },
+                  },
+                },
+              ],
+              supportedOperation: entrypointOperations,
+            },
+          },
+        ],
+      },
       {
         '@id': '#Category',
         '@type': 'Class',
@@ -126,6 +157,16 @@ describe('parseHydraDoc — supportedOperations', () => {
       'PATCH',
       'DELETE',
     ]);
+  });
+
+  it('merges collection POST from Entrypoint with item operations from the class', () => {
+    const doc = makeDoc(
+      [{ 'hydra:method': 'GET' }, { 'hydra:method': 'PATCH' }, { 'hydra:method': 'DELETE' }],
+      [{ 'hydra:method': 'GET' }, { 'hydra:method': 'POST' }],
+    );
+    const schemas = parseHydraDoc(doc);
+
+    expect(schemas['Category'].supportedOperations).toEqual(['GET', 'POST', 'PATCH', 'DELETE']);
   });
 
   it('read-only resource (GET only) has no POST/PUT/PATCH/DELETE', () => {

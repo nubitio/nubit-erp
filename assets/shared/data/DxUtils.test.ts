@@ -159,6 +159,42 @@ describe('DxUtils › getDataStore › iriMode=true (BUG-010)', () => {
     expect(result).toBeNull();
     expect(getSpy).not.toHaveBeenCalled();
   });
+
+  it('returns a matching prependData item without calling the API', async () => {
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore(
+      '/api/categories',
+      'id',
+      null,
+      [],
+      [],
+      [{ prependData: [{ id: 'uuid-1', name: 'Root' }] }],
+    );
+    const { byKey } = getStoreConfig(store);
+    const result = (await byKey('uuid-1')) as Record<string, unknown>;
+
+    expect(result).toEqual({ id: 'uuid-1', name: 'Root' });
+    expect(getSpy).not.toHaveBeenCalled();
+  });
+
+  it('prefers a matching prependData item before attempting a byKey request', async () => {
+    const getSpy = vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore(
+      '/api/categories',
+      'id',
+      null,
+      [],
+      [],
+      [{ prependData: [{ id: 'uuid-1', name: 'Root' }] }],
+    );
+    const { byKey } = getStoreConfig(store);
+    const result = (await byKey('uuid-1')) as Record<string, unknown>;
+
+    expect(result).toEqual({ id: 'uuid-1', name: 'Root' });
+    expect(getSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe('DxUtils › getDataStore › searchOperation stripping (AC-9 / AC-14)', () => {

@@ -1,26 +1,25 @@
 import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
 import type { FieldDataChangedEvent } from 'devextreme/ui/form';
 import { Field } from '../field/Field';
-import { FieldType } from '../field/FieldType';
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { FORM_ERRORS_EVENT, httpClient } from '../../shared/api/HttpClient';
 import { useFormSubmit } from './useFormSubmit';
-import DataGrid, {
-  DataGridRef,
-  Editing,
-  KeyboardNavigation,
-  LoadPanel,
-  Paging,
-} from 'devextreme-react/data-grid';
-import { buildColumns } from '../datagrid/DxDataGridUtils';
+import { DataGridRef } from 'devextreme-react/data-grid';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 import { useEvents } from '../event/EventHook';
 import { FormEventNames } from '../event/EventTypes';
 import { buildField } from './FormUtils';
-import { DateUtils } from '../../shared/lib/DateUtils';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import toast from '../../shared/lib/SharedUtils';
 import type { FormLayout } from '../crud/FormLayout';
+import { buildEmptyRow, normalizeFormData } from './DxFormDataTransform';
+import { DxFormDetailGrid } from './DxFormDetailGrid';
+import { useDxFormApi } from './useDxFormApi';
+
+type FormRecord = Record<string, unknown>;
+type FormError = { propertyPath: string; message: string };
+type EventRowPayload = FormRecord & { row?: FormRecord };
 
 export interface DxFormOptions {
   className?: string;
@@ -39,13 +38,13 @@ export interface DxFormOptions {
   /** @deprecated — no tiene efecto, IRI siempre se aplica */
   useIRI?: boolean;
   /** Called after a successful POST or PATCH. Receives the server response. */
-  onSaveSuccess?: (response: any) => void;
+  onSaveSuccess?: (response: unknown) => void;
   /** Called when POST or PATCH fails (after HTTP error). */
-  onSaveError?: (error?: any) => void;
+  onSaveError?: (error?: unknown) => void;
   /** Called after a successful DELETE. */
-  onDeleteSuccess?: (response: any) => void;
+  onDeleteSuccess?: (response: unknown) => void;
   /** Called when DELETE fails. */
-  onDeleteError?: (error?: any) => void;
+  onDeleteError?: (error?: unknown) => void;
   /** Called whenever the loading state changes (true = started, false = finished). */
   onLoadingChange?: (loading: boolean) => void;
   /** Optional layout descriptor: when set, renders fields inside tabs or collapsible sections. */
@@ -56,16 +55,18 @@ export interface DxFormOptions {
    * Use this to implement reactive rules (visibleWhen / disabledWhen / computed).
    */
   onFieldDataChanged?: (formData: Record<string, unknown>) => void;
+  /** Latest runtime-computed values pushed down by SmartCrudPage. */
+  computedValues?: Record<string, unknown>;
 }
 
 export interface DxFormEvents {
-  getFormData: () => any;
-  getFieldValue: (name: string) => any;
-  setFieldValue: (name: string, value: any) => void;
-  getDetailData: () => any;
-  setDetailData: (data: any[]) => void;
+  getFormData: () => FormRecord | undefined;
+  getFieldValue: (name: string) => unknown;
+  setFieldValue: (name: string, value: unknown) => void;
+  getDetailData: () => FormRecord[] | undefined;
+  setDetailData: (data: FormRecord[]) => void;
   reloadDetailData: () => void;
-  setValues: (data: any) => void;
+  setValues: (data: FormRecord) => void;
   setReadonly: (field: string, value: boolean) => void;
   setDisabled: (field: string, value: boolean) => void;
   enableValidation: (field: string) => void;
@@ -75,6 +76,27 @@ export interface DxFormEvents {
   hideField: (field: string) => void;
   validate: () => boolean;
   setIsEdit: (value: boolean) => void;
+}
+
+export function syncComputedValuesIntoFormData(
+  formData: Record<string, unknown>,
+  computedFieldNames: string[],
+  computedValues: Record<string, unknown>,
+): { changed: boolean; nextFormData: Record<string, unknown> } {
+  let changed = false;
+  const nextFormData = { ...formData };
+
+  computedFieldNames.forEach((name) => {
+    const hasComputedValue = Object.prototype.hasOwnProperty.call(computedValues, name);
+    const value = hasComputedValue ? computedValues[name] : undefined;
+
+    if (nextFormData[name] !== value) {
+      nextFormData[name] = value;
+      changed = true;
+    }
+  });
+
+  return { changed, nextFormData };
 }
 
 export const FORM_EVENTS = {
@@ -92,6 +114,11 @@ export type UploadedFile = {
 };
 
 export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => {
+  const { t } = useCoreTranslation();
+  const { computedValues, onFieldDataChanged } = options;
+  const computedFieldNames = options.fields
+    .filter((field) => field.computed !== undefined)
+    .map((field) => field.name);
   const formRef = useRef<FormRef | null>(null);
   const gridRef = useRef<DataGridRef | null>(null);
   const uploadedFiles = useRef<UploadedFile[]>([]);
@@ -107,8 +134,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const [on, emit] = useEvents();
   const detailPropertyName = options.detailPropertyName ?? 'items';
   const detailNoDataText = options.requiredDetail
-    ? 'Agrega al menos un ítem para continuar'
-    : 'No hay ítems agregados';
+    ? t('form.detailRequired')
+    : t('form.detailEmpty');
 
   const getIdField = () => {
     return options.fields.find((field) => field.isIdentity)?.name ?? '';
@@ -139,7 +166,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       toast(
         detailRequiredMissing && formValid
           ? detailNoDataText
-          : 'Uno o más campos del formulario no son válidos',
+          : t('form.validationError'),
         detailRequiredMissing && formValid ? 'warning' : 'error',
       );
     }
@@ -188,86 +215,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const remainingFields = (assignedNames: string[]): Field[] =>
     options.fields.filter((f) => !assignedNames.includes(f.name));
 
-  const buildEmptyRow = (fields: Field[]) => {
-    const row: any = {};
-    fields.forEach((field: Field) => {
-      if (field.defaultValue !== undefined) {
-        row[field.name] = field.defaultValue;
-      } else {
-        row[field.name] = undefined;
-      }
-    });
-    return row;
-  };
-
-  const getData = (data: any) => {
-    const row = { ...data };
-    options.fields.forEach((field: Field) => {
-      if (field.type === FieldType.FILE) {
-        delete row[field.name];
-      }
-      if (field.type === FieldType.PASSWORD) {
-        row[field.name] = '';
-      }
-      if (field.type === FieldType.DATE) {
-        const type = typeof row[field.name];
-        if (type === 'string') {
-          row[field.name] = DateUtils.dateParser(row[field.name]);
-        } else if (type === 'object') {
-          row[field.name] = new Date(row[field.name]);
-        } else {
-          row[field.name] = null;
-        }
-      }
-      if (field.type === FieldType.ENTITY) {
-        const type = typeof row[field.name];
-        if (type === 'string') {
-          // Server returned an IRI string like "/api/categories/uuid".
-          // Extract the last path segment as the key so that DevExtreme's
-          // byKey lookup calls GET /api/categories/uuid (not the full IRI path).
-          const value = row[field.name].split('/').pop();
-          row[field.name] = { [field.valueField]: value };
-        }
-        if (type === 'object' && row[field.name] !== null) {
-          // Server returned a full Hydra entity object.
-          // Two cases:
-          //
-          // Case A — Hydra object with @id (e.g. { "@id": "/api/categories/uuid", "id": 1, "name": "Root" })
-          //   Normalise to { [valueField]: lastSegment } so DevExtreme's byKey
-          //   lookup works (GET /api/categories/uuid) and serializeFields
-          //   reconstructs the correct IRI — preventing BUG-014 where the raw
-          //   integer id 1 was used to build /api/categories/1.
-          //
-          // Case B — plain nested object without @id (e.g. { "id": "uuid", "name": "OTROS" })
-          //   Use field.valueField directly (e.g. obj.id) so the SelectBox can
-          //   match the value to its datasource — fixes BUG-015.
-          const atId: unknown = row[field.name]['@id'];
-          if (typeof atId === 'string') {
-            const lastSegment = atId.split('/').pop() ?? atId;
-            row[field.name] = { [field.valueField]: lastSegment };
-          } else {
-            // Case B: plain object — extract the valueField directly
-            const directValue: unknown = (row[field.name] as Record<string, unknown>)[
-              field.valueField
-            ];
-            if (directValue !== undefined && directValue !== null) {
-              row[field.name] = { [field.valueField]: directValue };
-            }
-          }
-        }
-        if (row[field.name] === null || row[field.name] === undefined) {
-          row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
-        }
-      }
-    });
-
-    return row;
-  };
+  const getData = (rawData: FormRecord) => normalizeFormData(rawData, options.fields);
 
   const setupObservers = () => {
-    on(FORM_ERRORS_EVENT, (errors: any) => {
-      toast('Uno o más campos del formulario no son válidos', 'error');
-      errors.forEach((error: any) => {
+    on(FORM_ERRORS_EVENT, (errors: FormError[]) => {
+      toast(t('form.validationError'), 'error');
+      errors.forEach((error) => {
         setError(error.propertyPath, error.message);
       });
     });
@@ -275,7 +228,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     on<boolean>(FORM_EVENTS.LOADING, (loading) => {
       if (loading) {
         gridRef.current?.instance().option('noDataText', '');
-        gridRef.current?.instance().beginCustomLoading('Cargando...');
+        gridRef.current?.instance().beginCustomLoading(t('form.loading'));
       } else {
         gridRef.current?.instance().endCustomLoading();
         gridRef.current?.instance().option('noDataText', detailNoDataText);
@@ -283,60 +236,51 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     });
 
     if (options.events?.ADD)
-      on(options.events.ADD, (payload: any) => {
-        formRef.current?.instance().option('formData', null);
+      on(options.events.ADD, (payload: EventRowPayload | undefined) => {
         uploadedFiles.current = [];
         const store = data.current?.store() as ArrayStore;
         store.clear();
         data.current?.reload();
         if (payload) {
-          options.fields.forEach((field: Field) => {
-            if (payload[field.name] === undefined) return;
-            const row = getData(payload);
-            formRef.current?.instance().getEditor(field.name)?.option('value', row[field.name]);
-          });
-          if (payload[detailPropertyName]) {
-            setDetailData(payload[detailPropertyName]);
+          const row = getData(payload);
+          formRef.current?.instance().option('formData', row);
+          options.onFieldDataChanged?.(row);
+          if (Array.isArray(payload[detailPropertyName])) {
+            setDetailData(payload[detailPropertyName] as FormRecord[]);
           }
         } else {
-          options.fields.forEach((field: Field) => {
-            if (field.defaultValue !== undefined) {
-              if (field.defaultValue instanceof Function) {
-                formRef.current
-                  ?.instance()
-                  .getEditor(field.name)
-                  ?.option('value', field.defaultValue());
-              } else {
-                formRef.current
-                  ?.instance()
-                  .getEditor(field.name)
-                  ?.option('value', field.defaultValue);
-              }
-            }
-          });
+          const row = buildEmptyRow(options.fields);
+          formRef.current?.instance().option('formData', row);
+          options.onFieldDataChanged?.(row);
         }
         isEdit.current = false;
       });
 
     if (options.events?.EDIT)
-      on(options.events.EDIT, (payload: any) => {
+      on(options.events.EDIT, (payload: { row: FormRecord }) => {
         const row = getData(payload.row);
         formRef.current?.instance().option('formData', row);
+        options.onFieldDataChanged?.(row);
         uploadedFiles.current = [];
         isEdit.current = true;
-        const detailUrl = options.detailUrl?.replace('{id}', row[getIdField()]);
+        const detailId = row[getIdField()];
+        const detailUrl =
+          typeof detailId === 'string' || typeof detailId === 'number'
+            ? options.detailUrl?.replace('{id}', String(detailId))
+            : undefined;
         if (!detailUrl) return;
         setDetailData([]);
         emit(FORM_EVENTS.LOADING, true);
         httpClient
-          .get<any>(detailUrl)
+          .get<FormRecord[]>(detailUrl)
           .subscribe((response) => {
             setDetailData(response.data);
           })
           .add(() => emit(FORM_EVENTS.LOADING, false));
       });
 
-    if (options.events?.DELETE) on(options.events.DELETE, (payload: any) => handleDelete(payload));
+    if (options.events?.DELETE)
+      on(options.events.DELETE, (payload: { row: FormRecord }) => handleDelete(payload));
 
     if (options.events?.SAVE) on(options.events.SAVE, () => handleSave());
   };
@@ -371,110 +315,57 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     setupObserversRef.current();
   }, []);
 
-  const getFormData = () => {
-    return formRef.current?.instance().option('formData');
-  };
-
-  const setFieldValue = (field: string, value: any) => {
-    formRef.current?.instance().getEditor(field)?.option('value', value);
-  };
-
-  const setReadonly = (field: string, value: boolean) => {
-    formRef.current?.instance().getEditor(field)?.option('readOnly', value);
-  };
-
-  const setDisabled = (field: string, value: boolean) => {
-    formRef.current?.instance().getEditor(field)?.option('disabled', value);
-  };
-
-  const getDetailData = () => {
-    return gridRef.current?.instance().getDataSource().items();
-  };
-
-  const setValues = (data: any) => {
-    const row = getData(data);
-    formRef.current?.instance().option('formData', row);
-  };
-
-  const setDetailData = (data: any[]) => {
-    const store = gridRef.current?.instance().getDataSource().store() as ArrayStore;
-    store.clear();
-    data.forEach((row: any) => {
-      store.insert(row);
-    });
-    reloadDetailData();
-  };
-
-  const reloadDetailData = () => {
-    gridRef.current?.instance().getDataSource().reload();
-  };
-
-  const setError = (field: string, message: string) => {
-    if (field === 'items') {
-      toast(message, 'error');
+  useEffect(() => {
+    const instance = formRef.current?.instance();
+    if (!instance || computedFieldNames.length === 0) {
       return;
     }
-    const editor = formRef.current?.instance().getEditor(field);
-    editor?.option({
-      isValid: false,
-      validationError: {
-        message: message,
-      },
-    });
-  };
 
-  const showField = (field: string) => {
-    formRef.current?.instance().itemOption(field, 'visible', true);
-  };
+    const currentFormData = (instance.option('formData') ?? null) as Record<string, unknown> | null;
+    if (currentFormData == null) {
+      return;
+    }
 
-  const hideField = (field: string) => {
-    formRef.current?.instance().itemOption(field, 'visible', false);
-  };
+    const { changed, nextFormData } = syncComputedValuesIntoFormData(
+      currentFormData,
+      computedFieldNames,
+      computedValues ?? {},
+    );
 
-  const enableValidation = (field: string) => {
-    formRef.current?.instance().getEditor(field)?.option('isValid', true);
-  };
+    if (!changed) {
+      return;
+    }
 
-  const disableValidation = (field: string) => {
-    formRef.current?.instance().getEditor(field)?.option('isValid', false);
-  };
+    instance.option('formData', nextFormData);
+    onFieldDataChanged?.(nextFormData);
+  }, [computedFieldNames, computedValues, onFieldDataChanged]);
 
-  const setIsEdit = (value: boolean) => {
-    isEdit.current = value;
-  };
+  const api = useDxFormApi({ formRef, gridRef, isEdit }, options.fields);
+  // Destructure methods used by internal observers
+  const { setDetailData, setError } = api;
+
+  /**
+   * Stable handler for DevExtreme Form's onFieldDataChanged event.
+   * Reads the full formData snapshot from the form instance and forwards it
+   * to the optional `onFieldDataChanged` prop — enabling reactive rule evaluation
+   * (visibleWhen / disabledWhen / computed) in SmartCrudPage.
+   */
+  const handleFieldDataChanged = useCallback(
+    (e: FieldDataChangedEvent) => {
+      const snapshot = (e.component.option('formData') ?? {}) as Record<string, unknown>;
+      onFieldDataChanged?.(snapshot);
+    },
+    [onFieldDataChanged],
+  );
 
   useImperativeHandle(ref, () => ({
-    getFormData,
-    getFieldValue,
-    setFieldValue,
-    getDetailData,
-    setDetailData,
-    reloadDetailData,
-    setValues,
-    setReadonly,
-    setDisabled,
+    ...api,
+    // Override with DxForm-specific validate that includes detail grid validation + toast
     validate,
-    setError,
-    showField,
-    hideField,
-    enableValidation,
-    disableValidation,
-    setIsEdit,
   }));
 
   const renderForm = () => {
-    /**
-     * Stable handler for DevExtreme Form's onFieldDataChanged event.
-     * Reads the full formData snapshot from the form instance and forwards it
-     * to the optional `onFieldDataChanged` prop — enabling reactive rule evaluation
-     * (visibleWhen / disabledWhen / computed) in SmartCrudPage.
-     */
-    const handleFieldDataChanged = options.onFieldDataChanged
-      ? (e: FieldDataChangedEvent) => {
-          const snapshot = (e.component.option('formData') ?? {}) as Record<string, unknown>;
-          options.onFieldDataChanged!(snapshot);
-        }
-      : undefined;
+    const fieldChangeHandler = onFieldDataChanged ? handleFieldDataChanged : undefined;
 
     if ((options.detailFields?.length ?? 0) > 0) {
       return (
@@ -482,58 +373,22 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
           ref={formRef}
           className={options.className}
           labelMode={'floating'}
-          onFieldDataChanged={handleFieldDataChanged}
+          onFieldDataChanged={fieldChangeHandler}
         >
           <Item itemType="group" colCount={4}>
             <GroupItem>{buildFields(options.fields)}</GroupItem>
             <GroupItem colSpan={3}>
-              <DataGrid
-                id={'form-detail-grid'}
-                className="dx-form-detail-grid"
-                ref={gridRef}
-                keyExpr={getDetailIdField()}
+              <DxFormDetailGrid
+                gridRef={gridRef}
                 dataSource={data.current}
+                detailFields={options.detailFields ?? []}
+                detailIdField={getDetailIdField()}
                 noDataText={detailNoDataText}
-                showBorders={true}
-                showRowLines={true}
-                showColumnLines={true}
-                focusedRowEnabled={true}
-                hoverStateEnabled={true}
-                repaintChangesOnly={true}
-                onInitNewRow={(e: any) => {
-                  e.data = buildEmptyRow(options.detailFields ?? []);
-                  e.component.saveEditData();
-                }}
-                onRowInserted={(e: any) => {
-                  e.component.saveEditData();
-                  emit(FORM_EVENTS.ROW_ADDED, e.data);
-                }}
-                onRowRemoved={(e: any) => {
-                  e.component.saveEditData();
-                  emit(FORM_EVENTS.ROW_REMOVED, e.data);
-                }}
-                onRowUpdated={(e: any) => {
-                  e.component.saveEditData();
-                  emit(FORM_EVENTS.ROW_UPDATED, e.data);
-                }}
-              >
-                <LoadPanel showPane={false} />
-                <KeyboardNavigation
-                  editOnKeyPress={true}
-                  enterKeyAction="moveFocus"
-                  enterKeyDirection="column"
-                />
-                <Editing
-                  mode="cell"
-                  allowUpdating={options.allowUpdating ?? true}
-                  allowDeleting={options.allowDeleting ?? true}
-                  allowAdding={options.allowAdding ?? true}
-                  startEditAction="click"
-                  confirmDelete={false}
-                />
-                <Paging enabled={false} />
-                {buildColumns(options.detailFields ?? [], true)}
-              </DataGrid>
+                allowAdding={options.allowAdding}
+                allowUpdating={options.allowUpdating}
+                allowDeleting={options.allowDeleting}
+                emit={emit}
+              />
             </GroupItem>
           </Item>
         </Form>
@@ -550,7 +405,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
           ref={formRef}
           className={options.className}
           labelMode={'floating'}
-          onFieldDataChanged={handleFieldDataChanged}
+          onFieldDataChanged={fieldChangeHandler}
         >
           <TabbedItem>
             {tabs.map((tab) => (
@@ -558,7 +413,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 {buildFields(pickFields(tab.fields))}
               </Tab>
             ))}
-            {overflow.length > 0 && <Tab title="Otros">{buildFields(overflow)}</Tab>}
+            {overflow.length > 0 && <Tab title={t('form.groupOther')}>{buildFields(overflow)}</Tab>}
           </TabbedItem>
         </Form>
       );
@@ -574,7 +429,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
           ref={formRef}
           className={options.className}
           labelMode={'floating'}
-          onFieldDataChanged={handleFieldDataChanged}
+          onFieldDataChanged={fieldChangeHandler}
         >
           {sections.map((section) => (
             // caption is used as the item name so itemOption(section.label, ...) works
@@ -593,7 +448,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         ref={formRef}
         className={options.className}
         labelMode={'floating'}
-        onFieldDataChanged={handleFieldDataChanged}
+        onFieldDataChanged={fieldChangeHandler}
       >
         <GroupItem>{buildFields(options.fields)}</GroupItem>
       </Form>

@@ -6,7 +6,11 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,12 +18,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'categoria')]
 #[ApiResource(
-    operations: [new GetCollection()],
+    operations: [new GetCollection(), new Post(), new Get(), new Patch(), new Delete()],
     normalizationContext: ['groups' => ['category:read']],
+    denormalizationContext: ['groups' => ['category:write']],
     filters: [DevExtremeFilter::class],
     mercure: true,
 )]
@@ -38,7 +44,9 @@ class Category
     #[Groups([
         'category:read',
         'product:read',
+        'category:write',
     ])]
+    #[Assert\NotBlank]
     #[ApiProperty(
         description: 'category.name.label',
         openapiContext: [
@@ -52,7 +60,7 @@ class Category
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 
-    #[Groups(['category:read'])]
+    #[Groups(['category:read', 'category:write'])]
     #[ApiProperty(
         description: 'category.parent.label',
         openapiContext: [

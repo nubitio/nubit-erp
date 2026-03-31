@@ -111,6 +111,18 @@ describe('useDependsOn', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it('does NOT call invalidateQueries when formData is still null', () => {
+    const { spy, wrapper } = createWrapper();
+
+    const fields: Field[] = [
+      makeField({ name: 'city', url: '/api/cities', dependsOn: ['country'] }),
+    ];
+
+    renderHook(() => useDependsOn(fields, null), { wrapper });
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it('DOES call invalidateQueries when a dependency value changes after mount', () => {
     const { spy, wrapper } = createWrapper();
 
@@ -252,6 +264,42 @@ describe('useDependsOn', () => {
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy).toHaveBeenCalledWith({ queryKey: ['/api/cities'] });
     expect(spy).toHaveBeenCalledWith({ queryKey: ['/api/provinces'] });
+  });
+
+  it('invalidates only fields whose own dependencies changed', () => {
+    const { spy, wrapper } = createWrapper();
+
+    const fields: Field[] = [
+      makeField({ name: 'city', url: '/api/cities', dependsOn: ['country'] }),
+      makeField({ name: 'district', url: '/api/districts', dependsOn: ['city'] }),
+      makeField({
+        name: 'neighborhood',
+        url: '/api/neighborhoods',
+        dependsOn: ['country', 'city'],
+      }),
+    ];
+
+    const { result } = renderHook(
+      () => {
+        const [formData, setFormData] = useState<Record<string, unknown>>({
+          country: 'PE',
+          city: 'LIM',
+        });
+        useDependsOn(fields, formData);
+        return { setFormData };
+      },
+      { wrapper },
+    );
+
+    expect(spy).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.setFormData({ country: 'CL', city: 'LIM' });
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith({ queryKey: ['/api/cities'] });
+    expect(spy).toHaveBeenCalledWith({ queryKey: ['/api/neighborhoods'] });
   });
 
   it('does NOT fire on second render if formData reference changes but values are the same', () => {
