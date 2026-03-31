@@ -8,6 +8,11 @@ rm -rf /app/var/cache/${APP_ENV:-prod}
 mkdir -p /app/var/cache/${APP_ENV:-prod} /app/var/log /app/public/uploads
 chown -R www-data:www-data /app/var /app/public/uploads
 
+# Composer may invoke git during install; trust the bind-mounted app path inside the container.
+if command -v git >/dev/null 2>&1; then
+    git config --global --add safe.directory /app || true
+fi
+
 # Run database migrations automatically (only in prod/staging, not dev)
 # Workers should set SKIP_MIGRATIONS=true to avoid race conditions
 if [ "${SKIP_MIGRATIONS}" = "true" ]; then

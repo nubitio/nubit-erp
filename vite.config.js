@@ -171,6 +171,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     include: ['assets/**/*.test.ts', 'assets/**/*.test.tsx'],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
