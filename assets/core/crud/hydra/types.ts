@@ -12,6 +12,7 @@ export interface HydraProperty {
   '@id': string;
   '@type': string; // e.g. "rdf:Property", "Link"
   label: string;
+  supportedOperation?: HydraSupportedOperation[];
   /**
    * In real API Platform responses this can be:
    *   - a plain string: "xmls:string", "#Company"

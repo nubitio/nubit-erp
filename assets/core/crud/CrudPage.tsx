@@ -8,12 +8,14 @@ import { useCrudPage } from './useCrudPage';
 import { dispatch, useEvents } from '../event/EventHook';
 import type { ResourceConfig } from './ResourceConfig';
 import type { BulkAction } from './BulkAction';
+import type { Field } from '../field/Field';
 import { AuditTrailPanel } from './AuditTrailPanel';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { DialogStoreProvider } from './DialogStoreProvider';
 import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { resolveCrudResource } from './resolveCrudResource';
 
 interface CrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
   resource: ResourceConfig<T>;
@@ -35,6 +37,39 @@ interface CrudPageProps<T extends Record<string, unknown> = Record<string, unkno
    * Defaults to false — existing behaviour unchanged when omitted.
    */
   initialIsNew?: boolean;
+  computedValues?: Record<string, unknown>;
+  initialFilters?: Record<string, string>;
+  onFiltersChange?: (filters: Record<string, string>) => void;
+}
+
+function inferFilterOperator(field: Field): NonNullable<Field['selectedFilterOperation']> {
+  if (field.selectedFilterOperation) {
+    return field.selectedFilterOperation;
+  }
+
+  return field.valueType === 'string' ? 'contains' : '=';
+}
+
+function buildRoutingFilterRules(
+  fields: Field[],
+  initialFilters: Record<string, string>,
+): Array<{ field: string; operator: string; value: string | number | boolean }> {
+  return Object.entries(initialFilters).flatMap(([name, value]) => {
+    const field = fields.find(
+      (candidate) => candidate.name === name && candidate.filterable !== false,
+    );
+    if (!field || value === '') {
+      return [];
+    }
+
+    return [
+      {
+        field: name,
+        operator: inferFilterOperator(field),
+        value,
+      },
+    ];
+  });
 }
 
 /**
@@ -46,6 +81,9 @@ export const CrudPage = <T extends Record<string, unknown> = Record<string, unkn
   onFormDataChange,
   initialRecordId,
   initialIsNew,
+  computedValues,
+  initialFilters,
+  onFiltersChange,
 }: CrudPageProps<T>) => (
   <DialogStoreProvider>
     <CrudPageInner
@@ -53,6 +91,9 @@ export const CrudPage = <T extends Record<string, unknown> = Record<string, unkn
       onFormDataChange={onFormDataChange}
       initialRecordId={initialRecordId}
       initialIsNew={initialIsNew}
+      computedValues={computedValues}
+      initialFilters={initialFilters}
+      onFiltersChange={onFiltersChange}
     />
   </DialogStoreProvider>
 );
@@ -62,21 +103,61 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   onFormDataChange,
   initialRecordId = null,
   initialIsNew = false,
+  computedValues = {},
+  initialFilters = {},
+  onFiltersChange,
 }: CrudPageProps<T>) => {
   const { t } = useCoreTranslation();
-  const { events, fields, formRef, permissions, selectionState, presetState } =
-    useCrudPage(resource);
+  const resolvedInputResource = useMemo(() => resolveCrudResource(resource), [resource]);
+  const {
+    events,
+    resource: resolvedResource,
+    fields,
+    formRef,
+    permissions,
+    selectionState,
+    presetState,
+  } = useCrudPage(resolvedInputResource);
   const datagridFields = useMemo(
     () => fields.filter((field) => field.isIdentity || field.visible !== false),
     [fields],
   );
+  const routeAwareGridFields = useMemo(
+    () =>
+      datagridFields.map((field) => {
+        const routeFilterValue = initialFilters[field.name];
+        if (routeFilterValue === undefined) {
+          if (field.filterValue === undefined) {
+            return field;
+          }
+
+          return { ...field, filterValue: undefined };
+        }
+
+        return {
+          ...field,
+          filterValue: routeFilterValue,
+          selectedFilterOperation: inferFilterOperator(field),
+        };
+      }),
+    [datagridFields, initialFilters],
+  );
+  const routeAwareFilters = useMemo(
+    () => [
+      ...(resolvedResource.filter ?? []),
+      ...buildRoutingFilterRules(routeAwareGridFields, initialFilters),
+    ],
+    [initialFilters, resolvedResource.filter, routeAwareGridFields],
+  );
 
   const isInlineEditMode =
-    resource.editMode === 'row' || resource.editMode === 'cell' || resource.editMode === 'batch';
+    resolvedResource.editMode === 'row' ||
+    resolvedResource.editMode === 'cell' ||
+    resolvedResource.editMode === 'batch';
 
-  const hasMultipleSelection = (resource.bulkActions?.length ?? 0) > 0;
-  const hasPresets = (resource.columnPresets?.length ?? 0) > 0;
-  const hasAuditTrail = resource.auditTrail?.enabled === true;
+  const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
+  const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
+  const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
 
   const [selectedRowId, setSelectedRowId] = useState<string | number | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
@@ -90,7 +171,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     mode: dialogMode,
     openDialog,
     closeDialog,
-  } = useCrudDialogStore(resource.id);
+  } = useCrudDialogStore(resolvedResource.id);
 
   const [on] = useEvents();
 
@@ -144,22 +225,24 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   // Deep-link: open the appropriate dialog on mount when routing props are provided.
   React.useEffect(() => {
     if (initialRecordId != null) {
-      // Open edit dialog for the given record id.
-      // Row data is minimal (just the identity) — the form will fetch the full
-      // record via the EDIT event handler in DxForm (getData / detailUrl).
       openDialog('edit', { id: initialRecordId });
-    } else if (initialIsNew) {
-      openDialog('add', null);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    if (initialIsNew) {
+      openDialog('add', null);
+      return;
+    }
+
+    closeDialog();
+  }, [closeDialog, initialIsNew, initialRecordId, openDialog]);
 
   // Subscribe to detail-grid row mutation events and call onDetailRowsChanged when defined.
   // The callback receives `formRef` so it can imperatively update header-form fields
   // (e.g. recalculate a `total` from line items).
   // Cleanup is handled automatically by useEvents' own unmount effect.
-  const onDetailRowsChangedRef = React.useRef(resource.onDetailRowsChanged);
-  onDetailRowsChangedRef.current = resource.onDetailRowsChanged;
+  const onDetailRowsChangedRef = React.useRef(resolvedResource.onDetailRowsChanged);
+  onDetailRowsChangedRef.current = resolvedResource.onDetailRowsChanged;
 
   React.useEffect(() => {
     if (!onDetailRowsChangedRef.current) return;
@@ -194,10 +277,10 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   };
 
   const auditUrl = useMemo(() => {
-    if (!resource.auditTrail?.enabled || selectedRowId == null) return null;
-    const { apiUrl } = resource.auditTrail;
+    if (!resolvedResource.auditTrail?.enabled || selectedRowId == null) return null;
+    const { apiUrl } = resolvedResource.auditTrail;
     return typeof apiUrl === 'function' ? apiUrl(selectedRowId) : `${apiUrl}${selectedRowId}`;
-  }, [resource.auditTrail, selectedRowId]);
+  }, [resolvedResource.auditTrail, selectedRowId]);
 
   const executeBulkAction = useCallback(
     async (action: BulkAction) => {
@@ -228,18 +311,18 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
           className="column-preset-selector"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
         >
-          <label htmlFor={`preset-${resource.id}`} style={{ fontSize: 13 }}>
+          <label htmlFor={`preset-${resolvedResource.id}`} style={{ fontSize: 13 }}>
             {t('crudPage.columnsLabel')}
           </label>
           <select
-            id={`preset-${resource.id}`}
+            id={`preset-${resolvedResource.id}`}
             aria-label="Seleccionar preset de columnas"
             value={presetState.activePreset ?? ''}
             onChange={(e) => presetState.setPreset(e.target.value || null)}
             style={{ fontSize: 13 }}
           >
             <option value="">{t('crudPage.allColumns')}</option>
-            {resource.columnPresets!.map((p) => (
+            {resolvedResource.columnPresets!.map((p) => (
               <option key={p.key} value={p.key}>
                 {p.label}
               </option>
@@ -251,12 +334,12 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
 
   return (
     <div id="wrapper" className={auditOpen ? 'wrapper--with-audit' : undefined}>
-      {(resource.bulkActions?.length ?? 0) > 0 && selectionState.hasSelection && (
+      {(resolvedResource.bulkActions?.length ?? 0) > 0 && selectionState.hasSelection && (
         <div className="bulk-toolbar" role="toolbar" aria-label="Acciones en lote">
           <span className="bulk-toolbar__count">
             {t('crudPage.selectedCount', { count: selectionState.selectedCount })}
           </span>
-          {resource.bulkActions!.map((action: BulkAction) => (
+          {resolvedResource.bulkActions!.map((action: BulkAction) => (
             <Button
               key={action.key}
               text={action.label}
@@ -281,52 +364,54 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
         </div>
       )}
       <DxDataGrid
-        id={resource.id}
-        title={resource.title}
-        url={resource.apiUrl}
-        fields={datagridFields}
+        id={resolvedResource.id}
+        title={resolvedResource.title}
+        url={resolvedResource.apiUrl}
+        fields={routeAwareGridFields}
         events={events}
         allowAdd={permissions.canAdd}
         allowEdit={permissions.canEdit}
         allowDelete={permissions.canDelete}
         allowExport={permissions.canExport}
-        sort={resource.sort}
-        filter={resource.filter}
-        paging={resource.paging}
-        mode={resource.mode}
-        stateStoringEnabled={resource.stateStoring}
-        toolbar={resource.toolbar}
+        sort={resolvedResource.sort}
+        filter={routeAwareFilters}
+        paging={resolvedResource.paging}
+        mode={resolvedResource.mode}
+        stateStoringEnabled={resolvedResource.stateStoring}
+        toolbar={resolvedResource.toolbar}
         selectionMode={hasMultipleSelection ? 'multiple' : 'single'}
         onSelectionChanged={handleSelectionChanged}
-        editMode={resource.editMode}
+        editMode={resolvedResource.editMode}
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
-        detailUrl={resource.detailUrl}
-        detailFields={resource.detailFields}
+        detailUrl={resolvedResource.detailUrl}
+        detailFields={resolvedResource.detailFields}
+        onFilterChange={onFiltersChange}
       />
       {!isInlineEditMode && (
         <DxDialog
           events={events}
-          width={resource.dialogWidth}
-          height={resource.dialogHeight}
+          width={resolvedResource.dialogWidth}
+          height={resolvedResource.dialogHeight}
           title={dialogTitle}
           isOpen={dialogIsOpen}
           onClose={closeDialog}
         >
           <DxForm
             ref={formRef}
-            url={resource.apiUrl}
+            url={resolvedResource.apiUrl}
             fields={fields}
             events={events}
-            detailFields={resource.detailFields}
-            detailUrl={resource.detailUrl}
-            detailPropertyName={resource.detailPropertyName}
-            format={resource.format}
-            onSaveSuccess={resource.onSaveSuccess}
-            onSaveError={resource.onSaveError}
-            onDeleteSuccess={resource.onDeleteSuccess}
-            onDeleteError={resource.onDeleteError}
-            formLayout={resource.formLayout}
+            detailFields={resolvedResource.detailFields}
+            detailUrl={resolvedResource.detailUrl}
+            detailPropertyName={resolvedResource.detailPropertyName}
+            format={resolvedResource.format}
+            onSaveSuccess={resolvedResource.onSaveSuccess}
+            onSaveError={resolvedResource.onSaveError}
+            onDeleteSuccess={resolvedResource.onDeleteSuccess}
+            onDeleteError={resolvedResource.onDeleteError}
+            formLayout={resolvedResource.formLayout}
+            computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
           />
         </DxDialog>
@@ -334,7 +419,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
       {hasAuditTrail && (
         <AuditTrailPanel
           url={auditUrl}
-          renderEntry={resource.auditTrail!.renderEntry}
+          renderEntry={resolvedResource.auditTrail!.renderEntry}
           visible={auditOpen}
           onClose={() => setAuditOpen(false)}
         />

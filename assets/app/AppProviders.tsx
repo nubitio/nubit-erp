@@ -7,6 +7,7 @@ import { NavigationProvider } from '@app/contexts/navigation';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
 import { MercureProvider } from '@core/mercure';
+import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -19,13 +20,15 @@ export const AppProviders = ({ children, themeContext, mercureHubUrl }: AppProvi
     <Router>
       <ThemeContext.Provider value={themeContext}>
         <AuthProvider>
-          <ConnectivityProvider>
-            <OutboxSyncProvider>
-              <MercureProvider hubUrl={mercureHubUrl}>
-                <NavigationProvider>{children}</NavigationProvider>
-              </MercureProvider>
-            </OutboxSyncProvider>
-          </ConnectivityProvider>
+          <SmartCrudAuthBridge>
+            <ConnectivityProvider>
+              <OutboxSyncProvider>
+                <MercureProvider hubUrl={mercureHubUrl}>
+                  <NavigationProvider>{children}</NavigationProvider>
+                </MercureProvider>
+              </OutboxSyncProvider>
+            </ConnectivityProvider>
+          </SmartCrudAuthBridge>
         </AuthProvider>
       </ThemeContext.Provider>
     </Router>

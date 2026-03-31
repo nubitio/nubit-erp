@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import type { ResourceRouting } from '../ResourceConfig';
 
@@ -26,27 +26,27 @@ export function useRouting(routing: ResourceRouting | undefined): RoutingState {
   const params = useParams<Record<string, string>>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialRecordId = useMemo((): string | null => {
+  const initialRecordId = (() => {
     if (!routing?.routeParam) return null;
     const value = params[routing.routeParam];
     if (!value || value === 'new') return null;
     return value;
-  }, [routing?.routeParam, params]);
+  })();
 
-  const initialIsNew = useMemo((): boolean => {
+  const initialIsNew = (() => {
     if (!routing?.routeParam) return false;
     const value = params[routing.routeParam];
     return value === 'new';
-  }, [routing?.routeParam, params]);
+  })();
 
-  const initialFilters = useMemo((): Record<string, string> => {
+  const initialFilters = (() => {
     if (!routing?.syncFiltersToUrl) return {};
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       filters[key] = value;
     });
     return filters;
-  }, [routing?.syncFiltersToUrl, searchParams]);
+  })();
 
   const syncFilters = useCallback(
     (filters: Record<string, string>) => {

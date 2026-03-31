@@ -78,6 +78,40 @@ describe('useConditionalRules', () => {
     expect(result.current[0].computedValue).toBeUndefined();
   });
 
+  it('defers rule evaluation while form data has not hydrated yet', () => {
+    const fields: Field[] = [
+      makeField({
+        name: 'vatNumber',
+        visibleWhen: () => false,
+        disabledWhen: () => true,
+        computed: () => 'derived',
+      }),
+    ];
+
+    const { result } = renderHook(() => useConditionalRules(fields, null));
+
+    expect(result.current[0].visible).toBe(true);
+    expect(result.current[0].disabled).toBe(false);
+    expect(result.current[0].computedValue).toBeUndefined();
+  });
+
+  it('evaluates rules against an empty create-form snapshot', () => {
+    const fields: Field[] = [
+      makeField({
+        name: 'vatNumber',
+        visibleWhen: (data) => data.customerType === 'business',
+        disabledWhen: (data) => data.locked !== false,
+        computed: (data) => String(data.code ?? 'AUTO'),
+      }),
+    ];
+
+    const { result } = renderHook(() => useConditionalRules(fields, {}));
+
+    expect(result.current[0].visible).toBe(false);
+    expect(result.current[0].disabled).toBe(true);
+    expect(result.current[0].computedValue).toBe('AUTO');
+  });
+
   it('applies visibleWhen — field hidden when condition false', () => {
     const fields: Field[] = [
       makeField({

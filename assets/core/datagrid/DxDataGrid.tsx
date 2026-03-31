@@ -31,17 +31,14 @@ import {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jsPDF as JsPdf } from 'jspdf';
-import { saveAs } from 'file-saver';
-import { Workbook } from 'exceljs';
-import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
-import { exportDataGrid as exportDataGridToXLSX } from 'devextreme/excel_exporter';
 import { dxUtils } from '../../shared/data/DxUtils';
+import { EXPORT_FORMATS, handleDataGridExport } from './DxDataGridExport';
 import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
 import { DxDetailDataGrid } from './DxDetailDataGrid';
 import { DxFilterRule } from '../common/FilterRule';
 import { useEvents } from '../event/EventHook';
 import toast from '../utils/SharedUtils';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { Field } from '../field/Field';
 import { DataGridEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import { Store } from 'devextreme/data';
@@ -66,7 +63,7 @@ export interface DxDataGridOptions {
   deleteDisabled?: boolean;
   summaryFields?: ITotalItemProps[];
   filter?: DxFilterRule[];
-  sort?: any[];
+  sort?: Array<{ selector: string; desc: boolean }>;
   mode?: 'minimal' | 'normal' | 'full';
   paging?: boolean;
   hasBackButton?: boolean;
@@ -78,6 +75,7 @@ export interface DxDataGridOptions {
   onSelectionChanged?: (e: SelectionChangedEvent) => void;
   onRowPrepared?: (e: RowPreparedEvent) => void;
   onContentReady?: () => void;
+  onFilterChange?: (filters: Record<string, string>) => void;
   filterRow?: boolean;
   manualLoad?: boolean;
   beforeToolbar?: () => ReactNode;
@@ -99,16 +97,14 @@ export interface DxDataGridEvents {
   hideLoading: () => void;
   refresh: () => void;
   reset: () => void;
-  getVisibleRows: () => any;
-  getSelectedRowKey: () => any;
-  getSelectedRow: () => any;
-  getSelectedRowKeys: () => any;
-  getSelectedRows: () => any;
+  getVisibleRows: () => DataGridTypes.Row[] | undefined;
+  getSelectedRowKey: () => unknown;
+  getSelectedRow: () => Record<string, unknown> | undefined;
+  getSelectedRowKeys: () => unknown[];
+  getSelectedRows: () => Record<string, unknown>[];
   getDataSource: () => Store | null;
   setDataSource: (dataSource: Store | null) => void;
-
-  getFilter(): any[];
-
+  getFilter(): unknown[];
   filter(filterRule: DxFilterRule | null): void;
 }
 
@@ -117,15 +113,34 @@ export const DATA_GRID_EVENTS = {
   TOOLBAR_EVENT: 'datagrid:toolbar.event',
 };
 
-const EXPORT_FORMATS = ['xlsx', 'pdf'];
+function extractFilterRulesFromExpression(
+  expression: unknown,
+): Array<{ field: string; operator: string; value: string }> {
+  if (!Array.isArray(expression)) {
+    return [];
+  }
+
+  if (
+    expression.length === 3 &&
+    typeof expression[0] === 'string' &&
+    typeof expression[1] === 'string' &&
+    !Array.isArray(expression[2])
+  ) {
+    return [{ field: expression[0], operator: expression[1], value: String(expression[2] ?? '') }];
+  }
+
+  return expression.flatMap((part) => extractFilterRulesFromExpression(part));
+}
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
+  const { t } = useCoreTranslation();
   const gridRef = useRef<DataGridRef | null>(null);
   const [data, setData] = useState<Store | null>(null);
   const viewMode = options.mode ?? 'full';
   const [on, emit] = useEvents();
   const navigate = useNavigate();
-  const noDataText = 'No hay registros para mostrar';
+  const noDataText = t('grid.noRecords');
+  const { onFilterChange } = options;
 
   const refresh = () => {
     gridRef.current?.instance().refresh();
@@ -139,31 +154,8 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     gridRef.current?.instance().resetOption('focusedRowKey');
   };
 
-  const onExporting = (e: DataGridTypes.ExportingEvent) => {
-    if (e.format === 'pdf') {
-      const doc = new JsPdf();
-      exportDataGridToPdf({
-        jsPDFDocument: doc,
-        component: e.component,
-      }).then(() => {
-        doc.save(options.title + '.pdf');
-      });
-    } else {
-      const workbook = new Workbook();
-      const worksheet = workbook.addWorksheet(options.title);
-
-      exportDataGridToXLSX({
-        component: e.component,
-        worksheet,
-        autoFilterEnabled: true,
-      }).then(() => {
-        workbook.xlsx.writeBuffer().then((buffer) => {
-          saveAs(new Blob([buffer], { type: 'application/octet-stream' }), options.title + '.xlsx');
-        });
-      });
-      e.cancel = true;
-    }
-  };
+  const onExporting = (e: DataGridTypes.ExportingEvent) =>
+    handleDataGridExport(e, options.title);
 
   const onAddClick = () => {
     if (options.events?.ADD) emit(options.events?.ADD);
@@ -174,7 +166,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     if (selectedRowsData && selectedRowsData.length > 0) {
       if (options.events?.EDIT) emit(options.events?.EDIT, { row: selectedRowsData[0] });
     } else {
-      toast('Debe seleccionar un registro', 'warning', 2000);
+      toast(t('grid.selectRequired'), 'warning', 2000);
     }
   };
 
@@ -183,7 +175,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     if (selectedRowsData && selectedRowsData.length > 0) {
       if (options.events?.DELETE) emit(options.events?.DELETE, { row: selectedRowsData[0] });
     } else {
-      toast('Debe seleccionar un registro', 'warning', 2000);
+      toast(t('grid.selectRequired'), 'warning', 2000);
     }
   };
 
@@ -196,23 +188,23 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const setupObserversRef = useRef(setupObservers);
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
-  const initialOptionsRef = useRef(options);
-
   useEffect(() => {
     setupObserversRef.current();
-    const initialOptions = initialOptionsRef.current;
-    if (initialOptions.manualLoad) {
+  }, []);
+
+  useEffect(() => {
+    if (options.manualLoad) {
       return;
     }
     const newDataStore = dxUtils.getDataStore(
-      initialOptions.url,
-      getIdField(initialOptions.fields),
-      initialOptions.url,
-      initialOptions.filter,
-      initialOptions.sort,
+      options.url,
+      getIdField(options.fields),
+      options.url,
+      options.filter,
+      options.sort,
     );
     setData(newDataStore);
-  }, []);
+  }, [options.fields, options.filter, options.manualLoad, options.sort, options.url]);
 
   const renderDetail = useCallback(
     (e: { key: unknown; data: Record<string, unknown> }) => {
@@ -235,8 +227,8 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     [options.detailUrl, options.detailFields],
   );
 
-  const showLoading = (message: string = 'Cargando...') => {
-    gridRef.current?.instance().beginCustomLoading(message);
+  const showLoading = (message?: string) => {
+    gridRef.current?.instance().beginCustomLoading(message ?? t('grid.loading'));
   };
 
   const hideLoading = () => {
@@ -292,6 +284,25 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const onSelectionChanged = (e: SelectionChangedEvent) => {
     emit(DATA_GRID_EVENTS.SELECTION_CHANGED, e.selectedRowsData);
   };
+
+  const handleOptionChanged = useCallback(
+    (e: { fullName?: string; component?: { getCombinedFilter?: () => unknown } }) => {
+      if (!onFilterChange || !e.fullName?.includes('filter')) {
+        return;
+      }
+
+      const rules = extractFilterRulesFromExpression(e.component?.getCombinedFilter?.());
+      const nextFilters = rules.reduce<Record<string, string>>((acc, rule) => {
+        if (rule.value !== '') {
+          acc[rule.field] = rule.value;
+        }
+        return acc;
+      }, {});
+
+      onFilterChange(nextFilters);
+    },
+    [onFilterChange],
+  );
 
   /**
    * Apply column-preset visibility whenever `visibleColumns` changes.
@@ -362,6 +373,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
           onSelectionChanged={options.onSelectionChanged ?? onSelectionChanged}
           onRowPrepared={options.onRowPrepared}
           onContentReady={options.onContentReady}
+          onOptionChanged={handleOptionChanged}
           columnHidingEnabled={options.columnsHidingEnabled ?? false}
           allowColumnResizing={true}
           columnResizingMode={'widget'}
@@ -405,7 +417,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             {options.beforeToolbar && options.beforeToolbar()}
             <Item location="after" locateInMenu="auto" visible={options.allowAdd ?? false}>
               <Button
-                text="Nuevo"
+                text={t('grid.buttonNew')}
                 type="default"
                 stylingMode="outlined"
                 onClick={onAddClick}
@@ -414,7 +426,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             </Item>
             <Item location="after" locateInMenu="auto" visible={options.allowEdit ?? false}>
               <Button
-                text="Editar"
+                text={t('grid.buttonEdit')}
                 type="normal"
                 className="dx-button-warning"
                 stylingMode="outlined"
@@ -424,7 +436,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             </Item>
             <Item location="after" locateInMenu="auto" visible={options.allowDelete ?? false}>
               <Button
-                text="Eliminar"
+                text={t('grid.buttonDelete')}
                 type="danger"
                 stylingMode="outlined"
                 onClick={onDeleteClick}
@@ -435,7 +447,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             <Item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton">
               <Button
                 icon="ph ph-arrow-clockwise"
-                text="Actualizar"
+                text={t('grid.buttonRefresh')}
                 stylingMode="text"
                 onClick={refresh}
               />

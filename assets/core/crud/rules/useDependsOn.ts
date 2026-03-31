@@ -2,67 +2,86 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Field } from '../../field/Field';
 
+interface DependencyEntry {
+  url: string | null;
+  values: unknown[];
+}
+
+/**
+ * Compares two primitive-or-reference values.
+ * Uses strict equality for primitives (covers the vast majority of form values).
+ * Falls back to JSON.stringify only for objects/arrays (rare: e.g. multi-select).
+ */
+function valuesEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  * For each field that declares `dependsOn`, invalidate its entity query
  * (keyed by the field's `url`) whenever one of the watched form values changes.
  *
- * Only fires when a dependency value actually changes (deep compare via JSON.stringify).
+ * Only fires when a dependency value actually changes (compared per-value).
  * Skips the initial mount run to prevent spurious refetches when a dialog opens
  * with already-cached data (BUG-009).
  *
- * Also skips evaluation when `formData` is an empty object `{}` — this guards
- * against the one-render flash where SmartCrudPage initialises `formData` to `{}`
- * before the dialog populates it with the selected row's data.
- *
- * This is a React Query invalidation pattern: when a dependency field changes,
- * the dependent field's options are refetched from the server.
+ * Also skips evaluation while `formData` is `null`, which SmartCrudPage uses
+ * for edit dialogs that have not hydrated their initial snapshot yet.
  */
-export function useDependsOn(fields: Field[], formData: Record<string, unknown>): void {
+export function useDependsOn(fields: Field[], formData: Record<string, unknown> | null): void {
   const queryClient = useQueryClient();
+  const dependentFields = fields.filter((field) => field.dependsOn?.length);
 
-  // Guard: do nothing while formData is still the empty initial object.
-  // This suppresses the `{}` flash that occurs before CrudPage's onFieldDataChanged
-  // has fired for the first time after the dialog opens.
-  const hasData = Object.keys(formData).length > 0;
+  // Build current entries on every render (cheap: just extracting values).
+  const currentEntries: DependencyEntry[] | null =
+    formData == null
+      ? null
+      : dependentFields.map((field) => ({
+          url: field.url ?? null,
+          values: (field.dependsOn ?? []).map((dep) => formData[dep]),
+        }));
 
-  // Compute the current values of all dependency fields for comparison.
-  // Include `hasData` in the serialised snapshot so the effect re-runs once
-  // real data arrives, but the isMounted guard below blocks the invalidation
-  // on the very first run (the initial mount with real data).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dependencyValues = JSON.stringify(
-    hasData
-      ? fields
-          .filter((f) => f.dependsOn?.length)
-          .flatMap((f) => f.dependsOn!)
-          .map((dep) => formData[dep])
-      : null,
+  const isMounted = useRef(false);
+  const previousEntriesRef = useRef<DependencyEntry[] | null>(null);
+
+  // Single JSON.stringify for the effect dependency — triggers only when
+  // dependency values actually change. The structured entries above are
+  // used directly for comparison, avoiding the double-parse of the
+  // previous implementation.
+  const snapshotKey = JSON.stringify(
+    currentEntries?.map((e) => e.values) ?? null,
   );
 
-  // Mount guard: skip the very first execution of the effect so that opening
-  // a dialog (which mounts this hook with its initial data) does not trigger
-  // a spurious invalidation of already-cached entity queries.
-  const isMounted = useRef(false);
-
   useEffect(() => {
-    // Skip the first run (initial mount / first stable value).
+    // Skip the first run (mount guard — BUG-009)
     if (!isMounted.current) {
       isMounted.current = true;
+      previousEntriesRef.current = currentEntries;
       return;
     }
 
-    // Also skip when formData is empty — no meaningful dependency values yet.
-    if (!hasData) return;
+    // Skip while formData is null (edit dialog hydrating)
+    if (currentEntries == null) {
+      previousEntriesRef.current = null;
+      return;
+    }
 
-    fields.forEach((field) => {
-      if (!field.dependsOn?.length) return;
-      // Invalidate the entity query keyed by the field's url so it reloads options
-      const entityUrl = field.url ?? null;
-      if (entityUrl) {
-        queryClient.invalidateQueries({ queryKey: [entityUrl] });
-      }
+    const previousEntries = previousEntriesRef.current ?? [];
+    previousEntriesRef.current = currentEntries;
+
+    currentEntries.forEach((entry, index) => {
+      const previousValues = previousEntries[index]?.values ?? [];
+
+      const changed =
+        entry.values.length !== previousValues.length ||
+        entry.values.some((val, i) => !valuesEqual(val, previousValues[i]));
+
+      if (!changed || !entry.url) return;
+
+      queryClient.invalidateQueries({ queryKey: [entry.url] });
     });
-    // Only re-run when the watched dependency values change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependencyValues]);
+  }, [snapshotKey, queryClient]);
 }

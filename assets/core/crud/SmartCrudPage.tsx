@@ -1,26 +1,19 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Subscription } from 'rxjs';
 import { CrudPage } from './CrudPage';
 import { useResourceSchema } from './hydra/useResourceSchema';
 import { API_DOC_QUERY_KEY } from './hydra/useHydraMetadata';
 import type { ResourceConfig } from './ResourceConfig';
 import type { Field } from '../field/Field';
 import type { FieldOverride } from './hydra/useResourceSchema';
-import { useAuth } from '@app/contexts/auth';
-import { useFieldPermissions } from './rules/useFieldPermissions';
-import { useConditionalRules } from './rules/useConditionalRules';
-import { useDependsOn } from './rules/useDependsOn';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
-import { createScopedEventBus } from '../event/createScopedEventBus';
-import { dispatch, useEvents } from '../event/EventHook';
+import { dispatch } from '../event/EventHook';
 import { useMercureSubscription } from '@core/mercure';
-import {
-  applyFieldOperationFormSemantics,
-  type SmartCrudFieldOperationBehavior,
-  type SmartCrudOperation,
-} from './fieldOperationSemantics';
+import { resolveCrudResource } from './resolveCrudResource';
+import { useSmartCrudRoles } from './SmartCrudRolesContext';
+import { useSmartCrudOperation } from './useSmartCrudOperation';
+import { useSmartCrudFields } from './useSmartCrudFields';
 
 function CrudSkeleton() {
   return (
@@ -55,9 +48,7 @@ interface SmartCrudPageProps<T extends Record<string, unknown> = Record<string, 
   fieldOverrides?: FieldOverride[];
 }
 
-type SmartCrudRuntimeField = Field & {
-  operation?: SmartCrudFieldOperationBehavior;
-};
+type RoutingFilters = Record<string, string>;
 
 function formatRuntimeErrorMessage(error: Error): string {
   const issues = 'issues' in error && Array.isArray(error.issues) ? error.issues : [];
@@ -74,14 +65,14 @@ function formatRuntimeErrorMessage(error: Error): string {
  * - While the schema loads: renders a skeleton loader.
  * - If the schema fetch errors: renders a user-visible error with a retry button.
  *
- * ## Declarative rules pipeline
+ * ## Declarative rules pipeline (via `useSmartCrudFields`)
  *   1. `useFieldPermissions` — RBAC: hides or disables fields based on user roles
  *   2. `useConditionalRules` — evaluates visibleWhen / disabledWhen / computed
  *   3. `useDependsOn`        — invalidates entity queries when dependency fields change
- *   4. `useRouting`          — deep-link and URL filter sync (opt-in via resource.routing)
  *
- * `formData` is kept live via the `onFormDataChange` callback so visibleWhen /
- * disabledWhen / computed rules react to actual in-form changes.
+ * ## Operation & form state (via `useSmartCrudOperation`)
+ *   Manages `activeOperation` + `formData` as a unified state pair, synced
+ *   from routing changes and the resource event bus (ADD/EDIT/CANCEL/SUCCESS).
  *
  * URL deep-linking is wired via `initialRecordId` / `initialIsNew` props on CrudPage.
  */
@@ -90,39 +81,25 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
   fieldOverrides,
 }: SmartCrudPageProps<T>) {
   const queryClient = useQueryClient();
-  const [on] = useEvents();
 
-  // Stable event bus: reuse resource.events if provided, otherwise create a
-  // scoped one once per resource.id. This allows SmartCrudPage to dispatch
-  // events (e.g. SUCCESS for Mercure refresh) on the same bus that CrudPage
-  // and DxDataGrid listen to.
-  const events = useMemo(
-    () => resource.events ?? createScopedEventBus(resource.id),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [resource.id],
-  );
+  const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
+  const events = resolvedBaseResource.events;
 
   // Determine whether the consumer supplied manual fields.
-  // `fields` can be Field[], FieldDef<T>[], or FieldsFactory<T> (function).
-  // We only treat it as "manual" when it is a non-empty static array and the
-  // canonical field contract is not in use.
   const hasManualFields =
     !resource.fieldContract &&
     Array.isArray(resource.fields) &&
     (resource.fields as unknown[]).length > 0;
 
   const { fields, isLoading, error, supportedOperations } = useResourceSchema(
-    resource.apiUrl,
-    // Pass the manual fields only when they exist so useResourceSchema short-circuits
+    resolvedBaseResource.apiUrl,
     hasManualFields ? (resource.fields as Field[]) : undefined,
-    // Pass fieldOverrides through to useResourceSchema's merge logic
     hasManualFields ? undefined : fieldOverrides,
     resource.fieldContract,
   );
 
   // Dev hint: log a defineResource() snippet once per resource URL when fields
-  // were auto-inferred (not supplied manually). No-op in production.
-  // useEffect runs after render to avoid accessing refs during render.
+  // were auto-inferred. No-op in production.
   const hintFiredRef = useRef(false);
   useEffect(() => {
     if (
@@ -134,93 +111,41 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
       !hintFiredRef.current
     ) {
       hintFiredRef.current = true;
-      logDevHint(resource.apiUrl, fields);
+      logDevHint(resource.apiUrl, fields, supportedOperations);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resource.fieldContract, hasManualFields, isLoading, error, fields, resource.apiUrl]);
+  }, [
+    resource.fieldContract,
+    hasManualFields,
+    isLoading,
+    error,
+    fields,
+    resource.apiUrl,
+    supportedOperations,
+  ]);
 
-  const { user } = useAuth();
-  // Stabilize the roles array so useMemo inside useFieldPermissions is not
-  // defeated by a new array reference being created on every render when
-  // user?.roles is undefined.
-  const stableRoles = useMemo(() => user?.roles ?? [], [user?.roles]);
-
-  // Live form data — updated via onFormDataChange callback wired to CrudPage.
-  // Enables reactive evaluation of visibleWhen / disabledWhen / computed rules.
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
-
-  // Stable callback — avoids re-rendering CrudPage on every setState call
-  const handleFormDataChange = useCallback((data: Record<string, unknown>) => {
-    setFormData(data);
-  }, []);
-
+  // Routing
   const routingState = useRouting(resource.routing);
-  const [activeOperation, setActiveOperation] = useState<SmartCrudOperation | null>(() => {
-    if (routingState.initialRecordId != null) {
-      return 'edit';
-    }
 
-    if (routingState.initialIsNew) {
-      return 'create';
-    }
+  // Operation + form data state (unified)
+  const { activeOperation, formData, handleFormDataChange } = useSmartCrudOperation(
+    events,
+    routingState,
+  );
 
-    return null;
-  });
+  // Roles
+  const roles = useSmartCrudRoles();
+  const stableRoles = useMemo(() => roles ?? [], [roles]);
 
-  useEffect(() => {
-    const subscriptions: Subscription[] = [];
+  // Declarative rules pipeline
+  const { processedFields, computedValues } = useSmartCrudFields(
+    fields,
+    activeOperation,
+    formData,
+    stableRoles,
+  );
 
-    if (events.ADD) {
-      subscriptions.push(on(events.ADD, () => setActiveOperation('create')));
-    }
-
-    if (events.EDIT) {
-      subscriptions.push(on(events.EDIT, () => setActiveOperation('edit')));
-    }
-
-    if (events.CANCEL) {
-      subscriptions.push(on(events.CANCEL, () => setActiveOperation(null)));
-    }
-
-    if (events.SUCCESS) {
-      subscriptions.push(on(events.SUCCESS, () => setActiveOperation(null)));
-    }
-
-    return () => {
-      subscriptions.forEach((subscription) => subscription.unsubscribe());
-    };
-  }, [events.ADD, events.CANCEL, events.EDIT, events.SUCCESS, on]);
-
-  const operationAwareFields = useMemo(() => {
-    if (!activeOperation) {
-      return fields ?? [];
-    }
-
-    return (fields ?? []).map((field) => {
-      const runtimeField = field as SmartCrudRuntimeField;
-
-      if (!runtimeField.operation) {
-        return field;
-      }
-
-      return applyFieldOperationFormSemantics(
-        runtimeField,
-        activeOperation,
-        runtimeField.operation,
-        `Field '${field.name}'`,
-      ) as Field;
-    });
-  }, [activeOperation, fields]);
-
-  // 3a. RBAC field filtering
-  const permissionFilteredFields = useFieldPermissions(operationAwareFields, stableRoles);
-  const fieldStates = useConditionalRules(permissionFilteredFields, formData);
-  useDependsOn(permissionFilteredFields, formData);
-
-  // Real-time Mercure subscription: refresh the grid when another session
-  // modifies the resource. Dispatches SUCCESS on the shared event bus so
-  // DxDataGrid calls gridRef.current?.instance().refresh() automatically.
-  // Enabled by default; opt-out with `defineResource({ mercure: false })`.
+  // Real-time Mercure subscription
   useMercureSubscription(
     resource.apiUrl,
     () => {
@@ -228,45 +153,10 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
         dispatch(events.SUCCESS);
       }
     },
-    resource.mercure !== false,
+    resolvedBaseResource.mercure !== false,
   );
 
-  const processedFields: Field[] = React.useMemo(() => {
-    return permissionFilteredFields
-      .map((field) => {
-        // Identity fields (e.g. the hidden "id" field) must always be present in the
-        // field list passed to DxDataGrid so that DevExtreme can resolve keyExpr.
-        // Conditional rules and visibility state are never applied to them.
-        if (field.isIdentity) return field;
-
-        const state = fieldStates.find((s) => s.name === field.name);
-        if (!state) return field;
-
-        const updated: Field = { ...field };
-
-        // Conditional visibility is driven by live form data, so it should only
-        // affect the dialog form. Grid column visibility remains controlled by
-        // the static field definition / Hydra metadata.
-        updated.visibleOnForm = state.visible;
-        updated.hidden = !state.visible;
-
-        // Apply disabled state
-        if (state.disabled) {
-          updated.disabled = true;
-        }
-
-        // Apply computed value: mark field as readonly and set a default value
-        // (CrudPage/DxForm reads field.defaultValue for initial form data,
-        // and field.readonly prevents user editing)
-        if (state.computedValue !== undefined) {
-          updated.readonly = true;
-          updated.defaultValue = state.computedValue as Field['defaultValue'];
-        }
-
-        return updated;
-      })
-      .filter((f): f is Field => f !== null);
-  }, [permissionFilteredFields, fieldStates]);
+  // --- Render ---
 
   if (!hasManualFields && isLoading) {
     return <CrudSkeleton />;
@@ -281,31 +171,28 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     );
   }
 
-  // Normalize apiUrl — ensure it always starts with '/' so axios treats it as
-  // an absolute path regardless of the current page URL.
-  // e.g. CategoryPage passes 'api/categories' (no leading slash); without this
-  // normalization the browser resolves it relative to the current page, which
-  // produces incorrect URLs like '/some-page/api/categories'.
-  const normalizedApiUrl = resource.apiUrl.startsWith('/')
-    ? resource.apiUrl
-    : `/${resource.apiUrl}`;
+  // Normalize apiUrl — ensure it always starts with '/'
+  const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith('/')
+    ? resolvedBaseResource.apiUrl
+    : `/${resolvedBaseResource.apiUrl}`;
 
   const resolvedResource: ResourceConfig<T> = {
-    ...(hasManualFields ? resource : { ...resource, fields }),
+    ...resolvedBaseResource,
+    ...(hasManualFields ? {} : { fields }),
     apiUrl: normalizedApiUrl,
     fields: processedFields,
     _supportedOperations: supportedOperations,
-    // Inject the stable event bus so CrudPage/DxDataGrid share the same
-    // event names that SmartCrudPage dispatches (e.g. SUCCESS for Mercure refresh).
-    events,
-  };
+  } as ResourceConfig<T>;
 
   return (
     <CrudPage
       resource={resolvedResource}
       onFormDataChange={handleFormDataChange}
+      computedValues={computedValues}
       initialRecordId={routingState.initialRecordId}
       initialIsNew={routingState.initialIsNew}
+      initialFilters={routingState.initialFilters}
+      onFiltersChange={routingState.syncFilters as (filters: RoutingFilters) => void}
     />
   );
 }

@@ -2,6 +2,7 @@ export { defineResource } from './defineResource';
 export { useCrudPage } from './useCrudPage';
 export { CrudPage } from './CrudPage';
 export { SmartCrudPage } from './SmartCrudPage';
+export { SmartCrudRolesProvider, useSmartCrudRoles } from './SmartCrudRolesContext';
 export type {
   ResourceConfig,
   FieldsFactory,

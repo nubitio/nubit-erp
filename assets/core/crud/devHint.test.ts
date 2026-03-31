@@ -88,6 +88,13 @@ describe('logDevHint — local dev hostname (localhost)', () => {
     expect(message).toContain("key: 'price'");
   });
 
+  it('includes inferred operations when provided', async () => {
+    const logDevHint = await importFreshDevHint();
+    logDevHint('api/categories', stubFields, ['GET', 'POST', 'PATCH', 'DELETE']);
+    const [message] = consoleInfoSpy.mock.calls[0] as [string];
+    expect(message).toContain('operations: [GET, POST, PATCH, DELETE]');
+  });
+
   it('logs every call regardless of URL (dedup delegated to SmartCrudPage hintFiredRef)', async () => {
     const logDevHint = await importFreshDevHint();
     logDevHint('api/deduplicated', stubFields);

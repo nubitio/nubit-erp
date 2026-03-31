@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useFormSubmit } from './useFormSubmit';
+import { useFormSubmit, type UseFormSubmitOptions, type UseFormSubmitRefs } from './useFormSubmit';
 import { FieldType } from '../field/FieldType';
 import { FieldBuilder } from '../field/FieldBuilder';
 import type { Field } from '../field/Field';
@@ -10,6 +10,9 @@ vi.mock('devextreme/data/array_store', () => ({ default: class {} }));
 vi.mock('devextreme/ui/dialog', () => ({
   confirm: vi.fn(() => Promise.resolve(false)),
 }));
+vi.mock('../i18n/useCoreTranslation', () => ({
+  useCoreTranslation: () => ({ t: (key: string) => key }),
+}));
 vi.mock('../../shared/api/HttpClient', () => ({
   httpClient: {
     post: vi.fn(() => ({ subscribe: vi.fn(() => ({ add: vi.fn() })) })),
@@ -18,8 +21,8 @@ vi.mock('../../shared/api/HttpClient', () => ({
   },
 }));
 
-const makeSubmitter = (fields: Field[] = [], overrides: Record<string, any> = {}) => {
-  const refs = {
+const useMakeSubmitter = (fields: Field[] = [], overrides: Partial<UseFormSubmitOptions> = {}) => {
+  const refs: UseFormSubmitRefs = {
     formRef: { current: null },
     gridRef: { current: null },
     uploadedFiles: { current: [] },
@@ -36,7 +39,7 @@ const makeSubmitter = (fields: Field[] = [], overrides: Record<string, any> = {}
       detailPropertyName: 'items',
       ...overrides,
     },
-    refs as any,
+    refs,
     emit,
     getFieldValue,
     validate,
@@ -70,7 +73,7 @@ const noneField = (isIdentity = false) => {
 describe('useFormSubmit › serializeFields', () => {
   it('ENTITY field with object value serializes to IRI string', () => {
     const field = entityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ customer: { id: 5, businessName: 'Acme' } });
 
@@ -79,7 +82,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('ENTITY field with number value serializes to IRI string', () => {
     const field = entityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ customer: 3 });
 
@@ -88,7 +91,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('ENTITY field with null removes the field from payload', () => {
     const field = entityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ customer: null });
 
@@ -97,7 +100,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('ENTITY field with sentinel -999 removes the field from payload', () => {
     const field = entityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ customer: -999 });
 
@@ -114,7 +117,7 @@ describe('useFormSubmit › serializeFields', () => {
       .multiple(true)
       .build();
 
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({
       tags: [
@@ -128,7 +131,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('DATE field with valid date returns UTC ISO-8601 string ending with Z', () => {
     const field = dateField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     // Use a fixed date string that Luxon can parse
     const result = serializeFields({ issuedAt: '2024-06-15T00:00:00.000' });
@@ -140,7 +143,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('DATE field with null removes the field from payload', () => {
     const field = dateField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ issuedAt: null });
 
@@ -149,7 +152,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('NUMBER field with sendAsString:true returns string with 2 decimal places', () => {
     const field = numberField(true, 2);
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ qty: 12.5 });
 
@@ -158,7 +161,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('NUMBER field without sendAsString returns a JS number', () => {
     const field = numberField(false);
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ qty: '7' });
 
@@ -168,7 +171,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('NONE field that is not identity removes the field from payload', () => {
     const field = noneField(false);
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ status: 'active' });
 
@@ -177,7 +180,7 @@ describe('useFormSubmit › serializeFields', () => {
 
   it('NONE field that is identity keeps the field in payload', () => {
     const field = noneField(true);
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ status: 42 });
 
@@ -201,7 +204,7 @@ describe('useFormSubmit › serializeFields › BUG-014 IRI serialization', () =
 
   it('ENTITY field with IRI string value preserves the IRI in the PATCH body', () => {
     const field = parentEntityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({
       parent: '/api/categories/550e8400-e29b-41d4-a716-446655440000',
@@ -212,7 +215,7 @@ describe('useFormSubmit › serializeFields › BUG-014 IRI serialization', () =
 
   it('ENTITY field with full Hydra object extracts @id and sends as IRI', () => {
     const field = parentEntityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({
       parent: {
@@ -230,7 +233,7 @@ describe('useFormSubmit › serializeFields › BUG-014 IRI serialization', () =
 
   it('ENTITY field with raw integer value is converted to IRI path, not sent as bare integer', () => {
     const field = parentEntityField();
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({ parent: 1 });
 
@@ -250,7 +253,7 @@ describe('useFormSubmit › serializeFields › BUG-014 IRI serialization', () =
       .multiple(true)
       .build();
 
-    const { serializeFields } = makeSubmitter([field]);
+    const { serializeFields } = useMakeSubmitter([field]);
 
     const result = serializeFields({
       tags: [

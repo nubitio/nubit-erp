@@ -46,8 +46,9 @@ function fieldToHintLine(field: Field): string {
  *
  * @param resourceUrl - The `apiUrl` passed to SmartCrudPage (normalized form).
  * @param fields      - The auto-inferred `Field[]` resolved by useResourceSchema.
+ * @param operations  - The inferred HTTP methods exposed by the resource.
  */
-export function logDevHint(resourceUrl: string, fields: Field[]): void {
+export function logDevHint(resourceUrl: string, fields: Field[], operations: string[] = []): void {
   if (!isDevEnvironment()) return;
 
   // Exclude hidden identity fields from the hint — developers should not need
@@ -55,10 +56,17 @@ export function logDevHint(resourceUrl: string, fields: Field[]): void {
   const hintableFields = fields.filter((f) => !f.isIdentity);
   const fieldLines = hintableFields.map(fieldToHintLine).join('\n');
 
+  const operationsLine =
+    operations.length > 0
+      ? `  operations: [${operations.join(', ')}],
+`
+      : '';
+
   // eslint-disable-next-line no-console
   console.info(
     `[SmartCRUD] Auto-inferred fields for "${resourceUrl}". To customise, use:\n\n` +
       `defineResource('${resourceUrl}', {\n` +
+      operationsLine +
       `  fields: [\n` +
       `${fieldLines}\n` +
       `  ]\n` +
