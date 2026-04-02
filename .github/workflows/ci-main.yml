@@ -120,7 +120,8 @@ jobs:
 
       - name: Provision tenant database for e2e
         run: |
-          docker compose exec -T database mariadb -uroot -pchangeme <<'SQL'
+          docker compose exec -T database sh -lc "until mariadb-admin ping -h127.0.0.1 -uroot -pchangeme --silent; do sleep 1; done"
+          docker compose exec -T database mariadb -h127.0.0.1 -uroot -pchangeme <<'SQL'
           CREATE DATABASE IF NOT EXISTS demo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
           CREATE USER IF NOT EXISTS 'demo'@'%' IDENTIFIED BY 'changeme';
           GRANT ALL PRIVILEGES ON demo.* TO 'demo'@'%';
