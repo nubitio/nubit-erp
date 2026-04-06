@@ -22,6 +22,8 @@ use App\State\CashRegister\CashRegisterDashboardProvider;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use App\State\CashRegister\CashRegisterShiftsProvider;
 use App\Entity\CashSession;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -89,6 +91,32 @@ class CashRegister
     #[ApiProperty(description: 'cash_register.name.label')]
     private string $name;
 
+    /**
+     * All cash sessions (shifts) that belong to this register.
+     *
+     * Previously, the absence of this collection forced callers to use a custom
+     * API Platform provider (CashRegisterShiftsProvider) for the
+     * GET /cash-registers/{id}/shifts endpoint. The provider may now delegate
+     * to this collection via Doctrine navigation, or continue to use raw queries
+     * for pagination — both are supported.
+     *
+     * @var Collection<int, CashSession>
+     */
+    #[ORM\OneToMany(
+        targetEntity: CashSession::class,
+        mappedBy: 'cashRegister',
+        cascade: [],
+        orphanRemoval: false,
+        fetch: 'EXTRA_LAZY',
+    )]
+    #[ORM\OrderBy(['openedAt' => 'DESC'])]
+    private Collection $cashSessions;
+
+    public function __construct()
+    {
+        $this->cashSessions = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -116,5 +144,25 @@ class CashRegister
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, CashSession>
+     */
+    public function getCashSessions(): Collection
+    {
+        return $this->cashSessions;
+    }
+
+    /**
+     * Returns true if this register was auto-created by the enterprise-guardrails
+     * migration (Version20260227180000) rather than by a real user.
+     *
+     * Synthetic registers carry the sentinel name {@see CashRegisterRepository::MIGRATION_AUTO_NAME}.
+     * Audit logs, reports, and POS UIs should exclude them.
+     */
+    public function isMigrationAuto(): bool
+    {
+        return $this->name === CashRegisterRepository::MIGRATION_AUTO_NAME;
     }
 }

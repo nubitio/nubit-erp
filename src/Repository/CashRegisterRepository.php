@@ -13,33 +13,41 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CashRegisterRepository extends ServiceEntityRepository
 {
+    /**
+     * Sentinel name written by the enterprise-guardrails migration
+     * (Version20260227180000) when a branch had no cash register at all.
+     *
+     * These rows are synthetic placeholders created to satisfy the branch-FK
+     * constraints added in that migration. They are NOT real registers opened
+     * by a user; audit and reporting queries should exclude them.
+     *
+     * @see isMigrationAuto()
+     * @see findRealByBranchId()
+     */
+    public const string MIGRATION_AUTO_NAME = 'MIGRATION_AUTO';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CashRegister::class);
     }
 
-    //    /**
-    //     * @return CashRegister[] Returns an array of CashRegister objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?CashRegister
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Returns only real (non-synthetic) registers for a branch.
+     *
+     * Excludes registers created by the enterprise-guardrails migration
+     * (name = 'MIGRATION_AUTO').
+     *
+     * @return CashRegister[]
+     */
+    public function findRealByBranchId(int $branchId): array
+    {
+        return $this->createQueryBuilder('cr')
+            ->where('cr.branch = :branchId')
+            ->andWhere('cr.name != :sentinel')
+            ->setParameter('branchId', $branchId)
+            ->setParameter('sentinel', self::MIGRATION_AUTO_NAME)
+            ->orderBy('cr.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
