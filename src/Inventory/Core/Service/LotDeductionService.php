@@ -13,11 +13,19 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Handles FIFO / FEFO lot deduction for inventory movements.
  *
- * Returns an ordered list of lot deductions to be recorded
- * as individual stock_movements with their respective lot_id.
+ * All quantity arithmetic uses bcmath (scale 6) — never float — to avoid
+ * silent rounding errors on fractional quantities (pharmacies, food, etc.).
+ *
+ * Returns an ordered list of lot deductions to be recorded as individual
+ * stock_movements rows with their respective lot_id.
  */
 final readonly class LotDeductionService
 {
+    private const int SCALE = 6;
+    private const string ZERO = '0.000000';
+    /** Epsilon for "is remaining zero?" comparisons (avoids bccomp with literal 0). */
+    private const string EPSILON = '0.000001';
+
     public function __construct(
         private StockLotRepository $stockLotRepository,
         private EntityManagerInterface $entityManager,
@@ -25,16 +33,17 @@ final readonly class LotDeductionService
     }
 
     /**
-     * Deduct qty from lots using the product's tracking strategy.
+     * Deduct $qty from lots using the product's tracking strategy (FIFO / FEFO).
      *
-     * @return array<array{lot: StockLot, qty: float}>
+     * @return array<array{lot: StockLot, qty: string}>
      *
      * @throws ServiceException when insufficient stock across all lots
+     * @throws \LogicException  when strategy is NONE
      */
     public function deduct(
         string $productId,
         string $warehouseId,
-        float $qty,
+        string $qty,
         LotTrackingStrategy $strategy,
     ): array {
         $lots = match ($strategy) {
@@ -43,29 +52,32 @@ final readonly class LotDeductionService
             LotTrackingStrategy::NONE => throw new \LogicException('Cannot deduct by lot when strategy is NONE.'),
         };
 
-        $remaining = $qty;
+        $remaining = bcadd($qty, self::ZERO, self::SCALE); // normalise scale
         $deductions = [];
 
         foreach ($lots as $lot) {
-            if ($remaining <= 0.0000005) {
+            // Stop as soon as remaining ≤ epsilon (handles sub-unit floating point carry)
+            if (bccomp($remaining, self::EPSILON, self::SCALE) <= 0) {
                 break;
             }
 
             $available = $lot->getQtyOnHand();
-            $take = min($available, $remaining);
+            $take = (bccomp($available, $remaining, self::SCALE) >= 0)
+                ? $remaining        // lot has more than enough
+                : $available;       // take the entire lot
 
-            $lot->setQtyOnHand($available - $take);
+            $lot->setQtyOnHand(bcsub($available, $take, self::SCALE));
             $this->entityManager->persist($lot);
 
             $deductions[] = ['lot' => $lot, 'qty' => $take];
-            $remaining = round($remaining - $take, 6);
+            $remaining = bcsub($remaining, $take, self::SCALE);
         }
 
-        if ($remaining > 0.0000005) {
+        if (bccomp($remaining, self::EPSILON, self::SCALE) > 0) {
             throw new ServiceException(sprintf(
-                'Stock insuficiente en lotes para producto %s (faltan %.3f unidades).',
+                'Stock insuficiente en lotes para producto %s (faltan %s unidades).',
                 $productId,
-                $remaining
+                $remaining,
             ));
         }
 
@@ -81,8 +93,8 @@ final readonly class LotDeductionService
         string $productId,
         string $warehouseId,
         string $lotNumber,
-        float $qty,
-        ?float $cost,
+        string $qty,
+        ?string $cost,
         ?\DateTimeImmutable $expirationDate,
         ?\DateTimeImmutable $manufactureDate,
         ?\DateTimeImmutable $receivedAt,
@@ -106,7 +118,7 @@ final readonly class LotDeductionService
             }
         }
 
-        $lot->setQtyOnHand($lot->getQtyOnHand() + $qty);
+        $lot->setQtyOnHand(bcadd($lot->getQtyOnHand(), $qty, self::SCALE));
         $this->entityManager->persist($lot);
 
         return $lot;

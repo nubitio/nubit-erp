@@ -135,26 +135,27 @@ class StockLot
         return $this;
     }
 
-    public function getQtyOnHand(): float
+    public function getQtyOnHand(): string
     {
-        return (float) $this->qtyOnHand;
+        return $this->qtyOnHand;
     }
 
-    public function setQtyOnHand(float $qtyOnHand): static
+    public function setQtyOnHand(string $qtyOnHand): static
     {
-        $this->qtyOnHand = number_format($qtyOnHand, 6, '.', '');
+        // Normalise to 6 decimal places without float coercion.
+        $this->qtyOnHand = bcadd($qtyOnHand, '0', 6);
 
         return $this;
     }
 
-    public function getCost(): ?float
+    public function getCost(): ?string
     {
-        return $this->cost !== null ? (float) $this->cost : null;
+        return $this->cost;
     }
 
-    public function setCost(?float $cost): static
+    public function setCost(?string $cost): static
     {
-        $this->cost = $cost !== null ? number_format($cost, 4, '.', '') : null;
+        $this->cost = $cost !== null ? bcadd($cost, '0', 4) : null;
 
         return $this;
     }

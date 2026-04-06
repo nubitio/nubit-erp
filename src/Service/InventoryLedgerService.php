@@ -26,6 +26,10 @@ use Symfony\Component\Uid\Uuid;
  * Source of truth: stock_movements
  * Read model: stock_balances
  * Legacy compatibility reads: product_stock fallback for old tenants
+ *
+ * @deprecated Use App\Inventory\Core\Service\InventoryService (V2) for all new code.
+ *             This service will be removed following the cutover plan in ADR-018.
+ *             Do NOT add new callers.
  */
 final readonly class InventoryLedgerService
 {
@@ -137,7 +141,10 @@ SQL,
             try {
                 if ($lotDeductions !== []) {
                     foreach ($lotDeductions as $i => ['lot' => $lot, 'qty' => $lotQty]) {
-                        $lotDelta = $delta < 0 ? -$lotQty : $lotQty;
+                        // $lotQty is a bcmath string from LotDeductionService; cast to float for
+                        // this legacy method signature (TODO: remove in Fix #6 / InventoryLedgerService cutover).
+                        $lotQtyFloat = (float) $lotQty;
+                        $lotDelta = $delta < 0 ? -$lotQtyFloat : $lotQtyFloat;
                         $this->insertStockMovement(
                             sale: $sale,
                             item: $item,
@@ -189,7 +196,7 @@ SQL,
      * Resolve lot deductions for FIFO/FEFO strategies.
      * Returns empty array when lot tracking is disabled or column doesn't exist.
      *
-     * @return array<array{lot: \App\Entity\StockLot, qty: float}>
+     * @return array<array{lot: \App\Entity\StockLot, qty: string}>
      */
     private function resolveLotDeductions(
         Product $product,
@@ -217,7 +224,7 @@ SQL,
         return $this->lotDeductionService->deduct(
             productId: (string) $product->getId(),
             warehouseId: (string) $warehouse->getId(),
-            qty: $qty,
+            qty: (string) $qty,   // LotDeductionService uses bcmath (string); cast here for legacy compat
             strategy: $strategy,
         );
     }
