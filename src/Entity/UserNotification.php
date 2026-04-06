@@ -51,6 +51,21 @@ class UserNotification
     #[ORM\Column(type: Types::BIGINT)]
     private ?int $id = null;
 
+    /**
+     * Integer FK to `usuario.usuario_id`.
+     *
+     * Stored as raw INT (not a ManyToOne Doctrine relation) intentionally:
+     * UserNotificationService writes notifications via raw DBAL to avoid
+     * flush-inside-flush issues in Doctrine lifecycle listeners. A full ORM
+     * relation would force callers to hold managed User entities.
+     *
+     * The DB-level FK constraint is declared via `#[ORM\JoinColumn]` below
+     * so that Doctrine schema-diff can generate the DDL constraint — but the
+     * PHP accessor returns int, not a User object.
+     *
+     * @see UserNotificationService — raw DBAL writer
+     * @see UserNotificationReadProcessor — reads userId for authorization checks
+     */
     #[ORM\Column(name: 'user_id', type: Types::INTEGER)]
     private int $userId;
 
