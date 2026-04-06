@@ -19,6 +19,7 @@ use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
+use App\Repository\CustomerRepository;
 use App\Repository\SaleRecordRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Service\SalePaymentPlanService;
@@ -63,6 +64,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private DetractionCalculatorInterface $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
+        private CustomerRepository $customerRepository,
     ) {
     }
 
@@ -331,8 +333,9 @@ readonly class SaleProcessor implements ProcessorInterface
             'sale_id' => $data->getId(),
         ]);
 
-        // Re-fetch from DB to return a fully populated SaleRecord with V2 data
-        $this->entityManager->clear();
+        // Re-fetch from DB to return a fully populated SaleRecord with V2 data.
+        // Detach only $data so UnitOfWork entities loaded in this request are not lost.
+        $this->entityManager->detach($data);
         $record = $this->saleRecordRepository->findByAnyId((string) $data->getId());
         if ($record !== null) {
             $this->saleRecordRepository->enrichWithTaxDocuments([$record]);
@@ -442,10 +445,10 @@ readonly class SaleProcessor implements ProcessorInterface
             return;
         }
 
-        $defaultCustomer = $this->entityManager->find(Customer::class, 1);
+        $defaultCustomer = $this->customerRepository->findDefaultAnonymous();
         if (!$defaultCustomer instanceof Customer) {
             throw new ServiceException(
-                'Debe seleccionar un cliente para la venta y no existe el cliente general (ID 1).'
+                'Debe seleccionar un cliente para la venta y no existe el cliente general (ruc=00000000).'
             );
         }
 
