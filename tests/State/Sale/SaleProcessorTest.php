@@ -23,6 +23,7 @@ use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
+use App\Repository\CustomerRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\SalePaymentPlanService;
 use App\Repository\SaleRecordRepository;
@@ -123,6 +124,9 @@ final class SaleProcessorTest extends TestCase
     /** @var BranchRepository&MockObject */
     private BranchRepository $branchRepository;
 
+    /** @var CustomerRepository&MockObject */
+    private CustomerRepository $customerRepository;
+
     /** @var SalesWriteGateway&MockObject */
     private SalesWriteGateway $salesWriteGateway;
 
@@ -151,6 +155,7 @@ final class SaleProcessorTest extends TestCase
         $this->messageBus = $this->createMock(MessageBusInterface::class);
         $this->saleUtils = $this->createMock(SaleUtils::class);
         $this->branchRepository = $this->createMock(BranchRepository::class);
+        $this->customerRepository = $this->createMock(CustomerRepository::class);
         $this->salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $this->sunatCatalogRepository = $this->createMock(SunatCatalogRepository::class);
 
@@ -619,9 +624,8 @@ final class SaleProcessorTest extends TestCase
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
-        $this->entityManager
-            ->method('find')
-            ->with(Customer::class, 1)
+        $this->customerRepository
+            ->method('findDefaultAnonymous')
             ->willReturn($defaultCustomer);
 
         $this->saleUtils
@@ -648,9 +652,8 @@ final class SaleProcessorTest extends TestCase
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
-        $this->entityManager
-            ->method('find')
-            ->with(Customer::class, 1)
+        $this->customerRepository
+            ->method('findDefaultAnonymous')
             ->willReturn(null);
 
         $this->saleUtils
@@ -1094,6 +1097,7 @@ final class SaleProcessorTest extends TestCase
         $inj('detractionCalculator', $this->detractionCalculator);
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
         $inj('saleRecordRepository', $this->createMock(\App\Repository\SaleRecordRepository::class));
+        $inj('customerRepository', $this->customerRepository);
 
         return $processor;
     }
