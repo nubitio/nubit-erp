@@ -63,8 +63,19 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
         $detractionCode = $detractionCatalog->getCode();
         $threshold = $this->getThreshold($detractionCode);
 
-        if ($threshold > 0 && $total <= $threshold) {
-            $this->clearDetraction($sale, sprintf('total %.2f does not exceed threshold %.2f for code %s', $total, $threshold, $detractionCode));
+        // SUNAT threshold (MIN_TOTAL = 700) is always expressed in PEN.
+        // When the sale is in a foreign currency, convert the total to PEN
+        // using the stored exchange rate before comparing.
+        $totalForThreshold = $total;
+        if ($sale->getCurrency() !== 'PEN') {
+            $exchangeRate = (float) $sale->getExchangeRate();
+            if ($exchangeRate > 0.0) {
+                $totalForThreshold = round($total * $exchangeRate, 2);
+            }
+        }
+
+        if ($threshold > 0 && $totalForThreshold <= $threshold) {
+            $this->clearDetraction($sale, sprintf('total %.2f (PEN %.2f) does not exceed threshold %.2f for code %s', $total, $totalForThreshold, $threshold, $detractionCode));
 
             return;
         }

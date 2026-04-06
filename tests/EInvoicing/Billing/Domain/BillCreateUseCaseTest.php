@@ -354,6 +354,107 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertSame('00-000-123456', $detraction->getCtaBanco());
     }
 
+    // -----------------------------------------------------------------------
+    // USD invoice: detraction amount must be converted to PEN
+    // -----------------------------------------------------------------------
+
+    public function testInvokeConvertsDetractionAmountToPenForUsdInvoice(): void
+    {
+        $this->setupTaxDocument();
+
+        // USD invoice: total 900 USD, exchange rate 3.89, detraction 12%
+        // DB-stored detraction amount = 900 * 12/100 = 108 USD
+        // Expected PEN mount = 108 * 3.89 = 420.12
+        $voucher = new HydratedVoucher(
+            saleId: 'sale-usd',
+            customerDocType: '6',
+            customerDocNumber: '20100000001',
+            customerName: 'Test Customer SAC',
+            customerAddress: $this->makeAddress(),
+            customerPhone: null,
+            customerEmail: null,
+            companyId: '20100000000',
+            companyName: 'Test Company SAC',
+            companyAddress: null,
+            companyPhone: null,
+            branchAddress: null,
+            branchPhone: null,
+            voucherType: '01',
+            voucherSeries: 'F001',
+            voucherNumber: '1',
+            voucherPaymentMethod: 1,
+            voucherDate: new \DateTimeImmutable('2025-01-15'),
+            voucherCurrency: 'USD',
+            voucherExchangeRate: 3.89,
+            voucherDiscountAmount: 0.0,
+            voucherDiscountPercentage: null,
+            voucherConsumptionSurchargeAmount: 0.0,
+            voucherConsumptionSurchargePercentage: null,
+            voucherTaxedAmount: 762.71,
+            voucherTaxAmount: 137.29,
+            voucherTaxPercentage: 18.0,
+            voucherTotalTaxes: 137.29,
+            voucherSaleValue: 762.71,
+            voucherSaleAmount: 900.00,
+            voucherOperationType: '',
+            voucherDetractionCode: '022',
+            voucherDetractionPercent: 12.0,
+            voucherDetractionAmount: 108.0,   // USD amount stored in DB
+            voucherDetractionPaymentMethod: null,
+            voucherDetractionPaymentDescription: null,
+            voucherDetractionValueRef: 900.0,  // USD value ref stored in DB
+            voucherDetractionAccount: null,
+            voucherDetractionDescription: null,
+            voucherBankName: null,
+            voucherBankAccount: null,
+            voucherBankCci: null,
+            voucherNote: null,
+            voucherHash: null,
+            voucherQrData: null,
+            voucherStatus: null,
+            voucherItems: [$this->makeItem()],
+        );
+
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\EInvoicing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        $detraction = $invoice->getDetraccion();
+        self::assertNotNull($detraction);
+
+        // mount must be PEN: 108.00 USD * 3.89 = 420.12 PEN
+        self::assertEqualsWithDelta(420.12, $detraction->getMount(), 0.01);
+
+        // valueRef must also be PEN: 900.00 USD * 3.89 = 3501.00 PEN
+        self::assertEqualsWithDelta(3501.0, $detraction->getValueRef(), 0.01);
+    }
+
+    public function testInvokeDetractionAmountUnchangedForPenInvoice(): void
+    {
+        $this->setupTaxDocument();
+
+        // PEN invoice: amounts must pass through unchanged
+        $voucher = $this->makeBaseVoucher(
+            detractionCode: '022',
+            detractionPercent: 12.0,
+            detractionAmount: 108.0,
+        );
+
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\EInvoicing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        $detraction = $invoice->getDetraccion();
+        self::assertNotNull($detraction);
+        self::assertEqualsWithDelta(108.0, $detraction->getMount(), 0.01);
+    }
+
     public function testInvokeSetsVoucherNoteAsObservacion(): void
     {
         $this->setupTaxDocument();

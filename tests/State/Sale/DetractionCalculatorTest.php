@@ -55,12 +55,14 @@ final class DetractionCalculatorTest extends TestCase
     /**
      * @param list<SaleItem> $items
      */
-    private function makeSale(?Customer $customer, string $total, array $items = []): SaleRecord&MockObject
+    private function makeSale(?Customer $customer, string $total, array $items = [], string $currency = 'PEN', string $exchangeRate = '1.000000'): SaleRecord&MockObject
     {
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn($total);
         $sale->method('getItems')->willReturn(new ArrayCollection($items));
+        $sale->method('getCurrency')->willReturn($currency);
+        $sale->method('getExchangeRate')->willReturn($exchangeRate);
 
         return $sale;
     }
@@ -411,6 +413,8 @@ final class DetractionCalculatorTest extends TestCase
         $sale->method('getTotal')->willReturn('1000.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
         $sale->method('getDetraccionPorcentaje')->willReturn(null); // null percentage
+        $sale->method('getCurrency')->willReturn('PEN');
+        $sale->method('getExchangeRate')->willReturn('1.000000');
 
         $sale->expects(self::once())->method('setDetraccionMonto')->with(null);
         $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(1000.0);
@@ -419,6 +423,67 @@ final class DetractionCalculatorTest extends TestCase
         $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);
 
         $sale->method('getTipoOperacion')->willReturn(null);
+
+        $this->calculator->applyFromItems($sale);
+    }
+
+    // -------------------------------------------------------------------------
+    // USD invoice threshold: PEN-converted total must be used for comparison
+    // -------------------------------------------------------------------------
+
+    public function testUsdSaleBelowThresholdInPenClearsDetraction(): void
+    {
+        // USD 170 * 3.89 = 661.30 PEN → below 700 PEN threshold → cleared
+        $customer = $this->makeCustomer('20123456789');
+        $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
+        $item = $this->makeSaleItemWithCatalog($catalog);
+        $sale = $this->makeSale($customer, '170.00', [$item], 'USD', '3.890000');
+
+        $sale->expects(self::once())->method('setDetraccionCodigo')->with(null);
+        $sale->expects(self::once())->method('setDetraccionPorcentaje')->with(null);
+
+        $this->calculator->applyFromItems($sale);
+    }
+
+    public function testUsdSaleAboveThresholdInPenAppliesDetraction(): void
+    {
+        // USD 200 * 3.89 = 778.00 PEN → above 700 PEN threshold → detraction applies
+        $customer = $this->makeCustomer('20123456789');
+        $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
+        $item = $this->makeSaleItemWithCatalog($catalog);
+
+        $sale = $this->createMock(SaleRecord::class);
+        $sale->method('getCliente')->willReturn($customer);
+        $sale->method('getTotal')->willReturn('200.00');
+        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getCurrency')->willReturn('USD');
+        $sale->method('getExchangeRate')->willReturn('3.890000');
+        $sale->method('getDetraccionPorcentaje')->willReturn(4.0);
+
+        $sale->expects(self::once())->method('setDetraccionCodigo')->with('037');
+        $sale->expects(self::once())->method('setDetraccionPorcentaje')->with(4.0);
+        // Amount stored in USD: 200 * 4/100 = 8.00 (native currency, NOT converted here)
+        $sale->expects(self::once())->method('setDetraccionMonto')->with(8.0);
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(200.0);
+
+        $paymentMethod = $this->makePaymentMethod();
+        $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);
+
+        $sale->method('getTipoOperacion')->willReturn(null);
+        $sale->expects(self::once())->method('setTipoOperacion')->with('1001');
+
+        $this->calculator->applyFromItems($sale);
+    }
+
+    public function testUsdSaleExactlyAtPenThresholdClearsDetraction(): void
+    {
+        // USD 179.94 * 3.89 = 699.97 PEN → below 700 → cleared
+        $customer = $this->makeCustomer('20123456789');
+        $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
+        $item = $this->makeSaleItemWithCatalog($catalog);
+        $sale = $this->makeSale($customer, '179.94', [$item], 'USD', '3.890000');
+
+        $sale->expects(self::once())->method('setDetraccionCodigo')->with(null);
 
         $this->calculator->applyFromItems($sale);
     }

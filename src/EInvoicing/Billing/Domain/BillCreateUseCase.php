@@ -73,6 +73,30 @@ readonly class BillCreateUseCase
             );
         }
 
+        // SUNAT requires detraction amounts always in PEN (UBL currencyID="PEN").
+        // When the invoice is in a foreign currency the stored amounts are in that
+        // currency, so we must multiply by the exchange rate before handing them
+        // to Greenter.
+        $isForeignCurrency = $hydratedVoucher->voucherCurrency !== 'PEN'
+            && $hydratedVoucher->voucherExchangeRate !== null
+            && $hydratedVoucher->voucherExchangeRate > 0.0;
+
+        if ($isForeignCurrency) {
+            $exchangeRate = (string) $hydratedVoucher->voucherExchangeRate;
+
+            if ($detractionAmount !== null) {
+                $detractionAmount = Money::toFloat(
+                    Money::of($detractionAmount)->multipliedBy(Money::of($exchangeRate))
+                );
+            }
+
+            if ($detractionValueRef !== null) {
+                $detractionValueRef = Money::toFloat(
+                    Money::of($detractionValueRef)->multipliedBy(Money::of($exchangeRate))
+                );
+            }
+        }
+
         $customer = new Client()
             ->setTipoDoc($hydratedVoucher->customerDocType)
             ->setNumDoc($hydratedVoucher->customerDocNumber)
