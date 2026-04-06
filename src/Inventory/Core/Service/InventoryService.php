@@ -17,6 +17,7 @@ use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Event\StockMovementRecorded;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -252,7 +253,7 @@ final class InventoryService
                         :id,
                         :warehouse_id, :product_id,
                         :occurred_at, :movement_type,
-                        :qty_delta_base, :qty_delta_base, :qty_original,
+                        :qty_delta, :qty_delta_base, :qty_original,
                         :unit_id,
                         :source_type, :source_id,
                         :note, :idempotency_key,
@@ -265,6 +266,7 @@ final class InventoryService
                         'product_id'      => $movement->productId,
                         'occurred_at'     => $occurredAt,
                         'movement_type'   => $movement->movementType->value,
+                        'qty_delta'       => $movement->qtyOriginal,
                         'qty_delta_base'  => $movement->qtyDeltaBase,
                         'qty_original'    => $movement->qtyOriginal,
                         'unit_id'         => $movement->unitId ?: null,
@@ -305,48 +307,74 @@ final class InventoryService
     }
 
     /**
+     * Atomically upsert the stock_items read model.
+     *
+     * On MariaDB/MySQL uses a single INSERT … ON DUPLICATE KEY UPDATE so that
+     * concurrent sales of the same product never race on a read-then-write
+     * pattern. qty_on_hand is incremented by the signed delta entirely inside
+     * the DB engine — no PHP-side arithmetic needed.
+     *
+     * On SQLite (used in integration tests) falls back to an equivalent
+     * INSERT OR IGNORE + UPDATE pair, which is safe inside the surrounding
+     * serialised transaction.
+     *
      * @throws \Doctrine\DBAL\Exception
      */
     private function upsertStockItem(MovementDraft $movement, string $movementId): void
     {
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now    = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $params = [
+            'w'     => $movement->warehouseId,
+            'p'     => $movement->productId,
+            'delta' => $movement->qtyDeltaBase,
+            'now'   => $now,
+            'mid'   => $movementId,
+        ];
 
-        $existing = $this->connection->fetchOne(
-            'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-            ['w' => $movement->warehouseId, 'p' => $movement->productId],
-        );
+        if ($this->connection->getDatabasePlatform() instanceof SQLitePlatform) {
+            // SQLite does not support ON DUPLICATE KEY UPDATE.
+            // INSERT OR IGNORE creates the row with 0 qty if it doesn't exist;
+            // the UPDATE then adds the delta in both cases.
+            $this->connection->executeStatement(
+                <<<'SQL'
+                INSERT OR IGNORE INTO stock_items
+                    (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, last_movement_id, version)
+                VALUES
+                    (:w, :p, 0, 0, :now, :mid, 0)
+                SQL,
+                $params,
+            );
+            $this->connection->executeStatement(
+                <<<'SQL'
+                UPDATE stock_items
+                SET qty_on_hand      = qty_on_hand + :delta,
+                    updated_at       = :now,
+                    last_movement_id = :mid,
+                    version          = version + 1
+                WHERE warehouse_id = :w
+                  AND product_id   = :p
+                SQL,
+                $params,
+            );
 
-        if ($existing === false) {
-            $this->connection->executeStatement(
-                'INSERT INTO stock_items
-                 (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, last_movement_id, version)
-                 VALUES (:w, :p, :delta, :zero, :now, :mid, 1)',
-                [
-                    'w'     => $movement->warehouseId,
-                    'p'     => $movement->productId,
-                    'delta' => $movement->qtyDeltaBase,
-                    'zero'  => '0.000000',
-                    'now'   => $now,
-                    'mid'   => $movementId,
-                ],
-            );
-        } else {
-            $existingQty = is_numeric($existing) ? (string) $existing : '0';
-            $deltaBase = is_numeric($movement->qtyDeltaBase) ? $movement->qtyDeltaBase : '0';
-            $newQty = bcadd($existingQty, $deltaBase, 6);
-            $this->connection->executeStatement(
-                'UPDATE stock_items
-                 SET qty_on_hand = :qty, updated_at = :now, last_movement_id = :mid, version = version + 1
-                 WHERE warehouse_id = :w AND product_id = :p',
-                [
-                    'qty' => $newQty,
-                    'now' => $now,
-                    'mid' => $movementId,
-                    'w'   => $movement->warehouseId,
-                    'p'   => $movement->productId,
-                ],
-            );
+            return;
         }
+
+        // MariaDB / MySQL: single atomic statement, no race condition possible.
+        $this->connection->executeStatement(
+            <<<'SQL'
+            INSERT INTO stock_items
+                (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, last_movement_id, version)
+            VALUES
+                (:w, :p, :delta, 0, :now, :mid, 1)
+            ON DUPLICATE KEY UPDATE
+                qty_on_hand      = qty_on_hand + VALUES(qty_on_hand),
+                updated_at       = VALUES(updated_at),
+                last_movement_id = VALUES(last_movement_id),
+                version          = version + 1
+            SQL,
+            $params,
+        );
     }
 
     private function buildIdempotencyKey(MovementDraft $movement): string
