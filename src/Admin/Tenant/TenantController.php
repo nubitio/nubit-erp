@@ -16,9 +16,6 @@ use App\Core\Service\TenantNotificationService;
 use App\Core\Message\TenantBackupMessage;
 use App\Core\Audit\AuditLogger;
 use App\Onboarding\Payment\SubscriptionManager;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\ParameterType;
-use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -45,7 +42,8 @@ class TenantController extends AbstractController
         private readonly SubscriptionManager $subscriptionManager,
         private readonly AuditLogger $auditLogger,
         private readonly ProvisionCommandRunner $commandRunner,
-        private readonly ConnectionRegistry $connectionRegistry,
+        private readonly TenantProvisionRepository $provisionRepository,
+        private readonly TenantPaymentEventRepository $paymentEventRepository,
         private readonly TenantNotificationService $tenantNotificationService,
         private readonly LoggerInterface $logger,
         private readonly MessageBusInterface $messageBus,
@@ -109,14 +107,14 @@ class TenantController extends AbstractController
         }
 
         try {
-            $provisions = $this->loadProvisions($id);
+            $provisions = $this->provisionRepository->findByTenantId($id);
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Unable to load provision history: ' . $e->getMessage());
         }
 
         try {
             $subscription = $this->subscriptionManager->findActiveByTenant($id);
-            $paymentEvents = $this->loadPaymentEvents($id);
+            $paymentEvents = $this->paymentEventRepository->findByTenantId($id);
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Unable to load subscription data: ' . $e->getMessage());
         }
@@ -640,7 +638,7 @@ class TenantController extends AbstractController
             $domain = $this->tenantManager->getPrimaryDomain($id) ?? '';
         }
 
-        $provisionId = $this->recordProvisionDispatch(
+        $provisionId = $this->provisionRepository->recordDispatch(
             $id,
             (string)$tenant['name'],
             $domain,
@@ -664,7 +662,11 @@ class TenantController extends AbstractController
                 'provision_id' => $provisionId,
                 'output' => mb_substr($result['output'], 0, 2000),
             ]);
-            $this->markProvisionFailed($provisionId, $result['output']);
+            try {
+                $this->provisionRepository->markFailed($provisionId, $result['output']);
+            } catch (\Throwable) {
+                // Don't let tracking failures mask the original error
+            }
             $this->addFlash('error', 'Provisioning failed.');
         } else {
             $this->auditLogger->log('tenant.provision.completed', [
@@ -840,86 +842,6 @@ class TenantController extends AbstractController
         }
 
         return $response;
-    }
-
-    private function recordProvisionDispatch(
-        int $tenantId,
-        string $tenantName,
-        string $domain,
-        string $adminUser,
-    ): int {
-        /** @var Connection $cp */
-        $cp = $this->connectionRegistry->getConnection('control_plane');
-
-        $sql = 'INSERT INTO tenant_provisions'
-            . ' (tenant_id, tenant_name, domain, admin_user, status, created_at)'
-            . ' VALUES (?, ?, ?, ?, \'dispatched\', NOW())';
-
-        $cp->executeStatement(
-            $sql,
-            [$tenantId, $tenantName, $domain, $adminUser],
-            [
-                ParameterType::INTEGER,
-                ParameterType::STRING,
-                ParameterType::STRING,
-                ParameterType::STRING,
-            ]
-        );
-
-        return (int)$cp->lastInsertId();
-    }
-
-    private function markProvisionFailed(int $provisionId, string $error): void
-    {
-        try {
-            /** @var Connection $cp */
-            $cp = $this->connectionRegistry->getConnection('control_plane');
-            $cp->executeStatement(
-                'UPDATE tenant_provisions SET status = ?, error_message = ?, completed_at = NOW() WHERE id = ?',
-                ['failed', mb_substr($error, 0, 65535), $provisionId],
-                [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
-            );
-        } catch (\Throwable) {
-            // Don't let tracking failures mask the original error
-        }
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function loadProvisions(int $tenantId): array
-    {
-        /** @var Connection $cp */
-        $cp = $this->connectionRegistry->getConnection('control_plane');
-
-        if (!$cp->createSchemaManager()->tablesExist(['tenant_provisions'])) {
-            return [];
-        }
-
-        return $cp->fetchAllAssociative(
-            'SELECT * FROM tenant_provisions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
-            [$tenantId, 20],
-            [ParameterType::INTEGER, ParameterType::INTEGER]
-        );
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function loadPaymentEvents(int $tenantId): array
-    {
-        /** @var Connection $cp */
-        $cp = $this->connectionRegistry->getConnection('control_plane');
-
-        if (!$cp->createSchemaManager()->tablesExist(['payment_events'])) {
-            return [];
-        }
-
-        return $cp->fetchAllAssociative(
-            'SELECT * FROM payment_events WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
-            [$tenantId, 50],
-            [ParameterType::INTEGER, ParameterType::INTEGER]
-        );
     }
 
     /**
