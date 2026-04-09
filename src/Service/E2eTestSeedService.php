@@ -10,6 +10,7 @@ use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\PaymentMethod;
 use App\Entity\Product;
+use App\Entity\ProductStock;
 use App\Entity\Role;
 use App\Entity\CashRegister;
 use App\Entity\SaleRecord;
@@ -26,6 +27,7 @@ use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
+use App\Repository\ProductStockRepository;
 use App\Repository\RoleRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
@@ -60,6 +62,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly WarehouseRepository $warehouseRepository,
         private readonly CustomerRepository $customerRepository,
         private readonly ProductRepository $productRepository,
+        private readonly ProductStockRepository $productStockRepository,
         private readonly CategoryRepository $categoryRepository,
         private readonly UnitOfMeasureRepository $unitOfMeasureRepository,
         private readonly VoucherTypeRepository $voucherTypeRepository,
@@ -80,11 +83,12 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         $branch = $this->upsertBranch();
         $warehouse = $this->upsertWarehouse($branch);
-        $this->upsertCashRegister($branch);
+        $cashRegister = $this->upsertCashRegister($branch);
+        $this->purgeE2eCashSessions($cashRegister);
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
-        $product = $this->upsertProduct();
+        $product = $this->upsertProduct($warehouse);
 
         $sale = $this->createFreshSale($user, $branch, $warehouse, $customer, $product);
 
@@ -249,33 +253,53 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         return $customer;
     }
 
-    private function upsertProduct(): Product
+    private function upsertProduct(Warehouse $warehouse): Product
     {
         $product = $this->productRepository->findOneBy(['code' => self::E2E_PRODUCT_CODE]);
         if ($product instanceof Product) {
-            return $product;
+            // Always reset to known-good state so previous test runs don't affect stock or price
+            $product
+                ->setSalePrice('10.00')
+                ->setStock('100.000');
+            $this->entityManager->flush();
+        } else {
+            $category = $this->categoryRepository->findOneBy([]);
+            $unit = $this->unitOfMeasureRepository->findOneBy([]);
+
+            if (!$category instanceof Category || !$unit instanceof UnitOfMeasure) {
+                throw new \RuntimeException('No category/unit found for E2E seed.');
+            }
+
+            $product = new Product();
+            $product
+                ->setCode(self::E2E_PRODUCT_CODE)
+                ->setType(1)
+                ->setName(self::E2E_PRODUCT_NAME)
+                ->setCategory($category)
+                ->setUnitOfMeasure($unit)
+                ->setPurchasePrice('8.00')
+                ->setSalePrice('10.00')
+                ->setStock('100.000')
+                ->setMinStock('0.000');
+
+            $this->entityManager->persist($product);
+            $this->entityManager->flush();
         }
 
-        $category = $this->categoryRepository->findOneBy([]);
-        $unit = $this->unitOfMeasureRepository->findOneBy([]);
-
-        if (!$category instanceof Category || !$unit instanceof UnitOfMeasure) {
-            throw new \RuntimeException('No category/unit found for E2E seed.');
+        // Upsert the per-warehouse stock so the POS sees stock > 0
+        $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
+        if ($productStock instanceof ProductStock) {
+            $productStock->setStock(100.0);
+            $productStock->updateTimestamps();
+        } else {
+            $productStock = new ProductStock();
+            $productStock
+                ->setProduct($product)
+                ->setWarehouse($warehouse)
+                ->setStock(100.0)
+                ->setMinStock(0.0);
+            $this->entityManager->persist($productStock);
         }
-
-        $product = new Product();
-        $product
-            ->setCode(self::E2E_PRODUCT_CODE)
-            ->setType(1)
-            ->setName(self::E2E_PRODUCT_NAME)
-            ->setCategory($category)
-            ->setUnitOfMeasure($unit)
-            ->setPurchasePrice('8.00')
-            ->setSalePrice('10.00')
-            ->setStock('100.000')
-            ->setMinStock('0.000');
-
-        $this->entityManager->persist($product);
         $this->entityManager->flush();
 
         return $product;
@@ -402,6 +426,15 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         return $paymentMethod;
+    }
+
+    private function purgeE2eCashSessions(CashRegister $cashRegister): void
+    {
+        // cash_movements rows are deleted automatically via ON DELETE CASCADE on cash_session_id.
+        $this->connection->executeStatement(
+            'DELETE FROM cash_sessions WHERE cash_register_id = :register_id',
+            ['register_id' => $cashRegister->getId()],
+        );
     }
 
     private function upsertCashRegister(Branch $branch): CashRegister
