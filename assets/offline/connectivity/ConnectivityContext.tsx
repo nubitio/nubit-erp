@@ -19,7 +19,7 @@ const pingBackend = async () => {
   const timeout = window.setTimeout(() => abortController.abort(), 4000);
   try {
     const response = await exceptionalFetch(
-      '/health',
+      '/health/live',
       {
         method: 'GET',
         cache: 'no-store',
@@ -37,16 +37,20 @@ const pingBackend = async () => {
 };
 
 export const ConnectivityProvider = ({ children }: { children: React.ReactNode }) => {
-  const [browserOnline, setBrowserOnline] = useState<boolean>(navigator.onLine);
-  const [apiReachable, setApiReachable] = useState<boolean>(navigator.onLine);
-  const [status, setStatus] = useState<ConnectivityStatus>(
-    navigator.onLine ? 'checking' : 'offline',
-  );
+  // Start optimistically online and status 'checking' — navigator.onLine can be unreliable
+  // in headless/Docker environments. The initial ping will correct the state within 4 seconds.
+  const [browserOnline, setBrowserOnline] = useState<boolean>(true);
+  const [apiReachable, setApiReachable] = useState<boolean>(true);
+  const [status, setStatus] = useState<ConnectivityStatus>('checking');
   const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
 
   const pingNow = useCallback(async () => {
     setStatus('checking');
     const reachable = await pingBackend();
+    if (reachable) {
+      // A successful ping proves we have network — override any false navigator.onLine
+      setBrowserOnline(true);
+    }
     setApiReachable(reachable);
     setStatus(reachable ? 'online' : 'offline');
     setLastCheckedAt(new Date().toISOString());
@@ -68,12 +72,10 @@ export const ConnectivityProvider = ({ children }: { children: React.ReactNode }
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    if (navigator.onLine) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- pingNow calls setState; initial connectivity check on mount is intentional
-      void pingNow();
-    } else {
-      handleOffline();
-    }
+    // Always ping on mount — navigator.onLine can be false in headless/Docker environments
+    // even when the server is reachable. A successful ping will set browserOnline = true.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pingNow calls setState; initial connectivity check on mount is intentional
+    void pingNow();
 
     return () => {
       window.removeEventListener('online', handleOnline);
