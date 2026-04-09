@@ -6,6 +6,7 @@ namespace App\Tests\Service;
 
 use App\Dto\Setup\SetupStatusDto;
 use App\Entity\Branch;
+use App\Entity\CashRegister;
 use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\PaymentMethod;
@@ -18,17 +19,18 @@ use App\Entity\VoucherType;
 use App\Entity\VoucherSeries;
 use App\Entity\Warehouse;
 use App\Repository\BranchRepository;
+use App\Repository\CashRegisterRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
+use App\Repository\ProductStockRepository;
 use App\Repository\RoleRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
 use App\Repository\VoucherSeriesRepository;
 use App\Repository\VoucherTypeRepository;
-use App\Repository\CashRegisterRepository;
 use App\Repository\WarehouseRepository;
 use App\Service\E2eTestSeedService;
 use App\Setup\InitialSetupService;
@@ -52,6 +54,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $warehouseRepository = $this->createMock(WarehouseRepository::class);
         $customerRepository = $this->createMock(CustomerRepository::class);
         $productRepository = $this->createMock(ProductRepository::class);
+        $productStockRepository = $this->createMock(ProductStockRepository::class);
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
         $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
@@ -81,6 +84,10 @@ final class E2eTestSeedServiceTest extends TestCase
         $branchRepository->method('findOneBy')->willReturn($branch);
         $warehouseRepository->method('findOneBy')->willReturn($warehouse);
 
+        $cashRegister = (new CashRegister())->setName('Caja CI E2E')->setBranch($branch);
+        $this->setEntityId($cashRegister, 'id', 1);
+        $cashRegisterRepository->method('findOneBy')->willReturn($cashRegister);
+
         $voucherType1 = (new VoucherType())->setCode('01')->setName('Factura');
         $voucherType3 = (new VoucherType())->setCode('03')->setName('Boleta');
         $voucherTypeRepository->method('find')->willReturnMap([
@@ -100,6 +107,8 @@ final class E2eTestSeedServiceTest extends TestCase
             ->setUnitOfMeasure((new UnitOfMeasure())->setName('Unidad')->setCode('NIU')->setType(1)->setRatio('1.00'))
             ->setSalePrice('10.00');
         $productRepository->method('findOneBy')->willReturn($product);
+
+        $productStockRepository->method('findByProductAndWarehouse')->willReturn(null);
 
         $paymentMethod = (new PaymentMethod())->setName('Efectivo');
         $this->setEntityId($paymentMethod, 'id', 1);
@@ -125,6 +134,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $warehouseRepository,
             $customerRepository,
             $productRepository,
+            $productStockRepository,
             $categoryRepository,
             $unitRepository,
             $voucherTypeRepository,
@@ -153,6 +163,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $warehouseRepository = $this->createMock(WarehouseRepository::class);
         $customerRepository = $this->createMock(CustomerRepository::class);
         $productRepository = $this->createMock(ProductRepository::class);
+        $productStockRepository = $this->createMock(ProductStockRepository::class);
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
         $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
@@ -188,6 +199,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $warehouseRepository,
             $customerRepository,
             $productRepository,
+            $productStockRepository,
             $categoryRepository,
             $unitRepository,
             $voucherTypeRepository,
