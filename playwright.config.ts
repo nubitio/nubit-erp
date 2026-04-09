@@ -63,7 +63,7 @@ export default defineConfig({
     // ── Video recording ─────────────────────────────────────────────────
     // 'retain-on-failure' → video is kept only when the best fails.
     // Change to 'on' while debugging to always record.
-    video: 'on',
+    video: 'retain-on-failure',
 
     // ── Screenshots ──────────────────────────────────────────────────────
     screenshot: 'only-on-failure',

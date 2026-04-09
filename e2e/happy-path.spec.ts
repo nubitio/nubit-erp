@@ -150,7 +150,7 @@ async function filterGridByName(page: Page, name: string) {
   // Strategy: use the filter row textbox that is in the same column as "Columna Nombre"
   // DX filter row textboxes are in .dx-datagrid-filter-row td inputs
   // We use a relative approach: find the column index of "Nombre"
-  const nameFilterInput = page.locator('.dx-datagrid-filter-row .dx-editor-cell input').nth(6); // 7th column (0-based): Imagen, Código, SKU, Barcode, Tipo, Stock, Nombre
+  const nameFilterInput = page.locator('.dx-datagrid-filter-row .dx-editor-cell input').nth(1); // 2nd column (0-based): Código(0), Nombre(1)
   try {
     await nameFilterInput.waitFor({ state: 'visible', timeout: 3000 });
     await nameFilterInput.click({ clickCount: 3 });
@@ -163,7 +163,7 @@ async function filterGridByName(page: Page, name: string) {
     const count = await filterInputs.count();
     if (count > 0) {
       // Try the input that corresponds to the name column by index
-      const targetIndex = Math.min(6, count - 1);
+      const targetIndex = Math.min(1, count - 1);
       await filterInputs.nth(targetIndex).click({ clickCount: 3 });
       await filterInputs.nth(targetIndex).fill(name);
       await page.keyboard.press('Enter');
@@ -348,7 +348,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     // via browser.newPage() rather than the Playwright fixture — the use.video
     // config only applies to fixture-managed pages, not manually-created ones.
     const context = await browser.newContext({
-      recordVideo: { dir: 'test-results/videos/', size: { width: 1280, height: 720 } },
+      recordVideo: { dir: 'var/test-results/videos/', size: { width: 1280, height: 720 } },
     });
     page = await context.newPage();
   });
@@ -366,8 +366,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
         const src = await video.path();
         const { copyFileSync, mkdirSync } = await import('fs');
         const { join } = await import('path');
-        const dest = join('test-results', 'happy-path-full-run.webm');
-        mkdirSync('test-results', { recursive: true });
+        const dest = join('var/test-results', 'happy-path-full-run.webm');
+        mkdirSync('var/test-results', { recursive: true });
         copyFileSync(src, dest);
       }
     } catch {
@@ -684,34 +684,21 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Input de búsqueda de cliente: data-testid="pos-customer-search" (mounts after toggle opens)
       const customerSearchInput = page.getByTestId('pos-customer-search');
       await customerSearchInput.waitFor({ state: 'visible', timeout: 8000 });
-      // Search by DNI (unique per test run) via the 'ruc' search field.
-      // The DB may accumulate many "Cliente Test" entries from prior runs;
-      // searching by name risks returning the wrong page (>50 matches).
-      // customerDni is unique for this run and the API searches by businessName OR ruc.
-      await customerSearchInput.fill(customerDni);
+      // Search directly by the seed customer DNI — always present in E2E DB.
+      // Test 05 only verifies (not creates) the seed customer, so we always
+      // fall back to the seed customer here.
+      await customerSearchInput.fill(SEED_CUSTOMER_DNI);
 
       // Esperar sugerencias
       const suggestions = page.getByTestId('pos-customer-suggestions');
       await suggestions.waitFor({ state: 'visible', timeout: 10000 });
 
-      // Seleccionar la primera sugerencia que coincida con customerName
-      let expectedCustomerName = customerName;
-      let customerOption = page
+      // Select the seed customer option
+      const expectedCustomerName = SEED_CUSTOMER_NAME;
+      const customerOption = page
         .getByTestId('pos-customer-option')
-        .filter({ hasText: customerName })
+        .filter({ hasText: SEED_CUSTOMER_NAME })
         .first();
-      const dynamicCustomerFound = await customerOption
-        .isVisible({ timeout: 4000 })
-        .catch(() => false);
-      if (!dynamicCustomerFound) {
-        expectedCustomerName = SEED_CUSTOMER_NAME;
-        await customerSearchInput.fill('');
-        await customerSearchInput.fill(SEED_CUSTOMER_DNI);
-        customerOption = page
-          .getByTestId('pos-customer-option')
-          .filter({ hasText: SEED_CUSTOMER_NAME })
-          .first();
-      }
       await customerOption.waitFor({ state: 'visible', timeout: 8000 });
       await customerOption.click();
 
@@ -1000,6 +987,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await cellEditor.waitFor({ state: 'visible', timeout: 8000 });
       await cellEditor.fill('0'); // monto contado = 0 (suficiente para el test)
       await page.keyboard.press('Tab'); // confirmar y avanzar
+      // Wait for DX to process the cell update and for React to re-render
+      // the calculateCellValue for the 'Diferencia' column (which updates differenceData state).
+      // Without this wait, the closeCashRegister() validation sees differenceData=undefined
+      // and blocks the close with a toast error.
+      await page.waitForTimeout(800);
     });
 
     await test.step('Hacer click en "Cerrar caja"', async () => {
@@ -1019,16 +1011,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Verificar redirección al dashboard de cajas', async () => {
-      // cashRegisterService.closeCashRegister → navigate('/cash-register-dashboard')
-      // BUT the route '/cash-register-dashboard' does NOT exist in the router — it hits the
-      // wildcard catch-all which redirects role-3 users to '/pos' and others to '/dashboard'.
-      // So we wait for any post-close destination, then manually navigate to /cashbox to verify.
-      await page.waitForURL(/\/#\/(cash-register-dashboard|cashbox|pos|dashboard)/, {
-        timeout: 15000,
-      });
-
-      // Navigate to cashbox to verify the closed shift appears
-      await page.goto(`${BASE_URL}/#/cashbox`);
+      // cashRegisterService.closeCashRegister → navigate('/cashbox')
+      // The app navigates directly to /#/cashbox after a successful close.
+      await page.waitForURL(/\/#\/cashbox/, { timeout: 20000 });
       await waitForDxLoadPanel(page);
       // .cash-register-dashboard-page check toolbar instead (display:contents)
       await expect(page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
