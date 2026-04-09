@@ -65,6 +65,7 @@ security:
     access_control:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/account, roles: PUBLIC_ACCESS }
+        - { path: ^/health, roles: PUBLIC_ACCESS }
         - { path: ^/webhook/paypal, roles: PUBLIC_ACCESS }
         - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }

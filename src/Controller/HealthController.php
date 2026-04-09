@@ -15,6 +15,17 @@ use Throwable;
 
 class HealthController extends AbstractController
 {
+    /**
+     * Liveness probe — returns 200 if the server process is running.
+     * Used by the frontend to detect network connectivity.
+     * Does NOT check downstream dependencies (DB, Redis, queues).
+     */
+    #[Route('/health/live', name: 'health_live', methods: ['GET'])]
+    public function live(): JsonResponse
+    {
+        return $this->json(['status' => 'ok']);
+    }
+
     #[Route('/health', name: 'health_check', methods: ['GET'])]
     public function __invoke(
         EntityManagerInterface $entityManager,
