@@ -71,7 +71,7 @@ export const CashRegisterClose = () => {
       .subscribe((response) => {
         void response;
         toast('Caja cerrada correctamente', 'success');
-        navigate('/cash-register-dashboard');
+        navigate('/cashbox');
       });
   };
 

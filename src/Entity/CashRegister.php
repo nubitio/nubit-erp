@@ -34,12 +34,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             uriTemplate: '/cash-registers/dashboard',
             paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_register_dashboard:read']],
             provider: CashRegisterDashboardProvider::class,
         ),
         new Post(
             uriTemplate: '/cash-registers/{id}/open',
+            normalizationContext: ['groups' => ['cash_session:read']],
             input: CashRegisterOpenDto::class,
-            output: CashShift::class,
+            output: CashSession::class,
             processor: CashRegisterOpenProcessor::class,
         ),
         new Post(
@@ -106,8 +108,8 @@ class CashRegister
         targetEntity: CashSession::class,
         mappedBy: 'cashRegister',
         cascade: [],
-        orphanRemoval: false,
         fetch: 'EXTRA_LAZY',
+        orphanRemoval: false,
     )]
     #[ORM\OrderBy(['openedAt' => 'DESC'])]
     private Collection $cashSessions;
