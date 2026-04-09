@@ -33,6 +33,7 @@ desktop.ini
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
+/test-results/
 /vendor/
 ###< symfony/framework-bundle ###
 ###> yarn ###
