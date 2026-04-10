@@ -16,16 +16,25 @@ use Doctrine\Migrations\AbstractMigration;
  * (src/Inventory/Core/Service/InventoryService.php) generates UUID v7 strings for the id
  * column — these cannot be stored in a BIGINT column.
  *
- * Additionally, stock_items.last_movement_id was added as CHAR(36) (FK → stock_movements.id)
- * but the referenced column was still BIGINT, creating a type mismatch in the schema comment.
+ * Additionally, stock_items.last_movement_id was added as CHAR(36) (FK → stock_movements.id
+ * per comment) but the referenced column was still BIGINT, creating a type mismatch.
  *
  * Fix
  * ---
- * 1. Backfill existing BIGINT ids with a zero-padded UUID representation so existing rows
- *    remain valid after the type change.
- * 2. Modify stock_movements.id from BIGINT AUTO_INCREMENT to CHAR(36) NOT NULL.
- * 3. The idempotency_key unique constraint already provides insert deduplication;
- *    no new unique index is needed on id itself (it remains PRIMARY KEY).
+ * Uses a staging-column approach to avoid the MariaDB BIGINT truncation error that occurs
+ * when trying to UPDATE a BIGINT column with a UUID string before the ALTER TABLE.
+ *
+ * Steps:
+ * 1. Add staging column `id_uuid CHAR(36) NULL` (IF NOT EXISTS — idempotent on retry).
+ * 2. Backfill `id_uuid` with zero-padded synthetic UUID representations of BIGINT ids.
+ *    Format: 00000000-0000-7000-0000-<12-digit-zero-padded-id>
+ *    The 7xxx prefix signals "synthetic UUIDv7 from BIGINT migration".
+ *    Only rows where `id_uuid` is still NULL are updated (idempotent).
+ * 3. Add new column `id_new CHAR(36) NULL` (IF NOT EXISTS) — nullable so no DEFAULT clash.
+ * 4. Copy `id_uuid` → `id_new` (UPDATE WHERE id_new IS NULL — idempotent).
+ * 5. In one ALTER: drop old PK, make `id_new` NOT NULL, add PK on `id_new`.
+ * 6. Drop old `id` BIGINT column and rename `id_new` → `id`.
+ * 7. Drop staging column `id_uuid`.
  *
  * Rollback
  * --------
@@ -45,27 +54,65 @@ final class Version20260402000001_fix_stock_movements_id_to_uuid extends Abstrac
 
     public function up(Schema $schema): void
     {
-        // Step 1: Backfill existing BIGINT ids with zero-padded UUID-format strings.
-        // Format: 00000000-0000-7000-0000-<12-digit-zero-padded-id>
-        // The 7xxx prefix signals "synthetic UUIDv7 from BIGINT migration".
+        // Step 1: Add staging column (IF NOT EXISTS makes this idempotent on retry).
+        $this->addSql(<<<'SQL'
+            ALTER TABLE stock_movements
+                ADD COLUMN IF NOT EXISTS `id_uuid` CHAR(36) NULL
+        SQL);
+
+        // Step 2: Backfill staging column from BIGINT ids (only NULL rows — idempotent).
+        // Writing a UUID string into CHAR(36) is safe; no truncation.
         $this->addSql(<<<'SQL'
             UPDATE stock_movements
-            SET id = CONCAT(
+            SET id_uuid = CONCAT(
                 '00000000-0000-7000-0000-',
                 LPAD(CAST(id AS CHAR), 12, '0')
             )
-            WHERE id REGEXP '^[0-9]+$'
+            WHERE id_uuid IS NULL
         SQL);
 
-        // Step 2: Change the column type.
-        // Must drop AUTO_INCREMENT first (implicit when removing BIGINT definition).
+        // Step 3: Add new id column as nullable CHAR(36) (IF NOT EXISTS — idempotent).
+        // Must be nullable here to avoid Duplicate entry '' for PRIMARY KEY across all rows.
         $this->addSql(<<<'SQL'
             ALTER TABLE stock_movements
-                MODIFY id CHAR(36) NOT NULL
+                ADD COLUMN IF NOT EXISTS `id_new` CHAR(36) NULL FIRST
         SQL);
 
-        // Step 3: stock_items.last_movement_id is already CHAR(36) — no change needed there.
-        // Verify the column exists as CHAR(36) (guard; migration is idempotent on this step).
+        // Step 4: Populate the new id column from the staging column (idempotent).
+        $this->addSql(<<<'SQL'
+            UPDATE stock_movements
+            SET id_new = id_uuid
+            WHERE id_new IS NULL
+        SQL);
+
+        // Step 5: In a single ALTER:
+        //   a. Remove AUTO_INCREMENT from the old `id` BIGINT (required before DROP PRIMARY KEY).
+        //   b. Drop the old PRIMARY KEY.
+        //   c. Make `id_new` NOT NULL.
+        //   d. Add PRIMARY KEY on `id_new`.
+        // All four must be in one statement — MariaDB enforces that AUTO_INCREMENT columns
+        // must always be part of a key; dropping PK while AUTO_INCREMENT exists is only
+        // allowed when the AUTO_INCREMENT is simultaneously removed.
+        $this->addSql(<<<'SQL'
+            ALTER TABLE stock_movements
+                MODIFY COLUMN `id` BIGINT(20) NOT NULL,
+                DROP PRIMARY KEY,
+                MODIFY COLUMN `id_new` CHAR(36) NOT NULL,
+                ADD PRIMARY KEY (`id_new`)
+        SQL);
+
+        // Step 6: Drop the old BIGINT id column and rename id_new → id.
+        $this->addSql(<<<'SQL'
+            ALTER TABLE stock_movements
+                DROP COLUMN `id`,
+                CHANGE COLUMN `id_new` `id` CHAR(36) NOT NULL
+        SQL);
+
+        // Step 7: Drop the staging column.
+        $this->addSql(<<<'SQL'
+            ALTER TABLE stock_movements
+                DROP COLUMN IF EXISTS `id_uuid`
+        SQL);
     }
 
     public function down(Schema $schema): void
