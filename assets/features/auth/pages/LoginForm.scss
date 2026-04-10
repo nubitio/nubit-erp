@@ -65,7 +65,13 @@
 
   // ── Password toggle button ──────────────────────────────────────────────
   .dx-texteditor-buttons-container {
+    display: flex;
+    align-items: center;
+
     .dx-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       margin: 0 4px !important;
       min-width: 40px;
       min-height: 40px;
@@ -77,8 +83,20 @@
 
         &:hover { opacity: 1; }
 
+        .dx-button-content {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          padding: 0 !important;
+        }
+
         .dx-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           font-size: 17px;
+          line-height: 1;
           color: var(--text-secondary);
         }
       }
@@ -107,15 +125,23 @@
     }
 
     .dx-button-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
       padding: 0 !important;
     }
 
     .dx-button-text,
     .dx-button-text * {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       color: #fff !important;
       font-size: 15px !important;
       font-weight: 600 !important;
       letter-spacing: 0.2px;
+      line-height: 1;
     }
   }
 
@@ -130,6 +156,5 @@
     line-height: 1.4;
   }
 }
-
 
 
