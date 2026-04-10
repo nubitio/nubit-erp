@@ -136,6 +136,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const { t } = useCoreTranslation();
   const gridRef = useRef<DataGridRef | null>(null);
   const [data, setData] = useState<Store | null>(null);
+  const [isGridLoading, setIsGridLoading] = useState(!options.manualLoad);
   const viewMode = options.mode ?? 'full';
   const [on, emit] = useEvents();
   const navigate = useNavigate();
@@ -193,8 +194,11 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
 
   useEffect(() => {
     if (options.manualLoad) {
+      setIsGridLoading(false);
       return;
     }
+
+    setIsGridLoading(true);
     const newDataStore = dxUtils.getDataStore(
       options.url,
       getIdField(options.fields),
@@ -204,6 +208,31 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     );
     setData(newDataStore);
   }, [options.fields, options.filter, options.manualLoad, options.sort, options.url]);
+
+  useEffect(() => {
+    const dataSource = gridRef.current?.instance().getDataSource() as
+      | {
+          isLoading?: () => boolean;
+          on?: (eventName: string, handler: (loading: boolean) => void) => void;
+          off?: (eventName: string, handler: (loading: boolean) => void) => void;
+        }
+      | undefined;
+
+    if (!dataSource) {
+      return;
+    }
+
+    const handleLoadingChanged = (loading: boolean) => {
+      setIsGridLoading(loading);
+    };
+
+    setIsGridLoading(dataSource.isLoading?.() ?? false);
+    dataSource.on?.('loadingChanged', handleLoadingChanged);
+
+    return () => {
+      dataSource.off?.('loadingChanged', handleLoadingChanged);
+    };
+  }, [data]);
 
   const renderDetail = useCallback(
     (e: { key: unknown; data: Record<string, unknown> }) => {
@@ -227,10 +256,12 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   );
 
   const showLoading = (message?: string) => {
+    setIsGridLoading(true);
     gridRef.current?.instance().beginCustomLoading(message ?? t('grid.loading'));
   };
 
   const hideLoading = () => {
+    setIsGridLoading(false);
     gridRef.current?.instance().endCustomLoading();
   };
 
@@ -358,7 +389,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         <DataGrid
           ref={gridRef}
           className="grid theme-dependent"
-          noDataText={noDataText}
+          noDataText={isGridLoading ? '' : noDataText}
           focusedRowEnabled
           keyExpr={getIdField(options.fields) || undefined}
           height="100%"
