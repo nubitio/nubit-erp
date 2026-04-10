@@ -156,6 +156,30 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     resolvedBaseResource.mercure !== false,
   );
 
+  // Normalize apiUrl — ensure it always starts with '/'
+  const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith('/')
+    ? resolvedBaseResource.apiUrl
+    : `/${resolvedBaseResource.apiUrl}`;
+
+  const resolvedResource = useMemo(
+    () =>
+      ({
+        ...resolvedBaseResource,
+        ...(hasManualFields ? {} : { fields }),
+        apiUrl: normalizedApiUrl,
+        fields: processedFields,
+        _supportedOperations: supportedOperations,
+      }) as ResourceConfig<T>,
+    [
+      fields,
+      hasManualFields,
+      normalizedApiUrl,
+      processedFields,
+      resolvedBaseResource,
+      supportedOperations,
+    ],
+  );
+
   // --- Render ---
 
   if (!hasManualFields && isLoading) {
@@ -170,19 +194,6 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
       />
     );
   }
-
-  // Normalize apiUrl — ensure it always starts with '/'
-  const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith('/')
-    ? resolvedBaseResource.apiUrl
-    : `/${resolvedBaseResource.apiUrl}`;
-
-  const resolvedResource: ResourceConfig<T> = {
-    ...resolvedBaseResource,
-    ...(hasManualFields ? {} : { fields }),
-    apiUrl: normalizedApiUrl,
-    fields: processedFields,
-    _supportedOperations: supportedOperations,
-  } as ResourceConfig<T>;
 
   return (
     <CrudPage

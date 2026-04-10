@@ -4,6 +4,50 @@ import type { FormEventNames } from '../event/EventTypes';
 import { useEvents } from '../event/EventHook';
 import type { SmartCrudOperation } from './fieldOperationSemantics';
 
+function areEqualValues(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) {
+    return true;
+  }
+
+  if (left instanceof Date && right instanceof Date) {
+    return left.getTime() === right.getTime();
+  }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) {
+      return false;
+    }
+
+    return left.every((item, index) => areEqualValues(item, right[index]));
+  }
+
+  return false;
+}
+
+function areEqualFormData(
+  left: Record<string, unknown> | null,
+  right: Record<string, unknown> | null,
+): boolean {
+  if (left === right) {
+    return true;
+  }
+
+  if (left == null || right == null) {
+    return false;
+  }
+
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  return leftKeys.every(
+    (key) => Object.prototype.hasOwnProperty.call(right, key) && areEqualValues(left[key], right[key]),
+  );
+}
+
 interface RoutingSnapshot {
   initialRecordId: string | null;
   initialIsNew: boolean;
@@ -39,15 +83,27 @@ function stateFromRouting(routingState: RoutingSnapshot): CrudState {
 function crudReducer(state: CrudState, action: CrudAction): CrudState {
   switch (action.type) {
     case 'sync-routing':
-      return stateFromRouting(action.routingState);
+      {
+        const nextState = stateFromRouting(action.routingState);
+        return state.activeOperation === nextState.activeOperation &&
+          areEqualFormData(state.formData, nextState.formData)
+          ? state
+          : nextState;
+      }
     case 'set-form-data':
-      return { ...state, formData: action.data };
+      return areEqualFormData(state.formData, action.data) ? state : { ...state, formData: action.data };
     case 'create':
-      return { activeOperation: 'create', formData: {} };
+      return state.activeOperation === 'create' && areEqualFormData(state.formData, {})
+        ? state
+        : { activeOperation: 'create', formData: {} };
     case 'edit':
-      return { activeOperation: 'edit', formData: null };
+      return state.activeOperation === 'edit' && state.formData === null
+        ? state
+        : { activeOperation: 'edit', formData: null };
     case 'reset':
-      return { activeOperation: null, formData: null };
+      return state.activeOperation === null && state.formData === null
+        ? state
+        : { activeOperation: null, formData: null };
     default:
       return state;
   }
