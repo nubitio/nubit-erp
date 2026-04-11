@@ -67,22 +67,32 @@ class DevExtremeFilter extends AbstractFilter
             if (is_array($searchExpr)) {
                 $orX = $queryBuilder->expr()->orX();
                 foreach ($searchExpr as $field) {
+                    $dqlExpr = $this->resolveFieldExpression($field);
                     $param = $this->getUniqueParameterName($queryBuilder, $field);
-                    $orX->add(sprintf('o.%s LIKE :%s', $field, $param));
+                    $orX->add(sprintf('%s LIKE :%s', $dqlExpr, $param));
                     $queryBuilder->setParameter($param, sprintf('%%%s%%', $value));
                 }
 
                 $queryBuilder->andWhere($orX);
             } else {
-                $filter = [];
-                $filter[] = [
-                    $searchExpr,
-                    'contains',
-                    $value,
-                ];
-                $this->applyFilter($queryBuilder, $filter);
+                $dqlExpr = $this->resolveFieldExpression($searchExpr);
+                $param = $this->getUniqueParameterName($queryBuilder, $searchExpr);
+                $queryBuilder->andWhere(sprintf('%s LIKE :%s', $dqlExpr, $param));
+                $queryBuilder->setParameter($param, sprintf('%%%s%%', $value));
             }
         }
+    }
+
+    /**
+     * Resolves a (possibly virtual) field name to its DQL expression.
+     * Virtual fields are computed properties that have no direct ORM mapping.
+     */
+    private function resolveFieldExpression(string $field): string
+    {
+        return match ($field) {
+            'fullNumber' => "CONCAT(o.series, '-', o.number)",
+            default => sprintf('o.%s', $field),
+        };
     }
 
     /**

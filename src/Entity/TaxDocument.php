@@ -35,11 +35,21 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new GetCollection(provider: TaxDocumentProvider::class),
         new Post(processor: TaxDocumentProcessor::class),
-        new Get(provider: TaxDocumentProvider::class),
-        new Patch(processor: TaxDocumentProcessor::class),
-        new Delete(processor: TaxDocumentProcessor::class),
+        new Get(
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
+            provider: TaxDocumentProvider::class,
+        ),
+        new Patch(
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
+            processor: TaxDocumentProcessor::class,
+        ),
+        new Delete(
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
+            processor: TaxDocumentProcessor::class,
+        ),
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
             controller: ConsultInvoice::class,
             read: false,
             deserialize: false,
@@ -61,12 +71,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: SendInvoiceEmail::class,
             read: false,
             deserialize: false,
-        ),
-    ],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'id',
-            fromClass: TaxDocument::class
         ),
     ],
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
