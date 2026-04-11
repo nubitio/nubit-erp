@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Constants } from '@core/common/Constants';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
@@ -19,15 +19,22 @@ import {
 
 const API_URL = Constants.API_BASE_URL + 'tax-documents';
 const fields = CreditNoteFields();
-const detailFields = CreditNoteDetailFields();
+const gridDetailFields = (parentRow: Record<string, unknown>) =>
+  CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN');
 
 export const CreditNotePage = () => {
   const [on] = useEvents();
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
+  const [formDetailFields, setFormDetailFields] = useState(() => CreditNoteDetailFields());
 
-  useCreditNoteRelatedDocumentObserver({ on, apiUrl: API_URL, formRef });
+  useCreditNoteRelatedDocumentObserver({
+    on,
+    apiUrl: API_URL,
+    formRef,
+    onCurrencyChange: (currency) => setFormDetailFields(CreditNoteDetailFields(currency)),
+  });
 
   const actionDeps = useMemo(
     () => ({
@@ -77,7 +84,7 @@ export const CreditNotePage = () => {
         toolbar={toolbar}
         url={API_URL + '?type=note'}
         detailUrl={API_URL + '/{id}/lines'}
-        detailFields={detailFields}
+        detailFields={gridDetailFields}
         allowAdd
         allowEdit
         allowDelete
@@ -93,7 +100,7 @@ export const CreditNotePage = () => {
           url={API_URL}
           fields={fields}
           detailUrl={API_URL + '/{id}/lines'}
-          detailFields={detailFields}
+          detailFields={formDetailFields}
           detailPropertyName="lines"
           allowAdding={false}
           allowDeleting

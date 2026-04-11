@@ -81,7 +81,7 @@ export const CreditNoteFields = () => {
             <br />
             {data.customer?.businessName ?? ''}
             <br />
-            {NumberUtils.formatCurrency(data.total)}
+            {NumberUtils.formatCurrency(data.total, data.currency ?? 'PEN')}
           </div>
         );
       })
@@ -158,7 +158,7 @@ export const CreditNoteFields = () => {
   return fields;
 };
 
-export const CreditNoteDetailFields = () => {
+export const CreditNoteDetailFields = (currency: string = 'PEN') => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -204,7 +204,7 @@ export const CreditNoteDetailFields = () => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .readonly(true)
       .build(),
   );
@@ -212,7 +212,7 @@ export const CreditNoteDetailFields = () => {
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .readonly(true)
       .build(),
   );
