@@ -91,9 +91,14 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public function authenticate(Request $request): Passport
     {
         $credentials = $this->getCredentials($request);
+
+        // On the login route the user is explicitly supplying credentials —
+        // never try to re-use an expired (or any) JWT that may still be sitting
+        // in the browser cookie, otherwise a stale cookie blocks a valid login.
+        $isLoginRoute = self::LOGIN_ROUTE === $request->attributes->get('_route');
         $jwtToken = $credentials['token'];
 
-        if ($jwtToken) {
+        if ($jwtToken && !$isLoginRoute) {
             return $this->authenticateWithJWT($jwtToken);
         }
 
