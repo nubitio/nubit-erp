@@ -257,7 +257,19 @@ export const buildField = (
   }
 
   if (field.buttons && field.buttons.length > 0) {
-    editorOptions.buttons = [...(editorOptions.buttons ?? []), ...(field.buttons ?? [])];
+    const enrichedButtons = field.buttons.map((btn: Record<string, unknown>) => {
+      const opts = btn.options as Record<string, unknown> | undefined;
+      if (!opts?.onClick) return btn;
+      const originalOnClick = opts.onClick as (...args: unknown[]) => void;
+      return {
+        ...btn,
+        options: {
+          ...opts,
+          onClick: (...args: unknown[]) => originalOnClick(...args, { formRef }),
+        },
+      };
+    });
+    editorOptions.buttons = [...(editorOptions.buttons ?? []), ...enrichedButtons];
   }
 
   const className = field.hidden ? 'dx-hidden' : '';
