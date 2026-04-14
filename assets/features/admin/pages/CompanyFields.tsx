@@ -50,9 +50,10 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (e: any) => {
-              const doc: string = e.component.option('value');
-              if (!doc || doc.length !== 11) {
+            onClick: () => {
+              const rawDoc = formRef.current?.getFieldValue('ruc');
+              const doc = String(rawDoc ?? '').trim();
+              if (!doc || doc.length !== 11 || !SharedUtils.validateRUC(doc)) {
                 toast('Ingresa un RUC válido de 11 dígitos', 'warning');
                 return;
               }

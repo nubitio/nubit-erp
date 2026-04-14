@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { _getEditorType, _buildValidationRules } from './FormUtils';
+import { buildField, _getEditorType, _buildValidationRules } from './FormUtils';
 import { FieldType } from '../field/FieldType';
 import React from 'react';
 
@@ -58,6 +58,46 @@ describe('getEditorType', () => {
   });
   it('HTML → dxHtmlEditor', () => {
     expect(_getEditorType({ type: FieldType.HTML } as any)).toBe('dxHtmlEditor');
+  });
+});
+
+describe('buildField', () => {
+  it('injects formRef into field button onClick context', () => {
+    const originalOnClick = vi.fn();
+    const formRef = { current: { instance: vi.fn() } } as any;
+
+    const element = buildField(
+      {
+        name: 'ruc',
+        label: 'RUC/DNI',
+        type: FieldType.TEXT,
+        required: false,
+        validators: [],
+        visibleOnForm: true,
+        buttons: [
+          {
+            name: 'search',
+            location: 'after',
+            options: {
+              icon: 'search',
+              onClick: originalOnClick,
+            },
+          },
+        ],
+      } as any,
+      0,
+      true,
+      { current: [] } as any,
+      formRef,
+    ) as any;
+
+    const wrappedOnClick = element.props.editorOptions.buttons[0].options.onClick;
+    const event = { test: true };
+
+    wrappedOnClick(event);
+
+    expect(originalOnClick).toHaveBeenCalledTimes(1);
+    expect(originalOnClick).toHaveBeenCalledWith(event, { formRef });
   });
 });
 
