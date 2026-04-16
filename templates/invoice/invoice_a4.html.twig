@@ -366,20 +366,17 @@
                                 </tr>
                             {% endif %}
 
-                            {% if voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
-                                <tr>
-                                    <td class="label">Detracción ({{ voucher.voucher_detraction_percent|default(0) }}
-                                        %)
-                                    </td>
-                                    <td class="value">
-                                        {{ currency_symbol }} {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
-                                </tr>
-                            {% endif %}
-
                             <tr class="grand">
                                 <td class="label">TOTAL</td>
                                 <td class="value">{{ currency_symbol }} {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
                             </tr>
+
+                            {% if voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
+                                <tr>
+                                    <td class="label">Detracción ({{ voucher.voucher_detraction_percent|default(0) }}%)</td>
+                                    <td class="value">S/ {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
+                                </tr>
+                            {% endif %}
                             </tbody>
                         </table>
                     </div>
