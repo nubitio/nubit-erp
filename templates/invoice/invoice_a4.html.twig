@@ -227,6 +227,8 @@
 {% endblock %}
 
 {% block body %}
+{% set currency_symbols = {'PEN': 'S/', 'USD': '$', 'EUR': '€'} %}
+{% set currency_symbol = currency_symbols[voucher.voucher_currency|default('PEN')]|default(voucher.voucher_currency|default('S/')) %}
     <div class="container-fluid">
         <div class="invoice">
 
@@ -355,12 +357,12 @@
                                 <tr>
                                     <td class="label">Op. Gravadas</td>
                                     <td class="value">
-                                        S/ {{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td>
+                                        {{ currency_symbol }} {{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td>
                                 </tr>
                                 <tr>
                                     <td class="label">I.G.V.</td>
                                     <td class="value">
-                                        S/ {{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td>
+                                        {{ currency_symbol }} {{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td>
                                 </tr>
                             {% endif %}
 
@@ -370,13 +372,13 @@
                                         %)
                                     </td>
                                     <td class="value">
-                                        S/ {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
+                                        {{ currency_symbol }} {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
                                 </tr>
                             {% endif %}
 
                             <tr class="grand">
                                 <td class="label">TOTAL</td>
-                                <td class="value">S/ {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
+                                <td class="value">{{ currency_symbol }} {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
                             </tr>
                             </tbody>
                         </table>
