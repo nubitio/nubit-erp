@@ -44,6 +44,12 @@ class PrintESCPOSController extends AbstractController
         'ascii' => '=',
     ];
 
+    private const array CURRENCY_SYMBOLS = [
+        'PEN' => 'S/',
+        'USD' => '$',
+        'EUR' => '€',
+    ];
+
     public function __construct(
         private readonly LogoProvider $logoProvider,
         private readonly TaxDocumentRepository $taxDocumentRepository,
@@ -92,6 +98,7 @@ class PrintESCPOSController extends AbstractController
         $hrSolid = $this->hr($solidChar, $width);
 
         $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $currencySymbol = self::CURRENCY_SYMBOLS[$voucher->voucher_currency ?? 'PEN'] ?? ($voucher->voucher_currency ?? 'S/');
         $logoMaxPixels = (int) ((self::PAPER_PIXEL_WIDTH_MAP[$paperWidth] ?? self::PAPER_PIXEL_WIDTH_MAP[80]) * 0.5);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke(), $logoMaxPixels);
 
@@ -205,7 +212,7 @@ class PrintESCPOSController extends AbstractController
                 $width,
                 'DESCUENTO',
                 '',
-                '-' . $voucher->voucher_discount_amount
+                '-' . $currencySymbol . ' ' . $voucher->voucher_discount_amount
             ));
         }
 
@@ -214,13 +221,13 @@ class PrintESCPOSController extends AbstractController
         $hasDetraction = $voucher->voucher_detraction_amount && $voucher->voucher_detraction_amount > 0;
 
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
-            $printer->text((string)new SaleItemDto($width, 'OP. GRAVADA', '', $voucher->voucher_taxed_amount));
+            $printer->text((string)new SaleItemDto($width, 'OP. GRAVADA', '', $currencySymbol . ' ' . $voucher->voucher_taxed_amount));
             $printer->text(
                 (string)new SaleItemDto(
                     $width,
                     'IGV (' . $app_option_igv_get . '%)',
                     '',
-                    $voucher->voucher_tax_amount
+                    $currencySymbol . ' ' . $voucher->voucher_tax_amount
                 )
             );
             if ($app_option_rc_get >= 1 && (float)$voucher->voucher_consumption_surcharge_amount > 0) {
@@ -229,7 +236,7 @@ class PrintESCPOSController extends AbstractController
                         $width,
                         'RC (' . $app_option_rc_get . '%)',
                         '',
-                        $voucher->voucher_consumption_surcharge_amount
+                        $currencySymbol . ' ' . $voucher->voucher_consumption_surcharge_amount
                     )
                 );
             }
@@ -238,7 +245,7 @@ class PrintESCPOSController extends AbstractController
         // FINAL TOTAL
         $printer->text($hrSolid);
         $printer->setEmphasis(true);
-        $printer->text((string)new SaleItemDto($width, 'TOTAL', '', $voucher->voucher_sale_amount));
+        $printer->text((string)new SaleItemDto($width, 'TOTAL', '', $currencySymbol . ' ' . $voucher->voucher_sale_amount));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
@@ -250,7 +257,7 @@ class PrintESCPOSController extends AbstractController
                     $width,
                     'DETRACCION (' . $detractionPercent . '%)',
                     '',
-                    $voucher->voucher_detraction_amount
+                    'S/ ' . $voucher->voucher_detraction_amount
                 )
             );
             $detractionType = trim(

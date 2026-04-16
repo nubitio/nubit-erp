@@ -176,6 +176,8 @@
 {% endblock %}
 
 {% block body %}
+{% set currency_symbols = {'PEN': 'S/', 'USD': '$', 'EUR': '€'} %}
+{% set currency_symbol = currency_symbols[voucher.voucher_currency|default('PEN')]|default(voucher.voucher_currency|default('S/')) %}
     <div class="receipt">
 
         {# LOGO #}
@@ -309,19 +311,19 @@
                             <td class="value">{{ voucher.voucher_consumption_surcharge_amount|number_format(2, '.', '') }}</td>
                         </tr>
                     {% endif %}
-
-                    {% if voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
-                        <tr>
-                            <td class="label">Detracción ({{ voucher.voucher_detraction_percent|default(0) }}%)</td>
-                            <td class="value">{{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
-                        </tr>
-                    {% endif %}
                 {% endif %}
 
                 <tr class="grand">
                     <td class="label">TOTAL</td>
-                    <td class="value">{{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
+                    <td class="value">{{ currency_symbol }} {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
                 </tr>
+
+                {% if voucher.voucher_type != '00' and voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
+                    <tr>
+                        <td class="label">Detracción ({{ voucher.voucher_detraction_percent|default(0) }}%)</td>
+                        <td class="value">S/ {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
+                    </tr>
+                {% endif %}
                 </tbody>
             </table>
         </div>
