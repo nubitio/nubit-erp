@@ -2069,7 +2069,7 @@ describe('mapHydraSchemaToFields — REFAC-001: urlLookup optional parameter', (
 
     expect(fields.find((field) => field.name === 'company')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'businessName',
       url: '/api/companies',
     });
@@ -2100,7 +2100,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     };
   }
 
-  it('Customer(id, businessName) → valueField=@id, textField=businessName', () => {
+  it('Customer(id, businessName) → valueField=_iri, textField=businessName', () => {
     const customerSchema: HydraResourceSchema = {
       className: 'Customer',
       apiUrl: '/api/customers',
@@ -2118,12 +2118,12 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'customer')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'businessName',
     });
   });
 
-  it('Supplier(id, businessName) → valueField=@id, textField=businessName', () => {
+  it('Supplier(id, businessName) → valueField=_iri, textField=businessName', () => {
     const supplierSchema: HydraResourceSchema = {
       className: 'Supplier',
       apiUrl: '/api/suppliers',
@@ -2141,7 +2141,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'supplier')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'businessName',
     });
   });
@@ -2169,7 +2169,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     });
   });
 
-  it('SunatCatalog(id, code, description) → valueField=@id, textField=description', () => {
+  it('SunatCatalog(id, code, description) → valueField=_iri, textField=description', () => {
     const sunatSchema: HydraResourceSchema = {
       className: 'SunatCatalog',
       apiUrl: '/api/sunat-catalogs',
@@ -2187,12 +2187,12 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'catalog')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'description',
     });
   });
 
-  it('VoucherSerie(id, series) → valueField=@id, textField=series', () => {
+  it('VoucherSerie(id, series) → valueField=_iri, textField=series', () => {
     const voucherSerieSchema: HydraResourceSchema = {
       className: 'VoucherSerie',
       apiUrl: '/api/voucher-series',
@@ -2210,7 +2210,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'voucherSerie')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'series',
     });
   });
@@ -2239,12 +2239,12 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     });
   });
 
-  it('no schemaLookup provided → falls back to valueField=@id, textField=name (safe defaults)', () => {
+  it('no schemaLookup provided → falls back to valueField=_iri, textField=name (safe defaults)', () => {
     const hostSchema = makeHostSchema('ref', '#UnknownEntity');
     const fields = mapHydraSchemaToFields(hostSchema);
     expect(fields.find((f) => f.name === 'ref')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: '@id',
+      valueField: '_iri',
       textField: 'name',
     });
   });

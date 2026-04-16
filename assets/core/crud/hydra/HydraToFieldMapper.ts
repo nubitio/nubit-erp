@@ -117,13 +117,13 @@ function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
 }
 
 function resolveEntityValueField(relatedSchema: HydraResourceSchema | undefined): string {
-  if (!relatedSchema) return '@id';
+  if (!relatedSchema) return '_iri';
 
   const fieldNames = new Set(relatedSchema.fields.map((field) => field.name));
-  if (fieldNames.has('id') || fieldNames.has('@id')) return '@id';
+  if (fieldNames.has('id') || fieldNames.has('@id')) return '_iri';
   if (fieldNames.has('code')) return 'code';
 
-  return '@id';
+  return '_iri';
 }
 
 function isStringLikeField(field: HydraFieldSchema): boolean {
