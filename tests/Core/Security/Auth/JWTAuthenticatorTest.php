@@ -412,6 +412,7 @@ final class JWTAuthenticatorTest extends TestCase
         $cookieNames = array_map(fn ($c) => $c->getName(), $cookies);
         self::assertContains(JWTAuthenticator::AUTH_COOKIE, $cookieNames);
         self::assertContains(JWTAuthenticator::REFRESH_COOKIE, $cookieNames);
+        self::assertContains(JWTAuthenticator::MERCURE_COOKIE, $cookieNames);
     }
 
     /** @test (21) Web client login, missing refreshToken → response without cookies */
