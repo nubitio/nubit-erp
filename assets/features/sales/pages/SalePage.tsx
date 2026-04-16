@@ -9,7 +9,7 @@ import { DiscountDialog, DiscountDialogEvent } from '@shared/ui/discount-dialog/
 import {
   applySaleAutoInvoiceOnAdd,
   cloneSaleToForm,
-  createQzInvoicePrinter,
+  createInvoicePrinter,
   createSaleToolbar,
   runMakeInvoiceAction,
   runVoidSaleAction,
@@ -28,7 +28,7 @@ export const SalePage = () => {
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const customerFormRef = useRef<DxFormEvents>(null);
-  const qzInvoicePrinterRef = useRef(createQzInvoicePrinter());
+  const qzInvoicePrinterRef = useRef(createInvoicePrinter());
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);

@@ -62,4 +62,7 @@ abstract class Constants
     public const string INVENTORY_CORE_DUAL_WRITE = 'inventory_core_dual_write_enabled';
 
     public const string INVENTORY_CORE_READ_FROM_STOCK_ITEMS = 'inventory_core_read_stock_items_enabled';
+
+    // Feature flags
+    public const string FEATURE_WEBUSB_PRINT = 'feature_webusb_print';
 }
