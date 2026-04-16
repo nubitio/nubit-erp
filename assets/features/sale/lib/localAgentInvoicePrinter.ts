@@ -24,7 +24,7 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
   const initialize = async (): Promise<void> => {
     let ok = false;
     try {
-      const res = await fetch(`${AGENT_BASE_URL}/health`);
+      const res = await fetch(`${AGENT_BASE_URL}/health`, { mode: 'cors' });
       ok = res.ok;
     } catch {
       // network error → agent not running
@@ -41,6 +41,7 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
     try {
       res = await fetch(`${AGENT_BASE_URL}/print`, {
         method: 'POST',
+        mode: 'cors',
         headers: { 'Content-Type': 'application/octet-stream' },
         body: response,
       });
