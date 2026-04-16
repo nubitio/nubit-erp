@@ -4,7 +4,7 @@ import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { userInformation } from '@core/common/UserInformation';
 import { Setting, settings } from '@app/Settings';
-import { createQzInvoicePrinter } from '@features/sale';
+import { createInvoicePrinter, InvoicePrinter } from '@features/sale';
 import { ThemeContext } from '@assets/theme/theme';
 import { POSOperatorHeader } from './POSOperatorHeader';
 import { POSCatalogPanel } from './POSCatalogPanel';
@@ -17,7 +17,7 @@ import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@shared/components';
 
-type QzInvoicePrinter = ReturnType<typeof createQzInvoicePrinter>;
+type QzInvoicePrinter = InvoicePrinter;
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -37,7 +37,7 @@ const POSPage = () => {
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
   const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
 
-  const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createQzInvoicePrinter());
+  const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Barcode scanner: rapidly-typed chars (< 80 ms apart) followed by Enter
   const barcodeBufferRef = useRef<string>('');

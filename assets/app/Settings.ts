@@ -9,6 +9,11 @@ export const Setting = {
   DEFAULT_USD_EXCHANGE_RATE: 'sales_default_usd_exchange_rate',
 } as const;
 
+export const Feature = {
+  WEBUSB_PRINT: 'feature_webusb_print',
+  LOCAL_AGENT_PRINT: 'feature_local_agent_print',
+} as const;
+
 const STORAGE_KEY = 'settings';
 const STORAGE_TS_KEY = 'settings_updated_at';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -67,6 +72,16 @@ class Settings {
 
   getCached(key: string): SettingDto | undefined {
     return this.settings.find((s) => s.name === key);
+  }
+
+  async isFeatureEnabled(flag: string): Promise<boolean> {
+    const setting = await this.get(flag);
+    return setting?.value === true || setting?.value === 'true';
+  }
+
+  isFeatureEnabledCached(flag: string): boolean {
+    const setting = this.getCached(flag);
+    return setting?.value === true || setting?.value === 'true';
   }
 }
 
