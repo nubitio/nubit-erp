@@ -113,10 +113,19 @@ class DxUtils {
      *  - displayExpr renders the human-readable name
      *  - no "@" character is ever used as a JS property accessor
      */
-    const addIriField = (item: Record<string, unknown>): Record<string, unknown> => ({
-      ...item,
-      _iri: item['@id'],
-    });
+    const addIriField = (item: Record<string, unknown>): Record<string, unknown> => {
+      // Prefer the Hydra "@id" IRI when present.
+      // Fallback: some endpoints (e.g. /api/categories) expose only "id" without "@id".
+      // In that case, synthesize the IRI from the base url + id so that iriMode
+      // lookups still work (BUG: category UUID id breaks SelectBox required validation).
+      const iri =
+        typeof item['@id'] === 'string'
+          ? item['@id']
+          : typeof item['id'] === 'string' || typeof item['id'] === 'number'
+            ? `${url}/${item['id']}`
+            : undefined;
+      return { ...item, _iri: iri };
+    };
 
     return new CustomStore({
       key: idField,
@@ -158,6 +167,35 @@ class DxUtils {
         }
 
         if (iriMode) {
+          // When DevExtreme tries to resolve a SelectBox value it emits a load
+          // with a single equality filter on the key field ('_iri').  That field
+          // is synthetic (does not exist in the backend) so forwarding it to the
+          // API would produce a Doctrine / API-Platform error.
+          // Detect this pattern (both flat and nested) and short-circuit to a
+          // direct byKey fetch instead.
+          const filter = loadOptions.filter as unknown[];
+          // Normalise: unwrap [[field, op, val]] → [field, op, val]
+          const flat =
+            Array.isArray(filter) &&
+            filter.length === 1 &&
+            Array.isArray(filter[0])
+              ? (filter[0] as unknown[])
+              : filter;
+          if (
+            Array.isArray(flat) &&
+            flat.length === 3 &&
+            flat[0] === '_iri' &&
+            flat[1] === '=' &&
+            typeof flat[2] === 'string'
+          ) {
+            const iriValue = flat[2] as string;
+            return this.fetchById(byKeyUrl ?? url, iriValue, {}, idField).then((item) =>
+              item != null
+                ? { data: [addIriField(item)], totalCount: 1 }
+                : { data: [], totalCount: 0 },
+            );
+          }
+
           return this.fetchAll(url, loadOptions).then((result) => ({
             ...result,
             data: result.data.map(addIriField),

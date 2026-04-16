@@ -237,7 +237,7 @@ const productResource = defineResource<ProductRecord>({
       {
         kind: 'override',
         key: 'unitOfMeasure',
-        patch: { order: 8, width: 160, defaultValue: 1 },
+        patch: { order: 8, width: 160, defaultValue: '/api/unit-of-measures/1' },
       },
       {
         kind: 'override',

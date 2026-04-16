@@ -2062,7 +2062,7 @@ describe('mapHydraSchemaToFields — REFAC-001: urlLookup optional parameter', (
 
     expect(fields.find((field) => field.name === 'voucherType')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: 'code',
+      valueField: '_iri',
       textField: 'name',
       url: '/api/voucher-types',
     });
@@ -2146,7 +2146,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     });
   });
 
-  it('Ubigeo(code, …, name) → valueField=code, textField=name', () => {
+  it('Ubigeo(code, …, name) → valueField=_iri, textField=name', () => {
     const ubigeoSchema: HydraResourceSchema = {
       className: 'Ubigeo',
       apiUrl: '/api/ubigeos',
@@ -2164,7 +2164,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'ubigeo')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: 'code',
+      valueField: '_iri',
       textField: 'name',
     });
   });
@@ -2215,7 +2215,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     });
   });
 
-  it('VoucherType(code xsd:string, name xsd:string) → valueField=code, textField=name (xsd: prefix support)', () => {
+  it('VoucherType(code xsd:string, name xsd:string) → valueField=_iri, textField=name (xsd: prefix support)', () => {
     // Real-world: API Platform emits "xsd:string" (not "xmls:string") for VoucherType fields.
     // isStringLikeField must recognise both prefixes so resolveEntityTextField returns "name".
     const voucherTypeSchema: HydraResourceSchema = {
@@ -2234,7 +2234,7 @@ describe('resolveEntityValueField / resolveEntityTextField — real-world schema
     );
     expect(fields.find((f) => f.name === 'voucherType')).toMatchObject({
       type: FieldType.ENTITY,
-      valueField: 'code',
+      valueField: '_iri',
       textField: 'name',
     });
   });
