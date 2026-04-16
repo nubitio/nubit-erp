@@ -92,5 +92,9 @@ final readonly class CspNonceListener
                 "worker-src 'self' blob:",
             ])
         );
+
+        // Required for Chrome's Private Network Access (PNA) policy:
+        // allows JS on this page to fetch http://localhost from an HTTPS origin.
+        $response->headers->set('Permissions-Policy', 'private-network-access=allow');
     }
 }
