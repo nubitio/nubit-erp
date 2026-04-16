@@ -60,8 +60,8 @@ services:
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
-      # Mercure hub — integrated in FrankenPHP/Caddy (SLICE-014)
-      MERCURE_URL: 'http://localhost/.well-known/mercure'
+      # Mercure hub — contenedor separado dunglas/mercure, proxiado por Caddy en /.well-known/mercure
+      MERCURE_URL: 'http://mercure/.well-known/mercure'
       MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
     volumes:
@@ -131,6 +131,9 @@ services:
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
+      # Mercure
+      MERCURE_URL: 'http://mercure/.well-known/mercure'
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
@@ -198,6 +201,9 @@ services:
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
+      # Mercure
+      MERCURE_URL: 'http://mercure/.well-known/mercure'
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
@@ -231,10 +237,12 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins https://*.efact.app
+        cors_origins *
+        anonymous
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost/healthz']
+      interval: 10s
       timeout: 5s
       retries: 5
       start_period: 60s
