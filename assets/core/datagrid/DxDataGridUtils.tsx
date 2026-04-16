@@ -262,7 +262,7 @@ export function buildEntityCellValue(field: Field): (rowData: Record<string, unk
  */
 export function buildEntityCellRender(
   field: Field,
-): (cellData: { data: Record<string, unknown>; value: unknown }) => React.ReactNode {
+): (cellData: { data: Record<string, unknown>; value?: unknown }) => React.ReactNode {
   return ({ data: rowData, value }) => {
     const val = rowData[field.name];
     // If calculateCellValue already replaced the field with a primitive, val === value === "01".
