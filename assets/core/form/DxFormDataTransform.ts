@@ -76,7 +76,9 @@ function normalizeEntityField(row: FormRecord, field: Field): void {
   const rawValue = row[field.name];
   const type = typeof rawValue;
   if (type === 'string') {
-    const value = (rawValue as string).split('/').pop();
+    // If valueField is '@id', preserve the full IRI; otherwise extract the last segment.
+    const value =
+      field.valueField === '@id' ? rawValue : (rawValue as string).split('/').pop();
     row[field.name] = { [field.valueField]: value };
   }
   if (type === 'object' && row[field.name] !== null) {
@@ -84,8 +86,10 @@ function normalizeEntityField(row: FormRecord, field: Field): void {
     upsertPrependData(field, entityValue);
     const atId: unknown = entityValue['@id'];
     if (typeof atId === 'string') {
-      const lastSegment = atId.split('/').pop() ?? atId;
-      row[field.name] = { [field.valueField]: lastSegment };
+      // When valueField is '@id', keep the full IRI so the SelectBox can match
+      // against datasource items (which also have '@id' as the full IRI).
+      const value = field.valueField === '@id' ? atId : (atId.split('/').pop() ?? atId);
+      row[field.name] = { [field.valueField]: value };
     } else {
       const directValue: unknown = (row[field.name] as Record<string, unknown>)[field.valueField];
       if (directValue !== undefined && directValue !== null) {
