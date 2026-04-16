@@ -70,9 +70,10 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 throw new ServiceException('No se puede generar nota de crédito para un comprobante anulado.');
             }
             $branchId = $this->branchContextService->getCurrentBranchId();
-            $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch($branchId, '07');
+            $affectedSeries = substr($data->getAffectedDocument(), 0, 4);
+            $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch($branchId, '07', $affectedSeries);
             $number = $this->taxDocumentRepository->getNextSequenceNumber($branchId, '07');
-            if ($seriesResult->associatedSeries != substr($data->getAffectedDocument(), 0, 4)) {
+            if ($seriesResult === null || $seriesResult->associatedSeries != $affectedSeries) {
                 throw new ServiceException(
                     'La serie de la nota de crédito no coincide con la serie del documento afectado.'
                 );
