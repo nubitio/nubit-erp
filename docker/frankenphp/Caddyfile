@@ -64,9 +64,16 @@ route {
         header Cache-Control "public, max-age=604800"
     }
 
+    # Proxy Mercure hub — must be before php_server
+    handle /.well-known/mercure* {
+        reverse_proxy mercure:80
+    }
+
     # Pass PHP requests to FrankenPHP
-    php_server {
-        # Resolve root symlink for better performance
-        resolve_root_symlink
+    handle {
+        php_server {
+            # Resolve root symlink for better performance
+            resolve_root_symlink
+        }
     }
 }
