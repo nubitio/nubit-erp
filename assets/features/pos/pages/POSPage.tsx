@@ -176,7 +176,7 @@ const POSPage = () => {
 
   useEffect(() => {
     qzInvoicePrinterRef.current.initialize().catch(() => {
-      toast('QZ Tray no disponible. La venta se registrara sin impresion automatica.', 'warning');
+      toast('No hay backend de impresion disponible. La venta se registrara sin impresion automatica.', 'warning');
     });
   }, []);
 
