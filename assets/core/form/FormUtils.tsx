@@ -32,6 +32,7 @@ export const buildField = (
   let editorOptions: Record<string, any> = {};
   if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
     // Create a store instance so we can query a small page to decide auto-selection
+    const iriMode = field.valueField === '_iri';
     const store = dxUtils.getDataStore(
       field.url ?? '',
       field.valueField,
@@ -39,6 +40,7 @@ export const buildField = (
       field.filters,
       [],
       field.loadOptions,
+      iriMode,
     );
 
     editorOptions = {
