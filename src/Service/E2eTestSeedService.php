@@ -84,6 +84,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $branch = $this->upsertBranch();
         $warehouse = $this->upsertWarehouse($branch);
         $cashRegister = $this->upsertCashRegister($branch);
+        $this->purgeE2eSales();
         $this->purgeE2eCashSessions($cashRegister);
         $this->ensureVoucherSeries($branch);
 
@@ -102,6 +103,14 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     public function reset(): void
     {
         $this->purgeE2eSales();
+
+        $branch = $this->branchRepository->findOneBy(['name' => self::E2E_BRANCH_NAME]);
+        if ($branch instanceof Branch) {
+            $cashRegister = $this->cashRegisterRepository->findOneBy(['branch' => $branch]);
+            if ($cashRegister instanceof CashRegister) {
+                $this->purgeE2eCashSessions($cashRegister);
+            }
+        }
 
         $user = $this->userRepository->findOneBy(['username' => self::E2E_USERNAME]);
         if ($user instanceof User && $user->getId() !== null) {
@@ -200,6 +209,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     {
         $facturaType = $this->voucherTypeRepository->find('01');
         $boletaType = $this->voucherTypeRepository->find('03');
+        $notaVentaType = $this->voucherTypeRepository->find('00');
 
         if ($facturaType instanceof VoucherType) {
             $this->upsertVoucherSeries($branch, $facturaType, 'F001');
@@ -207,6 +217,10 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         if ($boletaType instanceof VoucherType) {
             $this->upsertVoucherSeries($branch, $boletaType, 'B001');
+        }
+
+        if ($notaVentaType instanceof VoucherType) {
+            $this->upsertVoucherSeries($branch, $notaVentaType, 'N001');
         }
 
         $this->entityManager->flush();
@@ -375,6 +389,12 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         if ($saleIds === []) {
             return;
         }
+
+        $this->connection->executeStatement(
+            'DELETE FROM cash_movements WHERE sale_id IN (?)',
+            [$saleIds],
+            [ArrayParameterType::STRING]
+        );
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document_event WHERE tax_document_id IN '

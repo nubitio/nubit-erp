@@ -112,6 +112,11 @@ final class InventoryLedgerServiceCoreTransitionTest extends TestCase
             static fn (array $call): bool => str_contains($call['sql'], 'INSERT INTO stock_movements')
         ));
         self::assertCount(1, $movementWrite);
+        self::assertArrayHasKey('id', $movementWrite[0]['params']);
+        self::assertMatchesRegularExpression(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+            (string) $movementWrite[0]['params']['id']
+        );
         self::assertArrayHasKey('qty_delta_base', $movementWrite[0]['params']);
         self::assertArrayHasKey('qty_original', $movementWrite[0]['params']);
         self::assertSame(1, $movementWrite[0]['params']['unit_id']);
