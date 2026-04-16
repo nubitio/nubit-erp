@@ -86,9 +86,9 @@ final readonly class CspNonceListener
                 "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
                 $imgSrc,
                 "font-src 'self' data: https://cdn.jsdelivr.net",
-                // 'self' for API calls; localhost ws/wss for QZ Tray desktop print agent
-                // (connects on ws://localhost:8182+ or wss://localhost:8181+)
-                "connect-src 'self' ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+                // 'self' for API calls; localhost HTTP for efact-printer-agent;
+                // localhost ws/wss for QZ Tray desktop print agent.
+                "connect-src 'self' http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",
             ])
         );

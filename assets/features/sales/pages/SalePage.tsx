@@ -109,8 +109,9 @@ export const SalePage = () => {
   };
 
   const print = (saleId: string) => {
-    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((_err: unknown) => {
-      toast('No se pudo imprimir el comprobante. Verifique QZ Tray.', 'error');
+    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : 'No se pudo imprimir el comprobante.';
+      toast(message, 'error');
     });
   };
 
