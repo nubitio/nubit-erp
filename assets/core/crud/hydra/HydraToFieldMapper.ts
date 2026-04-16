@@ -1,5 +1,5 @@
 import type { Field } from '../../field/Field';
-import type { HydraResourceSchema, CrudHints } from './types';
+import type { HydraFieldSchema, HydraResourceSchema, CrudHints } from './types';
 import {
   textField,
   numberField,
@@ -116,6 +116,47 @@ function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
   if (hints.width !== undefined) field.width = hints.width;
 }
 
+function resolveEntityValueField(relatedSchema: HydraResourceSchema | undefined): string {
+  if (!relatedSchema) return 'id';
+
+  const fieldNames = new Set(relatedSchema.fields.map((field) => field.name));
+  if (fieldNames.has('id') || fieldNames.has('@id')) return 'id';
+  if (fieldNames.has('code')) return 'code';
+
+  return relatedSchema.fields[0]?.name ?? 'id';
+}
+
+function isStringLikeField(field: HydraFieldSchema): boolean {
+  return (
+    field.range === undefined ||
+    field.range === 'xmls:string' ||
+    field.range === 'xsd:string'
+  );
+}
+
+function resolveEntityTextField(
+  relatedSchema: HydraResourceSchema | undefined,
+  valueField: string,
+): string {
+  if (!relatedSchema) return 'name';
+
+  const preferredNames = ['name', 'businessName', 'description', 'fullNumber', 'title', 'series'];
+
+  for (const fieldName of preferredNames) {
+    const match = relatedSchema.fields.find(
+      (field) => field.name === fieldName && isStringLikeField(field),
+    );
+    if (match) return match.name;
+  }
+
+  const firstStringField = relatedSchema.fields.find(
+    (field) => field.name !== valueField && isStringLikeField(field),
+  );
+  if (firstStringField) return firstStringField.name;
+
+  return valueField;
+}
+
 /**
  * Map a single HydraResourceSchema to an array of Field objects using the
  * existing field builder utilities.
@@ -153,6 +194,7 @@ function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
 export function mapHydraSchemaToFields(
   schema: HydraResourceSchema,
   urlLookup?: (className: string) => string | undefined,
+  schemaLookup?: (className: string) => HydraResourceSchema | undefined,
 ): Field[] {
   const fields: Field[] = [];
 
@@ -249,13 +291,16 @@ export function mapHydraSchemaToFields(
     // Rule 8 — entity reference (range starts with '#' / http IRI) or Link type → entityField
     if (tag === 'entity' || propertyType === 'Link') {
       const resourceClass = range ? range.replace('#', '') : '';
+      const relatedSchema = resourceClass ? schemaLookup?.(resourceClass) : undefined;
       // Derive the API URL: prefer the urlLookup (from the resource map) before
       // falling back to automatic pluralization heuristic.
       // e.g. Category → /api/categories, Branch → /api/branches, Product → /api/products
       const url = resourceClass
         ? (urlLookup?.(resourceClass) ?? `/api/${pluralize(toDashCase(resourceClass))}`)
         : '';
-      const built = entityField(url, 'id', 'name')
+      const valueField = resolveEntityValueField(relatedSchema);
+      const textField = resolveEntityTextField(relatedSchema, valueField);
+      const built = entityField(url, valueField, textField)
         .name(name)
         .label(label)
         .required(required)

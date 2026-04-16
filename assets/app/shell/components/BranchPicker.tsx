@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'devextreme-react';
 import List from 'devextreme-react/list';
@@ -70,10 +69,7 @@ export const BranchPicker = ({
           ? resolvePostLoginRedirect(redirectPath)
           : resolveBranchSelectionRedirect(undefined, window.location.search, window.location.hash);
 
-        flushSync(() => {
-          requestAuthSessionSync();
-        });
-
+        requestAuthSessionSync();
         navigate(nextPath, { replace: true });
       },
       error: () => {

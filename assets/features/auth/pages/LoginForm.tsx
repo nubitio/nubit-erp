@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Form, {
   ButtonItem,
@@ -56,10 +55,7 @@ export const LoginForm = () => {
           branchService.setSelectedBranchName(branch.name);
           const nextPath = resolvePostLoginRedirect(redirectPath);
 
-          flushSync(() => {
-            requestAuthSessionSync();
-          });
-
+          requestAuthSessionSync();
           navigate(nextPath, { replace: true });
         },
         error: (err) => {

@@ -30,6 +30,7 @@ import {
   buildToolbar,
   buildEntityDisplayValue,
   buildEntityCellValue,
+  buildEntityCellRender,
   getIdField,
 } from './DxDataGridUtils';
 import { FieldBuilder } from '../field/FieldBuilder';
@@ -268,9 +269,10 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
     expect(props['calculateDisplayValue']).toBeUndefined();
   });
 
-  it('attaches calculateDisplayValue (not calculateCellValue) for entity fields with non-id valueField', () => {
-    // Fields that use a custom valueField (not 'id', '@id', or '_iri') still use
-    // calculateDisplayValue for rendering nested objects.
+  it('attaches calculateCellValue and cellRender for entity fields with non-IRI, non-id valueField', () => {
+    // For 'code'-keyed fields: calculateCellValue extracts the primitive for the Lookup
+    // (filtering/editing), and cellRender reads the label directly from the embedded object
+    // because DevExtreme ignores calculateDisplayValue when a <Lookup> child is present.
     const fields: Field[] = [
       makeEntityField({ visible: true, formatter: undefined, valueField: 'code' }),
     ];
@@ -280,8 +282,9 @@ describe('DxDataGridUtils › buildEntityDisplayValue', () => {
 
     expect(React.isValidElement(element)).toBe(true);
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
-    expect(typeof props['calculateDisplayValue']).toBe('function');
-    expect(props['calculateCellValue']).toBeUndefined();
+    expect(typeof props['cellRender']).toBe('function');
+    expect(typeof props['calculateCellValue']).toBe('function');
+    expect(props['calculateDisplayValue']).toBeUndefined();
   });
 });
 
@@ -369,5 +372,75 @@ describe('DxDataGridUtils › buildEntityCellValue', () => {
     expect(React.isValidElement(element)).toBe(true);
     const props = (element as React.ReactElement<Record<string, unknown>>).props;
     expect(props['calculateCellValue']).toBeUndefined();
+  });
+
+  it('extracts code from an object when valueField is "code" (VoucherType fix)', () => {
+    const field = makeEntityField({ valueField: 'code' });
+    const fn = buildEntityCellValue(field);
+
+    // buildEntityCellValue still works for object extraction (legacy use)
+    expect(fn({ parent: { code: '01', name: 'Factura' } })).toBe('01');
+  });
+
+  it('returns plain string as-is when valueField is "code"', () => {
+    const field = makeEntityField({ valueField: 'code' });
+    const fn = buildEntityCellValue(field);
+
+    expect(fn({ parent: '01' })).toBe('01');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildEntityCellRender — direct label extraction for code-keyed entity columns
+// ---------------------------------------------------------------------------
+
+describe('DxDataGridUtils › buildEntityCellRender', () => {
+  it('reads textField from an embedded object (VoucherType fix)', () => {
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: { voucherType: { code: '01', name: 'Factura' } } })).toBe('Factura');
+  });
+
+  it('falls back to obj.name when textField is not present', () => {
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'label' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: { voucherType: { code: '01', name: 'Factura' } } })).toBe('Factura');
+  });
+
+  it('returns the plain string value when field is a primitive', () => {
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: { voucherType: '01' } })).toBe('01');
+  });
+
+  it('returns null when value is null or missing', () => {
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: {} })).toBeNull();
+    expect(fn({ data: { voucherType: null } })).toBeNull();
+  });
+
+  it('reads textField from data even when value is the computed primitive (calculateCellValue scenario)', () => {
+    // DevExtreme passes { data: <original row>, value: <calculateCellValue result> }.
+    // The original row still has the full embedded object; value is already "01".
+    // cellRender must read the name from data, NOT from value.
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    const result = fn({ data: { voucherType: { code: '01', name: 'Factura' } }, value: '01' });
+    expect(result).toBe('Factura');
+  });
+
+  it('falls back to value when data field has been replaced by primitive (worst-case mutation)', () => {
+    // If somehow rowData[field.name] is already the primitive "01", fall back to value.
+    const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    // rowData has primitive, value also primitive — returns String(val) = "01"
+    expect(fn({ data: { voucherType: '01' }, value: '01' })).toBe('01');
   });
 });

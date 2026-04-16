@@ -42,6 +42,10 @@ export default defineConfig({
     VitePWA({
       outDir: 'public',
       buildBase: '/',
+      // The app registers /sw.js manually in assets/app.tsx.
+      // Disable vite-plugin-pwa's injected helper so it does not generate and
+      // precache build/registerSW.js, which is not served in this Symfony setup.
+      injectRegister: false,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
@@ -125,12 +129,12 @@ export default defineConfig({
         enabled: false,
       },
     }),
-    // vite-plugin-pwa injects manifest.webmanifest into Workbox's additionalManifestEntries
-    // (which runs after manifestTransforms, so it can't be filtered there).
-    // vite-plugin-symfony routes all Vite assets to public/build/, so the manifest is
-    // served at /build/manifest.webmanifest — but the precache entry targets the root-level
-    // /manifest.webmanifest, causing a bad-precaching-response 404 at SW install time.
-    // This plugin strips that entry from the generated sw.js after the fact.
+    // vite-plugin-pwa injects some helper/root-level entries into Workbox's
+    // additionalManifestEntries (which runs after manifestTransforms, so they
+    // cannot be filtered there).
+    // In this Symfony + vite-plugin-symfony setup those URLs are not served at
+    // the paths Workbox precaches, so SW install fails with
+    // bad-precaching-response. Strip them from the generated sw.js after build.
     {
       name: 'pwa-strip-manifest-from-precache',
       apply: 'build',
@@ -139,8 +143,9 @@ export default defineConfig({
         const swPath = new URL('./public/sw.js', import.meta.url).pathname;
         if (!existsSync(swPath)) return;
         const before = readFileSync(swPath, 'utf8');
-        // Entry is always appended last: ,{url:"manifest.webmanifest",revision:"<hash>"}
-        const after = before.replace(/,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g, '');
+        const after = before
+          .replace(/,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g, '')
+          .replace(/,\s*\{url:"build\/registerSW\.js",revision:"[^"]*"\}/g, '');
         if (before !== after) {
           writeFileSync(swPath, after, 'utf8');
           console.log(
