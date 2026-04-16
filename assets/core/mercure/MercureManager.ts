@@ -94,7 +94,7 @@ class MercureManager {
     const url = new URL(this.hubUrl);
     url.searchParams.append('topic', topic);
 
-    const eventSource = new EventSource(url.toString());
+    const eventSource = new EventSource(url.toString(), { withCredentials: true });
 
     const listener = (e: MessageEvent) => {
       try {

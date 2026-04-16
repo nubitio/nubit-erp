@@ -11,6 +11,7 @@ use App\Core\Security\Auth\CookieFactoryService;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTAuthenticator;
 use App\Core\Security\Auth\JWTManager;
+use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Core\Security\Auth\UserProvider;
 use App\Entity\Role;
@@ -58,6 +59,7 @@ final class JWTAuthenticatorTest extends TestCase
     private TokenGeneratorService $tokenGenerator;
     private ClientDetectorService $clientDetector;
     private CookieFactoryService $cookieFactory;
+    private MercureSubscriberTokenService $mercureTokenService;
     private TranslatorInterface&MockObject $translator;
     private AuditLogger&MockObject $auditLogger;
     private TenantContext $tenantContext;
@@ -70,6 +72,7 @@ final class JWTAuthenticatorTest extends TestCase
         $this->logger        = $this->createMock(LoggerInterface::class);
         $this->clientDetector = new ClientDetectorService();
         $this->cookieFactory = new CookieFactoryService(false);
+        $this->mercureTokenService = new MercureSubscriberTokenService(self::JWT_SECRET, 3600);
         $this->translator    = $this->createMock(TranslatorInterface::class);
         $this->auditLogger   = $this->createMock(AuditLogger::class);
         $this->tenantContext = new TenantContext();
@@ -91,6 +94,7 @@ final class JWTAuthenticatorTest extends TestCase
             $this->tokenGenerator,
             $this->clientDetector,
             $this->cookieFactory,
+            $this->mercureTokenService,
             $this->translator,
             $this->auditLogger,
             $this->tenantContext,
@@ -537,6 +541,7 @@ final class JWTAuthenticatorTest extends TestCase
             $brokenTokenGenerator,
             $this->clientDetector,
             $this->cookieFactory,
+            $this->mercureTokenService,
             $this->translator,
             $this->auditLogger,
             $this->tenantContext,

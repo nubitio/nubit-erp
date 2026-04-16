@@ -10,6 +10,7 @@ use App\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Override;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +33,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public const string AUTH_COOKIE = 'AUTH_TOKEN';
     public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
+    public const string MERCURE_COOKIE = 'mercureAuthorization';
     public const string LOGIN_ROUTE = 'auth_login';
 
     public function __construct(
@@ -41,6 +43,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly TokenGeneratorService $tokenGenerator,
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
+        private readonly MercureSubscriberTokenService $mercureTokenService,
         private readonly TranslatorInterface $translator,
         private readonly AuditLogger $auditLogger,
         private readonly TenantContext $tenantContext,
@@ -354,8 +357,21 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
                 $refreshTokenExpiresAt
             );
 
+            $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
+            $tenantOrigin = $tenantDomain !== '' ? 'https://' . $tenantDomain : '';
+            $mercureToken = $this->mercureTokenService->generateSubscriberToken($tenantOrigin);
+            $mercureCookie = $this->cookieFactory->createSecureCookie(
+                self::MERCURE_COOKIE,
+                $mercureToken,
+                $accessTokenExpiresAt,
+                '/.well-known/mercure',
+                null,
+                Cookie::SAMESITE_LAX
+            );
+
             $response->headers->setCookie($accessCookie);
             $response->headers->setCookie($refreshCookie);
+            $response->headers->setCookie($mercureCookie);
         }
 
         return $response;
