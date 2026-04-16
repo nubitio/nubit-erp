@@ -42,9 +42,9 @@ services:
       E2E_SEED_ENABLED: '1'
       APP_COOKIE_SECURE: 'false'
       TZ: UTC
-      # Mercure hub — integrated in FrankenPHP/Caddy (SLICE-014)
-      MERCURE_URL: 'http://localhost/.well-known/mercure'
-      MERCURE_PUBLIC_URL: '${MERCURE_PUBLIC_URL:-http://localhost:8080/.well-known/mercure}'
+      # Mercure hub — proxy via Caddy (SLICE-014)
+      MERCURE_URL: 'http://mercure/.well-known/mercure'
+      MERCURE_PUBLIC_URL: '${MERCURE_PUBLIC_URL:-http://demo.localhost:8080/.well-known/mercure}'
       MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}'
 
   otel-collector:
@@ -126,7 +126,7 @@ services:
     restart: unless-stopped
     environment:
       # Uncomment the following line to disable HTTPS,
-      #SERVER_NAME: ':80'
+      SERVER_NAME: ':80'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
