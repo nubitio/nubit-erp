@@ -43,18 +43,24 @@ class TaxDocumentRepository extends ServiceEntityRepository
     /**
      * @throws ORMException
      */
-    public function getTaxDocumentSeriesByBranch(string $branchId, string $documentType): ?SeriesResultDto
+    public function getTaxDocumentSeriesByBranch(string $branchId, string $documentType, ?string $associatedSeries = null): ?SeriesResultDto
     {
         $branchRef = $this->getEntityManager()->getReference(Branch::class, $branchId);
-        $result = $this->getEntityManager()
+        $qb = $this->getEntityManager()
             ->getRepository(VoucherSeries::class)
             ->createQueryBuilder('vs')
             ->leftJoin('vs.voucherType', 'vt')
             ->where('vs.branch = :branch')
             ->andWhere('vt.code = :documentType')
             ->setParameter('branch', $branchRef)
-            ->setParameter('documentType', $documentType)
-            ->setMaxResults(1)
+            ->setParameter('documentType', $documentType);
+
+        if ($associatedSeries !== null) {
+            $qb->andWhere('vs.associatedSeries = :associatedSeries')
+               ->setParameter('associatedSeries', $associatedSeries);
+        }
+
+        $result = $qb->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 
