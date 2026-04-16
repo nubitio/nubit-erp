@@ -1982,4 +1982,270 @@ describe('mapHydraSchemaToFields — REFAC-001: urlLookup optional parameter', (
     const f = fields.find((x) => x.name === 'category');
     expect(f!.url).toBe('/api/categories');
   });
+
+  it('uses related schema identity and display fields for entity references', () => {
+    const schemaWithRelatedEntities: HydraResourceSchema = {
+      className: 'VoucherSeries',
+      apiUrl: '/api/voucher-series',
+      fields: [
+        {
+          name: 'voucherType',
+          range: '#VoucherType',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+        {
+          name: 'company',
+          range: '#Company',
+          propertyType: 'rdf:Property',
+          required: true,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+
+    const relatedSchemas: Record<string, HydraResourceSchema> = {
+      VoucherType: {
+        className: 'VoucherType',
+        apiUrl: '/api/voucher-types',
+        fields: [
+          {
+            name: 'code',
+            range: 'xmls:string',
+            propertyType: 'rdf:Property',
+            required: true,
+            readable: true,
+            writeable: true,
+          },
+          {
+            name: 'name',
+            range: 'xmls:string',
+            propertyType: 'rdf:Property',
+            required: true,
+            readable: true,
+            writeable: true,
+          },
+        ],
+      },
+      Company: {
+        className: 'Company',
+        apiUrl: '/api/companies',
+        fields: [
+          {
+            name: 'id',
+            range: 'xmls:integer',
+            propertyType: 'rdf:Property',
+            required: true,
+            readable: true,
+            writeable: true,
+          },
+          {
+            name: 'businessName',
+            range: 'xmls:string',
+            propertyType: 'rdf:Property',
+            required: true,
+            readable: true,
+            writeable: true,
+          },
+        ],
+      },
+    };
+
+    const fields = mapHydraSchemaToFields(
+      schemaWithRelatedEntities,
+      (className) => relatedSchemas[className]?.apiUrl,
+      (className) => relatedSchemas[className],
+    );
+
+    expect(fields.find((field) => field.name === 'voucherType')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'code',
+      textField: 'name',
+      url: '/api/voucher-types',
+    });
+
+    expect(fields.find((field) => field.name === 'company')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'businessName',
+      url: '/api/companies',
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-015 follow-up — non-standard PK / display field resolution for real
+// entity types found via OpenAPI schema audit
+// ---------------------------------------------------------------------------
+
+describe('resolveEntityValueField / resolveEntityTextField — real-world schema cases', () => {
+  /** Build a minimal host schema referencing a single related entity by range */
+  function makeHostSchema(fieldName: string, range: string): HydraResourceSchema {
+    return {
+      className: 'Host',
+      apiUrl: '/api/hosts',
+      fields: [
+        {
+          name: fieldName,
+          range,
+          propertyType: 'rdf:Property',
+          required: false,
+          readable: true,
+          writeable: true,
+        },
+      ],
+    };
+  }
+
+  it('Customer(id, businessName) → valueField=id, textField=businessName', () => {
+    const customerSchema: HydraResourceSchema = {
+      className: 'Customer',
+      apiUrl: '/api/customers',
+      fields: [
+        { name: 'id', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: false },
+        { name: 'ruc', range: 'xmls:string', propertyType: 'rdf:Property', required: false, readable: true, writeable: true },
+        { name: 'businessName', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('customer', '#Customer');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ Customer: '/api/customers' })[cls],
+      (cls) => ({ Customer: customerSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'customer')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'businessName',
+    });
+  });
+
+  it('Supplier(id, businessName) → valueField=id, textField=businessName', () => {
+    const supplierSchema: HydraResourceSchema = {
+      className: 'Supplier',
+      apiUrl: '/api/suppliers',
+      fields: [
+        { name: 'id', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: false },
+        { name: 'ruc', range: 'xmls:string', propertyType: 'rdf:Property', required: false, readable: true, writeable: true },
+        { name: 'businessName', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('supplier', '#Supplier');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ Supplier: '/api/suppliers' })[cls],
+      (cls) => ({ Supplier: supplierSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'supplier')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'businessName',
+    });
+  });
+
+  it('Ubigeo(code, …, name) → valueField=code, textField=name', () => {
+    const ubigeoSchema: HydraResourceSchema = {
+      className: 'Ubigeo',
+      apiUrl: '/api/ubigeos',
+      fields: [
+        { name: 'code', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+        { name: 'department', range: 'xmls:string', propertyType: 'rdf:Property', required: false, readable: true, writeable: true },
+        { name: 'name', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('ubigeo', '#Ubigeo');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ Ubigeo: '/api/ubigeos' })[cls],
+      (cls) => ({ Ubigeo: ubigeoSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'ubigeo')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'code',
+      textField: 'name',
+    });
+  });
+
+  it('SunatCatalog(id, code, description) → valueField=id, textField=description', () => {
+    const sunatSchema: HydraResourceSchema = {
+      className: 'SunatCatalog',
+      apiUrl: '/api/sunat-catalogs',
+      fields: [
+        { name: 'id', range: 'xmls:integer', propertyType: 'rdf:Property', required: true, readable: true, writeable: false },
+        { name: 'code', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+        { name: 'description', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('catalog', '#SunatCatalog');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ SunatCatalog: '/api/sunat-catalogs' })[cls],
+      (cls) => ({ SunatCatalog: sunatSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'catalog')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'description',
+    });
+  });
+
+  it('VoucherSerie(id, series) → valueField=id, textField=series', () => {
+    const voucherSerieSchema: HydraResourceSchema = {
+      className: 'VoucherSerie',
+      apiUrl: '/api/voucher-series',
+      fields: [
+        { name: 'id', range: 'xmls:integer', propertyType: 'rdf:Property', required: true, readable: true, writeable: false },
+        { name: 'series', range: 'xmls:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+        { name: 'associatedSeries', range: 'xmls:string', propertyType: 'rdf:Property', required: false, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('voucherSerie', '#VoucherSerie');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ VoucherSerie: '/api/voucher-series' })[cls],
+      (cls) => ({ VoucherSerie: voucherSerieSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'voucherSerie')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'series',
+    });
+  });
+
+  it('VoucherType(code xsd:string, name xsd:string) → valueField=code, textField=name (xsd: prefix support)', () => {
+    // Real-world: API Platform emits "xsd:string" (not "xmls:string") for VoucherType fields.
+    // isStringLikeField must recognise both prefixes so resolveEntityTextField returns "name".
+    const voucherTypeSchema: HydraResourceSchema = {
+      className: 'VoucherType',
+      apiUrl: '/api/voucher-types',
+      fields: [
+        { name: 'code', range: 'xsd:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+        { name: 'name', range: 'xsd:string', propertyType: 'rdf:Property', required: true, readable: true, writeable: true },
+      ],
+    };
+    const hostSchema = makeHostSchema('voucherType', '#VoucherType');
+    const fields = mapHydraSchemaToFields(
+      hostSchema,
+      (cls) => ({ VoucherType: '/api/voucher-types' })[cls],
+      (cls) => ({ VoucherType: voucherTypeSchema })[cls],
+    );
+    expect(fields.find((f) => f.name === 'voucherType')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'code',
+      textField: 'name',
+    });
+  });
+
+  it('no schemaLookup provided → falls back to valueField=id, textField=name (safe defaults)', () => {
+    const hostSchema = makeHostSchema('ref', '#UnknownEntity');
+    const fields = mapHydraSchemaToFields(hostSchema);
+    expect(fields.find((f) => f.name === 'ref')).toMatchObject({
+      type: FieldType.ENTITY,
+      valueField: 'id',
+      textField: 'name',
+    });
+  });
 });

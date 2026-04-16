@@ -248,6 +248,37 @@ export function buildEntityCellValue(field: Field): (rowData: Record<string, unk
   };
 }
 
+/**
+ * Builds a `cellRender` function for ENTITY columns with a primitive, non-UUID
+ * `valueField` (e.g. `'code'`).
+ *
+ * DevExtreme ignores `calculateDisplayValue` when a `<Lookup>` child is present —
+ * the Lookup's display resolution always wins.  For `code`-keyed entities the Lookup
+ * resolves `"01"` → shows `"Factura"` only after `byKey` completes, which may fail or
+ * be slow.  Using `cellRender` bypasses the Lookup display entirely and reads the
+ * human-readable label directly from the already-embedded API response object.
+ *
+ * The `<Lookup>` child is still rendered for column filtering/editing purposes.
+ */
+export function buildEntityCellRender(
+  field: Field,
+): (cellData: { data: Record<string, unknown>; value: unknown }) => React.ReactNode {
+  return ({ data: rowData, value }) => {
+    const val = rowData[field.name];
+    // If calculateCellValue already replaced the field with a primitive, val === value === "01".
+    // In that case, we can't recover the name from rowData. Check the original object shape.
+    if (val !== null && val !== undefined && typeof val === 'object') {
+      const obj = val as Record<string, unknown>;
+      const display = obj[field.textField] ?? obj['name'];
+      if (display !== undefined && display !== null) return String(display);
+    }
+    if (val != null) return String(val);
+    // Fallback: val is already a primitive (calculateCellValue mutated rowData)
+    return value != null ? String(value) : null;
+  };
+}
+
+
 export const buildColumns = (fields: Field[], forceLookup = false) => {
   return fields.map((field: Field, index) => {
     const clone = { ...field };
@@ -257,32 +288,41 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     if (forceLookup) clone.filterable = true;
     const editorOptions = buildEditorOptions(clone);
 
-    // For ENTITY fields without a custom formatter, provide a calculateDisplayValue
-    // that extracts the human-readable label from nested relation objects.
-    // This prevents "[object Object]" when the API returns embedded entities.
+    // For ENTITY fields with a primitive valueField (not IRI-mode), calculateCellValue
+    // extracts the primitive key from any embedded object or IRI string so that
+    // the DevExtreme Lookup can match it against the store for filtering/editing.
+    // This covers both UUID ('id') and other primitive keys (e.g. 'code').
     //
-    // Exceptions — skip calculateDisplayValue when:
-    //  • valueField === '@id': the stored value is a full IRI; let the <Lookup> resolve it.
-    //  • valueField === '_iri': IRI-mode lookup (BUG-010); the <Lookup> resolves the name
-    //    via its iriMode dataSource (which maps "@id" → "_iri" on every loaded item).
-    //  • valueField === 'id': UUID-mode lookup (BUG-011); calculateCellValue handles
-    //    IRI → UUID extraction so the <Lookup> can resolve the display name by UUID.
-    const entityDisplayValue =
+    // Skip when:
+    //  • valueField === '@id': full-IRI-mode; Lookup resolves by IRI directly.
+    //  • valueField === '_iri': IRI-mode (BUG-010); Lookup resolves via iriMode dataSource.
+    //  • formatter is set: formatter owns cell rendering entirely.
+    const entityCellValue =
+      field.type === FieldType.ENTITY &&
+      !field.formatter &&
+      field.valueField !== '@id' &&
+      field.valueField !== '_iri'
+        ? buildEntityCellValue(field)
+        : undefined;
+
+    // For non-id, non-IRI entity fields (e.g. 'code'), DevExtreme ignores
+    // calculateDisplayValue when a <Lookup> child is present — the Lookup display wins.
+    // Use cellRender to bypass the Lookup and read the label directly from the
+    // already-embedded API response object (e.g. rowData.voucherType.name).
+    //
+    // id-mode and IRI-mode are excluded: id-mode relies on the Lookup byKey(uuid)
+    // resolving asynchronously, and IRI-mode already works via the iriMode store.
+    const entityCellRender =
       field.type === FieldType.ENTITY &&
       !field.formatter &&
       field.valueField !== '@id' &&
       field.valueField !== '_iri' &&
       field.valueField !== 'id'
-        ? buildEntityDisplayValue(field)
+        ? buildEntityCellRender(field)
         : undefined;
 
-    // For ENTITY columns using UUID as valueExpr ('id'), the API returns IRI strings
-    // (e.g. "/api/warehouses/uuid"). Extract the UUID so the Lookup can match it
-    // against the store entries keyed by 'id' and display the human-readable name.
-    const entityCellValue =
-      field.type === FieldType.ENTITY && !field.formatter && field.valueField === 'id'
-        ? buildEntityCellValue(field)
-        : undefined;
+    // calculateDisplayValue is superseded by cellRender for code-keyed fields.
+    const entityDisplayValue = undefined;
 
     return (
       <Column
@@ -293,7 +333,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         allowSorting={field.sortable}
         allowFiltering={field.filterable}
         allowHiding={field.hideable}
-        cellRender={field.formatter}
+        cellRender={field.formatter ?? entityCellRender}
         calculateDisplayValue={entityDisplayValue}
         calculateCellValue={entityCellValue}
         setCellValue={field.onChange}

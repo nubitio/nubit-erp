@@ -86,6 +86,7 @@ export function useResourceSchema<T extends SmartCrudRecord = Record<string, unk
   const inferred = mapHydraSchemaToFields(
     resourceSchema,
     (className) => resourceMap[className]?.apiUrl,
+    (className) => resourceMap[className],
   );
 
   return resolveWithRuntimeErrors(

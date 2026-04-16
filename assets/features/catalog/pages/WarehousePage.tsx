@@ -10,5 +10,8 @@ const resource = defineResource({
   events: warehouseEvents,
 });
 export const WarehousePage = () => (
-  <SmartCrudPage resource={resource} fieldOverrides={[{ key: 'productStocks', hidden: true }]} />
+  <SmartCrudPage
+    resource={resource}
+    fieldOverrides={[{ key: 'productStocks', hidden: true, visible: false, visibleOnForm: false }]}
+  />
 );

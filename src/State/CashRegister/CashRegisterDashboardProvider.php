@@ -36,6 +36,10 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     {
         $branchId = $this->branchContext->getCurrentBranchId();
 
+        if ($branchId === null) {
+            return [];
+        }
+
         $sql = <<<SQL
 SELECT
     c.id,
