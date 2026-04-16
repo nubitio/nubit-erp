@@ -121,8 +121,11 @@ function resolveEntityValueField(relatedSchema: HydraResourceSchema | undefined)
 
   const fieldNames = new Set(relatedSchema.fields.map((field) => field.name));
   if (fieldNames.has('id') || fieldNames.has('@id')) return '_iri';
-  if (fieldNames.has('code')) return 'code';
 
+  // Always use IRI-mode: API Platform always serialises "@id" on every item
+  // regardless of whether an explicit "id" field appears in supportedProperty.
+  // Using a non-IRI field like "code" as valueField causes the frontend to send
+  // "/api/voucher-types/NIU" which the backend cannot resolve by code. (BUG)
   return '_iri';
 }
 

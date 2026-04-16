@@ -208,29 +208,42 @@ export function buildEntityDisplayValue(
 }
 
 /**
- * Builds a `calculateCellValue` function for ENTITY columns whose `valueField`
- * is `'id'` (UUID-based lookups).
+ * Builds a `calculateCellValue` function for ENTITY columns.
  *
- * The API returns relation fields as IRI strings (e.g. `"/api/warehouses/uuid"`),
- * but the DevExtreme Lookup is configured with `valueExpr='id'` and its data store
- * is keyed by UUID.  Without this transform, the Lookup cannot match the IRI to a
- * store entry and the grid cell shows the raw IRI instead of the display name.
+ * The API may return relation fields as embedded objects (e.g. `{ "@id": "...", "name": "..." }`)
+ * or plain IRI/primitive strings.  This function normalises the value to the key field
+ * (`_iri`, `id`, `code`, etc.) so the DevExtreme Lookup can match it against the store.
  *
- * This function handles three cases:
- *  - IRI string (`"/api/products/uuid"`) → extracts UUID via `split('/').pop()`
- *  - UUID string (already extracted) → returns as-is
- *  - Object with an `id` field (e.g. full entity from onChange) → returns `obj.id`
- *
- * Only applied when:
- *  - the field is an ENTITY type
- *  - `valueField === 'id'`      (UUID-based; not IRI-mode or @id-mode)
- *  - no custom formatter is set (formatters own the cell rendering entirely)
+ * Handles all cases:
+ *  - Embedded object + _iri/\@id mode → extracts IRI from `@id` or builds from `id`
+ *  - Embedded object + id mode → extracts `id` field
+ *  - Embedded object + code mode → extracts `code` field
+ *  - Plain IRI string + id mode → extracts UUID via `split('/').pop()`
+ *  - Plain IRI string + _iri mode → returns as-is
+ *  - Plain UUID string → returns as-is
  */
 export function buildEntityCellValue(field: Field): (rowData: Record<string, unknown>) => unknown {
   return (rowData: Record<string, unknown>): unknown => {
     const val = rowData[field.name];
     if (val === null || val === undefined) return val;
+
+    // Embedded object — extract the key field
+    if (typeof val === 'object') {
+      const obj = val as Record<string, unknown>;
+      if (field.valueField === '_iri' || field.valueField === '@id') {
+        // IRI mode: prefer @id, then build from id
+        const iri = obj['@id'];
+        if (typeof iri === 'string') return iri;
+        const id = obj['id'];
+        if (id !== undefined && id !== null) return `${field.url ?? ''}/${id}`;
+      }
+      const id = obj[field.valueField] ?? obj['id'];
+      if (id !== undefined && id !== null) return String(id);
+    }
+
+    // Already a plain IRI string — for _iri mode return as-is
     if (typeof val === 'string') {
+      if (field.valueField === '_iri' || field.valueField === '@id') return val;
       if (val.startsWith('/')) {
         // IRI string from API — extract the last path segment (UUID)
         return val.split('/').pop() ?? val;
@@ -238,12 +251,7 @@ export function buildEntityCellValue(field: Field): (rowData: Record<string, unk
       // Already a UUID — return as-is
       return val;
     }
-    if (typeof val === 'object') {
-      // Full entity object (e.g. set via onChange) — extract the id field
-      const obj = val as Record<string, unknown>;
-      const id = obj[field.valueField] ?? obj['id'];
-      if (id !== undefined && id !== null) return String(id);
-    }
+
     return val;
   };
 }
@@ -265,13 +273,16 @@ export function buildEntityCellRender(
 ): (cellData: { data: Record<string, unknown>; value?: unknown }) => React.ReactNode {
   return ({ data: rowData, value }) => {
     const val = rowData[field.name];
-    // If calculateCellValue already replaced the field with a primitive, val === value === "01".
-    // In that case, we can't recover the name from rowData. Check the original object shape.
+    // When the API returns an embedded object (e.g. { "@id": "...", "name": "..." }),
+    // read the textField directly — fast and no async Lookup needed.
     if (val !== null && val !== undefined && typeof val === 'object') {
       const obj = val as Record<string, unknown>;
       const display = obj[field.textField] ?? obj['name'];
       if (display !== undefined && display !== null) return String(display);
     }
+    // For plain IRI / primitive values, return null so DevExtreme falls back to
+    // the Lookup's display resolution (byKey fetch).
+    if (field.valueField === '_iri' || field.valueField === '@id') return null;
     if (val != null) return String(val);
     // Fallback: val is already a primitive (calculateCellValue mutated rowData)
     return value != null ? String(value) : null;
@@ -288,37 +299,46 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     if (forceLookup) clone.filterable = true;
     const editorOptions = buildEditorOptions(clone);
 
-    // For ENTITY fields with a primitive valueField (not IRI-mode), calculateCellValue
-    // extracts the primitive key from any embedded object or IRI string so that
-    // the DevExtreme Lookup can match it against the store for filtering/editing.
-    // This covers both UUID ('id') and other primitive keys (e.g. 'code').
+    // For ENTITY fields, calculateCellValue extracts the primitive key from any
+    // embedded object or IRI string so that the DevExtreme Lookup can match it
+    // against the store for filtering/editing.
     //
-    // Skip when:
-    //  • valueField === '@id': full-IRI-mode; Lookup resolves by IRI directly.
-    //  • valueField === '_iri': IRI-mode (BUG-010); Lookup resolves via iriMode dataSource.
-    //  • formatter is set: formatter owns cell rendering entirely.
+    // For _iri / @id mode: extracts the IRI string from an embedded object's "@id".
+    // For id mode: extracts UUID via split('/').pop().
+    // Skip when formatter is set — formatters own rendering entirely.
     const entityCellValue =
-      field.type === FieldType.ENTITY &&
-      !field.formatter &&
-      field.valueField !== '@id' &&
-      field.valueField !== '_iri'
+      field.type === FieldType.ENTITY && !field.formatter
         ? buildEntityCellValue(field)
         : undefined;
 
-    // For non-id, non-IRI entity fields (e.g. 'code'), DevExtreme ignores
-    // calculateDisplayValue when a <Lookup> child is present — the Lookup display wins.
-    // Use cellRender to bypass the Lookup and read the label directly from the
-    // already-embedded API response object (e.g. rowData.voucherType.name).
+    // For non-id entity fields, use cellRender to read the label directly from
+    // the already-embedded API response object (e.g. rowData.category.name).
     //
-    // id-mode and IRI-mode are excluded: id-mode relies on the Lookup byKey(uuid)
-    // resolving asynchronously, and IRI-mode already works via the iriMode store.
+    // This covers both:
+    //  - _iri / @id mode: API may return an embedded object { "@id": "...", "name": "..." }
+    //    instead of a plain IRI string; cellRender reads textField from the object directly.
+    //  - code / primitive-key mode: same approach.
+    //
+    // id-mode is excluded: it relies on the Lookup byKey(uuid) resolving asynchronously.
+    // formatter is excluded: formatters own cell rendering entirely.
     const entityCellRender =
       field.type === FieldType.ENTITY &&
       !field.formatter &&
-      field.valueField !== '@id' &&
-      field.valueField !== '_iri' &&
       field.valueField !== 'id'
         ? buildEntityCellRender(field)
+        : undefined;
+
+    // For ENUM fields, use cellRender to resolve the display text from the local
+    // options array directly — bypasses DevExtreme Lookup display which can be
+    // unreliable for local array datasources in read mode.
+    const enumCellRender =
+      field.type === FieldType.ENUM && !field.formatter && Array.isArray(field.data)
+        ? (cellData: { value?: unknown }) => {
+            const match = (field.data as { value: unknown; text: string }[]).find(
+              (opt) => opt.value === cellData.value,
+            );
+            return match ? match.text : (cellData.value != null ? String(cellData.value) : null);
+          }
         : undefined;
 
     // calculateDisplayValue is superseded by cellRender for code-keyed fields.
@@ -333,7 +353,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         allowSorting={field.sortable}
         allowFiltering={field.filterable}
         allowHiding={field.hideable}
-        cellRender={field.formatter ?? entityCellRender}
+        cellRender={field.formatter ?? entityCellRender ?? enumCellRender}
         calculateDisplayValue={entityDisplayValue}
         calculateCellValue={entityCellValue}
         setCellValue={field.onChange}
