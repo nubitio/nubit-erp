@@ -74,6 +74,63 @@ final class InventoryLedgerServiceTest extends TestCase
         $service->applyMovementFromSaleItem($sale, $item, 1, true);
     }
 
+    public function testApplyMovementUsesLegacyProductStockWhenBalanceRowDoesNotExist(): void
+    {
+        $connection = $this->createMock(Connection::class);
+
+        $connection->expects($this->once())->method('beginTransaction');
+        $connection->expects($this->once())->method('commit');
+        $connection->expects($this->never())->method('rollBack');
+
+        $connection->method('fetchAssociative')->willReturn(false);
+        $connection->method('fetchOne')->willReturnCallback(
+            static function (string $sql, array $params = []): string|int|false {
+                if (str_contains($sql, 'FROM product_stock')) {
+                    return '100.000';
+                }
+
+                if (str_contains($sql, 'information_schema.columns')) {
+                    return 0;
+                }
+
+                return false;
+            }
+        );
+
+        $executedSql = [];
+        $connection->method('executeStatement')->willReturnCallback(
+            static function (string $sql, array $params = []) use (&$executedSql): int {
+                $executedSql[] = ['sql' => $sql, 'params' => $params];
+
+                return 1;
+            }
+        );
+
+        $service = new InventoryLedgerService($connection);
+
+        $sale = (new SaleRecord())
+            ->setId('sale-legacy-stock')
+            ->setTipoId(2)
+            ->setFecha(new \DateTimeImmutable('2026-02-28 10:00:00'))
+            ->setAlmacen($this->newWarehouse('wh-1'));
+
+        $item = (new SaleItem())
+            ->setProducto($this->newProduct('prod-1'))
+            ->setCantidad(1.0)
+            ->setPrecioUnitario('10.00')
+            ->setPrecioTotal('10.00');
+
+        $service->applyMovementFromSaleItem($sale, $item, 1, true);
+
+        $balanceWrite = array_values(array_filter(
+            $executedSql,
+            static fn (array $call): bool => str_contains($call['sql'], 'INSERT INTO stock_balances')
+        ));
+        self::assertCount(1, $balanceWrite);
+        self::assertSame('99.000', $balanceWrite[0]['params']['on_hand_qty']);
+        self::assertSame('99.000', $balanceWrite[0]['params']['available_qty']);
+    }
+
     public function testServiceProductDoesNotWriteInventoryMovements(): void
     {
         $connection = $this->createMock(Connection::class);

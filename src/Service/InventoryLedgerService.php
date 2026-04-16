@@ -249,6 +249,7 @@ SQL,
         $totalCost = $unitCost !== null ? round(abs($delta) * $unitCost, 2) : null;
         $supportsLotId = $lotId !== null && $this->hasColumn('stock_movements', 'lot_id');
         $params = [
+            'id' => Uuid::v7()->toRfc4122(),
             'warehouse_id' => $warehouseId,
             'product_id' => $productId,
             'occurred_at' => $occurredAt,
@@ -282,6 +283,7 @@ SQL,
             $this->connection->executeStatement(
                 <<<SQL
 INSERT INTO stock_movements (
+    id,
     warehouse_id,
     product_id,
     variant_id,{$lotColumn}
@@ -305,6 +307,7 @@ INSERT INTO stock_movements (
     last_modified_at,
     created_at
 ) VALUES (
+    :id,
     :warehouse_id,
     :product_id,
     NULL,{$lotValue}
@@ -344,6 +347,7 @@ SQL,
         $this->connection->executeStatement(
             <<<SQL
 INSERT INTO stock_movements (
+    id,
     warehouse_id,
     product_id,
     variant_id,{$lotColumn}
@@ -364,6 +368,7 @@ INSERT INTO stock_movements (
     last_modified_at,
     created_at
 ) VALUES (
+    :id,
     :warehouse_id,
     :product_id,
     NULL,{$lotValue}
@@ -417,9 +422,9 @@ SQL,
         );
 
         if ($row === false) {
-            $currentOnHand = 0.0;
+            $currentOnHand = $this->readCurrentOnHandFallback($warehouseId, $productId);
             $currentReserved = 0.0;
-            $currentAvailable = 0.0;
+            $currentAvailable = $currentOnHand;
             $currentAvgCost = null;
         } else {
             $currentOnHand = (float) ($row['on_hand_qty'] ?? 0.0);
@@ -524,6 +529,48 @@ SQL,
         );
 
         $this->syncStockItem($warehouseId, $productId, $newOnHand, $currentReserved);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function readCurrentOnHandFallback(string $warehouseId, string $productId): float
+    {
+        if ($this->shouldReadFromStockItems() && $this->hasColumn('stock_items', 'qty_on_hand')) {
+            $fromStockItems = $this->connection->fetchOne(
+                <<<'SQL'
+SELECT qty_on_hand
+FROM stock_items
+WHERE warehouse_id = :warehouse_id
+  AND product_id = :product_id
+LIMIT 1
+SQL,
+                [
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                ]
+            );
+
+            if ($fromStockItems !== false) {
+                return (float) $fromStockItems;
+            }
+        }
+
+        $fromLegacy = $this->connection->fetchOne(
+            <<<'SQL'
+SELECT stock
+FROM product_stock
+WHERE warehouse_id = :warehouse_id
+  AND product_id = :product_id
+LIMIT 1
+SQL,
+            [
+                'warehouse_id' => $warehouseId,
+                'product_id' => $productId,
+            ]
+        );
+
+        return $fromLegacy !== false ? (float) $fromLegacy : 0.0;
     }
 
     private function resolveUnitCost(SaleRecord $sale, SaleItem $item): ?float

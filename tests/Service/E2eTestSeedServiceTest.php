@@ -174,15 +174,23 @@ final class E2eTestSeedServiceTest extends TestCase
         $user = (new User())->setUsername('ci_e2e_user');
         $this->setEntityId($user, 'id', 9);
 
-        $connection->method('fetchFirstColumn')->willReturn([]);
-        $connection->expects($this->once())
-            ->method('executeStatement')
-            ->with(
-                'DELETE FROM refresh_token WHERE user_id = :user_id',
-                ['user_id' => 9]
-            );
+        $branch = (new Branch())->setName('CI E2E Branch');
+        $cashRegister = (new CashRegister())->setName('Caja CI E2E')->setBranch($branch);
+        $this->setEntityId($cashRegister, 'id', 1);
 
-        $userRepository->method('findOneBy')->willReturn($user);
+        $connection->method('fetchFirstColumn')->willReturn([]);
+        $executeCalls = [];
+        $connection->expects($this->exactly(2))
+            ->method('executeStatement')
+            ->willReturnCallback(function (string $sql, array $params = []) use (&$executeCalls): int {
+                $executeCalls[] = [$sql, $params];
+
+                return 1;
+            });
+
+        $branchRepository->method('findOneBy')->with(['name' => 'CI E2E Branch'])->willReturn($branch);
+        $cashRegisterRepository->method('findOneBy')->with(['branch' => $branch])->willReturn($cashRegister);
+        $userRepository->method('findOneBy')->with(['username' => 'ci_e2e_user'])->willReturn($user);
 
         $entityManager->expects($this->once())->method('remove')->with($user);
         $entityManager->expects($this->once())->method('flush');
@@ -209,6 +217,11 @@ final class E2eTestSeedServiceTest extends TestCase
         );
 
         $service->reset();
+
+        self::assertSame([
+            ['DELETE FROM cash_sessions WHERE cash_register_id = :register_id', ['register_id' => 1]],
+            ['DELETE FROM refresh_token WHERE user_id = :user_id', ['user_id' => 9]],
+        ], $executeCalls);
     }
 
     private function setEntityId(object $entity, string $property, mixed $value): void
