@@ -54,6 +54,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             ->andWhere('vt.code = :documentType')
             ->setParameter('branch', $branchRef)
             ->setParameter('documentType', $documentType)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 
