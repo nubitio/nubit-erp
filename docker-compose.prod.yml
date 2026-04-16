@@ -238,7 +238,6 @@ services:
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins *
-        anonymous
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost/healthz']

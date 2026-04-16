@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\Controller\AuthSelectBranchController;
+use App\Core\Context\TenantContext;
 use App\Core\Security\Auth\ClientDetectorService;
 use App\Core\Security\Auth\CookieFactoryService;
+use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\User;
 use App\Repository\BranchRepository;
@@ -32,6 +34,8 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
+            (new \ReflectionClass(MercureSubscriberTokenService::class))->newInstanceWithoutConstructor(),
+            new TenantContext(),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -55,6 +59,8 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
+            (new \ReflectionClass(MercureSubscriberTokenService::class))->newInstanceWithoutConstructor(),
+            new TenantContext(),
             $this->createMock(LoggerInterface::class),
         );
 

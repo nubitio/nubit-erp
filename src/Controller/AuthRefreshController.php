@@ -8,15 +8,18 @@ use App\Core\Security\Auth\ClientDetectorService;
 use App\Core\Security\Auth\CookieFactoryService;
 use App\Core\Security\Auth\JWTAuthenticator;
 use App\Core\Security\Auth\JWTManager;
+use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Repository\BranchRepository;
 use App\Repository\RefreshTokenRepository;
+use App\Core\Context\TenantContext;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +34,8 @@ class AuthRefreshController extends AbstractController
         private readonly TokenGeneratorService $tokenGenerator,
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
+        private readonly MercureSubscriberTokenService $mercureTokenService,
+        private readonly TenantContext $tenantContext,
         private readonly LoggerInterface $logger,
         private readonly BranchRepository $branchRepository,
     ) {
@@ -128,6 +133,19 @@ class AuthRefreshController extends AbstractController
                     JWTAuthenticator::REFRESH_COOKIE,
                     $tokenPair->refreshToken,
                     $tokenPair->refreshTokenExpiresAt
+                )
+            );
+
+            $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
+            $tenantOrigin = $tenantDomain !== '' ? 'https://' . $tenantDomain : '';
+            $response->headers->setCookie(
+                $this->cookieFactory->createSecureCookie(
+                    JWTAuthenticator::MERCURE_COOKIE,
+                    $this->mercureTokenService->generateSubscriberToken($tenantOrigin),
+                    $tokenPair->accessTokenExpiresAt,
+                    '/.well-known/mercure',
+                    null,
+                    Cookie::SAMESITE_LAX
                 )
             );
         }

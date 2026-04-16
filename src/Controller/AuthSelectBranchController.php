@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Core\Context\TenantContext;
 use App\Core\Security\Auth\ClientDetectorService;
 use App\Core\Security\Auth\CookieFactoryService;
 use App\Core\Security\Auth\JWTAuthenticator;
+use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\Branch;
 use App\Entity\User;
@@ -14,6 +16,7 @@ use App\Repository\BranchRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +29,8 @@ class AuthSelectBranchController extends AbstractController
         private readonly TokenGeneratorService $tokenGenerator,
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
+        private readonly MercureSubscriberTokenService $mercureTokenService,
+        private readonly TenantContext $tenantContext,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -79,6 +84,19 @@ class AuthSelectBranchController extends AbstractController
                     JWTAuthenticator::REFRESH_COOKIE,
                     $tokenPair->refreshToken,
                     $tokenPair->refreshTokenExpiresAt
+                )
+            );
+
+            $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
+            $tenantOrigin = $tenantDomain !== '' ? 'https://' . $tenantDomain : '';
+            $response->headers->setCookie(
+                $this->cookieFactory->createSecureCookie(
+                    JWTAuthenticator::MERCURE_COOKIE,
+                    $this->mercureTokenService->generateSubscriberToken($tenantOrigin),
+                    $tokenPair->accessTokenExpiresAt,
+                    '/.well-known/mercure',
+                    null,
+                    Cookie::SAMESITE_LAX
                 )
             );
         }

@@ -36,6 +36,10 @@ services:
   App\Core\Security\Auth\CookieFactoryService:
     arguments:
       $cookieSecure: '%env(bool:APP_COOKIE_SECURE)%'
+  App\Core\Security\Auth\MercureSubscriberTokenService:
+    arguments:
+      $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
+      $accessTokenTtl: '%jwt_access_token_ttl%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'
