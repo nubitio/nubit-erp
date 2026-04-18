@@ -485,7 +485,7 @@ final class SaleProcessorTest extends TestCase
                 $this->isInstanceOf(SendInvoiceMessage::class),
                 $this->isArray()
             )
-            ->willReturn(new Envelope(new SendInvoiceMessage('inv-abc-123')));
+            ->willReturn(new Envelope(new SendInvoiceMessage('inv-abc-123', 'test-tenant')));
 
         $this->buildAndRunProcessor(
             $sale,
@@ -1098,6 +1098,7 @@ final class SaleProcessorTest extends TestCase
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
         $inj('saleRecordRepository', $this->createMock(\App\Repository\SaleRecordRepository::class));
         $inj('customerRepository', $this->customerRepository);
+        $inj('tenantContext', new \App\Core\Context\TenantContext());
 
         return $processor;
     }

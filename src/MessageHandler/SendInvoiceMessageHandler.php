@@ -7,13 +7,15 @@ namespace App\MessageHandler;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\Message\SendInvoiceMessage;
 use Brick\Math\Exception\MathException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final readonly class SendInvoiceMessageHandler
 {
     public function __construct(
-        private BillSendUseCase $billSendUseCase
+        private BillSendUseCase $billSendUseCase,
+        private LoggerInterface $billingLogger,
     ) {
     }
 
@@ -23,6 +25,27 @@ final readonly class SendInvoiceMessageHandler
      */
     public function __invoke(SendInvoiceMessage $message): void
     {
-        $this->billSendUseCase->__invoke($message->taxDocumentId);
+        $tenantId = $message->getTenantId() ?: 'unknown';
+
+        $this->billingLogger->info('send_invoice.start', [
+            'tenant_id' => $tenantId,
+            'tax_document_id' => $message->taxDocumentId,
+        ]);
+
+        try {
+            $this->billSendUseCase->__invoke($message->taxDocumentId);
+        } catch (\Throwable $e) {
+            $this->billingLogger->error('send_invoice.failed', [
+                'tenant_id' => $tenantId,
+                'exception' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        $this->billingLogger->info('send_invoice.done', [
+            'tenant_id' => $tenantId,
+            'tax_document_id' => $message->taxDocumentId,
+        ]);
     }
 }

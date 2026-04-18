@@ -14,7 +14,7 @@ use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class TenantListenerTest extends TestCase
@@ -175,8 +175,8 @@ final class TenantListenerTest extends TestCase
         $this->tenantManager->method('getTenantByName')
             ->willThrowException(new \RuntimeException('Tenant not found'));
 
-        $this->expectException(BadRequestHttpException::class);
-        $this->expectExceptionMessage('Invalid request');
+        $this->expectException(NotFoundHttpException::class);
+        $this->expectExceptionMessage('Tenant not found');
 
         ($this->listener)($this->createEvent('secret-tenant.example.com'));
     }

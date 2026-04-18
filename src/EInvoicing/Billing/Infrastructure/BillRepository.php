@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Infrastructure;
 
 use Override;
+use App\Core\Context\TenantContext;
 use App\EInvoicing\Billing\Domain\BillRepositoryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\EInvoicing\Billing\Domain\FileRequest;
@@ -29,7 +30,9 @@ readonly class BillRepository implements BillRepositoryInterface
     public function __construct(
         private SerializerInterface $serializer,
         private LoggerInterface $logger,
+        private LoggerInterface $billingLogger,
         private HttpClientInterface $httpClient,
+        private TenantContext $tenantContext,
         #[Autowire('%env(BILL_API_BASE_URL)%')]
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
@@ -49,24 +52,66 @@ readonly class BillRepository implements BillRepositoryInterface
     {
         $requestBody = $this->serializer->serialize($invoice, 'json');
         $url = $this->apiBaseUrl . 'invoice/send?token=' . $this->apiToken;
+        $taxDocumentId = $invoice->getSerie() . '-' . $invoice->getCorrelativo();
+        $tenantId = (string) ($this->tenantContext->getTenantId() ?? 'unknown');
 
         $this->logger->info('Enviando factura a Bill', ['invoice' => $invoice]);
         $this->logger->info('Request Body', ['requestBody' => $requestBody]);
 
-        $response = $this->httpClient->request('POST', $url, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => $requestBody,
-        ]);
+        $start = hrtime(true);
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => $requestBody,
+            ]);
 
-        $responseBody = $response->getContent();
-        $this->logger->info('Response Body', ['responseBody' => $responseBody]);
+            $responseBody = $response->getContent();
+            $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
 
-        /** @var DocumentResponse $documentResponse */
-        $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+            $this->logger->info('Response Body', ['responseBody' => $responseBody]);
 
-        return $documentResponse;
+            /** @var DocumentResponse $documentResponse */
+            $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+
+            $sunatResponse = $documentResponse->sunatResponse;
+            $cdr = $sunatResponse->getCdrResponse();
+            $success = (bool) $sunatResponse->isSuccess();
+            $sunatCode = $cdr?->getCode() ?? '';
+            $sunatMessage = $cdr?->getDescription() ?? '';
+
+            $logContext = [
+                'sunat_code'      => $sunatCode,
+                'sunat_message'   => $sunatMessage,
+                'success'         => $success,
+                'duration_ms'     => $durationMs,
+                'tenant_id'       => $tenantId,
+                'tax_document_id' => $taxDocumentId,
+            ];
+
+            if ($success) {
+                $this->billingLogger->info('sunat.send', $logContext);
+            } else {
+                $this->billingLogger->warning('sunat.send', $logContext);
+            }
+
+            return $documentResponse;
+        } catch (\Throwable $e) {
+            $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
+
+            $this->billingLogger->error('sunat.send', [
+                'sunat_code'      => '',
+                'sunat_message'   => '',
+                'success'         => false,
+                'duration_ms'     => $durationMs,
+                'tenant_id'       => $tenantId,
+                'tax_document_id' => $taxDocumentId,
+                'exception'       => $e,
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
