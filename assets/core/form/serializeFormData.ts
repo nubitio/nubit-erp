@@ -106,7 +106,16 @@ function serializeEntityField(formData: FormRecord, field: Field): void {
     if (typeof atId === 'string') {
       formData[field.name] = getIRI(field.url ?? '', atId);
     } else {
-      formData[field.name] = getIRI(field.url ?? '', String(entityValue[field.valueField]));
+      // When the API returns plain JSON (no @id), fall back to the numeric/string
+      // `id` property before trying the configured valueField.  This covers the
+      // common case where the grid loads data without JSON-LD headers and nested
+      // objects arrive as { id: 5, name: "..." } instead of { "@id": "/api/…/5" }.
+      const idValue = entityValue['id'];
+      const resolvedId =
+        idValue !== undefined && idValue !== null
+          ? String(idValue)
+          : String(entityValue[field.valueField]);
+      formData[field.name] = getIRI(field.url ?? '', resolvedId);
     }
   }
 
@@ -120,9 +129,13 @@ function serializeEntityField(formData: FormRecord, field: Field): void {
         if (typeof item === 'object') {
           const record = item as FormRecord;
           const atId = record['@id'];
-          return typeof atId === 'string'
-            ? getIRI(field.url ?? '', atId)
-            : getIRI(field.url ?? '', String(record[field.valueField]));
+          if (typeof atId === 'string') return getIRI(field.url ?? '', atId);
+          const idValue = record['id'];
+          const resolvedId =
+            idValue !== undefined && idValue !== null
+              ? String(idValue)
+              : String(record[field.valueField]);
+          return getIRI(field.url ?? '', resolvedId);
         }
         return getIRI(field.url ?? '', String(item));
       });
@@ -192,7 +205,12 @@ export function serializeDetailRows(
           if (typeof atId === 'string') {
             detail[field.name] = getIRI(field.url ?? '', atId);
           } else {
-            detail[field.name] = getIRI(field.url ?? '', String(entityValue[field.valueField]));
+            const idValue = entityValue['id'];
+            const resolvedId =
+              idValue !== undefined && idValue !== null
+                ? String(idValue)
+                : String(entityValue[field.valueField]);
+            detail[field.name] = getIRI(field.url ?? '', resolvedId);
           }
         }
       });
