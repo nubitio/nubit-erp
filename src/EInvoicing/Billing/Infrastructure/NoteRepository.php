@@ -10,6 +10,7 @@ use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\Note;
 use Override;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -24,6 +25,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
     public function __construct(
         private SerializerInterface $serializer,
         private HttpClientInterface $httpClient,
+        private LoggerInterface $billingLogger,
         #[Autowire('%env(BILL_API_BASE_URL)%')]
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
@@ -43,15 +45,60 @@ readonly class NoteRepository implements NoteRepositoryInterface
     {
         $url = $this->apiBaseUrl . 'note/send?token=' . $this->apiToken;
         $requestBody = $this->serializer->serialize($note, 'json');
-        $response = $this->httpClient->request('POST', $url, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => $requestBody,
-        ]);
-        $responseBody = $response->getContent();
-        /** @var DocumentResponse $documentResponse */
-        $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+
+        $tenantId = $note->getCompany()?->getRuc() ?? 'unknown';
+        $taxDocumentId = $note->getName();
+
+        $start = hrtime(true);
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => $requestBody,
+            ]);
+            $responseBody = $response->getContent();
+            /** @var DocumentResponse $documentResponse */
+            $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+        } catch (\Throwable $e) {
+            $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
+            $this->billingLogger->error('sunat.send', [
+                'sunat_code'      => 'N/A',
+                'sunat_message'   => 'N/A',
+                'success'         => false,
+                'duration_ms'     => $durationMs,
+                'tenant_id'       => $tenantId,
+                'tax_document_id' => $taxDocumentId,
+                'exception'       => $e,
+            ]);
+            throw $e;
+        }
+
+        $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
+        $sunatResponse = $documentResponse->sunatResponse;
+        $success = $sunatResponse->isSuccess() ?? false;
+        $sunatCode = $sunatResponse->getError()?->getCode() ?? '';
+        $sunatMessage = $sunatResponse->getError()?->getMessage() ?? '';
+
+        if ($success) {
+            $this->billingLogger->info('sunat.send', [
+                'sunat_code'      => $sunatCode,
+                'sunat_message'   => $sunatMessage,
+                'success'         => true,
+                'duration_ms'     => $durationMs,
+                'tenant_id'       => $tenantId,
+                'tax_document_id' => $taxDocumentId,
+            ]);
+        } else {
+            $this->billingLogger->warning('sunat.send', [
+                'sunat_code'      => $sunatCode,
+                'sunat_message'   => $sunatMessage,
+                'success'         => false,
+                'duration_ms'     => $durationMs,
+                'tenant_id'       => $tenantId,
+                'tax_document_id' => $taxDocumentId,
+            ]);
+        }
 
         return $documentResponse;
     }

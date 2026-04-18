@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Billing\Infrastructure;
 
+use App\Core\Context\TenantContext;
 use App\EInvoicing\Billing\Infrastructure\BillRepository;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use Greenter\Model\Response\BillResult;
@@ -25,11 +26,15 @@ final class BillRepositoryTest extends TestCase
 {
     private SerializerInterface&Stub $serializer;
     private LoggerInterface&Stub $logger;
+    private LoggerInterface&Stub $billingLogger;
+    private TenantContext $tenantContext;
 
     protected function setUp(): void
     {
         $this->serializer = $this->createStub(SerializerInterface::class);
         $this->logger = $this->createStub(LoggerInterface::class);
+        $this->billingLogger = $this->createStub(LoggerInterface::class);
+        $this->tenantContext = new TenantContext();
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -60,7 +65,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -93,7 +100,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -116,7 +125,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -141,7 +152,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'my-token',
         );
@@ -170,7 +183,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -199,7 +214,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -226,7 +243,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'tok',
         );
@@ -264,7 +283,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'test-token',
         );
@@ -298,7 +319,9 @@ final class BillRepositoryTest extends TestCase
         $repo = new BillRepository(
             $this->serializer,
             $this->logger,
+            $this->billingLogger,
             $httpClient,
+            $this->tenantContext,
             'https://api.example.com/',
             'mytoken',
         );

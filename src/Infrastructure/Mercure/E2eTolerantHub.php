@@ -41,7 +41,7 @@ final class E2eTolerantHub implements HubInterface
                 return '';
             }
 
-            $this->logger->error('Mercure publish failed. Real-time updates will be unavailable.', [
+            $this->logger->warning('Mercure publish failed. Real-time updates will be unavailable.', [
                 'exception' => $exception,
                 'topics' => $update->getTopics(),
             ]);

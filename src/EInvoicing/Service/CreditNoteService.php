@@ -18,6 +18,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for Credit Note business logic
@@ -31,6 +32,7 @@ readonly class CreditNoteService
         private FileManager $fileManager,
         private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
+        private readonly LoggerInterface $billingLogger,
     ) {
     }
 
@@ -75,10 +77,17 @@ readonly class CreditNoteService
                 $creditNote->setCdrPath($docDir . '/R-' . $response->name . '.zip');
             } else {
                 // SUNAT did not return the CDR zip inline — attempt to fetch it via consult
+                $taxDocumentId = $creditNote->getId() ?? 'unknown';
+                $tenantId = $this->companyContext->getId();
                 try {
                     $this->consultCdr($creditNote);
-                } catch (\Throwable) {
-                    // Consult failure must not abort the send transaction
+                } catch (\Throwable $e) {
+                    $this->billingLogger->error('credit_note.send.failed', [
+                        'exception' => $e->getMessage(),
+                        'tenant_id' => $tenantId ?: 'unknown',
+                        'tax_document_id' => $taxDocumentId ?: 'unknown',
+                    ]);
+                    throw $e;
                 }
             }
         } else {

@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Uid\Uuid;
 use Throwable;
 
@@ -127,13 +127,13 @@ readonly class TenantListener
         } catch (AccessDeniedHttpException $e) {
             throw $e;
         } catch (Throwable $throwable) {
-            $this->logger->error('Tenant resolution failed', [
+            $this->logger->warning('Tenant resolution failed', [
                 'tenant' => $subdomain,
                 'host' => $host,
                 'exception' => $throwable,
             ]);
 
-            throw new BadRequestHttpException('Invalid request', $throwable);
+            throw new NotFoundHttpException('Tenant not found', $throwable);
         }
     }
 

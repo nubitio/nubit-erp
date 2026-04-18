@@ -139,7 +139,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                     }
                 ),
             )
-            ->willReturn(new Envelope(new SendInvoiceMessage($invoiceId)));
+            ->willReturn(new Envelope(new SendInvoiceMessage($invoiceId, 'test-tenant')));
 
         $processor = $this->buildProcessor();
         $processor->process($sale, new Post(), [], []);
@@ -260,6 +260,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         /** @var SaleRecordRepository&MockObject $saleRecordRepoMock */
         $saleRecordRepoMock = $this->createMock(SaleRecordRepository::class);
         $processorReflection->getProperty('saleRecordRepository')->setValue($processor, $saleRecordRepoMock);
+        $processorReflection->getProperty('tenantContext')->setValue($processor, new \App\Core\Context\TenantContext());
 
         return $processor;
     }

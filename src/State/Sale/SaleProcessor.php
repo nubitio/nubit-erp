@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
+use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
@@ -65,6 +66,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
         private CustomerRepository $customerRepository,
+        private TenantContext $tenantContext,
     ) {
     }
 
@@ -317,7 +319,10 @@ readonly class SaleProcessor implements ProcessorInterface
                     ]);
                 } else {
                     $this->messageBus->dispatch(
-                        new SendInvoiceMessage($invoiceResult['invoiceId']),
+                        new SendInvoiceMessage(
+                            $invoiceResult['invoiceId'],
+                            (string) ($this->tenantContext->getTenantId() ?? 'unknown'),
+                        ),
                         [new DispatchAfterCurrentBusStamp()]
                     );
                 }
