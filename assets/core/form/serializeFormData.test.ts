@@ -57,6 +57,25 @@ describe('serializeFormFields', () => {
     expect(result.customer).toBe('/api/customers/uuid-123');
   });
 
+  it('serializes ENTITY with _iri valueField and no @id using id fallback (plain JSON response)', () => {
+    // Hydra mapper always sets valueField to '_iri', but the grid loads data as
+    // plain JSON (no @id on nested objects). The serializer must fall back to
+    // entityValue['id'] to avoid sending "/api/categories/undefined".
+    const iriField = new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('category')
+      .url('/api/categories')
+      .valueField('_iri')
+      .label('Category')
+      .build();
+    const result = serializeFormFields(
+      { category: { id: 7, name: 'Electronics' } },
+      [iriField],
+      ctx,
+    );
+    expect(result.category).toBe('/api/categories/7');
+  });
+
   it('serializes DATE field to UTC ISO-8601', () => {
     const result = serializeFormFields(
       { issuedAt: '2024-06-15T00:00:00.000' },
