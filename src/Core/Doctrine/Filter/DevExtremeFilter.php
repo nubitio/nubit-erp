@@ -105,7 +105,7 @@ class DevExtremeFilter extends AbstractFilter
     private function isJoinField(string $field): bool
     {
         return match ($field) {
-            'invoiceFullNumber' => true,
+            'invoiceFullNumber', 'paymentMethod' => true,
             default => false,
         };
     }
@@ -140,6 +140,24 @@ class DevExtremeFilter extends AbstractFilter
             $param = $this->getUniqueParameterName($queryBuilder, 'invoiceFullNumber');
 
             $queryBuilder->andWhere(sprintf('%s %s :%s', $dqlExpr, $operator, $param));
+            $queryBuilder->setParameter($param, $filterValue);
+        }
+
+        if ('paymentMethod' === $field) {
+            // sale_payments has no direct ORM association on SaleRecord.
+            // Use a DQL subquery via the SalePayment entity.
+            $param = $this->getUniqueParameterName($queryBuilder, 'paymentMethod');
+            $operator = $this->getOperator($op);
+            $filterValue = $this->getValueForOperator($op, $value);
+
+            $subDql = sprintf(
+                'SELECT IDENTITY(sp.saleRecord) FROM %s sp WHERE sp.paymentMethod %s :%s',
+                \App\Entity\SalePayment::class,
+                $operator,
+                $param,
+            );
+
+            $queryBuilder->andWhere(sprintf('o.id IN (%s)', $subDql));
             $queryBuilder->setParameter($param, $filterValue);
         }
     }
