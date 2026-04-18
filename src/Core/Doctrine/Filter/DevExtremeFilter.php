@@ -86,6 +86,9 @@ class DevExtremeFilter extends AbstractFilter
     /**
      * Resolves a (possibly virtual) field name to its DQL expression.
      * Virtual fields are computed properties that have no direct ORM mapping.
+     *
+     * Fields that require a JOIN are handled in applyFilter() before this method
+     * is called; this method only covers fields resolvable without extra joins.
      */
     private function resolveFieldExpression(string $field): string
     {
@@ -93,6 +96,52 @@ class DevExtremeFilter extends AbstractFilter
             'fullNumber' => "CONCAT(o.series, '-', o.number)",
             default => sprintf('o.%s', $field),
         };
+    }
+
+    /**
+     * Returns true when the field requires a JOIN to an external table
+     * rather than a direct ORM property reference.
+     */
+    private function isJoinField(string $field): bool
+    {
+        return match ($field) {
+            'invoiceFullNumber' => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Applies a filter condition for a field that lives in a joined table.
+     * Adds the necessary LEFT JOIN if it has not been added yet.
+     */
+    private function applyJoinFieldFilter(
+        QueryBuilder $queryBuilder,
+        string $field,
+        string $op,
+        mixed $value,
+    ): void {
+        if ('invoiceFullNumber' === $field) {
+            // Ensure the tax_document join exists (idempotent).
+            $aliases = $queryBuilder->getAllAliases();
+            if (!in_array('td', $aliases, true)) {
+                // TaxDocument has a ManyToOne to SaleRecord via td.sale.
+                // We join TaxDocument entities where td.sale = o AND td.reasonCode IS NULL.
+                $queryBuilder->leftJoin(
+                    \App\Entity\TaxDocument::class,
+                    'td',
+                    'WITH',
+                    'td.sale = o AND td.reasonCode IS NULL'
+                );
+            }
+
+            $dqlExpr = "CONCAT(td.series, '-', td.number)";
+            $operator = $this->getOperator($op);
+            $filterValue = $this->getValueForOperator($op, $value);
+            $param = $this->getUniqueParameterName($queryBuilder, 'invoiceFullNumber');
+
+            $queryBuilder->andWhere(sprintf('%s %s :%s', $dqlExpr, $operator, $param));
+            $queryBuilder->setParameter($param, $filterValue);
+        }
     }
 
     /**
@@ -138,6 +187,11 @@ class DevExtremeFilter extends AbstractFilter
 
             $field = $filterParam[0];
             $op = $filterParam[1];
+
+            if ($this->isJoinField($field)) {
+                $this->applyJoinFieldFilter($queryBuilder, $field, $op, $filterParam[2] ?? null);
+                continue;
+            }
 
             if ('isnull' === $op || 'isnotnull' === $op) {
                 $operator = $this->getOperator($op);
