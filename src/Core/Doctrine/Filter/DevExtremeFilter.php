@@ -124,13 +124,13 @@ class DevExtremeFilter extends AbstractFilter
             // Ensure the tax_document join exists (idempotent).
             $aliases = $queryBuilder->getAllAliases();
             if (!in_array('td', $aliases, true)) {
-                // TaxDocument has a ManyToOne to SaleRecord via td.sale.
-                // We join TaxDocument entities where td.sale = o AND td.reasonCode IS NULL.
+                // TaxDocument has a ManyToOne to SaleRecord via td.saleRecord.
+                // We join TaxDocument entities where td.saleRecord = o AND td.reasonCode IS NULL.
                 $queryBuilder->leftJoin(
                     \App\Entity\TaxDocument::class,
                     'td',
                     'WITH',
-                    'td.sale = o AND td.reasonCode IS NULL'
+                    'td.saleRecord = o AND td.reasonCode IS NULL'
                 );
             }
 
