@@ -179,13 +179,13 @@ class HttpClient {
     );
   };
 
-  private async handleUnauthorizedError(originalRequest: any) {
+  private handleUnauthorizedError(originalRequest: any): Promise<any> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       this.refreshPromise = this.axiosClient
         .post(`${Constants.API_BASE_URL}auth/refresh`)
         .then(() => {
-          this.processQueue();
+          this.processQueue(null);
         })
         .catch((refreshError) => {
           this.processQueue(refreshError);
@@ -200,19 +200,19 @@ class HttpClient {
 
     return new Promise((resolve, reject) => {
       this.failedQueue.push({ resolve, reject, request: originalRequest });
-      this.refreshPromise?.catch((error) => reject(error));
     });
   }
 
-  private processQueue(error?: any) {
-    this.failedQueue.forEach(({ resolve, reject, request }) => {
+  private processQueue(error: any) {
+    const queue = this.failedQueue;
+    this.failedQueue = [];
+    queue.forEach(({ resolve, reject, request }) => {
       if (error) {
         reject(error);
       } else {
-        resolve(this.axiosClient(request));
+        this.axiosClient(request).then(resolve).catch(reject);
       }
     });
-    this.failedQueue = [];
   }
 
   private handleTokenRefreshError() {
