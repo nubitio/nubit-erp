@@ -971,8 +971,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForDxLoadPanel(page);
 
       const persistedSale = await page.evaluate(async ({ baseUrl, saleId }) => {
+        // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
         const saleResponse = await fetch(`${baseUrl}/api/sales/${saleId}`);
         const sale = await saleResponse.json();
+        // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
         const itemsResponse = await fetch(`${baseUrl}/api/sales/${saleId}/items`);
         const items = await itemsResponse.json();
         return {
