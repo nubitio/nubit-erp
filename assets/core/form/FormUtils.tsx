@@ -282,7 +282,7 @@ export const buildField = (
       dataField={field.name}
       editorType={getEditorType(field)}
       label={{ text: field.label, visible: !useFloatingEditorLabel && !shouldHideLabel }}
-      isRequired={field.required}
+      isRequired={field.visible !== false && field.required}
       editorOptions={editorOptions}
       helpText={field.helpText}
       colSpan={field.col ?? 12}
@@ -305,8 +305,8 @@ const buildTemplate = (field: Field) => {
 
 const buildValidationRules = (field: Field) => {
   // Skip validation rules for hidden fields to avoid blocking form submission
-  // when a field is conditionally hidden via visibleWhen.
-  if (!field.visibleOnForm) {
+  // when a field is conditionally hidden via visibleWhen or visible(false).
+  if (!field.visibleOnForm || field.visible === false) {
     return [];
   }
 
