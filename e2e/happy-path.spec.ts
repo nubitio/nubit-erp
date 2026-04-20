@@ -758,6 +758,15 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 7 — Registrar venta en módulo Ventas
   // ───────────────────────────────────────────────────────────────────────────
   test('07 - Registrar venta en módulo Ventas', async () => {
+    await test.step('Asegurar caja abierta (prerequisito)', async () => {
+      // Test 07 may run in isolation (e.g. --grep "07") without test 04 having opened the cash register.
+      // recoverCashShiftId opens the register if closed, or recovers the ID if already open.
+      if (!openedCashShiftId) {
+        openedCashShiftId = await recoverCashShiftId(page);
+      }
+      expect(openedCashShiftId, 'debe haber una caja abierta para registrar ventas').not.toBeNull();
+    });
+
     await test.step('Navegar a /#/sale', async () => {
       await gotoProtectedRoute(page, 'sale');
       await waitForDxLoadPanel(page);
@@ -771,6 +780,50 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo/i }).last()).toBeVisible({
         timeout: 12000,
       });
+    });
+
+    await test.step('Seleccionar almacén si es visible', async () => {
+      // The Almacen field renders in the form (visibleOnForm defaults to true).
+      // We explicitly select the first warehouse to avoid async autoSelectIfSingle timing issues.
+      // Try multiple selector strategies to find the Almacen dropdown.
+      const almacenDropdownBtn = page.locator(
+        '.dx-popup-content .dx-selectbox[aria-label="Almacen"] .dx-dropdowneditor-button,' +
+        '.dx-popup-content input[aria-label="Almacen"] ~ .dx-dropdowneditor-button,' +
+        '.dx-popup-content .dx-field-item-label-text:has-text("Almacen") ~ .dx-field-item-content .dx-dropdowneditor-button'
+      ).first();
+
+      // Simpler: find the DX select widget that contains the label "Almacen"
+      const almacenInput = page.locator('.dx-popup-content input[aria-label="Almacen"]').first();
+      const almacenVisible = await almacenInput.isVisible({ timeout: 3000 }).catch(() => false);
+
+      if (almacenVisible) {
+        const currentVal = await almacenInput.inputValue().catch(() => '');
+        if (currentVal.trim().length === 0) {
+          // Click the input to focus, then open the dropdown via ArrowDown or dropdown button
+          await almacenInput.click();
+          await page.keyboard.press('ArrowDown');
+          const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
+          await firstOption.waitFor({ state: 'visible', timeout: 8000 });
+          await firstOption.click();
+          await page.waitForTimeout(300);
+        }
+      } else {
+        // Try finding by label text in the form item
+        const almacenItem = page.locator('.dx-popup-content .dx-field-item').filter({
+          hasText: 'Almacen',
+        }).first();
+        const itemVisible = await almacenItem.isVisible({ timeout: 2000 }).catch(() => false);
+        if (itemVisible) {
+          const ddBtn = almacenItem.locator('.dx-dropdowneditor-button').first();
+          await ddBtn.click({ timeout: 5000 }).catch(() => {});
+          const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
+          const optionVisible = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
+          if (optionVisible) {
+            await firstOption.click();
+            await page.waitForTimeout(300);
+          }
+        }
+      }
     });
 
     await test.step('Agregar producto al detalle de la venta', async () => {
@@ -794,52 +847,118 @@ test.describe('Happy Path — flujo completo de venta', () => {
           break;
         }
       }
+      // Wait for any open overlays (e.g. Almacen dropdown) to fully close before interacting with the grid
+      await page.locator('.dx-overlay-content .dx-list-item').first().waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
       const productCell = insertedRow.locator('td').nth(0);
       await productCell.click({ force: true });
 
-      const productInput = productCell
-        .locator('input[role="combobox"], input.dx-texteditor-input')
-        .last();
-      await productInput.waitFor({ state: 'visible', timeout: 5000 });
-      await productInput.click({ clickCount: 3 });
-      await productInput.fill(SEED_PRODUCT_NAME);
+      // Wait for the cell editor to activate (DX renders the editor after cell click)
+      await page.waitForTimeout(300);
+
+      // Click the dropdown button to open the product list
+      const productDropdownBtn = productCell.locator('.dx-dropdowneditor-button').first();
+      const hasDdBtn = await productDropdownBtn.isVisible({ timeout: 2000 }).catch(() => false);
+      if (hasDdBtn) {
+        await productDropdownBtn.click();
+      } else {
+        // Fallback: click the input to focus it
+        const productInput = productCell.locator('input[role="combobox"], input.dx-texteditor-input').last();
+        await productInput.waitFor({ state: 'visible', timeout: 5000 });
+        await productInput.click({ clickCount: 3 });
+      }
+
+      // Wait for a visible overlay list item to appear (product dropdown opened)
+      await page.waitForFunction(
+        () => {
+          const items = document.querySelectorAll('.dx-overlay-content .dx-list-item');
+          return Array.from(items).some((el) => (el as HTMLElement).offsetParent !== null);
+        },
+        undefined,
+        { timeout: 8000 },
+      );
+
+      // Type to filter for the seed product
+      const productInput = productCell.locator('input[role="combobox"], input.dx-texteditor-input').last();
+      await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
       salesModuleProductName = SEED_PRODUCT_NAME;
 
       const seedProductOption = page.locator('.dx-overlay-content .dx-list-item').filter({
         hasText: SEED_PRODUCT_NAME,
       });
-      await seedProductOption.first().waitFor({ state: 'visible', timeout: 10000 });
-      await page.keyboard.press('ArrowDown');
-      await page.keyboard.press('Enter');
-      await page.keyboard.press('Tab');
+      await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
+      await seedProductOption.first().click();
 
-      await expect(insertedRow.locator('td').nth(0)).toContainText(salesModuleProductName, {
-        timeout: 10000,
-      });
-      const priceText = await insertedRow.locator('td').nth(2).textContent();
-      const totalText = await insertedRow.locator('td').nth(3).textContent();
+      // Tab through remaining cells (qty, price) to trigger DX cell commit,
+      // then click outside the grid to commit the entire inserted row.
+      await page.keyboard.press('Tab'); // qty cell
+      await page.keyboard.press('Tab'); // price cell
+      await page.keyboard.press('Tab'); // exit grid
+
+      // Blur the grid so DX commits the inserted row.
+      await noteInput.click();
+      await insertedRow.waitFor({ state: 'hidden', timeout: 10000 });
+
+      // After commit the row is a normal dx-data-row — find it by product name.
+      const committedRow = page
+        .locator('#form-detail-grid tr.dx-data-row')
+        .filter({ hasText: salesModuleProductName })
+        .first();
+      await committedRow.waitFor({ state: 'visible', timeout: 8000 });
+      const priceText = await committedRow.locator('td').nth(2).textContent();
+      const totalText = await committedRow.locator('td').nth(3).textContent();
       expect(Number((priceText ?? '').replace(/[^\d.-]/g, ''))).toBeGreaterThan(0);
       expect(Number((totalText ?? '').replace(/[^\d.-]/g, ''))).toBeGreaterThan(0);
-
-      // El formulario aborta el guardado si el detail grid aún tiene edición activa.
-      // Hacemos blur fuera del grid para que DX confirme la fila recién insertada.
-      await noteInput.click();
-      await page.waitForTimeout(400);
-      await insertedRow.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
     });
 
     await test.step('Guardar y verificar persistencia de la venta', async () => {
+      // Capture console errors to diagnose silent save failures
+      const consoleErrors: string[] = [];
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') consoleErrors.push(msg.text());
+      });
+
       const createSaleResponsePromise = page.waitForResponse(
         (response) => /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
         { timeout: 15000 },
       );
 
       const saleDialog = page.getByRole('dialog', { name: 'Nuevo' }).last();
-      await saleDialog.getByRole('button', { name: 'Guardar' }).click();
 
-      const createSaleResponse = await createSaleResponsePromise;
+      // Ensure the detail grid has no pending edit data before saving.
+      // DX may keep hasEditData()=true briefly after the row visually commits.
+      // Pressing Escape on the grid explicitly cancels any lingering edit state.
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+
+      // Watch for a toast that would indicate silent validation failure
+      const toastPromise = page.locator('.dx-toast-message, [class*="toast"]').first().waitFor({
+        state: 'visible',
+        timeout: 3000,
+      }).then((el) => el.textContent()).catch(() => null);
+
+      // Click the save button — use page-level locator since DX renders toolbar
+      // items outside the dialog's DOM subtree in some versions.
+      await page.locator('button.dialog-save-button, .dx-popup-bottom .dx-button').last().click({ force: true });
+
+      const toastText = await toastPromise;
+      if (toastText) {
+        // eslint-disable-next-line no-console
+        console.log('[E2E] Toast after save click:', toastText);
+      }
+
+      const createSaleResponse = await createSaleResponsePromise.catch(async (err) => {
+        // eslint-disable-next-line no-console
+        console.error('[E2E] POST /api/sales never fired. Console errors:', consoleErrors);
+        throw err;
+      });
+      if (!createSaleResponse.ok()) {
+        const body = await createSaleResponse.text().catch(() => '(unreadable)');
+        // eslint-disable-next-line no-console
+        console.error('[E2E] POST /api/sales failed:', createSaleResponse.status(), body);
+      }
       expect(createSaleResponse.ok(), 'la venta en /sale debe responder 2xx').toBeTruthy();
 
       const createdSale = (await createSaleResponse.json()) as { id?: string | null };
