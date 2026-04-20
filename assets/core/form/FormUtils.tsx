@@ -306,7 +306,7 @@ const buildTemplate = (field: Field) => {
 const buildValidationRules = (field: Field) => {
   // Skip validation rules for hidden fields to avoid blocking form submission
   // when a field is conditionally hidden via visibleWhen or visible(false).
-  if (!field.visibleOnForm || field.visible === false) {
+  if (field.visibleOnForm === false || field.visible === false) {
     return [];
   }
 
