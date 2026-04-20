@@ -15,8 +15,10 @@ use App\Repository\BranchRepository;
 use App\Repository\TaxDocumentRepository;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineInput;
+use App\State\Sale\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -25,6 +27,18 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 readonly class TaxDocumentProcessor implements ProcessorInterface
 {
+    /**
+     * Reason codes that represent a full cancellation of the affected document.
+     * When a credit note is created with one of these codes, the linked sale is
+     * automatically marked as VOIDED (same behaviour as a Comunicación de Baja).
+     *
+     * SUNAT catalog 09:
+     *   01 — Anulación de la operación
+     *   02 — Anulación por error en el RUC
+     *   06 — Devolución total
+     */
+    private const VOID_REASON_CODES = ['01', '02', '06'];
+
     /**
      * @param ProcessorInterface<mixed, mixed> $persistProcessor
      * @param ProcessorInterface<mixed, mixed> $removeProcessor
@@ -37,6 +51,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private TaxDocumentRepository $taxDocumentRepository,
+        private SalesWriteGateway $salesWriteGateway,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -105,6 +121,11 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+        // If this is a new credit note with a void reason code, mark the linked sale as VOIDED.
+        if ($isNew && $data->getReasonCode() !== null) {
+            $this->voidSaleIfCreditNoteAnnuls($data);
+        }
 
         return $result;
     }
@@ -247,5 +268,37 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         $data->setDiscountAmount($amounts->getDiscountAmount());
 
         return;
+    }
+
+    /**
+     * When a credit note annuls the affected document (reason codes 01, 02, 06),
+     * mark the linked SaleRecord as VOIDED — both in the ORM entity and in the
+     * sales V2 table — mirroring what SaleVoidUseCase does for Comunicación de Baja.
+     */
+    private function voidSaleIfCreditNoteAnnuls(TaxDocument $creditNote): void
+    {
+        if (!in_array($creditNote->getReasonCode(), self::VOID_REASON_CODES, true)) {
+            return;
+        }
+
+        $saleRecord = $creditNote->getSaleRecord();
+        if ($saleRecord === null) {
+            return;
+        }
+
+        if ($saleRecord->getStatus() === 'VOIDED') {
+            return;
+        }
+
+        $now = new \DateTimeImmutable();
+        $saleRecord->setStatus('VOIDED');
+        $saleRecord->setDateUpdated($now);
+        $this->entityManager->flush();
+
+        try {
+            $this->salesWriteGateway->markVoided($saleRecord, 'Nota de crédito: ' . $creditNote->getFullNumber());
+        } catch (\Throwable) {
+            // V2 sync failure is non-fatal here; the ORM entity is already updated.
+        }
     }
 }
