@@ -191,7 +191,7 @@ jobs:
 
       - name: Run Playwright e2e tests
         run: |
-          docker compose --profile e2e run --rm \
+          docker compose --profile e2e run --rm --no-deps \
             -e E2E_USERNAME \
             -e E2E_PASSWORD \
             -e E2E_SALE_ID \
