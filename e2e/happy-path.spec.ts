@@ -934,10 +934,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await page.waitForTimeout(300);
 
       // Watch for a toast that would indicate silent validation failure
-      const toastPromise = page.locator('.dx-toast-message, [class*="toast"]').first().waitFor({
-        state: 'visible',
-        timeout: 3000,
-      }).then((el) => el.textContent()).catch(() => null);
+      const toastLocator = page.locator('.dx-toast-message, [class*="toast"]').first();
+      const toastPromise = toastLocator.waitFor({ state: 'visible', timeout: 3000 })
+        .then(() => toastLocator.textContent())
+        .catch(() => null);
 
       // Click the save button — use page-level locator since DX renders toolbar
       // items outside the dialog's DOM subtree in some versions.
