@@ -307,7 +307,10 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     // For id mode: extracts UUID via split('/').pop().
     // Skip when formatter is set — formatters own rendering entirely.
     const entityCellValue =
-      field.type === FieldType.ENTITY && !field.formatter
+      field.type === FieldType.ENTITY &&
+      !field.formatter &&
+      field.valueField !== '_iri' &&
+      field.valueField !== '@id'
         ? buildEntityCellValue(field)
         : undefined;
 
