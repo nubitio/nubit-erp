@@ -118,6 +118,22 @@ jobs:
       - name: Start full stack
         run: docker compose up -d database redis otel-collector web vite
 
+      - name: Wait for web to be healthy
+        run: |
+          echo "Waiting for web container to pass health check..."
+          for i in $(seq 1 24); do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' efact-web 2>/dev/null || echo "missing")
+            echo "  attempt $i/24: $STATUS"
+            if [ "$STATUS" = "healthy" ]; then
+              echo "web is healthy."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "web did not become healthy in time."
+          docker compose logs web | tail -40
+          exit 1
+
       - name: Provision tenant database for e2e
         run: |
           docker compose exec -T database sh -lc "until mariadb-admin ping -h127.0.0.1 -uroot -pchangeme --silent; do sleep 1; done"
