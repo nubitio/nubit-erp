@@ -223,7 +223,10 @@ final class SendInvoiceMessageHandlerTest extends TestCase
             $caught = $e;
         }
 
-        $this->assertSame($original, $caught,
-            'The exact original exception instance must be re-thrown by the handler');
+        $this->assertSame(
+            $original,
+            $caught,
+            'The exact original exception instance must be re-thrown by the handler'
+        );
     }
 }

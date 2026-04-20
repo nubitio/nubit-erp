@@ -92,7 +92,5 @@ final readonly class CspNonceListener
                 "worker-src 'self' blob:",
             ])
         );
-
-
     }
 }
