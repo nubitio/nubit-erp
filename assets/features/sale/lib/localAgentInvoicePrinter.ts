@@ -1,3 +1,4 @@
+import { exceptionalFetch } from '@shared/api/network';
 import { saleService } from '../services/saleService';
 import type { InvoicePrinter } from './invoicePrinter';
 
@@ -24,7 +25,7 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
   const initialize = async (): Promise<void> => {
     let ok = false;
     try {
-      const res = await fetch(`${AGENT_BASE_URL}/health`, { mode: 'cors' });
+      const res = await exceptionalFetch(`${AGENT_BASE_URL}/health`, { mode: 'cors' }, 'sdk-required');
       ok = res.ok;
     } catch {
       // network error → agent not running
@@ -39,12 +40,12 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
 
     let res: Response;
     try {
-      res = await fetch(`${AGENT_BASE_URL}/print`, {
+      res = await exceptionalFetch(`${AGENT_BASE_URL}/print`, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/octet-stream' },
         body: response,
-      });
+      }, 'sdk-required');
     } catch {
       throw new LocalAgentNotAvailableError();
     }
