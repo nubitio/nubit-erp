@@ -46,6 +46,12 @@ services:
       MERCURE_URL: 'http://mercure/.well-known/mercure'
       MERCURE_PUBLIC_URL: '${MERCURE_PUBLIC_URL:-http://demo.localhost:8080/.well-known/mercure}'
       MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}'
+    healthcheck:
+      test: ['CMD', 'curl', '-sf', 'http://localhost/health/live']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.145.0
@@ -115,8 +121,10 @@ services:
       # the isolated test environment so the seed endpoint touches demo_test only.
       APP_ENV: 'test'
     depends_on:
-      - web
-      - database
+      web:
+        condition: service_healthy
+      database:
+        condition: service_started
     profiles:
       - e2e
 
