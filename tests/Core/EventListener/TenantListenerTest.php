@@ -13,8 +13,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class TenantListenerTest extends TestCase
@@ -150,10 +148,15 @@ final class TenantListenerTest extends TestCase
 
         $this->switcher->expects($this->never())->method('switchConnection');
 
-        $this->expectException(AccessDeniedHttpException::class);
-        $this->expectExceptionMessage('Service temporarily unavailable');
+        $event = $this->createEvent('acme.example.com');
+        ($this->listener)($event);
 
-        ($this->listener)($this->createEvent('acme.example.com'));
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(403, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $this->assertFalse($body['success']);
+        $this->assertSame('Service temporarily unavailable', $body['message']);
     }
 
     public function testActiveTenantIsAllowed(): void
@@ -175,10 +178,15 @@ final class TenantListenerTest extends TestCase
         $this->tenantManager->method('getTenantByName')
             ->willThrowException(new \RuntimeException('Tenant not found'));
 
-        $this->expectException(NotFoundHttpException::class);
-        $this->expectExceptionMessage('Tenant not found');
+        $event = $this->createEvent('secret-tenant.example.com');
+        ($this->listener)($event);
 
-        ($this->listener)($this->createEvent('secret-tenant.example.com'));
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(404, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $this->assertFalse($body['success']);
+        $this->assertSame('Tenant not found', $body['message']);
     }
 
     public function testSetsRequestIdFromHeader(): void
