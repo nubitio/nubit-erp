@@ -9,9 +9,10 @@ use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Uid\Uuid;
 use Throwable;
 
@@ -125,15 +126,21 @@ readonly class TenantListener
             $this->tenantContext->setTenant($tenantId, $tenantName, $host, $requestId);
             $this->setTraceAttributes($tenantId, $tenantName, $host, $requestId);
         } catch (AccessDeniedHttpException $e) {
-            throw $e;
+            $event->setResponse(new JsonResponse(
+                ['success' => false, 'message' => $e->getMessage()],
+                Response::HTTP_FORBIDDEN,
+            ));
         } catch (Throwable $throwable) {
             $this->logger->warning('Tenant resolution failed', [
                 'tenant' => $subdomain,
                 'host' => $host,
-                'exception' => $throwable,
+                'exception' => $throwable->getMessage(),
             ]);
 
-            throw new NotFoundHttpException('Tenant not found', $throwable);
+            $event->setResponse(new JsonResponse(
+                ['success' => false, 'message' => 'Tenant not found'],
+                Response::HTTP_NOT_FOUND,
+            ));
         }
     }
 
