@@ -537,7 +537,9 @@ readonly class DashboardRepository
                 s.id AS id,
                 DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
                 COALESCE(pm.name, 'Sin método') AS payment_method,
-                s.grand_total AS total
+                s.grand_total AS total,
+                s.serie AS series,
+                s.numero AS number
             FROM sales s
                 LEFT JOIN sale_payments sp ON sp.sale_id = s.id
                 LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
@@ -583,6 +585,8 @@ readonly class DashboardRepository
             'issuedAt' => $row['issued_at'],
             'paymentMethod' => $row['payment_method'],
             'total' => (float) $row['total'],
+            'series' => $row['series'] ?? null,
+            'number' => $row['number'] ?? null,
         ], $recentSalesToday);
         $payload['meta'] = $this->buildMeta('lite', $failedSegments);
 
