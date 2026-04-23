@@ -15,7 +15,7 @@ final class JWTTenantBindingTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->jwtManager = new JWTManager('test-secret-key-for-unit-tests', new NullLogger());
+        $this->jwtManager = new JWTManager('test-secret-key-for-unit-tests-32b', new NullLogger());
     }
 
     public function testTokenContainsTenantClaims(): void

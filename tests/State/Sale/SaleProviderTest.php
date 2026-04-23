@@ -103,8 +103,8 @@ class SaleProviderTest extends TestCase
 
         $filter = $ctx['filters']['filter'] ?? null;
         $this->assertIsArray($filter);
-        // Sale filters: numero > 0 AND tipo_id = 2
-        $this->assertContains(['numero', '>', 0], $filter);
+        // Sale filters: number > 0 AND tipo_id = 2
+        $this->assertContains(['number', '>', 0], $filter);
         $this->assertContains(['tipo_id', '=', 2], $filter);
     }
 
@@ -115,7 +115,7 @@ class SaleProviderTest extends TestCase
 
         $filter = $ctx['filters']['filter'] ?? null;
         $this->assertIsArray($filter);
-        $this->assertContains(['numero', '>', 0], $filter);
+        $this->assertContains(['number', '>', 0], $filter);
     }
 
     // ── item operation ────────────────────────────────────────────────────────

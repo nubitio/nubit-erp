@@ -41,7 +41,7 @@ class VoucherSeries
 
     #[Groups(['voucher_series:read'])]
     #[ApiProperty(description: 'voucher_series.series.label')]
-    #[ORM\Column(name: 'serie', length: 6)]
+    #[ORM\Column(name: 'series', length: 6)]
     private string $series;
 
     #[Groups(['voucher_series:read'])]
