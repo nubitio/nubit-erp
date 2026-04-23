@@ -30,7 +30,7 @@ readonly class SaleUtils
         $series = $this->connection->fetchOne(
             '
             select
-                serie
+                series
             from local_comprobante lc
             inner join almacen a on a.local_id = lc.local_id
             where tipo_comprobante_id = ?
@@ -54,14 +54,14 @@ readonly class SaleUtils
         $this->connection->beginTransaction();
         try {
             $this->connection->executeStatement(
-                'INSERT INTO sale_sequences (serie, last_number) VALUES (:serie, 1)
+                'INSERT INTO sale_sequences (series, last_number) VALUES (:series, 1)
                  ON DUPLICATE KEY UPDATE last_number = last_number + 1',
-                ['serie' => $series]
+                ['series' => $series]
             );
             /** @var false|string $number */
             $number = $this->connection->fetchOne(
-                'SELECT last_number FROM sale_sequences WHERE serie = :serie',
-                ['serie' => $series]
+                'SELECT last_number FROM sale_sequences WHERE series = :series',
+                ['series' => $series]
             );
             $this->connection->commit();
         } catch (\Throwable $e) {

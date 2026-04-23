@@ -239,15 +239,15 @@ class SaleRecord
     #[ApiProperty(description: 'sale_record.discount_percent.label')]
     private ?string $discountPercent = null;
 
-    #[ORM\Column(name: 'serie', type: 'string', length: 10, nullable: true)]
+    #[ORM\Column(name: 'series', type: 'string', length: 10, nullable: true)]
     #[Groups(['sale:read'])]
-    #[ApiProperty(description: 'sale_record.serie.label')]
-    private ?string $serie = null;
+    #[ApiProperty(description: 'sale_record.series.label')]
+    private ?string $series = null;
 
-    #[ORM\Column(name: 'numero', type: 'string', length: 20, nullable: true)]
+    #[ORM\Column(name: 'number', type: 'string', length: 20, nullable: true)]
     #[Groups(['sale:read'])]
-    #[ApiProperty(description: 'sale_record.numero.label')]
-    private ?string $numero = null;
+    #[ApiProperty(description: 'sale_record.number.label')]
+    private ?string $number = null;
 
     // ── Write-only transient fields ───────────────────────────────────────────
 
@@ -736,24 +736,24 @@ class SaleRecord
 
     public function getSerie(): ?string
     {
-        return $this->serie;
+        return $this->series;
     }
 
     public function setSerie(?string $serie): static
     {
-        $this->serie = $serie;
+        $this->series = $serie;
 
         return $this;
     }
 
     public function getNumero(): ?string
     {
-        return $this->numero;
+        return $this->number;
     }
 
     public function setNumero(?string $numero): static
     {
-        $this->numero = $numero;
+        $this->number = $numero;
 
         return $this;
     }

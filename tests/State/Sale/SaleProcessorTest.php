@@ -1240,7 +1240,7 @@ final class SaleProcessorTest extends TestCase
         $jwtManagerRc = new ReflectionClass(\App\Core\Security\Auth\JWTManager::class);
         /** @var \App\Core\Security\Auth\JWTManager $jwtManager */
         $jwtManager = $jwtManagerRc->newInstanceWithoutConstructor();
-        $jwtManagerRc->getProperty('secret')->setValue($jwtManager, 'test-secret-for-unit-tests');
+        $jwtManagerRc->getProperty('secret')->setValue($jwtManager, 'test-secret-for-unit-tests-32bytes');
         $jwtManagerRc->getProperty('logger')->setValue($jwtManager, $this->logger);
 
         // 2. Encode a JWT that contains the branchId

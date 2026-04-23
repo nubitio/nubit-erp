@@ -58,7 +58,7 @@ readonly class SaleProvider implements ProviderInterface
         $context = $this->addSort($context, 'date_created', 'desc');
 
         $context = $this->addFilters($context, [
-            ['numero', 'isnull', null],
+            ['number', 'isnull', null],
             'and',
             ['tipo_id', '=', 1],
         ]);
@@ -77,7 +77,7 @@ readonly class SaleProvider implements ProviderInterface
         $context = $this->addSort($context, 'date_created', 'desc');
 
         $context = $this->addFilters($context, [
-            ['numero', 'isnull', null],
+            ['number', 'isnull', null],
             'and',
             ['tipo_id', '=', 2],
         ]);
@@ -96,7 +96,7 @@ readonly class SaleProvider implements ProviderInterface
         $context = $this->addSort($context, 'date_created', 'desc');
 
         $context = $this->addFilters($context, [
-            ['numero', '>', 0],
+            ['number', '>', 0],
             'and',
             ['tipo_id', '=', 2],
         ]);

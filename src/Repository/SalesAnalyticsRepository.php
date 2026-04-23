@@ -69,8 +69,8 @@ SELECT
          THEN CONCAT(td.series, '-', td.number)
          ELSE NULL
     END                                                      AS invoice,
-    td.series                                                AS serie,
-    td.number                                                AS numero
+    td.series                                                AS series,
+    td.number                                                AS number
 FROM sales s
 LEFT JOIN tax_document td
        ON td.movimiento_id = s.id
@@ -93,8 +93,8 @@ SQL,
                 (float) $row['total'],
                 $issuedAt,
                 isset($row['invoice']) ? (string) $row['invoice'] : null,
-                isset($row['serie']) ? (string) $row['serie'] : null,
-                isset($row['numero']) ? (string) $row['numero'] : null,
+                isset($row['series']) ? (string) $row['series'] : null,
+                isset($row['number']) ? (string) $row['number'] : null,
             );
         }, $rows);
     }

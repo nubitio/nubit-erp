@@ -164,8 +164,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => 'F001',
-            'numero' => '42',
+            'series' => 'F001',
+            'number' => '42',
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -201,8 +201,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => '',
-            'numero' => '',
+            'series' => '',
+            'number' => '',
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -237,8 +237,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -276,8 +276,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -319,8 +319,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '0.00',  // tax_total = 0 → fall back to settings
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -357,8 +357,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '18.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -395,8 +395,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '18.00',  // 18/100 * 100 = 18%
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $connection = $this->createMock(Connection::class);
@@ -433,8 +433,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '18.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $itemRow = [
@@ -485,8 +485,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '18.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $itemRow = [
@@ -531,8 +531,8 @@ final class SaleV2LoaderTest extends TestCase
             'tax_total' => '18.00',
             'issued_at' => null,
             'created_at' => null,
-            'serie' => null,
-            'numero' => null,
+            'series' => null,
+            'number' => null,
         ];
 
         $itemRow = [
