@@ -10,5 +10,14 @@
       "enabled": true,
       "type": "local"
     }
+  },
+  "mcpServers": {
+    "spex-state": {
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "command": "spex"
+    }
   }
 }
