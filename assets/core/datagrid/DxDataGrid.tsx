@@ -450,7 +450,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
               <Button
                 text={t('grid.buttonNew')}
                 type="default"
-                stylingMode="outlined"
+                stylingMode="contained"
                 onClick={onAddClick}
                 disabled={options.addDisabled ?? false}
               />

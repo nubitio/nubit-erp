@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
+    "@fontsource/syne": "^5.2.7",
     "@fontsource/ubuntu": "^5.2.8",
     "@phosphor-icons/web": "^2.1.2",
     "@tailwindcss/postcss": "^4.2.1",

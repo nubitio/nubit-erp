@@ -8,6 +8,15 @@
 
   .header-title {
     min-width: 250px !important;
+
+    // Brand touch: Syne for the company/location name in the header
+    .dx-toolbar-item-content {
+      font-family: 'Syne', var(--font-family-sans);
+      font-weight: 700;
+      font-size: var(--font-size-md);
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
   }
 
   .dx-toolbar.header-toolbar {
