@@ -121,6 +121,7 @@ export const SideNavOuterToolbar = ({
         title={title}
       />
       <Drawer
+        key={isLarge ? 'drawer-large' : 'drawer-small'}
         className={['drawer layout-body', patchCssClass].join(' ')}
         position="before"
         closeOnOutsideClick={onOutsideClick}

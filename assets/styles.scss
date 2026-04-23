@@ -87,15 +87,6 @@ samp {
   font-family: var(--font-family-mono);
 }
 
-::selection {
-  background: var(--focus-ring-color);
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
-}
-
 .header-text {
   @include header();
 }
@@ -292,11 +283,6 @@ samp {
       border-color: var(--accent-color) !important;
       box-shadow: 0 0 0 2px var(--focus-ring-color) !important;
     }
-  }
-
-  &.dx-state-focused:not(.dx-editor-underlined) {
-    border-color: var(--accent-color) !important;
-    box-shadow: 0 0 0 2px var(--focus-ring-color) !important;
   }
 
   .dx-texteditor-container,

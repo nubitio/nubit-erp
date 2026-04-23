@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "spex-state": {
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "command": "spex"
+    }
+  }
+}

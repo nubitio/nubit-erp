@@ -162,7 +162,7 @@
 @mixin toolbar-panel() {
   background-color: color-mix(in srgb, var(--surface-1) 92%, transparent);
   padding: 6px var(--content-padding);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
   box-shadow: var(--shadow-sm);
 }
