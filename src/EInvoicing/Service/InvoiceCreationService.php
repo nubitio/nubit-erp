@@ -134,7 +134,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             }
 
             $series = $connection->fetchOne(
-                'SELECT serie
+                'SELECT series
                         FROM local_comprobante
                         WHERE local_id = :localId
                           AND tipo_comprobante_id = :voucherType
