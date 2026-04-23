@@ -35,7 +35,7 @@
 
       // Selected item
       .dx-treeview-item-without-checkbox.dx-state-selected > .dx-treeview-item {
-        background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+        background: color-mix(in srgb, var(--accent-color) 18%, transparent);
         color: var(--accent-color);
         font-weight: var(--font-weight-semibold);
         border-left: 3px solid var(--accent-color);

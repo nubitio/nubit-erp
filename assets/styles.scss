@@ -270,6 +270,41 @@ samp {
   font-family: 'Inter', sans-serif;
 }
 
+/* ── TextEditor / Input — consistent rounded borders ── */
+.dx-texteditor {
+  border-radius: var(--radius-sm) !important;
+
+  &.dx-editor-outlined,
+  &.dx-editor-filled,
+  &.dx-editor-underlined {
+    border-radius: var(--radius-sm) !important;
+  }
+
+  // Normalise underlined variant to full-border (matches outlined siblings)
+  &.dx-editor-underlined {
+    border: 1px solid var(--border-color) !important;
+
+    &::after {
+      display: none !important; // hide the animated bottom-line
+    }
+
+    &.dx-state-focused {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 0 2px var(--focus-ring-color) !important;
+    }
+  }
+
+  &.dx-state-focused:not(.dx-editor-underlined) {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px var(--focus-ring-color) !important;
+  }
+
+  .dx-texteditor-container,
+  .dx-texteditor-input-container {
+    border-radius: inherit !important;
+  }
+}
+
 .dx-theme-fluent {
   .dx-widget {
     font-family: var(--font-family-sans);
