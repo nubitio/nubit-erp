@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Onboarding\Payment;
 
-use App\Onboarding\Payment\BillingCycle;
-use App\Onboarding\Payment\PayPalGateway;
+use App\ControlPlane\Subscription\Payment\BillingCycle;
+use App\ControlPlane\Subscription\Payment\PayPalGateway;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -270,7 +270,7 @@ final class PayPalGatewayTest extends TestCase
 
         $status = $gateway->getSubscriptionStatus('I-123');
 
-        self::assertSame(\App\Onboarding\Payment\SubscriptionStatus::Active, $status);
+        self::assertSame(\App\ControlPlane\Subscription\Payment\SubscriptionStatus::Active, $status);
     }
 
     /**

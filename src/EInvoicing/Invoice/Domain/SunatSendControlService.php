@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Invoice\Domain;
 
 use App\Core\Service\SettingsService;
-use App\Core\Service\TenantNotificationService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\Core\Util\Constants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;

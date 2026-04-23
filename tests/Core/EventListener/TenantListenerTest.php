@@ -6,8 +6,8 @@ namespace App\Tests\Core\EventListener;
 
 use App\Core\Context\TenantContext;
 use App\Core\EventListener\TenantListener;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;

@@ -6,5 +6,10 @@
     <rule ref="rulesets/controversial.xml"/>
     <rule ref="rulesets/design.xml"/>
     <rule ref="rulesets/naming.xml"/>-->
-    <rule ref="rulesets/unusedcode.xml"/>
+    <rule ref="rulesets/unusedcode.xml">
+        <!-- UnusedFormalParameter generates false positives for required callback
+             signatures (e.g. Process::run, event listeners, interface implementations).
+             PHPStan already catches genuinely unused parameters at a stricter level. -->
+        <exclude name="UnusedFormalParameter"/>
+    </rule>
 </ruleset>

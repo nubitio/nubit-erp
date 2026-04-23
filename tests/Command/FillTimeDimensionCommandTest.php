@@ -6,8 +6,8 @@ namespace App\Tests\Command;
 
 use App\Command\FillTimeDimensionCommand;
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Service\TimeDimensionSeeder;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

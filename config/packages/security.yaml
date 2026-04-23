@@ -7,7 +7,7 @@ security:
     providers:
         users_in_memory: { memory: null }
         control_plane_admin_provider:
-            id: App\Core\Security\Auth\ControlPlaneUserProvider
+            id: App\ControlPlane\Admin\Security\ControlPlaneUserProvider
         user_provider:
             id: App\Core\Security\Auth\UserProvider
     role_hierarchy:

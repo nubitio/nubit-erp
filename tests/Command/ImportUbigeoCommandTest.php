@@ -6,8 +6,8 @@ namespace App\Tests\Command;
 
 use App\Command\ImportUbigeoCommand;
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Service\UbigeoImportService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

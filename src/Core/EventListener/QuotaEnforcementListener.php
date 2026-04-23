@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantQuotaService;
+use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\Entity\Branch;
 use App\Entity\Customer;
 use App\Entity\Product;

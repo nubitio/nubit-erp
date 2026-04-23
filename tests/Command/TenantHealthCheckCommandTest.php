@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Command;
 
-use App\Command\TenantHealthCheckCommand;
+use App\ControlPlane\Tenant\Command\TenantHealthCheckCommand;
 use App\Core\Doctrine\DBAL\TenantConnection;
-use App\Core\Service\TenantHealthChecker;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantHealthChecker;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;

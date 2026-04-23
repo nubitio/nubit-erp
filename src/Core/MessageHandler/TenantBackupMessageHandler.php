@@ -6,7 +6,7 @@ namespace App\Core\MessageHandler;
 
 use App\Core\Audit\AuditLogger;
 use App\Core\Message\TenantBackupMessage;
-use App\Core\Service\TenantBackupService;
+use App\ControlPlane\Tenant\Service\TenantBackupService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Command;
 
-use App\Command\TenantSchemaAuditCommand;
+use App\ControlPlane\Tenant\Command\TenantSchemaAuditCommand;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 

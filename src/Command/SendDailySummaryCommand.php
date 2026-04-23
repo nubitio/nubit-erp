@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Core\Service\TenantNotificationService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use Override;
 use DateTimeImmutable;
 use DateTimeZone;
