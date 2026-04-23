@@ -6,8 +6,8 @@ namespace App\Core\Application\Command;
 
 use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use Exception;
 use Override;
 use Psr\Log\LoggerInterface;

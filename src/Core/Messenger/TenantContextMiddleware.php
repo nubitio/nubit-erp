@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Messenger;
 
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;

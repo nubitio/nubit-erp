@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Service;
 
-use App\Core\Service\PlanManager;
-use App\Core\Service\TenantResourceCatalog;
+use App\ControlPlane\Billing\Service\PlanManager;
+use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

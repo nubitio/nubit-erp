@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Audit;
 
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;

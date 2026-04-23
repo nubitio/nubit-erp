@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Onboarding\Service;
 
-use App\Onboarding\Service\SubdomainValidator;
+use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;

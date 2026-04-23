@@ -9,7 +9,7 @@ use App\Core\Messenger\ActorStamp;
 use App\Core\Messenger\TenantContextMiddleware;
 use App\Core\Messenger\TenantStamp;
 use App\Core\Messenger\TenantStampMiddleware;
-use App\Core\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Invoice\Domain;
 
 use App\Core\Service\SettingsService;
-use App\Core\Service\TenantNotificationService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\Core\Util\Constants;
 use App\EInvoicing\Invoice\Domain\SunatSendControlService;
 use PHPUnit\Framework\Attributes\DataProvider;

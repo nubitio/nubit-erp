@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Onboarding\Payment;
 
-use App\Onboarding\Payment\BillingCycle;
-use App\Onboarding\Payment\MercadoPagoGateway;
+use App\ControlPlane\Subscription\Payment\BillingCycle;
+use App\ControlPlane\Subscription\Payment\MercadoPagoGateway;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;

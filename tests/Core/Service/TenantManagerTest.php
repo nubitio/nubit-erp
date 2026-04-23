@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Service;
 
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;

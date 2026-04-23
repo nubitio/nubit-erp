@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantNotificationService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\EInvoicing\Invoice\Domain\InvoiceSendOrchestrator;
 use App\EInvoicing\Invoice\Domain\InvoiceSendRetryService;
 use App\EInvoicing\Invoice\Domain\SunatSendControlService;

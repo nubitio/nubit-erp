@@ -51,7 +51,7 @@ services:
           key: '%env(S3_ACCESS_KEY)%'
           secret: '%env(S3_ACCESS_SECRET)%'
 
-  App\Core\Service\TenantConnectionSwitcher:
+  App\ControlPlane\Tenant\Service\TenantConnectionSwitcher:
     arguments:
       $connectionRegistry: '@doctrine'
 
@@ -67,14 +67,14 @@ services:
     arguments:
       $logger: '@logger'
 
-  App\Onboarding\Payment\PaymentGatewayInterface:
-    class: App\Onboarding\Payment\PayPalGateway
+  App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
+    class: App\ControlPlane\Subscription\Payment\PayPalGateway
 
-  App\Onboarding\Payment\PayPalGateway:
+  App\ControlPlane\Subscription\Payment\PayPalGateway:
     tags:
       - { name: app.payment_gateway }
 
-  App\Onboarding\Payment\MercadoPagoGateway:
+  App\ControlPlane\Subscription\Payment\MercadoPagoGateway:
     tags:
       - { name: app.payment_gateway }
 

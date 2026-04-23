@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Service;
 
-use App\Core\Service\TenantResourceCatalog;
+use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use PHPUnit\Framework\TestCase;
 
 final class TenantResourceCatalogTest extends TestCase

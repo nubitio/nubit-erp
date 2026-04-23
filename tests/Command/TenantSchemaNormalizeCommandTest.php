@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Command;
 
-use App\Command\TenantSchemaNormalizeCommand;
+use App\ControlPlane\Tenant\Command\TenantSchemaNormalizeCommand;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 

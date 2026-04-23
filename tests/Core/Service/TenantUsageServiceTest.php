@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Core\Service;
 
 use App\Core\Doctrine\DBAL\TenantConnection;
-use App\Core\Service\TenantManager;
-use App\Core\Service\TenantResourceCatalog;
-use App\Core\Service\TenantUsageService;
+use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
+use App\ControlPlane\Tenant\Service\TenantUsageService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;

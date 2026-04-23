@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Onboarding\Payment;
 
-use App\Onboarding\Payment\BillingCycle;
-use App\Onboarding\Payment\PaymentEvent;
-use App\Onboarding\Payment\SubscriptionManager;
+use App\ControlPlane\Subscription\Payment\BillingCycle;
+use App\ControlPlane\Subscription\Payment\PaymentEvent;
+use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;

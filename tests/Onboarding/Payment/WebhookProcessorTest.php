@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Onboarding\Payment;
 
-use App\Onboarding\Message\ProvisionTenantMessage;
-use App\Onboarding\Payment\PaymentEvent;
-use App\Onboarding\Payment\SubscriptionManager;
-use App\Onboarding\Payment\WebhookProcessor;
+use App\ControlPlane\Onboarding\Message\ProvisionTenantMessage;
+use App\ControlPlane\Subscription\Payment\PaymentEvent;
+use App\ControlPlane\Subscription\Payment\SubscriptionManager;
+use App\ControlPlane\Subscription\Payment\WebhookProcessor;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;

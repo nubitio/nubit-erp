@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Command;
 
-use App\Command\TenantSetupCommand;
+use App\ControlPlane\Tenant\Command\TenantSetupCommand;
 use App\Core\Context\TenantContext;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Dto\Setup\InitialSetupInput;
 use App\Setup\InitialSetupService;
 use PHPUnit\Framework\TestCase;

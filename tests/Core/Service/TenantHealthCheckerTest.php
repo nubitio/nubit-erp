@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Core\Service;
 
 use App\Core\Doctrine\DBAL\TenantConnection;
-use App\Core\Service\TenantHealthChecker;
-use App\Core\Service\TenantManager;
+use App\ControlPlane\Tenant\Service\TenantHealthChecker;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\TestCase;
