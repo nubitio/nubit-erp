@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Subscription\Payment;
 
 use App\ControlPlane\Onboarding\Message\ProvisionTenantMessage;
+use App\ControlPlane\Onboarding\Security\SecretCipher;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -36,20 +37,12 @@ final readonly class WebhookProcessor
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly MessageBusInterface $messageBus,
         private readonly LoggerInterface $logger,
+        private readonly SecretCipher $secretCipher,
     ) {
     }
 
     public function process(PaymentEvent $event): void
     {
-        if ($this->subscriptionManager->isEventProcessed($event->gateway, $event->gatewayEventId)) {
-            $this->logger->info('Skipping already processed payment event', [
-                'gateway' => $event->gateway,
-                'event_id' => $event->gatewayEventId,
-            ]);
-
-            return;
-        }
-
         $action = $this->resolveAction($event);
         if ($action === null) {
             $this->logger->debug('Ignoring unhandled payment event type', [
@@ -59,6 +52,8 @@ final readonly class WebhookProcessor
 
             return;
         }
+
+        $conn = $this->cp();
 
         $subscription = $this->subscriptionManager->findByGatewaySubscriptionId(
             $event->gateway,
@@ -72,7 +67,7 @@ final readonly class WebhookProcessor
                 'event_type' => $event->eventType,
             ]);
 
-            $this->subscriptionManager->logPaymentEvent($event, null, null);
+            $this->subscriptionManager->failPaymentEvent($event, null, null, 'Payment event for unknown subscription');
 
             return;
         }
@@ -80,17 +75,52 @@ final readonly class WebhookProcessor
         $subscriptionId = (int) $subscription['id'];
         $tenantId = (int) ($subscription['tenant_id'] ?? 0);
 
-        $this->subscriptionManager->logPaymentEvent($event, $subscriptionId, $tenantId > 0 ? $tenantId : null);
+        $paymentEventId = null;
 
-        match ($action) {
-            'activate' => $this->handleActivate($subscription),
-            'renew' => $this->handleRenew($subscriptionId),
-            'past_due' => $this->handlePastDue($subscriptionId, $tenantId),
-            'cancel' => $this->handleCancel($subscriptionId, $tenantId),
-            'suspend' => $this->handleSuspend($subscriptionId, $tenantId),
-            'payment_check' => $this->handlePaymentCheck($subscription, $event),
-            default => null,
-        };
+        try {
+            $conn->beginTransaction();
+            $paymentEventId = $this->subscriptionManager->beginPaymentEventProcessing(
+                $event,
+                $subscriptionId,
+                $tenantId > 0 ? $tenantId : null,
+            );
+
+            if ($paymentEventId === null) {
+                $conn->commit();
+                $this->logger->info('Skipping already processed payment event', [
+                    'gateway' => $event->gateway,
+                    'event_id' => $event->gatewayEventId,
+                ]);
+
+                return;
+            }
+
+            match ($action) {
+                'activate' => $this->handleActivate($subscription),
+                'renew' => $this->handleRenew($subscriptionId),
+                'past_due' => $this->handlePastDue($subscriptionId, $tenantId),
+                'cancel' => $this->handleCancel($subscriptionId, $tenantId),
+                'suspend' => $this->handleSuspend($subscriptionId, $tenantId),
+                'payment_check' => $this->handlePaymentCheck($subscription, $event),
+                default => null,
+            };
+
+            $this->subscriptionManager->completePaymentEvent($paymentEventId);
+            $conn->commit();
+        } catch (\Throwable $e) {
+            if ($conn->isTransactionActive()) {
+                $conn->rollBack();
+            }
+
+            $this->subscriptionManager->failPaymentEvent(
+                $event,
+                $subscriptionId,
+                $tenantId > 0 ? $tenantId : null,
+                $e->getMessage(),
+            );
+
+            throw $e;
+        }
     }
 
     private function resolveAction(PaymentEvent $event): ?string
@@ -236,7 +266,7 @@ final readonly class WebhookProcessor
             tenantName: (string) $provision['tenant_name'],
             subdomain: $this->extractSubdomain((string) $provision['domain']),
             domain: (string) $provision['domain'],
-            adminPassword: (string) ($provision['admin_password'] ?? ''),
+            adminPasswordSecret: $this->protectAdminPassword((string) ($provision['admin_password'] ?? '')),
         ));
 
         // Remove the raw password once the provisioning job is queued.
@@ -261,6 +291,15 @@ final readonly class WebhookProcessor
         $parts = explode('.', $domain, 2);
 
         return $parts[0];
+    }
+
+    private function protectAdminPassword(string $storedPassword): string
+    {
+        if ($storedPassword === '') {
+            return '';
+        }
+
+        return $this->secretCipher->encrypt($this->secretCipher->decrypt($storedPassword));
     }
 
     private function cp(): Connection

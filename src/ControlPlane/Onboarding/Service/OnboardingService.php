@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Onboarding\Service;
 
 use App\ControlPlane\Onboarding\Message\ProvisionTenantMessage;
+use App\ControlPlane\Onboarding\Security\SecretCipher;
 use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Subscription\Payment\PaymentGatewayInterface;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
@@ -30,6 +31,7 @@ final readonly class OnboardingService
         private SubdomainValidator $subdomainValidator,
         private MessageBusInterface $messageBus,
         private SubscriptionManager $subscriptionManager,
+        private SecretCipher $secretCipher,
         #[AutowireIterator('app.payment_gateway')]
         iterable $gatewayIterator,
     ) {
@@ -68,7 +70,7 @@ final readonly class OnboardingService
             tenantName: $tenantName,
             subdomain: $check['normalized'],
             domain: $domain,
-            adminPassword: $adminPassword,
+            adminPasswordSecret: $this->secretCipher->encrypt($adminPassword),
         ));
 
         return [
@@ -204,7 +206,7 @@ final readonly class OnboardingService
             'domain' => $domain,
             'plan' => $plan,
             'admin_user' => 'admin',
-            'admin_password' => $adminPassword !== '' ? $adminPassword : null,
+            'admin_password' => $adminPassword !== '' ? $this->secretCipher->encrypt($adminPassword) : null,
             'target_container' => '',
             'status' => 'dispatched',
             'public_token' => $token,

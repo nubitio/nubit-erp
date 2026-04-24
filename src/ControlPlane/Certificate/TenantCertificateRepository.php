@@ -51,6 +51,17 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
+    public function findByTenantAndFingerprint(int $tenantId, string $fingerprintSha256): ?TenantCertificate
+    {
+        $row = $this->connection()->fetchAssociative(
+            'SELECT * FROM tenant_certificates WHERE tenant_id = ? AND fingerprint_sha256 = ? LIMIT 1',
+            [$tenantId, $fingerprintSha256],
+            [ParameterType::INTEGER, ParameterType::STRING],
+        );
+
+        return is_array($row) ? $this->hydrate($row) : null;
+    }
+
     /**
      * @return list<TenantCertificate>
      */
@@ -90,6 +101,8 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
             'valid_from' => $metadata->validFrom->format('Y-m-d H:i:s'),
             'expires_at' => $metadata->expiresAt->format('Y-m-d H:i:s'),
             'uploaded_by' => $uploadedBy,
+            'lycet_sync_status' => 'upsert_pending',
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
         ]);
 
         return (int)$this->connection()->lastInsertId();
@@ -103,6 +116,55 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
         ], ['id' => $id]);
     }
 
+    public function markOtherActiveCertificatesSuperseded(int $tenantId, string $ruc, int $supersededById): void
+    {
+        $this->connection()->executeStatement(
+            "UPDATE tenant_certificates
+             SET status = ?, superseded_by_id = ?
+             WHERE tenant_id = ? AND ruc = ? AND id <> ? AND status IN ('active', 'expiring_soon', 'expired')",
+            [CertificateStatus::Superseded->value, $supersededById, $tenantId, $ruc, $supersededById],
+            [ParameterType::STRING, ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::STRING, ParameterType::INTEGER],
+        );
+    }
+
+    public function markLycetSyncPending(int $id, string $status): void
+    {
+        $this->connection()->update('tenant_certificates', [
+            'lycet_sync_status' => $status,
+            'lycet_sync_error' => null,
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ], ['id' => $id]);
+    }
+
+    public function markLycetSyncFailed(int $id, string $status, string $error): void
+    {
+        $this->connection()->update('tenant_certificates', [
+            'lycet_sync_status' => $status,
+            'lycet_sync_error' => mb_substr($error, 0, 1000),
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ], ['id' => $id]);
+    }
+
+    public function markLycetSynced(int $id): void
+    {
+        $this->connection()->update('tenant_certificates', [
+            'lycet_sync_status' => 'synced',
+            'lycet_sync_error' => null,
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ], ['id' => $id]);
+    }
+
+    public function markRevocationPending(int $id, string $revokedBy, string $reason): void
+    {
+        $this->connection()->update('tenant_certificates', [
+            'revoked_by' => $revokedBy,
+            'revocation_reason' => $reason,
+            'lycet_sync_status' => 'revocation_pending',
+            'lycet_sync_error' => null,
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ], ['id' => $id]);
+    }
+
     public function revoke(int $id, string $revokedBy, string $reason): void
     {
         $this->connection()->update('tenant_certificates', [
@@ -110,6 +172,9 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
             'revoked_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'revoked_by' => $revokedBy,
             'revocation_reason' => $reason,
+            'lycet_sync_status' => 'synced',
+            'lycet_sync_error' => null,
+            'lycet_sync_updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
         ], ['id' => $id]);
     }
 
@@ -154,6 +219,9 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
             revocationReason: isset($row['revocation_reason']) ? (string)$row['revocation_reason'] : null,
             supersededById: isset($row['superseded_by_id']) ? (int)$row['superseded_by_id'] : null,
             lastAlertedAt: isset($row['last_alerted_at']) ? new \DateTimeImmutable((string)$row['last_alerted_at']) : null,
+            lycetSyncStatus: isset($row['lycet_sync_status']) ? (string)$row['lycet_sync_status'] : 'synced',
+            lycetSyncError: isset($row['lycet_sync_error']) ? (string)$row['lycet_sync_error'] : null,
+            lycetSyncUpdatedAt: isset($row['lycet_sync_updated_at']) ? new \DateTimeImmutable((string)$row['lycet_sync_updated_at']) : null,
         );
     }
 }

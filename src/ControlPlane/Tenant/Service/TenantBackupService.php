@@ -159,6 +159,24 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
     }
 
     /**
+     * @return array<string, mixed>|null
+     * @throws Exception
+     */
+    public function findBackupForTenant(int $backupId, int $tenantId): ?array
+    {
+        $backup = $this->getControlPlaneConnection()->fetchAssociative(
+            'SELECT id, tenant_id, filename, storage_path, size_bytes,
+                    storage_type, status, backup_type, error_message, created_at, completed_at
+             FROM tenant_backups
+             WHERE id = ? AND tenant_id = ?',
+            [$backupId, $tenantId],
+            [ParameterType::INTEGER, ParameterType::INTEGER],
+        );
+
+        return $backup === false ? null : $backup;
+    }
+
+    /**
      * @throws Exception
      */
     public function deleteBackup(int $backupId): void
@@ -295,10 +313,6 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             '--user=' . $user,
         ];
 
-        if ($password !== '') {
-            $dumpCmd[] = '--password=' . $password;
-        }
-
         $dumpCmd = array_merge($dumpCmd, [
             '--single-transaction',
             '--routines',
@@ -312,6 +326,8 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
 
         $process = Process::fromShellCommandline(
             'bash -o pipefail -c ' . escapeshellarg($shellCmd),
+            null,
+            $this->mysqlPasswordEnv($password),
         );
         $process->setTimeout(null);
         $process->run();
@@ -340,10 +356,6 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             '--user=' . $user,
         ];
 
-        if ($password !== '') {
-            $restoreCmd[] = '--password=' . $password;
-        }
-
         $restoreCmd[] = $dbName;
 
         $shellCmd = 'gunzip -c ' . escapeshellarg($filePath)
@@ -351,6 +363,8 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
 
         $process = Process::fromShellCommandline(
             'bash -o pipefail -c ' . escapeshellarg($shellCmd),
+            null,
+            $this->mysqlPasswordEnv($password),
         );
         $process->setTimeout(null);
         $process->run();
@@ -394,5 +408,20 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
     private function getControlPlaneConnection(): Connection
     {
         return $this->connectionRegistry->getConnection('control_plane');
+    }
+
+    /**
+     * @return array<string, string>|null
+     */
+    private function mysqlPasswordEnv(string $password): ?array
+    {
+        if ($password === '') {
+            return null;
+        }
+
+        return [
+            'MYSQL_PWD' => $password,
+            'MARIADB_PWD' => $password,
+        ];
     }
 }

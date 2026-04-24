@@ -37,18 +37,25 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
         try {
             $previous = $this->repository->findActiveByTenantAndRuc((int)$tenant['id'], $ruc);
             $id = $this->repository->insert((int)$tenant['id'], (string)$tenant['name'], $ruc, $status, $metadata, $uploadedBy);
-            if ($previous !== null) {
-                $this->repository->markSuperseded($previous->id, $id);
-            }
             $connection->commit();
         } catch (\Throwable $e) {
             $connection->rollBack();
             throw $e;
         }
 
-        // Lycet remains the signing/storage backend. Keep it outside the DB transaction
-        // to avoid holding database locks during network IO.
-        $this->electronicBillingCompany->upsertCompany($ruc, $solUser, $solPass, $certPem);
+        try {
+            // Lycet remains the signing/storage backend. Keep it outside the DB transaction
+            // to avoid holding database locks during network IO. The DB row is left
+            // upsert_pending/upsert_failed until Lycet confirms the write.
+            $this->electronicBillingCompany->upsertCompany($ruc, $solUser, $solPass, $certPem);
+            $this->repository->markLycetSynced($id);
+            if ($previous !== null) {
+                $this->repository->markSuperseded($previous->id, $id);
+            }
+        } catch (\Throwable $e) {
+            $this->repository->markLycetSyncFailed($id, 'upsert_failed', $e->getMessage());
+            throw $e;
+        }
 
         $certificate = $this->repository->findActiveByTenantAndRuc((int)$tenant['id'], $ruc);
         if ($certificate === null) {
@@ -66,8 +73,56 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
             throw new \RuntimeException(sprintf('No active certificate found for RUC %s.', $ruc));
         }
 
+        $this->repository->markRevocationPending($certificate->id, $revokedBy, $reason);
+        try {
+            $this->electronicBillingCompany->removeCompany($ruc);
+        } catch (\Throwable $e) {
+            $this->repository->markLycetSyncFailed($certificate->id, 'revocation_failed', $e->getMessage());
+            throw $e;
+        }
         $this->repository->revoke($certificate->id, $revokedBy, $reason);
-        $this->electronicBillingCompany->removeCompany($ruc);
+    }
+
+    public function retryUpsertSync(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem): TenantCertificate
+    {
+        $tenant = $this->requireTenant($tenantName);
+        $metadata = $this->metadataExtractor->extract($certPem);
+        $certificate = $this->repository->findByTenantAndFingerprint((int)$tenant['id'], $metadata->fingerprintSha256);
+        if ($certificate === null || $certificate->ruc !== $ruc) {
+            throw new \RuntimeException(sprintf('No recoverable certificate upsert found for RUC %s and the supplied certificate.', $ruc));
+        }
+
+        $this->repository->markLycetSyncPending($certificate->id, 'upsert_pending');
+        try {
+            $this->electronicBillingCompany->upsertCompany($ruc, $solUser, $solPass, $certPem);
+        } catch (\Throwable $e) {
+            $this->repository->markLycetSyncFailed($certificate->id, 'upsert_failed', $e->getMessage());
+            throw $e;
+        }
+        $this->repository->markLycetSynced($certificate->id);
+        $this->repository->markOtherActiveCertificatesSuperseded((int)$tenant['id'], $ruc, $certificate->id);
+
+        return $this->repository->findByTenantAndId((int)$tenant['id'], $certificate->id) ?? $certificate;
+    }
+
+    public function retryRevocation(string $tenantName, string $ruc): void
+    {
+        $tenant = $this->requireTenant($tenantName);
+        $certificate = $this->repository->findActiveByTenantAndRuc((int)$tenant['id'], $ruc);
+        if ($certificate === null) {
+            throw new \RuntimeException(sprintf('No recoverable revocation found for RUC %s.', $ruc));
+        }
+
+        $revokedBy = $certificate->revokedBy ?? 'retry';
+        $reason = $certificate->revocationReason ?? 'retry';
+        $this->repository->markLycetSyncPending($certificate->id, 'revocation_pending');
+        try {
+            $this->electronicBillingCompany->removeCompany($ruc);
+        } catch (\Throwable $e) {
+            $this->repository->markLycetSyncFailed($certificate->id, 'revocation_failed', $e->getMessage());
+            throw $e;
+        }
+        $this->repository->revoke($certificate->id, $revokedBy, $reason);
     }
 
     public function detail(string $tenantName, int $certificateId): TenantCertificate

@@ -8,6 +8,7 @@ use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -54,7 +55,7 @@ class TenantProvisionCommand extends Command
             ->addOption('seed-test', null, InputOption::VALUE_NONE, 'Run test data seed')
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
-            ->addOption('admin-password', null, InputOption::VALUE_OPTIONAL, 'Admin password for initial setup')
+            ->addOption('admin-password', null, InputOption::VALUE_OPTIONAL, 'Admin password for initial setup (prefer TENANT_ADMIN_PASSWORD env)')
             ->addOption('company-ruc', null, InputOption::VALUE_OPTIONAL, 'Company RUC (11 digits)')
             ->addOption('company-name', null, InputOption::VALUE_OPTIONAL, 'Company business name')
             ->addOption('company-trade', null, InputOption::VALUE_OPTIONAL, 'Company trade name')
@@ -94,7 +95,7 @@ class TenantProvisionCommand extends Command
 
         if ($provisionId !== null) {
             $controlPlane->executeStatement(
-                "UPDATE tenant_provisions SET status = 'provisioning', started_at = NOW() WHERE id = ?",
+                "UPDATE tenant_provisions SET status = 'running', started_at = NOW() WHERE id = ?",
                 [(int) $provisionId],
             );
         }
@@ -104,7 +105,7 @@ class TenantProvisionCommand extends Command
         } catch (\Throwable $e) {
             if ($provisionId !== null) {
                 $controlPlane->executeStatement(
-                    "UPDATE tenant_provisions SET status = 'failed', error_message = ?, finished_at = NOW() WHERE id = ?",
+                    "UPDATE tenant_provisions SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?",
                     [$e->getMessage(), (int) $provisionId],
                 );
             }
@@ -115,7 +116,7 @@ class TenantProvisionCommand extends Command
 
         if ($provisionId !== null) {
             $controlPlane->executeStatement(
-                "UPDATE tenant_provisions SET status = 'completed', finished_at = NOW() WHERE id = ?",
+                "UPDATE tenant_provisions SET status = 'completed', completed_at = NOW() WHERE id = ?",
                 [(int) $provisionId],
             );
         }
@@ -151,17 +152,28 @@ class TenantProvisionCommand extends Command
 
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
         $existing = $controlPlane->fetchOne('SELECT id FROM tenants WHERE name = ?', [$tenant]);
+        $tenantId = $existing === false ? null : (int) $existing;
 
         if ($existing === false) {
             $io->section('Registering tenant in control plane');
             $controlPlane->executeStatement(
-                'INSERT INTO tenants (name, primary_domain, status, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())',
-                [$tenant, $domain ?: null, 'active'],
+                'INSERT INTO tenants (name, connection, status, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())',
+                [$tenant, $tenant, 'active'],
                 [ParameterType::STRING, ParameterType::STRING, ParameterType::STRING],
             );
+            $tenantId = (int) $controlPlane->lastInsertId();
             $io->writeln(sprintf('  Tenant <info>%s</info> registered.', $tenant));
         } else {
+            $controlPlane->executeStatement(
+                'UPDATE tenants SET connection = ?, status = ?, updated_at = NOW() WHERE id = ?',
+                [$tenant, 'active', $tenantId],
+                [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER],
+            );
             $io->writeln(sprintf('  Tenant <info>%s</info> already registered, skipping.', $tenant));
+        }
+
+        if ($domain !== '' && $tenantId !== null) {
+            $this->upsertPrimaryDomain($controlPlane, $tenantId, $domain);
         }
 
         $this->cache->delete('tenants_list');
@@ -247,11 +259,46 @@ class TenantProvisionCommand extends Command
         };
     }
 
+    private function upsertPrimaryDomain(Connection $controlPlane, int $tenantId, string $domain): void
+    {
+        $domain = strtolower(trim($domain));
+        if ($domain === '') {
+            return;
+        }
+
+        $existingDomain = $controlPlane->fetchAssociative('SELECT id, tenant_id FROM tenant_domains WHERE domain = ?', [$domain]);
+        if ($existingDomain !== false && (int) $existingDomain['tenant_id'] !== $tenantId) {
+            throw new \RuntimeException(sprintf('Domain "%s" is already registered to another tenant.', $domain));
+        }
+
+        $controlPlane->executeStatement(
+            'UPDATE tenant_domains SET is_primary = 0 WHERE tenant_id = ?',
+            [$tenantId],
+            [ParameterType::INTEGER],
+        );
+
+        if ($existingDomain === false) {
+            $controlPlane->executeStatement(
+                'INSERT INTO tenant_domains (tenant_id, domain, is_primary) VALUES (?, ?, 1)',
+                [$tenantId, $domain],
+                [ParameterType::INTEGER, ParameterType::STRING],
+            );
+
+            return;
+        }
+
+        $controlPlane->executeStatement(
+            'UPDATE tenant_domains SET is_primary = 1 WHERE id = ?',
+            [(int) $existingDomain['id']],
+            [ParameterType::INTEGER],
+        );
+    }
+
     private function buildSetupInput(InputInterface $input): InitialTenantSetupRequest
     {
         return new InitialTenantSetupRequest(
             (string) ($input->getOption('admin-user') ?: 'admin'),
-            (string) ($input->getOption('admin-password') ?: 'Admin.3000'),
+            $this->resolveAdminPassword($input),
             (string) ($input->getOption('company-ruc') ?: '20123456789'),
             (string) ($input->getOption('company-name') ?: 'Empresa Demo'),
             (string) ($input->getOption('company-trade') ?: 'Demo'),
@@ -261,5 +308,15 @@ class TenantProvisionCommand extends Command
             (string) ($input->getOption('branch-address') ?: 'Av. Principal 123'),
             (string) ($input->getOption('branch-phone') ?: '999999999'),
         );
+    }
+
+    private function resolveAdminPassword(InputInterface $input): string
+    {
+        $fromEnv = trim((string) ($_SERVER['TENANT_ADMIN_PASSWORD'] ?? $_ENV['TENANT_ADMIN_PASSWORD'] ?? getenv('TENANT_ADMIN_PASSWORD') ?: ''));
+        if ($fromEnv !== '') {
+            return $fromEnv;
+        }
+
+        return (string) ($input->getOption('admin-password') ?: 'Admin.3000');
     }
 }

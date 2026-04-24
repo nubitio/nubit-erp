@@ -18,7 +18,7 @@ final class Version20260424142000 extends AbstractMigration
     {
         $this->addSql("CREATE TABLE tenant_certificates (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            tenant_id INT UNSIGNED NOT NULL,
+            tenant_id INT NOT NULL,
             tenant_name VARCHAR(63) NOT NULL,
             ruc VARCHAR(11) NOT NULL,
             status ENUM('active', 'expiring_soon', 'expired', 'revoked', 'superseded') NOT NULL DEFAULT 'active',

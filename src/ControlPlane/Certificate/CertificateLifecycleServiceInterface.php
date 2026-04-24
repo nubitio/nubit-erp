@@ -17,6 +17,10 @@ interface CertificateLifecycleServiceInterface
 
     public function revoke(string $tenantName, string $ruc, string $revokedBy, string $reason): void;
 
+    public function retryUpsertSync(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem): TenantCertificate;
+
+    public function retryRevocation(string $tenantName, string $ruc): void;
+
     public function detail(string $tenantName, int $certificateId): TenantCertificate;
 
     /**

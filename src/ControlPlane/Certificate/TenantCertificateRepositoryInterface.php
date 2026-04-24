@@ -15,6 +15,8 @@ interface TenantCertificateRepositoryInterface
 
     public function findByTenantAndId(int $tenantId, int $id): ?TenantCertificate;
 
+    public function findByTenantAndFingerprint(int $tenantId, string $fingerprintSha256): ?TenantCertificate;
+
     /**
      * @return list<TenantCertificate>
      */
@@ -30,6 +32,16 @@ interface TenantCertificateRepositoryInterface
     ): int;
 
     public function markSuperseded(int $id, int $supersededById): void;
+
+    public function markOtherActiveCertificatesSuperseded(int $tenantId, string $ruc, int $supersededById): void;
+
+    public function markLycetSyncPending(int $id, string $status): void;
+
+    public function markLycetSyncFailed(int $id, string $status, string $error): void;
+
+    public function markLycetSynced(int $id): void;
+
+    public function markRevocationPending(int $id, string $revokedBy, string $reason): void;
 
     public function revoke(int $id, string $revokedBy, string $reason): void;
 

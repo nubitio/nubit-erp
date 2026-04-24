@@ -94,6 +94,7 @@ final class CertificateLifecycleServiceTest extends TestCase
             ->with(1, '20123456789')
             ->willReturn($this->certificate(id: 10, status: CertificateStatus::Active));
         $repository->expects(self::once())->method('revoke')->with(10, 'ops@example.com', 'compromised');
+        $repository->expects(self::once())->method('markRevocationPending')->with(10, 'ops@example.com', 'compromised');
 
         $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
         $billing->expects(self::once())->method('removeCompany')->with('20123456789');
@@ -108,6 +109,176 @@ final class CertificateLifecycleServiceTest extends TestCase
         );
 
         $service->revoke('acme', '20123456789', 'ops@example.com', 'compromised');
+    }
+
+    public function testUpsertFailureLeavesRecoverableLycetFailureState(): void
+    {
+        $pem = $this->createSelfSignedCertificatePem('Acme Cert');
+
+        $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
+        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
+            'id' => 1,
+            'name' => 'acme',
+        ]);
+
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->expects(self::once())->method('findActiveByTenantAndRuc')->willReturn(null);
+        $repository->expects(self::once())->method('insert')->willReturn(11);
+        $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet unavailable');
+        $repository->expects(self::never())->method('markSuperseded');
+
+        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing->method('upsertCompany')->willThrowException(new \RuntimeException('lycet unavailable'));
+
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())->method('beginTransaction');
+        $connection->expects(self::once())->method('commit');
+        $connection->expects(self::never())->method('rollBack');
+
+        $registry = $this->createMock(ConnectionRegistry::class);
+        $registry->method('getConnection')->with('control_plane')->willReturn($connection);
+
+        $service = new CertificateLifecycleService(
+            $tenantRegistry,
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $billing,
+            $registry,
+        );
+
+        $this->expectExceptionMessage('lycet unavailable');
+        $service->upsert('acme', '20123456789', '20123456789MODDATOS', 'secret', $pem, 'ops@example.com');
+    }
+
+    public function testRevokeFailureDoesNotMarkCertificateRevoked(): void
+    {
+        $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
+        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
+            'id' => 1,
+            'name' => 'acme',
+        ]);
+
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->method('findActiveByTenantAndRuc')->with(1, '20123456789')->willReturn($this->certificate(id: 10, status: CertificateStatus::Active));
+        $repository->expects(self::once())->method('markRevocationPending')->with(10, 'ops@example.com', 'compromised');
+        $repository->expects(self::once())->method('markLycetSyncFailed')->with(10, 'revocation_failed', 'lycet unavailable');
+        $repository->expects(self::never())->method('revoke');
+
+        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing->method('removeCompany')->willThrowException(new \RuntimeException('lycet unavailable'));
+
+        $service = new CertificateLifecycleService(
+            $tenantRegistry,
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $billing,
+            $this->createMock(ConnectionRegistry::class),
+        );
+
+        $this->expectExceptionMessage('lycet unavailable');
+        $service->revoke('acme', '20123456789', 'ops@example.com', 'compromised');
+    }
+
+    public function testRetryRevocationCompletesPendingRemove(): void
+    {
+        $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
+        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
+            'id' => 1,
+            'name' => 'acme',
+        ]);
+
+        $certificate = $this->certificate(id: 10, status: CertificateStatus::Active);
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->method('findActiveByTenantAndRuc')->with(1, '20123456789')->willReturn($certificate);
+        $repository->expects(self::once())->method('markLycetSyncPending')->with(10, 'revocation_pending');
+        $repository->expects(self::once())->method('revoke')->with(10, 'ops@example.com', 'rotated');
+
+        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing->expects(self::once())->method('removeCompany')->with('20123456789');
+
+        $service = new CertificateLifecycleService(
+            $tenantRegistry,
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $billing,
+            $this->createMock(ConnectionRegistry::class),
+        );
+
+        $service->retryRevocation('acme', '20123456789');
+    }
+
+    public function testRetryUpsertCompletesPendingLycetSyncAndSupersedesOtherActiveCertificates(): void
+    {
+        $pem = $this->createSelfSignedCertificatePem('Acme Retry Cert');
+
+        $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
+        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
+            'id' => 1,
+            'name' => 'acme',
+        ]);
+
+        $certificate = $this->certificate(id: 11, status: CertificateStatus::Active);
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->expects(self::once())
+            ->method('findByTenantAndFingerprint')
+            ->with(1, self::isType('string'))
+            ->willReturn($certificate);
+        $repository->expects(self::once())->method('markLycetSyncPending')->with(11, 'upsert_pending');
+        $repository->expects(self::once())->method('markLycetSynced')->with(11);
+        $repository->expects(self::once())->method('markOtherActiveCertificatesSuperseded')->with(1, '20123456789', 11);
+        $repository->expects(self::once())->method('findByTenantAndId')->with(1, 11)->willReturn($certificate);
+
+        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing->expects(self::once())
+            ->method('upsertCompany')
+            ->with('20123456789', '20123456789MODDATOS', 'secret', $pem);
+
+        $service = new CertificateLifecycleService(
+            $tenantRegistry,
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $billing,
+            $this->createMock(ConnectionRegistry::class),
+        );
+
+        self::assertSame($certificate, $service->retryUpsertSync('acme', '20123456789', '20123456789MODDATOS', 'secret', $pem));
+    }
+
+    public function testRetryUpsertFailureKeepsRecoverableFailureState(): void
+    {
+        $pem = $this->createSelfSignedCertificatePem('Acme Retry Cert');
+
+        $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
+        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
+            'id' => 1,
+            'name' => 'acme',
+        ]);
+
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->method('findByTenantAndFingerprint')->with(1, self::isType('string'))->willReturn($this->certificate(id: 11, status: CertificateStatus::Active));
+        $repository->expects(self::once())->method('markLycetSyncPending')->with(11, 'upsert_pending');
+        $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet still unavailable');
+        $repository->expects(self::never())->method('markLycetSynced');
+        $repository->expects(self::never())->method('markOtherActiveCertificatesSuperseded');
+
+        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing->method('upsertCompany')->willThrowException(new \RuntimeException('lycet still unavailable'));
+
+        $service = new CertificateLifecycleService(
+            $tenantRegistry,
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $billing,
+            $this->createMock(ConnectionRegistry::class),
+        );
+
+        $this->expectExceptionMessage('lycet still unavailable');
+        $service->retryUpsertSync('acme', '20123456789', '20123456789MODDATOS', 'secret', $pem);
     }
 
     private function certificate(int $id, CertificateStatus $status): TenantCertificate
@@ -127,8 +298,8 @@ final class CertificateLifecycleServiceTest extends TestCase
             uploadedAt: new \DateTimeImmutable('2026-04-24'),
             uploadedBy: 'ops@example.com',
             revokedAt: null,
-            revokedBy: null,
-            revocationReason: null,
+            revokedBy: 'ops@example.com',
+            revocationReason: 'rotated',
             supersededById: null,
             lastAlertedAt: null,
         );
