@@ -8,11 +8,12 @@ use App\Core\Context\TenantContext;
 use App\Core\Doctrine\DBAL\TenantConnection;
 use App\Core\Exception\QuotaExceededException;
 use App\Core\Exception\ServiceException;
+use App\Core\Platform\Billing\QuotaEnforcerInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\Persistence\ConnectionRegistry;
 
-final class TenantQuotaService
+final class TenantQuotaService implements QuotaEnforcerInterface
 {
     /**
      * @var array<string, bool>

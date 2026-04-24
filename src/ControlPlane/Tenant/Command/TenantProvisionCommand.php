@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
+use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
+use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
+use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\Dto\Setup\InitialSetupInput;
-use App\Setup\InitialSetupService;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -30,9 +31,10 @@ class TenantProvisionCommand extends Command
 {
     public function __construct(
         private readonly ConnectionRegistry $connectionRegistry,
-        private readonly InitialSetupService $initialSetupService,
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
         private readonly CacheInterface $cache,
+        private readonly InitialTenantSetupPortInterface $initialTenantSetup,
+        private readonly ElectronicBillingCompanyPortInterface $electronicBillingCompany,
         #[Autowire(env: 'TENANT_DB_PASS')]
         private readonly string $tenantDbPass,
         #[Autowire(env: 'PROVISIONING_DATABASE_URL')]
@@ -61,7 +63,12 @@ class TenantProvisionCommand extends Command
             ->addOption('branch-name', null, InputOption::VALUE_OPTIONAL, 'Branch name')
             ->addOption('branch-address', null, InputOption::VALUE_OPTIONAL, 'Branch address')
             ->addOption('branch-phone', null, InputOption::VALUE_OPTIONAL, 'Branch phone')
-            ->addOption('provision-id', null, InputOption::VALUE_OPTIONAL, 'Provision tracking ID from control plane');
+            ->addOption('provision-id', null, InputOption::VALUE_OPTIONAL, 'Provision tracking ID from control plane')
+            ->addOption('lycet-upsert', null, InputOption::VALUE_NONE, 'Register/update company in lycet after provisioning')
+            ->addOption('lycet-sol-user', null, InputOption::VALUE_OPTIONAL, 'SOL user for lycet (RUC+user, e.g. 20000000001MODDATOS)')
+            ->addOption('lycet-sol-pass', null, InputOption::VALUE_OPTIONAL, 'SOL password for lycet')
+            ->addOption('lycet-cert-file', null, InputOption::VALUE_OPTIONAL, 'Path to .pem certificate file for lycet')
+            ->addOption('lycet-logo-file', null, InputOption::VALUE_OPTIONAL, 'Path to logo file for lycet (optional)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -188,10 +195,43 @@ class TenantProvisionCommand extends Command
             $setup = $this->buildSetupInput($input);
 
             try {
-                $this->initialSetupService->configure($setup);
+                $this->initialTenantSetup->configure($setup);
                 $io->writeln('  Initial setup completed.');
             } catch (BadRequestHttpException $e) {
                 $io->warning('Initial setup skipped: ' . $e->getMessage());
+            }
+        }
+
+        if ($input->getOption('lycet-upsert')) {
+            $io->section('Registering company in lycet');
+            $ruc      = (string) ($input->getOption('company-ruc') ?: '');
+            $solUser  = (string) ($input->getOption('lycet-sol-user') ?: '');
+            $solPass  = (string) ($input->getOption('lycet-sol-pass') ?: '');
+            $certFile = (string) ($input->getOption('lycet-cert-file') ?: '');
+
+            if ($ruc === '' || $solUser === '' || $solPass === '' || $certFile === '') {
+                $io->warning('lycet-upsert skipped: --company-ruc, --lycet-sol-user, --lycet-sol-pass and --lycet-cert-file are all required.');
+            } elseif (!file_exists($certFile)) {
+                $io->warning(sprintf('lycet-upsert skipped: certificate file not found: %s', $certFile));
+            } else {
+                $certPem = (string) file_get_contents($certFile);
+
+                try {
+                    $this->electronicBillingCompany->upsertCompany($ruc, $solUser, $solPass, $certPem);
+                    $io->writeln(sprintf('  Company <info>%s</info> registered in lycet.', $ruc));
+                } catch (\Throwable $e) {
+                    $io->warning('lycet-upsert failed: ' . $e->getMessage());
+                }
+
+                $logoFile = (string) ($input->getOption('lycet-logo-file') ?: '');
+                if ($logoFile !== '' && file_exists($logoFile)) {
+                    try {
+                        $this->electronicBillingCompany->uploadCompanyLogo($ruc, (string) file_get_contents($logoFile));
+                        $io->writeln('  Logo uploaded to lycet.');
+                    } catch (\Throwable $e) {
+                        $io->warning('lycet logo upload failed: ' . $e->getMessage());
+                    }
+                }
             }
         }
     }
@@ -207,20 +247,19 @@ class TenantProvisionCommand extends Command
         };
     }
 
-    private function buildSetupInput(InputInterface $input): InitialSetupInput
+    private function buildSetupInput(InputInterface $input): InitialTenantSetupRequest
     {
-        $setup = new InitialSetupInput();
-        $setup->adminUsername = (string) ($input->getOption('admin-user') ?: 'admin');
-        $setup->adminPassword = (string) ($input->getOption('admin-password') ?: 'Admin.3000');
-        $setup->companyRuc = (string) ($input->getOption('company-ruc') ?: '20123456789');
-        $setup->companyBusinessName = (string) ($input->getOption('company-name') ?: 'Empresa Demo');
-        $setup->companyTradeName = (string) ($input->getOption('company-trade') ?: 'Demo');
-        $setup->companyFiscalAddress = (string) ($input->getOption('company-address') ?: 'Av. Principal 123');
-        $setup->companyPhone = (string) ($input->getOption('company-phone') ?: '999999999');
-        $setup->branchName = (string) ($input->getOption('branch-name') ?: 'Principal');
-        $setup->branchAddress = (string) ($input->getOption('branch-address') ?: 'Av. Principal 123');
-        $setup->branchPhone = (string) ($input->getOption('branch-phone') ?: '999999999');
-
-        return $setup;
+        return new InitialTenantSetupRequest(
+            (string) ($input->getOption('admin-user') ?: 'admin'),
+            (string) ($input->getOption('admin-password') ?: 'Admin.3000'),
+            (string) ($input->getOption('company-ruc') ?: '20123456789'),
+            (string) ($input->getOption('company-name') ?: 'Empresa Demo'),
+            (string) ($input->getOption('company-trade') ?: 'Demo'),
+            (string) ($input->getOption('company-address') ?: 'Av. Principal 123'),
+            (string) ($input->getOption('company-phone') ?: '999999999'),
+            (string) ($input->getOption('branch-name') ?: 'Principal'),
+            (string) ($input->getOption('branch-address') ?: 'Av. Principal 123'),
+            (string) ($input->getOption('branch-phone') ?: '999999999'),
+        );
     }
 }

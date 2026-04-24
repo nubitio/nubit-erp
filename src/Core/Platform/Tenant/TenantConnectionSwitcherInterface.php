@@ -1,0 +1,10 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Platform\Tenant;
+
+interface TenantConnectionSwitcherInterface
+{
+    public function switchConnection(string $tenant): void;
+}

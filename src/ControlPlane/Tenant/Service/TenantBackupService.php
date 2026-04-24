@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\Core\Platform\Tenant\TenantBackupRunnerInterface;
 use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -16,7 +17,7 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Process\Process;
 
-final readonly class TenantBackupService
+final readonly class TenantBackupService implements TenantBackupRunnerInterface
 {
     public function __construct(
         private TenantManager $tenantManager,

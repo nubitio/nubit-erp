@@ -6,10 +6,11 @@ namespace App\ControlPlane\Tenant\Service;
 
 use App\Core\Doctrine\DBAL\TenantConnection;
 use App\Core\Exception\ServiceException;
+use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
 use Doctrine\DBAL\Driver\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
 
-readonly class TenantConnectionSwitcher
+readonly class TenantConnectionSwitcher implements TenantConnectionSwitcherInterface
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,

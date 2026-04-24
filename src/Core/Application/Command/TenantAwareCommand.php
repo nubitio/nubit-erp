@@ -6,8 +6,8 @@ namespace App\Core\Application\Command;
 
 use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
+use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Exception;
 use Override;
 use Psr\Log\LoggerInterface;
@@ -24,8 +24,8 @@ abstract class TenantAwareCommand extends Command
 {
     use LockableTrait;
 
-    private TenantManager $tenantManager;
-    private TenantConnectionSwitcher $tenantConnectionSwitcher;
+    private TenantRegistryInterface $tenantManager;
+    private TenantConnectionSwitcherInterface $tenantConnectionSwitcher;
     private TenantContext $tenantContext;
     protected LoggerInterface $logger;
 
@@ -35,8 +35,8 @@ abstract class TenantAwareCommand extends Command
 
     #[Required]
     public function initDependencies(
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        TenantRegistryInterface $tenantManager,
+        TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
         TenantContext $tenantContext,
         LoggerInterface $logger,
     ): void {

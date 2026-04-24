@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
+use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,8 +20,8 @@ use Throwable;
 readonly class TenantListener
 {
     public function __construct(
-        private TenantConnectionSwitcher $tenantConnectionSwitcher,
-        private TenantManager $tenantManager,
+        private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
+        private TenantRegistryInterface $tenantManager,
         private TenantContext $tenantContext,
         private LoggerInterface $logger,
     ) {

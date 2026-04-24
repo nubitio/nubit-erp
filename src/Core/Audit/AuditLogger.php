@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Audit;
 
 use App\Core\Context\TenantContext;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -16,7 +16,7 @@ readonly class AuditLogger
     public function __construct(
         private TenantContext $tenantContext,
         private Security $security,
-        private TenantManager $tenantManager,
+        private TenantRegistryInterface $tenantManager,
         private LoggerInterface $logger,
         private MessageBusInterface $bus,
     ) {

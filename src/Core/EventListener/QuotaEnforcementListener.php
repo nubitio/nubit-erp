@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
-use App\ControlPlane\Billing\Service\TenantQuotaService;
+use App\Core\Platform\Billing\QuotaEnforcerInterface;
 use App\Entity\Branch;
 use App\Entity\Customer;
 use App\Entity\Product;
@@ -31,7 +31,7 @@ final readonly class QuotaEnforcementListener
     ];
 
     public function __construct(
-        private TenantQuotaService $quotaService,
+        private QuotaEnforcerInterface $quotaService,
         private TenantContext $tenantContext,
     ) {
     }
