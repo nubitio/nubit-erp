@@ -88,6 +88,12 @@ services:
   App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface:
     class: App\ControlPlane\Tenant\Adapter\LycetElectronicBillingCompanyAdapter
 
+  App\ControlPlane\Certificate\CertificateLifecycleServiceInterface:
+    class: App\ControlPlane\Certificate\CertificateLifecycleService
+
+  App\ControlPlane\Certificate\CertificateAlertServiceInterface:
+    class: App\ControlPlane\Certificate\CertificateAlertService
+
   App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
     class: App\ControlPlane\Subscription\Payment\PayPalGateway
 

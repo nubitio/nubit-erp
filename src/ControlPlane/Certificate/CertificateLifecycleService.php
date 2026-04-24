@@ -8,7 +8,7 @@ use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Doctrine\Persistence\ConnectionRegistry;
 
-final readonly class CertificateLifecycleService
+final readonly class CertificateLifecycleService implements CertificateLifecycleServiceInterface
 {
     public function __construct(
         private TenantRegistryInterface $tenantRegistry,
@@ -68,6 +68,17 @@ final readonly class CertificateLifecycleService
 
         $this->repository->revoke($certificate->id, $revokedBy, $reason);
         $this->electronicBillingCompany->removeCompany($ruc);
+    }
+
+    public function detail(string $tenantName, int $certificateId): TenantCertificate
+    {
+        $tenant = $this->requireTenant($tenantName);
+        $certificate = $this->repository->findByTenantAndId((int)$tenant['id'], $certificateId);
+        if ($certificate === null) {
+            throw new \RuntimeException(sprintf('Certificate "%d" not found.', $certificateId));
+        }
+
+        return $certificate;
     }
 
     /**

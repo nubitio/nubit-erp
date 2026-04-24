@@ -82,11 +82,13 @@
                                     <td>{{ certificate.expiresAt|date('Y-m-d') }}</td>
                                     <td><code>{{ certificate.fingerprintSha256|slice(0, 12) }}</code></td>
                                     <td class="text-end">
+                                        <a href="{{ path('admin_tenant_certificate_detail', {'id': tenant.id, 'certificateId': certificate.id}) }}"
+                                           class="btn btn-outline-secondary btn-sm">Detail</a>
                                         {% if certificate.status.value in ['active', 'expiring_soon', 'expired'] %}
                                             <form action="{{ path('admin_tenant_certificate_revoke', {'id': tenant.id, 'ruc': certificate.ruc}) }}"
-                                                  method="post" class="d-inline">
+                                                  method="post" class="d-inline-flex gap-1 align-items-center">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                                                <input type="hidden" name="reason" value="Revoked from ControlPlane UI">
+                                                <input class="form-control form-control-sm" name="reason" placeholder="Reason" required style="max-width: 12rem;">
                                                 <button class="btn btn-outline-danger btn-sm" type="submit"
                                                         onclick="return confirm('Revoke certificate for {{ certificate.ruc }}?');">
                                                     Revoke

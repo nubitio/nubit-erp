@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Certificate\Command;
 
-use App\ControlPlane\Certificate\CertificateLifecycleService;
+use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'app:control-plane:certificate:revoke', description: 'Revoke tenant SUNAT certificate metadata and remove it from lycet.')]
 final class CertificateRevokeCommand extends Command
 {
-    public function __construct(private readonly CertificateLifecycleService $certificates)
+    public function __construct(private readonly CertificateLifecycleServiceInterface $certificates)
     {
         parent::__construct();
     }

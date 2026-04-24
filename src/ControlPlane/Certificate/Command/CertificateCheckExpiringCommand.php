@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Certificate\Command;
 
-use App\ControlPlane\Certificate\CertificateAlertService;
-use App\ControlPlane\Certificate\CertificateLifecycleService;
+use App\ControlPlane\Certificate\CertificateAlertServiceInterface;
+use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,8 +17,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class CertificateCheckExpiringCommand extends Command
 {
     public function __construct(
-        private readonly CertificateLifecycleService $certificates,
-        private readonly CertificateAlertService $alerts,
+        private readonly CertificateLifecycleServiceInterface $certificates,
+        private readonly CertificateAlertServiceInterface $alerts,
     ) {
         parent::__construct();
     }

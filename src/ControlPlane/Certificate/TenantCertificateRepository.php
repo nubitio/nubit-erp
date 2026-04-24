@@ -40,6 +40,17 @@ final readonly class TenantCertificateRepository
         return is_array($row) ? $this->hydrate($row) : null;
     }
 
+    public function findByTenantAndId(int $tenantId, int $id): ?TenantCertificate
+    {
+        $row = $this->connection()->fetchAssociative(
+            'SELECT * FROM tenant_certificates WHERE tenant_id = ? AND id = ? LIMIT 1',
+            [$tenantId, $id],
+            [ParameterType::INTEGER, ParameterType::INTEGER],
+        );
+
+        return is_array($row) ? $this->hydrate($row) : null;
+    }
+
     /**
      * @return list<TenantCertificate>
      */
