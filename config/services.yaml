@@ -67,6 +67,27 @@ services:
     arguments:
       $logger: '@logger'
 
+  App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface:
+    class: App\EInvoicing\Billing\Infrastructure\LycetCompanyService
+
+  App\Core\Platform\Tenant\TenantRegistryInterface:
+    class: App\ControlPlane\Tenant\Service\TenantManager
+
+  App\Core\Platform\Tenant\TenantConnectionSwitcherInterface:
+    class: App\ControlPlane\Tenant\Service\TenantConnectionSwitcher
+
+  App\Core\Platform\Tenant\TenantBackupRunnerInterface:
+    class: App\ControlPlane\Tenant\Service\TenantBackupService
+
+  App\Core\Platform\Billing\QuotaEnforcerInterface:
+    class: App\ControlPlane\Billing\Service\TenantQuotaService
+
+  App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface:
+    class: App\ControlPlane\Tenant\Adapter\InitialSetupServiceAdapter
+
+  App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface:
+    class: App\ControlPlane\Tenant\Adapter\LycetElectronicBillingCompanyAdapter
+
   App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
     class: App\ControlPlane\Subscription\Payment\PayPalGateway
 

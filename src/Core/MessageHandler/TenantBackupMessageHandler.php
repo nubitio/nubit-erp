@@ -6,7 +6,7 @@ namespace App\Core\MessageHandler;
 
 use App\Core\Audit\AuditLogger;
 use App\Core\Message\TenantBackupMessage;
-use App\ControlPlane\Tenant\Service\TenantBackupService;
+use App\Core\Platform\Tenant\TenantBackupRunnerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -14,7 +14,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class TenantBackupMessageHandler
 {
     public function __construct(
-        private TenantBackupService $backupService,
+        private TenantBackupRunnerInterface $backupService,
         private AuditLogger $auditLogger,
         private LoggerInterface $logger,
     ) {

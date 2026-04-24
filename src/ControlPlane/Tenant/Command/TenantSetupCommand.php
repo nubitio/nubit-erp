@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
+use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
+use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Dto\Setup\InitialSetupInput;
-use App\Setup\InitialSetupService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TenantSetupCommand extends TenantAwareCommand
 {
     public function __construct(
-        private readonly InitialSetupService $initialSetupService,
+        private readonly InitialTenantSetupPortInterface $initialTenantSetup,
     ) {
         parent::__construct();
     }
@@ -49,7 +49,7 @@ class TenantSetupCommand extends TenantAwareCommand
         $setup = $this->buildSetupInput($io, $input);
 
         try {
-            $this->initialSetupService->configure($setup);
+            $this->initialTenantSetup->configure($setup);
             $io->success('Initial setup completed.');
         } catch (\Throwable $throwable) {
             $io->warning('Initial setup skipped: ' . $throwable->getMessage());
@@ -58,15 +58,13 @@ class TenantSetupCommand extends TenantAwareCommand
         return Command::SUCCESS;
     }
 
-    private function buildSetupInput(SymfonyStyle $io, InputInterface $input): InitialSetupInput
+    private function buildSetupInput(SymfonyStyle $io, InputInterface $input): InitialTenantSetupRequest
     {
-        $setup = new InitialSetupInput();
-
-        $setup->adminUsername = (string) ($input->getOption('admin-user') ?: ($input->isInteractive()
+        $adminUsername = (string) ($input->getOption('admin-user') ?: ($input->isInteractive()
             ? $io->ask('Admin username', 'admin')
             : 'admin'));
 
-        $setup->adminPassword = (string) ($input->getOption('admin-pass') ?: ($input->isInteractive()
+        $adminPassword = (string) ($input->getOption('admin-pass') ?: ($input->isInteractive()
             ? $io->askHidden('Admin password (hidden)', static function ($value): string {
                 if (trim((string) $value) === '') {
                     return 'Admin.3000';
@@ -76,38 +74,49 @@ class TenantSetupCommand extends TenantAwareCommand
             })
             : 'Admin.3000'));
 
-        $setup->companyRuc = (string) ($input->getOption('company-ruc') ?: ($input->isInteractive()
+        $companyRuc = (string) ($input->getOption('company-ruc') ?: ($input->isInteractive()
             ? $io->ask('Company RUC (11 digits)', '20123456789')
             : '20123456789'));
 
-        $setup->companyBusinessName = (string) ($input->getOption('company-name') ?: ($input->isInteractive()
+        $companyBusinessName = (string) ($input->getOption('company-name') ?: ($input->isInteractive()
             ? $io->ask('Company business name', 'Empresa Demo')
             : 'Empresa Demo'));
 
-        $setup->companyTradeName = (string) ($input->getOption('company-trade') ?: ($input->isInteractive()
+        $companyTradeName = (string) ($input->getOption('company-trade') ?: ($input->isInteractive()
             ? $io->ask('Company trade name', 'Demo')
             : 'Demo'));
 
-        $setup->companyFiscalAddress = (string) ($input->getOption('company-address') ?: ($input->isInteractive()
+        $companyFiscalAddress = (string) ($input->getOption('company-address') ?: ($input->isInteractive()
             ? $io->ask('Company fiscal address', 'Av. Principal 123')
             : 'Av. Principal 123'));
 
-        $setup->companyPhone = (string) ($input->getOption('company-phone') ?: ($input->isInteractive()
+        $companyPhone = (string) ($input->getOption('company-phone') ?: ($input->isInteractive()
             ? $io->ask('Company phone', '999999999')
             : '999999999'));
 
-        $setup->branchName = (string) ($input->getOption('branch-name') ?: ($input->isInteractive()
+        $branchName = (string) ($input->getOption('branch-name') ?: ($input->isInteractive()
             ? $io->ask('Branch name', 'Principal')
             : 'Principal'));
 
-        $setup->branchAddress = (string) ($input->getOption('branch-address') ?: ($input->isInteractive()
+        $branchAddress = (string) ($input->getOption('branch-address') ?: ($input->isInteractive()
             ? $io->ask('Branch address', 'Av. Principal 123')
             : 'Av. Principal 123'));
 
-        $setup->branchPhone = (string) ($input->getOption('branch-phone') ?: ($input->isInteractive()
+        $branchPhone = (string) ($input->getOption('branch-phone') ?: ($input->isInteractive()
             ? $io->ask('Branch phone', '999999999')
             : '999999999'));
 
-        return $setup;
+        return new InitialTenantSetupRequest(
+            $adminUsername,
+            $adminPassword,
+            $companyRuc,
+            $companyBusinessName,
+            $companyTradeName,
+            $companyFiscalAddress,
+            $companyPhone,
+            $branchName,
+            $branchAddress,
+            $branchPhone,
+        );
     }
 }

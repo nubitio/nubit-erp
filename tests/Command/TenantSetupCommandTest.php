@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\ControlPlane\Tenant\Command\TenantSetupCommand;
+use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
+use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Dto\Setup\InitialSetupInput;
-use App\Setup\InitialSetupService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -19,10 +19,10 @@ final class TenantSetupCommandTest extends TestCase
 {
     public function testUsesDefaultValuesWhenRunNonInteractivelyWithoutOptions(): void
     {
-        $initialSetupService = $this->createMock(InitialSetupService::class);
+        $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
         $initialSetupService->expects(self::once())
             ->method('configure')
-            ->with(self::callback(function (InitialSetupInput $input): bool {
+            ->with(self::callback(function (InitialTenantSetupRequest $input): bool {
                 self::assertSame('admin', $input->adminUsername);
                 self::assertSame('Admin.3000', $input->adminPassword);
                 self::assertSame('20123456789', $input->companyRuc);
@@ -48,10 +48,10 @@ final class TenantSetupCommandTest extends TestCase
 
     public function testUsesOptionValuesWhenProvided(): void
     {
-        $initialSetupService = $this->createMock(InitialSetupService::class);
+        $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
         $initialSetupService->expects(self::once())
             ->method('configure')
-            ->with(self::callback(function (InitialSetupInput $input): bool {
+            ->with(self::callback(function (InitialTenantSetupRequest $input): bool {
                 self::assertSame('ops-admin', $input->adminUsername);
                 self::assertSame('s3cret', $input->adminPassword);
                 self::assertSame('20987654321', $input->companyRuc);
@@ -88,7 +88,7 @@ final class TenantSetupCommandTest extends TestCase
 
     public function testReturnsSuccessAndWarnsWhenSetupThrows(): void
     {
-        $initialSetupService = $this->createMock(InitialSetupService::class);
+        $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
         $initialSetupService->method('configure')->willThrowException(new \RuntimeException('already configured'));
 
         $command = $this->newCommand($initialSetupService);
@@ -100,7 +100,7 @@ final class TenantSetupCommandTest extends TestCase
         self::assertStringContainsString('Initial setup skipped: already configured', $tester->getDisplay());
     }
 
-    private function newCommand(InitialSetupService $initialSetupService): TenantSetupCommand
+    private function newCommand(InitialTenantSetupPortInterface $initialSetupService): TenantSetupCommand
     {
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);

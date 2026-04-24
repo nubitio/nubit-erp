@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Messenger;
 
 use App\Core\Context\TenantContext;
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
@@ -14,7 +14,7 @@ final readonly class TenantContextMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private TenantContext $tenantContext,
-        private TenantConnectionSwitcher $tenantConnectionSwitcher,
+        private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
     ) {
     }
 

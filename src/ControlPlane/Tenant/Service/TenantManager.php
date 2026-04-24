@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -16,7 +17,7 @@ use Symfony\Component\Yaml\Yaml;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
-readonly class TenantManager
+readonly class TenantManager implements TenantRegistryInterface
 {
     private const int CACHE_TTL = 300;
 
