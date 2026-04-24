@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Controller;
 
 use App\ControlPlane\Billing\Service\PlanManager;
-use App\ControlPlane\Certificate\CertificateLifecycleService;
+use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use App\ControlPlane\Tenant\Repository\TenantPaymentEventRepository;
@@ -48,7 +48,7 @@ class TenantController extends AbstractController
         private readonly TenantProvisionRepository $provisionRepository,
         private readonly TenantPaymentEventRepository $paymentEventRepository,
         private readonly TenantNotificationService $tenantNotificationService,
-        private readonly CertificateLifecycleService $certificateLifecycleService,
+        private readonly CertificateLifecycleServiceInterface $certificateLifecycleService,
         private readonly LoggerInterface $logger,
         private readonly MessageBusInterface $messageBus,
     ) {
@@ -120,6 +120,30 @@ class TenantController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+    }
+
+    #[Route('/{id}/certificates/{certificateId}', name: 'admin_tenant_certificate_detail', methods: ['GET'])]
+    public function certificateDetail(int $id, int $certificateId): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        try {
+            $certificate = $this->certificateLifecycleService->detail((string)$tenant['name'], $certificateId);
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Unable to load certificate: ' . $exception->getMessage());
+
+            return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+        }
+
+        return $this->render('admin/tenant/certificate_detail.html.twig', [
+            'tenant' => $tenant,
+            'certificate' => $certificate,
+        ]);
     }
 
     #[Route('/{id}/certificates/{ruc}/revoke', name: 'admin_tenant_certificate_revoke', methods: ['POST'])]

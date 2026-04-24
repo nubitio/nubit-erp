@@ -15,7 +15,7 @@ use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Mime\Email;
 
-final readonly class CertificateAlertService
+final readonly class CertificateAlertService implements CertificateAlertServiceInterface
 {
     private const int DEFAULT_DEDUP_SECONDS = 86400;
 
