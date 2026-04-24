@@ -12,7 +12,7 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
 {
     public function __construct(
         private TenantRegistryInterface $tenantRegistry,
-        private TenantCertificateRepository $repository,
+        private TenantCertificateRepositoryInterface $repository,
         private CertificateMetadataExtractor $metadataExtractor,
         private CertificateStatusPolicy $statusPolicy,
         private ElectronicBillingCompanyPortInterface $electronicBillingCompany,

@@ -19,7 +19,7 @@ use Doctrine\DBAL\Exception;
  *   2 = ROLE_ADMIN
  *   3 = ROLE_CASHIER
  */
-final readonly class UserNotificationService
+final readonly class UserNotificationService implements UserNotificationServiceInterface
 {
     /** @var array<string, int> */
     private const array ROLE_INT_MAP = [
