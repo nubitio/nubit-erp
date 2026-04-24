@@ -22,6 +22,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class NoteRepository implements NoteRepositoryInterface
 {
+    use LycetUrlBuilder;
+
     public function __construct(
         private SerializerInterface $serializer,
         private HttpClientInterface $httpClient,
@@ -43,7 +45,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
     #[Override]
     public function send(Note $note): DocumentResponse
     {
-        $url = $this->apiBaseUrl . 'note/send?token=' . $this->apiToken;
+        $url = $this->lycetUrl('note/send');
         $requestBody = $this->serializer->serialize($note, 'json');
 
         $tenantId = $note->getCompany()?->getRuc() ?? 'unknown';
@@ -71,7 +73,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
                 'tax_document_id' => $taxDocumentId,
                 'exception'       => $e,
             ]);
-            throw $e;
+            $this->maskAndRethrow($e);
         }
 
         $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
@@ -115,7 +117,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
     {
         $fileRequest = new FileRequest($note);
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
-        $url = $this->apiBaseUrl . 'note/pdf?token=' . $this->apiToken;
+        $url = $this->lycetUrl('note/pdf');
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -143,9 +145,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
             'numero' => $note->getCorrelativo(),
         ];
 
-        $urlParams = http_build_query($params);
-        $baseUrl = $this->apiBaseUrl . 'note/status?token=' . $this->apiToken;
-        $url = $baseUrl . ('&' . $urlParams);
+        $url = $this->lycetUrl('note/status', $params);
 
         $response = $this->httpClient->request('GET', $url);
 

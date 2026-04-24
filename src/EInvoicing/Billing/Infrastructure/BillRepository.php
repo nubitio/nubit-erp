@@ -27,6 +27,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class BillRepository implements BillRepositoryInterface
 {
+    use LycetUrlBuilder;
+
     public function __construct(
         private SerializerInterface $serializer,
         private LoggerInterface $logger,
@@ -51,7 +53,8 @@ readonly class BillRepository implements BillRepositoryInterface
     public function sendBill(Invoice $invoice): DocumentResponse
     {
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = $this->apiBaseUrl . 'invoice/send?token=' . $this->apiToken;
+        $url = $this->lycetUrl('invoice/send');
+        $safeUrl = $this->lycetUrlSafe('invoice/send');
         $taxDocumentId = $invoice->getSerie() . '-' . $invoice->getCorrelativo();
         $tenantId = (string) ($this->tenantContext->getTenantId() ?? 'unknown');
 
@@ -107,10 +110,11 @@ readonly class BillRepository implements BillRepositoryInterface
                 'duration_ms'     => $durationMs,
                 'tenant_id'       => $tenantId,
                 'tax_document_id' => $taxDocumentId,
+                'url'             => $safeUrl,
                 'exception'       => $e,
             ]);
 
-            throw $e;
+            $this->maskAndRethrow($e);
         }
     }
 
@@ -125,7 +129,7 @@ readonly class BillRepository implements BillRepositoryInterface
     public function getXml(Invoice $invoice): string
     {
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = $this->apiBaseUrl . 'invoice/xml?token=' . $this->apiToken;
+        $url = $this->lycetUrl('invoice/xml');
 
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
@@ -163,7 +167,7 @@ readonly class BillRepository implements BillRepositoryInterface
         );
 
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
-        $url = $this->apiBaseUrl . 'invoice/pdf?token=' . $this->apiToken;
+        $url = $this->lycetUrl('invoice/pdf');
 
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
@@ -192,9 +196,7 @@ readonly class BillRepository implements BillRepositoryInterface
             'numero' => $invoice->getCorrelativo(),
         ];
 
-        $urlParams = http_build_query($params);
-        $baseUrl = $this->apiBaseUrl . 'invoice/status?token=' . $this->apiToken;
-        $url = $baseUrl . ('&' . $urlParams);
+        $url = $this->lycetUrl('invoice/status', $params);
 
         $response = $this->httpClient->request('GET', $url);
 
