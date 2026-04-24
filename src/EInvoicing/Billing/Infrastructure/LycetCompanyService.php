@@ -23,6 +23,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 readonly class LycetCompanyService implements LycetCompanyServiceInterface
 {
+    use LycetUrlBuilder;
+
     public function __construct(
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
@@ -50,7 +52,7 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
         ?string $clientId = null,
         ?string $clientSecret = null,
     ): void {
-        $url = $this->buildUrl("configuration/company/{$ruc}");
+        $url = $this->lycetUrl("configuration/company/{$ruc}");
 
         $payload = [
             'SOL_USER'    => $solUser,
@@ -74,12 +76,17 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
 
         $this->logger->info('lycet.company.upsert', ['ruc' => $ruc]);
 
-        $response = $this->httpClient->request('PUT', $url, [
-            'headers' => ['Content-Type' => 'application/json'],
-            'json'    => $payload,
-        ]);
+        try {
+            $response = $this->httpClient->request('PUT', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json'    => $payload,
+            ]);
 
-        $response->getContent(); // throws on 4xx/5xx
+            $response->getContent(); // throws on 4xx/5xx
+        } catch (\Throwable $e) {
+            $this->maskAndRethrow($e);
+        }
+
         $this->logger->info('lycet.company.upsert.ok', ['ruc' => $ruc]);
     }
 
@@ -91,16 +98,21 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
      */
     public function uploadCompanyLogo(string $ruc, string $imageData): void
     {
-        $url = $this->buildUrl("configuration/company/{$ruc}/logo");
+        $url = $this->lycetUrl("configuration/company/{$ruc}/logo");
 
         $this->logger->info('lycet.company.logo.upload', ['ruc' => $ruc]);
 
-        $response = $this->httpClient->request('PUT', $url, [
-            'headers' => ['Content-Type' => 'application/json'],
-            'json'    => ['logo' => base64_encode($imageData)],
-        ]);
+        try {
+            $response = $this->httpClient->request('PUT', $url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json'    => ['logo' => base64_encode($imageData)],
+            ]);
 
-        $response->getContent();
+            $response->getContent();
+        } catch (\Throwable $e) {
+            $this->maskAndRethrow($e);
+        }
+
         $this->logger->info('lycet.company.logo.upload.ok', ['ruc' => $ruc]);
     }
 
@@ -112,20 +124,17 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
      */
     public function removeCompany(string $ruc): void
     {
-        $url = $this->buildUrl("configuration/company/{$ruc}");
+        $url = $this->lycetUrl("configuration/company/{$ruc}");
 
         $this->logger->info('lycet.company.remove', ['ruc' => $ruc]);
 
-        $response = $this->httpClient->request('DELETE', $url);
-        $response->getContent();
+        try {
+            $response = $this->httpClient->request('DELETE', $url);
+            $response->getContent();
+        } catch (\Throwable $e) {
+            $this->maskAndRethrow($e);
+        }
 
         $this->logger->info('lycet.company.remove.ok', ['ruc' => $ruc]);
-    }
-
-    private function buildUrl(string $path): string
-    {
-        $base = rtrim($this->apiBaseUrl, '/');
-
-        return "{$base}/api/v1/{$path}?token={$this->apiToken}";
     }
 }

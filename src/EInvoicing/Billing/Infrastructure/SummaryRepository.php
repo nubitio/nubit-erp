@@ -22,6 +22,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class SummaryRepository implements SummaryRepositoryInterface
 {
+    use LycetUrlBuilder;
+
     public function __construct(
         private Connection $connection,
         private SerializerInterface $serializer,
@@ -60,7 +62,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
     #[Override]
     public function createSummary(Summary $summary): SummaryResponse
     {
-        $url = $this->apiBaseUrl . 'summary/send?token=' . $this->apiToken;
+        $url = $this->lycetUrl('summary/send');
         $requestBody = $this->serializer->serialize($summary, 'json');
         $response = $this->httpClient->request('POST', $url, [
             'headers' => [
@@ -85,7 +87,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
     #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
-        $url = $this->apiBaseUrl . 'summary/status?token=' . $this->apiToken . '&ticket=' . $ticket . '&ruc=' . $ruc;
+        $url = $this->lycetUrl('summary/status', ['ticket' => $ticket, 'ruc' => $ruc]);
         $response = $this->httpClient->request('GET', $url);
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */

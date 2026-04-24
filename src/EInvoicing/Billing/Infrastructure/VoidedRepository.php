@@ -22,6 +22,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class VoidedRepository implements VoidedRepositoryInterface
 {
+    use LycetUrlBuilder;
+
     public function __construct(
         private Connection $connection,
         private SerializerInterface $serializer,
@@ -71,14 +73,18 @@ SQL,
     public function voidInvoice(Voided $voided): SummaryResponse
     {
         $requestBody = $this->serializer->serialize($voided, 'json');
-        $url = $this->apiBaseUrl . 'voided/send?token=' . $this->apiToken;
-        $response = $this->httpClient->request('POST', $url, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => $requestBody,
-        ]);
-        $responseBody = $response->getContent();
+        $url = $this->lycetUrl('voided/send');
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => $requestBody,
+            ]);
+            $responseBody = $response->getContent();
+        } catch (\Throwable $e) {
+            $this->maskAndRethrow($e);
+        }
         /** @var SummaryResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, SummaryResponse::class, 'json');
 
@@ -95,7 +101,7 @@ SQL,
     #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
-        $url = $this->apiBaseUrl . 'voided/status?token=' . $this->apiToken . '&ticket=' . $ticket . '&ruc=' . $ruc;
+        $url = $this->lycetUrl('voided/status', ['ticket' => $ticket, 'ruc' => $ruc]);
         $response = $this->httpClient->request('GET', $url);
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */
