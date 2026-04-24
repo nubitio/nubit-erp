@@ -19,6 +19,10 @@
             <p class="text-muted mb-0">Manage tenant settings, domains, and provisioning.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <a href="{{ path('admin_tenant_certificates', {'id': tenant.id}) }}"
+               class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-shield-lock me-1"></i> Certificates
+            </a>
             <a href="{{ path('admin_tenant_notifications', {'id': tenant.id}) }}"
                class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-bell me-1"></i> Notifications

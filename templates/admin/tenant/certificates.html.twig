@@ -1,0 +1,110 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Certificates - {{ tenant.name }}{% endblock %}
+{% block nav_tenants %}active{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_tenant_index') }}">Tenants</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_tenant_edit', {'id': tenant.id}) }}">{{ tenant.name }}</a></li>
+            <li class="breadcrumb-item active">Certificates</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h1 class="h4 mb-0">SUNAT certificates</h1>
+            <p class="text-muted mb-0">Manage certificate upload, renewal and revocation for {{ tenant.name }}.</p>
+        </div>
+        <a href="{{ path('admin_tenant_edit', {'id': tenant.id}) }}" class="btn btn-outline-secondary btn-sm">
+            Back to tenant
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Upload / renew certificate</h2>
+                    <form action="{{ path('admin_tenant_certificate_upload', {'id': tenant.id}) }}"
+                          method="post" enctype="multipart/form-data" class="row g-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                        <div class="col-12">
+                            <label class="form-label" for="ruc">RUC</label>
+                            <input id="ruc" name="ruc" class="form-control" maxlength="11" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="sol_user">SOL user</label>
+                            <input id="sol_user" name="sol_user" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="sol_pass">SOL password</label>
+                            <input id="sol_pass" name="sol_pass" type="password" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="certificate">PEM certificate</label>
+                            <input id="certificate" name="certificate" type="file" accept=".pem,.crt" class="form-control" required>
+                            <div class="form-text">The PEM is sent to lycet and only metadata is persisted in ControlPlane.</div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-primary" type="submit">Upload / renew</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Registered certificates</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th>RUC</th>
+                                <th>Status</th>
+                                <th>Expires</th>
+                                <th>Fingerprint</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for certificate in certificates %}
+                                <tr>
+                                    <td class="fw-semibold">{{ certificate.ruc }}</td>
+                                    <td>
+                                        {% set color = certificate.status.value == 'expired' ? 'danger' : (certificate.status.value == 'expiring_soon' ? 'warning' : (certificate.status.value == 'active' ? 'success' : 'secondary')) %}
+                                        <span class="badge bg-{{ color }}-subtle text-{{ color }}">{{ certificate.status.value }}</span>
+                                    </td>
+                                    <td>{{ certificate.expiresAt|date('Y-m-d') }}</td>
+                                    <td><code>{{ certificate.fingerprintSha256|slice(0, 12) }}</code></td>
+                                    <td class="text-end">
+                                        {% if certificate.status.value in ['active', 'expiring_soon', 'expired'] %}
+                                            <form action="{{ path('admin_tenant_certificate_revoke', {'id': tenant.id, 'ruc': certificate.ruc}) }}"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                                <input type="hidden" name="reason" value="Revoked from ControlPlane UI">
+                                                <button class="btn btn-outline-danger btn-sm" type="submit"
+                                                        onclick="return confirm('Revoke certificate for {{ certificate.ruc }}?');">
+                                                    Revoke
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-muted text-center py-4">No certificates registered.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
