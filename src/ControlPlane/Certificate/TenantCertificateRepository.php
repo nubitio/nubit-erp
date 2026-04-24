@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 
-final readonly class TenantCertificateRepository
+final readonly class TenantCertificateRepository implements TenantCertificateRepositoryInterface
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,

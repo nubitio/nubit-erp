@@ -6,7 +6,7 @@ namespace App\ControlPlane\Certificate;
 
 use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
 use App\Notification\NotificationType;
-use App\Notification\UserNotificationService;
+use App\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;
@@ -20,11 +20,11 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
     private const int DEFAULT_DEDUP_SECONDS = 86400;
 
     public function __construct(
-        private TenantCertificateRepository $repository,
+        private TenantCertificateRepositoryInterface $repository,
         private CertificateStatusPolicy $statusPolicy,
         private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
         private ConnectionRegistry $connectionRegistry,
-        private UserNotificationService $userNotificationService,
+        private UserNotificationServiceInterface $userNotificationService,
         private MailerInterface $mailer,
         private HubInterface $hub,
         private LoggerInterface $logger,

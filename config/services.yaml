@@ -94,6 +94,12 @@ services:
   App\ControlPlane\Certificate\CertificateAlertServiceInterface:
     class: App\ControlPlane\Certificate\CertificateAlertService
 
+  App\Notification\UserNotificationServiceInterface:
+    class: App\Notification\UserNotificationService
+
+  App\ControlPlane\Certificate\TenantCertificateRepositoryInterface:
+    class: App\ControlPlane\Certificate\TenantCertificateRepository
+
   App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
     class: App\ControlPlane\Subscription\Payment\PayPalGateway
 
