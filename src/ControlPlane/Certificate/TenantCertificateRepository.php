@@ -107,6 +107,13 @@ final readonly class TenantCertificateRepository
         $this->connection()->update('tenant_certificates', ['status' => $status->value], ['id' => $id]);
     }
 
+    public function markAlerted(int $id): void
+    {
+        $this->connection()->update('tenant_certificates', [
+            'last_alerted_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ], ['id' => $id]);
+    }
+
     private function connection(): Connection
     {
         return $this->connectionRegistry->getConnection('control_plane');

@@ -16,4 +16,5 @@ final class NotificationType
     public const string CASH_NOT_OPENED = 'cash_not_opened';
     public const string QUOTA_WARNING  = 'quota_warning';
     public const string DAILY_BRIEFING = 'daily_briefing';
+    public const string CERTIFICATE_EXPIRING = 'certificate_expiring';
 }

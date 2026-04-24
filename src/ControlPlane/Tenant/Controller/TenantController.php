@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Controller;
 
 use App\ControlPlane\Billing\Service\PlanManager;
+use App\ControlPlane\Certificate\CertificateLifecycleService;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use App\ControlPlane\Tenant\Repository\TenantPaymentEventRepository;
@@ -47,9 +48,121 @@ class TenantController extends AbstractController
         private readonly TenantProvisionRepository $provisionRepository,
         private readonly TenantPaymentEventRepository $paymentEventRepository,
         private readonly TenantNotificationService $tenantNotificationService,
+        private readonly CertificateLifecycleService $certificateLifecycleService,
         private readonly LoggerInterface $logger,
         private readonly MessageBusInterface $messageBus,
     ) {
+    }
+
+    #[Route('/{id}/certificates', name: 'admin_tenant_certificates', methods: ['GET'])]
+    public function certificates(int $id): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        try {
+            $certificates = $this->certificateLifecycleService->list((string)$tenant['name']);
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Unable to load certificates: ' . $exception->getMessage());
+            $certificates = [];
+        }
+
+        return $this->render('admin/tenant/certificates.html.twig', [
+            'tenant' => $tenant,
+            'certificates' => $certificates,
+        ]);
+    }
+
+    #[Route('/{id}/certificates', name: 'admin_tenant_certificate_upload', methods: ['POST'])]
+    public function uploadCertificate(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+        }
+
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $file = $request->files->get('certificate');
+        if ($file === null || !method_exists($file, 'getPathname')) {
+            $this->addFlash('error', 'Certificate PEM file is required.');
+
+            return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+        }
+
+        try {
+            $this->certificateLifecycleService->upsert(
+                (string)$tenant['name'],
+                trim((string)$request->request->get('ruc', '')),
+                trim((string)$request->request->get('sol_user', '')),
+                (string)$request->request->get('sol_pass', ''),
+                (string)file_get_contents($file->getPathname()),
+                $this->getUser()?->getUserIdentifier() ?? 'admin-ui',
+            );
+            $this->auditLogger->log('tenant.certificate.upsert', [
+                'tenant_id' => $id,
+                'tenant_name' => (string)$tenant['name'],
+                'ruc' => trim((string)$request->request->get('ruc', '')),
+            ]);
+            $this->addFlash('success', 'Certificate uploaded/renewed.');
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Certificate upload failed: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+    }
+
+    #[Route('/{id}/certificates/{ruc}/revoke', name: 'admin_tenant_certificate_revoke', methods: ['POST'])]
+    public function revokeCertificate(int $id, string $ruc, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+        }
+
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $reason = trim((string)$request->request->get('reason', ''));
+        if ($reason === '') {
+            $this->addFlash('error', 'Revocation reason is required.');
+
+            return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
+        }
+
+        try {
+            $this->certificateLifecycleService->revoke(
+                (string)$tenant['name'],
+                $ruc,
+                $this->getUser()?->getUserIdentifier() ?? 'admin-ui',
+                $reason,
+            );
+            $this->auditLogger->log('tenant.certificate.revoke', [
+                'tenant_id' => $id,
+                'tenant_name' => (string)$tenant['name'],
+                'ruc' => $ruc,
+            ]);
+            $this->addFlash('success', 'Certificate revoked.');
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Certificate revocation failed: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_certificates', ['id' => $id]);
     }
 
     #[Route('', name: 'admin_tenant_index')]
