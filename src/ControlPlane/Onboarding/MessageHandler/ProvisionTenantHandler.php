@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\ControlPlane\Onboarding\MessageHandler;
 
 use App\ControlPlane\Onboarding\Message\ProvisionTenantMessage;
+use App\ControlPlane\Onboarding\Security\SecretCipher;
 use App\ControlPlane\Onboarding\Service\TenantProvisioningService;
+use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -19,7 +21,9 @@ final readonly class ProvisionTenantHandler
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private TenantProvisioningService $tenantProvisioningService,
+        private SubscriptionManager $subscriptionManager,
         private LoggerInterface $logger,
+        private SecretCipher $secretCipher,
         #[Autowire(env: 'TENANT_DB_PASS')]
         private string $tenantDbPass,
         #[Autowire(env: 'DATABASE_URL')]
@@ -48,7 +52,7 @@ final readonly class ProvisionTenantHandler
             tenantName: $message->tenantName,
             subdomain: $message->subdomain,
             domain: $message->domain,
-            adminPassword: $message->adminPassword,
+            adminPassword: $this->secretCipher->decrypt($message->adminPasswordSecret),
             tenantDbPassword: $tenantDbPassword,
         );
 
@@ -62,7 +66,7 @@ final readonly class ProvisionTenantHandler
                 'provision_id' => $message->provisionId,
                 'provision_tenant' => $message->subdomain,
                 'exit_code' => $result['exit_code'],
-                'command_output' => mb_substr($combinedOutput, 0, 8000),
+                'command_output' => mb_substr($this->redactSecrets($combinedOutput), 0, 8000),
             ]);
 
             $this->markProvisionFailed(
@@ -92,6 +96,8 @@ final readonly class ProvisionTenantHandler
             [$tenantId, $message->provisionId],
             [ParameterType::INTEGER, ParameterType::INTEGER]
         );
+
+        $this->subscriptionManager->linkPendingProvisionSubscriptions($message->provisionId, $tenantId);
 
         $this->cp()->executeStatement(
             'INSERT INTO account_tenants (account_id, tenant_id, role, created_at)
@@ -139,5 +145,14 @@ final readonly class ProvisionTenantHandler
         }
 
         return isset($parts['pass']) ? rawurldecode((string) $parts['pass']) : '';
+    }
+
+    private function redactSecrets(string $output): string
+    {
+        return (string) preg_replace(
+            '/(--(?:admin-password|password)=)(\S+)/i',
+            '$1[REDACTED]',
+            $output,
+        );
     }
 }

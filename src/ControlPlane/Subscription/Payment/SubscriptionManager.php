@@ -62,7 +62,7 @@ final readonly class SubscriptionManager
     ): array {
         $conn = $this->cp();
         $conn->insert('subscriptions', [
-            'tenant_id' => 0,
+            'tenant_id' => null,
             'account_id' => $accountId,
             'provision_id' => $provisionId,
             'plan' => $plan,
@@ -134,6 +134,21 @@ final readonly class SubscriptionManager
             [$tenantId, $subscriptionId],
             [ParameterType::INTEGER, ParameterType::INTEGER],
         );
+    }
+
+    public function linkPendingProvisionSubscriptions(int $provisionId, int $tenantId): int
+    {
+        $subscriptionIds = $this->cp()->fetchFirstColumn(
+            'SELECT id FROM subscriptions WHERE provision_id = ? AND tenant_id IS NULL',
+            [$provisionId],
+            [ParameterType::INTEGER],
+        );
+
+        foreach ($subscriptionIds as $subscriptionId) {
+            $this->linkTenant((int) $subscriptionId, $tenantId);
+        }
+
+        return \count($subscriptionIds);
     }
 
     /**
@@ -249,6 +264,123 @@ final readonly class SubscriptionManager
                 'exception' => $e,
             ]);
         }
+    }
+
+    /**
+     * Atomically reserves a gateway event for processing inside the caller's transaction.
+     *
+     * Returns the payment_events.id to process, or null when the event was already completed.
+     */
+    public function beginPaymentEventProcessing(PaymentEvent $event, ?int $subscriptionId, ?int $tenantId): ?int
+    {
+        $conn = $this->cp();
+
+        $conn->executeStatement(
+            "INSERT INTO payment_events
+             (subscription_id, tenant_id, gateway, event_type, gateway_event_id, payload, processing_status, processed_at, last_error, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'in_progress', NULL, NULL, NOW(), NOW())
+             ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
+            [
+                $subscriptionId,
+                $tenantId,
+                $event->gateway,
+                $event->eventType,
+                $event->gatewayEventId,
+                json_encode($event->payload, JSON_THROW_ON_ERROR),
+            ],
+            [
+                $subscriptionId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                $tenantId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+            ],
+        );
+
+        $eventId = (int) $conn->lastInsertId();
+        $row = $conn->fetchAssociative(
+            'SELECT id, processed_at, processing_status FROM payment_events WHERE id = ? FOR UPDATE',
+            [$eventId],
+            [ParameterType::INTEGER],
+        );
+
+        if ($row === false) {
+            return null;
+        }
+
+        if (($row['processed_at'] ?? null) !== null || ($row['processing_status'] ?? null) === 'completed') {
+            return null;
+        }
+
+        $conn->executeStatement(
+            "UPDATE payment_events
+             SET subscription_id = ?, tenant_id = ?, event_type = ?, payload = ?, processing_status = 'in_progress', last_error = NULL, updated_at = NOW()
+             WHERE id = ?",
+            [
+                $subscriptionId,
+                $tenantId,
+                $event->eventType,
+                json_encode($event->payload, JSON_THROW_ON_ERROR),
+                $eventId,
+            ],
+            [
+                $subscriptionId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                $tenantId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::INTEGER,
+            ],
+        );
+
+        return $eventId;
+    }
+
+    public function completePaymentEvent(int $paymentEventId): void
+    {
+        $this->cp()->executeStatement(
+            "UPDATE payment_events
+             SET processing_status = 'completed', processed_at = NOW(), last_error = NULL, updated_at = NOW()
+             WHERE id = ?",
+            [$paymentEventId],
+            [ParameterType::INTEGER],
+        );
+    }
+
+    public function failPaymentEvent(PaymentEvent $event, ?int $subscriptionId, ?int $tenantId, string $error): void
+    {
+        $this->cp()->executeStatement(
+            "INSERT INTO payment_events
+             (subscription_id, tenant_id, gateway, event_type, gateway_event_id, payload, processing_status, processed_at, last_error, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'failed', NULL, ?, NOW(), NOW())
+             ON DUPLICATE KEY UPDATE
+                subscription_id = VALUES(subscription_id),
+                tenant_id = VALUES(tenant_id),
+                event_type = VALUES(event_type),
+                payload = VALUES(payload),
+                processing_status = 'failed',
+                processed_at = NULL,
+                last_error = VALUES(last_error),
+                updated_at = NOW()",
+            [
+                $subscriptionId,
+                $tenantId,
+                $event->gateway,
+                $event->eventType,
+                $event->gatewayEventId,
+                json_encode($event->payload, JSON_THROW_ON_ERROR),
+                mb_substr($error, 0, 1000),
+            ],
+            [
+                $subscriptionId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                $tenantId !== null ? ParameterType::INTEGER : ParameterType::NULL,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+            ],
+        );
     }
 
     /**

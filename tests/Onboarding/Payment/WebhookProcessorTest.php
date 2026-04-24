@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Onboarding\Payment;
 
 use App\ControlPlane\Onboarding\Message\ProvisionTenantMessage;
+use App\ControlPlane\Onboarding\Security\SecretCipher;
 use App\ControlPlane\Subscription\Payment\PaymentEvent;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use App\ControlPlane\Subscription\Payment\WebhookProcessor;
@@ -21,7 +22,11 @@ final class WebhookProcessorTest extends TestCase
     public function testSkipsAlreadyProcessedEvent(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            ['id' => 1, 'tenant_id' => 2, 'status' => 'active', 'account_id' => 3, 'plan' => 'basic'],
+            ['id' => 99, 'processed_at' => '2026-04-24 20:00:00', 'processing_status' => 'completed'],
+        );
+        $connection->expects(self::once())->method('executeStatement');
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('info');
@@ -32,10 +37,62 @@ final class WebhookProcessorTest extends TestCase
         $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.ACTIVATED', 'evt-1', 'sub-1'));
     }
 
+    public function testBusinessActionFailureLeavesPaymentEventRetryable(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            ['id' => 15, 'tenant_id' => 30, 'status' => 'active', 'account_id' => 11, 'plan' => 'basic'],
+            ['id' => 99, 'processed_at' => null, 'processing_status' => 'in_progress'],
+        );
+        $connection->method('isTransactionActive')->willReturn(true);
+        $connection->expects(self::once())->method('beginTransaction');
+        $connection->expects(self::once())->method('rollBack');
+        $connection->expects(self::never())->method('commit');
+
+        $executedSql = [];
+        $connection->expects(self::exactly(4))
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql, array $params = []) use (&$executedSql): int {
+                $executedSql[] = $sql;
+
+                if (str_contains($sql, 'UPDATE subscriptions SET status = ?') && ($params[0] ?? null) === 'past_due') {
+                    throw new \RuntimeException('transient action failure');
+                }
+
+                return 1;
+            });
+
+        $processor = $this->processor(
+            $connection,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(MessageBusInterface::class),
+        );
+
+        try {
+            $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.PAYMENT.FAILED', 'evt-retry', 'sub-15'));
+            self::fail('Expected business action failure to be rethrown.');
+        } catch (\RuntimeException $e) {
+            self::assertSame('transient action failure', $e->getMessage());
+        }
+
+        self::assertTrue(
+            array_any($executedSql, static fn (string $sql): bool => str_contains($sql, "processing_status = 'failed'")),
+            'Failure path must mark the payment event as failed for retry.'
+        );
+        self::assertFalse(
+            array_any($executedSql, static fn (string $sql): bool => str_contains($sql, "processing_status = 'completed'")),
+            'Failed business actions must not complete the payment event.'
+        );
+        self::assertTrue(
+            array_any($executedSql, static fn (string $sql): bool => str_contains($sql, 'processed_at = NULL')),
+            'Failed payment events must keep processed_at NULL so redelivery can retry.'
+        );
+    }
+
     public function testIgnoresUnhandledEventType(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
+        $connection->expects(self::never())->method('executeStatement');
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('debug');
@@ -47,7 +104,6 @@ final class WebhookProcessorTest extends TestCase
     public function testLogsUnknownSubscriptionAndPersistsEvent(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn(false);
         $connection->expects(self::once())->method('executeStatement');
 
@@ -61,7 +117,6 @@ final class WebhookProcessorTest extends TestCase
     public function testCancelEventCancelsSubscriptionAndSuspendsTenant(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 8,
             'tenant_id' => 20,
@@ -69,7 +124,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 11,
             'plan' => 'basic',
         ]);
-        $connection->expects(self::exactly(3))->method('executeStatement');
+        $connection->method('fetchOne')->willReturn('monthly');
+        $connection->expects(self::exactly(5))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -82,7 +138,7 @@ final class WebhookProcessorTest extends TestCase
     public function testPaymentCheckApprovedRenewsPastDueSubscription(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturnOnConsecutiveCalls(false, 'monthly');
+        $connection->method('fetchOne')->willReturn('monthly');
         $connection->method('fetchAssociative')->willReturn([
             'id' => 9,
             'tenant_id' => 0,
@@ -90,7 +146,7 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 11,
             'plan' => 'basic',
         ]);
-        $connection->expects(self::exactly(2))->method('executeStatement');
+        $connection->expects(self::exactly(4))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -108,8 +164,10 @@ final class WebhookProcessorTest extends TestCase
 
     public function testActivateEventTriggersProvisioningForPendingTenant(): void
     {
+        $cipher = new SecretCipher('test-secret');
+        $protectedPassword = $cipher->encrypt('secret');
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturnOnConsecutiveCalls(false, 'monthly');
+        $connection->method('fetchOne')->willReturn('monthly');
         $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
             [
                 'id' => 10,
@@ -119,24 +177,68 @@ final class WebhookProcessorTest extends TestCase
                 'plan' => 'pro',
                 'provision_id' => 55,
             ],
+            ['id' => 99, 'processed_at' => null, 'processing_status' => 'in_progress'],
             [
                 'id' => 55,
                 'account_id' => 13,
                 'tenant_name' => 'acme',
                 'domain' => 'acme.example.test',
-                'admin_password' => 'secret',
+                'admin_password' => $protectedPassword,
             ]
         );
-        $connection->expects(self::exactly(3))->method('executeStatement');
+        $connection->expects(self::exactly(5))->method('executeStatement');
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())
             ->method('dispatch')
-            ->with(self::isInstanceOf(ProvisionTenantMessage::class))
+            ->with(self::callback(static function (ProvisionTenantMessage $message) use ($cipher): bool {
+                return $message->adminPasswordSecret !== 'secret'
+                    && $cipher->decrypt($message->adminPasswordSecret) === 'secret';
+            }))
             ->willReturn(new Envelope(new \stdClass()));
 
-        $processor = $this->processor($connection, $this->createMock(LoggerInterface::class), $bus);
+        $processor = $this->processor($connection, $this->createMock(LoggerInterface::class), $bus, $cipher);
         $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.ACTIVATED', 'evt-6', 'sub-10'));
+    }
+
+    public function testActivateEventForAlreadyLinkedSubscriptionDoesNotDispatchProvisioning(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn('monthly');
+        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            [
+                'id' => 11,
+                'tenant_id' => 44,
+                'status' => 'pending',
+                'account_id' => 13,
+                'plan' => 'pro',
+                'provision_id' => 55,
+            ],
+            ['id' => 100, 'processed_at' => null, 'processing_status' => 'failed'],
+        );
+
+        $executedSql = [];
+        $connection->expects(self::exactly(4))
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$executedSql): int {
+                $executedSql[] = $sql;
+
+                return 1;
+            });
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects(self::never())->method('dispatch');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('info');
+
+        $processor = $this->processor($connection, $logger, $bus);
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.ACTIVATED', 'evt-retry-linked', 'sub-11'));
+
+        self::assertFalse(
+            array_any($executedSql, static fn (string $sql): bool => str_contains($sql, 'tenant_provisions')),
+            'An already-linked subscription must not enqueue or mutate provisioning rows during retry recovery.'
+        );
     }
 
     // ------------------------------------------------------------------ handlePastDue
@@ -144,7 +246,6 @@ final class WebhookProcessorTest extends TestCase
     public function testPastDueEventMarkesSubscriptionPastDue(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 15,
             'tenant_id' => 30,
@@ -152,8 +253,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 11,
             'plan' => 'basic',
         ]);
-        // executeStatement calls: logPaymentEvent (INSERT) + markPastDue (UPDATE)
-        $connection->expects(self::exactly(2))->method('executeStatement');
+        // executeStatement calls: reserve + mark in_progress + markPastDue + complete
+        $connection->expects(self::exactly(4))->method('executeStatement');
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning');
@@ -165,7 +266,6 @@ final class WebhookProcessorTest extends TestCase
     public function testPastDueEventWithZeroTenantIdDoesNotSuspendTenant(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 16,
             'tenant_id' => 0,
@@ -173,8 +273,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 11,
             'plan' => 'basic',
         ]);
-        // Only logPaymentEvent + markPastDue — no suspendTenant call
-        $connection->expects(self::exactly(2))->method('executeStatement');
+        // reserve + mark in_progress + markPastDue + complete — no suspendTenant call
+        $connection->expects(self::exactly(4))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -189,7 +289,6 @@ final class WebhookProcessorTest extends TestCase
     public function testSuspendEventSuspendsSubscriptionAndTenant(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 20,
             'tenant_id' => 40,
@@ -197,8 +296,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 12,
             'plan' => 'pro',
         ]);
-        // executeStatement calls: logPaymentEvent (INSERT) + suspend (UPDATE) + suspendTenant (UPDATE)
-        $connection->expects(self::exactly(3))->method('executeStatement');
+        // executeStatement calls: reserve + mark in_progress + suspend + suspendTenant + complete
+        $connection->expects(self::exactly(5))->method('executeStatement');
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning');
@@ -210,7 +309,6 @@ final class WebhookProcessorTest extends TestCase
     public function testSuspendEventWithZeroTenantIdDoesNotSuspendTenant(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 21,
             'tenant_id' => 0,
@@ -218,8 +316,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 12,
             'plan' => 'pro',
         ]);
-        // Only logPaymentEvent + suspend — no suspendTenant
-        $connection->expects(self::exactly(2))->method('executeStatement');
+        // reserve + mark in_progress + suspend + complete — no suspendTenant
+        $connection->expects(self::exactly(4))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -232,7 +330,6 @@ final class WebhookProcessorTest extends TestCase
     public function testDisputeCreatedEventAlsoTriggersSupend(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 22,
             'tenant_id' => 50,
@@ -240,7 +337,7 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 12,
             'plan' => 'pro',
         ]);
-        $connection->expects(self::exactly(3))->method('executeStatement');
+        $connection->expects(self::exactly(5))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -255,7 +352,6 @@ final class WebhookProcessorTest extends TestCase
     public function testCancelEventWithZeroTenantIdDoesNotSuspendTenant(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn([
             'id' => 25,
             'tenant_id' => 0,
@@ -263,8 +359,8 @@ final class WebhookProcessorTest extends TestCase
             'account_id' => 11,
             'plan' => 'basic',
         ]);
-        // Only logPaymentEvent + cancel — no suspendTenant
-        $connection->expects(self::exactly(2))->method('executeStatement');
+        // reserve + mark in_progress + cancel + complete — no suspendTenant
+        $connection->expects(self::exactly(4))->method('executeStatement');
 
         $processor = $this->processor(
             $connection,
@@ -288,7 +384,6 @@ final class WebhookProcessorTest extends TestCase
         ];
 
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn(false);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -312,7 +407,6 @@ final class WebhookProcessorTest extends TestCase
         ];
 
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
         $connection->method('fetchAssociative')->willReturn(false);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -329,8 +423,6 @@ final class WebhookProcessorTest extends TestCase
     public function testUnknownGatewayExitsCleanlyWithNoException(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchOne')->willReturn(false);
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('debug');
 
@@ -342,13 +434,14 @@ final class WebhookProcessorTest extends TestCase
         Connection $connection,
         LoggerInterface $logger,
         MessageBusInterface $bus,
+        ?SecretCipher $cipher = null,
     ): WebhookProcessor {
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
         $subscriptionManager = new SubscriptionManager($registry, $logger);
 
-        return new WebhookProcessor($subscriptionManager, $registry, $bus, $logger);
+        return new WebhookProcessor($subscriptionManager, $registry, $bus, $logger, $cipher ?? new SecretCipher('test-secret'));
     }
 
     /**
@@ -375,6 +468,9 @@ final class WebhookProcessorTest extends TestCase
      */
     private function connection(): Connection
     {
-        return $this->createMock(Connection::class);
+        $connection = $this->createMock(Connection::class);
+        $connection->method('lastInsertId')->willReturn('99');
+
+        return $connection;
     }
 }

@@ -318,20 +318,31 @@ final readonly class BinlogBackupService
             '--user=' . $user,
         ];
 
-        if ($password !== '') {
-            $cmd[] = '--password=' . $password;
-        }
-
         $cmd[] = '--result-file=' . $resultDir . '/';
         $cmd[] = $binlogFile;
 
-        $process = new Process($cmd);
+        $process = new Process($cmd, null, $this->mysqlPasswordEnv($password));
         $process->setTimeout(300);
         $process->run();
 
         if (!$process->isSuccessful()) {
             throw new RuntimeException('mariadb-binlog failed: ' . $process->getErrorOutput());
         }
+    }
+
+    /**
+     * @return array<string, string>|null
+     */
+    private function mysqlPasswordEnv(string $password): ?array
+    {
+        if ($password === '') {
+            return null;
+        }
+
+        return [
+            'MYSQL_PWD' => $password,
+            'MARIADB_PWD' => $password,
+        ];
     }
 
     private function compressFile(string $input, string $output): void

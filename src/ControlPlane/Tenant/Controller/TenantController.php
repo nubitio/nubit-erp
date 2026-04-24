@@ -940,6 +940,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/{id}/backup/{backupId}/download', name: 'admin_tenant_backup_download', methods: ['GET'])]
     public function downloadBackup(int $id, int $backupId): StreamedResponse
     {
@@ -948,17 +949,13 @@ class TenantController extends AbstractController
             throw $this->createNotFoundException('Tenant not found.');
         }
 
-        $localPath = $this->backupService->downloadBackup($backupId);
-        $filename = basename($localPath);
-
-        $backups = $this->backupService->listBackupsByTenantId($id);
-        foreach ($backups as $b) {
-            if ((int) $b['id'] === $backupId) {
-                $filename = (string) $b['filename'];
-                break;
-            }
+        $backup = $this->backupService->findBackupForTenant($backupId, $id);
+        if ($backup === null) {
+            throw $this->createNotFoundException('Backup not found.');
         }
 
+        $localPath = $this->backupService->downloadBackup($backupId);
+        $filename = (string) $backup['filename'];
         $isTemp = str_starts_with($localPath, sys_get_temp_dir());
 
         $response = new StreamedResponse(function () use ($localPath, $isTemp): void {

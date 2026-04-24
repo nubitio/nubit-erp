@@ -25,6 +25,9 @@ final readonly class TenantCertificate
         public ?string $revocationReason,
         public ?int $supersededById,
         public ?\DateTimeImmutable $lastAlertedAt,
+        public string $lycetSyncStatus = 'synced',
+        public ?string $lycetSyncError = null,
+        public ?\DateTimeImmutable $lycetSyncUpdatedAt = null,
     ) {
     }
 }

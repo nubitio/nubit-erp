@@ -32,7 +32,7 @@ final class Version20260227181000 extends AbstractMigration
         // tenants.id is signed INT, so tenant_id references must also be signed INT.
         $this->addSql('ALTER TABLE account_tenants MODIFY account_id INT UNSIGNED NOT NULL, MODIFY tenant_id INT NOT NULL');
         $this->addSql('ALTER TABLE tenant_provisions MODIFY tenant_id INT NULL, MODIFY account_id INT UNSIGNED NULL');
-        $this->addSql('ALTER TABLE subscriptions MODIFY tenant_id INT NOT NULL');
+        $this->addSql('ALTER TABLE subscriptions MODIFY tenant_id INT NULL');
         $this->addSql('ALTER TABLE payment_events MODIFY tenant_id INT NULL');
         $this->addSql('ALTER TABLE tenant_backups MODIFY tenant_id INT NOT NULL');
 
@@ -41,6 +41,7 @@ final class Version20260227181000 extends AbstractMigration
         $this->addSql('DELETE at FROM account_tenants at LEFT JOIN tenants t ON t.id = at.tenant_id WHERE t.id IS NULL');
         $this->addSql('UPDATE tenant_provisions tp LEFT JOIN tenants t ON t.id = tp.tenant_id SET tp.tenant_id = NULL WHERE tp.tenant_id IS NOT NULL AND t.id IS NULL');
         $this->addSql('UPDATE tenant_provisions tp LEFT JOIN accounts a ON a.id = tp.account_id SET tp.account_id = NULL WHERE tp.account_id IS NOT NULL AND a.id IS NULL');
+        $this->addSql('UPDATE subscriptions s LEFT JOIN tenants t ON t.id = s.tenant_id SET s.tenant_id = NULL WHERE s.tenant_id IS NOT NULL AND t.id IS NULL');
         $this->addSql('UPDATE subscriptions s LEFT JOIN tenant_provisions tp ON tp.id = s.provision_id SET s.provision_id = NULL WHERE s.provision_id IS NOT NULL AND tp.id IS NULL');
         $this->addSql('UPDATE payment_events pe LEFT JOIN subscriptions s ON s.id = pe.subscription_id SET pe.subscription_id = NULL WHERE pe.subscription_id IS NOT NULL AND s.id IS NULL');
         $this->addSql('UPDATE payment_events pe LEFT JOIN tenants t ON t.id = pe.tenant_id SET pe.tenant_id = NULL WHERE pe.tenant_id IS NOT NULL AND t.id IS NULL');
