@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use App\Core\Doctrine\DBAL\TenantConnection;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;

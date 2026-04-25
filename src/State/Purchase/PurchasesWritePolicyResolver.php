@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\State\Purchase;
 
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 
 final readonly class PurchasesWritePolicyResolver
 {

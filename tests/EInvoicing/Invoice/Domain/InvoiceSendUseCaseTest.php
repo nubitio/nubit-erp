@@ -8,7 +8,7 @@ use App\Core\Audit\AuditLogger;
 use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\CompanyContext;
+use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;

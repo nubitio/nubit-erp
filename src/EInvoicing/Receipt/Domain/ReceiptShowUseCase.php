@@ -6,7 +6,7 @@ namespace App\EInvoicing\Receipt\Domain;
 
 use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
-use App\Core\Service\CompanyContext;
+use App\Efact\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
 
 readonly class ReceiptShowUseCase

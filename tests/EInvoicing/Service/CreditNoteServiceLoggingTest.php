@@ -6,7 +6,7 @@ namespace App\Tests\EInvoicing\Service;
 
 use App\Core\Context\TenantContext;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\CompanyContext;
+use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\NoteConsultUseCase;
 use App\EInvoicing\Billing\Domain\NoteSendUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;

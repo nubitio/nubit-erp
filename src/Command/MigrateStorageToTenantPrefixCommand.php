@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ConnectionRegistry;

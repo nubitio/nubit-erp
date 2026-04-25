@@ -4,33 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Logging;
 
-use App\Core\Context\TenantContext;
-use Monolog\LogRecord;
-use OpenTelemetry\API\Trace\Span;
+use App\Platform\Observability\Logging\TenantLogProcessor as PlatformTenantLogProcessor;
 
-final class TenantLogProcessor
+final class TenantLogProcessor extends PlatformTenantLogProcessor
 {
-    public function __construct(
-        private readonly TenantContext $tenantContext,
-    ) {
-    }
-
-    public function __invoke(LogRecord $record): LogRecord
-    {
-        $context = $record->context;
-        $context['tenant_id'] = $this->tenantContext->getTenantId();
-        $context['tenant'] = $this->tenantContext->getTenantName();
-        $context['tenant_domain'] = $this->tenantContext->getTenantDomain();
-        $context['request_id'] = $this->tenantContext->getRequestId();
-
-        if (class_exists(Span::class)) {
-            $spanContext = Span::getCurrent()->getContext();
-            if ($spanContext->isValid()) {
-                $context['trace_id'] = $spanContext->getTraceId();
-                $context['span_id'] = $spanContext->getSpanId();
-            }
-        }
-
-        return $record->with(context: $context);
-    }
 }

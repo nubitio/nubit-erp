@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashSession;

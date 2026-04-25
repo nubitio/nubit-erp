@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Invoice\Domain;
 use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\CompanyContext;
+use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\EInvoicing\Invoice\Domain\InvoiceConsultUseCase;
 use App\Entity\TaxDocument;

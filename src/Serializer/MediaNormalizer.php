@@ -8,7 +8,7 @@ use Override;
 use ArrayObject;
 use App\Core\Context\TenantContext;
 use App\Core\Filesystem\S3UrlResolver;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;

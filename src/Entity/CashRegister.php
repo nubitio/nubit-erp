@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Core\Http\ApiResponse;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Repository\CashRegisterRepository;

@@ -70,17 +70,44 @@ services:
   App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface:
     class: App\EInvoicing\Billing\Infrastructure\LycetCompanyService
 
+  # SPEC-004 transitional Platform boundary bindings:
+  # Keep the legacy App\Core\... service IDs as the primary definitions while
+  # the application still imports them broadly. New App\Platform\... contracts
+  # alias back to those same services so both namespaces resolve consistently.
+  # Future migration direction: move consumers to App\Platform\... contracts,
+  # then flip the primary definitions and eventually remove the Core shims.
   App\Core\Platform\Tenant\TenantRegistryInterface:
     class: App\ControlPlane\Tenant\Service\TenantManager
+
+  App\Platform\Tenant\Contract\TenantRegistryInterface:
+    alias: App\Core\Platform\Tenant\TenantRegistryInterface
+
+  App\Platform\Tenant\Context\TenantContext:
+    # TenantContext is stateful per request/message; this alias intentionally
+    # prevents a second independent Platform context instance from being built.
+    alias: App\Core\Context\TenantContext
 
   App\Core\Platform\Tenant\TenantConnectionSwitcherInterface:
     class: App\ControlPlane\Tenant\Service\TenantConnectionSwitcher
 
+  App\Platform\Tenant\Contract\TenantConnectionSwitcherInterface:
+    alias: App\Core\Platform\Tenant\TenantConnectionSwitcherInterface
+
   App\Core\Platform\Tenant\TenantBackupRunnerInterface:
     class: App\ControlPlane\Tenant\Service\TenantBackupService
 
+  App\Platform\Tenant\Contract\TenantBackupRunnerInterface:
+    alias: App\Core\Platform\Tenant\TenantBackupRunnerInterface
+
   App\Core\Platform\Billing\QuotaEnforcerInterface:
     class: App\ControlPlane\Billing\Service\TenantQuotaService
+
+  App\Platform\Quota\Contract\QuotaEnforcerInterface:
+    alias: App\Core\Platform\Billing\QuotaEnforcerInterface
+
+  App\Platform\Quota\Contract\QuotaResourceResolverInterface:
+    # Efact-owned adapter: maps concrete app entities to portable quota resource names.
+    class: App\ControlPlane\Billing\Quota\EfactEntityQuotaResourceResolver
 
   App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface:
     class: App\ControlPlane\Tenant\Adapter\InitialSetupServiceAdapter
@@ -114,6 +141,18 @@ services:
   App\Core\Logging\TenantLogProcessor:
     tags:
       - { name: monolog.processor }
+
+  App\Platform\Observability\Logging\TenantLogProcessor:
+    # Legacy processor keeps the Monolog tag; Platform consumers share the tagged service.
+    alias: App\Core\Logging\TenantLogProcessor
+
+  App\Platform\Cache\CacheManager:
+    # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
+    alias: App\Core\Cache\CacheManager
+
+  App\Platform\Filesystem\FileManager:
+    # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
+    alias: App\Core\Filesystem\FileManager
 
   App\Core\Audit\AuditLogger: ~
 

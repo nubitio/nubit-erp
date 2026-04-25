@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\Core\Service\BinlogBackupService;
+use App\ControlPlane\Backup\BinlogBackupService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

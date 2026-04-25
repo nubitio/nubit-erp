@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\ControlPlane\Billing\Service;
 
 use App\Core\Context\TenantContext;
-use App\Core\Doctrine\DBAL\TenantConnection;
 use App\Core\Exception\QuotaExceededException;
 use App\Core\Exception\ServiceException;
 use App\Core\Platform\Billing\QuotaEnforcerInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\Persistence\ConnectionRegistry;
 
 final class TenantQuotaService implements QuotaEnforcerInterface

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Repository;
 
 use App\Core\Cache\CacheManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Repository\DashboardRepository;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;

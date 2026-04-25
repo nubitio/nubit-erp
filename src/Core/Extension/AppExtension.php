@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Extension;
 
 use App\Core\Security\CspNonceService;
-use App\Core\Service\LogoProvider;
+use App\Efact\Service\LogoProvider;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Attribute\AsTwigFunction;

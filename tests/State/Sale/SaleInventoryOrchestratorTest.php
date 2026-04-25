@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\Entity\Product;
 use App\Entity\SaleRecord;

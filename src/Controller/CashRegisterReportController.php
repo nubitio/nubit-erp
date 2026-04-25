@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Core\Service\PdfExporter;
+use App\Efact\Service\PdfExporter;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;

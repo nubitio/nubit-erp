@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use App\Core\Doctrine\DBAL\TenantConnection;
 use App\Core\Exception\ServiceException;
 use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Driver\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
 

@@ -6,7 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SupplierRepository;
 use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;

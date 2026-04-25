@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Service\ExchangeRateSyncService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Service;
 
 use App\Core\Platform\Tenant\TenantBackupRunnerInterface;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;

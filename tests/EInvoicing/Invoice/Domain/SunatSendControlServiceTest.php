@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Invoice\Domain;
 
-use App\Core\Service\SettingsService;
+use App\Efact\Service\SettingsService;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Invoice\Domain\SunatSendControlService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
