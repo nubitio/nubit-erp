@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Core\Extension\RemoteEscposImage;
-use App\Core\Service\LogoProvider;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\LogoProvider;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Sale\SaleItemDto;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;

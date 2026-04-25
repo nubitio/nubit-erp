@@ -6,7 +6,7 @@ namespace App\EInvoicing\Sale\Void;
 
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Billing\Domain\VoidedCreateUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;

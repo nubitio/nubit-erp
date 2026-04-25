@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
 use App\Dto\CashRegister\CashShiftXReportDto;

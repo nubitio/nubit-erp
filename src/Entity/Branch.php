@@ -6,7 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

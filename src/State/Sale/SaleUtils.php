@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Entity\SaleRecord;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;

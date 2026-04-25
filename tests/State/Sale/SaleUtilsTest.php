@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\SettingsService;
+use App\Efact\Service\SettingsService;
 use App\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
 use App\Entity\Warehouse;

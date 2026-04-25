@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\EInvoicing\Invoice\Domain;
 
 use App\Core\Audit\AuditLogger;
-use App\Core\Service\CompanyContext;
+use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Entity\TaxDocument;
 use App\Repository\TaxDocumentEventRepository;
 use Doctrine\DBAL\Exception;

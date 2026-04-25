@@ -3,7 +3,7 @@ doctrine:
     default_connection: tenant
     connections:
       tenant:
-        wrapper_class: App\Core\Doctrine\DBAL\TenantConnection
+        wrapper_class: App\Efact\Doctrine\DBAL\TenantConnection
         url: '%env(resolve:DATABASE_URL)%'
         mapping_types:
           enum: string
@@ -33,10 +33,10 @@ doctrine:
     controller_resolver: {}
     filters:
       branch_filter:
-        class: App\Core\Doctrine\Filter\BranchFilter
+        class: App\Efact\Doctrine\Filter\BranchFilter
         enabled: false
       soft_delete:
-        class: App\Core\Doctrine\Filter\SoftDeleteFilter
+        class: App\Efact\Doctrine\Filter\SoftDeleteFilter
         enabled: false
 
 when@test:

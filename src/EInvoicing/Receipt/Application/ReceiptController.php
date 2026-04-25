@@ -6,9 +6,9 @@ namespace App\EInvoicing\Receipt\Application;
 
 use App\Core\Base\BaseController;
 use App\Core\Exception\ServiceException;
-use App\Core\Service\PdfExporter;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\PdfExporter;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Receipt\Domain\ReceiptCdrUseCase;
 use App\EInvoicing\Receipt\Domain\ReceiptPdfUseCase;
 use App\EInvoicing\Receipt\Domain\ReceiptRequest;

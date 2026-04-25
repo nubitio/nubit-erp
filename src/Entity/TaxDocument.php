@@ -16,7 +16,7 @@ use App\Controller\Api\ConsultInvoice;
 use App\Controller\Api\SendInvoiceEmail;
 use App\Controller\Api\SendTaxDocument;
 use App\Controller\Api\ValidateInvoice;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
 use App\Repository\TaxDocumentRepository;
 use App\State\TaxDocument\TaxDocumentProcessor;

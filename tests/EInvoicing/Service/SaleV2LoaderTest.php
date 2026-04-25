@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Service;
 
-use App\Core\Service\SettingsService;
+use App\Efact\Service\SettingsService;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Customer;
 use App\Entity\SaleRecord;

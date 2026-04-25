@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
-use App\Core\Platform\Billing\QuotaEnforcerInterface;
-use App\Entity\Branch;
-use App\Entity\Customer;
-use App\Entity\Product;
-use App\Entity\TaxDocument;
-use App\Entity\User;
+use App\Platform\Quota\Contract\QuotaEnforcerInterface;
+use App\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -22,17 +18,10 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 #[AsDoctrineListener(event: Events::onClear)]
 final readonly class QuotaEnforcementListener
 {
-    private const array ENTITY_RESOURCE_MAP = [
-        User::class => 'users',
-        Customer::class => 'customers',
-        Product::class => 'products',
-        TaxDocument::class => 'invoices',
-        Branch::class => 'branches',
-    ];
-
     public function __construct(
         private QuotaEnforcerInterface $quotaService,
         private TenantContext $tenantContext,
+        private QuotaResourceResolverInterface $quotaResourceResolver,
     ) {
     }
 
@@ -46,7 +35,7 @@ final readonly class QuotaEnforcementListener
         }
 
         $entity = $args->getObject();
-        $resource = self::ENTITY_RESOURCE_MAP[$entity::class] ?? null;
+        $resource = $this->quotaResourceResolver->resolveResource($entity);
 
         if ($resource === null) {
             return;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Service;
 
-use App\Core\Service\DashboardService;
+use App\ControlPlane\Dashboard\DashboardService;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\TestCase;

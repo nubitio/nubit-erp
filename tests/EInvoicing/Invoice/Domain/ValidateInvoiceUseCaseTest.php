@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Invoice\Domain;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\CompanyContext;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\CompanyContext;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Invoice\Domain\ValidateInvoiceUseCase;
 use App\EInvoicing\Invoice\Domain\Voucher;
 use App\Entity\TaxDocument;

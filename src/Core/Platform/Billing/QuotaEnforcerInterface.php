@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Platform\Billing;
 
-interface QuotaEnforcerInterface
+interface QuotaEnforcerInterface extends \App\Platform\Quota\Contract\QuotaEnforcerInterface
 {
     public function enforce(string $resource): void;
 

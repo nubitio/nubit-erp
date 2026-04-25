@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Purchase;
 
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Efact\Service\SettingsService;
+use App\Efact\Config\EfactConstants as Constants;
 use App\State\Purchase\PurchasesWriteMode;
 use App\State\Purchase\PurchasesWritePolicy;
 use App\State\Purchase\PurchasesWritePolicyResolver;

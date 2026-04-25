@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Post;
 use App\Controller\Api\MakeInvoice;
 use App\Controller\Api\VoidSale;
 use App\Controller\PrintESCPOSController;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
 use App\Dto\Sale\VoidSaleDto;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;

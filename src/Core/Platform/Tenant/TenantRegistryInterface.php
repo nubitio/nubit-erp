@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Platform\Tenant;
 
-interface TenantRegistryInterface
+interface TenantRegistryInterface extends \App\Platform\Tenant\Contract\TenantRegistryInterface
 {
     /**
      * @return array<int, array<string, mixed>>

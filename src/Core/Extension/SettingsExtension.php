@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Extension;
 
 use Twig\Attribute\AsTwigFunction;
-use App\Core\Service\SettingsService;
+use App\Efact\Service\SettingsService;
 
 readonly class SettingsExtension
 {

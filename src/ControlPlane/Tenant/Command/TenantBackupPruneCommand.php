@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\Core\Service\BinlogBackupService;
+use App\ControlPlane\Backup\BinlogBackupService;
 use App\ControlPlane\Tenant\Service\TenantBackupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;

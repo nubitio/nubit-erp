@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Invoice\Domain;
 
-use App\Core\Service\SettingsService;
+use App\Efact\Service\SettingsService;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
-use App\Core\Util\Constants;
+use App\Efact\Config\EfactConstants as Constants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
