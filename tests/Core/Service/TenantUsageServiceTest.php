@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class TenantUsageServiceTest extends TestCase
 {
@@ -256,7 +257,8 @@ final class TenantUsageServiceTest extends TestCase
             'yaml',
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
-            $this->inMemoryCache()
+            $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class)
         );
     }
 

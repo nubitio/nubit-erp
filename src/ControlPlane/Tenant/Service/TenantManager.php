@@ -16,6 +16,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 readonly class TenantManager implements TenantRegistryInterface
 {
@@ -29,6 +30,8 @@ readonly class TenantManager implements TenantRegistryInterface
         private ConnectionRegistry $connectionRegistry,
         private LoggerInterface $logger,
         private CacheInterface $cache,
+        #[Autowire('@cache.app.taggable')]
+        private TagAwareCacheInterface $featureCache,
     ) {
         if ($this->shouldUseYaml() && '' === trim($this->tenantsConfigFilePath)) {
             throw new RuntimeException('Tenants config path is required when using YAML tenants source');
@@ -629,6 +632,9 @@ readonly class TenantManager implements TenantRegistryInterface
             $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
             $this->invalidateTenantDomainCaches($id);
         }
+
+        // AC-13: Invalidate the feature cache so the new plan's entitlements take effect immediately.
+        $this->featureCache->invalidateTags(['tenant_features_' . $id]);
     }
 
     /**
