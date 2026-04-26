@@ -7,12 +7,10 @@ export const Setting = {
   CHECK_STOCK: 'app_option_check_stock',
   DEFAULT_CURRENCY: 'sales_default_currency',
   DEFAULT_USD_EXCHANGE_RATE: 'sales_default_usd_exchange_rate',
+  PRINT_METHOD: 'print_method',
 } as const;
 
-export const Feature = {
-  WEBUSB_PRINT: 'feature_webusb_print',
-  LOCAL_AGENT_PRINT: 'feature_local_agent_print',
-} as const;
+export type PrintMethod = 'WEBUSB' | 'LOCAL_AGENT';
 
 const STORAGE_KEY = 'settings';
 const STORAGE_TS_KEY = 'settings_updated_at';
@@ -74,14 +72,18 @@ class Settings {
     return this.settings.find((s) => s.name === key);
   }
 
-  async isFeatureEnabled(flag: string): Promise<boolean> {
-    const setting = await this.get(flag);
-    return setting?.value === true || setting?.value === 'true';
+  async getPrintMethod(): Promise<PrintMethod> {
+    const setting = await this.get(Setting.PRINT_METHOD);
+    const value = setting?.value;
+    if (value === 'LOCAL_AGENT' || value === 'WEBUSB') return value;
+    return 'WEBUSB'; // default
   }
 
-  isFeatureEnabledCached(flag: string): boolean {
-    const setting = this.getCached(flag);
-    return setting?.value === true || setting?.value === 'true';
+  getPrintMethodCached(): PrintMethod {
+    const setting = this.getCached(Setting.PRINT_METHOD);
+    const value = setting?.value;
+    if (value === 'LOCAL_AGENT' || value === 'WEBUSB') return value;
+    return 'WEBUSB'; // default
   }
 }
 

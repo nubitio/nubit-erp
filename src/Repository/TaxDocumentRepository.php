@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\Dto\Invoice\VoucherHeaderDto;
@@ -133,7 +134,7 @@ SQL,
         $sale = $this->loadSaleGraph($resolvedSaleId);
 
         if (!$sale) {
-            throw new ServiceException('La venta no existe');
+            throw NotFoundException::forResource('Sale', $saleId);
         }
 
         // Load the active tax document for this sale explicitly by sale id.

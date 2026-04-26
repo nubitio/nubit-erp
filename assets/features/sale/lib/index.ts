@@ -1,6 +1,5 @@
 export { createInvoicePrinter } from './invoicePrinter';
 export type { InvoicePrinter } from './invoicePrinter';
-export { createQzInvoicePrinter } from './qzInvoicePrinter';
 export { createWebUsbInvoicePrinter } from './webUsbInvoicePrinter';
 export { createLocalAgentInvoicePrinter } from './localAgentInvoicePrinter';
 export { cloneSaleToForm } from './cloneSaleToForm';

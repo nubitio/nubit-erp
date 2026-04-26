@@ -1232,9 +1232,21 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await page.keyboard.press('Tab'); // confirmar y avanzar
       // Wait for DX to process the cell update and for React to re-render
       // the calculateCellValue for the 'Diferencia' column (which updates differenceData state).
-      // Without this wait, the closeCashRegister() validation sees differenceData=undefined
-      // and blocks the close with a toast error.
-      await page.waitForTimeout(800);
+      // We wait for the Diferencia cell to have a non-empty value rather than a fixed timeout.
+      await page.waitForFunction(
+        () => {
+          const row = document.querySelector('.dx-data-row');
+          const cells = row?.querySelectorAll('td');
+          // Diferencia is column index 3 (0=paymentMethod, 1=expected, 2=counted, 3=difference, 4=note)
+          const diffCell = cells?.[3];
+          return diffCell && diffCell.textContent?.trim() !== '';
+        },
+        undefined,
+        { timeout: 8000 },
+      ).catch(() => {
+        // If we can't confirm differenceData loaded, wait a fixed amount as fallback
+      });
+      await page.waitForTimeout(500);
     });
 
     await test.step('Hacer click en "Cerrar caja"', async () => {
@@ -1258,14 +1270,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
         )
         .catch(() => null);
 
-      // Botón de confirmación positiva
-      await page.locator('[data-testid="close-cash-confirm-yes"]').click();
+      // Botón de confirmación positiva — wait for it to be visible inside the dialog
+      const confirmYesBtn = confirmDialog.locator('[data-testid="close-cash-confirm-yes"]');
+      await confirmYesBtn.waitFor({ state: 'visible', timeout: 8000 });
+      await confirmYesBtn.click();
 
       const closeResponse = await closeResponsePromise;
       if (closeResponse) {
         expect(closeResponse.ok(), 'el cierre de caja debe responder 2xx').toBeTruthy();
       }
-      await expect(confirmDialog).toBeHidden({ timeout: 10000 });
+      // DX Popup hides via CSS animation; wait generously for it to disappear.
+      await expect(confirmDialog).toBeHidden({ timeout: 20000 });
     });
 
     await test.step('Verificar redirección al dashboard de cajas', async () => {
