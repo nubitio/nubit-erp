@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 /**
  * Extended test coverage for TenantManager lifecycle methods:
@@ -207,6 +208,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $this->expectException(\RuntimeException::class);
@@ -237,6 +239,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $logger,
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $tenants = $manager->getTenants();
@@ -478,6 +481,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -500,6 +504,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -522,6 +527,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -544,6 +550,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         self::assertSame([], $manager->getTenants());
@@ -564,6 +571,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         self::assertSame([], $manager->getTenants());
@@ -584,6 +592,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $manager->addTenant(['name' => 'new-tenant', 'connection' => 'new_conn']);
@@ -594,6 +603,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         ))->getTenants();
 
         self::assertCount(1, $tenants);
@@ -615,6 +625,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $manager->updateTenant(1, ['name' => 'acme-updated', 'connection' => 'c2']);
@@ -625,6 +636,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         ))->getTenants();
 
         self::assertSame('acme-updated', $tenants[0]['name']);
@@ -645,6 +657,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $manager->deleteTenant(1);
@@ -655,6 +668,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         ))->getTenants();
 
         self::assertCount(1, $tenants);
@@ -676,6 +690,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $tenant = $manager->getTenant(3);
@@ -700,6 +715,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $tenant = $manager->getTenantByName('globex');
@@ -722,6 +738,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         // YAML fallback path for domain lookup returns null
@@ -740,6 +757,7 @@ final class TenantManagerLifecycleTest extends TestCase
             $this->dbRegistry($connection),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
+            $this->createMock(TagAwareCacheInterface::class),
         );
     }
 

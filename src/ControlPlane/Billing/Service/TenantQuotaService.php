@@ -13,7 +13,7 @@ use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\Persistence\ConnectionRegistry;
 
-final class TenantQuotaService implements QuotaEnforcerInterface
+final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSummaryInterface
 {
     /**
      * @var array<string, bool>

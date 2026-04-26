@@ -105,6 +105,39 @@ services:
   App\Platform\Quota\Contract\QuotaEnforcerInterface:
     alias: App\Core\Platform\Billing\QuotaEnforcerInterface
 
+  # SPEC-005: Feature gate — bind the Platform contract to the ControlPlane implementation.
+  App\Platform\Feature\Contract\FeatureCheckerInterface:
+    class: App\ControlPlane\Billing\Feature\TenantFeatureChecker
+    arguments:
+      $featureCache: '@cache.app.taggable'
+
+  # SPEC-005 / TASK-034a: TenantManager needs the tag-aware cache to invalidate
+  # per-tenant feature cache entries when a plan change occurs (AC-13).
+  App\ControlPlane\Tenant\Service\TenantManager:
+    arguments:
+      $featureCache: '@cache.app.taggable'
+
+  # SPEC-005 / TASK-034b: Override CRUD service — bind the tag-aware cache pool
+  # so it can invalidate per-tenant feature cache entries (AC-14).
+  App\ControlPlane\Billing\Feature\TenantFeatureOverrideManager:
+    arguments:
+      $featureCache: '@cache.app.taggable'
+
+  # SPEC-005 / TASK-036: Reads #[RequiresFeature] attributes on controllers and
+  # throws FeatureNotAvailableException (HTTP 402) when the tenant's plan does
+  # not include the required feature.
+  App\ControlPlane\Billing\Feature\FeatureKernelListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
+
+  # SPEC-005 / TASK-037: Handles IS_GRANTED('FEATURE_*') expressions by
+  # delegating to FeatureCheckerInterface::hasFeature(). The security.voter tag
+  # is also applied automatically via autoconfigure, but is listed here
+  # explicitly for clarity alongside the other SPEC-005 registrations.
+  App\ControlPlane\Billing\Feature\FeatureVoter:
+    tags:
+      - { name: security.voter }
+
   App\Platform\Quota\Contract\QuotaResourceResolverInterface:
     # Efact-owned adapter: maps concrete app entities to portable quota resource names.
     class: App\ControlPlane\Billing\Quota\EfactEntityQuotaResourceResolver

@@ -1,5 +1,5 @@
 grumphp:
-  process_timeout: 180
+  process_timeout: 600
   tasks:
     phpcsfixer2:
       config: .php-cs-fixer.dist.php
