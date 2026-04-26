@@ -17,7 +17,6 @@ import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@shared/components';
 
-type QzInvoicePrinter = InvoicePrinter;
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -37,7 +36,7 @@ const POSPage = () => {
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
   const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
 
-  const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createInvoicePrinter());
+  const invoicePrinterRef = useRef<InvoicePrinter>(createInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
   // Barcode scanner: rapidly-typed chars (< 80 ms apart) followed by Enter
   const barcodeBufferRef = useRef<string>('');
@@ -124,7 +123,7 @@ const POSPage = () => {
       await refresh();
       await processNow();
     },
-    printSaleInvoice: (saleId: string) => qzInvoicePrinterRef.current.printSaleInvoice(saleId),
+    printSaleInvoice: (saleId: string) => invoicePrinterRef.current.printSaleInvoice(saleId),
   });
 
   const formatMoney = (value: number) =>
@@ -175,7 +174,7 @@ const POSPage = () => {
   }, [setEmitInvoice]);
 
   useEffect(() => {
-    qzInvoicePrinterRef.current.initialize().catch(() => {
+    invoicePrinterRef.current.initialize().catch(() => {
       toast('No hay backend de impresion disponible. La venta se registrara sin impresion automatica.', 'warning');
     });
   }, []);
@@ -329,7 +328,7 @@ const POSPage = () => {
         lastSaleCode={lastSaleCode}
         onPrintLastSale={() => {
           if (lastSaleCode) {
-            void qzInvoicePrinterRef.current.printSaleInvoice(lastSaleCode);
+            void invoicePrinterRef.current.printSaleInvoice(lastSaleCode);
           }
         }}
         selectedCustomerId={customersState.selectedCustomerId}

@@ -6,6 +6,17 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import react from '@vitejs/plugin-react';
 
+// VITE_DEV_SERVER_HOSTNAME allows overriding the hostname that Symfony uses
+// when generating <script src="http://<hostname>:5173/..."> tags.
+//
+// - Default: 'localhost'  → works for the developer's browser (host machine)
+// - Set to 'host.docker.internal' when running Playwright from inside Docker,
+//   because inside a container 'localhost' resolves to the container itself,
+//   not the host. The port 5173 must be mapped in docker-compose (5173:5173).
+//
+// Usage: VITE_DEV_SERVER_HOSTNAME=host.docker.internal npm run dev
+const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost';
+
 const frontendAliases = {
   // Canonical frontend layer aliases (ADR-015)
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
@@ -31,13 +42,16 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    allowedHosts: 'all',
+    allowedHosts: true,
     cors: true,
   },
   plugins: [
     react(),
     symfonyPlugin({
-      viteDevServerHostname: 'localhost',
+      // 'localhost' → Symfony genera URLs con localhost:5173, accesible tanto
+      // desde el navegador del host como desde contenedores Docker (vía el
+      // puerto mapeado 5173:5173). Ver: symfony-vite.pentatrion.com/guide/tips#docker
+      viteDevServerHostname,
     }),
     VitePWA({
       outDir: 'public',

@@ -86,7 +86,8 @@ readonly class TenantListener
         $subdomain = $parts[0];
 
         // Default/known infra hosts that should not trigger tenant switching.
-        $excludedSubdomains = ['localhost', 'dev', 'stg'];
+        // 'host' covers host.docker.internal used in Docker Desktop environments.
+        $excludedSubdomains = ['localhost', 'dev', 'stg', 'host'];
         if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
             $this->logger->debug('Skipping tenant switch for excluded or empty subdomain', [
                 'subdomain' => $subdomain,

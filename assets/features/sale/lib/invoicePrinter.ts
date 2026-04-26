@@ -1,5 +1,4 @@
-import { settings, Feature } from '@app/Settings';
-import { createQzInvoicePrinter } from './qzInvoicePrinter';
+import { settings } from '@app/Settings';
 import { createWebUsbInvoicePrinter } from './webUsbInvoicePrinter';
 import { createLocalAgentInvoicePrinter } from './localAgentInvoicePrinter';
 
@@ -10,23 +9,21 @@ export type InvoicePrinter = {
 
 /**
  * Factory that returns the appropriate printer implementation based on
- * tenant feature flags (resolved synchronously from cache).
+ * the `print_method` config setting.
  *
- * Priority:
- *   1. feature_local_agent_print → efact-printer-agent (Rust, localhost:8765)
- *   2. feature_webusb_print      → Web USB (browser API, no install)
- *   3. fallback                  → QZ Tray (legacy)
+ *   WEBUSB       → Web USB (browser API, no install required)
+ *   LOCAL_AGENT  → efact-printer-agent (Rust, localhost:8765)
+ *
+ * Defaults to WEBUSB if the setting is missing or unrecognised.
  */
 const resolveInvoicePrinter = async (): Promise<InvoicePrinter> => {
-  if (await settings.isFeatureEnabled(Feature.LOCAL_AGENT_PRINT)) {
+  const method = await settings.getPrintMethod();
+
+  if (method === 'LOCAL_AGENT') {
     return createLocalAgentInvoicePrinter();
   }
 
-  if (await settings.isFeatureEnabled(Feature.WEBUSB_PRINT)) {
-    return createWebUsbInvoicePrinter();
-  }
-
-  return createQzInvoicePrinter();
+  return createWebUsbInvoicePrinter();
 };
 
 export const createInvoicePrinter = (): InvoicePrinter => {

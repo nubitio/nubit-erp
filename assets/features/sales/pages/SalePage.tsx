@@ -28,7 +28,7 @@ export const SalePage = () => {
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const customerFormRef = useRef<DxFormEvents>(null);
-  const qzInvoicePrinterRef = useRef(createInvoicePrinter());
+  const invoicePrinterRef = useRef(createInvoicePrinter());
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
@@ -56,7 +56,7 @@ export const SalePage = () => {
   const API_URL = saleEndpoints.list();
 
   const setupPrinter = () => {
-    qzInvoicePrinterRef.current.initialize().catch((_err: unknown) => {
+    invoicePrinterRef.current.initialize().catch((_err: unknown) => {
       // QZ Tray not available — print features will be disabled silently
     });
   };
@@ -109,7 +109,7 @@ export const SalePage = () => {
   };
 
   const print = (saleId: string) => {
-    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((err: unknown) => {
+    invoicePrinterRef.current.printSaleInvoice(saleId).catch((err: unknown) => {
       const message = err instanceof Error ? err.message : 'No se pudo imprimir el comprobante.';
       toast(message, 'error');
     });
