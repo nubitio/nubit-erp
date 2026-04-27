@@ -41,17 +41,21 @@ class Customer
     private string $businessName;
 
     #[ORM\Column(name: 'domicilio_fiscal', nullable: true)]
+    #[ApiProperty(description: 'customer.fiscal_address.label')]
     private ?string $fiscalAddress = null;
 
     #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]
+    #[ApiProperty(description: 'customer.phone.label')]
     #[ORM\Column(name: 'telefono', length: 20, nullable: true)]
     private ?string $phone = null;
 
     #[Assert\Email]
+    #[ApiProperty(description: 'customer.email.label')]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 
     #[ORM\ManyToOne]
+    #[ApiProperty(description: 'customer.price_list.label')]
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
     private ?PriceList $priceList = null;
 

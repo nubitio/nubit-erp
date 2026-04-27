@@ -9,5 +9,8 @@
     "error": "Algo salió mal",
     "retry": "Reintentar",
     "noRecords": "No hay registros"
+  },
+  "customer": {
+    "title": "Clientes"
   }
 }

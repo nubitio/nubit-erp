@@ -198,6 +198,14 @@ customer:
     label: RUC
   business_name:
     label: Razón social
+  fiscal_address:
+    label: Dirección fiscal
+  phone:
+    label: Teléfono
+  email:
+    label: Correo electrónico
+  price_list:
+    label: Tarifa
 
 product:
   code:
