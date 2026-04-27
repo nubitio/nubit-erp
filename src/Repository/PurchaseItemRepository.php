@@ -1,20 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repository;
 
-use App\Entity\PurchaseItem;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-
-/**
- * @extends ServiceEntityRepository<PurchaseItem>
- */
-class PurchaseItemRepository extends ServiceEntityRepository
+/** @deprecated Use App\Purchasing\Repository\PurchaseItemRepository */
+class PurchaseItemRepository extends \App\Purchasing\Repository\PurchaseItemRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, PurchaseItem::class);
-    }
 }

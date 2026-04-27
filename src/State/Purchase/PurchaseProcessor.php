@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Security\Auth\BranchContextService;
 use App\Organization\Entity\Branch;
-use App\Entity\Purchase;
+use App\Purchasing\Entity\Purchase;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use Override;
