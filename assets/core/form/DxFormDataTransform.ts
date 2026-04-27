@@ -4,6 +4,38 @@ import { DateUtils } from '../../shared/lib/DateUtils';
 
 type FormRecord = Record<string, unknown>;
 
+function trimTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+function synthesizeEntityIri(field: Field, entityValue: FormRecord): string | undefined {
+  if (!field.url) return undefined;
+
+  const baseUrl = trimTrailingSlash(field.url);
+  const directId = entityValue.id;
+  if (typeof directId === 'string' || typeof directId === 'number') {
+    return `${baseUrl}/${directId}`;
+  }
+
+  const directValue = entityValue[field.valueField];
+  if (
+    field.valueField !== '_iri' &&
+    (typeof directValue === 'string' || typeof directValue === 'number')
+  ) {
+    return `${baseUrl}/${directValue}`;
+  }
+
+  const candidateKeys = ['code', 'uuid', 'slug'];
+  for (const key of candidateKeys) {
+    const candidate = entityValue[key];
+    if (typeof candidate === 'string' || typeof candidate === 'number') {
+      return `${baseUrl}/${candidate}`;
+    }
+  }
+
+  return undefined;
+}
+
 function upsertPrependData(field: Field, item: FormRecord): void {
   const existingLoadOption = field.loadOptions.find((option) => Array.isArray(option.prependData));
 
@@ -86,11 +118,12 @@ function normalizeEntityField(row: FormRecord, field: Field): void {
     if (
       field.valueField === '_iri' &&
       typeof entityValue['_iri'] !== 'string' &&
-      typeof entityValue['@id'] !== 'string' &&
-      (typeof entityValue.id === 'string' || typeof entityValue.id === 'number') &&
-      field.url
+      typeof entityValue['@id'] !== 'string'
     ) {
-      entityValue['_iri'] = `${field.url.replace(/\/+$/, '')}/${entityValue.id}`;
+      const synthesizedIri = synthesizeEntityIri(field, entityValue);
+      if (synthesizedIri) {
+        entityValue['_iri'] = synthesizedIri;
+      }
     }
     upsertPrependData(field, entityValue);
     const atId: unknown = entityValue['@id'];

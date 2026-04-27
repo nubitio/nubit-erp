@@ -118,11 +118,12 @@ class DxUtils {
       // Fallback: some endpoints (e.g. /api/categories) expose only "id" without "@id".
       // In that case, synthesize the IRI from the base url + id so that iriMode
       // lookups still work (BUG: category UUID id breaks SelectBox required validation).
+      const itemId = item['id'] ?? item['code'] ?? item['uuid'] ?? item['slug'];
       const iri =
         typeof item['@id'] === 'string'
           ? item['@id']
-          : typeof item['id'] === 'string' || typeof item['id'] === 'number'
-            ? `${url}/${item['id']}`
+          : typeof itemId === 'string' || typeof itemId === 'number'
+            ? `${url}/${itemId}`
             : undefined;
       return { ...item, _iri: iri };
     };
