@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Catalog\Entity\Category;
+use App\Catalog\Entity\SunatCatalog;
+use App\Catalog\Entity\UnitOfMeasure;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;

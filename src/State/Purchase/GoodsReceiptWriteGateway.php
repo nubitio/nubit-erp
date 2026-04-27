@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\State\Purchase;
 
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Core\Util\Money;
 use App\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;

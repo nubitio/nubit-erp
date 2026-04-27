@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Catalog\Repository;
 
-use App\Entity\UnitOfMeasure;
+use App\Catalog\Entity\UnitOfMeasure;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

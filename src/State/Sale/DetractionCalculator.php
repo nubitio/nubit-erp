@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\State\Sale;
 
+use App\Catalog\Entity\SunatCatalog;
 use App\Core\Exception\ServiceException;
 use App\Entity\SaleRecord;
-use App\Repository\SunatCatalogRepository;
+use App\Catalog\Repository\SunatCatalogRepository;
 use Psr\Log\LoggerInterface;
 
 /**

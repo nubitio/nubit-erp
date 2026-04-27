@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Catalog\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
-use App\Repository\PaymentMethodRepository;
+use App\Catalog\Repository\PaymentMethodRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;

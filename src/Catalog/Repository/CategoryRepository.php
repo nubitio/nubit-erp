@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Catalog\Repository;
 
-use App\Entity\VoucherSeries;
+use App\Catalog\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<VoucherSeries>
+ * @extends ServiceEntityRepository<Category>
  */
-class VoucherSeriesRepository extends ServiceEntityRepository
+class CategoryRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, VoucherSeries::class);
+        parent::__construct($registry, Category::class);
     }
 }

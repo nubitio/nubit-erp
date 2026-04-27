@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
+use App\Catalog\Entity\UnitOfMeasure;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\SaleRecord;
 use App\Sale\Domain\DocType;

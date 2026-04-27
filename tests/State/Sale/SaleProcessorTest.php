@@ -24,7 +24,7 @@ use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\Repository\CustomerRepository;
-use App\Repository\SunatCatalogRepository;
+use App\Catalog\Repository\SunatCatalogRepository;
 use App\Service\SalePaymentPlanService;
 use App\Repository\SaleRecordRepository;
 use App\State\Sale\CashSessionResolver;
@@ -1161,10 +1161,10 @@ final class SaleProcessorTest extends TestCase
         return $sale;
     }
 
-    private function buildPaymentMethod(int $id): \App\Entity\PaymentMethod
+    private function buildPaymentMethod(int $id): \App\Catalog\Entity\PaymentMethod
     {
-        $rc = new ReflectionClass(\App\Entity\PaymentMethod::class);
-        /** @var \App\Entity\PaymentMethod $pm */
+        $rc = new ReflectionClass(\App\Catalog\Entity\PaymentMethod::class);
+        /** @var \App\Catalog\Entity\PaymentMethod $pm */
         $pm = $rc->newInstanceWithoutConstructor();
         $rc->getProperty('id')->setValue($pm, $id);
 

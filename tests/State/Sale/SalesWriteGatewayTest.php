@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Entity\Branch;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Entity\Product;
-use App\Entity\UnitOfMeasure;
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Repository\DashboardRepository;
 use App\Service\SaleCurrencyResolver;
 use App\Service\SalePaymentPlanService;

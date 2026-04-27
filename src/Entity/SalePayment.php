@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Catalog\Entity\PaymentMethod;
 use Doctrine\ORM\Mapping as ORM;
 
 /**

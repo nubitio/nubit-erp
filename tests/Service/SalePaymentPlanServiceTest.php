@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
 use App\Service\SalePaymentPlanService;
 use PHPUnit\Framework\TestCase;
