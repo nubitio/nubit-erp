@@ -102,9 +102,23 @@ export const createWebUsbInvoicePrinter = (): WebUsbInvoicePrinter => {
   };
 
   const initialize = async (): Promise<void> => {
-    // Eagerly pair the device so the first print doesn't show a permission prompt mid-sale
-    const d = await getOrRequestDevice();
-    await openDevice(d);
+    // Silently reconnect to a previously-paired device on page load.
+    // We must NOT call requestDevice() here — that requires a user gesture
+    // and would show the browser USB picker immediately on mount, even when
+    // the user has no intention of printing.
+    if (!navigator.usb) {
+      return;
+    }
+
+    const paired = await navigator.usb.getDevices();
+    const knownVendors = new Set(THERMAL_PRINTER_FILTERS.map((f) => f.vendorId));
+    const existing = paired.find((d) => knownVendors.has(d.vendorId));
+
+    if (existing) {
+      device = existing;
+      await openDevice(device);
+    }
+    // No paired device found → do nothing. The picker will appear on first print.
   };
 
   const printSaleInvoice = async (saleId: string): Promise<void> => {
