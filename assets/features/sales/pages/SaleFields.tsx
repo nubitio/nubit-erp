@@ -274,7 +274,8 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
         const checkStock = await settings.get(Setting.CHECK_STOCK);
 
         row.netAmount = currentRow.unitPrice * value;
-        if (value > 0 && checkStock?.value == 'true') {
+        const checkStockEnabled = checkStock?.value === 'true' || checkStock?.value === true;
+        if (value > 0 && checkStockEnabled) {
           if (!selectedWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
