@@ -6,7 +6,7 @@ namespace App\Core\Security\Auth;
 
 use App\Core\Audit\AuditLogger;
 use App\Core\Context\TenantContext;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Override;
 use Psr\Log\LoggerInterface;

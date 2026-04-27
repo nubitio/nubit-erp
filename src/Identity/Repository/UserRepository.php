@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Identity\Repository;
 
-use App\Entity\Role;
+use App\Identity\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Role>
+ * @extends ServiceEntityRepository<User>
  */
-class RoleRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Role::class);
+        parent::__construct($registry, User::class);
     }
 }

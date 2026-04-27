@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;

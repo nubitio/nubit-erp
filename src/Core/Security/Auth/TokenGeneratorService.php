@@ -6,8 +6,8 @@ namespace App\Core\Security\Auth;
 
 use App\Core\Context\TenantContext;
 use App\Organization\Entity\Branch;
-use App\Entity\RefreshToken;
-use App\Entity\User;
+use App\Identity\Entity\RefreshToken;
+use App\Identity\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 

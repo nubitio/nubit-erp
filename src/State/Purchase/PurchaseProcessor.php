@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Security\Auth\BranchContextService;
 use App\Organization\Entity\Branch;
 use App\Entity\Purchase;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use Override;
 use Symfony\Bundle\SecurityBundle\Security;

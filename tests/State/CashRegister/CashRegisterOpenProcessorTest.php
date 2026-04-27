@@ -13,7 +13,7 @@ use App\Dto\Auth\AuthUserDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Organization\Entity\Branch;
 use App\Entity\CashSession;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use Doctrine\DBAL\Connection;

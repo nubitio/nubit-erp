@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
-use App\Entity\RefreshToken;
-use App\Entity\User;
-use App\Repository\RefreshTokenRepository;
+use App\Identity\Entity\RefreshToken;
+use App\Identity\Entity\User;
+use App\Identity\Repository\RefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

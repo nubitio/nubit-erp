@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Core\Security\Auth;
 
 use App\Core\Security\Auth\UserProvider;
-use App\Entity\Role;
-use App\Entity\User;
+use App\Identity\Entity\Role;
+use App\Identity\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;

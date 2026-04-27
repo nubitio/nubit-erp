@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Security\Auth;
 
 use Override;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;

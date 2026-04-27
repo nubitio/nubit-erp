@@ -6,7 +6,7 @@ namespace App\Efact\Doctrine\Filter;
 
 use App\Entity\Media;
 use App\Entity\Purchase;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 

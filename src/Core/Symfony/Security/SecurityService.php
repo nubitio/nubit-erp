@@ -9,7 +9,7 @@ use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
 use App\Dto\Auth\AuthUserDto;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
 final readonly class SecurityService implements Security

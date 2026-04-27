@@ -9,7 +9,7 @@ use App\Organization\Entity\Branch;
 use App\Entity\Media;
 use App\Entity\Purchase;
 use App\Entity\PurchaseItem;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

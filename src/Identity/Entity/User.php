@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Identity\Entity;
 
 use DateTimeImmutable;
 use Override;
@@ -15,7 +15,8 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Repository\UserRepository;
+use App\Identity\Entity\Role;
+use App\Identity\Repository\UserRepository;
 use App\State\User\UserSoftDeleteProcessor;
 use App\State\User\UserPasswordHasher;
 use Doctrine\ORM\Mapping as ORM;
