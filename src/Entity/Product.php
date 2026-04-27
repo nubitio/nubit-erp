@@ -51,7 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[AppAssert\UniqueEntity(fields: ['name'], message: 'Ya existe un producto con el mismo nombre.')]
 class Product
 {
-    #[Groups(['product:read', 'sale_item:read', 'sale_item_record:read'])]
+    #[Groups(['product:read', 'sale_item:read', 'sale_item_record:read', 'purchase_item:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -122,7 +122,7 @@ class Product
     private bool $isActive = true;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read', 'product:write', 'sale_item:read', 'sale_item_record:read'])]
+    #[Groups(['product:read', 'product:write', 'sale_item:read', 'sale_item_record:read', 'purchase_item:read'])]
     #[ApiProperty(description: 'product.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
