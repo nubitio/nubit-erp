@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\CashRegister\Entity;
 
 use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
@@ -17,12 +17,12 @@ use App\Core\Http\ApiResponse;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
-use App\Repository\CashRegisterRepository;
+use App\CashRegister\Repository\CashRegisterRepository;
 use App\State\CashRegister\CashRegisterCloseProcessor;
 use App\State\CashRegister\CashRegisterDashboardProvider;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use App\State\CashRegister\CashRegisterShiftsProvider;
-use App\Entity\CashSession;
+use App\CashRegister\Entity\CashSession;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;

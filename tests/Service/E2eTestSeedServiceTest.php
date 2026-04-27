@@ -6,7 +6,7 @@ namespace App\Tests\Service;
 
 use App\Dto\Setup\SetupStatusDto;
 use App\Organization\Entity\Branch;
-use App\Entity\CashRegister;
+use App\CashRegister\Entity\CashRegister;
 use App\Catalog\Entity\Category;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\PaymentMethod;
@@ -19,7 +19,7 @@ use App\Catalog\Entity\VoucherType;
 use App\Catalog\Entity\VoucherSeries;
 use App\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
-use App\Repository\CashRegisterRepository;
+use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Repository\CategoryRepository;
 use App\Organization\Repository\CompanyRepository;
 use App\Contacts\Repository\CustomerRepository;

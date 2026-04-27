@@ -10,7 +10,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
-use App\Entity\CashMovement;
+use App\CashRegister\Entity\CashMovement;
 use App\Enum\CashMovementType;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;

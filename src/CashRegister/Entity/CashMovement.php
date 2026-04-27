@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\CashRegister\Entity;
 
 use App\Organization\Entity\Branch;
 use DateTimeImmutable;
@@ -16,8 +16,8 @@ use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Entity\CashMovementCategory;
-use App\Entity\CashSession;
-use App\Repository\CashMovementRepository;
+use App\CashRegister\Entity\CashSession;
+use App\CashRegister\Repository\CashMovementRepository;
 use App\State\CashRegister\CashMovementItemProvider;
 use App\State\CashRegister\CashMovementWriteProcessor;
 use Doctrine\DBAL\Types\Types;
