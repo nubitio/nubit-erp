@@ -1,5 +1,17 @@
 import type { ResourceConfig } from './ResourceConfig';
 
+const stringResourceCache = new Map<string, ResourceConfig>();
+
+function cacheKey(apiUrl: string, overrides?: Record<string, unknown>): string | null {
+  if (!overrides) return apiUrl;
+
+  try {
+    return `${apiUrl}::${JSON.stringify(overrides)}`;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Derives the resource `id` from a URL string.
  * '/api/products'        → 'products'
@@ -40,14 +52,25 @@ export function defineResource<T extends Record<string, unknown> = Record<string
 ): ResourceConfig<T> {
   if (typeof configOrUrl === 'string') {
     const apiUrl = configOrUrl;
+    const key = cacheKey(apiUrl, overrides as Record<string, unknown> | undefined);
+    if (key !== null && stringResourceCache.has(key)) {
+      return stringResourceCache.get(key)! as ResourceConfig<T>;
+    }
+
     const id = overrides?.id ?? deriveId(apiUrl);
-    return {
+    const resource = {
       id,
       title: '',
       fields: [],
       ...overrides,
       apiUrl,
     } as ResourceConfig<T>;
+
+    if (key !== null) {
+      stringResourceCache.set(key, resource as ResourceConfig);
+    }
+
+    return resource;
   }
   // Legacy: pass-through
   return configOrUrl;
