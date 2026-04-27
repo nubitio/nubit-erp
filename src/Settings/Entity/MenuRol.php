@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Settings\Entity;
 
 use App\Identity\Entity\Role;
-use App\Repository\MenuRolRepository;
+use App\Settings\Repository\MenuRolRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MenuRolRepository::class)]

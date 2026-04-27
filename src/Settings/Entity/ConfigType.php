@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Settings\Entity;
 
 enum ConfigType: string
 {
