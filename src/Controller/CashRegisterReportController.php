@@ -10,6 +10,7 @@ use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use App\Platform\Feature\Attribute\RequiresFeature;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,6 +27,7 @@ class CashRegisterReportController extends AbstractController
     /**
      * @throws Exception
      */
+    #[RequiresFeature('pdf_bulk_download')]
     #[Route('/api/cash-shifts/{id}/closure-report', name: 'cash_shift_closure_report', methods: ['GET'])]
     public function __invoke(int $id): Response
     {
