@@ -379,12 +379,21 @@ final class InventoryService
 
     private function buildIdempotencyKey(MovementDraft $movement): string
     {
-        return hash('sha256', implode('|', [
+        $hex = hash('sha256', implode('|', [
             $movement->sourceType,
             $movement->sourceId,
             $movement->movementType->value,
             $movement->warehouseId,
             $movement->productId,
         ]));
+
+        return sprintf(
+            '%s-%s-%s-%s-%s',
+            substr($hex, 0, 8),
+            substr($hex, 8, 4),
+            substr($hex, 12, 4),
+            substr($hex, 16, 4),
+            substr($hex, 20, 12),
+        );
     }
 }

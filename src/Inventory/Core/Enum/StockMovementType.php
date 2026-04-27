@@ -6,8 +6,8 @@ namespace App\Inventory\Core\Enum;
 
 enum StockMovementType: string
 {
-    case PURCHASE = 'PURCHASE';
-    case SALE = 'SALE';
+    case PURCHASE = 'PURCHASE_IN';
+    case SALE = 'SALE_OUT';
     case ADJUSTMENT = 'ADJUSTMENT';
     case TRANSFER_IN = 'TRANSFER_IN';
     case TRANSFER_OUT = 'TRANSFER_OUT';

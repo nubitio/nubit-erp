@@ -178,6 +178,19 @@ class DevExtremeFilter extends AbstractFilter
         }
     }
 
+    private function normalizeRelationIdentifier(mixed $value): mixed
+    {
+        if (!is_string($value) || '' === $value) {
+            return $value;
+        }
+
+        if (!str_starts_with($value, '/')) {
+            return $value;
+        }
+
+        return basename($value);
+    }
+
     /**
      * @param array<int, mixed> $filter
      */
@@ -224,10 +237,14 @@ class DevExtremeFilter extends AbstractFilter
                 $queryBuilder->andWhere(
                     sprintf('o.%s IN (:%s)', $field, $uniqueParameterName)
                 )
-                    ->setParameter($uniqueParameterName, $filterParam[2]);
+                    ->setParameter(
+                        $uniqueParameterName,
+                        array_map($this->normalizeRelationIdentifier(...), (array) $filterParam[2])
+                    );
             } else {
                 $operator = $this->getOperator($op);
-                $value = $this->getValueForOperator($op, $filterParam[2] ?? null);
+                $rawValue = $filterParam[2] ?? null;
+                $value = $this->getValueForOperator($op, $this->normalizeRelationIdentifier($rawValue));
                 $uniqueParameterName = $this->getUniqueParameterName(
                     $queryBuilder,
                     $field

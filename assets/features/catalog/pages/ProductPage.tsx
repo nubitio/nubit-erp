@@ -245,7 +245,7 @@ const productResource = defineResource<ProductRecord>({
         patch: { order: 9, width: 130, visibleOnForm: false },
       },
       { kind: 'override', key: 'salePrice', patch: { order: 10, width: 130 } },
-      { kind: 'override', key: 'stock', patch: { order: 11, width: 120, visibleOnForm: false } },
+      { kind: 'override', key: 'stock', patch: { visible: false, visibleOnForm: false } },
       {
         kind: 'override',
         key: 'minStock',

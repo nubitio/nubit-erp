@@ -7,6 +7,7 @@ import {
   Editing,
   Export,
   FilterRow,
+  HeaderFilter,
   Item,
   ITotalItemProps,
   LoadPanel,
@@ -77,6 +78,7 @@ export interface DxDataGridOptions {
   onContentReady?: () => void;
   onFilterChange?: (filters: Record<string, string>) => void;
   filterRow?: boolean;
+  headerFilter?: boolean;
   manualLoad?: boolean;
   beforeToolbar?: () => ReactNode;
   /**
@@ -495,6 +497,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             <Item name="columnChooserButton" locateInMenu="auto" />
           </Toolbar>
           <FilterRow visible={options.filterRow ?? true} />
+          <HeaderFilter visible={options.headerFilter ?? false} />
           <StateStoring
             enabled={options.stateStoringEnabled ?? false}
             type="localStorage"
