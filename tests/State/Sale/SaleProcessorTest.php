@@ -19,14 +19,14 @@ use App\Organization\Entity\Branch;
 use App\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashShift;
 use App\Contacts\Entity\Customer;
-use App\Entity\SaleRecord;
-use App\Entity\SaleItem;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Service\SalePaymentPlanService;
-use App\Repository\SaleRecordRepository;
+use App\Sales\Repository\SaleRecordRepository;
 use App\State\Sale\CashSessionResolver;
 use App\State\Sale\DetractionCalculator;
 use App\State\Sale\SaleInventoryOrchestrator;
@@ -1096,7 +1096,7 @@ final class SaleProcessorTest extends TestCase
         $inj('salePaymentPlanService', $this->salePaymentPlanService);
         $inj('detractionCalculator', $this->detractionCalculator);
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
-        $inj('saleRecordRepository', $this->createMock(\App\Repository\SaleRecordRepository::class));
+        $inj('saleRecordRepository', $this->createMock(\App\Sales\Repository\SaleRecordRepository::class));
         $inj('customerRepository', $this->customerRepository);
         $inj('tenantContext', new \App\Core\Context\TenantContext());
 

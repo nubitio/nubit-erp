@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Core\Util\ReceiptPayload;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Serializer\PublicReceiptUrlNormalizer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

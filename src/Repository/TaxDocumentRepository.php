@@ -19,7 +19,7 @@ use App\EInvoicing\Service\InvoiceLineAmounts;
 use App\EInvoicing\Service\InvoiceLineInput;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Organization\Entity\Branch;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Catalog\Entity\SunatCatalog;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;

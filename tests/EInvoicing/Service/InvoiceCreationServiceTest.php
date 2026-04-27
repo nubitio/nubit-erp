@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Service;
 
 use App\EInvoicing\Service\InvoiceCreationService;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Entity\Product;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;

@@ -6,8 +6,8 @@ namespace App\Tests\State\Sale;
 
 use App\Organization\Entity\Branch;
 use App\Catalog\Entity\PaymentMethod;
-use App\Entity\SaleRecord;
-use App\Entity\SaleItem;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;
 use App\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;

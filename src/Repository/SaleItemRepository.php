@@ -1,20 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repository;
 
-use App\Entity\SaleItem;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-
-/**
- * @extends ServiceEntityRepository<SaleItem>
- */
-class SaleItemRepository extends ServiceEntityRepository
+/** @deprecated Use App\Sales\Repository\SaleItemRepository */
+class SaleItemRepository extends \App\Sales\Repository\SaleItemRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, SaleItem::class);
-    }
 }

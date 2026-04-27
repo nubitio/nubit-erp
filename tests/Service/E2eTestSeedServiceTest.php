@@ -12,7 +12,7 @@ use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Identity\Entity\Role;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Identity\Entity\User;
 use App\Catalog\Entity\VoucherType;

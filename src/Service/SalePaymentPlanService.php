@@ -7,7 +7,7 @@ namespace App\Service;
 use App\Catalog\Entity\PaymentMethod;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
 
 /**

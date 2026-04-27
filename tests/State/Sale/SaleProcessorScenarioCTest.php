@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Organization\Entity\Branch;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\State\Sale\CashSessionResolver;
 use App\State\Sale\SaleProcessor;
 use Doctrine\DBAL\Connection;
