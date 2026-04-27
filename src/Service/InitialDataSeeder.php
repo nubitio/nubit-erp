@@ -57,6 +57,7 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::CONSUMPTION_TAX, 'int', '0');
             $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
             $this->settingsService->set(Constants::PRINT_LOGO, 'bool', 'true');
+            $this->settingsService->set(Constants::PRINT_METHOD, 'string', 'WEBUSB');
             $this->settingsService->set(Constants::REQUIRE_CASH_REGISTER, 'bool', 'true');
             $this->settingsService->set(Constants::SUNAT_SEND_ENABLED, 'bool', 'true');
             $this->settingsService->set(Constants::SUNAT_REJECTION_STREAK, 'int', '0');
