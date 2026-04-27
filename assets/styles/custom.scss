@@ -67,6 +67,15 @@ $white: #fff;
 
 .dx-button {
   &.dx-button-mode-contained {
+    &.dx-button-default {
+      color: $white !important;
+
+      .dx-button-text,
+      .dx-icon {
+        color: $white !important;
+      }
+    }
+
     &.dx-button-primary {
       background-color: $primary !important;
     }
