@@ -6,7 +6,7 @@ namespace App\Service;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 
 readonly class SaleCurrencyResolver

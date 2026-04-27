@@ -152,7 +152,7 @@ class DevExtremeFilter extends AbstractFilter
 
             $subDql = sprintf(
                 'SELECT IDENTITY(sp.saleRecord) FROM %s sp WHERE sp.paymentMethod %s :%s',
-                \App\Entity\SalePayment::class,
+                \App\Sales\Entity\SalePayment::class,
                 $operator,
                 $param,
             );

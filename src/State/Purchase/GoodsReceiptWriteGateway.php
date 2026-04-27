@@ -6,7 +6,7 @@ namespace App\State\Purchase;
 
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Core\Util\Money;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

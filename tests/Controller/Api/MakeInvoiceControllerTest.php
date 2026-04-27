@@ -7,7 +7,7 @@ namespace App\Tests\Controller\Api;
 use App\Controller\Api\MakeInvoice;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\State\Sale\DetractionCalculatorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

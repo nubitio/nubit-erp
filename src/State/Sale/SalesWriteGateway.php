@@ -6,7 +6,7 @@ namespace App\State\Sale;
 
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Core\Util\Money;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Repository\DashboardRepository;
 use App\Service\SalePaymentPlanService;
 use App\Service\SaleCurrencyResolver;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Entity\Product;
-use App\Entity\SaleRecord;
-use App\Entity\SaleItem;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;
 use App\Service\InventoryLedgerService;
 use Doctrine\DBAL\Connection;

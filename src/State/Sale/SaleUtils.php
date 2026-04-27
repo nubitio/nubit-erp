@@ -7,7 +7,7 @@ namespace App\State\Sale;
 use App\Core\Exception\ServiceException;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

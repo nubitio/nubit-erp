@@ -6,8 +6,8 @@ namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Dto\Auth\AuthUserDto;
-use App\Entity\SaleRecord;
-use App\Entity\SaleItem;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Entity\SaleItem;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Service\InventoryLedgerService;
 use Psr\Log\LoggerInterface;

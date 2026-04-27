@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Serializer;
 
 use App\Core\Util\ReceiptPayload;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Entity\TaxDocument;
 use Override;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

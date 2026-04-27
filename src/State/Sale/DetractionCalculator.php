@@ -6,7 +6,7 @@ namespace App\State\Sale;
 
 use App\Catalog\Entity\SunatCatalog;
 use App\Core\Exception\ServiceException;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\SunatCatalogRepository;
 use Psr\Log\LoggerInterface;
 

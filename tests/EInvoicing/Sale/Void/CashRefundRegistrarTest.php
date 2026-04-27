@@ -6,7 +6,7 @@ namespace App\Tests\EInvoicing\Sale\Void;
 
 use App\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\State\Sale\CashSessionResolverInterface;
 use Doctrine\DBAL\Connection;

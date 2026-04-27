@@ -7,9 +7,9 @@ namespace App\State\Sale;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Entity\SaleRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\PaymentMethodRepository;
-use App\Repository\SaleRecordRepository;
+use App\Sales\Repository\SaleRecordRepository;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
