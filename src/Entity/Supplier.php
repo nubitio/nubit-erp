@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un proveedor con este RUC.')]
 class Supplier
 {
-    #[Groups(['inbound:read', 'outbound:read'])]
+    #[Groups(['inbound:read', 'outbound:read', 'purchase:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -37,7 +37,7 @@ class Supplier
     private string $ruc;
 
     #[Assert\NotBlank]
-    #[Groups(['inbound:read', 'outbound:read'])]
+    #[Groups(['inbound:read', 'outbound:read', 'purchase:read'])]
     #[ApiProperty(description: 'supplier.business_name.label')]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;

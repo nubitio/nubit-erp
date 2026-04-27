@@ -402,6 +402,15 @@ describe('DxDataGridUtils › buildEntityCellRender', () => {
     expect(fn({ data: { voucherType: { code: '01', name: 'Factura' } } })).toBe('Factura');
   });
 
+  it('reads textField from an id-keyed embedded object', () => {
+    const field = makeEntityField({ name: 'warehouse', valueField: 'id', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: { warehouse: { id: 'uuid-1', name: 'Almacen principal' } } })).toBe(
+      'Almacen principal',
+    );
+  });
+
   it('falls back to obj.name when textField is not present', () => {
     const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'label' });
     const fn = buildEntityCellRender(field);
@@ -409,11 +418,27 @@ describe('DxDataGridUtils › buildEntityCellRender', () => {
     expect(fn({ data: { voucherType: { code: '01', name: 'Factura' } } })).toBe('Factura');
   });
 
+  it('falls back to obj.businessName when textField and name are not present', () => {
+    const field = makeEntityField({ name: 'supplier', valueField: 'id', textField: 'label' });
+    const fn = buildEntityCellRender(field);
+
+    expect(
+      fn({ data: { supplier: { id: 'uuid-1', businessName: 'GINA LIZBETH CORI' } } }),
+    ).toBe('GINA LIZBETH CORI');
+  });
+
   it('returns the plain string value when field is a primitive', () => {
     const field = makeEntityField({ name: 'voucherType', valueField: 'code', textField: 'name' });
     const fn = buildEntityCellRender(field);
 
     expect(fn({ data: { voucherType: '01' } })).toBe('01');
+  });
+
+  it('returns null for primitive id values so Lookup can resolve display', () => {
+    const field = makeEntityField({ name: 'warehouse', valueField: 'id', textField: 'name' });
+    const fn = buildEntityCellRender(field);
+
+    expect(fn({ data: { warehouse: 'uuid-1' }, value: 'uuid-1' })).toBeNull();
   });
 
   it('returns null when value is null or missing', () => {

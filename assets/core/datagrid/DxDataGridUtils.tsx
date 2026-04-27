@@ -277,12 +277,15 @@ export function buildEntityCellRender(
     // read the textField directly — fast and no async Lookup needed.
     if (val !== null && val !== undefined && typeof val === 'object') {
       const obj = val as Record<string, unknown>;
-      const display = obj[field.textField] ?? obj['name'];
+      const display = obj[field.textField] ?? obj['name'] ?? obj['businessName'];
       if (display !== undefined && display !== null) return String(display);
     }
-    // For plain IRI / primitive values, return null so DevExtreme falls back to
-    // the Lookup's display resolution (byKey fetch).
-    if (field.valueField === '_iri' || field.valueField === '@id') return null;
+    // For plain IRI / primitive ids, return null so DevExtreme falls back to
+    // the Lookup's display resolution (byKey fetch). Code-keyed values can be
+    // displayed directly because the primitive itself is already meaningful.
+    if (field.valueField === '_iri' || field.valueField === '@id' || field.valueField === 'id') {
+      return null;
+    }
     if (val != null) return String(val);
     // Fallback: val is already a primitive (calculateCellValue mutated rowData)
     return value != null ? String(value) : null;
@@ -322,12 +325,12 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     //    instead of a plain IRI string; cellRender reads textField from the object directly.
     //  - code / primitive-key mode: same approach.
     //
-    // id-mode is excluded: it relies on the Lookup byKey(uuid) resolving asynchronously.
+    // id-mode is included for embedded relation objects (e.g. purchases warehouse/supplier)
+    // so we can render the already-present label directly. Primitive id values still fall
+    // back to Lookup resolution inside buildEntityCellRender.
     // formatter is excluded: formatters own cell rendering entirely.
     const entityCellRender =
-      field.type === FieldType.ENTITY &&
-      !field.formatter &&
-      field.valueField !== 'id'
+      field.type === FieldType.ENTITY && !field.formatter
         ? buildEntityCellRender(field)
         : undefined;
 
