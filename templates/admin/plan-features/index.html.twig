@@ -122,11 +122,16 @@
 
                                         {# Config textarea — only for config features #}
                                         {% if isConfigFeature %}
+                                            {% set configPlaceholders = {
+                                                'api_rate_limit':     '{"requests_per_hour": 1000}',
+                                                'retention_days':     '{"days": 365}',
+                                                'concurrent_sessions': '{"max": 5}'
+                                            } %}
                                             <textarea
                                                 name="config_json"
                                                 class="form-control form-control-sm font-monospace"
                                                 rows="2"
-                                                placeholder='e.g. {"days": 365}'
+                                                placeholder='e.g. {{ configPlaceholders[featureKey] ?? "{}" }}'
                                                 style="font-size: 0.75rem; resize: vertical;"
                                             >{{ currentConfig }}</textarea>
                                         {% endif %}
