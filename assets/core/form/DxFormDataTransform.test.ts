@@ -63,7 +63,7 @@ describe('normalizeFormData', () => {
     expect(result.createdAt).toBeNull();
   });
 
-  it('normalizes ENTITY IRI string to valueField object', () => {
+  it('normalizes ENTITY IRI string to scalar valueField value', () => {
     const fields = [
       new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -74,10 +74,10 @@ describe('normalizeFormData', () => {
         .build(),
     ];
     const result = normalizeFormData({ customer: '/api/customers/42' }, fields);
-    expect(result.customer).toEqual({ id: '42' });
+    expect(result.customer).toBe('42');
   });
 
-  it('normalizes ENTITY Hydra object (@id) to valueField object', () => {
+  it('normalizes ENTITY Hydra object (@id) to scalar valueField value', () => {
     const fields = [
       new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -91,10 +91,10 @@ describe('normalizeFormData', () => {
       { customer: { '@id': '/api/customers/uuid-123', id: 1, name: 'Acme' } },
       fields,
     );
-    expect(result.customer).toEqual({ id: 'uuid-123' });
+    expect(result.customer).toBe('uuid-123');
   });
 
-  it('normalizes plain ENTITY object to valueField object', () => {
+  it('normalizes plain ENTITY object to scalar valueField value', () => {
     const fields = [
       new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -105,7 +105,7 @@ describe('normalizeFormData', () => {
         .build(),
     ];
     const result = normalizeFormData({ category: { id: 'abc', name: 'Root' } }, fields);
-    expect(result.category).toEqual({ id: 'abc' });
+    expect(result.category).toBe('abc');
     expect(fields[0].loadOptions[0]?.prependData).toEqual([{ id: 'abc', name: 'Root' }]);
   });
 
@@ -125,6 +125,23 @@ describe('normalizeFormData', () => {
 
     expect(field.loadOptions[0]?.prependData).toEqual([
       { '@id': '/api/categories/uuid-1', id: 'uuid-1', name: 'Root' },
+    ]);
+  });
+
+  it('synthesizes _iri for iri-mode ENTITY objects without @id', () => {
+    const field = new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('category')
+      .url('/api/categories')
+      .valueField('_iri')
+      .label('Category')
+      .build();
+
+    const result = normalizeFormData({ category: { id: 'uuid-1', name: 'Root' } }, [field]);
+
+    expect(result.category).toBe('/api/categories/uuid-1');
+    expect(field.loadOptions[0]?.prependData).toEqual([
+      { id: 'uuid-1', name: 'Root', _iri: '/api/categories/uuid-1' },
     ]);
   });
 
