@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Security\Auth;
 
 use App\Dto\Auth\AuthResponseDto;
-use App\Entity\User;
+use App\Identity\Entity\User;
 
 final readonly class TokenPairDto
 {

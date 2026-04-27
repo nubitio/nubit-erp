@@ -8,7 +8,7 @@ use App\Core\Application\Command\TenantAwareCommand;
 use App\Notification\NotificationType;
 use App\Notification\UserNotificationService;
 use App\Repository\ProductStockRepository;
-use App\Repository\UserNotificationRepository;
+use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;

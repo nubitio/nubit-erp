@@ -7,7 +7,7 @@ namespace App\State\Notification;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
-use App\Entity\UserNotification;
+use App\Identity\Entity\UserNotification;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;

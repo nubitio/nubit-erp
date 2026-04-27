@@ -9,7 +9,7 @@ use App\Core\Application\Session\Security;
 use App\Dto\Auth\AuthUserDto;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Entity\CashSession;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use App\Repository\CashSessionRepository;
 use App\State\CashRegister\CashRegisterCloseProcessor;
 use Doctrine\ORM\EntityManagerInterface;

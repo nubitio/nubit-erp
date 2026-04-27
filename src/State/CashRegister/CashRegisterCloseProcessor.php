@@ -14,7 +14,7 @@ use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Entity\CashSession;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use App\Repository\CashSessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;

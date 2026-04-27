@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Identity\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Repository\RoleRepository;
+use App\Identity\Repository\RoleRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 

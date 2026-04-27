@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Repository;
 
-use App\Entity\UserNotification;
-use App\Repository\UserNotificationRepository;
+use App\Identity\Entity\UserNotification;
+use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;

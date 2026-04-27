@@ -7,8 +7,8 @@ namespace App\Tests\Entity;
 use App\Organization\Entity\Branch;
 use App\Entity\CashRegister;
 use App\Entity\CashShift;
-use App\Entity\Role;
-use App\Entity\User;
+use App\Identity\Entity\Role;
+use App\Identity\Entity\User;
 use App\Enum\CashShiftStatus;
 use PHPUnit\Framework\TestCase;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;

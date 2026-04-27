@@ -11,7 +11,7 @@ use App\Core\Security\Auth\JWTAuthenticator;
 use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Organization\Entity\Branch;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

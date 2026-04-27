@@ -6,7 +6,7 @@ namespace App\State\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\User;
+use App\Identity\Entity\User;
 use DateTimeImmutable;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

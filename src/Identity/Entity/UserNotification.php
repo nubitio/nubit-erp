@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Identity\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Repository\UserNotificationRepository;
+use App\Identity\Repository\UserNotificationRepository;
 use App\State\Notification\UserNotificationProvider;
 use App\State\Notification\UserNotificationReadAllProcessor;
 use App\State\Notification\UserNotificationReadProcessor;

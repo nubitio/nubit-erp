@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Identity\Entity\Role;
 use App\Repository\MenuRolRepository;
 use Doctrine\ORM\Mapping as ORM;
 
