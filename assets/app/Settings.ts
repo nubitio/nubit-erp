@@ -4,7 +4,7 @@ import { lastValueFrom } from 'rxjs';
 
 export const Setting = {
   AUTO_INVOICE: 'app_option_auto_invoice',
-  CHECK_STOCK: 'app_option_check_stock',
+  INVENTORY_NEGATIVE_STOCK_POLICY: 'inventory_negative_stock_policy',
   DEFAULT_CURRENCY: 'sales_default_currency',
   DEFAULT_USD_EXCHANGE_RATE: 'sales_default_usd_exchange_rate',
   PRINT_METHOD: 'print_method',

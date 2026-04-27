@@ -271,11 +271,10 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
 
-        const checkStock = await settings.get(Setting.CHECK_STOCK);
+        const stockPolicy = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
 
         row.netAmount = currentRow.unitPrice * value;
-        const checkStockEnabled = checkStock?.value === 'true' || checkStock?.value === true;
-        if (value > 0 && checkStockEnabled) {
+        if (value > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE') {
           if (!selectedWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;

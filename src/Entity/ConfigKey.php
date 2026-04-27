@@ -21,7 +21,6 @@ enum ConfigKey: string
 
     // ── Sales ─────────────────────────────────────────────────────────────────
     case AUTO_INVOICE               = 'app_option_auto_invoice';
-    case CHECK_STOCK                = 'app_option_check_stock';
     case DEFAULT_CURRENCY           = 'sales_default_currency';
     case DEFAULT_USD_EXCHANGE_RATE  = 'sales_default_usd_exchange_rate';
 

@@ -14,7 +14,6 @@ export const ConfigKey = {
 
   // Sales
   AUTO_INVOICE:              'app_option_auto_invoice',
-  CHECK_STOCK:               'app_option_check_stock',
   DEFAULT_CURRENCY:          'sales_default_currency',
   DEFAULT_USD_EXCHANGE_RATE: 'sales_default_usd_exchange_rate',
 

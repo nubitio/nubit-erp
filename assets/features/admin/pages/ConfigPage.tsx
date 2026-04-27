@@ -30,7 +30,6 @@ const CONFIG_META: Record<string, ConfigMeta> = {
     ],
   },
   app_option_auto_invoice:           { label: 'Facturación automática',           description: 'Emite el comprobante electrónico automáticamente.',         group: 'sales' },
-  app_option_check_stock:            { label: 'Verificar stock al vender',        description: 'Muestra advertencia en el formulario de venta si no hay stock. El bloqueo real se controla en "Política de stock negativo".',              group: 'sales' },
   sales_default_currency:            { label: 'Moneda por defecto',              description: 'Moneda predeterminada para nuevas ventas.',                 group: 'sales' },
   sales_default_usd_exchange_rate:   { label: 'Tipo de cambio USD por defecto',  description: 'Valor inicial del tipo de cambio USD/PEN.',                group: 'sales' },
   inventory_negative_stock_policy:   {

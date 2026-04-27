@@ -166,8 +166,8 @@ const POSPage = () => {
   // ── Load settings ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
-      const checkStockSetting = await settings.get(Setting.CHECK_STOCK);
-      setEnforceStockCheck(parseBooleanSetting(checkStockSetting?.value, true));
+      const stockPolicySetting = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
+      setEnforceStockCheck(stockPolicySetting?.value !== 'ALLOW_NEGATIVE');
       const autoInvoiceSetting = await settings.get(Setting.AUTO_INVOICE);
       setEmitInvoice(parseBooleanSetting(autoInvoiceSetting?.value, false));
     })();
