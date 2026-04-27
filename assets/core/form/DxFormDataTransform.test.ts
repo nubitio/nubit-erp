@@ -145,6 +145,23 @@ describe('normalizeFormData', () => {
     ]);
   });
 
+  it('synthesizes _iri from code for iri-mode ENTITY objects without id or @id', () => {
+    const field = new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('voucherType')
+      .url('/api/voucher-types')
+      .valueField('_iri')
+      .label('Voucher type')
+      .build();
+
+    const result = normalizeFormData({ voucherType: { code: '01', name: 'FACTURA' } }, [field]);
+
+    expect(result.voucherType).toBe('/api/voucher-types/01');
+    expect(field.loadOptions[0]?.prependData).toEqual([
+      { code: '01', name: 'FACTURA', _iri: '/api/voucher-types/01' },
+    ]);
+  });
+
   it('applies loadOptions prependData fallback for null ENTITY', () => {
     const field = new FieldBuilder()
       .type(FieldType.ENTITY)

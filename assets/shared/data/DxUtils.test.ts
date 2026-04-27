@@ -101,6 +101,18 @@ describe('DxUtils › getDataStore › iriMode=true (BUG-010)', () => {
     expect(result.data[1]['_iri']).toBe('/api/warehouses/uuid-2');
   });
 
+  it('injects _iri from code when item has no @id or id', async () => {
+    const items = [{ code: '01', name: 'FACTURA' }];
+    vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse(items));
+    vi.mocked(httpClient.get).mockReturnValue({} as never);
+
+    const store = dxUtils.getDataStore('/api/voucher-types', '_iri', null, [], [], [], true);
+    const { load } = getStoreConfig(store);
+    const result = (await load({ filter: [], sort: [] })) as { data: Record<string, unknown>[] };
+
+    expect(result.data[0]['_iri']).toBe('/api/voucher-types/01');
+  });
+
   it('preserves all original fields alongside _iri', async () => {
     const item = { '@id': '/api/warehouses/uuid-1', id: 'uuid-1', name: 'Almacén Central' };
     vi.mocked(lastValueFrom).mockResolvedValueOnce(makeApiResponse([item]));
