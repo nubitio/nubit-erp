@@ -42,7 +42,7 @@ export function buildEmptyRow(fields: Field[]): FormRecord {
  * - FILE fields are stripped (uploaded separately)
  * - PASSWORD fields are blanked
  * - DATE fields are parsed into JS Date objects
- * - ENTITY fields are normalized to `{ [valueField]: key }` for SelectBox matching
+ * - ENTITY fields are normalized to their scalar key for SelectBox matching
  */
 export function normalizeFormData(data: FormRecord, fields: Field[]): FormRecord {
   const row = { ...data };
@@ -79,21 +79,30 @@ function normalizeEntityField(row: FormRecord, field: Field): void {
     // If valueField is '_iri', preserve the full IRI; otherwise extract the last segment.
     const value =
       field.valueField === '_iri' ? rawValue : (rawValue as string).split('/').pop();
-    row[field.name] = { [field.valueField]: value };
+    row[field.name] = value;
   }
   if (type === 'object' && row[field.name] !== null) {
-    const entityValue = row[field.name] as Record<string, unknown>;
+    const entityValue = { ...(row[field.name] as Record<string, unknown>) };
+    if (
+      field.valueField === '_iri' &&
+      typeof entityValue['_iri'] !== 'string' &&
+      typeof entityValue['@id'] !== 'string' &&
+      (typeof entityValue.id === 'string' || typeof entityValue.id === 'number') &&
+      field.url
+    ) {
+      entityValue['_iri'] = `${field.url.replace(/\/+$/, '')}/${entityValue.id}`;
+    }
     upsertPrependData(field, entityValue);
     const atId: unknown = entityValue['@id'];
     if (typeof atId === 'string') {
       // When valueField is '_iri', keep the full IRI so the SelectBox can match
       // against datasource items (which also have '_iri' as the full IRI).
       const value = field.valueField === '_iri' ? atId : (atId.split('/').pop() ?? atId);
-      row[field.name] = { [field.valueField]: value };
+      row[field.name] = value;
     } else {
-      const directValue: unknown = (row[field.name] as Record<string, unknown>)[field.valueField];
+      const directValue: unknown = entityValue[field.valueField];
       if (directValue !== undefined && directValue !== null) {
-        row[field.name] = { [field.valueField]: directValue };
+        row[field.name] = directValue;
       }
     }
   }
