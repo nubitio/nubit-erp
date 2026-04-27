@@ -83,6 +83,9 @@ vi.mock('devextreme/ui/notify', () => ({
 // ---------------------------------------------------------------------------
 
 import { SaleFields, SaleDetailFields, setTotal } from './SaleFields';
+import { settings } from '@app/Settings';
+import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
+import toast from '@shared/lib/SharedUtils';
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -249,3 +252,116 @@ describe('setTotal', () => {
     expect(() => setTotal(null)).not.toThrow();
   });
 });
+
+// ---------------------------------------------------------------------------
+// SaleDetailFields › qty onChange — CHECK_STOCK behaviour
+// ---------------------------------------------------------------------------
+
+describe('SaleDetailFields › qty onChange stock check', () => {
+  // Grab mocks via vi.mocked() — these reference the same vi.fn() instances
+  // created in the hoisted vi.mock() calls above
+  const settingsGetMock = vi.mocked(settings.get);
+  const getStockMock = vi.mocked(GetStockUseCase);
+  const toastMock = vi.mocked(toast);
+
+  /**
+   * Set the module-level selectedWarehouseId by triggering the
+   * warehouse field's onChange callback (the only public setter).
+   */
+  function setWarehouseId(id: string) {
+    const mainFields = SaleFields(null);
+    const warehouseField = mainFields.find((f) => f.name === 'warehouse') as any;
+    warehouseField?.onChange?.(id);
+  }
+
+  function getQtyOnChange() {
+    const fields = SaleDetailFields(null);
+    const qtyField = fields.find((f) => f.name === 'qty') as any;
+    return qtyField?.onChange as
+      | ((this: any, row: any, value: any, currentRow: any) => Promise<void>)
+      | undefined;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setWarehouseId('wh-test');
+  });
+
+  it('shows current stock info and blocks the edit when qty exceeds stock and CHECK_STOCK is string "true"', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'true' });
+    getStockMock.mockResolvedValue({ stock: 3 });
+
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 5, currentRow);
+
+    expect(getStockMock).toHaveBeenCalledWith('p1', 'wh-test');
+    expect(toastMock).toHaveBeenCalledWith('Stock actual: 3', 'info', 2000);
+    expect(toastMock).toHaveBeenCalledWith('No hay stock suficiente', 'error', 2000);
+    expect(row.qty).toBe('');
+    expect(row.netAmount).toBe('');
+  });
+
+  it('blocks when CHECK_STOCK value is boolean true (not just string) — regression for loose == bug', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: true });
+    getStockMock.mockResolvedValue({ stock: 2 });
+
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 5, currentRow);
+
+    // Must trigger the stock check even when value is boolean true (not string)
+    expect(getStockMock).toHaveBeenCalled();
+    expect(row.qty).toBe('');
+  });
+
+  it('allows the edit when qty is within available stock and CHECK_STOCK is true', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'true' });
+    getStockMock.mockResolvedValue({ stock: 10 });
+
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 3, currentRow);
+
+    expect(toastMock).not.toHaveBeenCalledWith('No hay stock suficiente', 'error', 2000);
+    // qty should NOT be cleared
+    expect(row.qty).toBeUndefined();
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 3, currentRow);
+  });
+
+  it('skips stock check entirely when CHECK_STOCK is false', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'false' });
+
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 999, currentRow);
+
+    expect(getStockMock).not.toHaveBeenCalled();
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 999, currentRow);
+  });
+
+  it('returns early without calling defaultSetCellValue when value is empty string', async () => {
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, '', currentRow);
+
+    expect(getStockMock).not.toHaveBeenCalled();
+    expect(self.defaultSetCellValue).not.toHaveBeenCalled();
+  });
+});
+

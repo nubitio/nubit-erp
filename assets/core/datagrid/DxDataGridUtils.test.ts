@@ -5,6 +5,7 @@ vi.mock('devextreme-react/data-grid', () => ({
   Column: 'Column',
   CustomRule: 'CustomRule',
   EmailRule: 'EmailRule',
+  HeaderFilter: 'HeaderFilter',
   Item: 'Item',
   Lookup: 'Lookup',
   PatternRule: 'PatternRule',
