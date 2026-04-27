@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Controller;
 
+use App\ControlPlane\Billing\Feature\PlanFeatureManager;
 use App\ControlPlane\Billing\Feature\TenantFeatureOverrideManager;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
@@ -33,23 +34,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/admin/tenants/{id}/features', requirements: ['id' => '\d+'])]
 final class TenantFeatureOverrideController extends AbstractController
 {
-    /** The 14 feature keys defined in the plan_features catalogue. */
-    private const array FEATURE_KEYS = [
-        'excel_export',
-        'pdf_bulk_download',
-        'api_access',
-        'multi_warehouse',
-        'lot_tracking',
-        'custom_branding',
-        'advanced_reports',
-        'backup_download',
-        'sunat_auto_retry',
-        'webhooks',
-        'priority_support',
-        'api_rate_limit',
-        'retention_days',
-        'concurrent_sessions',
-    ];
+    /** The canonical feature key catalogue — sourced from PlanFeatureManager. */
+    private const array FEATURE_KEYS = PlanFeatureManager::FEATURE_KEYS;
 
     public function __construct(
         private readonly TenantManager $tenantManager,
