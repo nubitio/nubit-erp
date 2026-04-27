@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Entity\VoucherType;
-use App\Entity\Branch;
+use App\Organization\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 

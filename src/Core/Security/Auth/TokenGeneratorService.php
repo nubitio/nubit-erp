@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Security\Auth;
 
 use App\Core\Context\TenantContext;
-use App\Entity\Branch;
+use App\Organization\Entity\Branch;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use DateTimeImmutable;

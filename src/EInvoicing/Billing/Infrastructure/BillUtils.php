@@ -7,7 +7,7 @@ namespace App\EInvoicing\Billing\Infrastructure;
 use Override;
 use RuntimeException;
 use App\EInvoicing\Billing\Domain\BillUtilsInterface;
-use App\Repository\CompanyRepository;
+use App\Organization\Repository\CompanyRepository;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Efact\Service;
 
 use RuntimeException;
-use App\Entity\Company;
-use App\Repository\CompanyRepository;
+use App\Organization\Entity\Company;
+use App\Organization\Repository\CompanyRepository;
 
 class CompanyContext
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Entity;
 
-use App\Entity\Company;
+use App\Organization\Entity\Company;
 use App\Entity\Media;
 use PHPUnit\Framework\TestCase;
 

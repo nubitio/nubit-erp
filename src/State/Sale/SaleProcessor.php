@@ -20,7 +20,7 @@ use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
-use App\Repository\BranchRepository;
+use App\Organization\Repository\BranchRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\SaleRecordRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;

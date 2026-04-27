@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\Branch;
+use App\Organization\Entity\Branch;
 use App\Entity\SaleRecord;
 use App\State\Sale\CashSessionResolver;
 use App\State\Sale\SaleProcessor;
