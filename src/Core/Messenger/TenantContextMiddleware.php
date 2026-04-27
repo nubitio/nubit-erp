@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Messenger;
 
+use Nubit\Platform\Messenger\ActorStamp;
+use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Symfony\Component\Messenger\Envelope;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Exception;
 
+/** @deprecated Use Nubit\Platform\Exception\QuotaExceededException directly */
 class QuotaExceededException extends ServiceException
 {
     private const int HTTP_STATUS_TOO_MANY_REQUESTS = 429;
