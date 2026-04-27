@@ -9,9 +9,9 @@ use App\Dto\Assistant\ProductSearchResultDto;
 use App\Dto\Assistant\ProductStockDto;
 use App\Dto\Assistant\ProductWarehouseStockDto;
 use App\Entity\Product;
-use App\Entity\ProductStock;
+use App\Inventory\Entity\ProductStock;
 use App\Repository\ProductRepository;
-use App\Repository\ProductStockRepository;
+use App\Inventory\Repository\ProductStockRepository;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(

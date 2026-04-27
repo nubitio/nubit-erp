@@ -7,7 +7,7 @@ namespace App\Tests\State\Purchase;
 use App\Entity\Product;
 use App\Entity\Purchase;
 use App\Entity\PurchaseItem;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\StockMovementType;

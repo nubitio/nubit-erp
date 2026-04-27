@@ -10,7 +10,7 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Service\LotDeductionService;
 use Doctrine\DBAL\Connection;
@@ -196,11 +196,11 @@ SQL,
      * Resolve lot deductions for FIFO/FEFO strategies.
      * Returns empty array when lot tracking is disabled or column doesn't exist.
      *
-     * @return array<array{lot: \App\Entity\StockLot, qty: string}>
+     * @return array<array{lot: \App\Inventory\Entity\StockLot, qty: string}>
      */
     private function resolveLotDeductions(
         Product $product,
-        \App\Entity\Warehouse $warehouse,
+        \App\Inventory\Entity\Warehouse $warehouse,
         string $movementType,
         float $qty,
     ): array {

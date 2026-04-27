@@ -8,7 +8,7 @@ use App\Core\Exception\ServiceException;
 use App\Efact\Service\SettingsService;
 use App\Catalog\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Sale\Domain\DocType;
 use App\State\Sale\SaleUtils;
 use Doctrine\DBAL\Connection;

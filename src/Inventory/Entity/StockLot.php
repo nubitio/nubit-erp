@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
+use App\Entity\Product;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Repository\StockLotRepository;
+use App\Inventory\Repository\StockLotRepository;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Types\Types;

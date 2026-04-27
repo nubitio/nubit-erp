@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
 use App\Inventory\Core\Enum\StockPolicy;
-use App\Repository\TenantInventoryPolicyRepository;
+use App\Inventory\Repository\TenantInventoryPolicyRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 

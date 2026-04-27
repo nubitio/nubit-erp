@@ -9,7 +9,7 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\Contacts\Entity\Customer;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

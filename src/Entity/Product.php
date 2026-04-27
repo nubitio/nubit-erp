@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;

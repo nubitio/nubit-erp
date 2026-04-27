@@ -34,7 +34,7 @@ use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleUtils;
 use App\State\Sale\SalesWriteGateway;
 use App\Entity\Product;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;

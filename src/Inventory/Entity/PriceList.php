@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -16,7 +16,7 @@ use App\Core\Http\ApiResponse;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\PriceList\PriceListDto;
 use App\Dto\PriceList\PricesDto;
-use App\Repository\PriceListRepository;
+use App\Inventory\Repository\PriceListRepository;
 use App\State\PriceList\PriceListProcessor;
 use App\State\PriceList\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;

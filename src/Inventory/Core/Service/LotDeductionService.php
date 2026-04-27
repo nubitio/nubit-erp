@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\StockLot;
+use App\Inventory\Entity\StockLot;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Repository\StockLotRepository;
+use App\Inventory\Repository\StockLotRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -103,7 +103,7 @@ final readonly class LotDeductionService
 
         if ($lot === null) {
             $product = $this->entityManager->getReference(\App\Entity\Product::class, $productId);
-            $warehouse = $this->entityManager->getReference(\App\Entity\Warehouse::class, $warehouseId);
+            $warehouse = $this->entityManager->getReference(\App\Inventory\Entity\Warehouse::class, $warehouseId);
 
             $lot = new StockLot();
             $lot->setProduct($product);
