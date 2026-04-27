@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Symfony\Console;
+namespace Nubit\Platform\Symfony\Console;
 
-use App\Platform\Exception\ServiceException;
-use App\Platform\Tenant\Context\TenantContext;
-use App\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
-use App\Platform\Tenant\Contract\TenantRegistryInterface;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Exception;
 use Override;
 use Psr\Log\LoggerInterface;

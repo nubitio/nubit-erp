@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Feature\Contract;
+namespace Nubit\Platform\Feature\Contract;
 
 interface FeatureCheckerInterface
 {

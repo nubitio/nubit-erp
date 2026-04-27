@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\Filesystem;
 
-use App\Platform\Filesystem\FileManager;
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;

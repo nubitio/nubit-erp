@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Tenant\Contract;
+namespace Nubit\Platform\Tenant\Contract;
 
-use App\Platform\Tenant\Model\TenantDescriptor;
+use Nubit\Platform\Tenant\Model\TenantDescriptor;
 
 /**
  * Typed tenant registry port for new Platform consumers.

@@ -6,7 +6,7 @@ namespace App\EInvoicing\Invoice\Domain;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Psr\Log\LoggerInterface;

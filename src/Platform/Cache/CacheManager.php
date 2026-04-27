@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Cache;
+namespace Nubit\Platform\Cache;
 
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 

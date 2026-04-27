@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Tenant\Context;
+namespace Nubit\Platform\Tenant\Context;
 
 class TenantContext
 {

@@ -7,7 +7,7 @@ namespace App\State\Product;
 use App\Entity\Product;
 use App\Entity\Warehouse;
 use App\Service\ProductStockService;
-use App\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

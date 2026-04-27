@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Tenant\Model;
+namespace Nubit\Platform\Tenant\Model;
 
 use InvalidArgumentException;
 

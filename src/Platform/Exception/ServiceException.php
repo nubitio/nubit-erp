@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Exception;
+namespace Nubit\Platform\Exception;
 
 use RuntimeException;
 use Throwable;

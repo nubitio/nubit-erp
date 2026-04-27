@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\Observability\Logging;
 
-use App\Platform\Observability\Logging\TenantLogProcessor;
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Observability\Logging\TenantLogProcessor;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Monolog\Level;
 use Monolog\LogRecord;
 use PHPUnit\Framework\TestCase;

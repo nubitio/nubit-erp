@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\RateLimit;
 
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 

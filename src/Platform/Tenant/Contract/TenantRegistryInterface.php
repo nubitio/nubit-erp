@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Tenant\Contract;
+namespace Nubit\Platform\Tenant\Contract;
 
 /**
  * Transitional tenant registry port.
  *
  * This keeps the current array-based API stable so existing ControlPlane
- * implementations can satisfy both App\Core and App\Platform contracts while
+ * implementations can satisfy both App\Core and Nubit\Platform contracts while
  * typed consumers migrate to TenantDescriptorRegistryInterface.
  */
 interface TenantRegistryInterface

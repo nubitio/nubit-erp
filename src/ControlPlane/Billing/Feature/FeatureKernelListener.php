@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Feature;
 
-use App\Platform\Feature\Attribute\RequiresFeature;
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 /**

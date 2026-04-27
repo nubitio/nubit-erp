@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Exception;
+namespace Nubit\Platform\Exception;
 
 class ValidationException extends ServiceException
 {

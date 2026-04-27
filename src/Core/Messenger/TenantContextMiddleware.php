@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Messenger;
 
-use App\Platform\Tenant\Context\TenantContext;
-use App\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;

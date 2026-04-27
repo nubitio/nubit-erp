@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Filesystem;
+namespace Nubit\Platform\Filesystem;
 
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;

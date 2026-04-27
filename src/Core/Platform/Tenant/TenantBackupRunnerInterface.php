@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Platform\Tenant;
 
-interface TenantBackupRunnerInterface extends \App\Platform\Tenant\Contract\TenantBackupRunnerInterface
+interface TenantBackupRunnerInterface extends \Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface
 {
     /**
      * @return array{id: int, filename: string, storage_path: string, size_bytes: int, storage_type: string}

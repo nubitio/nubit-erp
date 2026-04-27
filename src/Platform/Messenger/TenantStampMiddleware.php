@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Messenger;
+namespace Nubit\Platform\Messenger;
 
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;

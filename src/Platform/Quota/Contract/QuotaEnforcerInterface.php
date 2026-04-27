@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Quota\Contract;
+namespace Nubit\Platform\Quota\Contract;
 
 interface QuotaEnforcerInterface
 {
