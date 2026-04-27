@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Entity;
 
-use App\Entity\Branch;
+use App\Organization\Entity\Branch;
 use App\Entity\CashRegister;
 use App\Entity\CashShift;
 use App\Entity\Role;

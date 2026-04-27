@@ -14,7 +14,7 @@ use App\Core\Security\Auth\JWTManager;
 use App\Dto\TaxDocument\SeriesResultDto;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
-use App\Repository\BranchRepository;
+use App\Organization\Repository\BranchRepository;
 use App\Repository\TaxDocumentRepository;
 use App\State\TaxDocument\TaxDocumentProcessor;
 use PHPUnit\Framework\MockObject\MockObject;

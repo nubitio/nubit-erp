@@ -11,7 +11,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
-use App\Repository\BranchRepository;
+use App\Organization\Repository\BranchRepository;
 use App\Repository\TaxDocumentRepository;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineInput;

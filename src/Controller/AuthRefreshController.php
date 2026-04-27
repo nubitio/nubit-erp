@@ -12,7 +12,7 @@ use App\Core\Security\Auth\MercureSubscriberTokenService;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\RefreshToken;
 use App\Entity\User;
-use App\Repository\BranchRepository;
+use App\Organization\Repository\BranchRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Core\Context\TenantContext;
 use DateTimeImmutable;

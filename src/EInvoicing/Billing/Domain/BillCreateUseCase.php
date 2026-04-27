@@ -11,7 +11,7 @@ use App\EInvoicing\Shared\Enum\ChargeType;
 use App\EInvoicing\Shared\Enum\LegendCode;
 use App\EInvoicing\Shared\Enum\OperationType;
 use App\EInvoicing\Shared\Service\AmountFormatterService;
-use App\Repository\CompanyRepository;
+use App\Organization\Repository\CompanyRepository;
 use App\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;

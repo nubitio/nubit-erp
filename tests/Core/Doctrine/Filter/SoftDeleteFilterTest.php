@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Core\Doctrine\Filter;
 
 use App\Efact\Doctrine\Filter\SoftDeleteFilter;
-use App\Entity\Branch;
+use App\Organization\Entity\Branch;
 use App\Entity\Media;
 use App\Entity\Purchase;
 use App\Entity\PurchaseItem;
