@@ -1,6 +1,7 @@
 import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
 import type { FieldDataChangedEvent } from 'devextreme/ui/form';
 import { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { FORM_ERRORS_EVENT, httpClient } from '../../shared/api/HttpClient';
 import { useFormSubmit } from './useFormSubmit';
@@ -99,6 +100,39 @@ export function syncComputedValuesIntoFormData(
   return { changed, nextFormData };
 }
 
+function validateDetailRows(detailRows: FormRecord[], detailFields: Field[]): boolean {
+  return detailRows.every((row) =>
+    detailFields.every((field) => {
+      const value = row[field.name];
+
+      if (field.required && (value === null || value === undefined || value === '')) {
+        return false;
+      }
+
+      if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
+        const numericValue = Number(value ?? 0);
+
+        if (field.required && Number.isNaN(numericValue)) {
+          return false;
+        }
+
+        const rangeValidators = field.validators.filter((validator) => validator.type === 'range');
+        for (const validator of rangeValidators) {
+          const { min, max } = validator.options;
+          if (min !== undefined && numericValue < min) {
+            return false;
+          }
+          if (max !== undefined && numericValue > max) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }),
+  );
+}
+
 export const FORM_EVENTS = {
   FIELD_CHANGED: 'on:field:changed',
   ROW_ADDED: 'on:row:added',
@@ -154,6 +188,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const formValid = formValidation?.isValid ?? true;
     let gridValid = !gridRef.current?.instance().hasEditData();
     let detailRequiredMissing = false;
+    let detailRowsValid = true;
 
     if (options.requiredDetail) {
       gridValid = (gridRef.current?.instance().totalCount() ?? 0) > 0;
@@ -162,7 +197,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       }
     }
 
-    if (!formValid || !gridValid) {
+    if (options.detailFields) {
+      const detailRows = (gridRef.current?.instance().getDataSource().items() ?? []) as FormRecord[];
+      detailRowsValid = validateDetailRows(detailRows, options.detailFields);
+    }
+
+    if (!formValid || !gridValid || !detailRowsValid) {
       toast(
         detailRequiredMissing && formValid
           ? detailNoDataText
@@ -171,7 +211,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       );
     }
 
-    return formValid && gridValid;
+    return formValid && gridValid && detailRowsValid;
   };
 
   const { handleSave, handleDelete } = useFormSubmit(

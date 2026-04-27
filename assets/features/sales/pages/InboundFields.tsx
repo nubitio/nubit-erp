@@ -62,6 +62,7 @@ export const InboundFields = () => {
     currencyField()
       .name('grandTotal')
       .label('Total')
+      .defaultValue(0)
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
       .build(),
@@ -95,12 +96,19 @@ export const InboundDetailFields = () => {
     numberField()
       .name('qty')
       .label('Cantidad')
+      .defaultValue(0)
       .align('center')
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.totalAmount = currentRow.unitCost * value;
+        row.totalAmount = Number(currentRow.unitCost ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);
       })
+      .validators([
+        {
+          type: 'range',
+          options: { min: 0.001, message: 'La cantidad debe ser mayor que cero' },
+        },
+      ])
       .required(true)
       .sortable(false)
       .valueType('number')
@@ -110,10 +118,11 @@ export const InboundDetailFields = () => {
     currencyField()
       .name('unitCost')
       .label('Precio unitario')
+      .defaultValue(0)
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.totalAmount = currentRow.qty * value;
+        row.totalAmount = Number(currentRow.qty ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);
       })
       .sortable(false)
@@ -123,6 +132,7 @@ export const InboundDetailFields = () => {
     currencyField()
       .name('totalAmount')
       .label('Precio total')
+      .defaultValue(0)
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)
       .filterable(false)

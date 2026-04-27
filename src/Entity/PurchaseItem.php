@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PurchaseItemRepository::class)]
 #[ORM\Table(name: 'goods_receipt_items')]
@@ -79,6 +80,7 @@ class PurchaseItem
     private ?string $uomSnapshot = null;
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
+    #[Assert\Positive(message: 'La cantidad debe ser mayor que cero.')]
     #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
     #[ApiProperty(description: 'purchase_item.qty.label')]
