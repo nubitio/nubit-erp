@@ -6,7 +6,7 @@ namespace App\Tests\EInvoicing\Service;
 
 use App\Efact\Service\SettingsService;
 use App\EInvoicing\Service\SaleV2Loader;
-use App\Entity\Customer;
+use App\Contacts\Entity\Customer;
 use App\Entity\SaleRecord;
 use App\Entity\Warehouse;
 use App\Sale\Domain\SaleStatus;

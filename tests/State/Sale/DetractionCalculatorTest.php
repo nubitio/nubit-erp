@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\Customer;
+use App\Contacts\Entity\Customer;
 use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
