@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Billing\Quota;
 
 use App\Organization\Entity\Branch;
-use App\Entity\Customer;
+use App\Contacts\Entity\Customer;
 use App\Entity\Product;
 use App\Entity\TaxDocument;
 use App\Identity\Entity\User;

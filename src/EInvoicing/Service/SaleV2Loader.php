@@ -6,7 +6,7 @@ namespace App\EInvoicing\Service;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Entity\Customer;
+use App\Contacts\Entity\Customer;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;

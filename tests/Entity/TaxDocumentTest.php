@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Entity;
 
 use App\Organization\Entity\Branch;
-use App\Entity\Customer;
+use App\Contacts\Entity\Customer;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
 use PHPUnit\Framework\TestCase;
