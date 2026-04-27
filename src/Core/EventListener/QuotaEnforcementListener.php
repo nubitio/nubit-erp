@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
-use App\Platform\Quota\Contract\QuotaEnforcerInterface;
-use App\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
+use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;

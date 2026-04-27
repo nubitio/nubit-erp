@@ -10,7 +10,7 @@ use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use App\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

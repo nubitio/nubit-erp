@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Invoice\Domain;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Invoice\Domain\InvoiceSendRetryService;
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;

@@ -7,9 +7,9 @@ namespace App\ControlPlane\Billing\Feature;
 use App\ControlPlane\Billing\Repository\PlanFeatureRepositoryInterface;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
-use App\Platform\Feature\Exception\FeatureNotAvailableException;
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 

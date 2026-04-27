@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Tenant\Contract;
+namespace Nubit\Platform\Tenant\Contract;
 
 interface TenantBackupRunnerInterface
 {

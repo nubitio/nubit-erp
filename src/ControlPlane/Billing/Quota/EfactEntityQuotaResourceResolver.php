@@ -9,7 +9,7 @@ use App\Entity\Customer;
 use App\Entity\Product;
 use App\Entity\TaxDocument;
 use App\Entity\User;
-use App\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 
 final readonly class EfactEntityQuotaResourceResolver implements QuotaResourceResolverInterface
 {

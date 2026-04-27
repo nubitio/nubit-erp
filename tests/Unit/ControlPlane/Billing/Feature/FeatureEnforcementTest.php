@@ -6,9 +6,9 @@ namespace App\Tests\Unit\ControlPlane\Billing\Feature;
 
 use App\ControlPlane\Billing\Feature\FeatureKernelListener;
 use App\ControlPlane\Billing\Feature\FeatureVoter;
-use App\Platform\Feature\Attribute\RequiresFeature;
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
-use App\Platform\Feature\Exception\FeatureNotAvailableException;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\RateLimit;
+namespace Nubit\Platform\RateLimit;
 
 final readonly class RateLimitResult
 {

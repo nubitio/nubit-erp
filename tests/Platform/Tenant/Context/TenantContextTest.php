@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Platform\Tenant\Context;
 
 use App\Core\Context\TenantContext as LegacyTenantContext;
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
 
 final class TenantContextTest extends TestCase

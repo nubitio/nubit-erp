@@ -25,6 +25,12 @@ services:
   # this creates a service per class whose id is the fully-qualified class name
   App\:
     resource: '../src/'
+    exclude:
+      - '../src/Platform/'
+
+  # Platform library — registered under Nubit\Platform\ namespace
+  Nubit\Platform\:
+    resource: '../src/Platform/'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -72,17 +78,17 @@ services:
 
   # SPEC-004 transitional Platform boundary bindings:
   # Keep the legacy App\Core\... service IDs as the primary definitions while
-  # the application still imports them broadly. New App\Platform\... contracts
+  # the application still imports them broadly. New Nubit\Platform\... contracts
   # alias back to those same services so both namespaces resolve consistently.
-  # Future migration direction: move consumers to App\Platform\... contracts,
+  # Future migration direction: move consumers to Nubit\Platform\... contracts,
   # then flip the primary definitions and eventually remove the Core shims.
   App\Core\Platform\Tenant\TenantRegistryInterface:
     class: App\ControlPlane\Tenant\Service\TenantManager
 
-  App\Platform\Tenant\Contract\TenantRegistryInterface:
+  Nubit\Platform\Tenant\Contract\TenantRegistryInterface:
     alias: App\Core\Platform\Tenant\TenantRegistryInterface
 
-  App\Platform\Tenant\Context\TenantContext:
+  Nubit\Platform\Tenant\Context\TenantContext:
     # TenantContext is stateful per request/message; this alias intentionally
     # prevents a second independent Platform context instance from being built.
     alias: App\Core\Context\TenantContext
@@ -90,23 +96,23 @@ services:
   App\Core\Platform\Tenant\TenantConnectionSwitcherInterface:
     class: App\ControlPlane\Tenant\Service\TenantConnectionSwitcher
 
-  App\Platform\Tenant\Contract\TenantConnectionSwitcherInterface:
+  Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface:
     alias: App\Core\Platform\Tenant\TenantConnectionSwitcherInterface
 
   App\Core\Platform\Tenant\TenantBackupRunnerInterface:
     class: App\ControlPlane\Tenant\Service\TenantBackupService
 
-  App\Platform\Tenant\Contract\TenantBackupRunnerInterface:
+  Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface:
     alias: App\Core\Platform\Tenant\TenantBackupRunnerInterface
 
   App\Core\Platform\Billing\QuotaEnforcerInterface:
     class: App\ControlPlane\Billing\Service\TenantQuotaService
 
-  App\Platform\Quota\Contract\QuotaEnforcerInterface:
+  Nubit\Platform\Quota\Contract\QuotaEnforcerInterface:
     alias: App\Core\Platform\Billing\QuotaEnforcerInterface
 
   # SPEC-005: Feature gate — bind the Platform contract to the ControlPlane implementation.
-  App\Platform\Feature\Contract\FeatureCheckerInterface:
+  Nubit\Platform\Feature\Contract\FeatureCheckerInterface:
     class: App\ControlPlane\Billing\Feature\TenantFeatureChecker
     arguments:
       $featureCache: '@cache.app.taggable'
@@ -138,7 +144,7 @@ services:
     tags:
       - { name: security.voter }
 
-  App\Platform\Quota\Contract\QuotaResourceResolverInterface:
+  Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface:
     # Efact-owned adapter: maps concrete app entities to portable quota resource names.
     class: App\ControlPlane\Billing\Quota\EfactEntityQuotaResourceResolver
 
@@ -175,15 +181,15 @@ services:
     tags:
       - { name: monolog.processor }
 
-  App\Platform\Observability\Logging\TenantLogProcessor:
+  Nubit\Platform\Observability\Logging\TenantLogProcessor:
     # Legacy processor keeps the Monolog tag; Platform consumers share the tagged service.
     alias: App\Core\Logging\TenantLogProcessor
 
-  App\Platform\Cache\CacheManager:
+  Nubit\Platform\Cache\CacheManager:
     # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
     alias: App\Core\Cache\CacheManager
 
-  App\Platform\Filesystem\FileManager:
+  Nubit\Platform\Filesystem\FileManager:
     # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
     alias: App\Core\Filesystem\FileManager
 

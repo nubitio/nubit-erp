@@ -6,8 +6,8 @@ namespace App\Tests\Core\EventListener;
 
 use App\Core\Context\TenantContext;
 use App\Core\EventListener\QuotaEnforcementListener;
-use App\Platform\Quota\Contract\QuotaEnforcerInterface;
-use App\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
+use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;

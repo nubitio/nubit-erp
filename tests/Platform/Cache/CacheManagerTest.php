@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\Cache;
 
-use App\Platform\Cache\CacheManager;
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Cache\CacheManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 

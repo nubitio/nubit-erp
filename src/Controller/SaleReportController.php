@@ -13,7 +13,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
 use PhpOffice\PhpSpreadsheet\Exception;
-use App\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;

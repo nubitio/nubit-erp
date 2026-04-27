@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Http;
+namespace Nubit\Platform\Http;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 

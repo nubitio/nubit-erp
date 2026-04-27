@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Feature;
 
-use App\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 

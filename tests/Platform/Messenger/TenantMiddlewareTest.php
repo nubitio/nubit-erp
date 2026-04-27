@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\Messenger;
 
-use App\Platform\Messenger\ActorStamp;
-use App\Platform\Messenger\TenantContextMiddleware;
-use App\Platform\Messenger\TenantStamp;
-use App\Platform\Messenger\TenantStampMiddleware;
-use App\Platform\Tenant\Context\TenantContext;
-use App\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Messenger\ActorStamp;
+use Nubit\Platform\Messenger\TenantContextMiddleware;
+use Nubit\Platform\Messenger\TenantStamp;
+use Nubit\Platform\Messenger\TenantStampMiddleware;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;

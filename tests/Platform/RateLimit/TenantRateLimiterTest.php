@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\RateLimit;
 
-use App\Platform\RateLimit\RateLimitResult;
-use App\Platform\RateLimit\TenantRateLimiter;
+use Nubit\Platform\RateLimit\RateLimitResult;
+use Nubit\Platform\RateLimit\TenantRateLimiter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 

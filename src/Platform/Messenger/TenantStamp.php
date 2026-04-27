@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Messenger;
+namespace Nubit\Platform\Messenger;
 
 use Symfony\Component\Messenger\Stamp\StampInterface;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\Observability\Logging;
+namespace Nubit\Platform\Observability\Logging;
 
-use App\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Monolog\LogRecord;
 use OpenTelemetry\API\Trace\Span;
 

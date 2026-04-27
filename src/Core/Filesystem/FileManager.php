@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Filesystem;
 
-use App\Platform\Filesystem\FileManager as PlatformFileManager;
+use Nubit\Platform\Filesystem\FileManager as PlatformFileManager;
 
 readonly class FileManager extends PlatformFileManager
 {

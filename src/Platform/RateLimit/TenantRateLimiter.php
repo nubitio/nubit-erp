@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Platform\RateLimit;
+namespace Nubit\Platform\RateLimit;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
