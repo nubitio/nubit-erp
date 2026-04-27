@@ -30,7 +30,7 @@ vi.mock('@core/common/UserInformation', () => ({
 vi.mock('@app/Settings', () => ({
   Setting: {
     AUTO_INVOICE: 'app_option_auto_invoice',
-    CHECK_STOCK: 'app_option_check_stock',
+    INVENTORY_NEGATIVE_STOCK_POLICY: 'inventory_negative_stock_policy',
     DEFAULT_CURRENCY: 'sales_default_currency',
     DEFAULT_USD_EXCHANGE_RATE: 'sales_default_usd_exchange_rate',
   },
@@ -254,7 +254,7 @@ describe('setTotal', () => {
 });
 
 // ---------------------------------------------------------------------------
-// SaleDetailFields › qty onChange — CHECK_STOCK behaviour
+// SaleDetailFields › qty onChange — inventory_negative_stock_policy behaviour
 // ---------------------------------------------------------------------------
 
 describe('SaleDetailFields › qty onChange stock check', () => {
@@ -287,8 +287,8 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     setWarehouseId('wh-test');
   });
 
-  it('shows current stock info and blocks the edit when qty exceeds stock and CHECK_STOCK is string "true"', async () => {
-    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'true' });
+  it('blocks and shows stock info when policy is BLOCK and qty exceeds stock', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
     getStockMock.mockResolvedValue({ stock: 3 });
 
     const row: any = {};
@@ -305,8 +305,8 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     expect(row.netAmount).toBe('');
   });
 
-  it('blocks when CHECK_STOCK value is boolean true (not just string) — regression for loose == bug', async () => {
-    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: true });
+  it('blocks when policy is WARNING_ONLY and qty exceeds stock', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'WARNING_ONLY' });
     getStockMock.mockResolvedValue({ stock: 2 });
 
     const row: any = {};
@@ -316,13 +316,12 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     const onChange = getQtyOnChange();
     await onChange!.call(self, row, 5, currentRow);
 
-    // Must trigger the stock check even when value is boolean true (not string)
     expect(getStockMock).toHaveBeenCalled();
     expect(row.qty).toBe('');
   });
 
-  it('allows the edit when qty is within available stock and CHECK_STOCK is true', async () => {
-    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'true' });
+  it('allows the edit when qty is within available stock', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
     getStockMock.mockResolvedValue({ stock: 10 });
 
     const row: any = {};
@@ -333,13 +332,12 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     await onChange!.call(self, row, 3, currentRow);
 
     expect(toastMock).not.toHaveBeenCalledWith('No hay stock suficiente', 'error', 2000);
-    // qty should NOT be cleared
     expect(row.qty).toBeUndefined();
     expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 3, currentRow);
   });
 
-  it('skips stock check entirely when CHECK_STOCK is false', async () => {
-    settingsGetMock.mockResolvedValue({ id: 1, name: 'app_option_check_stock', value: 'false' });
+  it('skips stock check entirely when policy is ALLOW_NEGATIVE', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'ALLOW_NEGATIVE' });
 
     const row: any = {};
     const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
@@ -350,6 +348,20 @@ describe('SaleDetailFields › qty onChange stock check', () => {
 
     expect(getStockMock).not.toHaveBeenCalled();
     expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 999, currentRow);
+  });
+
+  it('skips stock check when policy is absent (undefined)', async () => {
+    settingsGetMock.mockResolvedValue(undefined);
+
+    const row: any = {};
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 5, currentRow);
+
+    // undefined !== 'ALLOW_NEGATIVE' → check fires, stock API called
+    expect(getStockMock).toHaveBeenCalled();
   });
 
   it('returns early without calling defaultSetCellValue when value is empty string', async () => {
