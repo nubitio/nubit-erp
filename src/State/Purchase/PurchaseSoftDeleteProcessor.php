@@ -6,7 +6,7 @@ namespace App\State\Purchase;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Purchase;
+use App\Purchasing\Entity\Purchase;
 use DateTime;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

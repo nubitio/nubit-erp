@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\State\Purchase;
 
 use App\Entity\Product;
-use App\Entity\Purchase;
-use App\Entity\PurchaseItem;
+use App\Purchasing\Entity\Purchase;
+use App\Purchasing\Entity\PurchaseItem;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;

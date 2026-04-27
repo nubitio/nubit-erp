@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Purchase;
 
 use App\Entity\Product;
-use App\Entity\Purchase;
+use App\Purchasing\Entity\Purchase;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockMovementType;
