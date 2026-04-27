@@ -17,7 +17,7 @@ use App\Dto\Auth\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Organization\Entity\Branch;
 use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;
+use App\CashRegister\Entity\CashShift;
 use App\Contacts\Entity\Customer;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;

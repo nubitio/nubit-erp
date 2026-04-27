@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\CashRegister\Entity;
 
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
@@ -17,7 +17,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
-use App\Repository\CashShiftRepository;
+use App\CashRegister\Repository\CashShiftRepository;
 use App\Dto\CashRegister\CashShiftXReportDto;
 use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use App\State\CashRegister\CashShiftMovementsProvider;

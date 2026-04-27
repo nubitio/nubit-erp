@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Entity;
 
 use App\Organization\Entity\Branch;
-use App\Entity\CashRegister;
-use App\Entity\CashShift;
+use App\CashRegister\Entity\CashRegister;
+use App\CashRegister\Entity\CashShift;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Enum\CashShiftStatus;

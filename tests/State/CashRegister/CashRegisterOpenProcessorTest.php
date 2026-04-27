@@ -12,7 +12,7 @@ use App\Core\Security\Auth\JWTManager;
 use App\Dto\Auth\AuthUserDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Organization\Entity\Branch;
-use App\Entity\CashSession;
+use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use App\State\CashRegister\CashRegisterOpenProcessor;

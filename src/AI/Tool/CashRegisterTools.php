@@ -7,11 +7,11 @@ namespace App\AI\Tool;
 use DateTimeInterface;
 use App\Core\Exception\ServiceException;
 use App\Dto\Assistant\CashRegisterStatusDto;
-use App\Entity\CashRegister;
-use App\Entity\CashShift;
+use App\CashRegister\Entity\CashRegister;
+use App\CashRegister\Entity\CashShift;
 use App\Enum\CashShiftStatus;
-use App\Repository\CashRegisterRepository;
-use App\Repository\CashShiftRepository;
+use App\CashRegister\Repository\CashRegisterRepository;
+use App\CashRegister\Repository\CashShiftRepository;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
