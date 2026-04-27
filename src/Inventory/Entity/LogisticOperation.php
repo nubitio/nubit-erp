@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Repository\LogisticOperationRepository;
+use App\Inventory\Repository\LogisticOperationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;

@@ -11,7 +11,7 @@ use App\Dto\Auth\AuthUserDto;
 use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;

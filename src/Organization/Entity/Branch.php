@@ -7,7 +7,7 @@ namespace App\Organization\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

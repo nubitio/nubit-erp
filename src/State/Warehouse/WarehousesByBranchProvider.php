@@ -6,7 +6,7 @@ namespace App\State\Warehouse;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 

@@ -7,7 +7,7 @@ namespace App\Inventory\Core\Service;
 use App\Core\Exception\ServiceException;
 use App\Entity\Product;
 use App\Entity\SaleRecord;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\MovementDraft;

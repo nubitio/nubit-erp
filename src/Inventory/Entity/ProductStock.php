@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
+use App\Entity\Product;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\ProductStockRepository;
+use App\Inventory\Repository\ProductStockRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 

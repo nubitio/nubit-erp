@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contacts\Entity;
 
-use App\Entity\PriceList;
+use App\Inventory\Entity\PriceList;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;

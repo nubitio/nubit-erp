@@ -9,7 +9,7 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Service\InventoryLedgerService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;

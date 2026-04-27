@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Inventory\Entity;
 
+use App\Entity\Product;
 use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -14,7 +15,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Repository\WarehouseRepository;
+use App\Inventory\Repository\WarehouseRepository;
 use App\State\Warehouse\WarehousesByBranchProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Product;
-use App\Entity\ProductStock;
-use App\Entity\Warehouse;
-use App\Repository\ProductStockRepository;
-use App\Repository\WarehouseRepository;
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
+use App\Inventory\Repository\ProductStockRepository;
+use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\Core\Service\InventoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Inventory\Core\Service;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\StockLot;
+use App\Inventory\Entity\StockLot;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Service\LotDeductionService;
-use App\Repository\StockLotRepository;
+use App\Inventory\Repository\StockLotRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -174,13 +174,13 @@ final class LotDeductionServiceTest extends TestCase
             ->willReturn(null);
 
         $productRef = $this->createStub(\App\Entity\Product::class);
-        $warehouseRef = $this->createStub(\App\Entity\Warehouse::class);
+        $warehouseRef = $this->createStub(\App\Inventory\Entity\Warehouse::class);
 
         $this->em
             ->method('getReference')
             ->willReturnMap([
                 [\App\Entity\Product::class, 'prod-1', $productRef],
-                [\App\Entity\Warehouse::class, 'wh-1', $warehouseRef],
+                [\App\Inventory\Entity\Warehouse::class, 'wh-1', $warehouseRef],
             ]);
 
         $this->em->expects(self::once())->method('persist');

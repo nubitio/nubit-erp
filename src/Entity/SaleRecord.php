@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Inventory\Entity\Warehouse;
 use App\Contacts\Entity\Supplier;
 use App\Contacts\Entity\Customer;
 use App\Organization\Entity\Branch;

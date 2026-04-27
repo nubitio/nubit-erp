@@ -7,7 +7,7 @@ namespace App\Command\Notification;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Notification\NotificationType;
 use App\Notification\UserNotificationService;
-use App\Repository\ProductStockRepository;
+use App\Inventory\Repository\ProductStockRepository;
 use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;

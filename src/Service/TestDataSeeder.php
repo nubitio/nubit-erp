@@ -11,21 +11,21 @@ use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineInput;
 use App\Contacts\Entity\Customer;
 use App\Entity\TaxDocument;
-use App\Entity\LogisticOperation;
+use App\Inventory\Entity\LogisticOperation;
 use App\Entity\Product;
-use App\Entity\ProductStock;
+use App\Inventory\Entity\ProductStock;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Contacts\Entity\Supplier;
-use App\Entity\Warehouse;
+use App\Inventory\Entity\Warehouse;
 use App\Catalog\Repository\CategoryRepository;
 use App\Contacts\Repository\CustomerRepository;
-use App\Repository\LogisticOperationRepository;
+use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
 use App\Contacts\Repository\SupplierRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Repository\WarehouseRepository;
+use App\Inventory\Repository\WarehouseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class TestDataSeeder

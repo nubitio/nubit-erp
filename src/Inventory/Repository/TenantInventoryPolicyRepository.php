@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Inventory\Repository;
 
-use App\Entity\TenantInventoryPolicy;
+use App\Inventory\Entity\TenantInventoryPolicy;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
