@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\State\Sale;
 
+use App\Catalog\Entity\PaymentMethod;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
@@ -281,7 +282,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             createdBy: $user->userId,
                             amount: $cashCollected,
                             categoryId: null,
-                            paymentMethodId: \App\Entity\PaymentMethod::CASH,
+                            paymentMethodId: \App\Catalog\Entity\PaymentMethod::CASH,
                             createdAt: $data->getFecha() !== null ? \DateTimeImmutable::createFromInterface($data->getFecha()) : new DateTimeImmutable(),
                             description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
                         );

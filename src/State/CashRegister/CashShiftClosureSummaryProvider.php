@@ -10,7 +10,7 @@ use Brick\Math\RoundingMode;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\CashRegister\CashShiftClosureSummaryDto;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

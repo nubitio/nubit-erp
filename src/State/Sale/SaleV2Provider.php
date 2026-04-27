@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\SaleRecord;
-use App\Repository\PaymentMethodRepository;
+use App\Catalog\Repository\PaymentMethodRepository;
 use App\Repository\SaleRecordRepository;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

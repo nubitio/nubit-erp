@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Catalog\Entity\PaymentMethod;
 use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
@@ -19,10 +20,10 @@ use App\EInvoicing\Service\InvoiceLineInput;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Branch;
 use App\Entity\SaleRecord;
-use App\Entity\SunatCatalog;
+use App\Catalog\Entity\SunatCatalog;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
-use App\Entity\VoucherSeries;
+use App\Catalog\Entity\VoucherSeries;
 use App\Sale\Domain\DocType;
 use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

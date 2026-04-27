@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Repository\VoucherSeriesRepository;
+use App\Catalog\Repository\VoucherSeriesRepository;
+use App\Catalog\Entity\VoucherType;
+use App\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;

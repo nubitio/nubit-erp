@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Efact\Service\SettingsService;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
 use App\Entity\Warehouse;
 use App\Sale\Domain\DocType;

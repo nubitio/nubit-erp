@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Entity\Category;
+use App\Catalog\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\LogisticOperation;
-use App\Entity\PaymentMethod;
+use App\Catalog\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Supplier;
-use App\Entity\UnitOfMeasure;
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Entity\Warehouse;
-use App\Repository\CategoryRepository;
+use App\Catalog\Repository\CategoryRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
-use App\Repository\PaymentMethodRepository;
+use App\Catalog\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SupplierRepository;
-use App\Repository\UnitOfMeasureRepository;
+use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Repository\WarehouseRepository;
 use App\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
