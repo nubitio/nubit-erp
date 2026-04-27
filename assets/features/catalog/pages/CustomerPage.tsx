@@ -5,6 +5,7 @@ import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import toast from '@shared/lib/SharedUtils';
 import type { MutableRefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { FormRef } from 'devextreme-react/form';
 
 interface CustomerRecord extends Record<string, unknown> {
@@ -108,7 +109,11 @@ const customerResource = defineResource<CustomerRecord>({
   }),
 });
 
-export const CustomerPage = () => <SmartCrudPage resource={customerResource} />;
+export const CustomerPage = () => {
+  const { t } = useTranslation();
+
+  return <SmartCrudPage resource={{ ...customerResource, title: t('customer.title') }} />;
+};
 
 // Static properties consumed by SalePage — must stay as module-level singletons.
 CustomerPage.EVENTS = customerEvents;

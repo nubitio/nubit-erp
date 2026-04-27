@@ -172,7 +172,7 @@ final class TranslatedDocumentationNormalizer implements NormalizerInterface
         }
         $request = $this->requestStack->getCurrentRequest();
         if ($request !== null) {
-            return $request->getLocale();
+            return $request->getPreferredLanguage(['es', 'en']) ?? $request->getLocale();
         }
 
         return $this->translator->getLocale();

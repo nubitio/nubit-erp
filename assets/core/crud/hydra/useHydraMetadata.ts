@@ -1,11 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { exceptionalFetch } from '@shared/api/network';
+import i18n from '../../../i18n';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import type { HydraApiDoc, OpenApiDoc, ApiDoc } from './types';
 
 const JSONLD_URL = '/api/docs.jsonld';
 const JSON_URL = '/api/docs.json';
 const isDev = import.meta.env.DEV;
+
+function documentationFetchOptions(): RequestInit {
+  const locale = i18n.language?.split('-')[0] || 'es';
+
+  return {
+    ...(isDev ? {} : { cache: 'force-cache' as const }),
+    headers: {
+      'Accept-Language': locale,
+    },
+  };
+}
 
 /**
  * Try to fetch and validate a Hydra JSON-LD doc.
@@ -14,7 +26,7 @@ const isDev = import.meta.env.DEV;
 async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
   const res = await exceptionalFetch(
     url,
-    isDev ? {} : { cache: 'force-cache' },
+    documentationFetchOptions(),
     'api-documentation',
   );
   if (!res.ok) throw new Error(`Failed to load Hydra API doc: ${res.status} ${res.statusText}`);
@@ -37,7 +49,7 @@ async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
 async function fetchOpenApiDoc(url: string): Promise<OpenApiDoc> {
   const res = await exceptionalFetch(
     url,
-    isDev ? {} : { cache: 'force-cache' },
+    documentationFetchOptions(),
     'api-documentation',
   );
   if (!res.ok) throw new Error(`Failed to load OpenAPI doc: ${res.status} ${res.statusText}`);
@@ -93,8 +105,9 @@ export interface UseHydraMetadataResult {
 }
 
 export function useHydraMetadata(): UseHydraMetadataResult {
+  const locale = i18n.language?.split('-')[0] || 'es';
   const { data, error, isPending } = useQuery<ApiDoc, Error>({
-    queryKey: API_DOC_QUERY_KEY,
+    queryKey: [...API_DOC_QUERY_KEY, locale],
     queryFn: fetchApiDoc,
     staleTime: isDev ? 0 : 5 * 60_000, // 0 in dev, 5 min in prod
     refetchOnWindowFocus: isDev,

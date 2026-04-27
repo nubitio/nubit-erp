@@ -198,6 +198,14 @@ customer:
     label: RUC
   business_name:
     label: Business name
+  fiscal_address:
+    label: Fiscal address
+  phone:
+    label: Phone
+  email:
+    label: Email
+  price_list:
+    label: Price list
 
 product:
   code:
