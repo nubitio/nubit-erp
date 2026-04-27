@@ -4,30 +4,66 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\StockItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: StockItemRepository::class)]
 #[ORM\Table(name: 'stock_items')]
+#[ApiResource(
+    operations: [new GetCollection(), new Get()],
+    normalizationContext: ['groups' => ['stock_item:read']],
+    filters: [DevExtremeFilter::class],
+    mercure: true,
+)]
 class StockItem
 {
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(identifier: true, description: 'stock_item.id.label')]
+    public function getId(): string
+    {
+        return sprintf('%s:%s', $this->warehouse->getId(), $this->product->getId());
+    }
+
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.available_qty.label')]
+    public function getQtyAvailable(): string
+    {
+        return number_format((float) $this->qtyOnHand - (float) $this->qtyReserved, 6, '.', '');
+    }
+
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(identifier: false, description: 'stock_item.warehouse.label')]
     #[ORM\Id]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'warehouse_id', referencedColumnName: 'almacen_id', nullable: false)]
     private Warehouse $warehouse;
 
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(identifier: false, description: 'stock_item.product.label')]
     #[ORM\Id]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: false)]
     private Product $product;
 
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.qty_on_hand.label')]
     #[ORM\Column(name: 'qty_on_hand', type: Types::DECIMAL, precision: 18, scale: 6)]
     private string $qtyOnHand = '0.000000';
 
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.qty_reserved.label')]
     #[ORM\Column(name: 'qty_reserved', type: Types::DECIMAL, precision: 18, scale: 6)]
     private string $qtyReserved = '0.000000';
 
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.updated_at.label')]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
 

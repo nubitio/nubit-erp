@@ -52,6 +52,7 @@ class Warehouse
         'inbound:read',
         'outbound:read',
         'purchase:read',
+        'stock_item:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -64,6 +65,7 @@ class Warehouse
         'inbound:read',
         'outbound:read',
         'purchase:read',
+        'stock_item:read',
     ])]
     #[ApiProperty(description: 'warehouse.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]

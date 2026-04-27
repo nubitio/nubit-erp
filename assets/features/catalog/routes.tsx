@@ -8,6 +8,7 @@ import {
   PriceListPage,
   SunatCatalogPage,
   SupplierPage,
+  StockItemPage,
   UnitOfMeasurePage,
   VoucherSeriesPage,
   VoucherTypePage,
@@ -16,6 +17,7 @@ import {
 
 export const catalogRoutes: AppRouteDefinition[] = [
   ...productRoutes,
+  { path: '/stock', element: StockItemPage },
   { path: '/category', element: CategoryPage },
   ...customerRoutes,
   { path: '/warehouse', element: WarehousePage },

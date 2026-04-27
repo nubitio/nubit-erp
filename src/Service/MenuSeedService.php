@@ -101,6 +101,15 @@ class MenuSeedService
             'parent_id' => 100,
         ],
         [
+            'id' => 109,
+            'order_index' => 9,
+            'key_name' => 'Existencias',
+            'type' => 'route',
+            'route' => 'stock',
+            'icon' => '',
+            'parent_id' => 100,
+        ],
+        [
             'id' => 103,
             'order_index' => 3,
             'key_name' => 'Tarifas',

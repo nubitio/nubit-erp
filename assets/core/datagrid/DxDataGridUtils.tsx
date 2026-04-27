@@ -5,6 +5,7 @@ import {
   Column,
   CustomRule,
   EmailRule,
+  HeaderFilter,
   Item,
   ITotalItemProps,
   Lookup,
@@ -376,6 +377,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
         fixedPosition={field.fixedPosition}
       >
         {buildLookup(clone)}
+        {field.type === FieldType.ENTITY && field.filterable && <HeaderFilter visible />}
         {buildValidationRules(clone)}
       </Column>
     );

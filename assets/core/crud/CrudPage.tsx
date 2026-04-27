@@ -376,6 +376,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
         sort={resolvedResource.sort}
         filter={routeAwareFilters}
         paging={resolvedResource.paging}
+        headerFilter={resolvedResource.headerFilter}
         mode={resolvedResource.mode}
         stateStoringEnabled={resolvedResource.stateStoring}
         toolbar={resolvedResource.toolbar}

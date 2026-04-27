@@ -157,7 +157,7 @@ final class ProductStockServiceTest extends TestCase
             $entityManager ?? $this->createMock(EntityManagerInterface::class),
             $productStockRepository ?? $this->createMock(ProductStockRepository::class),
             $warehouseRepository ?? $this->createMock(WarehouseRepository::class),
-            $logger ?? $this->createMock(LoggerInterface::class)
+            $logger ?? $this->createMock(LoggerInterface::class),
         );
     }
 }

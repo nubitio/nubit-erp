@@ -95,6 +95,22 @@ product_stock:
   updated_at:
     label: Updated at
 
+stock_item:
+  id:
+    label: ID
+  warehouse:
+    label: Warehouse
+  product:
+    label: Product
+  qty_on_hand:
+    label: On hand
+  qty_reserved:
+    label: Reserved
+  available_qty:
+    label: Available
+  updated_at:
+    label: Updated at
+
 role:
   name:
     label: Name

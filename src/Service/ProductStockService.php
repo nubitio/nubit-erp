@@ -9,10 +9,12 @@ use App\Entity\ProductStock;
 use App\Entity\Warehouse;
 use App\Repository\ProductStockRepository;
 use App\Repository\WarehouseRepository;
+use App\Inventory\Core\Service\InventoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
-readonly class ProductStockService
+class ProductStockService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -22,11 +24,34 @@ readonly class ProductStockService
     ) {
     }
 
+    private ?InventoryLedgerService $inventoryLedgerService = null;
+    private ?InventoryService $inventoryService = null;
+
+    #[Required]
+    public function setInventoryService(InventoryService $inventoryService): void
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
+    #[Required]
+    public function setInventoryLedgerService(InventoryLedgerService $inventoryLedgerService): void
+    {
+        $this->inventoryLedgerService = $inventoryLedgerService;
+    }
+
     /**
      * Get stock for a product in a specific warehouse
      */
     public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
     {
+        if ($this->inventoryService instanceof InventoryService && $product->getId() !== null && $warehouse->getId() !== null) {
+            return (float) $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
+        }
+
+        if ($this->inventoryLedgerService instanceof InventoryLedgerService && $product->getId() !== null && $warehouse->getId() !== null) {
+            return $this->inventoryLedgerService->getStockForProductInWarehouse($product, $warehouse);
+        }
+
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
         return $productStock instanceof ProductStock ? $productStock->getStock() : 0;

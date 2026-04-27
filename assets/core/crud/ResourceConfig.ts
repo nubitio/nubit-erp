@@ -71,6 +71,8 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   filter?: DxFilterRule[];
   mode?: 'normal' | 'minimal';
   paging?: boolean;
+  /** Enables DevExtreme header filter dropdowns. Disabled by default; filter row remains the default. */
+  headerFilter?: boolean;
   stateStoring?: boolean;
   /** @deprecated Use `permissions.canAdd` instead. */
   allowAdd?: boolean;

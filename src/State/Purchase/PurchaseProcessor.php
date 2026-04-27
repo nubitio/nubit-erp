@@ -30,14 +30,17 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private Security $security,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
+        private PurchaseInventoryService $purchaseInventoryService,
     ) {
     }
 
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $isNewPurchase = $data instanceof Purchase && $data->getId() === null;
+
         // Assign UUID v7 on new entity (when $data->getId() is null)
-        if ($data instanceof Purchase && $data->getId() === null) {
+        if ($isNewPurchase) {
             $data->setId(Uuid::v7()->toRfc4122());
         }
 
@@ -77,6 +80,12 @@ readonly class PurchaseProcessor implements ProcessorInterface
             }
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+        if ($isNewPurchase) {
+            $this->purchaseInventoryService->recordPurchaseReceipt($data);
+        }
+
+        return $result;
     }
 }

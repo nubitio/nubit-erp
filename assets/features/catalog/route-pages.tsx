@@ -16,6 +16,10 @@ export const WarehousePage = lazyNamed(
   () => import('@features/catalog/pages/WarehousePage'),
   'WarehousePage',
 );
+export const StockItemPage = lazyNamed(
+  () => import('@features/catalog/pages/StockItemPage'),
+  'StockItemPage',
+);
 export const PriceListPage = lazyNamed(
   () => import('@features/catalog/pages/PriceListPage'),
   'PriceListPage',
