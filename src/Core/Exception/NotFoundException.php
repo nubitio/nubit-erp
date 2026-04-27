@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Exception;
 
+/** @deprecated Use Nubit\Platform\Exception\NotFoundException directly */
 class NotFoundException extends ServiceException
 {
     public static function forResource(string $resource, mixed $identifier): self

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Exception;
 
+/** @deprecated Use Nubit\Platform\Exception\ValidationException directly */
 class ValidationException extends ServiceException
 {
     /** @var array<string, array<string>> */

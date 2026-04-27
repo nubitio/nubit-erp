@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Core\Messenger;
 
 use App\Core\Context\TenantContext;
-use App\Core\Messenger\ActorStamp;
+use Nubit\Platform\Messenger\ActorStamp;
 use App\Core\Messenger\TenantContextMiddleware;
-use App\Core\Messenger\TenantStamp;
-use App\Core\Messenger\TenantStampMiddleware;
+use Nubit\Platform\Messenger\TenantStamp;
+use Nubit\Platform\Messenger\TenantStampMiddleware;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;

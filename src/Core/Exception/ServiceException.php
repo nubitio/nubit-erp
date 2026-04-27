@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Exception;
 
-use RuntimeException;
-use Throwable;
-
-class ServiceException extends RuntimeException
+/** @deprecated Use Nubit\Platform\Exception\ServiceException directly */
+class ServiceException extends \Nubit\Platform\Exception\ServiceException
 {
-    public static function create(string $message, int $code = 0, ?Throwable $previous = null): self
-    {
-        return new self($message, $code, $previous);
-    }
 }
