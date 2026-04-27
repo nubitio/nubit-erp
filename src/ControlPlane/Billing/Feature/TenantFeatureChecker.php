@@ -59,7 +59,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
                 $item->tag([$tag]);
                 $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->resolveFeature($featureKey);
+                return $this->resolveFeature($featureKey, $item);
             },
         );
 
@@ -86,7 +86,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
                 $item->tag([$tag]);
                 $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->resolveFeature($featureKey);
+                return $this->resolveFeature($featureKey, $item);
             },
         );
 
@@ -124,7 +124,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
                 $item->tag([$tag]);
                 $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->buildEntitlements($tenantId);
+                return $this->buildEntitlements($tenantId, $item);
             },
         );
 
@@ -138,9 +138,18 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
     /**
      * Core resolution logic — no cache, no side effects.
      *
+     * Receives the cache ItemInterface so it can attach the plan-level tag
+     * ('plan_features_{planName}') when the value is resolved from the plan
+     * (not from an override). This enables O(1) plan-wide cache invalidation
+     * via PlanFeatureManager::setFeature().
+     *
+     * The tag is NOT added when an active override wins, because in that case
+     * the cached value is independent of the plan and should not be evicted
+     * when the plan feature changes.
+     *
      * @return array{enabled: bool, config: array<string, mixed>}
      */
-    private function resolveFeature(string $featureKey): array
+    private function resolveFeature(string $featureKey, ItemInterface $item): array
     {
         $tenantId = $this->tenantContext->getTenantId();
         if ($tenantId === null) {
@@ -152,6 +161,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         if ($override !== null) {
             if ($override->isActive()) {
                 // Active override wins — use its enabled flag and config.
+                // No plan tag: this value is override-sourced, not plan-sourced.
                 return [
                     'enabled' => $override->isEnabled(),
                     'config'  => $override->getConfigJson() ?? [],
@@ -177,6 +187,10 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
             return ['enabled' => false, 'config' => []];
         }
 
+        // Tag this cache item with the plan tag so that PlanFeatureManager can
+        // invalidate all tenants on this plan with a single invalidateTags() call.
+        $item->tag(['plan_features_' . $planName]);
+
         $planFeature = $this->planFeatureRepository->findOneByPlanAndKey($planName, $featureKey);
         if ($planFeature === null) {
             // Feature not defined for this plan → fail closed.
@@ -193,9 +207,12 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
      * Builds the full entitlements map for a tenant.
      * Merges plan features with active overrides (overrides take precedence).
      *
+     * Attaches the plan-level cache tag ('plan_features_{planName}') to the
+     * cache item so that a plan feature change invalidates this entry.
+     *
      * @return array<string, array{enabled: bool, config: array<string, mixed>}>
      */
-    private function buildEntitlements(int $tenantId): array
+    private function buildEntitlements(int $tenantId, ItemInterface $item): array
     {
         $tenantName = $this->tenantContext->getTenantName();
         if ($tenantName === null) {
@@ -214,6 +231,9 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
 
         // Seed from plan features.
         if ($planName !== '') {
+            // Tag so PlanFeatureManager can invalidate all tenants on this plan at once.
+            $item->tag(['plan_features_' . $planName]);
+
             foreach ($this->planFeatureRepository->findByPlan($planName) as $planFeature) {
                 $entitlements[$planFeature->featureKey] = [
                     'enabled' => $planFeature->isEnabled(),

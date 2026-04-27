@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Service;
 
+use App\ControlPlane\Billing\Feature\PlanFeatureManager;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Connection;
@@ -24,6 +25,7 @@ final readonly class PlanManager
         private CacheInterface $cache,
         private LoggerInterface $logger,
         private TenantResourceCatalog $resourceCatalog,
+        private ?PlanFeatureManager $planFeatureManager = null,
     ) {
     }
 
@@ -149,6 +151,9 @@ final readonly class PlanManager
             'created_at' => $now,
             'updated_at' => $now,
         ]);
+
+        // Seed all feature keys as disabled so the plan feature matrix is pre-populated.
+        $this->planFeatureManager?->seedFeaturesForNewPlan($name);
 
         $this->invalidateCache();
     }
