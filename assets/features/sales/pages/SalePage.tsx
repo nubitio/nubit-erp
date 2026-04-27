@@ -57,7 +57,7 @@ export const SalePage = () => {
 
   const setupPrinter = () => {
     invoicePrinterRef.current.initialize().catch((_err: unknown) => {
-      // QZ Tray not available — print features will be disabled silently
+      // Initialization is best-effort (silent reconnect only). Errors are ignored.
     });
   };
   const setupPrinterRef = useRef(setupPrinter);
