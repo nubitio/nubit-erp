@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Settings\Entity;
 
 /**
  * Canonical registry of all known Config keys.
