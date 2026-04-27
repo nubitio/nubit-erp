@@ -7,6 +7,7 @@ namespace App\State\Warehouse;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Warehouse;
+use App\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -16,6 +17,7 @@ readonly class WarehousesByBranchProvider implements ProviderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private FeatureCheckerInterface $featureChecker,
     ) {
     }
 
@@ -24,6 +26,8 @@ readonly class WarehousesByBranchProvider implements ProviderInterface
      */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
+        $this->featureChecker->requireFeature('multi_warehouse');
+
         $branchId = $uriVariables['id'];
 
         $qb = $this->entityManager->createQueryBuilder();

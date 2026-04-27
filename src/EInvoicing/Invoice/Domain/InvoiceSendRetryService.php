@@ -6,6 +6,7 @@ namespace App\EInvoicing\Invoice\Domain;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
+use App\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Psr\Log\LoggerInterface;
@@ -17,11 +18,20 @@ readonly class InvoiceSendRetryService
         private Connection $connection,
         private SettingsService $settings,
         private LoggerInterface $logger,
+        private FeatureCheckerInterface $featureChecker,
     ) {
     }
 
     public function countCandidateDocuments(): int
     {
+        // Fail-closed: if the plan does not include sunat_auto_retry, report
+        // zero candidates so the calling command skips the retry cycle entirely.
+        // Using hasFeature() (not requireFeature()) because this is invoked from
+        // CLI / Scheduler contexts where HTTP 402 exceptions are not meaningful.
+        if (!$this->featureChecker->hasFeature('sunat_auto_retry')) {
+            return 0;
+        }
+
         return (int)$this->connection->fetchOne(
             "
             SELECT COUNT(1) AS total
