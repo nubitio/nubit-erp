@@ -1,0 +1,107 @@
+.feature-gate {
+  display: contents; // transparent wrapper — does not affect layout
+}
+
+// ---------------------------------------------------------------------------
+// Type B — lock: disabled overlay
+// ---------------------------------------------------------------------------
+
+.feature-gate--locked {
+  display: inline-block;
+  position: relative;
+  cursor: not-allowed;
+
+  // Disable all pointer interaction on children
+  > * {
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.45;
+    filter: grayscale(0.4);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Type C — upgrade: badge + prompt
+// ---------------------------------------------------------------------------
+
+.feature-gate--upgrade {
+  display: inline-block;
+  position: relative;
+}
+
+.feature-gate__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-semibold, 600);
+  background: var(--accent-color, #6c47ff);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  border: none;
+  transition: background 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-color-hover, #5535d4);
+    outline: none;
+  }
+}
+
+.feature-gate__prompt {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--base-bg, #fff);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--border-color, #e5e7eb);
+  font-size: var(--font-size-sm, 14px);
+  line-height: var(--line-height-normal, 1.5);
+  color: var(--base-text-color, #111);
+
+  &__message {
+    margin: 0 0 10px;
+  }
+
+  &__link {
+    display: inline-block;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--accent-color, #6c47ff);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--secondary-text-color, #6b7280);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+
+    &:hover {
+      color: var(--base-text-color, #111);
+    }
+  }
+}
