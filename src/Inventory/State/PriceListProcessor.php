@@ -8,7 +8,7 @@ use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
-use App\Dto\PriceList\PricesDto;
+use App\Inventory\Dto\PricesDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 

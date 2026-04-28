@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\CashRegister;
 
 use ApiPlatform\Metadata\GetCollection;
-use App\Dto\CashRegister\CashShiftClosureSummaryDto;
+use App\CashRegister\Dto\CashShiftClosureSummaryDto;
 use App\CashRegister\State\CashShiftClosureSummaryProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;

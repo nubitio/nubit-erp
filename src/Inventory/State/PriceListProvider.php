@@ -7,7 +7,7 @@ namespace App\Inventory\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\PriceList\PriceListDto;
+use App\Inventory\Dto\PriceListDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 

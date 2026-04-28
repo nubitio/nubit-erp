@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
-use App\Dto\CashRegister\CashRegisterCloseDto;
+use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
 use App\CashRegister\Repository\CashSessionRepository;

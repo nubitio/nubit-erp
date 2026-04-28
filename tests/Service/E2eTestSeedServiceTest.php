@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Dto\Setup\SetupStatusDto;
+use App\Setup\Dto\SetupStatusDto;
 use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashRegister;
 use App\Catalog\Entity\Category;

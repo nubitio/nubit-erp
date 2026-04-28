@@ -7,8 +7,8 @@ namespace App\Settings\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\Menu\MenuDto;
-use App\Dto\Menu\SubMenuDto;
+use App\Settings\Dto\MenuDto;
+use App\Settings\Dto\SubMenuDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 

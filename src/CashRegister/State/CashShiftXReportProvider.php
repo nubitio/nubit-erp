@@ -9,7 +9,7 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\CashRegister\CashShiftXReportDto;
+use App\CashRegister\Dto\CashShiftXReportDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

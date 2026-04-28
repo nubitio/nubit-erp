@@ -6,10 +6,10 @@ namespace App\Controller;
 
 use App\AI\Service\SessionContextBuilder;
 use App\Core\Exception\ServiceException;
-use App\Dto\Assistant\AssistantMessageInput;
-use App\Dto\Assistant\AssistantRequest;
-use App\Dto\Assistant\AssistantResponse;
-use App\Dto\Assistant\AttachmentInput;
+use App\AI\Dto\AssistantMessageInput;
+use App\AI\Dto\AssistantRequest;
+use App\AI\Dto\AssistantResponse;
+use App\AI\Dto\AttachmentInput;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Content\ContentInterface;

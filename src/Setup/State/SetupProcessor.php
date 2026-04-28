@@ -7,8 +7,8 @@ namespace App\Setup\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Dto\Setup\InitialSetupInput;
-use App\Dto\Setup\SetupStatusDto;
+use App\Setup\Dto\InitialSetupInput;
+use App\Setup\Dto\SetupStatusDto;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Exception;
 

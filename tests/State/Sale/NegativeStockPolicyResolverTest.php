@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Sale;
 
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
 use App\Sales\State\NegativeStockPolicyResolver;

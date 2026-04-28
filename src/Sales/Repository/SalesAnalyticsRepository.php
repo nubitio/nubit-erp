@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sales\Repository;
 
-use App\Dto\Assistant\RecentSaleDto;
-use App\Dto\Assistant\SalesSummaryDto;
+use App\AI\Dto\RecentSaleDto;
+use App\AI\Dto\SalesSummaryDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 

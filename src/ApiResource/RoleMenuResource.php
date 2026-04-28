@@ -7,7 +7,7 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use App\Dto\RoleMenu\RoleMenuDto;
+use App\Settings\Dto\RoleMenuDto;
 use App\Settings\State\RoleMenuProcessor;
 use App\Settings\State\RoleMenuProvider;
 

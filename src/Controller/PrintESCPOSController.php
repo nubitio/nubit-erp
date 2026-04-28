@@ -8,7 +8,7 @@ use App\Core\Extension\RemoteEscposImage;
 use App\Efact\Service\LogoProvider;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Dto\Sale\SaleItemDto;
+use App\Sales\Dto\SaleItemDto;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Sales\Domain\DocType;
 use Doctrine\DBAL\Exception;

@@ -21,7 +21,7 @@ use App\Controller\PrintESCPOSController;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
-use App\Dto\Sale\VoidSaleDto;
+use App\Sales\Dto\VoidSaleDto;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\SaleProcessor;
 use App\Sales\State\SaleV2Provider;

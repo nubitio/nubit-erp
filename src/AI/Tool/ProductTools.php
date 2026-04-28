@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use App\Core\Exception\ServiceException;
-use App\Dto\Assistant\ProductSearchResultDto;
-use App\Dto\Assistant\ProductStockDto;
-use App\Dto\Assistant\ProductWarehouseStockDto;
+use App\AI\Dto\ProductSearchResultDto;
+use App\AI\Dto\ProductStockDto;
+use App\AI\Dto\ProductWarehouseStockDto;
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\ProductStock;
 use App\Catalog\Repository\ProductRepository;

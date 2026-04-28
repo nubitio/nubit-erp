@@ -6,7 +6,7 @@ namespace App\AI\Tool;
 
 use DateTimeInterface;
 use App\Core\Exception\ServiceException;
-use App\Dto\Assistant\CashRegisterStatusDto;
+use App\AI\Dto\CashRegisterStatusDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;
 use App\CashRegister\Enum\CashShiftStatus;

@@ -7,8 +7,8 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
-use App\Dto\Setup\InitialSetupInput;
-use App\Dto\Setup\SetupStatusDto;
+use App\Setup\Dto\InitialSetupInput;
+use App\Setup\Dto\SetupStatusDto;
 use App\Setup\State\SetupProcessor;
 use App\Setup\State\SetupStatusProvider;
 

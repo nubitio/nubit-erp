@@ -7,7 +7,7 @@ namespace App\AI\Tool;
 use Throwable;
 use App\Reporting\Entity\TimeDimension;
 use DateTimeInterface;
-use App\Dto\Assistant\RecentSaleDto;
+use App\AI\Dto\RecentSaleDto;
 use App\Sales\Repository\SalesAnalyticsRepository;
 use App\Reporting\Repository\TimeDimensionRepository;
 use DateInterval;

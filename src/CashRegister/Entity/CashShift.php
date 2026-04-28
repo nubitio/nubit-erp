@@ -18,7 +18,7 @@ use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashShiftRepository;
-use App\Dto\CashRegister\CashShiftXReportDto;
+use App\CashRegister\Dto\CashShiftXReportDto;
 use App\CashRegister\State\CashShiftClosureSummaryProvider;
 use App\CashRegister\State\CashShiftMovementsProvider;
 use App\CashRegister\State\CashShiftXReportProvider;

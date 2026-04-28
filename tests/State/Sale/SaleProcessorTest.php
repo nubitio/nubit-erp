@@ -13,7 +13,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashMovementCategory;

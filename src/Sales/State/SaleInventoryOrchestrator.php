@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use App\Core\Exception\ServiceException;
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
