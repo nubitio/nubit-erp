@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Identity\ApiResource;
+
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use App\Identity\Controller\AuthController;
+use App\Identity\Dto\AuthResponseDto;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+
+#[ApiResource(
+    shortName: 'Auth',
+    operations: [
+        new Post(
+            uriTemplate: '/auth/login',
+            status: 200,
+            controller: AuthController::class,
+            exceptionToStatus: [
+                UserNotFoundException::class => 404,
+                AuthenticationException::class => 401,
+                BadCredentialsException::class => 401,
+            ],
+            input: AuthResource::class,
+            output: AuthResponseDto::class,
+            name: 'auth_login'
+        ),
+    ]
+)]
+class AuthResource
+{
+    public string $username;
+
+    public string $password;
+}

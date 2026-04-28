@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Inventory\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Notification\NotificationType;
-use App\Notification\UserNotificationService;
+use App\Identity\Notification\NotificationType;
+use App\Identity\Notification\UserNotificationService;
 use App\Inventory\Repository\ProductStockRepository;
 use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;

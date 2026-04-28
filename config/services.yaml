@@ -160,8 +160,8 @@ services:
   App\ControlPlane\Certificate\CertificateAlertServiceInterface:
     class: App\ControlPlane\Certificate\CertificateAlertService
 
-  App\Notification\UserNotificationServiceInterface:
-    class: App\Notification\UserNotificationService
+  App\Identity\Notification\UserNotificationServiceInterface:
+    class: App\Identity\Notification\UserNotificationService
 
   App\ControlPlane\Certificate\TenantCertificateRepositoryInterface:
     class: App\ControlPlane\Certificate\TenantCertificateRepository
@@ -244,7 +244,7 @@ services:
   GuzzleHttp\ClientInterface:
     class: GuzzleHttp\Client
 
-  App\ApiPlatform\TranslatedDocumentationNormalizer:
+  App\Core\ApiPlatform\TranslatedDocumentationNormalizer:
     decorates: api_platform.hydra.normalizer.documentation
     arguments:
       $inner: '@.inner'
@@ -252,7 +252,7 @@ services:
       $requestStack: '@request_stack'
       $apiLocale: '%env(APP_API_LOCALE)%'
 
-  App\Infrastructure\Mercure\E2eTolerantHub:
+  App\Setup\Infrastructure\Mercure\E2eTolerantHub:
     decorates: mercure.hub.default
     arguments:
-      $inner: '@App\Infrastructure\Mercure\E2eTolerantHub.inner'
+      $inner: '@App\Setup\Infrastructure\Mercure\E2eTolerantHub.inner'

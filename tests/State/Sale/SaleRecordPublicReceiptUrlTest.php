@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Util\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
-use App\Serializer\PublicReceiptUrlNormalizer;
+use App\Billing\Serializer\PublicReceiptUrlNormalizer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
