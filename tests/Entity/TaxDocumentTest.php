@@ -6,8 +6,8 @@ namespace App\Tests\Entity;
 
 use App\Organization\Entity\Branch;
 use App\Contacts\Entity\Customer;
-use App\Entity\TaxDocument;
-use App\Entity\TaxDocumentLine;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocumentLine;
 use PHPUnit\Framework\TestCase;
 
 final class TaxDocumentTest extends TestCase

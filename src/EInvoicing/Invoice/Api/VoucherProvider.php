@@ -6,7 +6,7 @@ namespace App\EInvoicing\Invoice\Api;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Override;
 

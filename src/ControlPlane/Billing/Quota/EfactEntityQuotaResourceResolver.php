@@ -7,7 +7,7 @@ namespace App\ControlPlane\Billing\Quota;
 use App\Organization\Entity\Branch;
 use App\Contacts\Entity\Customer;
 use App\Entity\Product;
-use App\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocument;
 use App\Identity\Entity\User;
 use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 

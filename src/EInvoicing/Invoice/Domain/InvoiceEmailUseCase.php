@@ -9,7 +9,7 @@ use App\Core\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
 use App\Efact\Service\CompanyContext;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;

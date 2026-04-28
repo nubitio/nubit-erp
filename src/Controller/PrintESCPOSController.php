@@ -9,7 +9,7 @@ use App\Efact\Service\LogoProvider;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Sale\SaleItemDto;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\EscposImage;

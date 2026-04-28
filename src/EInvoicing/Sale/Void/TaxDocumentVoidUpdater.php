@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Sale\Void;
 
-use App\Entity\TaxDocument;
-use App\Repository\TaxDocumentEventRepository;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Repository\TaxDocumentEventRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 

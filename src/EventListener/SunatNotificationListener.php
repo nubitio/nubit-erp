@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
-use App\Entity\TaxDocumentEvent;
+use App\Billing\Entity\TaxDocumentEvent;
 use App\Notification\NotificationType;
 use App\Notification\UserNotificationService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;

@@ -6,8 +6,8 @@ namespace App\Tests\AI\Tool;
 
 use App\AI\Repository\SunatRejectionQueryInterface;
 use App\AI\Tool\SunatStatusTool;
-use App\Entity\TaxDocument;
-use App\Entity\TaxDocumentEvent;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocumentEvent;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

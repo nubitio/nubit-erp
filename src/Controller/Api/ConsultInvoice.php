@@ -8,7 +8,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Invoice\Domain\InvoiceConsultUseCase;
 use App\EInvoicing\Service\CreditNoteService;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

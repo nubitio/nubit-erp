@@ -10,7 +10,7 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Billing\Domain\SummaryCreateUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
 

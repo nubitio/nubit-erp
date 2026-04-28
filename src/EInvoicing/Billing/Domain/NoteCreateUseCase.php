@@ -6,9 +6,9 @@ namespace App\EInvoicing\Billing\Domain;
 
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
-use App\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocument;
 use App\EInvoicing\Invoice\Domain\Voucher;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;

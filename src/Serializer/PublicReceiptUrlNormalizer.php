@@ -6,7 +6,7 @@ namespace App\Serializer;
 
 use App\Core\Util\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
-use App\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocument;
 use Override;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
