@@ -7,7 +7,7 @@ namespace App\EInvoicing\Service;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Sales\Entity\SaleRecord;
-use App\Sale\Domain\DocType;
+use App\Sales\Domain\DocType;
 use App\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;
 use DateTimeImmutable;

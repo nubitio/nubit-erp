@@ -15,4 +15,4 @@ parameters:
         # PHPMD @SuppressWarnings annotations are valid PHPMD syntax but PHPStan
         # cannot parse the dot-separated rule name inside the parentheses.
         - message: '#PHPDoc tag @SuppressWarnings has invalid value#'
-          path: src/State/Mcp/*
+          path: src/AI/State/*

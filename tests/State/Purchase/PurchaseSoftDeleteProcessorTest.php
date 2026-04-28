@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\State\ProcessorInterface;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Entity\PurchaseItem;
-use App\State\Purchase\PurchaseSoftDeleteProcessor;
+use App\Purchasing\State\PurchaseSoftDeleteProcessor;
 use DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

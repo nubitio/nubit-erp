@@ -16,7 +16,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Inventory\Repository\WarehouseRepository;
-use App\State\Warehouse\WarehousesByBranchProvider;
+use App\Inventory\State\WarehousesByBranchProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;

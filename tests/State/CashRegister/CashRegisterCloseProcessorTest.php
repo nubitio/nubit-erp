@@ -11,7 +11,7 @@ use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
 use App\CashRegister\Repository\CashSessionRepository;
-use App\State\CashRegister\CashRegisterCloseProcessor;
+use App\CashRegister\State\CashRegisterCloseProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

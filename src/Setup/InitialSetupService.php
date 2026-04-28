@@ -25,7 +25,7 @@ use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Entity\VoucherType;
 use App\Inventory\Entity\Warehouse;
 use App\Catalog\Entity\SunatCatalog;
-use App\Enum\CashMovementType;
+use App\CashRegister\Enum\CashMovementType;
 use App\Organization\Repository\BranchRepository;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;

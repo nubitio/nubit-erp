@@ -6,7 +6,7 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use App\State\Menu\MenuProvider;
+use App\Settings\State\MenuProvider;
 
 #[ApiResource(
     uriTemplate: '/menu/{roleId}',

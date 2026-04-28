@@ -9,8 +9,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Dto\Setup\InitialSetupInput;
 use App\Dto\Setup\SetupStatusDto;
-use App\State\Setup\SetupProcessor;
-use App\State\Setup\SetupStatusProvider;
+use App\Setup\State\SetupProcessor;
+use App\Setup\State\SetupStatusProvider;
 
 #[ApiResource(
     uriTemplate: '/setup',

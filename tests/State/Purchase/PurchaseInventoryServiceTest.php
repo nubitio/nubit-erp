@@ -13,7 +13,7 @@ use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Core\Service\UnitConversionService;
-use App\State\Purchase\PurchaseInventoryService;
+use App\Purchasing\State\PurchaseInventoryService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;

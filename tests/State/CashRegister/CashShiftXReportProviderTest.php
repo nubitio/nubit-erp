@@ -6,7 +6,7 @@ namespace App\Tests\State\CashRegister;
 
 use ApiPlatform\Metadata\Get;
 use App\Dto\CashRegister\CashShiftXReportDto;
-use App\State\CashRegister\CashShiftXReportProvider;
+use App\CashRegister\State\CashShiftXReportProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

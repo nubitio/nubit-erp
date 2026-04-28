@@ -17,8 +17,8 @@ use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\PriceList\PriceListDto;
 use App\Dto\PriceList\PricesDto;
 use App\Inventory\Repository\PriceListRepository;
-use App\State\PriceList\PriceListProcessor;
-use App\State\PriceList\PriceListProvider;
+use App\Inventory\State\PriceListProcessor;
+use App\Inventory\State\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PriceListRepository::class)]

@@ -7,7 +7,7 @@ namespace App\Controller\Api;
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Sale\SaleVoidUseCase;
-use App\Sale\Domain\SaleException;
+use App\Sales\Domain\SaleException;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

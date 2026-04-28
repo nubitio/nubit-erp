@@ -8,8 +8,8 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Billing\Domain\VoidedCreateUseCase;
-use App\Sale\Domain\DocType;
-use App\Sale\Domain\SaleException;
+use App\Sales\Domain\DocType;
+use App\Sales\Domain\SaleException;
 use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
 

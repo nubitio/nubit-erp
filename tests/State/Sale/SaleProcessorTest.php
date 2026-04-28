@@ -27,12 +27,12 @@ use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Service\SalePaymentPlanService;
 use App\Sales\Repository\SaleRecordRepository;
-use App\State\Sale\CashSessionResolver;
-use App\State\Sale\DetractionCalculator;
-use App\State\Sale\SaleInventoryOrchestrator;
-use App\State\Sale\SaleProcessor;
-use App\State\Sale\SaleUtils;
-use App\State\Sale\SalesWriteGateway;
+use App\Sales\State\CashSessionResolver;
+use App\Sales\State\DetractionCalculator;
+use App\Sales\State\SaleInventoryOrchestrator;
+use App\Sales\State\SaleProcessor;
+use App\Sales\State\SaleUtils;
+use App\Sales\State\SalesWriteGateway;
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
@@ -1318,7 +1318,7 @@ final class SaleProcessorTest extends TestCase
         // policyResolver (final) — bypass constructor, inject SettingsService mock
         $policyResolverClass = (string) $rc->getProperty('policyResolver')->getType();
         $rcPr = new ReflectionClass($policyResolverClass);
-        /** @var \App\State\Sale\NegativeStockPolicyResolver $prStub */
+        /** @var \App\Sales\State\NegativeStockPolicyResolver $prStub */
         $prStub = $rcPr->newInstanceWithoutConstructor();
 
         // SettingsService is NOT final — we can mock it

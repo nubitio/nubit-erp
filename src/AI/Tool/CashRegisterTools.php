@@ -9,7 +9,7 @@ use App\Core\Exception\ServiceException;
 use App\Dto\Assistant\CashRegisterStatusDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;
-use App\Enum\CashShiftStatus;
+use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\CashRegister\Repository\CashShiftRepository;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;

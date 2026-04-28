@@ -12,7 +12,7 @@ use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
-use App\State\User\UserPasswordHasher;
+use App\Identity\State\UserPasswordHasher;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

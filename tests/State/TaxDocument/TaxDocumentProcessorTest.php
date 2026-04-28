@@ -16,7 +16,7 @@ use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Organization\Repository\BranchRepository;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\State\TaxDocument\TaxDocumentProcessor;
+use App\Billing\State\TaxDocumentProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;

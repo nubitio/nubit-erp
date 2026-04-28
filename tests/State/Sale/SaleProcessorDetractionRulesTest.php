@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Sale;
 
-use App\State\Sale\DetractionCalculator;
+use App\Sales\State\DetractionCalculator;
 use PHPUnit\Framework\TestCase;
 
 final class SaleProcessorDetractionRulesTest extends TestCase

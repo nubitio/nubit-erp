@@ -6,9 +6,9 @@ namespace App\Tests\State\Purchase;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\State\Purchase\PurchasesWriteMode;
-use App\State\Purchase\PurchasesWritePolicy;
-use App\State\Purchase\PurchasesWritePolicyResolver;
+use App\Purchasing\State\PurchasesWriteMode;
+use App\Purchasing\State\PurchasesWritePolicy;
+use App\Purchasing\State\PurchasesWritePolicyResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

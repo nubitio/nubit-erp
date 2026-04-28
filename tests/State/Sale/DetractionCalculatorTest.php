@@ -11,7 +11,7 @@ use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Repository\SunatCatalogRepository;
-use App\State\Sale\DetractionCalculator;
+use App\Sales\State\DetractionCalculator;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
