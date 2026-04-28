@@ -529,7 +529,7 @@ readonly class InitialSetupService
 
     private function seedUbigeoFromResource(): void
     {
-        $file = realpath(__DIR__ . '/../Resources/ubugeo.csv');
+        $file = realpath(__DIR__ . '/Resources/ubugeo.csv');
         if (!$file || !is_readable($file)) {
             return;
         }
