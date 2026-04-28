@@ -24,7 +24,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
-use App\Service\SalePaymentPlanService;
+use App\Sales\Service\SalePaymentPlanService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;

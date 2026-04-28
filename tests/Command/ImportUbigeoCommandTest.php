@@ -8,7 +8,7 @@ use App\Command\ImportUbigeoCommand;
 use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Service\UbigeoImportService;
+use App\Settings\Service\UbigeoImportService;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;

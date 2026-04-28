@@ -8,7 +8,7 @@ use App\Command\FillTimeDimensionCommand;
 use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Service\TimeDimensionSeeder;
+use App\Reporting\Service\TimeDimensionSeeder;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;

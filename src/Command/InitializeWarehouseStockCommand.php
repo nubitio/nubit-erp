@@ -8,7 +8,7 @@ use Override;
 use Exception;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Catalog\Entity\Product;
-use App\Service\ProductStockService;
+use App\Inventory\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

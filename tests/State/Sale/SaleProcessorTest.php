@@ -25,7 +25,7 @@ use App\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
-use App\Service\SalePaymentPlanService;
+use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
@@ -1286,8 +1286,8 @@ final class SaleProcessorTest extends TestCase
 
         // Build InventoryLedgerService via reflection (final class — cannot createMock).
         // Inject a Connection mock that returns false for fetchOne() → stock = 0.0.
-        $ledgerRc = new ReflectionClass(\App\Service\InventoryLedgerService::class);
-        /** @var \App\Service\InventoryLedgerService $ledgerStub */
+        $ledgerRc = new ReflectionClass(\App\Inventory\Service\InventoryLedgerService::class);
+        /** @var \App\Inventory\Service\InventoryLedgerService $ledgerStub */
         $ledgerStub = $ledgerRc->newInstanceWithoutConstructor();
 
         /** @var Connection&MockObject $ledgerConn */

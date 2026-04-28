@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Service\TestDataSeeder;
+use App\Setup\Service\TestDataSeeder;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;

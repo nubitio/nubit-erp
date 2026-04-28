@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Service\TimeDimensionSeeder;
+use App\Reporting\Service\TimeDimensionSeeder;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 

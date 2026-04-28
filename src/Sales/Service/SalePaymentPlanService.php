@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Sales\Service;
 
 use App\Catalog\Entity\PaymentMethod;
 use App\Core\Exception\ServiceException;

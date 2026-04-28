@@ -15,7 +15,7 @@ use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Service\InventoryLedgerService;
+use App\Inventory\Service\InventoryLedgerService;
 use App\Sales\State\NegativeStockPolicyResolver;
 use App\Sales\State\SaleInventoryOrchestrator;
 use Doctrine\DBAL\Connection;

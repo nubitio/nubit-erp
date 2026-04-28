@@ -22,8 +22,8 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
-use App\Service\InitialDataSeeder;
-use App\Service\MenuSeedService;
+use App\Setup\Service\InitialDataSeeder;
+use App\Settings\Service\MenuSeedService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 

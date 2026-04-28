@@ -3,7 +3,7 @@
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Service\TimeDimensionSeeder;
+use App\Reporting\Service\TimeDimensionSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

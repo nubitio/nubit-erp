@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Service\ExchangeRateSyncService;
+use App\Catalog\Service\ExchangeRateSyncService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

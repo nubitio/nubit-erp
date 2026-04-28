@@ -7,7 +7,7 @@ namespace App\Tests\Service;
 use App\Core\Exception\ServiceException;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
-use App\Service\SalePaymentPlanService;
+use App\Sales\Service\SalePaymentPlanService;
 use PHPUnit\Framework\TestCase;
 
 final class SalePaymentPlanServiceTest extends TestCase

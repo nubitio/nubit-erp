@@ -9,7 +9,7 @@ use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\ProductStockRepository;
 use App\Inventory\Repository\WarehouseRepository;
-use App\Service\ProductStockService;
+use App\Inventory\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

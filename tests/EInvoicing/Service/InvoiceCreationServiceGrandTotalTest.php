@@ -9,7 +9,7 @@ use App\EInvoicing\Service\InvoiceCreationService;
 use App\EInvoicing\Service\InvoiceLineInput;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
-use App\Service\SaleCurrencyResolver;
+use App\Sales\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 
