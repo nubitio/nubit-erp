@@ -7,7 +7,7 @@ namespace App\Tests\State\Media;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use App\State\Media\MediaSoftDeleteProcessor;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
