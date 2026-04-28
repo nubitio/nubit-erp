@@ -10,6 +10,7 @@ use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Inventory\Core\Contract\UnitConversionServiceInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
@@ -43,7 +44,7 @@ final class InventoryService
     public function __construct(
         private readonly Connection $connection,
         private readonly StockValidationPolicyInterface $validationPolicy,
-        private readonly UnitConversionService $unitConversion,
+        private readonly UnitConversionServiceInterface $unitConversion,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly iterable $enrichers = [],
     ) {
