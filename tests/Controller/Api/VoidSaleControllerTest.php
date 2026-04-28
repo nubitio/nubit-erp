@@ -6,7 +6,7 @@ namespace App\Tests\Controller\Api;
 
 use App\Controller\Api\VoidSale;
 use App\Core\Application\Session\Security;
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 use App\EInvoicing\Sale\SaleVoidUseCase;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

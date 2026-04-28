@@ -7,7 +7,7 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Security\Auth\BranchContextService;
-use App\Dto\CashRegister\CashRegisterDashboardDto;
+use App\CashRegister\Dto\CashRegisterDashboardDto;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateMalformedStringException;

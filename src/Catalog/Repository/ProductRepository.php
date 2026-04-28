@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Repository;
 
-use App\Dto\Assistant\ProductSearchResultDto;
+use App\AI\Dto\ProductSearchResultDto;
 use App\Catalog\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

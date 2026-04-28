@@ -6,7 +6,7 @@ namespace App\ControlPlane\Tenant\Adapter;
 
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
-use App\Dto\Setup\InitialSetupInput;
+use App\Setup\Dto\InitialSetupInput;
 use App\Setup\InitialSetupService;
 
 final readonly class InitialSetupServiceAdapter implements InitialTenantSetupPortInterface

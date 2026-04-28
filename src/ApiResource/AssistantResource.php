@@ -6,8 +6,8 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
-use App\Dto\Assistant\AssistantRequest;
-use App\Dto\Assistant\AssistantResponse;
+use App\AI\Dto\AssistantRequest;
+use App\AI\Dto\AssistantResponse;
 use App\Controller\AssistantController;
 
 #[ApiResource(

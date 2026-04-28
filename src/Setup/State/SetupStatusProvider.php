@@ -7,7 +7,7 @@ namespace App\Setup\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\Setup\SetupStatusDto;
+use App\Setup\Dto\SetupStatusDto;
 use App\Setup\InitialSetupService;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Application\Session;
 
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 
 interface Security
 {

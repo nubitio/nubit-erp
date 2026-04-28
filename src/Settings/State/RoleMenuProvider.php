@@ -7,8 +7,8 @@ namespace App\Settings\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\RoleMenu\RoleMenuDto;
-use App\Dto\RoleMenu\RoleMenuItemDto;
+use App\Settings\Dto\RoleMenuDto;
+use App\Settings\Dto\RoleMenuItemDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 

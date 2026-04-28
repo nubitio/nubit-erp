@@ -6,7 +6,7 @@ namespace App\Sales\State;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Dto\Auth\AuthUserDto;
+use App\Identity\Dto\AuthUserDto;
 use App\Catalog\Entity\Product;
 
 /**

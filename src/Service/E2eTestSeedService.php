@@ -7,7 +7,7 @@ namespace App\Service;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Dto\Setup\InitialSetupInput;
+use App\Setup\Dto\InitialSetupInput;
 use App\Organization\Entity\Branch;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;

@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\BranchContextService;
-use App\Dto\CashRegister\CashRegisterOpenDto;
+use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;

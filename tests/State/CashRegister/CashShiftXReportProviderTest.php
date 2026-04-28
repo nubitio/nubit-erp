@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\State\CashRegister;
 
 use ApiPlatform\Metadata\Get;
-use App\Dto\CashRegister\CashShiftXReportDto;
+use App\CashRegister\Dto\CashShiftXReportDto;
 use App\CashRegister\State\CashShiftXReportProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;

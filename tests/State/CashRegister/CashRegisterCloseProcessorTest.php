@@ -6,8 +6,8 @@ namespace App\Tests\State\CashRegister;
 
 use ApiPlatform\Metadata\Put;
 use App\Core\Application\Session\Security;
-use App\Dto\Auth\AuthUserDto;
-use App\Dto\CashRegister\CashRegisterCloseDto;
+use App\Identity\Dto\AuthUserDto;
+use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
 use App\CashRegister\Repository\CashSessionRepository;

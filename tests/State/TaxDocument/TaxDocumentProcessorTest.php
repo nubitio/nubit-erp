@@ -11,7 +11,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
-use App\Dto\TaxDocument\SeriesResultDto;
+use App\Billing\Dto\SeriesResultDto;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Organization\Repository\BranchRepository;
