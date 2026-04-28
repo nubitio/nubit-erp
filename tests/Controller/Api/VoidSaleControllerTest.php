@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
 
-use App\Controller\Api\VoidSale;
+use App\Sales\Controller\Api\VoidSale;
 use App\Core\Application\Session\Security;
 use App\Identity\Dto\AuthUserDto;
 use App\EInvoicing\Sale\SaleVoidUseCase;

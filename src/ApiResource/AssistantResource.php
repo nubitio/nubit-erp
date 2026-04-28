@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\AI\Dto\AssistantRequest;
 use App\AI\Dto\AssistantResponse;
-use App\Controller\AssistantController;
+use App\AI\Controller\AssistantController;
 
 #[ApiResource(
     uriTemplate: '/assistant',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
 
-use App\Controller\Api\MakeInvoice;
+use App\EInvoicing\Controller\Api\MakeInvoice;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Sales\Entity\SaleRecord;

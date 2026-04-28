@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
-use App\Controller\ConsultController;
+use App\EInvoicing\Controller\ConsultController;
 
 #[ApiResource(
     shortName: 'Consult',

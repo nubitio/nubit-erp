@@ -6,7 +6,7 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use App\Controller\DashboardController;
+use App\Sales\Controller\DashboardController;
 
 #[ApiResource(
     uriTemplate: '/dashboard',

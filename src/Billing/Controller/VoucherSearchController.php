@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Billing\Controller;
 
 use App\Core\Util\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;

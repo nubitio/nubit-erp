@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\CashRegister\Controller;
 
 use App\Efact\Service\PdfExporter;
 use Brick\Math\BigDecimal;

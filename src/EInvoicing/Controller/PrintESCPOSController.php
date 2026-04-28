@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\EInvoicing\Controller;
 
 use App\Core\Extension\RemoteEscposImage;
 use App\Efact\Service\LogoProvider;

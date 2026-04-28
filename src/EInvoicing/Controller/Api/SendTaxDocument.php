@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Api;
+namespace App\EInvoicing\Controller\Api;
 
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;

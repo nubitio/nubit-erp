@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Controller\AuthSelectBranchController;
+use App\Identity\Controller\AuthSelectBranchController;
 use App\Identity\Dto\AuthResponseDto;
 
 #[ApiResource(

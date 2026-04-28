@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Identity\Controller;
 
 use App\Core\Context\TenantContext;
 use App\Core\Security\Auth\ClientDetectorService;
