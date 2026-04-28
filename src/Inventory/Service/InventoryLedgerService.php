@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Inventory\Service;
 
 use App\Efact\Service\SettingsService;
 use App\Core\Exception\ServiceException;

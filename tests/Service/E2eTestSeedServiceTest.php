@@ -32,7 +32,7 @@ use App\Identity\Repository\UserRepository;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Inventory\Repository\WarehouseRepository;
-use App\Service\E2eTestSeedService;
+use App\Setup\Service\E2eTestSeedService;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;

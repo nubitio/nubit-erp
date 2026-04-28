@@ -6,7 +6,7 @@ namespace App\Command;
 
 use Override;
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Service\InitialDataSeeder;
+use App\Setup\Service\InitialDataSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

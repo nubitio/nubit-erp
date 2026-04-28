@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Inventory\Service;
 
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\ProductStock;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Setup\Service;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
@@ -23,6 +23,7 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
+use App\Settings\Service\MenuSeedService;
 use Doctrine\ORM\EntityManagerInterface;
 use Throwable;
 

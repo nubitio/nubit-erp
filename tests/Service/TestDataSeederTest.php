@@ -20,7 +20,7 @@ use App\Catalog\Repository\ProductRepository;
 use App\Contacts\Repository\SupplierRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Inventory\Repository\WarehouseRepository;
-use App\Service\TestDataSeeder;
+use App\Setup\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

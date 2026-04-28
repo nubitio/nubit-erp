@@ -20,7 +20,7 @@ use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
-use App\Service\SalePaymentPlanService;
+use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\State\SaleUtils;
 use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;

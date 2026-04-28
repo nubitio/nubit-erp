@@ -9,7 +9,7 @@ use App\Identity\Dto\AuthUserDto;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
-use App\Service\InventoryLedgerService;
+use App\Inventory\Service\InventoryLedgerService;
 use Psr\Log\LoggerInterface;
 
 /**

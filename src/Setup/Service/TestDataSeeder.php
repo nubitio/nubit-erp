@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Setup\Service;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;

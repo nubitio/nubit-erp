@@ -10,7 +10,7 @@ use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;
-use App\Service\InventoryLedgerService;
+use App\Inventory\Service\InventoryLedgerService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 

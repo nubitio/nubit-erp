@@ -6,7 +6,7 @@ namespace App\Catalog\State;
 
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\Warehouse;
-use App\Service\ProductStockService;
+use App\Inventory\Service\ProductStockService;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

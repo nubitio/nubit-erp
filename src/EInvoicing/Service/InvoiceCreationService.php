@@ -8,7 +8,7 @@ use App\Catalog\Entity\UnitOfMeasure;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Domain\DocType;
-use App\Service\SaleCurrencyResolver;
+use App\Sales\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use DateTimeZone;
