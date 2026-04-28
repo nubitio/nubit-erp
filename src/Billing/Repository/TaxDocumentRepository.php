@@ -24,7 +24,7 @@ use App\Catalog\Entity\SunatCatalog;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Catalog\Entity\VoucherSeries;
-use App\Sale\Domain\DocType;
+use App\Sales\Domain\DocType;
 use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Exception\ORMException;

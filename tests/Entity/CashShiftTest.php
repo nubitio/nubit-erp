@@ -9,7 +9,7 @@ use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
-use App\Enum\CashShiftStatus;
+use App\CashRegister\Enum\CashShiftStatus;
 use PHPUnit\Framework\TestCase;
 
 final class CashShiftTest extends TestCase

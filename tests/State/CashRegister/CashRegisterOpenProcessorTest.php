@@ -15,7 +15,7 @@ use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
-use App\State\CashRegister\CashRegisterOpenProcessor;
+use App\CashRegister\State\CashRegisterOpenProcessor;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;

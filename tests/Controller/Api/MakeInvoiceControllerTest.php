@@ -8,7 +8,7 @@ use App\Controller\Api\MakeInvoice;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Sales\Entity\SaleRecord;
-use App\State\Sale\DetractionCalculatorInterface;
+use App\Sales\State\DetractionCalculatorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 

@@ -7,7 +7,7 @@ namespace App\Tests\State\Sale;
 use App\Dto\Auth\AuthUserDto;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
-use App\State\Sale\NegativeStockPolicyResolver;
+use App\Sales\State\NegativeStockPolicyResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

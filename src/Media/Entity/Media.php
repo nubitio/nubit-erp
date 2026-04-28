@@ -14,7 +14,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\MediaController;
 use App\Media\Repository\MediaRepository;
-use App\State\Media\MediaSoftDeleteProcessor;
+use App\Media\State\MediaSoftDeleteProcessor;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

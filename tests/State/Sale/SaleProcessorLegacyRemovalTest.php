@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Sale;
 
-use App\State\Sale\SaleProcessor;
+use App\Sales\State\SaleProcessor;
 use PHPUnit\Framework\TestCase;
 
 final class SaleProcessorLegacyRemovalTest extends TestCase

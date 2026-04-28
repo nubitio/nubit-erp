@@ -8,7 +8,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Core\Util\Money;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\Sales\Entity\SaleRecord;
-use App\State\Sale\CashSessionResolverInterface;
+use App\Sales\State\CashSessionResolverInterface;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;

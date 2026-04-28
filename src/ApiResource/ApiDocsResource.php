@@ -6,7 +6,7 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\McpResource;
-use App\State\Mcp\ApiDocsProvider;
+use App\AI\State\ApiDocsProvider;
 
 #[ApiResource(
     shortName: 'ApiDocsResource',

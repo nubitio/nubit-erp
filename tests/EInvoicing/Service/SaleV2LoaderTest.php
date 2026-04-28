@@ -9,7 +9,7 @@ use App\EInvoicing\Service\SaleV2Loader;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
-use App\Sale\Domain\SaleStatus;
+use App\Sales\Domain\SaleStatus;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;

@@ -7,7 +7,7 @@ namespace App\CashRegister\Entity;
 use RuntimeException;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Enum\CashMovementType;
+use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;

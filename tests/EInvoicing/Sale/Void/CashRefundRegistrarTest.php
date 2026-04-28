@@ -8,7 +8,7 @@ use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
-use App\State\Sale\CashSessionResolverInterface;
+use App\Sales\State\CashSessionResolverInterface;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

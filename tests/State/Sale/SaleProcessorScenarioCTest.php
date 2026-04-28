@@ -7,8 +7,8 @@ namespace App\Tests\State\Sale;
 use App\Core\Exception\ServiceException;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
-use App\State\Sale\CashSessionResolver;
-use App\State\Sale\SaleProcessor;
+use App\Sales\State\CashSessionResolver;
+use App\Sales\State\SaleProcessor;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 
@@ -145,7 +145,7 @@ final class SaleProcessorScenarioCTest extends TestCase
      */
     public function testSalesWriteGatewayWriteAcceptsNullableCashSessionId(): void
     {
-        $reflection = new \ReflectionClass(\App\State\Sale\SalesWriteGateway::class);
+        $reflection = new \ReflectionClass(\App\Sales\State\SalesWriteGateway::class);
         $method = $reflection->getMethod('write');
 
         $params = $method->getParameters();

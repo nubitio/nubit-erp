@@ -6,7 +6,7 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\McpTool;
-use App\State\Mcp\ReadHydraResourceProcessor;
+use App\AI\State\ReadHydraResourceProcessor;
 
 #[ApiResource(
     shortName: 'ReadHydraResource',

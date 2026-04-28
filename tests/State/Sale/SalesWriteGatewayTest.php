@@ -14,7 +14,7 @@ use App\Catalog\Entity\UnitOfMeasure;
 use App\Sales\Repository\DashboardRepository;
 use App\Service\SaleCurrencyResolver;
 use App\Service\SalePaymentPlanService;
-use App\State\Sale\SalesWriteGateway;
+use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;

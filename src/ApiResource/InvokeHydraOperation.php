@@ -7,7 +7,7 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\McpTool;
-use App\State\Mcp\InvokeHydraOperationProcessor;
+use App\AI\State\InvokeHydraOperationProcessor;
 
 #[ApiResource(
     shortName: 'InvokeHydraOperation',

@@ -7,7 +7,7 @@ namespace App\Controller\Api;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
-use App\State\Sale\DetractionCalculatorInterface;
+use App\Sales\State\DetractionCalculatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

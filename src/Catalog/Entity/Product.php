@@ -23,7 +23,7 @@ use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Catalog\Repository\ProductRepository;
-use App\State\Product\ProductStockController;
+use App\Catalog\State\ProductStockController;
 use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Dto\RoleMenu\RoleMenuDto;
-use App\State\RoleMenu\RoleMenuProcessor;
-use App\State\RoleMenu\RoleMenuProvider;
+use App\Settings\State\RoleMenuProcessor;
+use App\Settings\State\RoleMenuProvider;
 
 #[ApiResource(
     shortName: 'RoleMenu',

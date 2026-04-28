@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\State\ProcessorInterface;
 use App\Media\Entity\Media;
-use App\State\Media\MediaSoftDeleteProcessor;
+use App\Media\State\MediaSoftDeleteProcessor;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

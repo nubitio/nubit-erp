@@ -14,7 +14,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
-use App\Enum\CashMovementType;
+use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
 use App\Contacts\Repository\CustomerRepository;

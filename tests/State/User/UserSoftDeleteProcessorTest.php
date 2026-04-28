@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
-use App\State\User\UserSoftDeleteProcessor;
+use App\Identity\State\UserSoftDeleteProcessor;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

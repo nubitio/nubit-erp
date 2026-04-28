@@ -10,7 +10,7 @@ use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Sale\SaleItemDto;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Sale\Domain\DocType;
+use App\Sales\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
