@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Sales\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use Doctrine\DBAL\Connection;

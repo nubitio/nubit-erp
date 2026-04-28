@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Setup\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Setup\Service\TestDataSeeder;

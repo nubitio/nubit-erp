@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Command;
 
-use App\Command\TestSeedE2eCommand;
+use App\Setup\Command\TestSeedE2eCommand;
 use App\Setup\Service\E2eTestSeedServiceInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;

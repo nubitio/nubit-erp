@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Identity\Command;
 
 use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;

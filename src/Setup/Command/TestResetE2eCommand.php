@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Setup\Command;
 
 use App\Setup\Service\E2eTestSeedServiceInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

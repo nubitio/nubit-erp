@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App\Settings\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Settings\Service\UbigeoImportService;
