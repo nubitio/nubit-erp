@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use Throwable;
-use App\Entity\TimeDimension;
+use App\Reporting\Entity\TimeDimension;
 use DateTimeInterface;
 use App\Dto\Assistant\RecentSaleDto;
 use App\Repository\SalesAnalyticsRepository;
-use App\Repository\TimeDimensionRepository;
+use App\Reporting\Repository\TimeDimensionRepository;
 use DateInterval;
 use DateTimeImmutable;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
