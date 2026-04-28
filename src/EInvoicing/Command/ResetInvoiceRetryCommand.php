@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\EInvoicing\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Efact\Service\SettingsService;

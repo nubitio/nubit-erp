@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App\Reporting\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Reporting\Service\TimeDimensionSeeder;

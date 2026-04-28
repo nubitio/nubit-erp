@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Notification;
+namespace App\Inventory\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Notification\NotificationType;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Catalog\Command;
 
 use App\Catalog\Service\ExchangeRateSyncService;
 use Symfony\Component\Console\Attribute\AsCommand;
