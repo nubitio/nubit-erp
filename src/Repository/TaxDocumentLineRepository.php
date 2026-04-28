@@ -1,20 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repository;
 
-use App\Entity\TaxDocumentLine;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-
-/**
- * @extends ServiceEntityRepository<TaxDocumentLine>
- */
-class TaxDocumentLineRepository extends ServiceEntityRepository
+/** @deprecated Use App\Billing\Repository\TaxDocumentLineRepository */
+class TaxDocumentLineRepository extends \App\Billing\Repository\TaxDocumentLineRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, TaxDocumentLine::class);
-    }
 }

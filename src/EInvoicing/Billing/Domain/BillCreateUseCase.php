@@ -12,7 +12,7 @@ use App\EInvoicing\Shared\Enum\LegendCode;
 use App\EInvoicing\Shared\Enum\OperationType;
 use App\EInvoicing\Shared\Service\AmountFormatterService;
 use App\Organization\Repository\CompanyRepository;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
 use Greenter\Model\Client\Client;

@@ -14,7 +14,7 @@ use App\EInvoicing\Shared\Enum\OperationType;
 use App\EInvoicing\Shared\Service\AmountFormatterService;
 use App\Organization\Entity\Company;
 use App\Organization\Repository\CompanyRepository;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company as GreenterCompany;
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
@@ -144,7 +144,7 @@ final class BillCreateUseCaseTest extends TestCase
 
     private function setupTaxDocument(string $id = 'td-1'): void
     {
-        $taxDocument = $this->createMock(\App\Entity\TaxDocument::class);
+        $taxDocument = $this->createMock(\App\Billing\Entity\TaxDocument::class);
         $taxDocument->method('getId')->willReturn($id);
         $this->taxDocumentRepository->method('find')->willReturn($taxDocument);
     }

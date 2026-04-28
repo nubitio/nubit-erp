@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Entity;
 
-use App\Entity\TaxDocument;
-use App\Entity\TaxDocumentLine;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocumentLine;
 use PHPUnit\Framework\TestCase;
 
 final class TaxDocumentLineTest extends TestCase

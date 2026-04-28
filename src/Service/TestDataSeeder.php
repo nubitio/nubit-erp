@@ -10,7 +10,7 @@ use App\Catalog\Entity\UnitOfMeasure;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineInput;
 use App\Contacts\Entity\Customer;
-use App\Entity\TaxDocument;
+use App\Billing\Entity\TaxDocument;
 use App\Inventory\Entity\LogisticOperation;
 use App\Entity\Product;
 use App\Inventory\Entity\ProductStock;

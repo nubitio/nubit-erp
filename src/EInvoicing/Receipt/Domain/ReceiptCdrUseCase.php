@@ -9,7 +9,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\CompanyContext;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
 
 readonly class ReceiptCdrUseCase

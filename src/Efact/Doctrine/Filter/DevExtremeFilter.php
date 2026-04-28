@@ -127,7 +127,7 @@ class DevExtremeFilter extends AbstractFilter
                 // TaxDocument has a ManyToOne to SaleRecord via td.saleRecord.
                 // We join TaxDocument entities where td.saleRecord = o AND td.reasonCode IS NULL.
                 $queryBuilder->leftJoin(
-                    \App\Entity\TaxDocument::class,
+                    \App\Billing\Entity\TaxDocument::class,
                     'td',
                     'WITH',
                     'td.saleRecord = o AND td.reasonCode IS NULL'

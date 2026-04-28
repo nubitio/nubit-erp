@@ -8,7 +8,7 @@ use App\Core\Exception\ServiceException;
 use App\Efact\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Api\AuthApi;

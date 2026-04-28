@@ -7,7 +7,7 @@ namespace App\Controller\Api;
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\EInvoicing\Service\CreditNoteService;
 use Exception;
 use League\Flysystem\FilesystemException;

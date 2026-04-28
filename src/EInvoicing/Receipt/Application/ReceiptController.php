@@ -16,7 +16,7 @@ use App\EInvoicing\Receipt\Domain\ReceiptShowUseCase;
 use App\EInvoicing\Receipt\Domain\ReceiptType;
 use App\EInvoicing\Receipt\Domain\ReceiptXmlUseCase;
 use App\Repository\InvoiceRepository;
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use Brick\Math\Exception\MathException;
 use chillerlan\QRCode\QRCode;

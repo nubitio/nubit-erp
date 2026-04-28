@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Billing\Domain;
 
-use App\Repository\TaxDocumentRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use DateTime;
 use Exception;
 use App\EInvoicing\Billing\Model\Response\SummaryResponse;

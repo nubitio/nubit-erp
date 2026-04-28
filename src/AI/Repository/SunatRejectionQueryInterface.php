@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Repository;
 
-use App\Entity\TaxDocumentEvent;
+use App\Billing\Entity\TaxDocumentEvent;
 
 /**
  * Query contract for SUNAT rejection events used by the AI assistant.
