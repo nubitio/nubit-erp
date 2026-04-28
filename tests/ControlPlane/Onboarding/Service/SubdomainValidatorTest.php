@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Onboarding\Service;
+namespace App\Tests\ControlPlane\Onboarding\Service;
 
 use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use Doctrine\DBAL\Connection;
