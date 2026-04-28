@@ -7,7 +7,7 @@ namespace App\State\Sale;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Core\Util\Money;
 use App\Sales\Entity\SaleRecord;
-use App\Repository\DashboardRepository;
+use App\Sales\Repository\DashboardRepository;
 use App\Service\SalePaymentPlanService;
 use App\Service\SaleCurrencyResolver;
 use Brick\Math\BigDecimal;

@@ -8,9 +8,9 @@ use App\Core\Exception\ServiceException;
 use App\Dto\Assistant\ProductSearchResultDto;
 use App\Dto\Assistant\ProductStockDto;
 use App\Dto\Assistant\ProductWarehouseStockDto;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Inventory\Entity\ProductStock;
-use App\Repository\ProductRepository;
+use App\Catalog\Repository\ProductRepository;
 use App\Inventory\Repository\ProductStockRepository;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 

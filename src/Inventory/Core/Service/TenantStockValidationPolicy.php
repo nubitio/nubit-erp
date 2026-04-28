@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Core\Context\TenantContext;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\StockPolicy;

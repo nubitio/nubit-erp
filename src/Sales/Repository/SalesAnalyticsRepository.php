@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Sales\Repository;
 
 use App\Dto\Assistant\RecentSaleDto;
 use App\Dto\Assistant\SalesSummaryDto;

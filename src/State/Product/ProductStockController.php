@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\State\Product;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Inventory\Entity\Warehouse;
 use App\Service\ProductStockService;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;

@@ -8,7 +8,7 @@ use App\Core\Exception\ServiceException;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Auth\AuthUserDto;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;

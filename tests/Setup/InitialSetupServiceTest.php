@@ -6,7 +6,7 @@ namespace App\Tests\Setup;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\Category;
 use App\Contacts\Entity\Customer;
 use App\Inventory\Entity\LogisticOperation;
@@ -16,7 +16,7 @@ use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
 use App\Organization\Repository\BranchRepository;
-use App\Repository\CashMovementCategoryRepository;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
 use App\Organization\Repository\CompanyRepository;
 use App\Contacts\Repository\CustomerRepository;

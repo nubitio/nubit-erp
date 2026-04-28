@@ -173,13 +173,13 @@ final class LotDeductionServiceTest extends TestCase
             ->method('findByLotNumber')
             ->willReturn(null);
 
-        $productRef = $this->createStub(\App\Entity\Product::class);
+        $productRef = $this->createStub(\App\Catalog\Entity\Product::class);
         $warehouseRef = $this->createStub(\App\Inventory\Entity\Warehouse::class);
 
         $this->em
             ->method('getReference')
             ->willReturnMap([
-                [\App\Entity\Product::class, 'prod-1', $productRef],
+                [\App\Catalog\Entity\Product::class, 'prod-1', $productRef],
                 [\App\Inventory\Entity\Warehouse::class, 'wh-1', $warehouseRef],
             ]);
 

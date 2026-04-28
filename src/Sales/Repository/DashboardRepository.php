@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Sales\Repository;
 
 use App\Core\Cache\CacheManager;
 use App\Efact\Service\SettingsService;

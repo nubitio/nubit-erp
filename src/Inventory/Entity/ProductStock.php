@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Entity;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Sale\Void;
 
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;

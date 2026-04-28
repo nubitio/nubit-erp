@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Inventory;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;

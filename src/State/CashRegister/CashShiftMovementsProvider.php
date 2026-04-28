@@ -8,7 +8,7 @@ use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\Enum\CashMovementType;
 use DateTimeImmutable;

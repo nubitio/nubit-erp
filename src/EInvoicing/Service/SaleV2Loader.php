@@ -145,7 +145,7 @@ SQL,
             return null;
         }
 
-        $product = $this->entityManager->getRepository(\App\Entity\Product::class)->find($productId);
+        $product = $this->entityManager->getRepository(\App\Catalog\Entity\Product::class)->find($productId);
         if ($product === null) {
             return null;
         }

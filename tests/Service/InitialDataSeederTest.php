@@ -6,10 +6,10 @@ namespace App\Tests\Service;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Repository\CashMovementCategoryRepository;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
 use App\Contacts\Repository\CustomerRepository;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\Category;
 use App\Contacts\Entity\Customer;
 use App\Inventory\Entity\LogisticOperation;

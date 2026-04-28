@@ -14,7 +14,7 @@ use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;
 use App\EInvoicing\Sale\Void\VoidStrategyInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\EInvoicing\Shared\ErrorMessages;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\Billing\Entity\TaxDocument;

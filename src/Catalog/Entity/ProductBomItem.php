@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Catalog\Entity;
 
-use App\Repository\ProductBomItemRepository;
+use App\Catalog\Entity\Product;
+use App\Catalog\Repository\ProductBomItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 

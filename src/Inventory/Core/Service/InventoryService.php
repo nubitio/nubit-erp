@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
