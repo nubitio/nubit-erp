@@ -21,7 +21,7 @@ use App\CashRegister\Entity\CashShift;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
-use App\Message\SendInvoiceMessage;
+use App\EInvoicing\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Controller;
 
-use App\ApiResource\ConsultDocType;
-use App\ApiResource\ConsultResource;
+use App\EInvoicing\ApiResource\ConsultDocType;
+use App\EInvoicing\ApiResource\ConsultResource;
 use App\Core\Exception\ServiceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;

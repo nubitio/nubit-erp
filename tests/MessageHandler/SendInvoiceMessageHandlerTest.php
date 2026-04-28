@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\MessageHandler;
 
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
-use App\Message\SendInvoiceMessage;
-use App\MessageHandler\SendInvoiceMessageHandler;
+use App\EInvoicing\Message\SendInvoiceMessage;
+use App\EInvoicing\MessageHandler\SendInvoiceMessageHandler;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\ControlPlane\Certificate;
 
 use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
-use App\Notification\NotificationType;
-use App\Notification\UserNotificationServiceInterface;
+use App\Identity\Notification\NotificationType;
+use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;

@@ -14,7 +14,7 @@ use App\Identity\Dto\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
-use App\Message\SendInvoiceMessage;
+use App\EInvoicing\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
