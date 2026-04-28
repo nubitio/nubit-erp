@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Media\Controller;
 
 use App\Core\Base\BaseController;
 use App\Core\Filesystem\FileManager;

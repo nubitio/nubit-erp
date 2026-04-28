@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
-use App\Controller\AuthSelectBranchController;
+use App\Identity\Controller\AuthSelectBranchController;
 use App\Core\Context\TenantContext;
 use App\Core\Security\Auth\ClientDetectorService;
 use App\Core\Security\Auth\CookieFactoryService;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Identity\Controller;
 
 use App\Core\Security\Auth\ClientDetectorService;
 use App\Core\Security\Auth\CookieFactoryService;

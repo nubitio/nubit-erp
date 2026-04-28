@@ -7,7 +7,7 @@ namespace App\EInvoicing\Invoice\Api;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
-use App\Controller\Api\MakeInvoice;
+use App\EInvoicing\Controller\Api\MakeInvoice;
 use App\EInvoicing\Invoice\Domain\Voucher;
 
 #[ApiResource(

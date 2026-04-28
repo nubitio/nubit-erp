@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Setup\Controller;
 
 use App\Setup\Service\E2eTestSeedServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

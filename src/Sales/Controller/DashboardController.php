@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Sales\Controller;
 
 use App\Core\Security\Auth\BranchContextService;
 use App\Sales\Repository\DashboardRepository;

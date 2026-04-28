@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
-use App\Controller\SaleReportController;
+use App\Sales\Controller\SaleReportController;
 use ArrayObject;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

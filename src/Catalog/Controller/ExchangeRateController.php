@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Catalog\Controller;
 
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;

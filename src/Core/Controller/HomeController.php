@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Core\Controller;
 
 use App\Core\Base\BaseController;
 use App\Efact\Service\LogoProvider;
