@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Onboarding\Security;
+namespace App\Tests\ControlPlane\Onboarding\Security;
 
 use App\ControlPlane\Onboarding\Security\SecretCipher;
 use PHPUnit\Framework\TestCase;

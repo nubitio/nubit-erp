@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Onboarding\Payment;
+namespace App\Tests\ControlPlane\Onboarding\Payment;
 
 use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Subscription\Payment\PayPalGateway;
