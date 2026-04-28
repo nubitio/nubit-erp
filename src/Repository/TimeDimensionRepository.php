@@ -1,20 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repository;
 
-use App\Entity\TimeDimension;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-
-/**
- * @extends ServiceEntityRepository<TimeDimension>
- */
-class TimeDimensionRepository extends ServiceEntityRepository
+/** @deprecated Use App\Reporting\Repository\TimeDimensionRepository */
+class TimeDimensionRepository extends \App\Reporting\Repository\TimeDimensionRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, TimeDimension::class);
-    }
 }

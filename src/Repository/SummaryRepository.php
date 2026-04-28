@@ -1,20 +1,8 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repository;
 
-use App\Entity\Summary;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-
-/**
- * @extends ServiceEntityRepository<Summary>
- */
-class SummaryRepository extends ServiceEntityRepository
+/** @deprecated Use App\Reporting\Repository\SummaryRepository */
+class SummaryRepository extends \App\Reporting\Repository\SummaryRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Summary::class);
-    }
 }
