@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;

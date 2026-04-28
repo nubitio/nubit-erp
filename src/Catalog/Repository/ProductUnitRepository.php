@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Catalog\Repository;
 
-use App\Entity\ProductUnit;
+use App\Catalog\Entity\ProductUnit;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<ProductUnit>
  */
-final class ProductUnitRepository extends ServiceEntityRepository
+class ProductUnitRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

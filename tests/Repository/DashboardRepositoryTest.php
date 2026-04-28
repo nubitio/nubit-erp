@@ -7,7 +7,7 @@ namespace App\Tests\Repository;
 use App\Core\Cache\CacheManager;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Repository\DashboardRepository;
+use App\Sales\Repository\DashboardRepository;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;

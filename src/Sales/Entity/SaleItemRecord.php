@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Entity;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;

@@ -102,7 +102,7 @@ final readonly class LotDeductionService
         $lot = $this->stockLotRepository->findByLotNumber($productId, $warehouseId, $lotNumber);
 
         if ($lot === null) {
-            $product = $this->entityManager->getReference(\App\Entity\Product::class, $productId);
+            $product = $this->entityManager->getReference(\App\Catalog\Entity\Product::class, $productId);
             $warehouse = $this->entityManager->getReference(\App\Inventory\Entity\Warehouse::class, $warehouseId);
 
             $lot = new StockLot();

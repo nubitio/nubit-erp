@@ -15,7 +15,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Repository\CashMovementRepository;
 use App\State\CashRegister\CashMovementItemProvider;

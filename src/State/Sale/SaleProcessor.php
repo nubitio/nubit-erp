@@ -16,7 +16,7 @@ use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Core\Util\Money;
 use App\Contacts\Entity\Customer;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;

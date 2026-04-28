@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Entity;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Repository\SaleItemRepository;
 use Doctrine\DBAL\Types\Types;

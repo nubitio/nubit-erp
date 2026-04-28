@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Purchase;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Entity\PurchaseItem;
 use App\Inventory\Entity\Warehouse;

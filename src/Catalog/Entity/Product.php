@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Catalog\Entity;
 
+use App\Media\Entity\Media;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Catalog\Entity\Category;
@@ -21,7 +22,7 @@ use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
-use App\Repository\ProductRepository;
+use App\Catalog\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;

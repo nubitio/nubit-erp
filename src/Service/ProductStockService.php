@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\ProductStockRepository;

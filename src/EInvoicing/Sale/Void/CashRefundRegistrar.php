@@ -6,7 +6,7 @@ namespace App\EInvoicing\Sale\Void;
 
 use App\Catalog\Entity\PaymentMethod;
 use App\Core\Util\Money;
-use App\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Sales\Entity\SaleRecord;
 use App\State\Sale\CashSessionResolverInterface;
 use DateTimeImmutable;

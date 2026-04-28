@@ -451,9 +451,9 @@ final class SaleV2LoaderTest extends TestCase
         $connection->method('fetchAssociative')->willReturn($saleRow);
         $connection->method('fetchAllAssociative')->willReturn([$itemRow]);
 
-        $product = $this->createMock(\App\Entity\Product::class);
+        $product = $this->createMock(\App\Catalog\Entity\Product::class);
 
-        /** @var EntityRepository<\App\Entity\Product>&MockObject $productRepo */
+        /** @var EntityRepository<\App\Catalog\Entity\Product>&MockObject $productRepo */
         $productRepo = $this->createMock(EntityRepository::class);
         $productRepo->method('find')->with('42')->willReturn($product);
 
@@ -549,7 +549,7 @@ final class SaleV2LoaderTest extends TestCase
         $connection->method('fetchAssociative')->willReturn($saleRow);
         $connection->method('fetchAllAssociative')->willReturn([$itemRow]);
 
-        /** @var EntityRepository<\App\Entity\Product>&MockObject $productRepo */
+        /** @var EntityRepository<\App\Catalog\Entity\Product>&MockObject $productRepo */
         $productRepo = $this->createMock(EntityRepository::class);
         $productRepo->method('find')->with('99')->willReturn(null); // product not found
 

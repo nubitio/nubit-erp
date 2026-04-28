@@ -7,7 +7,7 @@ namespace App\State\Sale;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Dto\Auth\AuthUserDto;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 
 /**
  * Resolves the negative stock policy and determines whether a user can sell below zero.

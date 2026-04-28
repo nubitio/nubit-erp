@@ -8,7 +8,7 @@ use Throwable;
 use App\Reporting\Entity\TimeDimension;
 use DateTimeInterface;
 use App\Dto\Assistant\RecentSaleDto;
-use App\Repository\SalesAnalyticsRepository;
+use App\Sales\Repository\SalesAnalyticsRepository;
 use App\Reporting\Repository\TimeDimensionRepository;
 use DateInterval;
 use DateTimeImmutable;

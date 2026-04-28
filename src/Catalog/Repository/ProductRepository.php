@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Catalog\Repository;
 
 use App\Dto\Assistant\ProductSearchResultDto;
-use App\Entity\Product;
+use App\Catalog\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
