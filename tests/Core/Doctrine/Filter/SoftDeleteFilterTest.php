@@ -6,7 +6,7 @@ namespace App\Tests\Core\Doctrine\Filter;
 
 use App\Efact\Doctrine\Filter\SoftDeleteFilter;
 use App\Organization\Entity\Branch;
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Entity\PurchaseItem;
 use App\Identity\Entity\User;

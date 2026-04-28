@@ -9,7 +9,7 @@ use ArrayObject;
 use App\Core\Context\TenantContext;
 use App\Core\Filesystem\S3UrlResolver;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;

@@ -6,7 +6,7 @@ namespace App\State\Media;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use DateTimeImmutable;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

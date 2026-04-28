@@ -7,7 +7,7 @@ namespace App\Organization\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use App\Organization\Repository\CompanyRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;

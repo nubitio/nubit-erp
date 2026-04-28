@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Doctrine\Filter;
 
-use App\Entity\Media;
+use App\Media\Entity\Media;
 use App\Purchasing\Entity\Purchase;
 use App\Identity\Entity\User;
 use Doctrine\ORM\Mapping\ClassMetadata;
