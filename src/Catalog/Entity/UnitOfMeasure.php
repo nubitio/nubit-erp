@@ -33,15 +33,23 @@ class UnitOfMeasure
     #[ORM\Column(length: 255)]
     private string $name;
 
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[ApiProperty(description: 'unit_of_measure.code.label')]
     #[ORM\Column(length: 255)]
     private string $code;
 
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[ApiProperty(description: 'unit_of_measure.type.label')]
     #[ORM\Column(name: 'type_id')]
     private int $type;
 
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[ApiProperty(description: 'unit_of_measure.ratio.label')]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $ratio = '1.00';
 
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[ApiProperty(description: 'unit_of_measure.reference.label')]
     #[ORM\Column(name: 'is_reference')]
     private bool $reference = false;
 
