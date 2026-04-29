@@ -41,7 +41,7 @@ final readonly class UserNotificationProvider implements ProviderInterface
         $result = $this->entityManager
             ->createQuery(
                 <<<'DQL'
-                    SELECT n FROM App\Entity\UserNotification n
+                    SELECT n FROM App\Identity\Entity\UserNotification n
                     WHERE n.userId = :userId
                       AND (n.readAt IS NULL OR n.createdAt >= :since)
                     ORDER BY n.createdAt DESC
