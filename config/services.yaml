@@ -205,18 +205,6 @@ services:
     arguments:
       $apiBaseUrl: '%app.api_base_url%'
 
-  App\State\Mcp\ReadHydraResourceProcessor:
-    arguments:
-      $apiBaseUrl: '%app.api_base_url%'
-
-  App\State\Mcp\InvokeHydraOperationProcessor:
-    arguments:
-      $apiBaseUrl: '%app.api_base_url%'
-
-  App\State\Mcp\ApiDocsProvider:
-    arguments:
-      $apiBaseUrl: '%app.api_base_url%'
-
   Symfony\Component\Messenger\Middleware\DispatchAfterCurrentBusMiddleware:
     tags:
       - { name: messenger.middleware, bus: messenger.bus.default }
