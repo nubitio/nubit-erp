@@ -123,9 +123,16 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
  * Hace click en un botón de la toolbar del DxDataGrid identificado por texto.
  */
 async function clickGridToolbarButton(page: Page, buttonText: string) {
-  // DxDataGrid toolbar renderiza botones DX con .dx-toolbar .dx-button
-  // El texto puede estar como aria-label o como texto visible del span
-  const btn = page.locator('.dx-toolbar .dx-button').filter({ hasText: buttonText }).first();
+  // DxDataGrid toolbar renderiza botones DX con .dx-toolbar .dx-button.
+  // The current UI can render translated or English labels depending on locale.
+  const alternatives: Record<string, RegExp> = {
+    Nuevo: /^(Nuevo|New)$/i,
+    Editar: /^(Editar|Edit)$/i,
+    Eliminar: /^(Eliminar|Delete)$/i,
+    Guardar: /^(Guardar|Save)$/i,
+  };
+  const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
+  const btn = page.locator('.dx-toolbar .dx-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -135,9 +142,14 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
  * Los botones del footer del DxDialog tienen .dx-popup-bottom .dx-toolbar .dx-button
  */
 async function clickDialogButton(page: Page, buttonText: string) {
+  const alternatives: Record<string, RegExp> = {
+    Guardar: /^(Guardar|Save)$/i,
+    Cancelar: /^(Cancelar|Cancel)$/i,
+  };
+  const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
   const btn = page
     .locator('.dx-popup-bottom .dx-button, .dx-overlay-content .dx-popup-bottom .dx-button')
-    .filter({ hasText: buttonText })
+    .filter({ hasText: text })
     .first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
@@ -558,7 +570,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await expect(
         page
           .locator('.dx-toolbar')
-          .filter({ hasText: /cliente/i })
+          .filter({ hasText: /cliente|customers?/i })
           .first(),
       ).toBeVisible({ timeout: 15000 });
     });
@@ -777,7 +789,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Abrir formulario de nueva venta', async () => {
       await clickGridToolbarButton(page, 'Nuevo');
-      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo/i }).last()).toBeVisible({
+      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last()).toBeVisible({
         timeout: 12000,
       });
     });
@@ -925,7 +937,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         { timeout: 15000 },
       );
 
-      const saleDialog = page.getByRole('dialog', { name: 'Nuevo' }).last();
+      const saleDialog = page.getByRole('dialog', { name: /Nuevo|New/i }).last();
 
       // Ensure the detail grid has no pending edit data before saving.
       // DX may keep hasEditData()=true briefly after the row visually commits.
@@ -965,7 +977,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       salesModuleSaleId = createdSale.id ?? null;
       expect(salesModuleSaleId, 'la respuesta de /api/sales debe incluir id').toBeTruthy();
 
-      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo/i }).last()).toBeHidden({
+      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last()).toBeHidden({
         timeout: 15000,
       });
       await waitForDxLoadPanel(page);
@@ -1035,7 +1047,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await clickGridToolbarButton(page, 'Nuevo');
       // DxDialog opens in ADD mode with title 'Nuevo' (DxDialog.tsx line 65: payload?.title ?? 'Nuevo')
       // The title prop "Movimiento de caja" in CashMovements.tsx is the initial state only.
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
+      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i });
       await popup.waitFor({ state: 'visible', timeout: 12000 });
     });
 
@@ -1085,7 +1097,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Guardar movimiento y verificar en la lista', async () => {
       await clickDialogButton(page, 'Guardar');
 
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo/i });
+      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i });
       await popup.waitFor({ state: 'hidden', timeout: 15000 });
       await waitForDxLoadPanel(page);
 
@@ -1130,7 +1142,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Retry loop: click Editar and wait for popup — retry up to 3 times if it doesn't open.
       // This guards against the DX focusedRowChanged race condition where the toolbar receives
       // the click before the component state reflects the newly-selected row.
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar/i });
+      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar|edit/i });
       let opened = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         await clickGridToolbarButton(page, 'Editar');
@@ -1174,7 +1186,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await page.keyboard.press('Tab');
 
       await clickDialogButton(page, 'Guardar');
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar/i });
+      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar|edit/i });
       await popup.waitFor({ state: 'hidden', timeout: 15000 });
       await waitForDxLoadPanel(page);
     });

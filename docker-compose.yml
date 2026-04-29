@@ -100,7 +100,7 @@ services:
       - '6379:6379'
 
   e2e:
-    image: mcr.microsoft.com/playwright:v1.58.2-noble
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
     security_opt:
       - label=disable
     working_dir: /home/node/app
