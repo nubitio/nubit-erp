@@ -82,9 +82,7 @@ test-front:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn test'
 
 e2e:
-	$(DC) --profile e2e up -d $(SERVICES) e2e
-	$(EXEC_WEB) 'cd /app && php bin/console app:test:seed-e2e'
-	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn test:e2e'
+	$(DC) --profile e2e run --rm e2e
 
 logs:
 	$(DC) logs -f web vite database redis otel-collector
