@@ -11,8 +11,3 @@ parameters:
         - config/reference.php
         - migrations/
         - migrations_control_plane/
-    ignoreErrors:
-        # PHPMD @SuppressWarnings annotations are valid PHPMD syntax but PHPStan
-        # cannot parse the dot-separated rule name inside the parentheses.
-        - message: '#PHPDoc tag @SuppressWarnings has invalid value#'
-          path: src/AI/State/*
