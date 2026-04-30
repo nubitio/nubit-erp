@@ -14,8 +14,8 @@ final readonly class SunatVoidService
     private array $strategies;
 
     public function __construct(
-        InvoiceVoidStrategy $invoiceStrategy,
-        ReceiptVoidStrategy $receiptStrategy,
+        VoidStrategyInterface $invoiceStrategy,
+        VoidStrategyInterface $receiptStrategy,
     ) {
         $this->strategies = [$invoiceStrategy, $receiptStrategy];
     }
