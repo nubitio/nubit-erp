@@ -6,7 +6,7 @@ namespace App\Billing\EventListener;
 
 use App\Billing\Entity\TaxDocumentEvent;
 use App\Identity\Notification\NotificationType;
-use App\Identity\Notification\UserNotificationService;
+use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Events;
@@ -24,7 +24,7 @@ final readonly class SunatNotificationListener
     private const array ERROR_STATUSES = ['error', 'rejected', 'ERROR', 'REJECTED'];
 
     public function __construct(
-        private UserNotificationService $notificationService,
+        private UserNotificationServiceInterface $notificationService,
         private LoggerInterface $logger,
     ) {
     }
