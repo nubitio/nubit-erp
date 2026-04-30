@@ -9,7 +9,7 @@ use App\ControlPlane\Certificate\CertificateStatus;
 use App\ControlPlane\Certificate\CertificateStatusPolicy;
 use App\ControlPlane\Certificate\TenantCertificate;
 use App\ControlPlane\Certificate\TenantCertificateRepositoryInterface;
-use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;

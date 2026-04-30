@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Certificate;
 
 use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
-use App\Core\Platform\Tenant\TenantRegistryInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Doctrine\Persistence\ConnectionRegistry;
 
 final readonly class CertificateLifecycleService implements CertificateLifecycleServiceInterface

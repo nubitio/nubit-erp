@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use App\Core\Platform\Tenant\TenantRegistryInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\Persistence\ConnectionRegistry;
