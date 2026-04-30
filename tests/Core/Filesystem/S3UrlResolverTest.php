@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Filesystem;
 
-use App\Core\Filesystem\S3UrlResolver;
+use App\Efact\Filesystem\S3UrlResolver;
 use PHPUnit\Framework\TestCase;
 
 final class S3UrlResolverTest extends TestCase

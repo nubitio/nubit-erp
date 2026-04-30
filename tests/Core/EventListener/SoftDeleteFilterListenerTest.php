@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\EventListener;
 
-use App\Core\EventListener\SoftDeleteFilterListener;
+use App\Efact\Doctrine\SoftDeleteFilterListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\FilterCollection;
 use PHPUnit\Framework\MockObject\MockObject;

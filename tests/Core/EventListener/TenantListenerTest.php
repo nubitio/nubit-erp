@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Core\EventListener;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Core\EventListener\TenantListener;
+use App\Efact\EventListener\TenantListener;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use PHPUnit\Framework\MockObject\MockObject;
