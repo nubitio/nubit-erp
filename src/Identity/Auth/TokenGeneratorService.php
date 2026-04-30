@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Security\Auth;
+namespace App\Identity\Auth;
 
 use App\Core\Context\TenantContext;
 use App\Organization\Entity\Branch;

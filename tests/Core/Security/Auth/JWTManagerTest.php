@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security\Auth;
 
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\Auth\JWTManager;
 use Firebase\JWT\ExpiredException;
 use LogicException;
 use PHPUnit\Framework\TestCase;

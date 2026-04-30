@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security\Auth;
 
-use App\Core\Security\Auth\UserProvider;
+use App\Identity\Auth\UserProvider;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use DateTimeImmutable;

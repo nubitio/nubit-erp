@@ -34,17 +34,17 @@ services:
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
-  App\Core\Security\Auth\JWTManager:
+  App\Identity\Auth\JWTManager:
     arguments:
       $secret: '%env(APP_SECRET)%'
-  App\Core\Security\Auth\TokenGeneratorService:
+  App\Identity\Auth\TokenGeneratorService:
     arguments:
       $accessTokenTtl: '%jwt_access_token_ttl%'
       $refreshTokenTtl: '%jwt_refresh_token_ttl%'
-  App\Core\Security\Auth\CookieFactoryService:
+  App\Identity\Auth\CookieFactoryService:
     arguments:
       $cookieSecure: '%env(bool:APP_COOKIE_SECURE)%'
-  App\Core\Security\Auth\MercureSubscriberTokenService:
+  App\Identity\Auth\MercureSubscriberTokenService:
     arguments:
       $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
       $accessTokenTtl: '%jwt_access_token_ttl%'
@@ -197,6 +197,8 @@ services:
 
   App\Core\Audit\AuditLogRepository: ~
 
+  App\Inventory\Core\Contract\SalesInventoryPortInterface: '@App\Inventory\Adapter\InventoryServiceSalesInventoryPort'
+  App\Sales\Port\SaleInvoicingPortInterface: '@App\EInvoicing\Adapter\SaleInvoicingAdapter'
   App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
   App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Identity\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Security\Auth\RefreshTokenService;
+use App\Identity\Auth\RefreshTokenService;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;

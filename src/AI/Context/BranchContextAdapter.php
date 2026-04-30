@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Context;
 
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 
 /**
  * Adapts the framework BranchContextService to the AI tool BranchContextInterface.

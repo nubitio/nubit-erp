@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Symfony\Security;
+namespace App\Identity\Security;
 
 use Override;
-use App\Core\Application\Session\Security;
-use App\Core\Security\Auth\JWTAuthenticationToken;
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\Security\Security;
+use App\Identity\Auth\JWTAuthenticationToken;
+use App\Identity\Auth\JWTManager;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;

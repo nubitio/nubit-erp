@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Core\Security\Auth;
 
 use App\Core\Context\TenantContext;
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\Auth\JWTManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 

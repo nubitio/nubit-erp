@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\EventListener;
+namespace App\Identity\EventListener;
 
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\Auth\JWTManager;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;

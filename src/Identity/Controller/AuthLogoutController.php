@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
-use App\Core\Security\Auth\ClientDetectorService;
-use App\Core\Security\Auth\CookieFactoryService;
-use App\Core\Security\Auth\JWTAuthenticator;
-use App\Core\Security\Auth\RefreshTokenService;
+use App\Identity\Auth\ClientDetectorService;
+use App\Identity\Auth\CookieFactoryService;
+use App\Identity\Auth\JWTAuthenticator;
+use App\Identity\Auth\RefreshTokenService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

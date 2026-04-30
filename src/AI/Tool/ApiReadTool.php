@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\Core\Security\Auth\JWTAuthenticationToken;
+use App\Identity\Auth\JWTAuthenticationToken;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;

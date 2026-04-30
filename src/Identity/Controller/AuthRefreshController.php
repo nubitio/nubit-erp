@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
-use App\Core\Security\Auth\ClientDetectorService;
-use App\Core\Security\Auth\CookieFactoryService;
-use App\Core\Security\Auth\JWTAuthenticator;
-use App\Core\Security\Auth\JWTManager;
-use App\Core\Security\Auth\MercureSubscriberTokenService;
-use App\Core\Security\Auth\TokenGeneratorService;
+use App\Identity\Auth\ClientDetectorService;
+use App\Identity\Auth\CookieFactoryService;
+use App\Identity\Auth\JWTAuthenticator;
+use App\Identity\Auth\JWTManager;
+use App\Identity\Auth\MercureSubscriberTokenService;
+use App\Identity\Auth\TokenGeneratorService;
 use App\Identity\Entity\RefreshToken;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
