@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Application\Session;
+namespace App\Identity\Security;
 
 use App\Identity\Dto\AuthUserDto;
 

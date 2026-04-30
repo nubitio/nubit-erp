@@ -69,7 +69,7 @@ final class TestableBranchFilterSubscriber extends BranchFilterSubscriber
         // We pass a bare BranchContextService instance (without constructor) to satisfy
         // the parent constructor's type hint. The parent constructor stores it as readonly,
         // but we override onKernelRequest so the stored value is never used.
-        $branchContextService = (new \ReflectionClass(\App\Core\Security\Auth\BranchContextService::class))
+        $branchContextService = (new \ReflectionClass(\App\Identity\Auth\BranchContextService::class))
             ->newInstanceWithoutConstructor();
 
         parent::__construct($entityManager, $branchContextService);

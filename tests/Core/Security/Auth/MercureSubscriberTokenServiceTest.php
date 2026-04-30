@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security\Auth;
 
-use App\Core\Security\Auth\MercureSubscriberTokenService;
+use App\Identity\Auth\MercureSubscriberTokenService;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use PHPUnit\Framework\TestCase;

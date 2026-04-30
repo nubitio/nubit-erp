@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Dto;
 
-use App\Core\Security\Auth\TokenPairDto;
+use App\Identity\Auth\TokenPairDto;
 
 class AuthResponseDto
 {

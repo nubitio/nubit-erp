@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security;
 
-use App\Core\EventListener\AppSecretBootListener;
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\EventListener\AppSecretBootListener;
+use App\Identity\Auth\JWTManager;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -95,7 +95,7 @@ final class AccessControlTest extends TestCase
     {
         self::assertTrue(
             class_exists(AppSecretBootListener::class),
-            'AppSecretBootListener must exist at App\Core\EventListener\AppSecretBootListener.',
+            'AppSecretBootListener must exist at App\Identity\EventListener\AppSecretBootListener.',
         );
     }
 

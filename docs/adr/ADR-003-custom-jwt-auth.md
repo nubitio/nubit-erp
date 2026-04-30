@@ -89,7 +89,7 @@ firewalls:
     pattern: ^/api
     stateless: true
     custom_authenticators:
-      - App\Core\Security\Auth\JWTAuthenticator
+      - App\Identity\Auth\JWTAuthenticator
 
   main:
     lazy: true

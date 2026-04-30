@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Identity\Controller;
 
 use App\Core\Context\TenantContext;
-use App\Core\Security\Auth\ClientDetectorService;
-use App\Core\Security\Auth\CookieFactoryService;
-use App\Core\Security\Auth\JWTAuthenticator;
-use App\Core\Security\Auth\MercureSubscriberTokenService;
-use App\Core\Security\Auth\TokenGeneratorService;
+use App\Identity\Auth\ClientDetectorService;
+use App\Identity\Auth\CookieFactoryService;
+use App\Identity\Auth\JWTAuthenticator;
+use App\Identity\Auth\MercureSubscriberTokenService;
+use App\Identity\Auth\TokenGeneratorService;
 use App\Organization\Entity\Branch;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
