@@ -37,7 +37,7 @@ Adapter-only exceptions:
 
 - `App\Dto\Setup\InitialSetupInput`
 - `App\Setup\InitialSetupService`
-- `App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface`
+- `App\Billing\Sunat\Domain\LycetCompanyServiceInterface`
 
 These imports are allowed only under `src/ControlPlane/**/Adapter/` and are guarded by `tests/Architecture/ControlPlaneBoundaryTest.php`.
 
@@ -118,6 +118,6 @@ Targeted boundary checks:
 
 ```bash
 rg '^use App\\ControlPlane' src/Core
-rg '^use App\\(Setup|EInvoicing|Dto\\Setup)' src/ControlPlane/Tenant/Command
+rg '^use App\\(Setup|Dto\\Setup)' src/ControlPlane/Tenant/Command
 docker compose exec -T web ./vendor/bin/phpunit tests/Architecture/ControlPlaneBoundaryTest.php
 ```

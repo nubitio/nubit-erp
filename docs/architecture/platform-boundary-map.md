@@ -85,7 +85,7 @@ Este documento no mueve código. Define el mapa de frontera para orientar refact
 
 ## Reglas de dirección de dependencias
 
-1. **Platform core no puede depender de app concreta**: prohibidos imports desde `App\Entity`, `App\Dto`, `App\Repository`, `App\ControlPlane\...` concreto, `App\Setup`, `App\EInvoicing` o módulos de negocio.
+1. **Platform core no puede depender de app concreta**: prohibidos imports desde `App\Entity`, `App\Dto`, `App\Repository`, `App\ControlPlane\...` concreto, `App\Setup`, `App\Billing` o módulos de negocio.
 2. **Platform core puede definir puertos** (`Interface`, DTOs/value objects, mensajes genéricos) que la app o `ControlPlane` implementan.
 3. **Adaptadores Symfony dependen hacia adentro**: pueden depender de Platform core y de Symfony/Doctrine/Messenger/Monolog, pero no de dominio efact salvo que estén explícitamente clasificados como app adapters.
 4. **ControlPlane implementa puertos Platform, no al revés**: bindings actuales aceptados en Symfony DI:
@@ -120,7 +120,7 @@ Comando local:
 composer check:platform-boundary
 ```
 
-El check falla con ruta, línea y patrón cuando un candidato Platform referencia namespaces concretos de efact (`App\Entity\`, `App\Repository\`, `App\Dto\`, `App\ControlPlane\`, `App\EInvoicing\`, `App\Inventory\`, `App\Notification\`, `App\State\`, `App\Infrastructure\`). Desde `TASK-018`, el check también falla si `src/Platform` referencia la auth transicional app-owned (`App\Core\Security\Auth\`, `App\Core\Symfony\Security\`, `App\Core\Application\Session\Security`). Desde `TASK-019`, `src/Platform` tampoco puede importar la fachada legacy `App\Core\Util\Constants` ni el namespace app-owned `App\Efact\Config\`. Desde `TASK-020`, `src/Platform` tampoco puede importar los adaptadores Doctrine efact (`App\Efact\Doctrine\`) ni las fachadas legacy `App\Core\Doctrine\`. Para validar el comportamiento negativo del guard sin dejar fixtures en rutas productivas:
+El check falla con ruta, línea y patrón cuando un candidato Platform referencia namespaces concretos de efact (`App\Entity\`, `App\Repository\`, `App\Dto\`, `App\ControlPlane\`, `App\Billing\`, `App\Inventory\`, `App\Notification\`, `App\State\`, `App\Infrastructure\`). Desde `TASK-018`, el check también falla si `src/Platform` referencia la auth transicional app-owned (`App\Core\Security\Auth\`, `App\Core\Symfony\Security\`, `App\Core\Application\Session\Security`). Desde `TASK-019`, `src/Platform` tampoco puede importar la fachada legacy `App\Core\Util\Constants` ni el namespace app-owned `App\Efact\Config\`. Desde `TASK-020`, `src/Platform` tampoco puede importar los adaptadores Doctrine efact (`App\Efact\Doctrine\`) ni las fachadas legacy `App\Core\Doctrine\`. Para validar el comportamiento negativo del guard sin dejar fixtures en rutas productivas:
 
 ```bash
 composer test:platform-boundary-guard
@@ -313,6 +313,6 @@ docker compose exec -T web php bin/console lint:container
 Checks útiles para tareas posteriores:
 
 ```bash
-rg '^use App\\(Entity|Dto|Repository|ControlPlane|Setup|EInvoicing)' src/Core
+rg '^use App\\(Entity|Dto|Repository|ControlPlane|Setup|Billing)' src/Core
 rg '^use App\\ControlPlane' src/Core
 ```

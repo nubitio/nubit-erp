@@ -27,7 +27,7 @@ Rules:
 1. `ControlPlane` may depend on generic, reusable Core platform capabilities.
 2. `Core` must not depend on concrete `App\ControlPlane\...` classes.
 3. Core-to-ControlPlane dependencies must be inverted through platform contracts or moved out of Core.
-4. ControlPlane dependencies on app-specific modules such as `Setup` and `EInvoicing` must move behind ControlPlane-owned ports/adapters over time.
+4. ControlPlane dependencies on app-specific modules such as `Setup` and `Billing` must move behind ControlPlane-owned ports/adapters over time.
 5. ControlPlane public API must be explicit; implementation services remain internal by default.
 
 ---

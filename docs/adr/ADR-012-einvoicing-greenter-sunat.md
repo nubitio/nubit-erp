@@ -80,7 +80,7 @@ POST /api/tax-documents/{id}/send
 `VoucherHydrator` maps eFact's `TaxDocument` entity to greenter's object graph:
 
 ```php
-// src/EInvoicing/Invoice/Service/VoucherHydrator.php
+// src/Billing/Invoice/Service/VoucherHydrator.php
 class VoucherHydrator implements VoucherHydratorInterface
 {
     public function hydrate(TaxDocument $doc): BaseDocument
