@@ -122,7 +122,9 @@ class ProductStockService
     }
 
     /**
-     * Calculate and update global stock from warehouse-specific stocks
+     * @deprecated No callers — superseded by InventoryService V2 write path.
+     *             Stock aggregation is computed from stock_items on demand.
+     *             Remove once confirmed no external callers remain.
      */
     public function updateGlobalStockForProduct(Product $product): void
     {
@@ -134,7 +136,8 @@ class ProductStockService
     }
 
     /**
-     * Initialize stock for a product in all warehouses
+     * @deprecated No callers in production code. Seeding uses TestDataSeeder/E2eTestSeedService directly.
+     *             Remove once migration commands are retired.
      */
     public function initializeStockForProduct(Product $product, float $initialStock = 0): void
     {
@@ -146,7 +149,9 @@ class ProductStockService
     }
 
     /**
-     * Distribute global stock to warehouses
+     * @deprecated One-time migration helper to bootstrap stock_items from producto.stock.
+     *             Only called from InitializeWarehouseStockCommand (legacy migration tool).
+     *             Remove once all tenants have been migrated to V2 stock_items.
      */
     public function distributeGlobalStockToWarehouses(Product $product): void
     {

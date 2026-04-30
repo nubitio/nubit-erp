@@ -25,7 +25,7 @@ class ProductRepository extends ServiceEntityRepository
     public function searchByTerm(string $term, int $limit = 5): array
     {
         $qb = $this->createQueryBuilder('p')
-            ->select('p.id', 'p.code', 'p.name', 'p.salePrice', 'p.stock', 'p.minStock')
+            ->select('p.id', 'p.code', 'p.name', 'p.salePrice', 'p.minStock')
             ->where('LOWER(p.name) LIKE :term OR LOWER(p.code) LIKE :term')
             ->setParameter('term', '%' . mb_strtolower($term) . '%')
             ->setMaxResults($limit)
@@ -37,7 +37,7 @@ class ProductRepository extends ServiceEntityRepository
                 $row['code'],
                 (string) $row['name'],
                 (float) $row['salePrice'],
-                null !== $row['stock'] ? (float) $row['stock'] : null,
+                null, // stock is sourced from stock_items via product_stock tool, not the legacy column
                 null !== $row['minStock'] ? (float) $row['minStock'] : null,
             ),
             $qb->getQuery()->getArrayResult()

@@ -71,9 +71,11 @@ class ProductStockController extends AbstractController
     {
         $warehouses = $this->entityManager->getRepository(Warehouse::class)->findAll();
         $stockData = [];
+        $globalStock = 0.0;
 
         foreach ($warehouses as $warehouse) {
             $stock = $this->productStockService->getStockForProductInWarehouse($product, $warehouse);
+            $globalStock += $stock;
 
             $stockData[] = [
                 'warehouse' => [
@@ -87,7 +89,7 @@ class ProductStockController extends AbstractController
         return $this->json([
             'id' => $product->getId(),
             'name' => $product->getName(),
-            'global_stock' => $product->getStock(),
+            'global_stock' => $globalStock,
             'warehouses' => $stockData,
         ]);
     }
