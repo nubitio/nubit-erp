@@ -104,13 +104,15 @@ final class ArrayHelper
     /**
      * @param array<string, mixed> $array
      */
+    /**
+     * @param array<array-key, mixed> $array
+     */
     public static function isAssociative(array $array): bool
     {
         if ([] === $array) {
             return false;
         }
 
-        // @phpstan-ignore notIdentical.alwaysTrue (array_keys returns string[] for array<string, mixed>, range returns int[])
         return array_keys($array) !== range(0, count($array) - 1);
     }
 }

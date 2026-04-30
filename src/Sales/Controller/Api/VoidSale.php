@@ -51,7 +51,7 @@ class VoidSale extends AbstractController
             return new ApiResponse(
                 success: false,
                 message: $message,
-                data: $e->getMessage()
+                payload: $e->getMessage()
             );
         } catch (\Exception $e) {
             return new ApiResponse(
