@@ -24,19 +24,12 @@ class ProductStockService
     ) {
     }
 
-    private ?InventoryLedgerService $inventoryLedgerService = null;
     private ?InventoryService $inventoryService = null;
 
     #[Required]
     public function setInventoryService(InventoryService $inventoryService): void
     {
         $this->inventoryService = $inventoryService;
-    }
-
-    #[Required]
-    public function setInventoryLedgerService(InventoryLedgerService $inventoryLedgerService): void
-    {
-        $this->inventoryLedgerService = $inventoryLedgerService;
     }
 
     /**
@@ -46,10 +39,6 @@ class ProductStockService
     {
         if ($this->inventoryService instanceof InventoryService && $product->getId() !== null && $warehouse->getId() !== null) {
             return (float) $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
-        }
-
-        if ($this->inventoryLedgerService instanceof InventoryLedgerService && $product->getId() !== null && $warehouse->getId() !== null) {
-            return $this->inventoryLedgerService->getStockForProductInWarehouse($product, $warehouse);
         }
 
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);

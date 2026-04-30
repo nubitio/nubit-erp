@@ -12,10 +12,10 @@ use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
 use App\Inventory\Entity\Warehouse;
+use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Inventory\Service\InventoryLedgerService;
 use App\Sales\State\NegativeStockPolicyResolver;
 use App\Sales\State\SaleInventoryOrchestrator;
 use Doctrine\DBAL\Connection;
@@ -29,7 +29,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     private Connection&MockObject $connection;
     private SettingsService&MockObject $settings;
     private StockValidationPolicyInterface&MockObject $validationPolicy;
-    private InventoryLedgerService $ledger;
+    private SalesInventoryPortInterface $salesInventory;
     private NegativeStockPolicyResolver $policyResolver;
     private SaleInventoryOrchestrator $orchestrator;
     private AuthUserDto $user;
@@ -40,11 +40,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->settings = $this->createMock(SettingsService::class);
         $this->validationPolicy = $this->createMock(StockValidationPolicyInterface::class);
 
-        $this->ledger = new InventoryLedgerService($this->connection, $this->settings);
+        $this->salesInventory = new TestSalesInventoryPort($this->connection);
         $this->policyResolver = new NegativeStockPolicyResolver($this->settings);
 
         $this->orchestrator = new SaleInventoryOrchestrator(
-            $this->ledger,
+            $this->salesInventory,
             $this->validationPolicy,
             $this->policyResolver,
             new NullLogger(),
@@ -395,7 +395,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('STRICT', 'legacy');
 
-        // No DB calls for stock or ledger writes
+        // No DB calls for stock or inventory movements
         $this->connection->expects(self::never())->method('fetchOne');
         $this->connection->expects(self::never())->method('beginTransaction');
 
@@ -473,5 +473,29 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->connection->expects(self::exactly(2))->method('commit');
 
         $this->orchestrator->process($sale, $this->user);
+    }
+}
+
+final readonly class TestSalesInventoryPort implements SalesInventoryPortInterface
+{
+    public function __construct(private Connection $connection)
+    {
+    }
+
+    public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
+    {
+        $stock = $this->connection->fetchOne('SELECT 1');
+
+        return $stock !== false ? (float) $stock : 0.0;
+    }
+
+    public function applyMovementFromSaleItem(
+        SaleRecord $sale,
+        SaleItem $item,
+        int $lineNo,
+        bool $enforceNonNegativeStock = true,
+    ): void {
+        $this->connection->beginTransaction();
+        $this->connection->commit();
     }
 }
