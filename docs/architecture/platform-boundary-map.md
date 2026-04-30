@@ -60,9 +60,9 @@ Este documento no mueve código. Define el mapa de frontera para orientar refact
 | `Core/Doctrine/Filter/DevExtremeFilter.php` | **Efact app adapter / domain-specific** | Mover a módulo UI/app o parametrizar virtual fields. | Bloqueador: conoce `TaxDocument`, `SalePayment` y campos virtuales de ventas. |
 | `Core/Migrations/ControlPlaneMigrationFactory.php`, `TenantMigrationFactory.php` | **Symfony adapter** / transitional | Mantener como integración Doctrine Migrations hasta definir bridge. | No deben conocer servicios concretos fuera de puertos. |
 | `Core/Security/CspNonceService.php` | **Platform core** / Symfony adapter | Mantener si es servicio genérico. | Listener asociado es Symfony adapter. |
-| `Core/Security/Auth/*` | **Excluded from future package** salvo piezas genéricas | Mover a módulo Auth/app o rediseñar por contratos. | Bloqueador: depende de `User`, `Branch`, `RefreshToken`, `AuthResponseDto`, `RefreshTokenRepository`. |
-| `Core/Symfony/Security/SecurityService.php` | **Excluded from future package** | Mover a app auth adapter. | Conoce `AuthUserDto` y `User`. |
-| `Core/Application/Session/Security.php` | **Excluded from future package** | Mover a app auth/session. | Conoce `AuthUserDto`. |
+| `Identity/Auth/*` | **Efact app adapter / domain-specific** | Mantener fuera de Platform; Core auth legacy ya fue removido. | Depende de `User`, `Branch`, `RefreshToken`, `AuthResponseDto`, `RefreshTokenRepository`; pertenece a Identity/app auth. |
+| `Identity/Security/SecurityService.php` | **Efact app adapter / domain-specific** | Mantener como app auth/session adapter. | Conoce `AuthUserDto` y `User`. |
+| `Identity/Security/Security.php` | **Efact app adapter / domain-specific** | Mantener como contrato app-owned para authenticated-user/session. | Devuelve `AuthUserDto`, por tanto no es Platform. |
 | `Core/Service/SettingsService.php` | **Efact app adapter / domain-specific** | Mover o invertir detrás de `SettingsProviderInterface`. | Settings actuales son parte de reglas/config app. |
 | `Core/Service/DashboardService.php` | **Efact app adapter / domain-specific** | Mover a app/reporting. | Dashboard no es capability de plataforma genérica. |
 | `Core/Service/CompanyContext.php` | **Efact app adapter / domain-specific** | Mover a app/company context. | Depende de `Company` y `CompanyRepository`. |
@@ -201,17 +201,16 @@ Elementos diferidos deliberadamente:
 
 ## Aislamiento de auth de TASK-018
 
-`TASK-018` clasifica la implementación actual de autenticación como **Efact app auth** y la deja fuera de la frontera Platform. No se mueven namespaces en esta tarea porque `App\Core\Security\Auth\*`, `App\Core\Symfony\Security\SecurityService` y `App\Core\Application\Session\Security` están referenciados por Symfony security config, service definitions y consumidores existentes.
+`TASK-018` clasificó la implementación de autenticación como **Efact app auth** y la dejó fuera de la frontera Platform. La migración posterior movió la implementación fuera de `App\Core` hacia Identity:
 
-Ubicación transicional excluida del paquete futuro:
+- `src/Identity/Auth/*`
+- `src/Identity/Security/SecurityService.php`
+- `src/Identity/Security/Security.php`
+- `src/Identity/EventListener/AppSecretBootListener.php`
 
-- `src/Core/Security/Auth/*`
-- `src/Core/Symfony/Security/SecurityService.php`
-- `src/Core/Application/Session/Security.php`
+Los antiguos namespaces `App\Core\Security\Auth\*`, `App\Core\Symfony\Security\*` y `App\Core\Application\Session\Security` ya no deben importarse desde código productivo; `tests/Architecture/ContextBoundaryTest.php` lo guarda explícitamente.
 
-Target app-owned recomendado para una migración posterior: `src/Auth/*` o `src/Efact/Auth/*`, manteniendo aliases/shims para service IDs legacy durante la transición.
-
-No se añaden contratos `App\Platform\Security\Contract` en esta tarea: no hay todavía un puerto project-agnostic probado que justifique una API pública. La regla activa es negativa: `src/Platform` no puede importar la auth legacy de Efact.
+No se añaden contratos `App\Platform\Security\Contract`: no hay todavía un puerto project-agnostic probado que justifique una API pública. La regla activa sigue siendo negativa: `src/Platform` no puede importar auth app-owned.
 
 Documento complementario: `docs/architecture/auth-boundary.md`.
 
@@ -262,8 +261,8 @@ Separar en paquete bridge opcional, por ejemplo `efact/platform-symfony`:
 
 No incluir:
 
-- `Core/Security/Auth/*` actual ni `Core/Symfony/Security/SecurityService.php`.
-- `Core/Application/Session/Security.php` mientras su API devuelva `AuthUserDto` de Efact.
+- `Identity/Auth/*` ni `Identity/Security/*`, porque la auth actual es app-owned.
+- cualquier contrato de sesión/auth que devuelva `AuthUserDto` de Efact.
 - `Core/Util/Constants.php` como fachada BC, `Efact/Config/EfactConstants.php` y cualquier catálogo SUNAT/CPE/ventas/compras/inventario/settings/feature flags.
 - adaptadores de quota que conozcan entidades concretas, como `ControlPlane/Billing/Quota/EfactEntityQuotaResourceResolver`.
 - filtros Doctrine con referencias a `Media`, `Purchase`, `User`, `TaxDocument`, `SalePayment`, `Branch` u otros modelos efact.
@@ -286,12 +285,12 @@ No incluir:
 ## Acoplamientos conocidos a eliminar
 
 1. `Core/EventListener/QuotaEnforcementListener.php` ya no usa entidades efact directamente; el acoplamiento restante del mapeo `Branch`, `Customer`, `Product`, `TaxDocument`, `User` vive en `ControlPlane/Billing/Quota/EfactEntityQuotaResourceResolver` como app adapter.
-2. `Core/Security/Auth/*` depende de `App\Entity\User`, `Branch`, `RefreshToken`, `App\Dto\Auth\AuthResponseDto`, `App\Repository\RefreshTokenRepository`. Debe salir del paquete Platform.
+2. Auth app-owned ya vive en `Identity/Auth/*` y depende de `User`, `Branch`, `RefreshToken`, `AuthResponseDto`, `RefreshTokenRepository`; debe permanecer fuera del paquete Platform.
 3. `Core/Util/Constants.php` es una fachada BC hacia `Efact/Config/EfactConstants.php`; los consumidores restantes en `Core/Service` deben migrarse cuando esos servicios salgan de Core o se inviertan detrás de puertos.
 4. `Core/Doctrine/Filter/SoftDeleteFilter.php` referencia `Media`, `Purchase`, `User`; `DevExtremeFilter.php` referencia `TaxDocument`, `SalePayment` y campos virtuales de ventas. Deben moverse a app o parametrizarse.
 5. `Core/Doctrine/DBAL/TenantConnection.php` embebe política efact de conexión de tenant (`dbname`/`user`) y fallback YAML. Debe separarse en contrato + estrategia app.
 6. `SettingsService`, `DashboardService`, `CompanyContext`, `LogoProvider` y exporters están mezclados en Core pero no son necesariamente Platform. Clasificar y mover antes de extracción Composer.
-7. `Core/Symfony/Security/SecurityService.php` y `Core/Application/Session/Security.php` conocen DTOs/entidades de auth de efact. Deben migrar a app auth/session.
+7. `Identity/Security/SecurityService.php` y `Identity/Security/Security.php` conocen DTOs/entidades de auth de efact; deben permanecer como app auth/session, no Platform.
 8. `Core/Util/ReceiptPayload.php` expresa payload de comprobante/recibo y debe salir de Platform.
 
 ## Mapeo a acceptance criteria de SPEC-004

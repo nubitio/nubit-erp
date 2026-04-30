@@ -50,7 +50,7 @@ Contenido candidato para un paquete separado o sub-namespace opcional, no para e
 
 Estos elementos no deben entrar al paquete `Platform` salvo rediseño profundo detrás de contratos genéricos:
 
-- **Auth efact**: `src/Core/Security/Auth/*`, `src/Core/Symfony/Security/SecurityService.php`, `src/Core/Application/Session/Security.php`.
+- **Auth efact**: moved to `src/Identity/Auth/*`, `src/Identity/Security/*`, and `src/Identity/EventListener/AppSecretBootListener.php`; former Core auth/session paths are removed from production code.
 - **Constantes efact**: `App\Efact\Config\EfactConstants` y la fachada legacy `App\Core\Util\Constants`.
 - **Doctrine efact**: `src/Efact/Doctrine/*` y fachadas legacy `src/Core/Doctrine/*`.
 - **Quota resolver app-owned**: `App\ControlPlane\Billing\Quota\EfactEntityQuotaResourceResolver`, porque conoce entidades como `User`, `Customer`, `Product`, `TaxDocument` y `Branch`.
