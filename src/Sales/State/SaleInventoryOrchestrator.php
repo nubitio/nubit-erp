@@ -8,17 +8,17 @@ use App\Core\Exception\ServiceException;
 use App\Identity\Dto\AuthUserDto;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
+use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
-use App\Inventory\Service\InventoryLedgerService;
 use Psr\Log\LoggerInterface;
 
 /**
- * Orchestrates stock validation and ledger writes for a sale.
+ * Orchestrates stock validation and inventory movements for a sale.
  */
 final readonly class SaleInventoryOrchestrator
 {
     public function __construct(
-        private InventoryLedgerService $inventoryLedgerService,
+        private SalesInventoryPortInterface $salesInventory,
         private StockValidationPolicyInterface $stockValidationPolicy,
         private NegativeStockPolicyResolver $policyResolver,
         private LoggerInterface $logger,
@@ -26,7 +26,7 @@ final readonly class SaleInventoryOrchestrator
     }
 
     /**
-     * Validates stock availability and records inventory ledger movements for all sale items.
+     * Validates stock availability and records inventory movements for all sale items.
      *
      * When $isOfflineSale is true (sale originated from an offline POS terminal),
      * stock validation is skipped and negative stock is allowed — the physical
@@ -51,7 +51,7 @@ final readonly class SaleInventoryOrchestrator
 
         // Offline sales bypass stock validation — the transaction is a physical fait accompli.
         if ($isOfflineSale) {
-            $this->applyLedgerMovements($sale, $useCoreValidation, false);
+            $this->applyInventoryMovements($sale, $useCoreValidation, false);
 
             return;
         }
@@ -64,7 +64,7 @@ final readonly class SaleInventoryOrchestrator
             $this->validateStock($sale, $useCoreValidation, $enforceNonNegative);
         }
 
-        $this->applyLedgerMovements($sale, $useCoreValidation, $enforceNonNegative);
+        $this->applyInventoryMovements($sale, $useCoreValidation, $enforceNonNegative);
     }
 
     /**
@@ -79,7 +79,7 @@ final readonly class SaleInventoryOrchestrator
                 continue;
             }
 
-            $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
+            $currentStock = $this->salesInventory->getStockForProductInWarehouse(
                 $item->getProducto(),
                 $sale->getAlmacen()
             );
@@ -131,7 +131,7 @@ final readonly class SaleInventoryOrchestrator
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    private function applyLedgerMovements(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
+    private function applyInventoryMovements(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
     {
         $lineNo = 0;
 
@@ -146,7 +146,7 @@ final readonly class SaleInventoryOrchestrator
 
             $productId = $item->getProducto()->getId();
             $warehouseId = $sale->getAlmacen()->getId();
-            $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
+            $currentStock = $this->salesInventory->getStockForProductInWarehouse(
                 $item->getProducto(),
                 $sale->getAlmacen()
             );
@@ -164,7 +164,7 @@ final readonly class SaleInventoryOrchestrator
                     'quantity_added' => $item->getCantidad(),
                 ]);
 
-                $this->inventoryLedgerService->applyMovementFromSaleItem(
+                $this->salesInventory->applyMovementFromSaleItem(
                     $sale,
                     $item,
                     $lineNo,
@@ -177,7 +177,7 @@ final readonly class SaleInventoryOrchestrator
                     'quantity_removed' => $item->getCantidad(),
                 ]);
 
-                $this->inventoryLedgerService->applyMovementFromSaleItem(
+                $this->salesInventory->applyMovementFromSaleItem(
                     $sale,
                     $item,
                     $lineNo,

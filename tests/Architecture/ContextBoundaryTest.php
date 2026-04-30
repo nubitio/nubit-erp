@@ -123,6 +123,47 @@ final class ContextBoundaryTest extends TestCase
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
 
+    public function testSalesDoesNotImportEInvoicingInternals(): void
+    {
+        $violations = $this->findUseStatementViolations(
+            __DIR__ . '/../../src/Sales',
+            '/^use App\\\\EInvoicing\\\\/m',
+        );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
+    public function testSalesDoesNotImportConcreteInventoryLedgerService(): void
+    {
+        $violations = $this->findUseStatementViolations(
+            __DIR__ . '/../../src/Sales',
+            '/^use App\\\\Inventory\\\\Service\\\\InventoryLedgerService;/m',
+        );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
+    public function testProductionCodeOutsideInventoryDoesNotImportConcreteInventoryLedgerService(): void
+    {
+        $violations = $this->findUseStatementViolations(
+            __DIR__ . '/../../src',
+            '/^use App\\\\Inventory\\\\Service\\\\InventoryLedgerService;/m',
+            ['src/Inventory/'],
+        );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
+    public function testLegacyInventoryLedgerServiceHasBeenRemoved(): void
+    {
+        $violations = $this->findContentViolations(
+            __DIR__ . '/../../src',
+            '/InventoryLedgerService/',
+        );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
     // -------------------------------------------------------------------------
     // Reporting: must not import Sales, Billing, Purchasing, CashRegister
     // -------------------------------------------------------------------------
@@ -133,6 +174,32 @@ final class ContextBoundaryTest extends TestCase
             __DIR__ . '/../../src/Reporting',
             '/^use App\\\\(?:Sales|Billing|Purchasing|CashRegister)\\\\/m',
         );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
+    // -------------------------------------------------------------------------
+    // Core compatibility shims: new domain code should not import deprecated shims
+    // -------------------------------------------------------------------------
+
+    public function testReceiptPayloadIsOwnedByBillingNotCore(): void
+    {
+        $violations = $this->findContentViolations(
+            __DIR__ . '/../../src',
+            '/App\\\\Core\\\\Util\\\\ReceiptPayload/',
+            ['src/Core/Util/ReceiptPayload.php'],
+        );
+
+        self::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
+    public function testAuthIsOwnedByIdentityNotCore(): void
+    {
+        $pattern = '/App\\\\Core\\\\(?:Security\\\\Auth|Symfony\\\\Security|Application\\\\Session)\\\\/';
+        $violations = [
+            ...$this->findContentViolations(__DIR__ . '/../../src', $pattern),
+            ...$this->findContentViolations(__DIR__ . '/../../config', $pattern),
+        ];
 
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
@@ -167,6 +234,46 @@ final class ContextBoundaryTest extends TestCase
 
             $path = $file->getPathname();
             if ($this->isAllowedPath($path, $allowedPathFragments)) {
+                continue;
+            }
+
+            $content = (string) file_get_contents($path);
+            if (preg_match($pattern, $content) === 1) {
+                $violations[] = $this->relativePath($path);
+            }
+        }
+
+        sort($violations);
+
+        return $violations;
+    }
+
+    /**
+     * @param list<string> $allowedPathFragments
+     * @return list<string>
+     */
+    private function findContentViolations(
+        string $directory,
+        string $pattern,
+        array $allowedPathFragments = [],
+    ): array {
+        if (!is_dir($directory)) {
+            return [];
+        }
+
+        $violations = [];
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof \SplFileInfo || !in_array($file->getExtension(), ['php', 'yaml', 'yml'], true)) {
+                continue;
+            }
+
+            $path = $file->getPathname();
+            if ($this->isAllowedPath($this->relativePath($path), $allowedPathFragments)) {
                 continue;
             }
 
