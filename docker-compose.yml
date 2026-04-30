@@ -41,6 +41,7 @@ services:
       OTEL_PHP_LOG_DESTINATION: 'stderr'
       E2E_SEED_ENABLED: '1'
       APP_COOKIE_SECURE: 'false'
+      DECOLECTA_TOKEN: '${DECOLECTA_TOKEN:-}'
       TZ: UTC
       # Mercure hub — proxy via Caddy (SLICE-014)
       MERCURE_URL: 'http://mercure/.well-known/mercure'

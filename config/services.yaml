@@ -206,10 +206,6 @@ services:
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
   App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'
 
-  App\AI\Tool\ApiReadTool:
-    arguments:
-      $apiBaseUrl: '%app.api_base_url%'
-
   Symfony\Component\Messenger\Middleware\DispatchAfterCurrentBusMiddleware:
     tags:
       - { name: messenger.middleware, bus: messenger.bus.default }
@@ -260,3 +256,11 @@ services:
     arguments:
       $invoiceStrategy: '@App\Billing\Sale\Void\InvoiceVoidStrategy'
       $receiptStrategy: '@App\Billing\Sale\Void\ReceiptVoidStrategy'
+
+  # ── Document Lookup (RUC / DNI) ────────────────────────────────────────────
+  # Primario:  SUNAT scraping (gratis, sin token)
+  # Fallback:  Decolecta API (https://decolecta.com) — requiere DECOLECTA_TOKEN
+  # Cache:     Redis 7 días RUC / 30 días DNI
+  App\Billing\Consult\Infrastructure\DecolectaClient:
+    arguments:
+      $decolectaToken: '%env(default::DECOLECTA_TOKEN)%'

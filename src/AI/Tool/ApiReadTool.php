@@ -7,6 +7,7 @@ namespace App\AI\Tool;
 use App\Identity\Auth\JWTAuthenticationToken;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -23,6 +24,7 @@ final readonly class ApiReadTool
         private HttpClientInterface $httpClient,
         private Security $security,
         private RequestStack $requestStack,
+        #[Autowire('%app.api_base_url%')]
         private string $apiBaseUrl,
     ) {
     }
