@@ -15,9 +15,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\EInvoicing\Controller\Api\MakeInvoice;
+use App\Sales\Controller\Api\MakeSaleInvoice;
+use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\VoidSale;
-use App\EInvoicing\Controller\PrintESCPOSController;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
@@ -45,7 +45,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Patch(),
         new Post(
             uriTemplate: '/sales/{id}/invoice',
-            controller: MakeInvoice::class,
+            controller: MakeSaleInvoice::class,
             name: 'sale_make_invoice'
         ),
         new Post(
@@ -59,7 +59,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Get(
             uriTemplate: '/sales/{id}/print-invoice',
-            controller: PrintESCPOSController::class,
+            controller: PrintSaleInvoice::class,
             read: false,
             name: 'sale_print_invoice',
         ),

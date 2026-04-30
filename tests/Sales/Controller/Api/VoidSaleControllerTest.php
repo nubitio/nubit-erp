@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Sales\Controller\Api;
 
 use App\Sales\Controller\Api\VoidSale;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\Identity\Dto\AuthUserDto;
-use App\EInvoicing\Sale\SaleVoidUseCase;
+use App\Sales\Port\SaleInvoicingPortInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -15,13 +15,13 @@ final class VoidSaleControllerTest extends TestCase
 {
     public function testReturnsValidationErrorWhenReasonIsMissing(): void
     {
-        $saleVoidUseCase = $this->createMock(SaleVoidUseCase::class);
-        $saleVoidUseCase->expects(self::never())->method('__invoke');
+        $saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
+        $saleInvoicing->expects(self::never())->method('voidSale');
 
         $security = $this->createMock(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(10, 'cashier', 3, ['ROLE_USER']));
 
-        $controller = new VoidSale($saleVoidUseCase, $security);
+        $controller = new VoidSale($saleInvoicing, $security);
         $request = Request::create('/api/sales/sale-1/void', 'POST');
         $request->attributes->set('id', 'sale-1');
         $response = $controller($request);

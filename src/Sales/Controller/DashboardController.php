@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 use App\Sales\Repository\DashboardRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
