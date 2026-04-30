@@ -7,7 +7,7 @@ namespace App\Media\Serializer;
 use Override;
 use ArrayObject;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Core\Filesystem\S3UrlResolver;
+use App\Efact\Filesystem\S3UrlResolver;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Media\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;

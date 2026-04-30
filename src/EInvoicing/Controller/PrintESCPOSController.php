@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Controller;
 
-use App\Core\Extension\RemoteEscposImage;
+use App\EInvoicing\Extension\RemoteEscposImage;
 use App\Efact\Service\LogoProvider;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;

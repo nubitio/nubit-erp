@@ -17,7 +17,7 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use App\Efact\Audit\AuditLogger;
-use App\Core\Message\TenantBackupMessage;
+use App\ControlPlane\Message\TenantBackupMessage;
 use App\ControlPlane\Backup\BinlogBackupService;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;

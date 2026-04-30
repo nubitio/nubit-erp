@@ -63,13 +63,13 @@ services:
 
   Doctrine\Persistence\ConnectionRegistry: '@doctrine'
 
-  App\Core\Migrations\ControlPlaneMigrationFactory:
+  App\Efact\Migrations\ControlPlaneMigrationFactory:
     arguments:
       $projectDir: '%kernel.project_dir%'
 
   doctrine.migrations.control_plane_dependency_factory:
     class: Doctrine\Migrations\DependencyFactory
-    factory: ['@App\Core\Migrations\ControlPlaneMigrationFactory', 'createDependencyFactory']
+    factory: ['@App\Efact\Migrations\ControlPlaneMigrationFactory', 'createDependencyFactory']
     arguments:
       $logger: '@logger'
 
@@ -243,7 +243,7 @@ services:
   GuzzleHttp\ClientInterface:
     class: GuzzleHttp\Client
 
-  App\Core\ApiPlatform\TranslatedDocumentationNormalizer:
+  App\Efact\ApiPlatform\TranslatedDocumentationNormalizer:
     decorates: api_platform.hydra.normalizer.documentation
     arguments:
       $inner: '@.inner'

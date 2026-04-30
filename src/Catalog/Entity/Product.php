@@ -24,7 +24,7 @@ use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Catalog\Repository\ProductRepository;
 use App\Catalog\State\ProductStockController;
-use App\Core\Validator as AppAssert;
+use App\Efact\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
