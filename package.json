@@ -99,5 +99,8 @@
     "unified": "^11.0.5",
     "web-vitals": "^5.1.0"
   },
-  "packageManager": "yarn@4.9.1"
+  "packageManager": "yarn@4.9.1",
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
+  }
 }
