@@ -6,7 +6,7 @@ namespace App\Identity\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\Identity\Entity\UserNotification;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;

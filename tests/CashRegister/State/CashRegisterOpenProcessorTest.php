@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Post;
-use App\Core\Application\Session\Security;
-use App\Core\Security\Auth\BranchContextService;
-use App\Core\Security\Auth\JWTAuthenticationToken;
-use App\Core\Security\Auth\JWTManager;
+use App\Identity\Security\Security;
+use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\JWTAuthenticationToken;
+use App\Identity\Auth\JWTManager;
 use App\Identity\Dto\AuthUserDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\Organization\Entity\Branch;

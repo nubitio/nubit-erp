@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Util;
 
+use App\Billing\Receipt\ReceiptPayload as BillingReceiptPayload;
+
+/**
+ * @deprecated Use App\Billing\Receipt\ReceiptPayload. Receipt URLs are Billing/Receipt domain language, not Core utility code.
+ */
 final class ReceiptPayload
 {
     private function __construct()
@@ -12,14 +17,11 @@ final class ReceiptPayload
 
     public static function encode(string $type, string $id): string
     {
-        return base64_encode(json_encode([
-            'type' => $type,
-            'id' => $id,
-        ], JSON_UNESCAPED_SLASHES));
+        return BillingReceiptPayload::encode($type, $id);
     }
 
     public static function publicUrl(string $type, string $id): string
     {
-        return '/receipt/' . self::encode($type, $id);
+        return BillingReceiptPayload::publicUrl($type, $id);
     }
 }

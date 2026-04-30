@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
 use DateTimeImmutable;

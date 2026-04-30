@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Put;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\Identity\Dto\AuthUserDto;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
