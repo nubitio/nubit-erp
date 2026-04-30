@@ -6,20 +6,19 @@ namespace App\Tests\Sales\State;
 
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Application\Session\Security;
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Security\Security;
+use App\Identity\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Identity\Dto\AuthUserDto;
-use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
-use App\EInvoicing\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
+use App\Sales\Port\SaleInvoicingPortInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\State\SaleUtils;
 use App\Sales\State\SalesWriteGateway;
@@ -32,12 +31,9 @@ use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionNamedType;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 
 /**
- * Unit tests for the invoice dispatch behaviour in SaleProcessor::process().
+ * Unit tests for the invoicing-port behaviour in SaleProcessor::process().
  *
  * SaleProcessor has many final constructor dependencies. To avoid extending or
  * modifying production code solely for test purposes, we bypass the constructor
@@ -45,15 +41,13 @@ use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
  * properties exercised by the two test scenarios.
  *
  * Covers:
- * - TC-1: dispatch() is NOT called when createForSale() returns success=false
- * - TC-2: dispatch() carries a DispatchAfterCurrentBusStamp when createForSale() succeeds
+ * - TC-1: skipped invoice result is handled without throwing
+ * - TC-2: successful invoice result is requested through the Sales invoicing port
  */
 final class SaleProcessorInvoiceDispatchTest extends TestCase
 {
-    /** @var MessageBusInterface&MockObject */
-    private MessageBusInterface $messageBus;
-    /** @var InvoiceCreationServiceInterface&MockObject */
-    private InvoiceCreationServiceInterface $invoiceCreationService;
+    /** @var SaleInvoicingPortInterface&MockObject */
+    private SaleInvoicingPortInterface $saleInvoicing;
     /** @var Security&MockObject */
     private Security $security;
     /** @var ProcessorInterface<mixed, mixed>&MockObject */
@@ -67,8 +61,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->messageBus = $this->createMock(MessageBusInterface::class);
-        $this->invoiceCreationService = $this->createMock(InvoiceCreationServiceInterface::class);
+        $this->saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
@@ -77,88 +70,38 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     }
 
     /**
-     * TC-1: When InvoiceCreationService::createForSale() returns ['success' => false],
-     * MessageBusInterface::dispatch() must never be called.
+     * TC-1: When SaleInvoicingPort returns ['success' => false], processing completes without throwing.
      */
-    public function testDispatchNotCalledWhenCreateForSaleFails(): void
+    public function testSkippedInvoiceResultCompletesWithoutThrowing(): void
     {
         $sale = $this->buildOperationalSale(emitInvoice: true);
 
-        $this->invoiceCreationService
-            ->method('createForSale')
+        $this->saleInvoicing
+            ->expects($this->once())
+            ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => false, 'message' => 'err']);
-
-        $this->messageBus
-            ->expects($this->never())
-            ->method('dispatch');
 
         $processor = $this->buildProcessor();
         $processor->process($sale, new Post(), [], []);
     }
 
     /**
-     * TC-2: When InvoiceCreationService::createForSale() returns ['success' => true],
-     * dispatch() must be called with:
-     * - a SendInvoiceMessage carrying the returned invoiceId, and
-     * - a stamps array that contains a DispatchAfterCurrentBusStamp instance.
+     * TC-2: When SaleInvoicingPort returns success, SaleProcessor completes normally.
      */
-    public function testDispatchIncludesDispatchAfterCurrentBusStamp(): void
+    public function testSuccessfulInvoiceResultIsRequestedThroughPort(): void
     {
         $invoiceId = 'test-uuid-123';
         $sale = $this->buildOperationalSale(emitInvoice: true);
 
-        $this->invoiceCreationService
-            ->method('createForSale')
+        $this->saleInvoicing
+            ->expects($this->once())
+            ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => true, 'invoiceId' => $invoiceId]);
 
-        /** @var SendInvoiceMessage|null $capturedMessage */
-        $capturedMessage = null;
-        /** @var array<object>|null $capturedStamps */
-        $capturedStamps = null;
-
-        $this->messageBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with(
-                $this->callback(
-                    static function (mixed $msg) use (&$capturedMessage): bool {
-                        if (!$msg instanceof SendInvoiceMessage) {
-                            return false;
-                        }
-                        $capturedMessage = $msg;
-                        return true;
-                    }
-                ),
-                $this->callback(
-                    static function (mixed $stamps) use (&$capturedStamps): bool {
-                        if (!is_array($stamps)) {
-                            return false;
-                        }
-                        $capturedStamps = $stamps;
-                        return true;
-                    }
-                ),
-            )
-            ->willReturn(new Envelope(new SendInvoiceMessage($invoiceId, 'test-tenant')));
-
         $processor = $this->buildProcessor();
-        $processor->process($sale, new Post(), [], []);
+        $result = $processor->process($sale, new Post(), [], []);
 
-        self::assertInstanceOf(SendInvoiceMessage::class, $capturedMessage);
-        self::assertSame($invoiceId, $capturedMessage->taxDocumentId);
-
-        self::assertIsArray($capturedStamps);
-        $hasStamp = false;
-        foreach ($capturedStamps as $stamp) {
-            if ($stamp instanceof DispatchAfterCurrentBusStamp) {
-                $hasStamp = true;
-                break;
-            }
-        }
-        self::assertTrue(
-            $hasStamp,
-            'Stamps array must contain a DispatchAfterCurrentBusStamp instance'
-        );
+        self::assertSame($sale, $result);
     }
 
     // -------------------------------------------------------------------------
@@ -238,9 +181,8 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->set($processorReflection, $processor, 'security', $this->security);
         $this->set($processorReflection, $processor, 'entityManager', $this->entityManager);
         $this->set($processorReflection, $processor, 'settings', $this->settings);
-        $this->set($processorReflection, $processor, 'invoiceCreationService', $this->invoiceCreationService);
+        $this->set($processorReflection, $processor, 'saleInvoicing', $this->saleInvoicing);
         $this->set($processorReflection, $processor, 'logger', $this->logger);
-        $this->set($processorReflection, $processor, 'messageBus', $this->messageBus);
 
         // Inject no-op stubs for final-class properties not exercised by tests.
         $this->injectNoOpStub($processorReflection, $processor, 'saleUtils');
@@ -260,7 +202,6 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         /** @var SaleRecordRepository&MockObject $saleRecordRepoMock */
         $saleRecordRepoMock = $this->createMock(SaleRecordRepository::class);
         $processorReflection->getProperty('saleRecordRepository')->setValue($processor, $saleRecordRepoMock);
-        $processorReflection->getProperty('tenantContext')->setValue($processor, new \App\Core\Context\TenantContext());
 
         return $processor;
     }

@@ -8,10 +8,9 @@ use App\Catalog\Entity\PaymentMethod;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Application\Session\Security;
-use App\Core\Context\TenantContext;
+use App\Identity\Security\Security;
 use App\Core\Exception\ServiceException;
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Core\Util\Money;
@@ -19,11 +18,10 @@ use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
-use App\EInvoicing\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Sales\Repository\SaleRecordRepository;
-use App\EInvoicing\Service\InvoiceCreationServiceInterface;
+use App\Sales\Port\SaleInvoicingPortInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
@@ -33,8 +31,6 @@ use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -55,11 +51,10 @@ readonly class SaleProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
         private SettingsService $settings,
-        private InvoiceCreationServiceInterface $invoiceCreationService,
+        private SaleInvoicingPortInterface $saleInvoicing,
         private LoggerInterface $logger,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
-        private MessageBusInterface $messageBus,
         private SalesWriteGateway $salesWriteGateway,
         private CashSessionResolverInterface $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
@@ -67,7 +62,6 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
         private CustomerRepository $customerRepository,
-        private TenantContext $tenantContext,
     ) {
     }
 
@@ -97,7 +91,7 @@ readonly class SaleProcessor implements ProcessorInterface
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
-        // Ensure deterministic movement source keys before inventory ledger writes.
+        // Ensure deterministic movement source keys before inventory inventory movements.
         if ($isNew && $data->getId() === null) {
             $data->setId(Uuid::v7()->toRfc4122());
         }
@@ -312,20 +306,12 @@ readonly class SaleProcessor implements ProcessorInterface
         $shouldEmitInvoice = $emitInvoice !== null ? $emitInvoice : $autoInvoiceEnabled;
         if ($isNew && $data->getTipoId() === 2 && $shouldEmitInvoice) {
             try {
-                $invoiceResult = $this->invoiceCreationService->createForSale($data);
+                $invoiceResult = $this->saleInvoicing->createAndDispatchInvoiceForSaleId((string) $data->getId());
                 if (!$invoiceResult['success']) {
                     $this->logger->warning('Auto invoice skipped', [
                         'sale_id' => $data->getId(),
                         'message' => $invoiceResult['message'],
                     ]);
-                } else {
-                    $this->messageBus->dispatch(
-                        new SendInvoiceMessage(
-                            $invoiceResult['invoiceId'],
-                            (string) ($this->tenantContext->getTenantId() ?? 'unknown'),
-                        ),
-                        [new DispatchAfterCurrentBusStamp()]
-                    );
                 }
             } catch (\Throwable $throwable) {
                 $this->logger->error('Auto invoice failed', [

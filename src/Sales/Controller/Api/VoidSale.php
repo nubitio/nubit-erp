@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller\Api;
 
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\Core\Http\ApiResponse;
-use App\EInvoicing\Sale\SaleVoidUseCase;
 use App\Sales\Domain\SaleException;
+use App\Sales\Port\SaleInvoicingPortInterface;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class VoidSale extends AbstractController
 {
     public function __construct(
-        private readonly SaleVoidUseCase $saleVoidUseCase,
+        private readonly SaleInvoicingPortInterface $saleInvoicing,
         private readonly Security $security,
     ) {
     }
@@ -44,7 +44,7 @@ class VoidSale extends AbstractController
         }
 
         try {
-            $this->saleVoidUseCase->__invoke($saleId, $reason, $userId);
+            $this->saleInvoicing->voidSale((string) $saleId, $reason, $userId);
         } catch (FilesystemException | SaleException $e) {
             $message = ($e instanceof SaleException) ? $e->getMessage() : 'Error al anular el comprobante';
 

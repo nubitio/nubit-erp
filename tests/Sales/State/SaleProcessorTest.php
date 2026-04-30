@@ -8,23 +8,22 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use App\Core\Exception\ServiceException;
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Identity\Dto\AuthUserDto;
-use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashShift;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
-use App\EInvoicing\Message\SendInvoiceMessage;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
+use App\Sales\Port\SaleInvoicingPortInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
@@ -34,6 +33,7 @@ use App\Sales\State\SaleProcessor;
 use App\Sales\State\SaleUtils;
 use App\Sales\State\SalesWriteGateway;
 use App\Catalog\Entity\Product;
+use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,8 +46,6 @@ use ReflectionClass;
 use ReflectionNamedType;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Comprehensive unit tests for SaleProcessor::process().
@@ -74,9 +72,9 @@ use Symfony\Component\Messenger\MessageBusInterface;
  * - Sales V2 strict + gateway throws → ServiceException
  * - Offline sale header → inventoryOrchestrator receives isOfflineSale=true (via ledger spy)
  * - inventoryOrchestrator throws → exception propagated, persist NOT called
- * - Auto-invoice disabled + emitInvoice=null → no createForSale call
- * - emitInvoice=true → createForSale called
- * - Invoice creation success → messageBus dispatched
+ * - Auto-invoice disabled + emitInvoice=null → no invoicing-port call
+ * - emitInvoice=true → invoicing port called
+ * - Invoice creation success → invoicing port handles dispatch
  * - Invoice creation exception → caught, not propagated
  * - ensureSaleCustomer: default customer fetched when tipoId=2 + no customer
  * - ensureSaleCustomer: ServiceException when default customer missing
@@ -109,14 +107,11 @@ final class SaleProcessorTest extends TestCase
     /** @var EntityManagerInterface&MockObject */
     private EntityManagerInterface $entityManager;
 
-    /** @var InvoiceCreationServiceInterface&MockObject */
-    private InvoiceCreationServiceInterface $invoiceCreationService;
+    /** @var SaleInvoicingPortInterface&MockObject */
+    private SaleInvoicingPortInterface $saleInvoicing;
 
     /** @var LoggerInterface&MockObject */
     private LoggerInterface $logger;
-
-    /** @var MessageBusInterface&MockObject */
-    private MessageBusInterface $messageBus;
 
     /** @var SaleUtils&MockObject */
     private SaleUtils $saleUtils;
@@ -150,9 +145,8 @@ final class SaleProcessorTest extends TestCase
         $this->removeProcessor = $this->createMock(ProcessorInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->invoiceCreationService = $this->createMock(InvoiceCreationServiceInterface::class);
+        $this->saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->messageBus = $this->createMock(MessageBusInterface::class);
         $this->saleUtils = $this->createMock(SaleUtils::class);
         $this->branchRepository = $this->createMock(BranchRepository::class);
         $this->customerRepository = $this->createMock(CustomerRepository::class);
@@ -425,7 +419,7 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-15: Auto-invoice disabled + emitInvoice=null → invoiceCreationService not called
+    // TC-15: Auto-invoice disabled + emitInvoice=null → invoicing port not called
     // -------------------------------------------------------------------------
 
     public function testAutoInvoiceDisabledAndEmitInvoiceNullSkipsInvoice(): void
@@ -433,9 +427,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(null);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->never())
-            ->method('createForSale');
+            ->method('createAndDispatchInvoiceForSaleId');
 
         $this->buildAndRunProcessor(
             $sale,
@@ -445,7 +439,7 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-16: emitInvoice=true on new operational sale → invoiceCreationService called
+    // TC-16: emitInvoice=true on new operational sale → invoicing port called
     // -------------------------------------------------------------------------
 
     public function testEmitInvoiceTrueCallsInvoiceCreationService(): void
@@ -453,9 +447,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->once())
-            ->method('createForSale')
+            ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => false, 'message' => 'skipped']);
 
         $this->buildAndRunProcessor(
@@ -466,7 +460,7 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-17: Invoice creation success → messageBus dispatched with SendInvoiceMessage
+    // TC-17: Invoice creation success → SaleInvoicingPort handles dispatch
     // -------------------------------------------------------------------------
 
     public function testInvoiceCreationSuccessDispatchesMessage(): void
@@ -474,18 +468,10 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
-        $this->invoiceCreationService
-            ->method('createForSale')
-            ->willReturn(['success' => true, 'invoiceId' => 'inv-abc-123']);
-
-        $this->messageBus
+        $this->saleInvoicing
             ->expects($this->once())
-            ->method('dispatch')
-            ->with(
-                $this->isInstanceOf(SendInvoiceMessage::class),
-                $this->isArray()
-            )
-            ->willReturn(new Envelope(new SendInvoiceMessage('inv-abc-123', 'test-tenant')));
+            ->method('createAndDispatchInvoiceForSaleId')
+            ->willReturn(['success' => true, 'invoiceId' => 'inv-abc-123']);
 
         $this->buildAndRunProcessor(
             $sale,
@@ -503,13 +489,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
-        $this->invoiceCreationService
-            ->method('createForSale')
+        $this->saleInvoicing
+            ->method('createAndDispatchInvoiceForSaleId')
             ->willThrowException(new \RuntimeException('SUNAT unavailable'));
-
-        $this->messageBus
-            ->expects($this->never())
-            ->method('dispatch');
 
         $result = $this->buildAndRunProcessor(
             $sale,
@@ -534,9 +516,9 @@ final class SaleProcessorTest extends TestCase
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setEmitInvoice(null);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->never())
-            ->method('createForSale');
+            ->method('createAndDispatchInvoiceForSaleId');
 
         $this->buildAndRunProcessor(
             $sale,
@@ -546,7 +528,7 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-20: autoInvoice=true + new operational sale + emitInvoice=null → createForSale called
+    // TC-20: autoInvoice=true + new operational sale + emitInvoice=null → invoicing port called
     // -------------------------------------------------------------------------
 
     public function testAutoInvoiceEnabledOnNewOperationalSaleTriggersInvoice(): void
@@ -554,9 +536,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(null);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->once())
-            ->method('createForSale')
+            ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => false, 'message' => 'not ready']);
 
         $this->buildAndRunProcessor(
@@ -575,9 +557,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(false);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->never())
-            ->method('createForSale');
+            ->method('createAndDispatchInvoiceForSaleId');
 
         $this->buildAndRunProcessor(
             $sale,
@@ -595,9 +577,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 1);
         $sale->setEmitInvoice(true);
 
-        $this->invoiceCreationService
+        $this->saleInvoicing
             ->expects($this->never())
-            ->method('createForSale');
+            ->method('createAndDispatchInvoiceForSaleId');
 
         $this->buildAndRunProcessor(
             $sale,
@@ -1086,11 +1068,10 @@ final class SaleProcessorTest extends TestCase
         $inj('entityManager', $this->entityManager);
         $inj('saleUtils', $this->saleUtils);
         $inj('settings', $settingsMock);
-        $inj('invoiceCreationService', $this->invoiceCreationService);
+        $inj('saleInvoicing', $this->saleInvoicing);
         $inj('logger', $this->logger);
         $inj('branchContextService', $this->branchContextService);
         $inj('branchRepository', $this->branchRepository);
-        $inj('messageBus', $this->messageBus);
         $inj('salesWriteGateway', $this->salesWriteGateway);
         $inj('cashSessionResolver', $this->cashSessionResolver);
         $inj('salePaymentPlanService', $this->salePaymentPlanService);
@@ -1098,7 +1079,6 @@ final class SaleProcessorTest extends TestCase
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
         $inj('saleRecordRepository', $this->createMock(\App\Sales\Repository\SaleRecordRepository::class));
         $inj('customerRepository', $this->customerRepository);
-        $inj('tenantContext', new \App\Core\Context\TenantContext());
 
         return $processor;
     }
@@ -1237,8 +1217,8 @@ final class SaleProcessorTest extends TestCase
     private function buildBranchContextStubWithRealToken(string $branchId): BranchContextService
     {
         // 1. Build a real JWTManager with a test secret (bypassing constructor to avoid empty-secret check)
-        $jwtManagerRc = new ReflectionClass(\App\Core\Security\Auth\JWTManager::class);
-        /** @var \App\Core\Security\Auth\JWTManager $jwtManager */
+        $jwtManagerRc = new ReflectionClass(\App\Identity\Auth\JWTManager::class);
+        /** @var \App\Identity\Auth\JWTManager $jwtManager */
         $jwtManager = $jwtManagerRc->newInstanceWithoutConstructor();
         $jwtManagerRc->getProperty('secret')->setValue($jwtManager, 'test-secret-for-unit-tests-32bytes');
         $jwtManagerRc->getProperty('logger')->setValue($jwtManager, $this->logger);
@@ -1247,8 +1227,8 @@ final class SaleProcessorTest extends TestCase
         $encodedToken = $jwtManager->encode(['branchId' => $branchId, 'sub' => 'test-user']);
 
         // 3. Build JWTAuthenticationToken with the encoded token as credentials
-        $jwtTokenRc = new ReflectionClass(\App\Core\Security\Auth\JWTAuthenticationToken::class);
-        /** @var \App\Core\Security\Auth\JWTAuthenticationToken $jwtToken */
+        $jwtTokenRc = new ReflectionClass(\App\Identity\Auth\JWTAuthenticationToken::class);
+        /** @var \App\Identity\Auth\JWTAuthenticationToken $jwtToken */
         $jwtToken = $jwtTokenRc->newInstanceWithoutConstructor();
         // Set the 'token' property on JWTAuthenticationToken itself
         $jwtTokenRc->getProperty('token')->setValue($jwtToken, $encodedToken);
@@ -1284,31 +1264,22 @@ final class SaleProcessorTest extends TestCase
         /** @var SaleInventoryOrchestrator $stub */
         $stub = $rc->newInstanceWithoutConstructor();
 
-        // Build InventoryLedgerService via reflection (final class — cannot createMock).
-        // Inject a Connection mock that returns false for fetchOne() → stock = 0.0.
-        $ledgerRc = new ReflectionClass(\App\Inventory\Service\InventoryLedgerService::class);
-        /** @var \App\Inventory\Service\InventoryLedgerService $ledgerStub */
-        $ledgerStub = $ledgerRc->newInstanceWithoutConstructor();
+        $salesInventory = new class () implements SalesInventoryPortInterface {
+            public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
+            {
+                return 0.0;
+            }
 
-        /** @var Connection&MockObject $ledgerConn */
-        $ledgerConn = $this->createMock(Connection::class);
-        $ledgerConn->method('fetchOne')->willReturn(false);
-        // beginTransaction / rollBack / commit return void — no willReturn needed
+            public function applyMovementFromSaleItem(
+                SaleRecord $sale,
+                SaleItem $item,
+                int $lineNo,
+                bool $enforceNonNegativeStock = true,
+            ): void {
+            }
+        };
 
-        $ledgerRc->getProperty('connection')->setValue($ledgerStub, $ledgerConn);
-
-        // settingsService = null → shouldReadFromStockItems() returns false (skips stock_items query)
-        if ($ledgerRc->hasProperty('settingsService')) {
-            $ledgerRc->getProperty('settingsService')->setValue($ledgerStub, null);
-        }
-        if ($ledgerRc->hasProperty('lotDeductionService')) {
-            $ledgerRc->getProperty('lotDeductionService')->setValue($ledgerStub, null);
-        }
-        if ($ledgerRc->hasProperty('logger')) {
-            $ledgerRc->getProperty('logger')->setValue($ledgerStub, $this->logger);
-        }
-
-        $rc->getProperty('inventoryLedgerService')->setValue($stub, $ledgerStub);
+        $rc->getProperty('salesInventory')->setValue($stub, $salesInventory);
 
         // stockValidationPolicy — no-op interface mock
         /** @var \App\Inventory\Core\Contract\StockValidationPolicyInterface&MockObject $svp */

@@ -123,7 +123,7 @@ SQL,
             $record->setSunatStatus($taxRow['sunat_status'] !== null ? (string) $taxRow['sunat_status'] : null);
             $record->setDocumentType((string) $taxRow['document_type']);
             $record->setPublicReceiptUrl(
-                \App\Core\Util\ReceiptPayload::publicUrl(
+                \App\Billing\Receipt\ReceiptPayload::publicUrl(
                     (string) $taxRow['document_type'],
                     (string) $taxRow['tax_document_id'],
                 )
