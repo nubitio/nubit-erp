@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Controller\Api;
 
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\EInvoicing\Service\CreditNoteService;

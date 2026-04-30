@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\MessageHandler;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use App\Core\Message\TenantBackupMessage;
 use Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface;
 use Psr\Log\LoggerInterface;

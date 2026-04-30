@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Invoice\Service;
 
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\EInvoicing\Invoice\Domain\Voucher;
 use App\EInvoicing\Invoice\Dto\HydratedVoucher;
 use App\EInvoicing\Invoice\Dto\HydratedVoucherItem;

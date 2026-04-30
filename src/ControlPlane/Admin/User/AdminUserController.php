@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Admin\User;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use App\ControlPlane\Admin\Security\ControlPlaneUser;
 use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerInterface;

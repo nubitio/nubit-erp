@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Invoice\Domain;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Filesystem\FileManager;

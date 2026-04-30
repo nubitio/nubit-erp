@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Domain;
 
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\Billing\Entity\TaxDocument;
 use App\EInvoicing\Invoice\Domain\Voucher;
 use App\Billing\Repository\TaxDocumentRepository;

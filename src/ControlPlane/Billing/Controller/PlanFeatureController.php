@@ -7,7 +7,7 @@ namespace App\ControlPlane\Billing\Controller;
 use App\ControlPlane\Billing\Feature\PlanFeatureManager;
 use App\ControlPlane\Billing\Repository\PlanFeatureRepositoryInterface;
 use App\ControlPlane\Billing\Service\PlanManager;
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

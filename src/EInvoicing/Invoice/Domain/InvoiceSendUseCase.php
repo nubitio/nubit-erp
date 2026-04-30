@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Invoice\Domain;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;

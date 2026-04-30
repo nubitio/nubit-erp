@@ -20,7 +20,7 @@ use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\VoidSale;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\Sales\Dto\VoidSaleDto;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\SaleProcessor;

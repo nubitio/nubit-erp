@@ -6,7 +6,7 @@ namespace App\Sales\Service;
 
 use App\Catalog\Entity\PaymentMethod;
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
 

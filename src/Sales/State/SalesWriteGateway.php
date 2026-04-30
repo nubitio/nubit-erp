@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Repository\DashboardRepository;
 use App\Sales\Service\SalePaymentPlanService;

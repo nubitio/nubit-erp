@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Web;
 
-use App\Core\Base\BaseController;
+use App\Efact\Http\BaseController;
 use App\Efact\Service\LogoProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

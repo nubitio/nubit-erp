@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Audit;
 
-use App\Core\Audit\AuditLogRepository;
+use App\Efact\Audit\AuditLogRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;

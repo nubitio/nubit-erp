@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Util;
 
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use Brick\Math\BigDecimal;
 use PHPUnit\Framework\TestCase;
 

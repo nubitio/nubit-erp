@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Invoice\Domain;
 
 use NumberFormatter;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 class Voucher

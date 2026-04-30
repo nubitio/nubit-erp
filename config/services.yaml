@@ -196,9 +196,9 @@ services:
   App\Core\Filesystem\FileManager:
     alias: Nubit\Platform\Filesystem\FileManager
 
-  App\Core\Audit\AuditLogger: ~
+  App\Efact\Audit\AuditLogger: ~
 
-  App\Core\Audit\AuditLogRepository: ~
+  App\Efact\Audit\AuditLogRepository: ~
 
   App\Inventory\Core\Contract\SalesInventoryPortInterface: '@App\Inventory\Adapter\InventoryServiceSalesInventoryPort'
   App\Sales\Port\SaleInvoicingPortInterface: '@App\EInvoicing\Adapter\SaleInvoicingAdapter'
