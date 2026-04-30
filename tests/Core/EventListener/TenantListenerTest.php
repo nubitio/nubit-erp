@@ -9,12 +9,14 @@ use App\Core\EventListener\TenantListener;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantListenerTest extends TestCase
 {
     private TenantConnectionSwitcher&MockObject $switcher;
@@ -193,7 +195,7 @@ final class TenantListenerTest extends TestCase
     {
         $request = Request::create('https://acme.example.com/api/test');
         $request->headers->set('X-Request-Id', 'custom-req-id');
-        $kernel = $this->createMock(HttpKernelInterface::class);
+        $kernel = $this->createStub(HttpKernelInterface::class);
         $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme'];

@@ -10,11 +10,13 @@ use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantSetupCommandTest extends TestCase
 {
     public function testUsesDefaultValuesWhenRunNonInteractivelyWithoutOptions(): void
@@ -88,7 +90,7 @@ final class TenantSetupCommandTest extends TestCase
 
     public function testReturnsSuccessAndWarnsWhenSetupThrows(): void
     {
-        $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
+        $initialSetupService = $this->createStub(InitialTenantSetupPortInterface::class);
         $initialSetupService->method('configure')->willThrowException(new \RuntimeException('already configured'));
 
         $command = $this->newCommand($initialSetupService);
@@ -102,7 +104,7 @@ final class TenantSetupCommandTest extends TestCase
 
     private function newCommand(InitialTenantSetupPortInterface $initialSetupService): TenantSetupCommand
     {
-        $tenantManager = $this->createMock(TenantManager::class);
+        $tenantManager = $this->createStub(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
 
         $command = new TenantSetupCommand($initialSetupService);

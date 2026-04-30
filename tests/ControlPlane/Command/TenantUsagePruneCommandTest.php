@@ -8,9 +8,11 @@ use App\ControlPlane\Tenant\Command\TenantUsagePruneCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantUsagePruneCommandTest extends TestCase
 {
     private ConnectionRegistry&MockObject $registry;

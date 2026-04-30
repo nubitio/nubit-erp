@@ -9,8 +9,10 @@ use App\CashRegister\Dto\CashShiftXReportDto;
 use App\CashRegister\State\CashShiftXReportProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashShiftXReportProviderTest extends TestCase
 {
     /** @var Connection&MockObject */

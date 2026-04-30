@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -21,6 +22,7 @@ use Psr\Log\LoggerInterface;
  *   - run()         : no-pairs (empty), ok pairs, drift pairs, error path
  *   - reconcileOne(): OK (within tolerance), DRIFT (positive + negative), zero-delta
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ReconciliationServiceTest extends TestCase
 {
     // -------------------------------------------------------------------------
@@ -153,7 +155,7 @@ final class ReconciliationServiceTest extends TestCase
     public function testReconcileOneHandlesFalsyLedgerSumAsZero(): void
     {
         /** @var Connection&MockObject $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         // fetchOne returns false (no rows at all — should be treated as 0)
         $connection->method('fetchOne')->willReturn(false);
         $connection->method('executeStatement')->willReturn(0);
@@ -265,13 +267,13 @@ final class ReconciliationServiceTest extends TestCase
         ];
 
         /** @var Connection&MockObject $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
 
         // fetchAllAssociative powers the QBuilder result
-        $resultMock = $this->createMock(Result::class);
+        $resultMock = $this->createStub(Result::class);
         $resultMock->method('fetchAllAssociative')->willReturn($pairs);
 
-        $qb = $this->createMock(QueryBuilder::class);
+        $qb = $this->createStub(QueryBuilder::class);
         $qb->method('select')->willReturnSelf();
         $qb->method('from')->willReturnSelf();
         $qb->method('andWhere')->willReturnSelf();
@@ -313,9 +315,9 @@ final class ReconciliationServiceTest extends TestCase
     public function testRunWithWarehouseFilterPassesParameterToQuery(): void
     {
         /** @var Connection&MockObject $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
 
-        $resultMock = $this->createMock(Result::class);
+        $resultMock = $this->createStub(Result::class);
         $resultMock->method('fetchAllAssociative')->willReturn([]);
 
         $qb = $this->createMock(QueryBuilder::class);
@@ -344,9 +346,9 @@ final class ReconciliationServiceTest extends TestCase
     public function testRunWithProductFilterPassesParameterToQuery(): void
     {
         /** @var Connection&MockObject $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
 
-        $resultMock = $this->createMock(Result::class);
+        $resultMock = $this->createStub(Result::class);
         $resultMock->method('fetchAllAssociative')->willReturn([]);
 
         $qb = $this->createMock(QueryBuilder::class);
@@ -427,10 +429,10 @@ final class ReconciliationServiceTest extends TestCase
         /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
 
-        $resultMock = $this->createMock(Result::class);
+        $resultMock = $this->createStub(Result::class);
         $resultMock->method('fetchAllAssociative')->willReturn($pairs);
 
-        $qb = $this->createMock(QueryBuilder::class);
+        $qb = $this->createStub(QueryBuilder::class);
         $qb->method('select')->willReturnSelf();
         $qb->method('from')->willReturnSelf();
         $qb->method('andWhere')->willReturnSelf();

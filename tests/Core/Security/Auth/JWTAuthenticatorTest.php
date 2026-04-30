@@ -78,7 +78,7 @@ final class JWTAuthenticatorTest extends TestCase
         $this->tenantContext = new TenantContext();
 
         // TokenGeneratorService is final readonly — create real instance with a mocked EM
-        $em = $this->createMock(EntityManagerInterface::class);
+        $em = $this->createStub(EntityManagerInterface::class);
         $this->tokenGenerator = new TokenGeneratorService(
             $this->jwtManager,
             $em,
@@ -367,7 +367,7 @@ final class JWTAuthenticatorTest extends TestCase
     /** @test (18) Not a JWTAuthenticationToken → null */
     public function testOnAuthenticationSuccessNonJWTTokenReturnsNull(): void
     {
-        $token   = $this->createMock(TokenInterface::class);
+        $token   = $this->createStub(TokenInterface::class);
         $request = $this->makeRequest('POST', JWTAuthenticator::LOGIN_ROUTE);
 
         $result = $this->authenticator->onAuthenticationSuccess($request, $token, 'main');
@@ -472,8 +472,8 @@ final class JWTAuthenticatorTest extends TestCase
     /** @test (24) User is not App\Entity\User → AuthenticationException */
     public function testCreateTokenWithNonUserInstanceThrows(): void
     {
-        $passport = $this->createMock(Passport::class);
-        $nonUser  = $this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class);
+        $passport = $this->createStub(Passport::class);
+        $nonUser  = $this->createStub(\Symfony\Component\Security\Core\User\UserInterface::class);
         $passport->method('getUser')->willReturn($nonUser);
         $passport->method('getAttribute')->willReturn(null);
 
@@ -485,7 +485,7 @@ final class JWTAuthenticatorTest extends TestCase
     public function testCreateTokenExistingJwtReturnsJWTAuthenticationToken(): void
     {
         $user     = $this->makeUser();
-        $passport = $this->createMock(Passport::class);
+        $passport = $this->createStub(Passport::class);
         $passport->method('getUser')->willReturn($user);
         $passport->method('getAttribute')->willReturnMap([
             ['is_login', false],
@@ -503,7 +503,7 @@ final class JWTAuthenticatorTest extends TestCase
     public function testCreateTokenLoginFlowGeneratesNewTokenPair(): void
     {
         $user     = $this->makeUser();
-        $passport = $this->createMock(Passport::class);
+        $passport = $this->createStub(Passport::class);
         $passport->method('getUser')->willReturn($user);
         $passport->method('getAttribute')->willReturnMap([
             ['is_login', true],
@@ -524,7 +524,7 @@ final class JWTAuthenticatorTest extends TestCase
     public function testCreateTokenLoginFlowFailureThrowsAuthenticationException(): void
     {
         // Build an authenticator with a broken EM that throws on flush
-        $em = $this->createMock(EntityManagerInterface::class);
+        $em = $this->createStub(EntityManagerInterface::class);
         $em->method('flush')->willThrowException(new RuntimeException('DB failure'));
 
         $brokenTokenGenerator = new TokenGeneratorService(
@@ -549,7 +549,7 @@ final class JWTAuthenticatorTest extends TestCase
         );
 
         $user     = $this->makeUser();
-        $passport = $this->createMock(Passport::class);
+        $passport = $this->createStub(Passport::class);
         $passport->method('getUser')->willReturn($user);
         $passport->method('getAttribute')->willReturnMap([
             ['is_login', true],

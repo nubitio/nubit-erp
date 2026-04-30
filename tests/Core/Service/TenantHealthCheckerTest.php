@@ -9,17 +9,19 @@ use App\ControlPlane\Tenant\Service\TenantHealthChecker;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantHealthCheckerTest extends TestCase
 {
     public function testCheckReturnsHealthyWhenTenantConnectionAndSchemaAreValid(): void
     {
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['user', 'config', 'branch']);
 
         $tenantConnection = $this->createMock(TenantConnection::class);
@@ -84,10 +86,10 @@ final class TenantHealthCheckerTest extends TestCase
 
     public function testCheckReportsMissingSchemaTables(): void
     {
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['user', 'branch']);
 
-        $tenantConnection = $this->createMock(TenantConnection::class);
+        $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 
         $checker = new TenantHealthChecker(
@@ -105,7 +107,7 @@ final class TenantHealthCheckerTest extends TestCase
 
     public function testCheckHandlesControlPlaneLookupException(): void
     {
-        $tenantConnection = $this->createMock(TenantConnection::class);
+        $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('executeQuery')->willThrowException(new \RuntimeException('db down'));
 
         $logger = $this->createMock(LoggerInterface::class);

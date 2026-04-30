@@ -6,13 +6,15 @@ namespace App\Tests\ControlPlane\Command;
 
 use App\ControlPlane\Tenant\Command\TenantSchemaAuditCommand;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantSchemaAuditCommandTest extends TestCase
 {
     public function testBuildSchemaSnapshotNormalizesAndFiltersRows(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchFirstColumn')
             ->willReturn(['menu', 'doctrine_migration_versions', 'MENU']);
         $connection->method('fetchAllAssociative')

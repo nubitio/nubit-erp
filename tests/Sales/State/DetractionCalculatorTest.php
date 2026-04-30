@@ -14,9 +14,11 @@ use App\Catalog\Repository\SunatCatalogRepository;
 use App\Sales\State\DetractionCalculator;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class DetractionCalculatorTest extends TestCase
 {
     private SunatCatalogRepository&MockObject $sunatCatalogRepository;
@@ -69,7 +71,7 @@ final class DetractionCalculatorTest extends TestCase
 
     private function makeSaleItemWithCatalog(?SunatCatalog $catalog): SaleItem&MockObject
     {
-        $product = $this->createMock(Product::class);
+        $product = $this->createStub(Product::class);
         $product->method('getDetractionCatalog')->willReturn($catalog);
 
         $item = $this->createMock(SaleItem::class);
@@ -305,7 +307,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
         $item = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(SaleRecord::class);
+        $sale = $this->createStub(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1500.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
@@ -401,7 +403,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '037', 0.0);
 
         // Override to return null percentage
-        $catalogNull = $this->createMock(SunatCatalog::class);
+        $catalogNull = $this->createStub(SunatCatalog::class);
         $catalogNull->method('getId')->willReturn(1);
         $catalogNull->method('getCode')->willReturn('037');
         $catalogNull->method('getPercentage')->willReturn(null);

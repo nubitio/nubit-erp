@@ -8,8 +8,10 @@ use App\EInvoicing\Service\InvoiceCreationService;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class InvoiceCreationServiceTest extends TestCase
 {
     public function testCreateForSaleFailsWhenSaleIdIsMissing(): void
@@ -69,7 +71,7 @@ final class InvoiceCreationServiceTest extends TestCase
 
     public function testNoMovimientoUpdateIsExecutedDuringInvoiceCreation(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturnCallback(
             static fn (string $sql, array $params): int => (($params['table_name'] ?? '') !== '') ? 1 : 0
         );
@@ -111,7 +113,7 @@ final class InvoiceCreationServiceTest extends TestCase
     private function newService(?Connection $connection = null): InvoiceCreationService
     {
         $connection ??= $this->createMock(Connection::class);
-        $resolver = $this->createMock(SaleCurrencyResolver::class);
+        $resolver = $this->createStub(SaleCurrencyResolver::class);
         $reflection = new \ReflectionClass(InvoiceCreationService::class);
         $constructor = $reflection->getConstructor();
         $required = $constructor?->getNumberOfRequiredParameters() ?? 0;

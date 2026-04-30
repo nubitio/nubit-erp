@@ -8,6 +8,7 @@ use App\Identity\EventSubscriber\BranchFilterSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\FilterCollection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -27,6 +28,7 @@ interface FilterParameterSetter
  * Instantiated via newInstanceWithoutConstructor + reflection to inject a mock EM.
  * @internal
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class FilterStub extends \Doctrine\ORM\Query\Filter\SQLFilter
 {
     public function addFilterConstraint(\Doctrine\ORM\Mapping\ClassMetadata $targetEntity, string $targetTableAlias): string
@@ -104,6 +106,7 @@ final class TestableBranchFilterSubscriber extends BranchFilterSubscriber
 }
 
 #[CoversClass(BranchFilterSubscriber::class)]
+#[AllowMockObjectsWithoutExpectations]
 final class BranchFilterSubscriberTest extends TestCase
 {
     private EntityManagerInterface&MockObject $entityManager;
@@ -125,7 +128,7 @@ final class BranchFilterSubscriberTest extends TestCase
 
     public function testSubRequestIsIgnored(): void
     {
-        $event = $this->createMock(RequestEvent::class);
+        $event = $this->createStub(RequestEvent::class);
         $event->method('isMainRequest')->willReturn(false);
 
         $this->entityManager->expects(self::never())->method('getFilters');
@@ -136,7 +139,7 @@ final class BranchFilterSubscriberTest extends TestCase
 
     public function testNoBranchInContextDoesNotTouchFilters(): void
     {
-        $event = $this->createMock(RequestEvent::class);
+        $event = $this->createStub(RequestEvent::class);
         $event->method('isMainRequest')->willReturn(true);
 
         $this->entityManager->expects(self::never())->method('getFilters');
@@ -147,11 +150,11 @@ final class BranchFilterSubscriberTest extends TestCase
 
     public function testBranchSetAndFilterNotYetEnabledEnablesAndSetsParameter(): void
     {
-        $event = $this->createMock(RequestEvent::class);
+        $event = $this->createStub(RequestEvent::class);
         $event->method('isMainRequest')->willReturn(true);
 
         // The real setParameter() calls em->getFilters()->setFiltersStateDirty()
-        $innerFilterCollection = $this->createMock(FilterCollection::class);
+        $innerFilterCollection = $this->createStub(FilterCollection::class);
         $innerFilterCollection->method('setFiltersStateDirty');
         $innerEm = $this->createMock(EntityManagerInterface::class);
         $innerEm->method('getFilters')->willReturn($innerFilterCollection);
@@ -176,10 +179,10 @@ final class BranchFilterSubscriberTest extends TestCase
 
     public function testBranchSetAndFilterAlreadyEnabledSkipsEnableButSetsParameter(): void
     {
-        $event = $this->createMock(RequestEvent::class);
+        $event = $this->createStub(RequestEvent::class);
         $event->method('isMainRequest')->willReturn(true);
 
-        $innerFilterCollection = $this->createMock(FilterCollection::class);
+        $innerFilterCollection = $this->createStub(FilterCollection::class);
         $innerFilterCollection->method('setFiltersStateDirty');
         $innerEm = $this->createMock(EntityManagerInterface::class);
         $innerEm->method('getFilters')->willReturn($innerFilterCollection);

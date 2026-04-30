@@ -10,10 +10,12 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Invoice\Domain\SunatSendControlService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SunatSendControlServiceTest extends TestCase
 {
     private SettingsService&MockObject $settings;

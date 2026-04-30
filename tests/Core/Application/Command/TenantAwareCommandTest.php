@@ -9,6 +9,7 @@ use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantAwareCommandTest extends TestCase
 {
     public function testExecutesWithDefaultConnectionWhenNoTenantsExist(): void
@@ -178,6 +180,7 @@ final class TenantAwareCommandTest extends TestCase
     }
 }
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class DummyTenantAwareCommand extends TenantAwareCommand
 {
     /** @var list<string> */

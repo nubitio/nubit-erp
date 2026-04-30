@@ -39,7 +39,7 @@ final class UserNotificationRepositoryTest extends TestCase
         $entityManager->method('getClassMetadata')->willReturn($classMetadata);
         $entityManager->method('getConnection')->willReturn($connection);
 
-        $registry = $this->createStub(ManagerRegistry::class);
+        $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getManagerForClass')
             ->with(UserNotification::class)
             ->willReturn($entityManager);
@@ -121,7 +121,7 @@ final class UserNotificationRepositoryTest extends TestCase
             )
             ->willReturn(0);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getClassMetadata')->willReturn($classMetadata);
         $entityManager->method('getConnection')->willReturn($connection);
 

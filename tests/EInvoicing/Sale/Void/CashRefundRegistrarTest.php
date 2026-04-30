@@ -11,9 +11,11 @@ use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\Sales\State\CashSessionResolverInterface;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRefundRegistrarTest extends TestCase
 {
     // ---------------------------------------------------------------------------

@@ -21,9 +21,11 @@ use App\Sales\State\SaleInventoryOrchestrator;
 use Doctrine\DBAL\Connection;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SaleInventoryOrchestratorTest extends TestCase
 {
     private Connection&MockObject $connection;
@@ -150,7 +152,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
     public function testNoWarehouseSkipsAllProcessing(): void
     {
-        $sale = $this->createMock(SaleRecord::class);
+        $sale = $this->createStub(SaleRecord::class);
         $sale->method('getAlmacen')->willReturn(null);
 
         $this->connection->expects(self::never())->method('fetchOne');
@@ -410,7 +412,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     {
         $warehouse = $this->makeWarehouse();
 
-        $item = $this->createMock(SaleItem::class);
+        $item = $this->createStub(SaleItem::class);
         $item->method('getProducto')->willReturn(null);
         $item->method('getDescuento')->willReturn(null);
 

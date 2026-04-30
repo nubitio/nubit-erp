@@ -36,29 +36,31 @@ use App\Setup\Service\E2eTestSeedService;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class E2eTestSeedServiceTest extends TestCase
 {
     public function testSeedBuildsUserAndSalePayloadWhenBaseEntitiesExist(): void
     {
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $connection = $this->createMock(Connection::class);
-        $passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
-        $initialSetupService = $this->createMock(InitialSetupService::class);
-        $companyRepository = $this->createMock(CompanyRepository::class);
-        $roleRepository = $this->createMock(RoleRepository::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $connection = $this->createStub(Connection::class);
+        $passwordHasher = $this->createStub(UserPasswordHasherInterface::class);
+        $initialSetupService = $this->createStub(InitialSetupService::class);
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $roleRepository = $this->createStub(RoleRepository::class);
         $userRepository = $this->createMock(UserRepository::class);
         $branchRepository = $this->createMock(BranchRepository::class);
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
-        $customerRepository = $this->createMock(CustomerRepository::class);
-        $productRepository = $this->createMock(ProductRepository::class);
-        $productStockRepository = $this->createMock(ProductStockRepository::class);
-        $categoryRepository = $this->createMock(CategoryRepository::class);
-        $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
-        $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
-        $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
+        $customerRepository = $this->createStub(CustomerRepository::class);
+        $productRepository = $this->createStub(ProductRepository::class);
+        $productStockRepository = $this->createStub(ProductStockRepository::class);
+        $categoryRepository = $this->createStub(CategoryRepository::class);
+        $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
+        $voucherTypeRepository = $this->createStub(VoucherTypeRepository::class);
+        $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 
@@ -154,20 +156,20 @@ final class E2eTestSeedServiceTest extends TestCase
     {
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $connection = $this->createMock(Connection::class);
-        $passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
-        $initialSetupService = $this->createMock(InitialSetupService::class);
-        $companyRepository = $this->createMock(CompanyRepository::class);
-        $roleRepository = $this->createMock(RoleRepository::class);
+        $passwordHasher = $this->createStub(UserPasswordHasherInterface::class);
+        $initialSetupService = $this->createStub(InitialSetupService::class);
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $roleRepository = $this->createStub(RoleRepository::class);
         $userRepository = $this->createMock(UserRepository::class);
         $branchRepository = $this->createMock(BranchRepository::class);
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
-        $customerRepository = $this->createMock(CustomerRepository::class);
-        $productRepository = $this->createMock(ProductRepository::class);
-        $productStockRepository = $this->createMock(ProductStockRepository::class);
-        $categoryRepository = $this->createMock(CategoryRepository::class);
-        $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
-        $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
-        $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
+        $customerRepository = $this->createStub(CustomerRepository::class);
+        $productRepository = $this->createStub(ProductRepository::class);
+        $productStockRepository = $this->createStub(ProductStockRepository::class);
+        $categoryRepository = $this->createStub(CategoryRepository::class);
+        $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
+        $voucherTypeRepository = $this->createStub(VoucherTypeRepository::class);
+        $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 

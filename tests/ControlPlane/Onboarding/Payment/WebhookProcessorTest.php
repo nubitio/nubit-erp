@@ -12,11 +12,13 @@ use App\ControlPlane\Subscription\Payment\WebhookProcessor;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class WebhookProcessorTest extends TestCase
 {
     public function testSkipsAlreadyProcessedEvent(): void

@@ -10,6 +10,7 @@ use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -25,6 +26,7 @@ use Symfony\Component\Security\Core\Authentication\Token\NullToken;
  *   AC-11 FeatureVoter returns false for IS_GRANTED('FEATURE_EXCEL_EXPORT')
  *         when the feature is disabled, and true when enabled.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class FeatureEnforcementTest extends TestCase
 {
     private FeatureCheckerInterface&MockObject $featureChecker;

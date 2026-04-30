@@ -70,7 +70,7 @@ final class CashMovementTest extends TestCase
     public function testSetAndGetCashShift(): void
     {
         /** @var CashShift&MockObject */
-        $cashShift = $this->createMock(CashShift::class);
+        $cashShift = $this->createStub(CashShift::class);
 
         $entity = new CashMovement();
         $entity->setType(CashMovementType::INCOME);
@@ -84,7 +84,7 @@ final class CashMovementTest extends TestCase
     public function testSetCashShiftToNull(): void
     {
         /** @var CashShift&MockObject */
-        $cashShift = $this->createMock(CashShift::class);
+        $cashShift = $this->createStub(CashShift::class);
 
         $entity = new CashMovement();
         $entity->setType(CashMovementType::INCOME);
@@ -99,7 +99,7 @@ final class CashMovementTest extends TestCase
     public function testSetAndGetCashSession(): void
     {
         /** @var CashSession&MockObject */
-        $cashSession = $this->createMock(CashSession::class);
+        $cashSession = $this->createStub(CashSession::class);
 
         $entity = new CashMovement();
         $entity->setType(CashMovementType::INCOME);
@@ -113,7 +113,7 @@ final class CashMovementTest extends TestCase
     public function testSetCashSessionToNull(): void
     {
         /** @var CashSession&MockObject */
-        $cashSession = $this->createMock(CashSession::class);
+        $cashSession = $this->createStub(CashSession::class);
 
         $entity = new CashMovement();
         $entity->setType(CashMovementType::INCOME);
@@ -128,7 +128,7 @@ final class CashMovementTest extends TestCase
     public function testSetCategoryAlsoSetsType(): void
     {
         /** @var CashMovementCategory&MockObject */
-        $category = $this->createMock(CashMovementCategory::class);
+        $category = $this->createStub(CashMovementCategory::class);
         $category->method('getType')->willReturn(CashMovementType::EXPENSE);
 
         $entity = new CashMovement();

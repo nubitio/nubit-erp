@@ -9,8 +9,10 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
 use App\Sales\State\NegativeStockPolicyResolver;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class NegativeStockPolicyResolverTest extends TestCase
 {
     private SettingsService&MockObject $settings;

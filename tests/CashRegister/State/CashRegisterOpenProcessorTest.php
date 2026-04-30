@@ -21,11 +21,13 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\JWT;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\SecurityBundle\Security as SymfonySecurity;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRegisterOpenProcessorTest extends TestCase
 {
     private const string JWT_TEST_SECRET = 'test-secret-at-least-32-chars-long-ok';
@@ -192,12 +194,12 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $rawJwt = JWT::encode(['branchId' => $branchId], self::JWT_TEST_SECRET, 'HS256');
 
         // Build a real JWTAuthenticationToken (not final)
-        $user = $this->createMock(User::class);
+        $user = $this->createStub(User::class);
         $user->method('getRoles')->willReturn(['ROLE_USER']);
         $token = new JWTAuthenticationToken($user, 'main', ['ROLE_USER'], $rawJwt);
 
         /** @var SymfonySecurity&MockObject $securityMock */
-        $securityMock = $this->createMock(SymfonySecurity::class);
+        $securityMock = $this->createStub(SymfonySecurity::class);
         $securityMock->method('getToken')->willReturn($token);
 
         $reflection->getProperty('security')->setValue($stub, $securityMock);

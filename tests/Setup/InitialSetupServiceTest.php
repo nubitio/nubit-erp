@@ -34,16 +34,18 @@ use App\Settings\Service\UbigeoImportService;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class InitialSetupServiceTest extends TestCase
 {
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
         $captured = [];
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('set')->willReturnCallback(
             static function (string $name, string $type, string $value) use (&$captured): void {
                 $captured[$name] = ['type' => $type, 'value' => $value];
@@ -65,7 +67,7 @@ final class InitialSetupServiceTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('set')->willThrowException(new \RuntimeException('boom'));
 
         $service = $this->newService($settings);
@@ -74,11 +76,11 @@ final class InitialSetupServiceTest extends TestCase
 
     public function testStatusReflectsRepositoryCounts(): void
     {
-        $userRepository = $this->createMock(UserRepository::class);
+        $userRepository = $this->createStub(UserRepository::class);
         $userRepository->method('count')->willReturn(1);
-        $companyRepository = $this->createMock(CompanyRepository::class);
+        $companyRepository = $this->createStub(CompanyRepository::class);
         $companyRepository->method('count')->willReturn(1);
-        $branchRepository = $this->createMock(BranchRepository::class);
+        $branchRepository = $this->createStub(BranchRepository::class);
         $branchRepository->method('count')->willReturn(1);
 
         $service = $this->newService(
@@ -150,21 +152,21 @@ final class InitialSetupServiceTest extends TestCase
         $entityManager->expects(self::never())->method('persist');
         $entityManager->expects(self::never())->method('flush');
 
-        $logisticRepo = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepo = $this->createStub(LogisticOperationRepository::class);
         $logisticRepo->method('findOneBy')->willReturn(new LogisticOperation());
-        $paymentRepo = $this->createMock(PaymentMethodRepository::class);
+        $paymentRepo = $this->createStub(PaymentMethodRepository::class);
         $paymentRepo->method('findOneBy')->willReturn(new PaymentMethod());
-        $cashRepo = $this->createMock(CashMovementCategoryRepository::class);
+        $cashRepo = $this->createStub(CashMovementCategoryRepository::class);
         $cashRepo->method('findOneBy')->willReturn(new CashMovementCategory());
-        $voucherRepo = $this->createMock(VoucherTypeRepository::class);
+        $voucherRepo = $this->createStub(VoucherTypeRepository::class);
         $voucherRepo->method('find')->willReturn(new VoucherType());
-        $unitRepo = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepo = $this->createStub(UnitOfMeasureRepository::class);
         $unitRepo->method('findOneBy')->willReturn(new UnitOfMeasure());
-        $categoryRepo = $this->createMock(CategoryRepository::class);
+        $categoryRepo = $this->createStub(CategoryRepository::class);
         $categoryRepo->method('findOneBy')->willReturn(new Category());
-        $customerRepo = $this->createMock(CustomerRepository::class);
+        $customerRepo = $this->createStub(CustomerRepository::class);
         $customerRepo->method('findOneBy')->willReturn(new Customer());
-        $sunatRepo = $this->createMock(SunatCatalogRepository::class);
+        $sunatRepo = $this->createStub(SunatCatalogRepository::class);
         $sunatRepo->method('findOneBy')->willReturn(new SunatCatalog());
 
         $service = $this->newService(

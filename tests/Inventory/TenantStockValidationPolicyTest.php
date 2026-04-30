@@ -13,7 +13,7 @@ final class TenantStockValidationPolicyTest extends TestCase
 {
     public function testStrictPolicyBlocksNegativeStock(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn('STRICT');
 
         $policy = new TenantStockValidationPolicy($connection);
@@ -25,7 +25,7 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testWarningOnlyPolicyAllowsWithWarning(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn('WARNING_ONLY');
 
         $policy = new TenantStockValidationPolicy($connection);
@@ -37,7 +37,7 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testAllowNegativePolicyAllows(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn('ALLOW_NEGATIVE');
 
         $policy = new TenantStockValidationPolicy($connection);
@@ -60,7 +60,7 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testFallsBackToStrictWhenPolicyIsMissing(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(false);
 
         $policy = new TenantStockValidationPolicy($connection);

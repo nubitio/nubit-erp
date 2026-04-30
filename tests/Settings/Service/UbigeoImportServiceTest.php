@@ -6,8 +6,10 @@ namespace App\Tests\Settings\Service;
 
 use App\Settings\Service\UbigeoImportService;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class UbigeoImportServiceTest extends TestCase
 {
     public function testImportThrowsWhenFileIsNotReadable(): void

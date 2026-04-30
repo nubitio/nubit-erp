@@ -17,6 +17,7 @@ use App\Inventory\Core\Service\UnitConversionService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
@@ -27,6 +28,7 @@ use Psr\Log\LoggerInterface;
  * Uses SQLite in-memory for fast, isolated test runs.
  * Tests cover the 9 mandatory scenarios from core-inventory-migration-plan.md.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class InventoryServiceIntegrationTest extends TestCase
 {
     private Connection $conn;

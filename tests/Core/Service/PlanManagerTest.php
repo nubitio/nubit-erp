@@ -9,11 +9,13 @@ use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class PlanManagerTest extends TestCase
 {
     private ConnectionRegistry&MockObject $registry;
@@ -57,7 +59,7 @@ final class PlanManagerTest extends TestCase
 
     public function testGetPlanAndGetPlanByNameHydrateDatabaseRows(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturnMap([
             ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [7], [], [
                 'id' => 7,
@@ -85,7 +87,7 @@ final class PlanManagerTest extends TestCase
 
     public function testCreatePlanRejectsInvalidInputs(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
         $manager = new PlanManager($this->registry, $this->cacheReturning([]), new NullLogger(), $this->resourceCatalog);
@@ -97,7 +99,7 @@ final class PlanManagerTest extends TestCase
 
     public function testCreatePlanRejectsInvalidNameAndDuplicatesAndLimitRange(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 

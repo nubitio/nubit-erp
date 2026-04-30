@@ -67,7 +67,7 @@ vi.mock('@features/product', () => ({
 }));
 
 vi.mock('@features/pos/lib/GetStockUseCase', () => ({
-  GetStockUseCase: vi.fn(() => Promise.resolve({ stock: 100 })),
+  GetStockUseCase: vi.fn(() => Promise.resolve({ id: 'p1', name: 'Product', stock: 100 })),
 }));
 
 vi.mock('@features/customer', () => ({
@@ -289,7 +289,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
 
   it('blocks and shows stock info when policy is BLOCK and qty exceeds stock', async () => {
     settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
-    getStockMock.mockResolvedValue({ stock: 3 });
+    getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 3 });
 
     const row: any = {};
     const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
@@ -307,7 +307,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
 
   it('blocks when policy is WARNING_ONLY and qty exceeds stock', async () => {
     settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'WARNING_ONLY' });
-    getStockMock.mockResolvedValue({ stock: 2 });
+    getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 2 });
 
     const row: any = {};
     const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
@@ -322,7 +322,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
 
   it('allows the edit when qty is within available stock', async () => {
     settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
-    getStockMock.mockResolvedValue({ stock: 10 });
+    getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 10 });
 
     const row: any = {};
     const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };

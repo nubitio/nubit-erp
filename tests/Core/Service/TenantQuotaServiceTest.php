@@ -16,11 +16,13 @@ use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantQuotaServiceTest extends TestCase
 {
     public function testCheckReturnsOpenWhenNoTenantContextAndClosedForUnknownResource(): void
@@ -70,10 +72,10 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenantByName')->with('acme')->willReturn($tenant);
 
-        $tenantConnectionUnlimited = $this->createMock(TenantConnection::class);
+        $tenantConnectionUnlimited = $this->createStub(TenantConnection::class);
         $tenantConnectionUnlimited->method('switchTenantParams');
         $tenantConnectionUnlimited->method('quoteSingleIdentifier')->willReturn('`usuario`');
-        $schemaUnlimited = $this->createMock(AbstractSchemaManager::class);
+        $schemaUnlimited = $this->createStub(AbstractSchemaManager::class);
         $schemaUnlimited->method('listTableNames')->willReturn(['usuario']);
         $tenantConnectionUnlimited->method('createSchemaManager')->willReturn($schemaUnlimited);
 
@@ -93,9 +95,9 @@ final class TenantQuotaServiceTest extends TestCase
         self::assertTrue($unlimited->allowed);
         self::assertSame(-1, $unlimited->limit);
 
-        $tenantConnectionMissing = $this->createMock(TenantConnection::class);
+        $tenantConnectionMissing = $this->createStub(TenantConnection::class);
         $tenantConnectionMissing->method('switchTenantParams');
-        $schemaMissing = $this->createMock(AbstractSchemaManager::class);
+        $schemaMissing = $this->createStub(AbstractSchemaManager::class);
         $schemaMissing->method('listTableNames')->willReturn([]);
         $tenantConnectionMissing->method('createSchemaManager')->willReturn($schemaMissing);
         $registryMissing = $this->createMock(ConnectionRegistry::class);
@@ -124,11 +126,11 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenantByName')->with('acme')->willReturn($tenant);
 
-        $tenantConnection = $this->createMock(TenantConnection::class);
+        $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('switchTenantParams');
         $tenantConnection->method('quoteSingleIdentifier')->willReturn('`usuario`');
 
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
         $tenantConnection->method('fetchOne')->willReturnOnConsecutiveCalls(
@@ -181,12 +183,12 @@ final class TenantQuotaServiceTest extends TestCase
             ['missing', null],
         ]);
 
-        $tenantConnection = $this->createMock(TenantConnection::class);
+        $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('switchTenantParams');
         $tenantConnection->method('quoteSingleIdentifier')->willReturnCallback(
             static fn (string $table): string => sprintf('`%s`', $table)
         );
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 

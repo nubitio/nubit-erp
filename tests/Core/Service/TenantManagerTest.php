@@ -9,12 +9,14 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantManagerTest extends TestCase
 {
     public function testConstructorRequiresConfigPathWhenYamlIsEnabled(): void
@@ -347,7 +349,7 @@ final class TenantManagerTest extends TestCase
      */
     private function dbConnection(bool $ready): Connection
     {
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('tablesExist')->willReturn($ready);
 
         $connection = $this->createMock(Connection::class);

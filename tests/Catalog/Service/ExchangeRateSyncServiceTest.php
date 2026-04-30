@@ -9,6 +9,7 @@ use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -16,6 +17,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 #[CoversClass(ExchangeRateSyncService::class)]
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ExchangeRateSyncServiceTest extends TestCase
 {
     private HttpClientInterface&MockObject $httpClient;
@@ -44,7 +46,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
     {
         $bcrpData = ['periods' => [['values' => ['3.750000']]]];
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('toArray')->willReturn($bcrpData);
 
         $this->httpClient
@@ -77,7 +79,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
     {
         $bcrpData = ['periods' => [['values' => ['n.d.']]]];
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('toArray')->willReturn($bcrpData);
 
         $this->httpClient->method('request')->willReturn($response);
@@ -105,7 +107,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
     {
         $bcrpData = ['periods' => []];
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('toArray')->willReturn($bcrpData);
 
         $this->httpClient->method('request')->willReturn($response);
@@ -161,7 +163,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
             ],
         ];
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('toArray')->willReturn($bcrpData);
 
         $this->httpClient->method('request')->willReturn($response);
@@ -186,7 +188,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
             ],
         ];
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('toArray')->willReturn($bcrpData);
 
         $this->httpClient->method('request')->willReturn($response);

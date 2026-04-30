@@ -7,14 +7,16 @@ namespace App\Tests\Core\Service;
 use App\ControlPlane\Dashboard\DashboardService;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class DashboardServiceTest extends TestCase
 {
     public function testGetTenantStatsReturnsCountsFromDatabase(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturnMap([
             ['SELECT COUNT(*) FROM tenants', [], [], 12],
             ["SELECT COUNT(*) FROM tenants WHERE status = 'active'", [], [], 10],
@@ -32,7 +34,7 @@ final class DashboardServiceTest extends TestCase
 
     public function testGetTenantStatsReturnsSafeDefaultsOnFailure(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willThrowException(new \RuntimeException('db down'));
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -48,7 +50,7 @@ final class DashboardServiceTest extends TestCase
 
     public function testGetPlanStatsReturnsValuesAndDefaultsToZeroOnError(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturnMap([
             ['SELECT COUNT(*) FROM plans', [], [], 3],
             ["SELECT COUNT(*) FROM tenants WHERE plan IS NULL OR plan = ''", [], [], 2],
@@ -61,7 +63,7 @@ final class DashboardServiceTest extends TestCase
             $service->getPlanStats()
         );
 
-        $failingConnection = $this->createMock(Connection::class);
+        $failingConnection = $this->createStub(Connection::class);
         $failingConnection->method('fetchOne')->willThrowException(new \RuntimeException('boom'));
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning');
@@ -75,7 +77,7 @@ final class DashboardServiceTest extends TestCase
 
     public function testAuditAndBackupStatsReturnFallbacksWhenConnectionFails(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('createSchemaManager')->willThrowException(new \RuntimeException('schema error'));
 
         $logger = $this->createMock(LoggerInterface::class);

@@ -13,6 +13,7 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -25,6 +26,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  *
  * Also covers the conditional `source` field logic (X-Debug-Entitlements + ROLE_ADMIN).
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class EntitlementsControllerTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;

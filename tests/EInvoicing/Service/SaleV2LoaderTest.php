@@ -30,7 +30,7 @@ final class SaleV2LoaderTest extends TestCase
 
     public function testReturnsNullWhenSaleNotFound(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn(false);
 
         $em = $this->createMock(EntityManagerInterface::class);
@@ -60,7 +60,7 @@ final class SaleV2LoaderTest extends TestCase
             'created_at' => '2025-01-15 09:00:00',
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -97,7 +97,7 @@ final class SaleV2LoaderTest extends TestCase
             'created_at' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -131,7 +131,7 @@ final class SaleV2LoaderTest extends TestCase
             'created_at' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -168,7 +168,7 @@ final class SaleV2LoaderTest extends TestCase
             'number' => '42',
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -205,7 +205,7 @@ final class SaleV2LoaderTest extends TestCase
             'number' => '',
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -241,12 +241,12 @@ final class SaleV2LoaderTest extends TestCase
             'number' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         /** @var Customer&MockObject $customer */
-        $customer = $this->createMock(Customer::class);
+        $customer = $this->createStub(Customer::class);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getReference')->with(Customer::class, 15)->willReturn($customer);
@@ -280,12 +280,12 @@ final class SaleV2LoaderTest extends TestCase
             'number' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         /** @var Warehouse&MockObject $warehouse */
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getBranch')->willReturn(null);
 
         /** @var EntityRepository<Warehouse>&MockObject $warehouseRepo */
@@ -323,14 +323,14 @@ final class SaleV2LoaderTest extends TestCase
             'number' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('get')->willReturn('18');
 
         $loader = new SaleV2Loader($connection, $em, $settings);
@@ -361,14 +361,14 @@ final class SaleV2LoaderTest extends TestCase
             'number' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('get')->willReturn('18');
 
         $loader = new SaleV2Loader($connection, $em, $settings);
@@ -399,14 +399,14 @@ final class SaleV2LoaderTest extends TestCase
             'number' => null,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($row);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('get')->willReturn('10'); // not used
 
         $loader = new SaleV2Loader($connection, $em, $settings);
@@ -447,11 +447,11 @@ final class SaleV2LoaderTest extends TestCase
             'line_no' => 1,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($saleRow);
         $connection->method('fetchAllAssociative')->willReturn([$itemRow]);
 
-        $product = $this->createMock(\App\Catalog\Entity\Product::class);
+        $product = $this->createStub(\App\Catalog\Entity\Product::class);
 
         /** @var EntityRepository<\App\Catalog\Entity\Product>&MockObject $productRepo */
         $productRepo = $this->createMock(EntityRepository::class);
@@ -499,7 +499,7 @@ final class SaleV2LoaderTest extends TestCase
             'line_no' => 1,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($saleRow);
         $connection->method('fetchAllAssociative')->willReturn([$itemRow]);
 
@@ -545,7 +545,7 @@ final class SaleV2LoaderTest extends TestCase
             'line_no' => 1,
         ];
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchAssociative')->willReturn($saleRow);
         $connection->method('fetchAllAssociative')->willReturn([$itemRow]);
 

@@ -23,13 +23,15 @@ use App\Inventory\Repository\WarehouseRepository;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TestDataSeederTest extends TestCase
 {
     public function testGetFirstWarehouseThrowsWhenNoWarehouseExists(): void
     {
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $warehouseRepository->method('findOneBy')->willReturn(null);
 
         $seeder = $this->newSeeder(warehouseRepository: $warehouseRepository);
@@ -41,7 +43,7 @@ final class TestDataSeederTest extends TestCase
 
     public function testGetSaleLogisticOperationThrowsWhenVentaOperationMissing(): void
     {
-        $logisticRepository = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepository = $this->createStub(LogisticOperationRepository::class);
         $logisticRepository->method('findOneBy')->willReturn(null);
 
         $seeder = $this->newSeeder(logisticOperationRepository: $logisticRepository);
@@ -57,7 +59,7 @@ final class TestDataSeederTest extends TestCase
         $entityManager->expects(self::exactly(34))->method('persist');
         $entityManager->expects(self::once())->method('flush');
 
-        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository = $this->createStub(CategoryRepository::class);
         $categoryRepository->method('findOneBy')->willReturn(null);
 
         $seeder = $this->newSeeder(
@@ -75,7 +77,7 @@ final class TestDataSeederTest extends TestCase
         $entityManager->expects(self::exactly(9))->method('persist');
         $entityManager->expects(self::once())->method('flush');
 
-        $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
         $unitRepository->method('findOneBy')->willReturn(null);
 
         $seeder = $this->newSeeder(
@@ -94,9 +96,9 @@ final class TestDataSeederTest extends TestCase
         $entityManager->expects(self::exactly(4))->method('flush');
         $entityManager->expects(self::exactly(4))->method('clear');
 
-        $supplierRepository = $this->createMock(SupplierRepository::class);
+        $supplierRepository = $this->createStub(SupplierRepository::class);
         $supplierRepository->method('findOneBy')->willReturn(null);
-        $customerRepository = $this->createMock(CustomerRepository::class);
+        $customerRepository = $this->createStub(CustomerRepository::class);
         $customerRepository->method('findOneBy')->willReturn(null);
 
         $seeder = $this->newSeeder(
@@ -126,14 +128,14 @@ final class TestDataSeederTest extends TestCase
         $this->setEntityId($unit, 'id', 1);
         $this->setEntityId($warehouse, 'id', 'wh-1');
 
-        $productRepository = $this->createMock(ProductRepository::class);
+        $productRepository = $this->createStub(ProductRepository::class);
         $productRepository->method('findOneBy')->willReturn(null);
 
-        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository = $this->createStub(CategoryRepository::class);
         $categoryRepository->method('find')->willReturn($category);
-        $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
         $unitRepository->method('find')->willReturn($unit);
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $warehouseRepository->method('find')->willReturn($warehouse);
         $warehouseRepository->method('findOneBy')->willReturn($warehouse);
 
@@ -176,18 +178,18 @@ final class TestDataSeederTest extends TestCase
         $this->setEntityId($warehouse, 'id', 'wh-1');
         $this->setEntityId($operation, 'id', 'op-1');
 
-        $customerRepository = $this->createMock(CustomerRepository::class);
+        $customerRepository = $this->createStub(CustomerRepository::class);
         $customerRepository->method('find')->willReturn($customer);
-        $supplierRepository = $this->createMock(SupplierRepository::class);
+        $supplierRepository = $this->createStub(SupplierRepository::class);
         $supplierRepository->method('find')->willReturn($supplier);
-        $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
+        $paymentMethodRepository = $this->createStub(PaymentMethodRepository::class);
         $paymentMethodRepository->method('find')->willReturn($paymentMethod);
-        $productRepository = $this->createMock(ProductRepository::class);
+        $productRepository = $this->createStub(ProductRepository::class);
         $productRepository->method('find')->willReturn($product);
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $warehouseRepository->method('find')->willReturn($warehouse);
         $warehouseRepository->method('findOneBy')->willReturn($warehouse);
-        $logisticRepository = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepository = $this->createStub(LogisticOperationRepository::class);
         $logisticRepository->method('find')->willReturn($operation);
 
         $seeder = $this->newSeeder(

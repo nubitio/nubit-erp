@@ -12,6 +12,7 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,6 +29,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  * These tests instantiate the controller directly (no Symfony kernel) to keep
  * them fast and isolated, following the project's controller test pattern.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class EntitlementsEndpointTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;
@@ -158,7 +160,7 @@ final class EntitlementsEndpointTest extends TestCase
 
         // Wire a minimal authorization checker that always denies ROLE_ADMIN
         // (debug mode off) so the controller behaves in non-debug mode by default.
-        $authChecker = $this->createMock(AuthorizationCheckerInterface::class);
+        $authChecker = $this->createStub(AuthorizationCheckerInterface::class);
         $authChecker->method('isGranted')->willReturn(false);
 
         // Inject the container with the authorization checker.

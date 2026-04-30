@@ -11,12 +11,14 @@ use App\ControlPlane\Tenant\Service\TenantUsageService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantUsageServiceTest extends TestCase
 {
     public function testCollectMetricsReturnsCountsForExistingTables(): void
@@ -27,7 +29,7 @@ final class TenantUsageServiceTest extends TestCase
             static fn (string $table): string => sprintf('`%s`', $table)
         );
 
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local', 'cash_sessions']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 
@@ -68,7 +70,7 @@ final class TenantUsageServiceTest extends TestCase
         $tenantConnection->expects(self::once())->method('switchTenantParams');
         $tenantConnection->method('quoteSingleIdentifier')->willReturn('`usuario`');
 
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 

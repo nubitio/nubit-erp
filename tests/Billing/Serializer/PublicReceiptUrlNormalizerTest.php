@@ -8,10 +8,12 @@ use App\Billing\Receipt\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
 use App\Billing\Serializer\PublicReceiptUrlNormalizer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class PublicReceiptUrlNormalizerTest extends TestCase
 {
     private const string ALREADY_CALLED = 'public_receipt_url_normalizer_called';

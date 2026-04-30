@@ -268,9 +268,9 @@ final class ProductTest extends TestCase
 
     public function testGetStockByWarehouseReturnsMatchingStock(): void
     {
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
 
-        $stockEntry = $this->createMock(ProductStock::class);
+        $stockEntry = $this->createStub(ProductStock::class);
         $stockEntry->method('getWarehouse')->willReturn($warehouse);
         $stockEntry->method('getStock')->willReturn(5.5);
 
@@ -282,10 +282,10 @@ final class ProductTest extends TestCase
 
     public function testGetStockByWarehouseReturnsZeroWhenNotFound(): void
     {
-        $warehouse = $this->createMock(Warehouse::class);
-        $otherWarehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
+        $otherWarehouse = $this->createStub(Warehouse::class);
 
-        $stockEntry = $this->createMock(ProductStock::class);
+        $stockEntry = $this->createStub(ProductStock::class);
         $stockEntry->method('getWarehouse')->willReturn($otherWarehouse);
 
         $product = new Product();
@@ -296,7 +296,7 @@ final class ProductTest extends TestCase
 
     public function testGetStockByWarehouseReturnsZeroWhenNoStocks(): void
     {
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $product = new Product();
 
         self::assertSame(0.0, $product->getStockByWarehouse($warehouse));
@@ -332,7 +332,7 @@ final class ProductTest extends TestCase
 
     public function testRemoveStockRemovesFromCollection(): void
     {
-        $stockEntry = $this->createMock(ProductStock::class);
+        $stockEntry = $this->createStub(ProductStock::class);
         $stockEntry->method('setProduct');
 
         $product = new Product();

@@ -14,8 +14,10 @@ use App\CashRegister\Repository\CashSessionRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRegisterCloseProcessorTest extends TestCase
 {
     /** @var EntityManagerInterface&MockObject */

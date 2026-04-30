@@ -9,10 +9,12 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantNotificationServiceTest extends TestCase
 {
     public function testGetTenantTargetsReturnsDecodedRows(): void
@@ -220,7 +222,7 @@ final class TenantNotificationServiceTest extends TestCase
      */
     private function readyConnection(bool $ready = true): Connection
     {
-        $schemaManager = $this->createMock(AbstractSchemaManager::class);
+        $schemaManager = $this->createStub(AbstractSchemaManager::class);
         $schemaManager->method('tablesExist')->willReturn($ready);
 
         $connection = $this->createMock(Connection::class);

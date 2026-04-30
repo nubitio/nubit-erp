@@ -31,7 +31,7 @@ final class BillRepositoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->serializer = $this->createStub(SerializerInterface::class);
+        $this->serializer = $this->createMock(SerializerInterface::class);
         $this->logger = $this->createStub(LoggerInterface::class);
         $this->billingLogger = $this->createStub(LoggerInterface::class);
         $this->tenantContext = new TenantContext();

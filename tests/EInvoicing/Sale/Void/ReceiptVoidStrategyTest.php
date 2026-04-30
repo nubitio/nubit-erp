@@ -17,10 +17,12 @@ use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use Greenter\Model\Response\SummaryResult;
 use League\Flysystem\FilesystemOperator;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ReceiptVoidStrategyTest extends TestCase
 {
     // ──────────────────────────────────────────────────────────────────────────
@@ -99,7 +101,7 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidThrowsServiceExceptionWhenTaxDocumentNotFound(): void
     {
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn(null);
 
         $sut = new ReceiptVoidStrategy(
@@ -120,10 +122,10 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidThrowsSaleExceptionWhenDocumentNotIssued(): void
     {
-        $taxDocument = $this->createMock(TaxDocument::class);
+        $taxDocument = $this->createStub(TaxDocument::class);
         $taxDocument->method('getSunatStatus')->willReturn('2');
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn($taxDocument);
 
         $sut = new ReceiptVoidStrategy(
@@ -140,10 +142,10 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidThrowsSaleExceptionWhenSunatStatusIsNull(): void
     {
-        $taxDocument = $this->createMock(TaxDocument::class);
+        $taxDocument = $this->createStub(TaxDocument::class);
         $taxDocument->method('getSunatStatus')->willReturn(null);
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn($taxDocument);
 
         $sut = new ReceiptVoidStrategy(
@@ -164,11 +166,11 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidReturnsSunatVoidResponseOnSuccess(): void
     {
-        $taxDocument = $this->createMock(TaxDocument::class);
+        $taxDocument = $this->createStub(TaxDocument::class);
         $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('55');
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse(
@@ -177,7 +179,7 @@ final class ReceiptVoidStrategyTest extends TestCase
             ticket: 'TICKET-002',
         );
 
-        $useCase = $this->createMock(SummaryCreateUseCase::class);
+        $useCase = $this->createStub(SummaryCreateUseCase::class);
         $useCase->method('__invoke')->willReturn($summaryResponse);
 
         $filesystem = $this->createMock(FilesystemOperator::class);
@@ -205,16 +207,16 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidThrowsServiceExceptionWhenSunatResponseFails(): void
     {
-        $taxDocument = $this->createMock(TaxDocument::class);
+        $taxDocument = $this->createStub(TaxDocument::class);
         $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('66');
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse(success: false, ticket: '');
 
-        $useCase = $this->createMock(SummaryCreateUseCase::class);
+        $useCase = $this->createStub(SummaryCreateUseCase::class);
         $useCase->method('__invoke')->willReturn($summaryResponse);
 
         $filesystem = $this->createMock(FilesystemOperator::class);
@@ -234,11 +236,11 @@ final class ReceiptVoidStrategyTest extends TestCase
 
     public function testVoidCallsUseCaseWithTaxDocumentId(): void
     {
-        $taxDocument = $this->createMock(TaxDocument::class);
+        $taxDocument = $this->createStub(TaxDocument::class);
         $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('88');
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse();
@@ -249,7 +251,7 @@ final class ReceiptVoidStrategyTest extends TestCase
             ->with('88')
             ->willReturn($summaryResponse);
 
-        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem = $this->createStub(FilesystemOperator::class);
 
         $sut = new ReceiptVoidStrategy(
             $repo,
@@ -265,7 +267,7 @@ final class ReceiptVoidStrategyTest extends TestCase
     {
         $capturedCriteria = null;
 
-        $repo = $this->createMock(TaxDocumentRepository::class);
+        $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findOneBy')
             ->willReturnCallback(static function (array $criteria) use (&$capturedCriteria): null {
                 $capturedCriteria = $criteria;

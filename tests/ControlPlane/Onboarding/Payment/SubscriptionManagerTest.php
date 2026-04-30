@@ -10,9 +10,11 @@ use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SubscriptionManagerTest extends TestCase
 {
     public function testCreateAndCreatePendingReturnInsertedIds(): void

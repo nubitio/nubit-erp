@@ -9,11 +9,13 @@ use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Settings\Service\UbigeoImportService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ImportUbigeoCommandTest extends TestCase
 {
     public function testFailsWhenCsvIsUnreadable(): void
@@ -43,7 +45,7 @@ final class ImportUbigeoCommandTest extends TestCase
                 skipHeader: true,
                 batchSize: 50,
                 disableChecks: true,
-                progressCallback: self::isType('callable')
+                progressCallback: self::isCallable()
             )
             ->willReturn(1);
 
@@ -67,7 +69,7 @@ final class ImportUbigeoCommandTest extends TestCase
         self::assertNotFalse($tmpFile);
         file_put_contents($tmpFile, "010101,AMAZONAS,CHACHAPOYAS,CHACHAPOYAS\n");
 
-        $importService = $this->createMock(UbigeoImportService::class);
+        $importService = $this->createStub(UbigeoImportService::class);
         $importService->method('import')->willThrowException(new \RuntimeException('csv malformed'));
 
         $tester = new CommandTester($this->newCommand($importService));
@@ -81,7 +83,7 @@ final class ImportUbigeoCommandTest extends TestCase
 
     private function newCommand(UbigeoImportService $importService): ImportUbigeoCommand
     {
-        $tenantManager = $this->createMock(TenantManager::class);
+        $tenantManager = $this->createStub(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
 
         $command = new ImportUbigeoCommand($importService);

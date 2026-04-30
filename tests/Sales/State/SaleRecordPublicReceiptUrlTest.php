@@ -8,6 +8,7 @@ use App\Billing\Receipt\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
 use App\Billing\Serializer\PublicReceiptUrlNormalizer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -25,6 +26,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
  * - AC3: GET /api/sales collection returns absolute publicReceiptUrl per item
  * - AC5: PublicReceiptUrlNormalizer passes with SaleRecord coverage
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SaleRecordPublicReceiptUrlTest extends TestCase
 {
     private UrlGeneratorInterface&MockObject $urlGenerator;
@@ -109,7 +111,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
             $expectedPayload = ReceiptPayload::encode($data['documentType'], $data['taxDocumentId']);
             $absoluteUrl = 'https://app.efact.pe/receipt/' . $expectedPayload;
 
-            $innerNormalizer = $this->createMock(NormalizerInterface::class);
+            $innerNormalizer = $this->createStub(NormalizerInterface::class);
             $innerNormalizer->method('normalize')->willReturn(['publicReceiptUrl' => '/receipt/relative']);
 
             $urlGenerator = $this->createMock(UrlGeneratorInterface::class);

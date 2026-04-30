@@ -26,6 +26,7 @@ use Doctrine\DBAL\Connection;
 use App\Sales\State\SaleProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -44,6 +45,7 @@ use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
  * - TC-1: skipped invoice result is handled without throwing
  * - TC-2: successful invoice result is requested through the Sales invoicing port
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SaleProcessorInvoiceDispatchTest extends TestCase
 {
     /** @var SaleInvoicingPortInterface&MockObject */
@@ -192,7 +194,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->injectNoOpStub($processorReflection, $processor, 'branchRepository');
         // salesWriteGateway: use an interface mock so write() is a no-op (avoids warehouse/register guards).
         /** @var SalesWriteGateway&MockObject $salesWriteGatewayMock */
-        $salesWriteGatewayMock = $this->createMock(SalesWriteGateway::class);
+        $salesWriteGatewayMock = $this->createStub(SalesWriteGateway::class);
         $processorReflection->getProperty('salesWriteGateway')->setValue($processor, $salesWriteGatewayMock);
         $this->injectCashSessionResolverStub($processorReflection, $processor);
         $this->injectNoOpStub($processorReflection, $processor, 'salePaymentPlanService');
@@ -200,7 +202,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->injectNoOpStub($processorReflection, $processor, 'inventoryOrchestrator');
         // saleRecordRepository: use a mock so findByAnyId() returns null without touching real Doctrine.
         /** @var SaleRecordRepository&MockObject $saleRecordRepoMock */
-        $saleRecordRepoMock = $this->createMock(SaleRecordRepository::class);
+        $saleRecordRepoMock = $this->createStub(SaleRecordRepository::class);
         $processorReflection->getProperty('saleRecordRepository')->setValue($processor, $saleRecordRepoMock);
 
         return $processor;
@@ -241,7 +243,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         }
         $stubReflection = new ReflectionClass($className);
         if ($stubReflection->isInterface() || $stubReflection->isAbstract()) {
-            $stub = $this->createMock($className);
+            $stub = $this->createStub($className);
         } else {
             $stub = $stubReflection->newInstanceWithoutConstructor();
             $this->initializeStubProperties($stubReflection, $stub);
@@ -264,7 +266,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $resolver = $resolverRc->newInstanceWithoutConstructor();
 
         /** @var Connection&MockObject $connMock */
-        $connMock = $this->createMock(Connection::class);
+        $connMock = $this->createStub(Connection::class);
         $connMock->method('fetchAssociative')->willReturn(false);
 
         $resolverRc->getProperty('connection')->setValue($resolver, $connMock);
@@ -286,7 +288,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         SaleProcessor $target
     ): void {
         /** @var SecurityComponent&MockObject $securityComponentMock */
-        $securityComponentMock = $this->createMock(SecurityComponent::class);
+        $securityComponentMock = $this->createStub(SecurityComponent::class);
         $securityComponentMock->method('getToken')->willReturn(null);
 
         $branchContextReflection = new ReflectionClass(BranchContextService::class);
@@ -318,7 +320,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                     try {
                         $depReflection = new ReflectionClass($depClass);
                         if ($depReflection->isInterface() || $depReflection->isAbstract()) {
-                            $depStub = $this->createMock($depClass);
+                            $depStub = $this->createStub($depClass);
                         } else {
                             $depStub = $depReflection->newInstanceWithoutConstructor();
                         }
