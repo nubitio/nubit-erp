@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Exception\ServiceException;
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Organization\Repository\BranchRepository;

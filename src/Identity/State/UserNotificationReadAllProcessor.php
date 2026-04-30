@@ -6,7 +6,7 @@ namespace App\Identity\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Application\Session\Security;
+use App\Identity\Security\Security;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;

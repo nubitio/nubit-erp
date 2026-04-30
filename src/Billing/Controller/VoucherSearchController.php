@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller;
 
-use App\Core\Util\ReceiptPayload;
+use App\Billing\Receipt\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

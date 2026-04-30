@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Serializer;
 
-use App\Core\Util\ReceiptPayload;
+use App\Billing\Receipt\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
 use App\Billing\Serializer\PublicReceiptUrlNormalizer;
 use PHPUnit\Framework\MockObject\MockObject;

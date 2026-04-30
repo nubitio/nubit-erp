@@ -6,7 +6,7 @@ namespace App\Purchasing\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Security\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextService;
 use App\Organization\Entity\Branch;
 use App\Purchasing\Entity\Purchase;
 use App\Identity\Entity\User;

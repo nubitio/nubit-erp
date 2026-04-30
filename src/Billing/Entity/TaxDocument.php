@@ -20,7 +20,7 @@ use App\EInvoicing\Controller\Api\SendInvoiceEmail;
 use App\EInvoicing\Controller\Api\SendTaxDocument;
 use App\EInvoicing\Controller\Api\ValidateInvoice;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
-use App\Core\Util\ReceiptPayload;
+use App\Billing\Receipt\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Billing\State\TaxDocumentProvider;
