@@ -6,7 +6,7 @@ namespace App\CashRegister\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\CashRegister\Dto\CashRegisterDashboardDto;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -23,7 +23,7 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-        private BranchContextService $branchContext,
+        private BranchContextServiceInterface $branchContext,
     ) {
     }
 
