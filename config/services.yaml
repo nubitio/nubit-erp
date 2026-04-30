@@ -255,3 +255,8 @@ services:
     decorates: mercure.hub.default
     arguments:
       $inner: '@App\Setup\Infrastructure\Mercure\E2eTolerantHub.inner'
+
+  App\Billing\Sale\Void\SunatVoidService:
+    arguments:
+      $invoiceStrategy: '@App\Billing\Sale\Void\InvoiceVoidStrategy'
+      $receiptStrategy: '@App\Billing\Sale\Void\ReceiptVoidStrategy'

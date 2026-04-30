@@ -10,7 +10,7 @@ use Firebase\JWT\Key;
 use LogicException;
 use Psr\Log\LoggerInterface;
 
-final readonly class JWTManager
+final readonly class JWTManager implements JWTManagerInterface
 {
     private const string JWT_ALGORITHM = 'HS256';
 

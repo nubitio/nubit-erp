@@ -8,6 +8,7 @@ use Override;
 use App\Identity\Security\Security;
 use App\Identity\Auth\JWTAuthenticationToken;
 use App\Identity\Auth\JWTManager;
+use App\Identity\Auth\JWTManagerInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
@@ -16,7 +17,7 @@ final readonly class SecurityService implements Security
 {
     public function __construct(
         private SecurityComponent $security,
-        private JWTManager $jwtManager,
+        private JWTManagerInterface $jwtManager,
     ) {
     }
 
