@@ -158,16 +158,6 @@ class Product
     #[ORM\Column(name: 'precio', type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $salePrice = '0.00';
 
-    #[Groups(['product:read'])]
-    #[ApiProperty(description: 'product.stock.label')]
-    #[ORM\Column(name: 'stock', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
-    /**
-     * @deprecated Legacy denormalised stock counter. Do not read for business logic.
-     *             Use stock_items (InventoryService::getOnHand) or ProductStockService instead.
-     *             Column retained for Android POS backward compatibility.
-     */
-    private ?string $stock = null;
-
     #[Groups(['product:read', 'product:write'])]
     #[ApiProperty(description: 'product.min_stock.label')]
     #[ORM\Column(name: 'stock_minimo', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
@@ -434,18 +424,6 @@ class Product
     public function setSalePrice(string $salePrice): static
     {
         $this->salePrice = $salePrice;
-
-        return $this;
-    }
-
-    public function getStock(): ?string
-    {
-        return $this->stock;
-    }
-
-    public function setStock(?string $stock): static
-    {
-        $this->stock = $stock;
 
         return $this;
     }

@@ -273,8 +273,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         if ($product instanceof Product) {
             // Always reset to known-good state so previous test runs don't affect stock or price
             $product
-                ->setSalePrice('10.00')
-                ->setStock('100.000');
+                ->setSalePrice('10.00');
             $this->entityManager->flush();
         } else {
             $category = $this->categoryRepository->findOneBy([]);
@@ -293,7 +292,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
                 ->setUnitOfMeasure($unit)
                 ->setPurchasePrice('8.00')
                 ->setSalePrice('10.00')
-                ->setStock('100.000')
                 ->setMinStock('0.000');
 
             $this->entityManager->persist($product);

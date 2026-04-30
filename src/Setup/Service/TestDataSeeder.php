@@ -498,7 +498,6 @@ final readonly class TestDataSeeder
                     ->setUnitOfMeasure($unit)
                     ->setPurchasePrice($purchasePrice)
                     ->setSalePrice($salePrice)
-                    ->setStock($stock)
                     ->setMinStock($minStock);
 
                 $this->entityManager->persist($product);

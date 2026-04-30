@@ -122,17 +122,12 @@ class ProductStockService
     }
 
     /**
-     * @deprecated No callers — superseded by InventoryService V2 write path.
-     *             Stock aggregation is computed from stock_items on demand.
-     *             Remove once confirmed no external callers remain.
+     * @deprecated Removed. producto.stock column no longer exists (dropped in
+     *             Version20260430000001_drop_producto_stock_column).
      */
     public function updateGlobalStockForProduct(Product $product): void
     {
-        $totalStock = $this->productStockRepository->getTotalStockForProduct($product);
-
-        $product->setStock(number_format($totalStock, 2, '.', ''));
-        $this->entityManager->persist($product);
-        $this->entityManager->flush();
+        // No-op: producto.stock column no longer exists.
     }
 
     /**
@@ -149,33 +144,12 @@ class ProductStockService
     }
 
     /**
-     * @deprecated One-time migration helper to bootstrap stock_items from producto.stock.
-     *             Only called from InitializeWarehouseStockCommand (legacy migration tool).
-     *             Remove once all tenants have been migrated to V2 stock_items.
+     * @deprecated Removed. The producto.stock column was dropped in
+     *             Version20260430000001_drop_producto_stock_column.
+     *             Stock migration is now handled by the Doctrine migration directly.
      */
     public function distributeGlobalStockToWarehouses(Product $product): void
     {
-        $globalStock = (float) $product->getStock();
-        $warehouses = $this->warehouseRepository->findAll();
-        $warehouseCount = count($warehouses);
-
-        if ($warehouseCount === 0) {
-            return;
-        }
-
-        // Calculate base stock per warehouse
-        $baseStock = floor($globalStock / $warehouseCount);
-        $remainder = fmod($globalStock, $warehouseCount);
-
-        foreach ($warehouses as $index => $warehouse) {
-            $stockForWarehouse = $baseStock;
-
-            // Distribute the remainder to first warehouses
-            if ($index < $remainder) {
-                $stockForWarehouse++;
-            }
-
-            $this->updateStockForProductInWarehouse($product, $warehouse, $stockForWarehouse);
-        }
+        // No-op: producto.stock column no longer exists.
     }
 }
