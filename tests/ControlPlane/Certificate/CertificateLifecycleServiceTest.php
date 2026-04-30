@@ -11,7 +11,7 @@ use App\ControlPlane\Certificate\CertificateStatusPolicy;
 use App\ControlPlane\Certificate\TenantCertificate;
 use App\ControlPlane\Certificate\TenantCertificateRepositoryInterface;
 use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
-use App\Core\Platform\Tenant\TenantRegistryInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;

@@ -7,7 +7,7 @@ namespace App\ControlPlane\Billing\Service;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Exception\QuotaExceededException;
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Platform\Billing\QuotaEnforcerInterface;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\Efact\Doctrine\DBAL\TenantConnection;

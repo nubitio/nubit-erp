@@ -77,39 +77,41 @@ services:
     class: App\EInvoicing\Billing\Infrastructure\LycetCompanyService
 
   # SPEC-004 transitional Platform boundary bindings:
-  # Keep the legacy App\Core\... service IDs as the primary definitions while
-  # the application still imports them broadly. New Nubit\Platform\... contracts
-  # alias back to those same services so both namespaces resolve consistently.
-  # Future migration direction: move consumers to Nubit\Platform\... contracts,
-  # then flip the primary definitions and eventually remove the Core shims.
-  App\Core\Platform\Tenant\TenantRegistryInterface:
-    class: App\ControlPlane\Tenant\Service\TenantManager
+  # ── Platform contracts → concrete implementations ─────────────────────────
+  # Primary definitions are now on Nubit\Platform\... contracts.
+  # App\Core\... shims remain as backward-compat aliases until removed.
 
   Nubit\Platform\Tenant\Contract\TenantRegistryInterface:
-    alias: App\Core\Platform\Tenant\TenantRegistryInterface
+    class: App\ControlPlane\Tenant\Service\TenantManager
+
+  App\Core\Platform\Tenant\TenantRegistryInterface:
+    alias: Nubit\Platform\Tenant\Contract\TenantRegistryInterface
 
   Nubit\Platform\Tenant\Context\TenantContext:
-    # TenantContext is stateful per request/message; this alias intentionally
-    # prevents a second independent Platform context instance from being built.
-    alias: App\Core\Context\TenantContext
+    # Stateful per request/message; autoconfiguration creates a single instance.
+    # App\Core\Context\TenantContext extends this, so both resolve to one object.
+    class: Nubit\Platform\Tenant\Context\TenantContext
 
-  App\Core\Platform\Tenant\TenantConnectionSwitcherInterface:
-    class: App\ControlPlane\Tenant\Service\TenantConnectionSwitcher
+  App\Core\Context\TenantContext:
+    alias: Nubit\Platform\Tenant\Context\TenantContext
 
   Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface:
-    alias: App\Core\Platform\Tenant\TenantConnectionSwitcherInterface
+    class: App\ControlPlane\Tenant\Service\TenantConnectionSwitcher
 
-  App\Core\Platform\Tenant\TenantBackupRunnerInterface:
-    class: App\ControlPlane\Tenant\Service\TenantBackupService
+  App\Core\Platform\Tenant\TenantConnectionSwitcherInterface:
+    alias: Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface
 
   Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface:
-    alias: App\Core\Platform\Tenant\TenantBackupRunnerInterface
+    class: App\ControlPlane\Tenant\Service\TenantBackupService
 
-  App\Core\Platform\Billing\QuotaEnforcerInterface:
-    class: App\ControlPlane\Billing\Service\TenantQuotaService
+  App\Core\Platform\Tenant\TenantBackupRunnerInterface:
+    alias: Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface
 
   Nubit\Platform\Quota\Contract\QuotaEnforcerInterface:
-    alias: App\Core\Platform\Billing\QuotaEnforcerInterface
+    class: App\ControlPlane\Billing\Service\TenantQuotaService
+
+  App\Core\Platform\Billing\QuotaEnforcerInterface:
+    alias: Nubit\Platform\Quota\Contract\QuotaEnforcerInterface
 
   # SPEC-005: Feature gate — bind the Platform contract to the ControlPlane implementation.
   Nubit\Platform\Feature\Contract\FeatureCheckerInterface:
@@ -177,21 +179,22 @@ services:
     tags:
       - { name: app.payment_gateway }
 
-  App\Core\Logging\TenantLogProcessor:
+  Nubit\Platform\Observability\Logging\TenantLogProcessor:
     tags:
       - { name: monolog.processor }
 
-  Nubit\Platform\Observability\Logging\TenantLogProcessor:
-    # Legacy processor keeps the Monolog tag; Platform consumers share the tagged service.
-    alias: App\Core\Logging\TenantLogProcessor
+  App\Core\Logging\TenantLogProcessor:
+    alias: Nubit\Platform\Observability\Logging\TenantLogProcessor
 
-  Nubit\Platform\Cache\CacheManager:
-    # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
-    alias: App\Core\Cache\CacheManager
+  Nubit\Platform\Cache\CacheManager: ~
 
-  Nubit\Platform\Filesystem\FileManager:
-    # Stateless compatibility alias; legacy class extends the promoted Platform implementation.
-    alias: App\Core\Filesystem\FileManager
+  App\Core\Cache\CacheManager:
+    alias: Nubit\Platform\Cache\CacheManager
+
+  Nubit\Platform\Filesystem\FileManager: ~
+
+  App\Core\Filesystem\FileManager:
+    alias: Nubit\Platform\Filesystem\FileManager
 
   App\Core\Audit\AuditLogger: ~
 
@@ -211,13 +214,19 @@ services:
     tags:
       - { name: messenger.middleware, bus: messenger.bus.default }
 
+  Nubit\Platform\Messenger\TenantStampMiddleware:
+    tags:
+      - { name: messenger.middleware, bus: messenger.bus.default }
+
   App\Core\Messenger\TenantStampMiddleware:
+    alias: Nubit\Platform\Messenger\TenantStampMiddleware
+
+  Nubit\Platform\Messenger\TenantContextMiddleware:
     tags:
       - { name: messenger.middleware, bus: messenger.bus.default }
 
   App\Core\Messenger\TenantContextMiddleware:
-    tags:
-      - { name: messenger.middleware, bus: messenger.bus.default }
+    alias: Nubit\Platform\Messenger\TenantContextMiddleware
 
   # OpenTelemetry Logger Provider
   open_telemetry.logger_provider:

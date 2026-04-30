@@ -30,7 +30,7 @@ api_platform:
     pagination_client_items_per_page: true
   use_symfony_listeners: true
   exception_to_status:
-    App\Core\Exception\ServiceException: 422
+    Nubit\Platform\Exception\ServiceException: 422
   mercure: ~
   mcp:
     enabled: true

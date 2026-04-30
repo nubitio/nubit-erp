@@ -6,7 +6,7 @@ namespace App\Tests\Core\Messenger;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Messenger\ActorStamp;
-use App\Core\Messenger\TenantContextMiddleware;
+use Nubit\Platform\Messenger\TenantContextMiddleware;
 use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Messenger\TenantStampMiddleware;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;

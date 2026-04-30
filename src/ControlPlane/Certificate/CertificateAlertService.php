@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Certificate;
 
-use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;

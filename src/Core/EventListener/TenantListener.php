@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Core\Platform\Tenant\TenantConnectionSwitcherInterface;
-use App\Core\Platform\Tenant\TenantRegistryInterface;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
