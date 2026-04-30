@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 final readonly class TokenGeneratorService
 {
     public function __construct(
-        private JWTManager $jwtManager,
+        private JWTManagerInterface $jwtManager,
         private EntityManagerInterface $entityManager,
         private TenantContext $tenantContext,
         private int $accessTokenTtl,

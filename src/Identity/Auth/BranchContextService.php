@@ -14,7 +14,7 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
 {
     public function __construct(
         private SecurityComponent $security,
-        private JWTManager $jwtManager,
+        private JWTManagerInterface $jwtManager,
     ) {
     }
 
