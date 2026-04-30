@@ -602,7 +602,7 @@ final class SaleProcessorTest extends TestCase
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
-        $defaultCustomer = $this->createMock(Customer::class);
+        $defaultCustomer = $this->createStub(Customer::class);
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
@@ -1044,7 +1044,7 @@ final class SaleProcessorTest extends TestCase
         string $disableLegacyCashMovement = 'false',
     ): SaleProcessor {
         // Configure the main settings mock (new mock each call to avoid "already configured" issues)
-        $settingsMock = $this->createMock(SettingsService::class);
+        $settingsMock = $this->createStub(SettingsService::class);
         $settingsMock
             ->method('get')
             ->willReturnMap([
@@ -1191,7 +1191,7 @@ final class SaleProcessorTest extends TestCase
     private function buildBranchContextStub(?string $returnBranchId = null): BranchContextService
     {
         /** @var SecurityComponent&MockObject $secMock */
-        $secMock = $this->createMock(SecurityComponent::class);
+        $secMock = $this->createStub(SecurityComponent::class);
         $secMock->method('getToken')->willReturn(null);
 
         $rc = new ReflectionClass(BranchContextService::class);
@@ -1240,7 +1240,7 @@ final class SaleProcessorTest extends TestCase
 
         // 4. Make security->getToken() return our JWT token
         /** @var \Symfony\Bundle\SecurityBundle\Security&MockObject $secMock */
-        $secMock = $this->createMock(\Symfony\Bundle\SecurityBundle\Security::class);
+        $secMock = $this->createStub(\Symfony\Bundle\SecurityBundle\Security::class);
         $secMock->method('getToken')->willReturn($jwtToken);
 
         // 5. Build BranchContextService via reflection
@@ -1283,7 +1283,7 @@ final class SaleProcessorTest extends TestCase
 
         // stockValidationPolicy — no-op interface mock
         /** @var \App\Inventory\Core\Contract\StockValidationPolicyInterface&MockObject $svp */
-        $svp = $this->createMock(\App\Inventory\Core\Contract\StockValidationPolicyInterface::class);
+        $svp = $this->createStub(\App\Inventory\Core\Contract\StockValidationPolicyInterface::class);
         $rc->getProperty('stockValidationPolicy')->setValue($stub, $svp);
 
         // policyResolver (final) — bypass constructor, inject SettingsService mock
@@ -1294,7 +1294,7 @@ final class SaleProcessorTest extends TestCase
 
         // SettingsService is NOT final — we can mock it
         /** @var SettingsService&MockObject $policySettings */
-        $policySettings = $this->createMock(SettingsService::class);
+        $policySettings = $this->createStub(SettingsService::class);
 
         if ($shouldThrow) {
             // BLOCK policy: resolvePolicy() returns BLOCK (default for empty/unknown setting)
@@ -1365,7 +1365,7 @@ final class SaleProcessorTest extends TestCase
         $stub = $rc->newInstanceWithoutConstructor();
 
         /** @var Connection&MockObject $connMock */
-        $connMock = $this->createMock(Connection::class);
+        $connMock = $this->createStub(Connection::class);
 
         if ($resolvedSessionId !== null) {
             $connMock

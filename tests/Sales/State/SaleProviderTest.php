@@ -11,9 +11,11 @@ use ApiPlatform\State\ProviderInterface;
 use App\Sales\State\SaleProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SaleProvider::class)]
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class SaleProviderTest extends TestCase
 {
     /** @var ProviderInterface<object>&MockObject */

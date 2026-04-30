@@ -6,12 +6,14 @@ namespace App\Tests\ControlPlane\Onboarding\Payment;
 
 use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Subscription\Payment\PayPalGateway;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class PayPalGatewayTest extends TestCase
 {
     private function buildGateway(

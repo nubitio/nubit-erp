@@ -14,8 +14,10 @@ use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CertificateLifecycleServiceTest extends TestCase
 {
     public function testUpsertStoresMetadataSupersedesPreviousAndUpdatesLycet(): void
@@ -127,7 +129,7 @@ final class CertificateLifecycleServiceTest extends TestCase
         $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet unavailable');
         $repository->expects(self::never())->method('markSuperseded');
 
-        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing = $this->createStub(ElectronicBillingCompanyPortInterface::class);
         $billing->method('upsertCompany')->willThrowException(new \RuntimeException('lycet unavailable'));
 
         $connection = $this->createMock(Connection::class);
@@ -165,7 +167,7 @@ final class CertificateLifecycleServiceTest extends TestCase
         $repository->expects(self::once())->method('markLycetSyncFailed')->with(10, 'revocation_failed', 'lycet unavailable');
         $repository->expects(self::never())->method('revoke');
 
-        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing = $this->createStub(ElectronicBillingCompanyPortInterface::class);
         $billing->method('removeCompany')->willThrowException(new \RuntimeException('lycet unavailable'));
 
         $service = new CertificateLifecycleService(
@@ -224,7 +226,7 @@ final class CertificateLifecycleServiceTest extends TestCase
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
         $repository->expects(self::once())
             ->method('findByTenantAndFingerprint')
-            ->with(1, self::isType('string'))
+            ->with(1, self::isString())
             ->willReturn($certificate);
         $repository->expects(self::once())->method('markLycetSyncPending')->with(11, 'upsert_pending');
         $repository->expects(self::once())->method('markLycetSynced')->with(11);
@@ -259,13 +261,13 @@ final class CertificateLifecycleServiceTest extends TestCase
         ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->method('findByTenantAndFingerprint')->with(1, self::isType('string'))->willReturn($this->certificate(id: 11, status: CertificateStatus::Active));
+        $repository->method('findByTenantAndFingerprint')->with(1, self::isString())->willReturn($this->certificate(id: 11, status: CertificateStatus::Active));
         $repository->expects(self::once())->method('markLycetSyncPending')->with(11, 'upsert_pending');
         $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet still unavailable');
         $repository->expects(self::never())->method('markLycetSynced');
         $repository->expects(self::never())->method('markOtherActiveCertificatesSuperseded');
 
-        $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
+        $billing = $this->createStub(ElectronicBillingCompanyPortInterface::class);
         $billing->method('upsertCompany')->willThrowException(new \RuntimeException('lycet still unavailable'));
 
         $service = new CertificateLifecycleService(

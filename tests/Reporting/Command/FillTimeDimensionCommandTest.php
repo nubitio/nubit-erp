@@ -9,11 +9,13 @@ use App\Core\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Reporting\Service\TimeDimensionSeeder;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class FillTimeDimensionCommandTest extends TestCase
 {
     public function testFailsWhenStartDateIsNotBeforeEndDate(): void
@@ -41,7 +43,7 @@ final class FillTimeDimensionCommandTest extends TestCase
                 self::isInstanceOf(\DateTimeImmutable::class),
                 100,
                 'en_US',
-                self::isType('callable')
+                self::isCallable()
             )
             ->willReturn(365);
 
@@ -59,7 +61,7 @@ final class FillTimeDimensionCommandTest extends TestCase
 
     public function testReturnsFailureWhenSeederThrows(): void
     {
-        $seeder = $this->createMock(TimeDimensionSeeder::class);
+        $seeder = $this->createStub(TimeDimensionSeeder::class);
         $seeder->method('seed')->willThrowException(new \RuntimeException('db error'));
 
         $tester = new CommandTester($this->newCommand($seeder));
@@ -74,7 +76,7 @@ final class FillTimeDimensionCommandTest extends TestCase
 
     private function newCommand(TimeDimensionSeeder $seeder): FillTimeDimensionCommand
     {
-        $tenantManager = $this->createMock(TenantManager::class);
+        $tenantManager = $this->createStub(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
 
         $command = new FillTimeDimensionCommand($seeder);

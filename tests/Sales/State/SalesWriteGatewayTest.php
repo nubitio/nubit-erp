@@ -18,9 +18,11 @@ use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SalesWriteGateway::class)]
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class SalesWriteGatewayTest extends TestCase
 {
     private Connection&MockObject $connection;
@@ -35,7 +37,7 @@ class SalesWriteGatewayTest extends TestCase
         // SalePaymentPlanService is final (no-arg constructor) — instantiate directly
         $paymentPlanService = new SalePaymentPlanService();
 
-        $dashboardRepository = $this->createMock(DashboardRepository::class);
+        $dashboardRepository = $this->createStub(DashboardRepository::class);
 
         $this->gateway = new SalesWriteGateway(
             $this->connection,
@@ -53,10 +55,10 @@ class SalesWriteGatewayTest extends TestCase
      */
     private function buildMinimalSale(string $amount = '100.00'): SaleRecord
     {
-        $branch = $this->createMock(Branch::class);
+        $branch = $this->createStub(Branch::class);
         $branch->method('getId')->willReturn('branch-uuid');
 
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getId')->willReturn('warehouse-uuid');
         $warehouse->method('getBranch')->willReturn(null);
 
@@ -122,7 +124,7 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testWriteThrowsWhenBranchIsNull(): void
     {
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getId')->willReturn('wh-1');
         $warehouse->method('getBranch')->willReturn(null);
 
@@ -139,7 +141,7 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testWriteThrowsWhenWarehouseIsNull(): void
     {
-        $branch = $this->createMock(Branch::class);
+        $branch = $this->createStub(Branch::class);
         $branch->method('getId')->willReturn('branch-1');
 
         $sale = $this->buildSaleWithNullSeller();
@@ -155,10 +157,10 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testWriteThrowsWhenCashRegisterIsNull(): void
     {
-        $branch = $this->createMock(Branch::class);
+        $branch = $this->createStub(Branch::class);
         $branch->method('getId')->willReturn('branch-1');
 
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getId')->willReturn('wh-1');
 
         $sale = $this->buildSaleWithNullSeller();
@@ -175,10 +177,10 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testWriteThrowsWhenSellerUserIsNull(): void
     {
-        $branch = $this->createMock(Branch::class);
+        $branch = $this->createStub(Branch::class);
         $branch->method('getId')->willReturn('branch-1');
 
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getId')->willReturn('wh-1');
 
         $sale = $this->buildSaleWithNullSeller();
@@ -276,10 +278,10 @@ class SalesWriteGatewayTest extends TestCase
     {
         $sale = $this->buildMinimalSale();
 
-        $uom = $this->createMock(UnitOfMeasure::class);
+        $uom = $this->createStub(UnitOfMeasure::class);
         $uom->method('getCode')->willReturn('NIU');
 
-        $product = $this->createMock(Product::class);
+        $product = $this->createStub(Product::class);
         $product->method('getId')->willReturn('product-uuid');
         $product->method('getCode')->willReturn('SKU-001');
         $product->method('getName')->willReturn('Test Product');

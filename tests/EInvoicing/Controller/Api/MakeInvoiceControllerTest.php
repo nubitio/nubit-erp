@@ -9,9 +9,11 @@ use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\DetractionCalculatorInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class MakeInvoiceControllerTest extends TestCase
 {
     public function testReturnsErrorWhenSaleDoesNotExist(): void

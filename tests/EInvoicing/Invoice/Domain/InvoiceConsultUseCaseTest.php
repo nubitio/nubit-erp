@@ -48,16 +48,16 @@ final class InvoiceConsultUseCaseTest extends TestCase
         // TaxDocumentEventRepository is final — bypass constructor via reflection
         /** @var TaxDocumentEventRepository $taxDocEventRepo */
         $taxDocEventRepo    = (new \ReflectionClass(TaxDocumentEventRepository::class))->newInstanceWithoutConstructor();
-        $mockObjectManager  = $this->createMock(ObjectManager::class);
+        $mockObjectManager  = $this->createStub(ObjectManager::class);
         $mockObjectManager->method('persist'); // no-op
-        $mockRegistry = $this->createMock(ManagerRegistry::class);
+        $mockRegistry = $this->createStub(ManagerRegistry::class);
         $mockRegistry->method('getManager')->willReturn($mockObjectManager);
         $registryProp = (new \ReflectionClass(TaxDocumentEventRepository::class))->getProperty('registry');
         $registryProp->setValue($taxDocEventRepo, $mockRegistry);
         $this->taxDocumentEventRepository = $taxDocEventRepo;
 
         $tenantContext    = new TenantContext();
-        $slugger          = $this->createMock(SluggerInterface::class);
+        $slugger          = $this->createStub(SluggerInterface::class);
         $this->fileManager = new FileManager($this->filesystemOperator, $tenantContext, $slugger);
 
         $this->useCase = new InvoiceConsultUseCase(

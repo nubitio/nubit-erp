@@ -144,7 +144,7 @@ final class BillCreateUseCaseTest extends TestCase
 
     private function setupTaxDocument(string $id = 'td-1'): void
     {
-        $taxDocument = $this->createMock(\App\Billing\Entity\TaxDocument::class);
+        $taxDocument = $this->createStub(\App\Billing\Entity\TaxDocument::class);
         $taxDocument->method('getId')->willReturn($id);
         $this->taxDocumentRepository->method('find')->willReturn($taxDocument);
     }

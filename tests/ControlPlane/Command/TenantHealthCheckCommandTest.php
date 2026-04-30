@@ -11,11 +11,13 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantHealthCheckCommandTest extends TestCase
 {
     public function testChecksSpecificTenantAndReturnsSuccessWhenHealthy(): void
@@ -87,7 +89,7 @@ final class TenantHealthCheckCommandTest extends TestCase
 
     private function healthyTenantConnection(): TenantConnection
     {
-        $schema = $this->createMock(AbstractSchemaManager::class);
+        $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['user', 'config', 'branch']);
 
         $connection = $this->createMock(TenantConnection::class);

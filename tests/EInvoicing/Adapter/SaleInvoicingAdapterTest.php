@@ -14,16 +14,18 @@ use App\EInvoicing\Service\SaleV2Loader;
 use App\Sales\State\DetractionCalculatorInterface;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Sales\Entity\SaleRecord;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SaleInvoicingAdapterTest extends TestCase
 {
     public function testCreateAndDispatchSkipsMessageWhenCreationFails(): void
     {
-        $invoiceCreation = $this->createMock(InvoiceCreationServiceInterface::class);
+        $invoiceCreation = $this->createStub(InvoiceCreationServiceInterface::class);
         $invoiceCreation->method('createForSale')->willReturn(['success' => false, 'message' => 'not ready']);
 
         $messageBus = $this->createMock(MessageBusInterface::class);
@@ -36,7 +38,7 @@ final class SaleInvoicingAdapterTest extends TestCase
 
     public function testCreateAndDispatchSendsMessageAfterCurrentBusWhenCreationSucceeds(): void
     {
-        $invoiceCreation = $this->createMock(InvoiceCreationServiceInterface::class);
+        $invoiceCreation = $this->createStub(InvoiceCreationServiceInterface::class);
         $invoiceCreation->method('createForSale')->willReturn(['success' => true, 'invoiceId' => 'tax-1']);
 
         $capturedMessage = null;
@@ -71,8 +73,8 @@ final class SaleInvoicingAdapterTest extends TestCase
 
     public function testVoidSaleDelegatesToUseCase(): void
     {
-        $invoiceCreation = $this->createMock(InvoiceCreationServiceInterface::class);
-        $messageBus = $this->createMock(MessageBusInterface::class);
+        $invoiceCreation = $this->createStub(InvoiceCreationServiceInterface::class);
+        $messageBus = $this->createStub(MessageBusInterface::class);
         $voidUseCase = $this->createMock(SaleVoidUseCase::class);
         $voidUseCase->expects(self::once())
             ->method('__invoke')

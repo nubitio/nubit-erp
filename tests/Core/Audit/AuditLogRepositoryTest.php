@@ -91,7 +91,7 @@ final class AuditLogRepositoryTest extends TestCase
         $schemaManager = $this->createMock(AbstractSchemaManager::class);
         $schemaManager->method('tablesExist')->with(['audit_logs'])->willReturn(true);
 
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('createSchemaManager')->willReturn($schemaManager);
         $connection->method('fetchFirstColumn')->willReturn(['action1']);
 
@@ -114,7 +114,7 @@ final class AuditLogRepositoryTest extends TestCase
             ->willReturn($controlPlaneReady);
 
         if ($connection === null) {
-            $connection = $this->createMock(Connection::class);
+            $connection = $this->createStub(Connection::class);
         }
 
         $registry = $this->createMock(ConnectionRegistry::class);

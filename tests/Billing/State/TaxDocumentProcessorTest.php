@@ -19,6 +19,7 @@ use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\State\TaxDocumentProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use ReflectionClass;
@@ -38,6 +39,7 @@ use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
  * - TC-3: Voided document guard — credit note for a voided related document → ServiceException.
  * - TC-4: Delete guard — deleting a processed (sent to SUNAT) document → ServiceException.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TaxDocumentProcessorTest extends TestCase
 {
     /** @var ProcessorInterface<mixed, mixed>&MockObject */

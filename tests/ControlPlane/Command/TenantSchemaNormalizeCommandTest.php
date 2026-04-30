@@ -12,7 +12,7 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
 {
     public function testBuildMenuIdNormalizationAddsPrimaryAndModifyStatements(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturnCallback(
             static function (string $sql): int {
                 if (str_contains($sql, 'information_schema.tables')) {
@@ -52,7 +52,7 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
 
     public function testBuildUnidadCodeNormalizationIncludesFallbacksAndNotNull(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturnCallback(
             static function (string $sql, array $params): int {
                 if (str_contains($sql, 'information_schema.tables')) {
@@ -84,7 +84,7 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
 
     public function testBuildTypeOnlyAlterReturnsStatementWhenTypeChanges(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
         $connection->method('fetchAssociative')->willReturn(
             [

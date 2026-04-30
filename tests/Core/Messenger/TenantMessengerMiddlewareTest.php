@@ -10,11 +10,13 @@ use App\Core\Messenger\TenantContextMiddleware;
 use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Messenger\TenantStampMiddleware;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantMessengerMiddlewareTest extends TestCase
 {
     public function testStampMiddlewareAddsTenantStamp(): void
@@ -118,7 +120,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
     public function testContextMiddlewareRestoresActorWithMessengerChannel(): void
     {
         $ctx = new TenantContext();
-        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+        $switcher = $this->createStub(TenantConnectionSwitcher::class);
 
         $tenantStamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
         $actorStamp = new ActorStamp('cli:app:test', 'cli', 'app:test');
@@ -145,7 +147,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
     public function testContextMiddlewareSetsMessengerChannelWithoutActorStamp(): void
     {
         $ctx = new TenantContext();
-        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+        $switcher = $this->createStub(TenantConnectionSwitcher::class);
 
         $tenantStamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
         $envelope = new Envelope(new \stdClass(), [$tenantStamp]);
@@ -165,7 +167,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
     public function testContextMiddlewareClearsContextAfterProcessing(): void
     {
         $ctx = new TenantContext();
-        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+        $switcher = $this->createStub(TenantConnectionSwitcher::class);
 
         $stamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
         $actorStamp = new ActorStamp('cli:test', 'cli');
@@ -185,7 +187,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
     public function testContextMiddlewareClearsContextEvenOnException(): void
     {
         $ctx = new TenantContext();
-        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+        $switcher = $this->createStub(TenantConnectionSwitcher::class);
 
         $stamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
         $envelope = new Envelope(new \stdClass(), [$stamp]);

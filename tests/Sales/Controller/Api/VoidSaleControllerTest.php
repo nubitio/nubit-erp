@@ -18,7 +18,7 @@ final class VoidSaleControllerTest extends TestCase
         $saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
         $saleInvoicing->expects(self::never())->method('voidSale');
 
-        $security = $this->createMock(Security::class);
+        $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(10, 'cashier', 3, ['ROLE_USER']));
 
         $controller = new VoidSale($saleInvoicing, $security);

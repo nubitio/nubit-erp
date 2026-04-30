@@ -101,7 +101,7 @@ final class VoidedRepositoryTest extends TestCase
     {
         $this->connection->method('fetchOne')->willReturn(false);
 
-        $statement = $this->createMock(\Doctrine\DBAL\Result::class);
+        $statement = $this->createStub(\Doctrine\DBAL\Result::class);
         $statement->method('fetchAssociative')->willReturn(false);
         $this->connection->method('executeQuery')->willReturn($statement);
 

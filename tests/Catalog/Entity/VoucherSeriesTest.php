@@ -22,7 +22,7 @@ final class VoucherSeriesTest extends TestCase
 
     public function testBranchRoundTrip(): void
     {
-        $branch = $this->createMock(Branch::class);
+        $branch = $this->createStub(Branch::class);
 
         $entity = new VoucherSeries();
         $entity->setBranch($branch);
@@ -32,7 +32,7 @@ final class VoucherSeriesTest extends TestCase
 
     public function testVoucherTypeRoundTrip(): void
     {
-        $voucherType = $this->createMock(VoucherType::class);
+        $voucherType = $this->createStub(VoucherType::class);
 
         $entity = new VoucherSeries();
         $entity->setVoucherType($voucherType);

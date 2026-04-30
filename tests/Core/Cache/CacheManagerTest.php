@@ -7,6 +7,7 @@ namespace App\Tests\Core\Cache;
 use App\Core\Cache\CacheManager;
 use App\Core\Context\TenantContext;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -18,6 +19,7 @@ use Psr\Cache\CacheItemPoolInterface;
  * The underlying CacheItemPoolInterface is fully mocked so tests are fast
  * and isolated from infrastructure.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CacheManagerTest extends TestCase
 {
     private CacheItemPoolInterface&MockObject $pool;
@@ -147,7 +149,7 @@ final class CacheManagerTest extends TestCase
     {
         $manager = $this->makeCacheManager('demo');
 
-        $item = $this->createMock(CacheItemInterface::class);
+        $item = $this->createStub(CacheItemInterface::class);
         $item->method('isHit')->willReturn(false);
         $item->method('set')->willReturnSelf();
         $item->method('expiresAfter')->willReturnSelf();

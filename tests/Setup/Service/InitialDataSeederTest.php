@@ -25,15 +25,17 @@ use App\Catalog\Repository\VoucherTypeRepository;
 use App\Setup\Service\InitialDataSeeder;
 use App\Settings\Service\MenuSeedService;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class InitialDataSeederTest extends TestCase
 {
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
         $captured = [];
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('set')->willReturnCallback(
             static function (string $name, string $type, string $value) use (&$captured): void {
                 $captured[$name] = ['type' => $type, 'value' => $value];
@@ -55,7 +57,7 @@ final class InitialDataSeederTest extends TestCase
     {
         $this->expectNotToPerformAssertions();
 
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $settings->method('set')->willThrowException(new \RuntimeException('boom'));
 
         $service = $this->newService($settings);
@@ -64,7 +66,7 @@ final class InitialDataSeederTest extends TestCase
 
     public function testSeedRunsReferenceDataAndMenuSeedWhenEntitiesAlreadyExist(): void
     {
-        $settings = $this->createMock(SettingsService::class);
+        $settings = $this->createStub(SettingsService::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
         $entityManager->expects(self::never())->method('flush');
@@ -72,21 +74,21 @@ final class InitialDataSeederTest extends TestCase
         $menuSeedService = $this->createMock(MenuSeedService::class);
         $menuSeedService->expects(self::once())->method('seed');
 
-        $logisticRepo = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepo = $this->createStub(LogisticOperationRepository::class);
         $logisticRepo->method('findOneBy')->willReturn(new LogisticOperation());
-        $paymentRepo = $this->createMock(PaymentMethodRepository::class);
+        $paymentRepo = $this->createStub(PaymentMethodRepository::class);
         $paymentRepo->method('findOneBy')->willReturn(new PaymentMethod());
-        $cashRepo = $this->createMock(CashMovementCategoryRepository::class);
+        $cashRepo = $this->createStub(CashMovementCategoryRepository::class);
         $cashRepo->method('findOneBy')->willReturn(new CashMovementCategory());
-        $voucherRepo = $this->createMock(VoucherTypeRepository::class);
+        $voucherRepo = $this->createStub(VoucherTypeRepository::class);
         $voucherRepo->method('find')->willReturn(new VoucherType());
-        $unitRepo = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepo = $this->createStub(UnitOfMeasureRepository::class);
         $unitRepo->method('findOneBy')->willReturn(new UnitOfMeasure());
-        $categoryRepo = $this->createMock(CategoryRepository::class);
+        $categoryRepo = $this->createStub(CategoryRepository::class);
         $categoryRepo->method('findOneBy')->willReturn(new Category());
-        $customerRepo = $this->createMock(CustomerRepository::class);
+        $customerRepo = $this->createStub(CustomerRepository::class);
         $customerRepo->method('findOneBy')->willReturn(new Customer());
-        $sunatRepo = $this->createMock(SunatCatalogRepository::class);
+        $sunatRepo = $this->createStub(SunatCatalogRepository::class);
         $sunatRepo->method('findOneBy')->willReturn(new SunatCatalog());
 
         $service = new InitialDataSeeder(

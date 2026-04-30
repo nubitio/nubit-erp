@@ -14,9 +14,11 @@ use App\Sales\State\SaleUtils;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SaleUtils::class)]
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class SaleUtilsTest extends TestCase
 {
     private Connection&MockObject $connection;
@@ -41,10 +43,10 @@ class SaleUtilsTest extends TestCase
      */
     private function buildSaleForFill(int $paymentMethodId, ?int $cajaId = null): SaleRecord
     {
-        $warehouse = $this->createMock(Warehouse::class);
+        $warehouse = $this->createStub(Warehouse::class);
         $warehouse->method('getId')->willReturn('wh-uuid');
 
-        $paymentMethod = $this->createMock(PaymentMethod::class);
+        $paymentMethod = $this->createStub(PaymentMethod::class);
         $paymentMethod->method('getId')->willReturn($paymentMethodId);
 
         $sale = new SaleRecord();

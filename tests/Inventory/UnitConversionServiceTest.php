@@ -12,7 +12,7 @@ final class UnitConversionServiceTest extends TestCase
 {
     public function testToBaseConvertsWithConfiguredFactor(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn('150.000000');
 
         $service = new UnitConversionService($connection);
@@ -22,7 +22,7 @@ final class UnitConversionServiceTest extends TestCase
 
     public function testFromBaseConvertsBackWithConfiguredFactor(): void
     {
-        $connection = $this->createMock(Connection::class);
+        $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn('150.000000');
 
         $service = new UnitConversionService($connection);

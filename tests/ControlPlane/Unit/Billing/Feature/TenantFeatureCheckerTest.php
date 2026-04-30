@@ -13,6 +13,7 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -29,6 +30,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  *   AC-9  Plan not found → false (fail-closed)
  *   AC-15 getFeatureConfig('retention_days') → ['days' => 365]
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantFeatureCheckerTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;

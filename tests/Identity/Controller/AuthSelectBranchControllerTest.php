@@ -17,6 +17,7 @@ use App\Organization\Entity\Branch;
 use App\Identity\Entity\Role;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -24,11 +25,12 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class AuthSelectBranchControllerTest extends TestCase
 {
     public function testReturnsUnauthorizedWhenUserIsNotAuthenticated(): void
     {
-        $security = $this->createMock(Security::class);
+        $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn(null);
         $tokenGenerator = (new \ReflectionClass(TokenGeneratorService::class))->newInstanceWithoutConstructor();
         $clientDetector = (new \ReflectionClass(ClientDetectorService::class))->newInstanceWithoutConstructor();
@@ -53,7 +55,7 @@ final class AuthSelectBranchControllerTest extends TestCase
 
     public function testReturnsBadRequestWhenBranchIdIsMissing(): void
     {
-        $security = $this->createMock(Security::class);
+        $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn((new User())->setUsername('tester')->setPassword('hash'));
         $tokenGenerator = (new \ReflectionClass(TokenGeneratorService::class))->newInstanceWithoutConstructor();
         $clientDetector = (new \ReflectionClass(ClientDetectorService::class))->newInstanceWithoutConstructor();
@@ -88,14 +90,14 @@ final class AuthSelectBranchControllerTest extends TestCase
         $branch = new Branch();
         $branch->setName('Main Branch');
 
-        $security = $this->createMock(Security::class);
+        $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn($user);
 
-        $branchRepository = $this->createMock(BranchRepository::class);
+        $branchRepository = $this->createStub(BranchRepository::class);
         $branchRepository->method('find')->willReturn($branch);
 
         $jwtManager = new JWTManager($jwtSecret, new NullLogger());
-        $em = $this->createMock(EntityManagerInterface::class);
+        $em = $this->createStub(EntityManagerInterface::class);
         $tenantContext = new TenantContext();
         $tenantContext->setTenant(1, 'acme', null, null);
 

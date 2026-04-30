@@ -11,6 +11,7 @@ use App\Inventory\Core\Service\LotDeductionService;
 use App\Inventory\Repository\StockLotRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
  *               insufficient stock, exact epsilon boundary, NONE strategy exception
  *   - receive(): new lot creation, existing lot qty accumulation
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class LotDeductionServiceTest extends TestCase
 {
     private StockLotRepository&MockObject $repository;

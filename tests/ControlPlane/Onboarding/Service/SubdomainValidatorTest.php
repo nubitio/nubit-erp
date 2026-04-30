@@ -8,8 +8,10 @@ use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SubdomainValidatorTest extends TestCase
 {
     private ConnectionRegistry&MockObject $registry;

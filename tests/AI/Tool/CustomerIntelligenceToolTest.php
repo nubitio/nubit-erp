@@ -8,8 +8,10 @@ use App\AI\Context\BranchContextInterface;
 use App\AI\Tool\CustomerIntelligenceTool;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CustomerIntelligenceToolTest extends TestCase
 {
     private Connection&MockObject $connection;

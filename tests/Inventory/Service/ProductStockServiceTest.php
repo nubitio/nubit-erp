@@ -11,9 +11,11 @@ use App\Inventory\Repository\ProductStockRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ProductStockServiceTest extends TestCase
 {
     public function testGetStockForProductInWarehouseReturnsZeroWhenNoRecordExists(): void
@@ -116,7 +118,7 @@ final class ProductStockServiceTest extends TestCase
         $warehouseA = new Warehouse();
         $warehouseB = new Warehouse();
 
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $warehouseRepository->method('findAll')->willReturn([$warehouseA, $warehouseB]);
 
         $repository = $this->createMock(ProductStockRepository::class);
@@ -124,7 +126,7 @@ final class ProductStockServiceTest extends TestCase
         $repository->method('getTotalStockForProduct')->willReturn(5.0);
 
         $stocks = [];
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('persist')->willReturnCallback(
             static function (object $entity) use (&$stocks): void {
                 if ($entity instanceof ProductStock) {

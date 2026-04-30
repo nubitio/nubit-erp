@@ -10,6 +10,7 @@ use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -24,6 +25,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * we test the cache invalidation contract through TenantFeatureOverrideManager
  * which is the primary mutation surface for feature overrides.
  */
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CacheInvalidationTest extends TestCase
 {
     private TenantFeatureOverrideRepositoryInterface&MockObject $overrideRepository;

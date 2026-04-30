@@ -10,8 +10,10 @@ use App\Purchasing\State\PurchasesWriteMode;
 use App\Purchasing\State\PurchasesWritePolicy;
 use App\Purchasing\State\PurchasesWritePolicyResolver;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class PurchasesWritePolicyResolverTest extends TestCase
 {
     private SettingsService&MockObject $settings;

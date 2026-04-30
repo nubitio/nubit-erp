@@ -9,9 +9,11 @@ use App\CashRegister\Dto\CashShiftClosureSummaryDto;
 use App\CashRegister\State\CashShiftClosureSummaryProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashShiftClosureSummaryProviderTest extends TestCase
 {
     /** @var Connection&MockObject */
