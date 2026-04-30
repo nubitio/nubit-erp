@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Adapter;
 
 use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
-use App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface;
+use App\Billing\Sunat\Domain\LycetCompanyServiceInterface;
 
 final readonly class LycetElectronicBillingCompanyAdapter implements ElectronicBillingCompanyPortInterface
 {

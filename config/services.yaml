@@ -73,8 +73,8 @@ services:
     arguments:
       $logger: '@logger'
 
-  App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface:
-    class: App\EInvoicing\Billing\Infrastructure\LycetCompanyService
+  App\Billing\Sunat\Domain\LycetCompanyServiceInterface:
+    class: App\Billing\Sunat\Infrastructure\LycetCompanyService
 
   # SPEC-004 transitional Platform boundary bindings:
   # ── Platform contracts → concrete implementations ─────────────────────────
@@ -201,7 +201,7 @@ services:
   App\Efact\Audit\AuditLogRepository: ~
 
   App\Inventory\Core\Contract\SalesInventoryPortInterface: '@App\Inventory\Adapter\InventoryServiceSalesInventoryPort'
-  App\Sales\Port\SaleInvoicingPortInterface: '@App\EInvoicing\Adapter\SaleInvoicingAdapter'
+  App\Sales\Port\SaleInvoicingPortInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
   App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
   App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'
