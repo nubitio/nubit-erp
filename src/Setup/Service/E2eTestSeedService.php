@@ -103,6 +103,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     public function reset(): void
     {
         $this->purgeE2eSales();
+        $this->purgeE2ePurchases();
 
         $branch = $this->branchRepository->findOneBy(['name' => self::E2E_BRANCH_NAME]);
         if ($branch instanceof Branch) {
@@ -120,6 +121,40 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             $this->entityManager->remove($user);
             $this->entityManager->flush();
         }
+    }
+
+    private function purgeE2ePurchases(): void
+    {
+        $purchaseIds = $this->connection->fetchFirstColumn(
+            'SELECT gr.id FROM goods_receipts gr
+             INNER JOIN usuario u ON u.usuario_id = gr.buyer_user_id
+             WHERE u.username = :username',
+            ['username' => self::E2E_USERNAME]
+        );
+
+        if ($purchaseIds === []) {
+            return;
+        }
+
+        $this->connection->executeStatement(
+            "DELETE FROM stock_movements
+             WHERE source_type = 'PURCHASE_ITEM'
+             AND SUBSTRING_INDEX(source_id, ':', 1) IN (?)",
+            [$purchaseIds],
+            [ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            'DELETE FROM goods_receipt_items WHERE goods_receipt_id IN (?)',
+            [$purchaseIds],
+            [ArrayParameterType::STRING]
+        );
+
+        $this->connection->executeStatement(
+            'DELETE FROM goods_receipts WHERE id IN (?)',
+            [$purchaseIds],
+            [ArrayParameterType::STRING]
+        );
     }
 
     private function ensureInitialSetup(): void

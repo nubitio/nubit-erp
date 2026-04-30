@@ -180,9 +180,14 @@ final class E2eTestSeedServiceTest extends TestCase
         $cashRegister = (new CashRegister())->setName('Caja CI E2E')->setBranch($branch);
         $this->setEntityId($cashRegister, 'id', 1);
 
-        $connection->method('fetchFirstColumn')->willReturn([]);
+        $fetchCalls = 0;
+        $connection->method('fetchFirstColumn')->willReturnCallback(static function () use (&$fetchCalls): array {
+            ++$fetchCalls;
+
+            return $fetchCalls === 2 ? ['purchase-e2e-1'] : [];
+        });
         $executeCalls = [];
-        $connection->expects($this->exactly(2))
+        $connection->expects($this->exactly(5))
             ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$executeCalls): int {
                 $executeCalls[] = [$sql, $params];
@@ -221,6 +226,12 @@ final class E2eTestSeedServiceTest extends TestCase
         $service->reset();
 
         self::assertSame([
+            [
+                "DELETE FROM stock_movements\n             WHERE source_type = 'PURCHASE_ITEM'\n             AND SUBSTRING_INDEX(source_id, ':', 1) IN (?)",
+                [['purchase-e2e-1']],
+            ],
+            ['DELETE FROM goods_receipt_items WHERE goods_receipt_id IN (?)', [['purchase-e2e-1']]],
+            ['DELETE FROM goods_receipts WHERE id IN (?)', [['purchase-e2e-1']]],
             ['DELETE FROM cash_sessions WHERE cash_register_id = :register_id', ['register_id' => 1]],
             ['DELETE FROM refresh_token WHERE user_id = :user_id', ['user_id' => 9]],
         ], $executeCalls);
