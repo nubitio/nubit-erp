@@ -50,7 +50,7 @@ This is **not yet Composer-extraction complete**. The remaining work is package-
 - `src/Efact/Config/EfactConstants.php`
 - `src/Efact/Doctrine/DBAL/TenantConnection.php`
 - `src/Efact/Doctrine/Filter/{BranchFilter,DevExtremeFilter,SoftDeleteFilter}.php`
-- Existing app-owned auth remains excluded in `src/Core/Security/Auth/*`, `src/Core/Symfony/Security/SecurityService.php`, and `src/Core/Application/Session/Security.php`.
+- App-owned auth is excluded from Platform and now lives under `src/Identity/Auth/*`, `src/Identity/Security/*`, and `src/Identity/EventListener/AppSecretBootListener.php`; former Core auth/session paths have been removed from production code.
 
 ### Backward-compatibility shims
 
