@@ -7,7 +7,7 @@ namespace App\ControlPlane\Tenant\Service;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 
-final readonly class ProvisionCommandRunner
+final readonly class ProvisionCommandRunner implements ProvisionCommandRunnerInterface
 {
     public function __construct(
         private KernelInterface $kernel,

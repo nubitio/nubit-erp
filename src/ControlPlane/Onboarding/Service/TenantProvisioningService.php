@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\ControlPlane\Onboarding\Service;
 
 use App\ControlPlane\Tenant\Service\ProvisionCommandRequest;
-use App\ControlPlane\Tenant\Service\ProvisionCommandRunner;
+use App\ControlPlane\Tenant\Service\ProvisionCommandRunnerInterface;
 
 final readonly class TenantProvisioningService
 {
     public function __construct(
-        private ProvisionCommandRunner $commandRunner,
+        private ProvisionCommandRunnerInterface $commandRunner,
     ) {
     }
 
