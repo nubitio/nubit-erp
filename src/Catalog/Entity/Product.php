@@ -161,6 +161,11 @@ class Product
     #[Groups(['product:read'])]
     #[ApiProperty(description: 'product.stock.label')]
     #[ORM\Column(name: 'stock', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
+    /**
+     * @deprecated Legacy denormalised stock counter. Do not read for business logic.
+     *             Use stock_items (InventoryService::getOnHand) or ProductStockService instead.
+     *             Column retained for Android POS backward compatibility.
+     */
     private ?string $stock = null;
 
     #[Groups(['product:read', 'product:write'])]

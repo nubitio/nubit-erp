@@ -50,14 +50,11 @@ final readonly class ProductTools
 
         $stocks = $this->productStockRepository->findByProduct($product);
 
-        $fallbackStock = $product->getStock();
-
         return new ProductStockDto(
             (string) $product->getId(),
             $product->getCode(),
             $product->getName(),
             $this->productStockRepository->getTotalStockForProduct($product),
-            $fallbackStock !== null ? (float) $fallbackStock : null,
             array_map(static fn (ProductStock $stock): ProductWarehouseStockDto => new ProductWarehouseStockDto(
                 (string) $stock->getWarehouse()->getId(),
                 $stock->getWarehouse()->getName(),
