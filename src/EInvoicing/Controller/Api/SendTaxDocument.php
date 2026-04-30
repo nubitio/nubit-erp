@@ -68,7 +68,7 @@ class SendTaxDocument extends AbstractController
             return new ApiResponse(
                 success: false,
                 message: 'Error sending document',
-                data: $e->getMessage(),
+                payload: $e->getMessage(),
             );
         }
     }

@@ -109,7 +109,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             return new ApiResponse(
                 success: false,
                 message: 'Error al cerrar la caja',
-                data: $ormException->getMessage(),
+                payload: $ormException->getMessage(),
             );
         }
 

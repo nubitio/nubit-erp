@@ -8,11 +8,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiResponse extends JsonResponse
 {
+    /** @var mixed The application-level payload (not the JsonResponse internal $data property). */
+    private mixed $payload;
+
     public function __construct(
         public bool $success,
         public string $message,
-        public mixed $data = null,
+        mixed $payload = null,
     ) {
+        $this->payload = $payload;
         parent::__construct($this->toArray(), $success ? 200 : 400);
     }
 
@@ -34,7 +38,7 @@ class ApiResponse extends JsonResponse
         return [
             'success' => $this->success,
             'message' => $this->message,
-            'data' => $this->data,
+            'data'    => $this->payload,
         ];
     }
 }
