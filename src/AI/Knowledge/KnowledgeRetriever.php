@@ -7,7 +7,7 @@ namespace App\AI\Knowledge;
 final readonly class KnowledgeRetriever
 {
     public function __construct(
-        private KnowledgeIndex $index,
+        private KnowledgeIndexInterface $index,
     ) {
     }
 
@@ -17,8 +17,8 @@ final readonly class KnowledgeRetriever
     public function search(string $query, int $limit = 3): array
     {
         $index = $this->index->load();
-        $idf = $index['idf'] ?? [];
-        $chunks = $index['chunks'] ?? [];
+        $idf = $index['idf'];
+        $chunks = $index['chunks'];
 
         $queryVector = $this->tfIdf($this->tokenize($query), $idf);
         if ([] === $queryVector || [] === $chunks) {

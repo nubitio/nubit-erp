@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Context;
 
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 
 /**
  * Adapts the framework BranchContextService to the AI tool BranchContextInterface.
@@ -14,7 +14,7 @@ use App\Identity\Auth\BranchContextService;
 final readonly class BranchContextAdapter implements BranchContextInterface
 {
     public function __construct(
-        private BranchContextService $branchContextService,
+        private BranchContextServiceInterface $branchContextService,
     ) {
     }
 

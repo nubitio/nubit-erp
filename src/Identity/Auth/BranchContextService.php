@@ -10,7 +10,7 @@ use Throwable;
 /**
  * Service to get the current branch ID from the authenticated JWT token
  */
-final readonly class BranchContextService
+final readonly class BranchContextService implements BranchContextServiceInterface
 {
     public function __construct(
         private SecurityComponent $security,

@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Uid\Uuid;
 
-final class KnowledgeIndex
+final class KnowledgeIndex implements KnowledgeIndexInterface
 {
     /** @var array<string, mixed>|null */
     private ?array $cache = null;
