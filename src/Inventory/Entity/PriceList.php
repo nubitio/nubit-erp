@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Inventory\Dto\PriceListDto;
 use App\Inventory\Dto\PricesDto;

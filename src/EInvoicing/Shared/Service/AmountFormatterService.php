@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Shared\Service;
 
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use Brick\Math\Exception\MathException;
 use NumberFormatter;
 

@@ -7,7 +7,7 @@ namespace App\Inventory\State;
 use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\Inventory\Dto\PricesDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

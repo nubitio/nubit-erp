@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Domain;
 
 use App\EInvoicing\Billing\Model\Report\Parameters;
-use App\Core\Annotation\IgnoreAutowire;
+use App\Efact\Annotation\IgnoreAutowire;
 use Greenter\Model\DocumentInterface;
 
 #[IgnoreAutowire]

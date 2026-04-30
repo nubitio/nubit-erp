@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Controller;
 
 use App\ControlPlane\Billing\Service\PlanManager;
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

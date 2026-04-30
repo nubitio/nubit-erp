@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Twig;
 
-use App\Core\Security\CspNonceService;
+use App\Efact\Web\CspNonceService;
 use App\Efact\Service\LogoProvider;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;

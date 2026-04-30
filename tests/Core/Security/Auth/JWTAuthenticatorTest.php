@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security\Auth;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Identity\Auth\ClientDetectorService;
 use App\Identity\Auth\CookieFactoryService;

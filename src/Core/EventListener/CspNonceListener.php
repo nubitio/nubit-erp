@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
-use App\Core\Security\CspNonceService;
+use App\Efact\Web\CspNonceService;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;

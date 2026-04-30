@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
-use App\Core\Annotation\IgnoreAutowire;
-use App\Core\Util\Money;
+use App\Efact\Annotation\IgnoreAutowire;
+use App\Efact\Domain\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;

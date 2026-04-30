@@ -8,7 +8,7 @@ use App\ControlPlane\Billing\Feature\PlanFeatureManager;
 use App\ControlPlane\Billing\Feature\TenantFeatureOverrideManager;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

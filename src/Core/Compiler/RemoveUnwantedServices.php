@@ -7,7 +7,7 @@ namespace App\Core\Compiler;
 use Override;
 use ReflectionClass;
 use Exception;
-use App\Core\Annotation\IgnoreAutowire;
+use App\Efact\Annotation\IgnoreAutowire;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 

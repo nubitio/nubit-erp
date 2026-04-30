@@ -8,7 +8,7 @@ use App\Billing\Repository\TaxDocumentRepository;
 use DateTime;
 use Exception;
 use App\EInvoicing\Billing\Model\Response\SummaryResponse;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;

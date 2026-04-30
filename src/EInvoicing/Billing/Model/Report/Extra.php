@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Billing\Model\Report;
 
-use App\Core\Annotation\IgnoreAutowire;
+use App\Efact\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
 readonly class Extra

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantUsageService;

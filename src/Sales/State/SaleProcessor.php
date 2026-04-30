@@ -13,7 +13,7 @@ use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;

@@ -7,7 +7,7 @@ namespace App\Billing\Repository;
 use App\Catalog\Entity\PaymentMethod;
 use Nubit\Platform\Exception\NotFoundException;
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\EInvoicing\Invoice\Dto\VoucherHeaderDto;
 use App\EInvoicing\Invoice\Dto\VoucherLineDto;
 use App\Billing\Dto\SeriesResultDto;

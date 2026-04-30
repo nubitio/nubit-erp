@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Sale;
 
-use App\Core\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Exception\ServiceException;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\EInvoicing\Sale\Void\SunatVoidService;
 use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;

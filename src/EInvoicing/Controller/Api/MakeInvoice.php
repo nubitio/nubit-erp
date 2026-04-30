@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Controller\Api;
 
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Sales\State\DetractionCalculatorInterface;

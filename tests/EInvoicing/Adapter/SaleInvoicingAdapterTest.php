@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Adapter;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Core\Http\ApiResponse;
+use App\Efact\Http\ApiResponse;
 use App\EInvoicing\Adapter\SaleInvoicingAdapter;
 use App\EInvoicing\Message\SendInvoiceMessage;
 use App\EInvoicing\Controller\PrintESCPOSController;

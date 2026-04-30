@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Sale\Void;
 
 use App\Catalog\Entity\PaymentMethod;
-use App\Core\Util\Money;
+use App\Efact\Domain\Money;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\CashSessionResolverInterface;
