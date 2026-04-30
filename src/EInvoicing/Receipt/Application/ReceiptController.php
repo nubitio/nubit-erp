@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Receipt\Application;
 
 use App\Core\Base\BaseController;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Service\PdfExporter;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;

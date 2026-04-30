@@ -7,7 +7,7 @@ namespace App\AI\Briefing;
 use DateTimeImmutable;
 use DateTimeZone;
 use Throwable;
-use App\Core\Cache\CacheManager;
+use Nubit\Platform\Cache\CacheManager;
 use Doctrine\DBAL\Connection;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;

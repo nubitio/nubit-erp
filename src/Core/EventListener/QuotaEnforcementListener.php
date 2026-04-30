@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
 use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;

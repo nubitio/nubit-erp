@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Sale\Void;
 
-use App\Core\Context\TenantContext;
-use App\Core\Exception\ServiceException;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use App\EInvoicing\Billing\Domain\VoidedCreateUseCase;
 use App\EInvoicing\Billing\Model\Response\SummaryResponse;
 use App\EInvoicing\Sale\Void\InvoiceVoidStrategy;

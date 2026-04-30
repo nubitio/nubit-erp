@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Domain;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 
 class SaleException extends ServiceException
 {

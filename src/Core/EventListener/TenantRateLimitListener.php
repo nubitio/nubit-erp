@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\RateLimit\TenantRateLimiter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;

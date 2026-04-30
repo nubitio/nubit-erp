@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Application\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Context\TenantContext;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Exception\ServiceException;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;

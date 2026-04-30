@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use Throwable;
-use App\Core\Exception\NotFoundException;
-use App\Core\Exception\QuotaExceededException;
-use App\Core\Exception\ServiceException;
-use App\Core\Exception\ValidationException;
+use Nubit\Platform\Exception\NotFoundException;
+use Nubit\Platform\Exception\QuotaExceededException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;

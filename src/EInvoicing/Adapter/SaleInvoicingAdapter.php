@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Adapter;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Controller\PrintESCPOSController;
 use App\EInvoicing\Message\SendInvoiceMessage;

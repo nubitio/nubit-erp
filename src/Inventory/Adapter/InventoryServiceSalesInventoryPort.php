@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Adapter;
 
 use App\Catalog\Entity\Product;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;

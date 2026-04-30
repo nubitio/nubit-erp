@@ -16,7 +16,7 @@ class MakeInvoice extends AbstractController
 {
     /**
      * @throws \Doctrine\DBAL\Exception
-     * @throws \App\Core\Exception\ServiceException
+     * @throws \Nubit\Platform\Exception\ServiceException
      */
     public function __invoke(
         Request $request,

@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Service;
 
-use App\Core\Context\TenantContext;
-use App\Core\Exception\QuotaExceededException;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Exception\QuotaExceededException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Core\Platform\Billing\QuotaEnforcerInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;

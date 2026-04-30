@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Repository;
 
-use App\Core\Cache\CacheManager;
+use Nubit\Platform\Cache\CacheManager;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Sales\Repository\DashboardRepository;

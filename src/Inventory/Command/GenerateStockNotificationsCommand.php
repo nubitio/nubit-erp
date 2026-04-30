@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationService;
 use App\Inventory\Repository\ProductStockRepository;

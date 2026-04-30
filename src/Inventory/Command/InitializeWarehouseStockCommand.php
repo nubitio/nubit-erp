@@ -6,7 +6,7 @@ namespace App\Inventory\Command;
 
 use Override;
 use Exception;
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Catalog\Entity\Product;
 use App\Inventory\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;

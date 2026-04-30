@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Receipt\Domain;
 
-use App\Core\Exception\NotFoundException;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\NotFoundException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Service\CompanyContext;
 use App\Billing\Repository\TaxDocumentRepository;
 

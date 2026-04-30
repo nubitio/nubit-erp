@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\EventListener;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\EventListener\ConsoleContextListener;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;

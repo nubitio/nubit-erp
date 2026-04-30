@@ -6,7 +6,7 @@ namespace App\EInvoicing\Controller;
 
 use App\EInvoicing\ApiResource\ConsultDocType;
 use App\EInvoicing\ApiResource\ConsultResource;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;

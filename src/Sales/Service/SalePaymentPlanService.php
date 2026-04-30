@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Service;
 
 use App\Catalog\Entity\PaymentMethod;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;

@@ -2,7 +2,7 @@
 
 namespace App\Settings\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Settings\Service\UbigeoImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

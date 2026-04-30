@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Audit;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\Platform\Tenant\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;

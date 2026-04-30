@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Sale\Void;
 
-use App\Core\Exception\ServiceException;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\EInvoicing\Billing\Domain\VoidedCreateUseCase;
 use App\Sales\Domain\DocType;

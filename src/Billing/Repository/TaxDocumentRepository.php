@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Billing\Repository;
 
 use App\Catalog\Entity\PaymentMethod;
-use App\Core\Exception\NotFoundException;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\NotFoundException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\EInvoicing\Invoice\Dto\VoucherHeaderDto;
 use App\EInvoicing\Invoice\Dto\VoucherLineDto;

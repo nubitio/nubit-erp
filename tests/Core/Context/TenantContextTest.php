@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Context;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
 
 final class TenantContextTest extends TestCase

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Media\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Media\Entity\Media;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

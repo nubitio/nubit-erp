@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Inventory;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Catalog\Entity\Product;
 use App\Inventory\Core\Service\TenantStockValidationPolicy;
 use Doctrine\DBAL\Connection;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use OpenTelemetry\API\Globals;
 use OpenTelemetry\API\Metrics\CounterInterface;
 use OpenTelemetry\API\Metrics\HistogramInterface;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Service;
 
-use App\Core\Context\TenantContext;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\NoteConsultUseCase;
 use App\EInvoicing\Billing\Domain\NoteSendUseCase;

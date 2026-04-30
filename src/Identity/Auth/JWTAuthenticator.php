@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Identity\Auth;
 
 use App\Core\Audit\AuditLogger;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Identity\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Override;

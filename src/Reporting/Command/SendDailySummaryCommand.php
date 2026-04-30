@@ -10,7 +10,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use RuntimeException;
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

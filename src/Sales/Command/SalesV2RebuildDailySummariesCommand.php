@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
