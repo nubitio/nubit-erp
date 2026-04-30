@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\ControlPlane\Tenant\Adapter;
 
 use App\ControlPlane\Tenant\Adapter\LycetElectronicBillingCompanyAdapter;
-use App\EInvoicing\Billing\Domain\LycetCompanyServiceInterface;
+use App\Billing\Sunat\Domain\LycetCompanyServiceInterface;
 use PHPUnit\Framework\TestCase;
 
 final class LycetElectronicBillingCompanyAdapterTest extends TestCase

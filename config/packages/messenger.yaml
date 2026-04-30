@@ -20,7 +20,7 @@ framework:
       Symfony\Component\Notifier\Message\ChatMessage: async
       Symfony\Component\Notifier\Message\SmsMessage: async
       App\Efact\Audit\AuditLogMessage: async
-      App\EInvoicing\Message\SendInvoiceMessage: async
+      App\Billing\Message\SendInvoiceMessage: async
 
 # when@test:
 #    framework:

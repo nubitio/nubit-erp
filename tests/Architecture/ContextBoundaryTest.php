@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
  *   Purchasing   → Catalog, Contacts, Core, Dto, Efact, Identity, Inventory, Organization, State
  *   CashRegister → Core, Dto, Efact, Enum, Identity, Organization, State
  *   Sales        → Catalog, Contacts, Core, Dto, Efact, Inventory, Organization, State
- *   Billing      → AI, Catalog, Contacts, Core, Dto, Efact, EInvoicing, Organization, Sale*, Sales, State
+ *   Billing      → AI, Catalog, Contacts, Core, Dto, Efact, Organization, Sale*, Sales, State
  *   Platform     → (no App\ imports at all)
  *
  * *Inventory→Sales and Catalog→Inventory are soft deps tracked here as warnings;
@@ -123,11 +123,11 @@ final class ContextBoundaryTest extends TestCase
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
 
-    public function testSalesDoesNotImportEInvoicingInternals(): void
+    public function testSalesDoesNotImportBillingInternals(): void
     {
         $violations = $this->findUseStatementViolations(
             __DIR__ . '/../../src/Sales',
-            '/^use App\\\\EInvoicing\\\\/m',
+            '/^use App\\\\\\\\Billing\\\\\\\\(?:Invoice|Sale|Sunat|Service|Shared|Adapter)\\\\\\\\/m',
         );
 
         self::assertSame([], $violations, $this->formatViolations($violations));
