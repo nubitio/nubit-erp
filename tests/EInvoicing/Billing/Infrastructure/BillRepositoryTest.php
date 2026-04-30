@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Billing\Infrastructure;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\EInvoicing\Billing\Infrastructure\BillRepository;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use Greenter\Model\Response\BillResult;

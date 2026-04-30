@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Reporting\Command;
 
 use App\Reporting\Command\FillTimeDimensionCommand;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Reporting\Service\TimeDimensionSeeder;

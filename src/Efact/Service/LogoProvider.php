@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Service;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\Filesystem\S3UrlResolver;
 use App\Efact\Config\EfactConstants;
 use Doctrine\DBAL\Connection;

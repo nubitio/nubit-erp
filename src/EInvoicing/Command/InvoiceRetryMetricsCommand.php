@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use Override;

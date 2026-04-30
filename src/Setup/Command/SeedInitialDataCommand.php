@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Setup\Command;
 
 use Override;
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Setup\Service\InitialDataSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;

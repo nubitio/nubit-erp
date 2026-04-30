@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Auth;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Organization\Entity\Branch;
 use App\Identity\Entity\RefreshToken;
 use App\Identity\Entity\User;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Service;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SalePaymentPlanService;

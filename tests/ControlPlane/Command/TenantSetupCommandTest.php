@@ -7,7 +7,7 @@ namespace App\Tests\ControlPlane\Command;
 use App\ControlPlane\Tenant\Command\TenantSetupCommand;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Infrastructure;
 
 use Override;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\EInvoicing\Billing\Domain\BillRepositoryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\EInvoicing\Billing\Domain\FileRequest;

@@ -7,7 +7,7 @@ namespace App\EInvoicing\Receipt\Domain;
 use App\EInvoicing\Billing\Domain\BillPdfUseCase;
 use App\EInvoicing\Billing\Domain\FileResponse;
 use App\EInvoicing\Billing\Domain\NotePdfUseCase;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 
 readonly class ReceiptPdfUseCase
 {

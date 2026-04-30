@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Doctrine\DBAL;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;

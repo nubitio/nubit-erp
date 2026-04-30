@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Invoice\Domain;
 
 use App\Core\Audit\AuditLogger;
-use App\Core\Context\TenantContext;
-use App\Core\Exception\ServiceException;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;

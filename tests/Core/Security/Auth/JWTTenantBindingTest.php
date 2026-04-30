@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Security\Auth;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Identity\Auth\JWTManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;

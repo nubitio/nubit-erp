@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Validation;
 
-use App\Core\Exception\ValidationException;
+use Nubit\Platform\Exception\ValidationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final readonly class Validator

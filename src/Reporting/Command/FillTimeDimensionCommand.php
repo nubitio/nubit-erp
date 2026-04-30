@@ -2,7 +2,7 @@
 
 namespace App\Reporting\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Reporting\Service\TimeDimensionSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use App\Catalog\Entity\SunatCatalog;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\SunatCatalogRepository;
 use Psr\Log\LoggerInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Service;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Entity\StockLot;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Repository\StockLotRepository;

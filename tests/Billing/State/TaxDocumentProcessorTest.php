@@ -7,7 +7,7 @@ namespace App\Tests\Billing\State;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Auth\JWTAuthenticationToken;
 use App\Identity\Auth\JWTManager;

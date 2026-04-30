@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Service;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Catalog\Entity\Product;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;

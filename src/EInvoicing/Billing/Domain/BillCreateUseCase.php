@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Billing\Domain;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\EInvoicing\Invoice\Service\VoucherHydratorInterface;
 use App\EInvoicing\Shared\Enum\ChargeType;

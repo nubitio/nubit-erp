@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use DateTimeInterface;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\AI\Dto\CashRegisterStatusDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;

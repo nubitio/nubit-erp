@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Core\Migrations\TenantMigrationFactory;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\AI\Dto\ProductSearchResultDto;
 use App\AI\Dto\ProductStockDto;
 use App\AI\Dto\ProductWarehouseStockDto;

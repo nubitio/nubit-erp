@@ -6,7 +6,7 @@ namespace App\Media\Serializer;
 
 use Override;
 use ArrayObject;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Core\Filesystem\S3UrlResolver;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Media\Entity\Media;

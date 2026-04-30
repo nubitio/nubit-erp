@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Setup\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;

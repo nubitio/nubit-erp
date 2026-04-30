@@ -7,7 +7,7 @@ namespace App\AI\Service;
 use DateTimeImmutable;
 use DateTimeZone;
 use DateTimeInterface;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Identity\Auth\JWTAuthenticationToken;
 use App\Identity\Auth\JWTManager;
 use Doctrine\DBAL\Connection;

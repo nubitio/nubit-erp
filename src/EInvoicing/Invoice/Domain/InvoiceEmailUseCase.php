@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Invoice\Domain;
 
 use App\EInvoicing\Billing\Domain\BillPdfUseCase;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
 use App\Efact\Service\CompanyContext;

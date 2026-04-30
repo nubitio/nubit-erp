@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Command;
 
-use App\Core\Application\Command\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\TenantAwareCommand;
 use App\Identity\Auth\RefreshTokenService;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Contract;
 
 use App\Catalog\Entity\Product;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItem;
 use App\Sales\Entity\SaleRecord;

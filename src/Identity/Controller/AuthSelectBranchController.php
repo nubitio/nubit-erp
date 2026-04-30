@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Identity\Auth\ClientDetectorService;
 use App\Identity\Auth\CookieFactoryService;
 use App\Identity\Auth\JWTAuthenticator;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Sale\Void;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 
 final readonly class SunatVoidService
 {

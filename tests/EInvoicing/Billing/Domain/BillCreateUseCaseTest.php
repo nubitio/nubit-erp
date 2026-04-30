@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Billing\Domain;
 
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\EInvoicing\Billing\Domain\BillCreateUseCase;
 use App\EInvoicing\Billing\Domain\BillUtilsInterface;
 use App\EInvoicing\Invoice\Dto\HydratedVoucher;

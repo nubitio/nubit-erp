@@ -14,7 +14,7 @@ use App\Identity\Entity\RefreshToken;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use App\Identity\Repository\RefreshTokenRepository;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

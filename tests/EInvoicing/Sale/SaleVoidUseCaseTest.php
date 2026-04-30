@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Sale;
 
 use App\Core\Audit\AuditLogger;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\ServiceException;
 use App\EInvoicing\Sale\SaleVoidUseCase;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\EInvoicing\Sale\Void\SunatVoidResponse;

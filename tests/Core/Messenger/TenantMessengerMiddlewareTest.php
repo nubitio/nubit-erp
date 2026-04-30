@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Messenger;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Messenger\ActorStamp;
 use App\Core\Messenger\TenantContextMiddleware;
 use Nubit\Platform\Messenger\TenantStamp;

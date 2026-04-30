@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Cache;
 
-use App\Core\Cache\CacheManager;
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Cache\CacheManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;

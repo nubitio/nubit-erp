@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\AI\Briefing;
 
 use App\AI\Briefing\DailyBriefingService;
-use App\Core\Cache\CacheManager;
+use Nubit\Platform\Cache\CacheManager;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

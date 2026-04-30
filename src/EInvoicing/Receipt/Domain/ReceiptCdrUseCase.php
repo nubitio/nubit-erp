@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\EInvoicing\Receipt\Domain;
 
 use App\EInvoicing\Billing\Domain\FileResponse;
-use App\Core\Exception\ServiceException;
-use App\Core\Filesystem\FileManager;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\CompanyContext;
 use App\Billing\Repository\TaxDocumentRepository;

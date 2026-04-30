@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Core\Service;
 
-use App\Core\Context\TenantContext;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Efact\Doctrine\DBAL\TenantConnection;
-use App\Core\Exception\QuotaExceededException;
-use App\Core\Exception\ServiceException;
+use Nubit\Platform\Exception\QuotaExceededException;
+use Nubit\Platform\Exception\ServiceException;
 use App\ControlPlane\Billing\Service\PlanManager;
 use App\ControlPlane\Billing\Service\QuotaCheckResult;
 use App\ControlPlane\Tenant\Service\TenantManager;
