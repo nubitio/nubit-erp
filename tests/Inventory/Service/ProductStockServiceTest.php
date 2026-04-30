@@ -28,19 +28,19 @@ final class ProductStockServiceTest extends TestCase
         self::assertSame(0.0, $service->getStockForProductInWarehouse(new Product(), new Warehouse()));
     }
 
-    public function testUpdateStockCreatesMissingProductStockAndUpdatesGlobalStock(): void
+    public function testUpdateStockCreatesMissingProductStockEntry(): void
     {
-        $product = (new Product())->setStock('0.00');
+        $product = new Product();
         $warehouse = new Warehouse();
 
         $persisted = [];
         $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects(self::exactly(2))->method('persist')->willReturnCallback(
+        $entityManager->expects(self::exactly(1))->method('persist')->willReturnCallback(
             static function (object $entity) use (&$persisted): void {
                 $persisted[] = $entity;
             }
         );
-        $entityManager->expects(self::exactly(2))->method('flush');
+        $entityManager->expects(self::once())->method('flush');
 
         $repository = $this->createMock(ProductStockRepository::class);
         $repository->method('findByProductAndWarehouse')->willReturn(null);
@@ -52,8 +52,7 @@ final class ProductStockServiceTest extends TestCase
 
         self::assertInstanceOf(ProductStock::class, $stock);
         self::assertSame(10.0, $stock->getStock());
-        self::assertSame('15.50', $product->getStock());
-        self::assertCount(2, $persisted);
+        self::assertCount(1, $persisted);
     }
 
     public function testTransferStockRejectsInvalidOrInsufficientQuantity(): void
@@ -112,9 +111,9 @@ final class ProductStockServiceTest extends TestCase
         self::assertSame(5.0, $targetStock->getStock());
     }
 
-    public function testInitializeAndDistributeStockAcrossWarehouses(): void
+    public function testInitializeStockAcrossWarehouses(): void
     {
-        $product = (new Product())->setStock('5');
+        $product = new Product();
         $warehouseA = new Warehouse();
         $warehouseB = new Warehouse();
 
@@ -142,11 +141,9 @@ final class ProductStockServiceTest extends TestCase
         );
 
         $service->initializeStockForProduct($product, 4);
-        $service->distributeGlobalStockToWarehouses($product);
+        $service->distributeGlobalStockToWarehouses($product); // no-op now
 
         self::assertContains(4.0, $stocks);
-        self::assertContains(3.0, $stocks);
-        self::assertContains(2.0, $stocks);
     }
 
     private function newService(

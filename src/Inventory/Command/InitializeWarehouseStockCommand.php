@@ -5,119 +5,39 @@ declare(strict_types=1);
 namespace App\Inventory\Command;
 
 use Override;
-use Exception;
 use Nubit\Platform\Symfony\Console\TenantAwareCommand;
-use App\Catalog\Entity\Product;
-use App\Inventory\Service\ProductStockService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:initialize-warehouse-stock',
-    description: 'Initialize warehouse-specific stock based on current global stock'
+    description: '[REMOVED] Legacy one-time stock migration command. The producto.stock column has been dropped.'
 )]
+/**
+ * @deprecated This command read from the legacy `producto.stock` column which was
+ *             removed by migration Version20260430000001_drop_producto_stock_column.
+ *             Stock is now managed exclusively through stock_items (Inventory V2).
+ *             The command is kept as a stub to surface a clear error if invoked.
+ */
 class InitializeWarehouseStockCommand extends TenantAwareCommand
 {
-    public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly ProductStockService $productStockService,
-    ) {
+    public function __construct()
+    {
         parent::__construct();
     }
 
     #[Override]
-    protected function configure(): void
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
-        parent::configure();
-        $this
-            ->addOption(
-                'dry-run',
-                null,
-                InputOption::VALUE_NONE,
-                'Show what would be done without actually making changes'
-            );
-    }
-
-    #[Override]
-    protected function executeTenantCommand(
-        InputInterface $input,
-        OutputInterface $output,
-    ): int {
         $io = new SymfonyStyle($input, $output);
-        $dryRun = $input->getOption('dry-run');
-        $batchSize = 100;
-        $processed = 0;
+        $io->error(
+            'This command has been removed. The producto.stock column was dropped in ' .
+            'Version20260430000001_drop_producto_stock_column. ' .
+            'Stock is now exclusively tracked in stock_items (Inventory V2).'
+        );
 
-        if ($dryRun) {
-            $io->note('Running in dry-run mode. No changes will be made.');
-        }
-
-        $io->title('Initializing warehouse-specific stock');
-        $io->progressStart();
-
-        $products = $this->entityManager->getRepository(Product::class)->findAll();
-
-        if ($products === []) {
-            $io->warning('No products found. Skipping initialization.');
-            return Command::SUCCESS;
-        }
-
-        foreach ($products as $product) {
-            try {
-                if ($dryRun) {
-                    $io->text(
-                        sprintf(
-                            'Would distribute global stock %s for product %s across warehouses',
-                            $product->getStock(),
-                            $product->getName()
-                        )
-                    );
-                } else {
-                    $this->productStockService->distributeGlobalStockToWarehouses($product);
-                    $io->text(
-                        sprintf(
-                            'Distributed global stock %s for product %s across warehouses',
-                            $product->getStock(),
-                            $product->getName()
-                        )
-                    );
-                }
-            } catch (Exception $e) {
-                $this->logger->error(
-                    'An error occurred while initializing stock for product ' . $product->getId(),
-                    ['exception' => $e]
-                );
-                $io->error(
-                    'An error occurred while initializing stock for product ' . $product->getId()
-                );
-            }
-
-            ++$processed;
-            $io->progressAdvance();
-            if (!$dryRun && ($processed % $batchSize) === 0) {
-                $this->entityManager->flush();
-                $this->entityManager->clear();
-
-                // Reload products after clearing entity manager
-                if ($processed < count($products)) {
-                    $products = $this->entityManager->getRepository(Product::class)->findAll();
-                }
-            }
-        }
-
-        if (!$dryRun) {
-            // Final flush for any remaining entities
-            $this->entityManager->flush();
-            $io->success('Warehouse-specific stock has been initialized successfully.');
-        } else {
-            $io->success('Dry run completed. No changes were made.');
-        }
-
-        return Command::SUCCESS;
+        return self::FAILURE;
     }
 }
