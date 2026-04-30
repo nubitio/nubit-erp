@@ -57,6 +57,8 @@ services:
       QZ_CERT_PATH: ${QZ_CERT_PATH:-/app/var/qz/qz_cert.pem}
       QZ_PRIVATE_KEY_PATH: ${QZ_PRIVATE_KEY_PATH:-/app/var/qz/qz_private.key}
       QZ_PRIVATE_KEY_PASSPHRASE: ${QZ_PRIVATE_KEY_PASSPHRASE}
+      # Document lookup (RUC / DNI via SUNAT + decolecta.com)
+      DECOLECTA_TOKEN: ${DECOLECTA_TOKEN:-}
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
