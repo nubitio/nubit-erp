@@ -64,8 +64,12 @@ final class CookieFactoryServiceTest extends TestCase
     {
         $factory = new CookieFactoryService();
         $cookie = $factory->createSecureCookie(
-            'token', 'v', time() + 3600,
-            '/', null, Cookie::SAMESITE_LAX
+            'token',
+            'v',
+            time() + 3600,
+            '/',
+            null,
+            Cookie::SAMESITE_LAX,
         );
 
         self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
