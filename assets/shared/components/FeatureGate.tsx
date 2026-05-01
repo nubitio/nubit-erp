@@ -142,7 +142,6 @@ function UpgradeGate({ planBadge, upgradeMessage, children }: UpgradeGateProps) 
   };
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- prompt closed via button
     <div className="feature-gate--upgrade" onBlur={handleBlur}>
       {children}
 

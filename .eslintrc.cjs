@@ -215,6 +215,9 @@ module.exports = {
     // React Hooks rules
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
+    // v7 rules: widespread existing patterns — track as warnings until codebase is migrated
+    'react-hooks/refs': 'warn',
+    'react-hooks/set-state-in-effect': 'warn',
 
     // TypeScript rules
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -238,6 +241,14 @@ module.exports = {
   overrides: [
     {
       files: ['assets/shared/api/network.ts'],
+      rules: {
+        'no-restricted-globals': 'off',
+      },
+    },
+    {
+      // fetch() inside page.evaluate() runs in the Playwright browser context — not Node.js.
+      // The no-restricted-globals rule does not apply here.
+      files: ['e2e/**/*.{ts,tsx,js}'],
       rules: {
         'no-restricted-globals': 'off',
       },
