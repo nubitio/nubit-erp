@@ -131,10 +131,14 @@ final class ControlPlaneBillingDomainTest extends TestCase
     public function testOverrideGetConfig(): void
     {
         $override = new TenantFeatureOverride(
-            id: 1, tenantId: 1, featureKey: 'k',
+            id: 1,
+            tenantId: 1,
+            featureKey: 'k',
             enabled: true,
             configJson: ['limit' => 50],
-            expiresAt: null, reason: null, cleanedAt: null,
+            expiresAt: null,
+            reason: null,
+            cleanedAt: null,
             createdAt: new \DateTimeImmutable(),
         );
         self::assertSame(50, $override->getConfig('limit'));

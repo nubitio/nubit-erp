@@ -51,7 +51,7 @@ final class VoucherHeaderDtoTest extends TestCase
             'voucher_type'          => '01',
             'voucher_series'        => 'F001',
             'voucher_number'        => '00000123',
-            'voucher_payment_method'=> '1',
+            'voucher_payment_method' => '1',
             'voucher_date'          => '2026-04-30',
             'voucher_currency'      => 'PEN',
             'voucher_exchange_rate' => '1.000',

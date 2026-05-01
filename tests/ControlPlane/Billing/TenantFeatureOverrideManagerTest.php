@@ -48,9 +48,14 @@ final class TenantFeatureOverrideManagerTest extends TestCase
     public function testSetOverrideUpdatesExistingRecord(): void
     {
         $existing = new TenantFeatureOverride(
-            id: 42, tenantId: 7, featureKey: 'excel_export',
-            enabled: false, configJson: null,
-            expiresAt: null, reason: null, cleanedAt: null,
+            id: 42,
+            tenantId: 7,
+            featureKey: 'excel_export',
+            enabled: false,
+            configJson: null,
+            expiresAt: null,
+            reason: null,
+            cleanedAt: null,
             createdAt: new \DateTimeImmutable(),
         );
 
