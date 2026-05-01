@@ -186,8 +186,7 @@ final class EfactDomainTest extends TestCase
 
     public function testAuditableEntityDefaultValues(): void
     {
-        $entity = new class() extends AuditableEntity {
-        };
+        $entity = new class() extends AuditableEntity {};
 
         self::assertTrue($entity->isActive());
         self::assertNull($entity->getCreatedBy());
@@ -196,8 +195,7 @@ final class EfactDomainTest extends TestCase
 
     public function testAuditableEntitySettersAndGetters(): void
     {
-        $entity = new class() extends AuditableEntity {
-        };
+        $entity = new class() extends AuditableEntity {};
 
         $entity->setCreatedBy(1);
         $entity->setUpdatedBy(2);
@@ -210,8 +208,7 @@ final class EfactDomainTest extends TestCase
 
     public function testAuditableEntityActivateDeactivate(): void
     {
-        $entity = new class() extends AuditableEntity {
-        };
+        $entity = new class() extends AuditableEntity {};
 
         $r1 = $entity->deactivate();
         self::assertFalse($entity->isActive());
