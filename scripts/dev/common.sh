@@ -12,6 +12,10 @@ exec_web() {
   dc exec -T web sh -lc "cd /app && $*"
 }
 
+exec_web_php() {
+  dc exec -T web sh -lc "cd /app && php -d memory_limit=256M $*"
+}
+
 exec_vite() {
   dc exec -T --user root vite sh -lc "cd /home/node/app && $*"
 }

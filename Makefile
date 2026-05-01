@@ -4,6 +4,7 @@ DC := docker compose
 SERVICES := database redis otel-collector web vite
 EXEC_WEB := $(DC) exec -T web sh -lc
 EXEC_VITE := $(DC) exec -T --user root vite sh -lc
+PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
@@ -47,7 +48,7 @@ bootstrap:
 install: install-back install-front
 
 install-back:
-	$(EXEC_WEB) 'cd /app && composer install --no-interaction --prefer-dist'
+	$(EXEC_WEB) 'cd /app && composer install --no-interaction --prefer-dist --no-scripts && $(PHP_DEV) bin/console cache:clear && $(PHP_DEV) bin/console assets:install public'
 
 install-front:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn install --immutable'
@@ -56,13 +57,13 @@ migrate:
 	bash scripts/dev/migrate.sh
 
 migrate-control-plane:
-	$(EXEC_WEB) 'cd /app && php bin/console app:control-plane:migrate --no-interaction'
+	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console app:control-plane:migrate --no-interaction'
 
 migrate-tenants:
-	$(EXEC_WEB) 'cd /app && php bin/console app:tenants:migrate --no-interaction'
+	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console app:tenants:migrate --no-interaction'
 
 cache-clear:
-	$(EXEC_WEB) 'cd /app && php bin/console cache:clear'
+	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console cache:clear'
 
 dev:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn dev --host 0.0.0.0'
