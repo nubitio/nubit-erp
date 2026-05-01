@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\AI\Controller;
 
-use App\AI\Service\SessionContextBuilder;
-use Nubit\Platform\Exception\ServiceException;
 use App\AI\Dto\AssistantMessageInput;
 use App\AI\Dto\AssistantRequest;
 use App\AI\Dto\AssistantResponse;
 use App\AI\Dto\AttachmentInput;
+use App\AI\Service\SessionContextBuilder;
+use Nubit\Platform\Exception\ServiceException;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Content\ContentInterface;

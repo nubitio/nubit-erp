@@ -120,10 +120,7 @@
     "psr-4": {
       "App\\": "src/",
       "Nubit\\Platform\\": "src/Platform/"
-    },
-    "exclude-from-classmap": [
-      "src/Platform/"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
