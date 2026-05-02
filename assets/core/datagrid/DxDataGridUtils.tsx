@@ -30,6 +30,7 @@ export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] 
                 key={subIndex}
                 icon={subItem.icon}
                 text={subItem.text}
+                hint={subItem.hint}
                 type={subItem.type}
                 stylingMode="outlined"
                 onClick={subItem.onClick}
@@ -45,6 +46,7 @@ export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] 
         <Button
           icon={item.icon}
           text={item.text}
+          hint={item.hint}
           type={item.type}
           stylingMode="outlined"
           onClick={item.onClick}
