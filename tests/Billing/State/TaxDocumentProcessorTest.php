@@ -16,6 +16,7 @@ use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Organization\Repository\BranchRepository;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -348,6 +349,10 @@ final class TaxDocumentProcessorTest extends TestCase
         $reflection->getProperty('branchContextService')->setValue($processor, $this->branchContextService);
         $reflection->getProperty('branchRepository')->setValue($processor, $this->branchRepository);
         $reflection->getProperty('taxDocumentRepository')->setValue($processor, $this->taxDocumentRepository);
+        $reflection->getProperty('creditNoteStockReverser')->setValue(
+            $processor,
+            $this->createMock(CreditNoteStockReverserInterface::class),
+        );
 
         return $processor;
     }

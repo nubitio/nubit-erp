@@ -7,7 +7,6 @@ namespace App\Inventory\Command;
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationService;
-use App\Inventory\Repository\ProductStockRepository;
 use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
@@ -49,7 +48,6 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
     private const string ADMIN_ROL_IDS_SQL = 'SELECT usuario_id FROM usuario WHERE rol_id IN (1, 2)';
 
     public function __construct(
-        private readonly ProductStockRepository $productStockRepository,
         private readonly UserNotificationRepository $userNotificationRepository,
         private readonly UserNotificationService $notificationService,
         private readonly Connection $connection,
@@ -63,7 +61,8 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
         parent::configure();
         $this->setHelp(
             <<<'HELP'
-            Queries every tenant's product_stock table for rows where stock <= min_stock,
+            Queries every tenant's stock_items table (V2 source of truth) joined to
+            producto.stock_minimo for rows where qty_on_hand <= stock_minimo,
             then emits a <info>stock_low</info> in-app notification to all admin and super-admin
             users — deduplicated: no second notification for the same user within 24 hours.
 
@@ -79,7 +78,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
         $tenantName = (string) ($this->currentTenantName ?? 'default');
 
         try {
-            $belowMin = $this->productStockRepository->findAllBelowMinimumStock();
+            $belowMin = $this->fetchBelowMinStock();
 
             if ($belowMin === []) {
                 $io->text(sprintf('[%s] No products below minimum stock.', $tenantName));
@@ -99,25 +98,24 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
             $notified = 0;
             $skipped  = 0;
 
-            foreach ($belowMin as $productStock) {
-                $product     = $productStock->getProduct();
-                $productName = $product->getName();
-                $qty         = $productStock->getStock();
-                $minQty      = $productStock->getMinStock();
-                $warehouse   = $productStock->getWarehouse();
+            foreach ($belowMin as $row) {
+                $productName   = (string) $row['product_name'];
+                $warehouseName = (string) $row['warehouse_name'];
+                $qty           = (float)  $row['qty_on_hand'];
+                $minQty        = (float)  $row['min_stock'];
 
                 $title = sprintf('Stock bajo: %s', $productName);
                 $body  = sprintf(
                     'El producto "%s" (almacén: %s) tiene stock actual de %.3f unidades, '
                     . 'por debajo del mínimo configurado de %.3f unidades.',
                     $productName,
-                    $warehouse->getName(),
+                    $warehouseName,
                     $qty,
                     $minQty,
                 );
 
-                foreach ($adminRows as $row) {
-                    $userId = (int) $row['usuario_id'];
+                foreach ($adminRows as $adminRow) {
+                    $userId = (int) $adminRow['usuario_id'];
 
                     if (
                         $this->userNotificationRepository->existsUnreadForUserAndType(
@@ -163,11 +161,36 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
     }
 
     /**
-     * Fetch all user IDs belonging to ROLE_SUPER_ADMIN (rol_id=1) or ROLE_ADMIN (rol_id=2).
+     * Fetch products below minimum stock using V2 stock_items table.
      *
-     * Uses the injected DBAL Connection directly to avoid loading User entities,
-     * mirroring the pattern used by UserNotificationService.
+     * @return list<array{product_name: string, warehouse_name: string, qty_on_hand: string, min_stock: string}>
      *
+     * @throws DbalException
+     */
+    private function fetchBelowMinStock(): array
+    {
+        /** @var list<array{product_name: string, warehouse_name: string, qty_on_hand: string, min_stock: string}> $rows */
+        $rows = $this->connection->fetchAllAssociative(
+            <<<'SQL'
+            SELECT
+                p.descripcion   AS product_name,
+                a.nombre        AS warehouse_name,
+                si.qty_on_hand  AS qty_on_hand,
+                p.stock_minimo  AS min_stock
+            FROM stock_items si
+            INNER JOIN producto p ON p.producto_id = si.product_id
+            INNER JOIN almacen  a ON a.almacen_id  = si.warehouse_id
+            WHERE p.stock_minimo IS NOT NULL
+              AND p.stock_minimo > 0
+              AND si.qty_on_hand <= p.stock_minimo
+            ORDER BY (si.qty_on_hand / p.stock_minimo) ASC
+            SQL
+        );
+
+        return $rows;
+    }
+
+    /**
      * @return list<array{usuario_id: int|string}>
      *
      * @throws DbalException
