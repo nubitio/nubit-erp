@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import List from 'devextreme-react/list';
-import { useNavigate } from 'react-router-dom';
-
 import { useAuth } from '@app/contexts/auth';
 import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@assets/types';
 import { UserAvatar } from '@shared/ui/library/user-avatar/UserAvatar';
 
 import { BranchPicker } from './BranchPicker';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 import '../../../shared/ui/library/user-menu-section/UserMenuSection.scss';
 
@@ -20,8 +19,8 @@ type MenuItem = {
 export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) => {
   const { user, signOut } = useAuth();
   const [visible, setVisible] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [canChangeBranch, setCanChangeBranch] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const subscription = branchService.getAll().subscribe({
@@ -57,7 +56,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
         text: 'Cambiar contraseña',
         icon: 'ph ph-lock',
         onClick: () => {
-          navigate('/change-password');
+          setShowChangePassword(true);
         },
       },
       {
@@ -68,7 +67,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
     );
 
     return items;
-  }, [canChangeBranch, navigate, signOut]);
+  }, [canChangeBranch, signOut]);
 
   const listElementAttr = {
     class: 'user-info-list',
@@ -91,6 +90,10 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
         repaintChangesOnly={true}
       />
       <BranchPicker visible={visible} setVisible={setVisible} />
+      <ChangePasswordModal
+        visible={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </>
   );
 };
