@@ -21,7 +21,6 @@ class ProductStockController extends AbstractController
     ) {
     }
 
-    #[RequiresFeature('multi_warehouse')]
     public function __invoke(Request $request): Response
     {
         $productId = $request->attributes->get('id') ?? null;
