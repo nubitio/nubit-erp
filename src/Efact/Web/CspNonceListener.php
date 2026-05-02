@@ -28,12 +28,14 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final readonly class CspNonceListener
 {
     private string $assetHost;
+    private string $mercureHost;
 
     public function __construct(
         private CspNonceService $nonceService,
         #[Autowire(env: 'S3_PUBLIC_URL')] string $s3PublicUrl,
         #[Autowire(env: 'S3_ENDPOINT')] string $s3Endpoint,
         #[Autowire(env: 'S3_BUCKET_NAME')] string $s3BucketName,
+        #[Autowire(env: 'MERCURE_PUBLIC_URL')] string $mercurePublicUrl,
         #[Autowire(param: 'kernel.environment')] private string $environment,
     ) {
         $s3PublicUrl = trim($s3PublicUrl);
@@ -48,6 +50,14 @@ final readonly class CspNonceListener
         $host = parse_url($base, PHP_URL_HOST) ?? '';
         $scheme = parse_url($base, PHP_URL_SCHEME) ?? 'https';
         $this->assetHost = $host !== '' ? $scheme . '://' . $host : '';
+
+        // Build the Mercure hub origin for connect-src (e.g. https://app.efact.app).
+        $mercureHost   = parse_url(trim($mercurePublicUrl), PHP_URL_HOST) ?? '';
+        $mercureScheme = parse_url(trim($mercurePublicUrl), PHP_URL_SCHEME) ?? 'https';
+        $mercurePort   = parse_url(trim($mercurePublicUrl), PHP_URL_PORT);
+        $this->mercureHost = $mercureHost !== ''
+            ? $mercureScheme . '://' . $mercureHost . ($mercurePort !== null ? ':' . $mercurePort : '')
+            : '';
     }
 
     public function __invoke(ResponseEvent $event): void
@@ -86,9 +96,9 @@ final readonly class CspNonceListener
                 "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
                 $imgSrc,
                 "font-src 'self' data: https://cdn.jsdelivr.net",
-                // 'self' for API calls; localhost HTTP for efact-printer-agent;
+                // 'self' for API calls; Mercure hub for SSE; localhost HTTP for efact-printer-agent;
                 // localhost ws/wss for QZ Tray desktop print agent.
-                "connect-src 'self' http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+                "connect-src 'self' {$this->mercureHost} http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",
             ])
         );
