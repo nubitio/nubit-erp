@@ -247,6 +247,11 @@ services:
       $requestStack: '@request_stack'
       $apiLocale: '%env(APP_API_LOCALE)%'
 
+  App\Efact\Mercure\TenantAwareMercureHub:
+    decorates: mercure.hub.default
+    arguments:
+      $inner: '@App\Efact\Mercure\TenantAwareMercureHub.inner'
+
   App\Setup\Infrastructure\Mercure\E2eTolerantHub:
     decorates: mercure.hub.default
     arguments:
