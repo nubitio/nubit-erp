@@ -17,8 +17,8 @@ export const InvoicePage = lazyNamed(
   'InvoicePage',
 );
 export const OutboundPage = lazyNamed(
-  () => import('@features/sales/pages/OutboundPage'),
-  'OutboundPage',
+  () => import('@features/stockEntry/pages/StockEntryPage'),
+  'IssuePage',
 );
 export const SalePage = lazyNamed(() => import('@features/sales/pages/SalePage'), 'SalePage');
 export const SaleConsultPage = lazyNamed(
@@ -26,6 +26,6 @@ export const SaleConsultPage = lazyNamed(
   'SaleConsultPage',
 );
 export const TransferPage = lazyNamed(
-  () => import('@features/sales/pages/TransferPage'),
+  () => import('@features/stockEntry/pages/StockEntryPage'),
   'TransferPage',
 );

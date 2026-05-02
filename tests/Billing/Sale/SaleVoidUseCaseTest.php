@@ -24,6 +24,7 @@ use App\Billing\Repository\TaxDocumentRepository;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use App\Sales\Domain\SaleStatus;
+use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Sales\State\CashSessionResolverInterface;
 use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
@@ -851,6 +852,7 @@ final class SaleVoidUseCaseTest extends TestCase
             auditLogger: $this->createMock(AuditLogger::class),
             salesWriteGateway: $salesWriteGateway ?? $this->createMock(SalesWriteGateway::class),
             saleV2Loader: $saleV2Loader,
+            stockVoidReverser: $this->createMock(StockVoidReverserInterface::class),
         );
     }
 }

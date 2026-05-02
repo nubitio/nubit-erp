@@ -7,10 +7,11 @@ export class SaleService {
     return businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`);
   }
 
-  voidSale(saleId: string, reason: string) {
+  voidSale(saleId: string, reason: string, restoreStock = false) {
     return businessHttpClient.post<AppResponse>(`${Constants.API_BASE_URL}sales/${saleId}/void`, {
       saleId,
       reason,
+      restoreStock,
     });
   }
 

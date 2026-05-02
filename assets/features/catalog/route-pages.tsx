@@ -1,5 +1,25 @@
 import { lazyNamed } from '@app/router/lazy';
 
+export const KardexPage = lazyNamed(
+  () => import('@features/kardex/pages/KardexPage'),
+  'KardexPage',
+);
+
+export const StockAdjustmentPage = lazyNamed(
+  () => import('@features/stockEntry/pages/StockEntryPage'),
+  'AdjustmentPage',
+);
+
+export const ReceiptPage = lazyNamed(
+  () => import('@features/stockEntry/pages/StockEntryPage'),
+  'ReceiptPage',
+);
+
+export const ReorderPage = lazyNamed(
+  () => import('@features/reorder/pages/ReorderPage'),
+  'ReorderPage',
+);
+
 export const ProductPage = lazyNamed(
   () => import('@features/catalog/pages/ProductPage'),
   'ProductPage',

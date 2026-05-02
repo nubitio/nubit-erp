@@ -3,12 +3,16 @@ import { customerRoutes } from '@features/customer/routes';
 import { productRoutes } from '@features/product/routes';
 import {
   CategoryPage,
+  KardexPage,
   OperationPage,
   PaymentMethodPage,
   PriceListPage,
+  ReceiptPage,
+  ReorderPage,
+  StockAdjustmentPage,
+  StockItemPage,
   SunatCatalogPage,
   SupplierPage,
-  StockItemPage,
   UnitOfMeasurePage,
   VoucherSeriesPage,
   VoucherTypePage,
@@ -17,8 +21,12 @@ import {
 
 export const catalogRoutes: AppRouteDefinition[] = [
   ...productRoutes,
-  { path: '/stock', element: StockItemPage },
-  { path: '/category', element: CategoryPage },
+  { path: '/stock',            element: StockItemPage },
+  { path: '/kardex',           element: KardexPage },
+  { path: '/reorder',          element: ReorderPage },
+  { path: '/stock-adjustment', element: StockAdjustmentPage },
+  { path: '/receipt',          element: ReceiptPage },
+  { path: '/category',         element: CategoryPage },
   ...customerRoutes,
   { path: '/warehouse', element: WarehousePage },
   { path: '/price-list', element: PriceListPage },

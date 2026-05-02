@@ -187,10 +187,12 @@ final readonly class DailyBriefingService
     {
         try {
             $value = $this->connection->fetchOne(
-                "SELECT COUNT(*)
-                 FROM product_stock ps
-                 WHERE ps.min_stock > 0
-                   AND ps.stock <= ps.min_stock",
+                "SELECT COUNT(DISTINCT si.product_id)
+                 FROM stock_items si
+                 JOIN producto p ON p.producto_id = si.product_id
+                 WHERE p.stock_minimo IS NOT NULL
+                   AND p.stock_minimo > 0
+                   AND si.qty_on_hand <= p.stock_minimo",
             );
 
             return (int) $value;

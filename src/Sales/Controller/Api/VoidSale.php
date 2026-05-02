@@ -25,13 +25,16 @@ class VoidSale extends AbstractController
     {
         $saleId = $request->attributes->get('id');
         $reason = $request->get('reason');
+        $restoreStock = false;
         if ($reason === null) {
             try {
                 $payload = $request->toArray();
                 $reason = $payload['reason'] ?? null;
+                $restoreStock = (bool) ($payload['restoreStock'] ?? false);
             } catch (\Throwable) {
                 $payload = json_decode((string)$request->getContent(), true);
                 $reason = is_array($payload) ? ($payload['reason'] ?? null) : null;
+                $restoreStock = is_array($payload) ? (bool) ($payload['restoreStock'] ?? false) : false;
             }
         }
         $userId = $this->security->connectedUser()->userId;
@@ -44,7 +47,7 @@ class VoidSale extends AbstractController
         }
 
         try {
-            $this->saleInvoicing->voidSale((string) $saleId, $reason, $userId);
+            $this->saleInvoicing->voidSale((string) $saleId, $reason, $userId, $restoreStock);
         } catch (FilesystemException | SaleException $e) {
             $message = ($e instanceof SaleException) ? $e->getMessage() : 'Error al anular el comprobante';
 

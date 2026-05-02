@@ -1,0 +1,301 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Inventory\State;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use App\Identity\Entity\User;
+use App\Inventory\Core\Dto\MovementDraft;
+use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\StockEntryType;
+use App\Inventory\Core\Enum\StockMovementType;
+use App\Inventory\Core\Service\InventoryService;
+use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Inventory\Entity\StockEntry;
+use App\Inventory\Entity\StockEntryItem;
+use Doctrine\ORM\EntityManagerInterface;
+use Override;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+
+/**
+ * Handles POST /stock-entries.
+ *
+ * Single processor for all four entry types. Each type maps to specific
+ * StockMovementType(s) and applies its own validation rules:
+ *
+ *   RECEIPT    → MANUAL_IN   per item (no stock validation)
+ *   ISSUE      → MANUAL_OUT  per item (validates stock if STRICT policy)
+ *   TRANSFER   → TRANSFER_OUT (source) + TRANSFER_IN (target) per item
+ *   ADJUSTMENT → ADJUSTMENT  per item (qty absolute → delta computed here)
+ *
+ * All persistence + ledger writes happen inside a single transaction.
+ *
+ * @implements ProcessorInterface<StockEntry, StockEntry>
+ */
+final readonly class StockEntryProcessor implements ProcessorInterface
+{
+    public function __construct(
+        private InventoryService $inventoryService,
+        private EntityManagerInterface $em,
+        private Security $security,
+        private StockValidationPolicyInterface $stockValidationPolicy,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
+        private ProcessorInterface $persistProcessor,
+    ) {
+    }
+
+    #[Override]
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    {
+        if (!$data instanceof StockEntry) {
+            return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        }
+
+        $type = $data->getType();
+        if ($type === null) {
+            throw new UnprocessableEntityHttpException('type is required.');
+        }
+
+        $this->validateEntry($data, $type);
+
+        /** @var User|null $user */
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            $data->setCreatedBy($user);
+        }
+
+        $this->em->wrapInTransaction(function () use ($data, $type): void {
+            $this->em->persist($data);
+            $this->em->flush();
+
+            $entryId = (string) $data->getId();
+
+            match ($type) {
+                StockEntryType::RECEIPT    => $this->processReceipt($data, $entryId),
+                StockEntryType::ISSUE      => $this->processIssue($data, $entryId),
+                StockEntryType::TRANSFER   => $this->processTransfer($data, $entryId),
+                StockEntryType::ADJUSTMENT => $this->processAdjustment($data, $entryId),
+            };
+        });
+
+        return $data;
+    }
+
+    // ─── Type handlers ────────────────────────────────────────────────────────
+
+    private function processReceipt(StockEntry $entry, string $entryId): void
+    {
+        $warehouseId = (string) $entry->getWarehouse()?->getId();
+        $note        = $this->buildNote($entry);
+
+        foreach ($entry->getItems() as $item) {
+            $product = $item->getProduct();
+            if (!$this->isTracked($product)) {
+                continue;
+            }
+
+            $qty   = $item->getQty();
+            $delta = $qty;
+
+            $item->setQtyDelta($delta);
+
+            $this->record($warehouseId, $product, StockMovementType::MANUAL_IN, $delta, $item, $entryId, $note);
+        }
+    }
+
+    private function processIssue(StockEntry $entry, string $entryId): void
+    {
+        $warehouseId = (string) $entry->getWarehouse()?->getId();
+        $note        = $this->buildNote($entry);
+
+        foreach ($entry->getItems() as $item) {
+            $product = $item->getProduct();
+            if (!$this->isTracked($product)) {
+                continue;
+            }
+
+            $qty    = $item->getQty();
+            $delta  = '-' . $qty;
+
+            $item->setQtyDelta($delta);
+
+            $this->record($warehouseId, $product, StockMovementType::MANUAL_OUT, $delta, $item, $entryId, $note);
+        }
+    }
+
+    private function processTransfer(StockEntry $entry, string $entryId): void
+    {
+        $sourceId = (string) $entry->getWarehouse()?->getId();
+        $targetId = (string) $entry->getTargetWarehouse()?->getId();
+        $sourceName = $entry->getWarehouse()?->getName() ?? '';
+        $targetName = $entry->getTargetWarehouse()?->getName() ?? '';
+
+        foreach ($entry->getItems() as $item) {
+            $product = $item->getProduct();
+            if (!$this->isTracked($product)) {
+                continue;
+            }
+
+            $qty   = $item->getQty();
+            $itemId = (string) ($item->getId() ?? uniqid('sei_', true));
+
+            $item->setQtyDelta('-' . $qty); // from source perspective
+
+            $this->record(
+                $sourceId,
+                $product,
+                StockMovementType::TRANSFER_OUT,
+                '-' . $qty,
+                $item,
+                $entryId . ':out:' . $itemId,
+                'Traslado a ' . $targetName
+            );
+
+            $this->record(
+                $targetId,
+                $product,
+                StockMovementType::TRANSFER_IN,
+                $qty,
+                $item,
+                $entryId . ':in:' . $itemId,
+                'Traslado desde ' . $sourceName
+            );
+        }
+    }
+
+    private function processAdjustment(StockEntry $entry, string $entryId): void
+    {
+        $warehouseId = (string) $entry->getWarehouse()?->getId();
+        $reasonNote  = $this->buildNote($entry);
+
+        foreach ($entry->getItems() as $item) {
+            $product = $item->getProduct();
+            if (!$this->isTracked($product)) {
+                continue;
+            }
+
+            $productId = (string) $product?->getId();
+            $qtyBefore = $this->inventoryService->getOnHand($warehouseId, $productId);
+            $delta     = bcsub($item->getQty(), $qtyBefore, 6);
+
+            $item->setQtyBefore($qtyBefore);
+            $item->setQtyDelta($delta);
+
+            // Skip if nothing changed
+            if (bccomp($delta, '0', 6) === 0) {
+                continue;
+            }
+
+            $this->record($warehouseId, $product, StockMovementType::ADJUSTMENT, $delta, $item, $entryId, $reasonNote);
+        }
+    }
+
+    // ─── Stock validation ─────────────────────────────────────────────────────
+
+    /**
+     * Validates business rules before persisting.
+     * Pre-flight stock checks run here so we can abort before any DB writes.
+     */
+    private function validateEntry(StockEntry $entry, StockEntryType $type): void
+    {
+        $warehouse = $entry->getWarehouse();
+        if ($warehouse === null) {
+            throw new UnprocessableEntityHttpException('warehouse is required.');
+        }
+
+        if ($entry->getItems()->isEmpty()) {
+            throw new UnprocessableEntityHttpException('At least one item is required.');
+        }
+
+        if ($type->requiresTargetWarehouse()) {
+            $target = $entry->getTargetWarehouse();
+            if ($target === null) {
+                throw new UnprocessableEntityHttpException('targetWarehouse is required for TRANSFER entries.');
+            }
+            if ($target->getId() === $warehouse->getId()) {
+                throw new UnprocessableEntityHttpException('sourceWarehouse and targetWarehouse must be different.');
+            }
+        }
+
+        if ($type->requiresReason() && empty($entry->getReason())) {
+            throw new UnprocessableEntityHttpException('reason is required for ADJUSTMENT entries.');
+        }
+
+        if ($entry->getReason() === 'OTHER' && empty(trim($entry->getNote() ?? ''))) {
+            throw new UnprocessableEntityHttpException('note is required when reason is OTHER.');
+        }
+
+        if ($type->validatesStock()) {
+            $warehouseId = (string) $warehouse->getId();
+            foreach ($entry->getItems() as $item) {
+                $product = $item->getProduct();
+                if (!$this->isTracked($product)) {
+                    continue;
+                }
+
+                $qty    = $item->getQty();
+                $onHand = $this->inventoryService->getOnHand($warehouseId, (string) $product?->getId());
+                $result = $this->stockValidationPolicy->validateSale($product, $warehouseId, $qty, $onHand);
+
+                if (!$result->allowed) {
+                    throw new UnprocessableEntityHttpException(sprintf(
+                        'Stock insuficiente para "%s". Disponible: %s, solicitado: %s.',
+                        $product?->getName(),
+                        $onHand,
+                        $qty,
+                    ));
+                }
+            }
+        }
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private function record(
+        string $warehouseId,
+        mixed $product,
+        StockMovementType $movementType,
+        string $delta,
+        StockEntryItem $item,
+        string $sourceId,
+        string $note,
+    ): void {
+        $this->inventoryService->recordMovement(new MovementDraft(
+            warehouseId:  $warehouseId,
+            productId:    (string) $product?->getId(),
+            movementType: $movementType,
+            qtyDeltaBase: $delta,
+            unitId:       (int) ($item->getUnit()?->getId() ?? 0),
+            qtyOriginal:  ltrim(ltrim($delta, '+'), '-'),
+            sourceType:   'STOCK_ENTRY',
+            sourceId:     $sourceId,
+            note:         $note,
+        ));
+    }
+
+    private function buildNote(StockEntry $entry): string
+    {
+        $parts = array_filter([
+            $entry->getOperation()?->getName(),
+            $entry->getReason() ? $entry->getReasonLabel() : null,
+            $entry->getNote(),
+        ]);
+
+        return implode(' — ', $parts) ?: $entry->getType()?->label() ?? '';
+    }
+
+    private function isTracked(mixed $product): bool
+    {
+        if ($product === null) {
+            return false;
+        }
+
+        $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior()) ?? InventoryBehavior::TRACKED;
+
+        return $behavior->tracksInventory();
+    }
+}

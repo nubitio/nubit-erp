@@ -117,6 +117,13 @@ export function POSItem({
         </div>
         <div className="pos-product-card__footer">
           <div className="pos-product-card__price">S/{unitPrice.toFixed(2)}</div>
+          {tracksInventory && stockValue !== null && !isOutOfStock && (
+            <div className="pos-product-card__stock" title="Stock disponible">
+              {stockValue % 1 === 0
+                ? stockValue.toFixed(0)
+                : stockValue.toFixed(1)}
+            </div>
+          )}
           {!isOutOfStock && (
             <button
               type="button"

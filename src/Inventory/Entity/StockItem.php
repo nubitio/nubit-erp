@@ -63,6 +63,15 @@ class StockItem
     #[ORM\Column(name: 'qty_reserved', type: Types::DECIMAL, precision: 18, scale: 6)]
     private string $qtyReserved = '0.000000';
 
+    /** Minimum stock threshold sourced from the product — used for reorder alerts. */
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.min_stock.label', writable: false)]
+    public function getMinStock(): ?string
+    {
+        $v = $this->product->getMinStock();
+        return $v !== null ? number_format((float) $v, 6, '.', '') : null;
+    }
+
     #[Groups(['stock_item:read'])]
     #[ApiProperty(description: 'stock_item.updated_at.label')]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]

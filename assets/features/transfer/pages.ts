@@ -1,1 +1,2 @@
-export { TransferPage } from '@features/sales/pages/TransferPage';
+// Transfer pages — re-exported from StockEntry.
+export { TransferPage } from '@features/stockEntry/pages/StockEntryPage';
