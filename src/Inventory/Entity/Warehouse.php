@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Inventory\Repository\WarehouseRepository;
+use App\Inventory\State\WarehouseCreateProcessor;
 use App\Inventory\State\WarehousesByBranchProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -28,7 +29,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(),
-        new Post(),
+        new Post(processor: WarehouseCreateProcessor::class),
         new Get(),
         new Patch(),
         new Delete(),
