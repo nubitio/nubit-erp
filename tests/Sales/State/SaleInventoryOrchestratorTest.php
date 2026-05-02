@@ -186,7 +186,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // tipoId === 2 (sale), sufficient stock, BLOCK policy → ledger applied
+    // tipoId === 2 (sale), sufficient stock, STRICT policy → ledger applied
     // -------------------------------------------------------------------------
 
     public function testSufficientStockBlockPolicyAppliesLedger(): void
@@ -196,7 +196,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 3.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('STRICT', 'legacy'); // BLOCK, no allow
+        $this->configureSettings('STRICT', 'legacy'); // STRICT → canSell=false, but stock is sufficient
         $this->stubStockBalance(10.0); // plenty of stock
         $this->stubSuccessfulLedgerWrite();
 
@@ -206,7 +206,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // tipoId === 2, insufficient stock, BLOCK policy → throws ServiceException
+    // tipoId === 2, insufficient stock, STRICT policy → throws ServiceException
     // -------------------------------------------------------------------------
 
     public function testInsufficientStockBlockPolicyThrowsException(): void
@@ -216,7 +216,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('STRICT', 'legacy'); // BLOCK
+        $this->configureSettings('STRICT', 'legacy');
         $this->stubStockBalance(5.0); // not enough
 
         $this->expectException(ServiceException::class);
@@ -226,7 +226,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // tipoId === 2, insufficient stock, ALLOW_ALL policy → proceeds, no exception
+    // tipoId === 2, insufficient stock, ALLOW_NEGATIVE policy → proceeds, no exception
     // -------------------------------------------------------------------------
 
     public function testInsufficientStockAllowAllProceedsWithoutException(): void
@@ -236,7 +236,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('ALLOW_NEGATIVE', 'legacy'); // maps to ALLOW_ALL → allowNegative=true
+        $this->configureSettings('ALLOW_NEGATIVE', 'legacy'); // ALLOW_NEGATIVE → canSell=true
         $this->stubStockBalance(1.0); // below requested qty
         $this->stubSuccessfulLedgerWrite();
 
@@ -247,7 +247,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // tipoId === 2, ALLOW_WITH_ROLE, admin user → proceeds (canSell = true)
+    // tipoId === 2, WARNING_ONLY, admin user → proceeds (canSell = true)
     // -------------------------------------------------------------------------
 
     public function testAllowWithRoleAdminUserProceeds(): void
@@ -257,7 +257,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('WARNING_ONLY', 'legacy'); // maps to ALLOW_WITH_ROLE
+        $this->configureSettings('WARNING_ONLY', 'legacy'); // WARNING_ONLY → canSell for admins only
         $this->stubStockBalance(1.0);
         $this->stubSuccessfulLedgerWrite();
 
@@ -269,7 +269,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // tipoId === 2, ALLOW_WITH_ROLE, non-admin user → enforcement ON → throws
+    // tipoId === 2, WARNING_ONLY, non-admin user → enforcement ON → throws
     // -------------------------------------------------------------------------
 
     public function testAllowWithRoleNonAdminUserThrowsWhenInsufficient(): void
@@ -279,7 +279,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('WARNING_ONLY', 'legacy'); // ALLOW_WITH_ROLE
+        $this->configureSettings('WARNING_ONLY', 'legacy');
         $this->stubStockBalance(1.0);
 
         $regularUser = new AuthUserDto(userId: 2, username: 'cashier', roles: ['ROLE_USER']);

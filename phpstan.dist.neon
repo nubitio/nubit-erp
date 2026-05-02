@@ -18,5 +18,3 @@ parameters:
         - { message: '#Instanceof between.*StockEntry.*will always evaluate to true#', path: src/Inventory/State/StockEntryProcessor.php }
         # Same pattern for Purchase void processor
         - { message: '#Instanceof between.*Purchase.*will always evaluate to true#', path: src/Purchasing/State/PurchaseVoidProcessor.php }
-        # TenantInventoryPolicyProcessor — mixed data narrowed by ApiPlatform routing
-        - { message: '#Instanceof between.*TenantInventoryPolicy.*will always evaluate to true#', path: src/Inventory/State/TenantInventoryPolicyProcessor.php }
