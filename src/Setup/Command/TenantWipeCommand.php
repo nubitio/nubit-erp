@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Setup\Command;
 
 use Doctrine\DBAL\Connection;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -51,52 +53,52 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:tenant:wipe',
     description: 'Wipe all transactional data from a tenant DB (preserves config & catalog by default).',
 )]
-final class TenantWipeCommand extends TenantAwareCommand
+final class TenantWipeCommand extends Command
 {
-    public function __construct(private readonly Connection $connection)
-    {
+    public function __construct(
+        private readonly Connection $connection,
+        private readonly TenantRegistryInterface $tenantRegistry,
+        private readonly TenantConnectionSwitcherInterface $tenantSwitcher,
+    ) {
         parent::__construct();
     }
 
     #[\Override]
     protected function configure(): void
     {
-        parent::configure();
-
-        $this->addOption('force', null, InputOption::VALUE_NONE, 'Skip confirmation prompt')
-             ->addOption('wipe-catalog', null, InputOption::VALUE_NONE, 'Also delete products, customers and suppliers');
+        $this
+            ->addOption('tenant', 't', InputOption::VALUE_REQUIRED, 'Tenant name (required)')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Skip confirmation prompt')
+            ->addOption('wipe-catalog', null, InputOption::VALUE_NONE, 'Also delete products, customers and suppliers');
     }
 
-    /**
-     * Override to enforce --tenant is always required.
-     * The parent would iterate ALL tenants if --tenant is omitted, which is
-     * catastrophic for a destructive command.
-     */
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io          = new SymfonyStyle($input, $output);
+        $tenantName  = $input->getOption('tenant');
+        $wipeCatalog = (bool) $input->getOption('wipe-catalog');
+        $force       = (bool) $input->getOption('force');
 
-        if (!$input->getOption('tenant')) {
+        // ---- --tenant is mandatory ----------------------------------------
+        if (!$tenantName) {
             $io->error([
-                'El flag --tenant es obligatorio para este comando.',
+                'El flag --tenant es obligatorio.',
                 'Ejemplo: php bin/console app:tenant:wipe --tenant=jawka --force',
-                '',
-                'Omitir --tenant ejecutaría el wipe en TODOS los tenants.',
-                'Eso nunca es lo que quieres.',
             ]);
 
             return self::FAILURE;
         }
 
-        return parent::execute($input, $output);
-    }
-    #[\Override]
-    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
-    {
-        $io           = new SymfonyStyle($input, $output);
-        $wipeCatalog  = (bool) $input->getOption('wipe-catalog');
-        $force        = (bool) $input->getOption('force');
+        // ---- Resolve tenant & switch connection ---------------------------
+        $tenant = $this->tenantRegistry->getTenantByName($tenantName);
+        if ($tenant === null) {
+            $io->error(sprintf('Tenant "%s" not found.', $tenantName));
+
+            return self::FAILURE;
+        }
+
+        $this->tenantSwitcher->switchConnection($tenantName);
 
         // ---- Confirmation ------------------------------------------------
         $scope = $wipeCatalog
@@ -106,7 +108,7 @@ final class TenantWipeCommand extends TenantAwareCommand
         $io->warning([
             '⚠️  Este comando es IRREVERSIBLE.',
             "Alcance: {$scope}",
-            'Tenant actual: ' . ($this->currentTenantName ?? '(default)'),
+            "Tenant: {$tenantName}",
         ]);
 
         if (!$force && !$io->confirm('¿Confirmas que quieres continuar?', false)) {
@@ -115,7 +117,7 @@ final class TenantWipeCommand extends TenantAwareCommand
             return self::SUCCESS;
         }
 
-        // ---- Execute ------------------------------------------------------
+        // ---- Execute -----------------------------------------------------
         $io->text('Desactivando foreign key checks…');
         $this->connection->executeStatement('SET foreign_key_checks = 0');
 
@@ -212,11 +214,9 @@ final class TenantWipeCommand extends TenantAwareCommand
             }
         }
 
-        // Reset sale sequences without dropping the rows (needed for FK integrity)
         $n = $this->connection->executeStatement('UPDATE sale_sequences SET last_number = 0');
         $io->text("  sale_sequences: {$n} series reseteadas a 0");
 
-        // Reset voucher series counters stored in local_comprobante
         $n = $this->connection->executeStatement('DELETE FROM local_comprobante');
         $io->text("  local_comprobante: {$n} filas eliminadas");
     }
@@ -240,10 +240,6 @@ final class TenantWipeCommand extends TenantAwareCommand
         }
     }
 
-    /**
-     * Truncate a table if it exists. Returns the row count deleted or null if
-     * the table does not exist (graceful for optional tables).
-     */
     private function truncateIfExists(string $table): ?int
     {
         try {
