@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\CashRegister\Entity;
 
 use App\Organization\Entity\Branch;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -24,6 +22,7 @@ use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashRegisterOpenProcessor;
 use App\CashRegister\State\CashRegisterShiftsProvider;
+use App\CashRegister\State\CashRegistersByBranchProvider;
 use App\CashRegister\Entity\CashSession;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,7 +30,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashRegisterRepository::class)]
-#[ApiFilter(SearchFilter::class, properties: ['branch' => 'exact'])]
 #[ApiResource(
     shortName: 'CashRegister',
     operations: [
@@ -68,7 +66,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             output: CashSession::class,
             provider: CashRegisterShiftsProvider::class,
         ),
-        new GetCollection(uriTemplate: '/cash-registers'),
+        new GetCollection(uriTemplate: '/cash-registers', provider: CashRegistersByBranchProvider::class),
         new Post(uriTemplate: '/cash-registers'),
         new Get(uriTemplate: '/cash-registers/{id}'),
         new Patch(uriTemplate: '/cash-registers/{id}'),
