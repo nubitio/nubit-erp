@@ -12,6 +12,7 @@ use App\Purchasing\Entity\Purchase;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use Override;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Uid\Uuid;
@@ -38,6 +39,11 @@ readonly class PurchaseProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $isNewPurchase = $data instanceof Purchase && $data->getId() === null;
+
+        // Prevent editing a voided purchase
+        if ($data instanceof Purchase && !$isNewPurchase && $data->getStatus() === 'VOIDED') {
+            throw new UnprocessableEntityHttpException('No se puede modificar una compra anulada.');
+        }
 
         // Assign UUID v7 on new entity (when $data->getId() is null)
         if ($isNewPurchase) {

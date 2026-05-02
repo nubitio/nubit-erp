@@ -16,3 +16,5 @@ parameters:
         - { message: '#ProcessorInterface but does not specify its types#', path: src/Inventory/State/StockEntryProcessor.php }
         # PHPDoc-driven instanceof check — mixed $data is narrowed to StockEntry by ApiPlatform routing
         - { message: '#Instanceof between.*StockEntry.*will always evaluate to true#', path: src/Inventory/State/StockEntryProcessor.php }
+        # Same pattern for Purchase void processor
+        - { message: '#Instanceof between.*Purchase.*will always evaluate to true#', path: src/Purchasing/State/PurchaseVoidProcessor.php }
