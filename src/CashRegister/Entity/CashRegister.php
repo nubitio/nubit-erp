@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\CashRegister\Entity;
 
 use App\Organization\Entity\Branch;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -29,6 +31,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashRegisterRepository::class)]
+#[ApiFilter(SearchFilter::class, properties: ['branch' => 'exact'])]
 #[ApiResource(
     shortName: 'CashRegister',
     operations: [
@@ -167,5 +170,55 @@ class CashRegister
     public function isMigrationAuto(): bool
     {
         return $this->name === CashRegisterRepository::MIGRATION_AUTO_NAME;
+    }
+
+    /**
+     * Whether this register currently has an open shift.
+     * Exposed as `is_open` in the `cash_register:read` serialization group
+     * so that POS clients can determine status without a separate request.
+     */
+    #[Groups(['cash_register:read'])]
+    public function isOpen(): bool
+    {
+        foreach ($this->cashSessions as $session) {
+            if ($session->getStatus() === 'OPEN') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the currently open CashSession, or null if the register is closed.
+     * Exposed as `current_shift` in the `cash_register:read` serialization group.
+     *
+     * Returns a plain array to avoid circular reference issues
+     * (CashSession → CashRegister → CashSession).
+     *
+     * @return array<string, mixed>|null
+     */
+    #[Groups(['cash_register:read'])]
+    public function getCurrentShift(): ?array
+    {
+        foreach ($this->cashSessions as $session) {
+            if ($session->getStatus() === 'OPEN') {
+                return [
+                    'id' => $session->getId(),
+                    'opening_amount' => (float) $session->getOpeningAmount(),
+                    'closing_amount' => $session->getCountedAmount() !== null
+                        ? (float) $session->getCountedAmount()
+                        : null,
+                    'opening_date' => $session->getOpenedAt()->format(\DateTimeInterface::ATOM),
+                    'closing_date' => $session->getClosedAt()?->format(\DateTimeInterface::ATOM),
+                    'opened_by' => [
+                        'id' => $session->getOpenedBy()->getId(),
+                        'name' => $session->getOpenedBy()->getUsername(),
+                    ],
+                ];
+            }
+        }
+
+        return null;
     }
 }
