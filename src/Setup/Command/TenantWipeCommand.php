@@ -189,7 +189,7 @@ final class TenantWipeCommand extends TenantAwareCommand
         }
 
         // Reset sale sequences without dropping the rows (needed for FK integrity)
-        $n = $this->connection->executeStatement('UPDATE sale_sequences SET numero = 0');
+        $n = $this->connection->executeStatement('UPDATE sale_sequences SET last_number = 0');
         $io->text("  sale_sequences: {$n} series reseteadas a 0");
 
         // Reset voucher series counters stored in local_comprobante
