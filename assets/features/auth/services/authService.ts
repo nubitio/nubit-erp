@@ -19,6 +19,13 @@ class AuthService {
   logout() {
     return businessHttpClient.post(Constants.API_BASE_URL + 'auth/logout');
   }
+
+  changePassword(currentPassword: string, newPassword: string) {
+    return businessHttpClient.post<{ message: string }>(
+      Constants.API_BASE_URL + 'auth/change-password',
+      { currentPassword, newPassword },
+    );
+  }
 }
 
 export const authService = new AuthService();
