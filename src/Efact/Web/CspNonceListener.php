@@ -88,6 +88,16 @@ final readonly class CspNonceListener
             $imgSrc .= ' ' . $this->assetHost;
         }
 
+        // The Mercure hub is proxied at /.well-known/mercure on the SAME domain as the app
+        // (same-origin). However, when PHP runs behind an SSL-terminating proxy without
+        // X-Forwarded-Proto, getSchemeAndHttpHost() may return http:// while the browser
+        // is on https://. We include both scheme variants of the tenant host so the
+        // EventSource URL is always covered regardless of proxy configuration.
+        $tenantHost = $event->getRequest()->getHttpHost(); // e.g. jawka.efact.app
+        $connectSrcExtra = $tenantHost !== ''
+            ? "https://{$tenantHost} http://{$tenantHost}"
+            : $this->mercureHost; // fallback to static env var
+
         $response->headers->set(
             'Content-Security-Policy',
             implode('; ', [
@@ -96,9 +106,10 @@ final readonly class CspNonceListener
                 "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
                 $imgSrc,
                 "font-src 'self' data: https://cdn.jsdelivr.net",
-                // 'self' for API calls; Mercure hub for SSE; localhost HTTP for efact-printer-agent;
+                // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
+                // localhost HTTP for efact-printer-agent;
                 // localhost ws/wss for QZ Tray desktop print agent.
-                "connect-src 'self' {$this->mercureHost} http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+                "connect-src 'self' {$connectSrcExtra} http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",
             ])
         );
