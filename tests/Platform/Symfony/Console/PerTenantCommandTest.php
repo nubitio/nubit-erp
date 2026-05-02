@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Platform\Symfony\Console;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Exception\ServiceException;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
@@ -20,14 +20,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
-final class TenantAwareCommandTest extends TestCase
+final class PerTenantCommandTest extends TestCase
 {
     public function testExecutesWithDefaultConnectionWhenNoTenantsExist(): void
     {
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
 
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
@@ -51,7 +51,7 @@ final class TenantAwareCommandTest extends TestCase
         ]);
         $tenantManager->method('getTenantByName')->with('missing')->willReturn(null);
 
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
@@ -80,7 +80,7 @@ final class TenantAwareCommandTest extends TestCase
         $switcher->expects(self::once())->method('switchConnection')->with('acme');
         $tenantContext = new TenantContext();
 
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $command->initDependencies(
             $tenantManager,
             $switcher,
@@ -107,7 +107,7 @@ final class TenantAwareCommandTest extends TestCase
         $switcher = $this->createMock(TenantConnectionSwitcher::class);
         $switcher->expects(self::exactly(2))->method('switchConnection');
 
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $command->resultByTenant = [
             'acme' => Command::SUCCESS,
             'globex' => Command::FAILURE,
@@ -136,7 +136,7 @@ final class TenantAwareCommandTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('error');
 
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $command->throwingTenant = 'acme';
         $command->initDependencies(
             $tenantManager,
@@ -153,7 +153,7 @@ final class TenantAwareCommandTest extends TestCase
 
     public function testBuildParallelCommandArgsIncludesCustomArgsAndOptions(): void
     {
-        $command = new DummyTenantAwareCommand();
+        $command = new DummyPerTenantCommand();
         $reflection = new \ReflectionObject($command);
         $method = $reflection->getMethod('buildParallelCommandArgs');
 
@@ -181,7 +181,7 @@ final class TenantAwareCommandTest extends TestCase
 }
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
-final class DummyTenantAwareCommand extends TenantAwareCommand
+final class DummyPerTenantCommand extends PerTenantCommand
 {
     /** @var list<string> */
     public array $executedTenants = [];
