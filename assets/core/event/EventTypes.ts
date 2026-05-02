@@ -35,6 +35,7 @@ export interface DialogEventNames {
 export interface ToolbarButtonItem {
   icon?: string;
   text: string;
+  hint?: string;
   /** DevExtreme button type. Common values: 'default' | 'normal' | 'danger' | 'success' | 'back' */
   type?: string;
   onClick?: () => void;

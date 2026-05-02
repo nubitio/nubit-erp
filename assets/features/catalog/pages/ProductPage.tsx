@@ -3,7 +3,8 @@ import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract
 import { Constants } from '@core/common/Constants';
 import type { Field } from '@core/field/Field';
 import { enumField, imageField } from '@core/field/FieldBuilders';
-import React from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import { ProductImportDialog } from '@features/product/components/ProductImportDialog';
 
 interface ProductRecord extends Record<string, unknown> {
   id: string;
@@ -283,4 +284,47 @@ const productResource = defineResource<ProductRecord>({
   sort: [{ selector: 'name', desc: false }],
 });
 
-export const ProductPage = () => <SmartCrudPage resource={productResource} />;
+export function ProductPage() {
+  const [importOpen, setImportOpen] = useState(false);
+  const gridRefreshRef = useRef<(() => void) | null>(null);
+
+  const handleImportDone = useCallback(() => {
+    // Refresh the grid after a successful import so new products are visible.
+    gridRefreshRef.current?.();
+  }, []);
+
+  const productResourceWithImport = React.useMemo(
+    () => ({
+      ...productResource,
+      toolbar: [
+        ...(Array.isArray(productResource.toolbar) ? (productResource.toolbar as unknown[]) : []),
+        {
+          text: '',
+          icon: 'ph ph-download-simple',
+          hint: 'Exportar productos',
+          onClick: () => window.open('/api/v1/products/export', '_blank'),
+        },
+        {
+          text: '',
+          icon: 'ph ph-upload-simple',
+          hint: 'Importar productos',
+          onClick: () => setImportOpen(true),
+        },
+      ] as typeof productResource.toolbar,
+    }),
+    [],
+  );
+
+  return (
+    <>
+      <SmartCrudPage
+        resource={productResourceWithImport}
+      />
+      <ProductImportDialog
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImportDone={handleImportDone}
+      />
+    </>
+  );
+}
