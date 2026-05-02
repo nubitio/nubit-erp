@@ -4,6 +4,7 @@ import toast from '@shared/lib/SharedUtils';
 import { configService } from '@features/config/services/configService';
 import type { ConfigDto } from '@features/config/model/ConfigKey';
 import { isTechnical } from '@features/config/model/ConfigKey';
+import { InventoryPolicyCard } from './InventoryPolicyCard';
 import './ConfigPage.scss';
 
 // ── Label registry ────────────────────────────────────────────────────────────
@@ -259,6 +260,7 @@ export const ConfigPage = () => {
             <SettingGroup title="General"    configs={general}   onSave={handleSave} />
             <SettingGroup title="Ventas"     configs={sales}     onSave={handleSave} />
             <SettingGroup title="Inventario" configs={inventory} onSave={handleSave} />
+            <InventoryPolicyCard />
             {other.length > 0 && (
               <SettingGroup title="Otras" configs={other} onSave={handleSave} />
             )}

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
+use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Organization\Repository\BranchRepository;
@@ -53,6 +54,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private TaxDocumentRepository $taxDocumentRepository,
         private SalesWriteGateway $salesWriteGateway,
         private EntityManagerInterface $entityManager,
+        private CreditNoteStockReverserInterface $creditNoteStockReverser,
     ) {
     }
 
@@ -125,6 +127,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         // If this is a new credit note with a void reason code, mark the linked sale as VOIDED.
         if ($isNew && $data->getReasonCode() !== null) {
             $this->voidSaleIfCreditNoteAnnuls($data);
+            $this->creditNoteStockReverser->reverse($data);
         }
 
         return $result;

@@ -16,6 +16,7 @@ enum StockMovementType: string
     case MANUAL_OUT        = 'MANUAL_OUT';
     case VOID_REVERSAL     = 'VOID_REVERSAL';
     case PURCHASE_VOID     = 'PURCHASE_VOID';
+    case RETURN_IN         = 'RETURN_IN';
 
     public function label(): string
     {
@@ -30,6 +31,7 @@ enum StockMovementType: string
             self::MANUAL_OUT         => 'Salida manual',
             self::VOID_REVERSAL      => 'Reversa anulación',
             self::PURCHASE_VOID      => 'Anulación compra',
+            self::RETURN_IN          => 'Devolución cliente',
         };
     }
 
@@ -37,7 +39,7 @@ enum StockMovementType: string
     public function isInbound(): bool
     {
         return match ($this) {
-            self::PURCHASE, self::TRANSFER_IN, self::MANUAL_IN, self::VOID_REVERSAL, self::ADJUSTMENT => true,
+            self::PURCHASE, self::TRANSFER_IN, self::MANUAL_IN, self::VOID_REVERSAL, self::ADJUSTMENT, self::RETURN_IN => true,
             default => false,
         };
     }
