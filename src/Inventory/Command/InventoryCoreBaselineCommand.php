@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Override;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:inventory:core:baseline',
     description: 'Apply Inventory Core baseline flags (mode / dual-write / read-from-stock-items).',
 )]
-final class InventoryCoreBaselineCommand extends TenantAwareCommand
+final class InventoryCoreBaselineCommand extends PerTenantCommand
 {
     private const array ALLOWED_MODES = ['legacy', 'dual_write', 'v2_authoritative'];
 

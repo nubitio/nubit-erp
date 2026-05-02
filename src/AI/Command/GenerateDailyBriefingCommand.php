@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Command;
 
 use App\AI\Briefing\DailyBriefingService;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,7 +24,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:ai:briefing:generate',
     description: 'Generate the AI-narrated daily morning briefing for all (or one) tenants',
 )]
-final class GenerateDailyBriefingCommand extends TenantAwareCommand
+final class GenerateDailyBriefingCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly DailyBriefingService $briefingService,

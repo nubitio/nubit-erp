@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:purchases:v2:backfill-goods-receipts',
     description: 'Backfill legacy purchase movements (tipo_id=1) into Purchases V2 goods receipts tables.',
 )]
-final class PurchasesV2BackfillGoodsReceiptsCommand extends TenantAwareCommand
+final class PurchasesV2BackfillGoodsReceiptsCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

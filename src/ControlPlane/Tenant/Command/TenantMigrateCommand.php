@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Migrations\TenantMigrationFactory;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:tenants:migrate',
     description: 'Run Doctrine migrations for all tenants.',
 )]
-class TenantMigrateCommand extends TenantAwareCommand
+class TenantMigrateCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly TenantMigrationFactory $migrationFactory,

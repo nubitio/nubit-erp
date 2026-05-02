@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:schema:audit:tenants',
     description: 'Audit DB schema drift across tenants (tables, columns, indexes and constraints).',
 )]
-final class TenantSchemaAuditCommand extends TenantAwareCommand
+final class TenantSchemaAuditCommand extends PerTenantCommand
 {
     private ?string $baselineTenant = null;
     private bool $normalizeFkActions = true;

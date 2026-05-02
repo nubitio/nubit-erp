@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
 use Override;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'invoice:retry:metrics',
     description: 'Show SUNAT send/retry metrics for the current tenant',
 )]
-class InvoiceRetryMetricsCommand extends TenantAwareCommand
+class InvoiceRetryMetricsCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly \Doctrine\DBAL\Connection $connection,

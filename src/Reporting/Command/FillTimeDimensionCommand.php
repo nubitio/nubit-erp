@@ -2,7 +2,7 @@
 
 namespace App\Reporting\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Reporting\Service\TimeDimensionSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:fill-time-dimension',
     description: 'Rellena la tabla time_dimension (date dimension) entre dos fechas.',
 )]
-class FillTimeDimensionCommand extends TenantAwareCommand
+class FillTimeDimensionCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly TimeDimensionSeeder $timeDimensionSeeder,

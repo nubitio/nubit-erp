@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:purchases:menu:migrate',
     description: 'Migrate legacy inbound menu entries to purchases route for existing tenants.',
 )]
-final class PurchasesMenuMigrateCommand extends TenantAwareCommand
+final class PurchasesMenuMigrateCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

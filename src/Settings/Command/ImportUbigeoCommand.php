@@ -2,7 +2,7 @@
 
 namespace App\Settings\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Settings\Service\UbigeoImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:import-ubigeo',
     description: 'Importa los códigos de ubigeo (INEI) desde un CSV y los guarda en la tabla ubigeo.',
 )]
-class ImportUbigeoCommand extends TenantAwareCommand
+class ImportUbigeoCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly UbigeoImportService $ubigeoImportService,

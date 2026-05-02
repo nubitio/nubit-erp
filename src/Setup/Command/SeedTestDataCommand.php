@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Setup\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:seed:test-data',
     description: 'Seed test data for development (customers, products, categories, units, sales)',
 )]
-class SeedTestDataCommand extends TenantAwareCommand
+class SeedTestDataCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly TestDataSeeder $testDataSeeder,
