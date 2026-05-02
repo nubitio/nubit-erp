@@ -7,12 +7,14 @@ namespace App\Tests\Sales\State;
 use App\Identity\Dto\AuthUserDto;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\SettingsService;
+use App\Inventory\Core\Enum\StockPolicy;
 use App\Sales\State\NegativeStockPolicyResolver;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
+#[AllowMockObjectsWithoutExpectations]
 final class NegativeStockPolicyResolverTest extends TestCase
 {
     private SettingsService&MockObject $settings;
@@ -24,10 +26,10 @@ final class NegativeStockPolicyResolverTest extends TestCase
         $this->resolver = new NegativeStockPolicyResolver($this->settings);
     }
 
-    // ── resolvePolicy() ───────────────────────────────────────────────────────
+    // ── resolvePolicy() — returns StockPolicy enum ───────────────────────────
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('stockPolicyMappingProvider')]
-    public function testResolvePolicyMapsRawValuesToConstants(string $raw, string $expected): void
+    #[DataProvider('stockPolicyMappingProvider')]
+    public function testResolvePolicyMapsRawValuesToEnum(string $raw, StockPolicy $expected): void
     {
         $this->settings->method('get')
             ->with(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')
@@ -36,63 +38,64 @@ final class NegativeStockPolicyResolverTest extends TestCase
         self::assertSame($expected, $this->resolver->resolvePolicy());
     }
 
-    /** @return array<string, array{string, string}> */
+    /** @return array<string, array{string, StockPolicy}> */
     public static function stockPolicyMappingProvider(): array
     {
         return [
-            'STRICT maps to BLOCK'                  => ['STRICT',          NegativeStockPolicyResolver::BLOCK],
-            'WARNING_ONLY maps to ALLOW_WITH_ROLE'  => ['WARNING_ONLY',    NegativeStockPolicyResolver::ALLOW_WITH_ROLE],
-            'ALLOW_NEGATIVE maps to ALLOW_ALL'      => ['ALLOW_NEGATIVE',  NegativeStockPolicyResolver::ALLOW_ALL],
-            // Direct legacy string passthrough
-            'BLOCK passthrough'                     => ['BLOCK',           NegativeStockPolicyResolver::BLOCK],
-            'ALLOW_WITH_ROLE passthrough'           => ['ALLOW_WITH_ROLE', NegativeStockPolicyResolver::ALLOW_WITH_ROLE],
-            'ALLOW_ALL passthrough'                 => ['ALLOW_ALL',       NegativeStockPolicyResolver::ALLOW_ALL],
-            // Normalisation: lowercase input
-            'strict lowercase maps to BLOCK'        => ['strict',          NegativeStockPolicyResolver::BLOCK],
-            'allow_negative lowercase maps to ALLOW_ALL' => ['allow_negative', NegativeStockPolicyResolver::ALLOW_ALL],
+            // Canonical new values
+            'STRICT'                      => ['STRICT',          StockPolicy::STRICT],
+            'WARNING_ONLY'                => ['WARNING_ONLY',    StockPolicy::WARNING_ONLY],
+            'ALLOW_NEGATIVE'              => ['ALLOW_NEGATIVE',  StockPolicy::ALLOW_NEGATIVE],
+            // Legacy synonym values (kept for backwards compat with existing DB rows)
+            'BLOCK synonym'               => ['BLOCK',           StockPolicy::STRICT],
+            'ALLOW_WITH_ROLE synonym'     => ['ALLOW_WITH_ROLE', StockPolicy::WARNING_ONLY],
+            'ALLOW_ALL synonym'           => ['ALLOW_ALL',       StockPolicy::ALLOW_NEGATIVE],
+            // Case normalisation
+            'strict lowercase'            => ['strict',          StockPolicy::STRICT],
+            'allow_negative lowercase'    => ['allow_negative',  StockPolicy::ALLOW_NEGATIVE],
             // Unknown / empty → safe default
-            'empty string defaults to BLOCK'        => ['',                NegativeStockPolicyResolver::BLOCK],
-            'unknown value defaults to BLOCK'       => ['GARBAGE',         NegativeStockPolicyResolver::BLOCK],
+            'empty string → STRICT'       => ['',               StockPolicy::STRICT],
+            'unknown value → STRICT'      => ['GARBAGE',        StockPolicy::STRICT],
         ];
     }
 
-    // ── canSell() — ALLOW_ALL policy ─────────────────────────────────────────
+    // ── canSell() — ALLOW_NEGATIVE policy ────────────────────────────────────
 
-    public function testAllowAllPolicyGrantsAnyUser(): void
+    public function testAllowNegativePolicyGrantsAnyUser(): void
     {
-        $regularUser  = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
-        $adminUser    = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
-        $superAdmin   = new AuthUserDto(userId: 3, username: 'root', roles: ['ROLE_SUPER_ADMIN']);
+        $regular    = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
+        $admin      = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
+        $superAdmin = new AuthUserDto(userId: 3, username: 'root', roles: ['ROLE_SUPER_ADMIN']);
 
-        self::assertTrue($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_ALL, $regularUser));
-        self::assertTrue($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_ALL, $adminUser));
-        self::assertTrue($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_ALL, $superAdmin));
+        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $regular));
+        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $admin));
+        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $superAdmin));
     }
 
-    // ── canSell() — BLOCK policy ─────────────────────────────────────────────
+    // ── canSell() — STRICT policy ─────────────────────────────────────────────
 
-    public function testBlockPolicyDeniesAnyUser(): void
+    public function testStrictPolicyDeniesAnyUser(): void
     {
-        $regularUser = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
-        $adminUser   = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
+        $regular = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
+        $admin   = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
 
-        self::assertFalse($this->resolver->canSell(NegativeStockPolicyResolver::BLOCK, $regularUser));
-        self::assertFalse($this->resolver->canSell(NegativeStockPolicyResolver::BLOCK, $adminUser));
+        self::assertFalse($this->resolver->canSell(StockPolicy::STRICT, $regular));
+        self::assertFalse($this->resolver->canSell(StockPolicy::STRICT, $admin));
     }
 
-    // ── canSell() — ALLOW_WITH_ROLE policy ───────────────────────────────────
+    // ── canSell() — WARNING_ONLY policy ──────────────────────────────────────
 
-    public function testAllowWithRoleGrantsAdminsOnly(): void
+    public function testWarningOnlyPolicyGrantsAdminsOnly(): void
     {
         $cashier    = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
         $admin      = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
         $superAdmin = new AuthUserDto(userId: 3, username: 'superadmin', roles: ['ROLE_SUPER_ADMIN']);
         $noRoles    = new AuthUserDto(userId: 4, username: 'ghost', roles: []);
 
-        self::assertFalse($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_WITH_ROLE, $cashier));
-        self::assertTrue($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_WITH_ROLE, $admin));
-        self::assertTrue($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_WITH_ROLE, $superAdmin));
-        self::assertFalse($this->resolver->canSell(NegativeStockPolicyResolver::ALLOW_WITH_ROLE, $noRoles));
+        self::assertFalse($this->resolver->canSell(StockPolicy::WARNING_ONLY, $cashier));
+        self::assertTrue($this->resolver->canSell(StockPolicy::WARNING_ONLY, $admin));
+        self::assertTrue($this->resolver->canSell(StockPolicy::WARNING_ONLY, $superAdmin));
+        self::assertFalse($this->resolver->canSell(StockPolicy::WARNING_ONLY, $noRoles));
     }
 
     // ── shouldUseCoreValidation() ─────────────────────────────────────────────

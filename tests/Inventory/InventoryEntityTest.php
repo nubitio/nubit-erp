@@ -14,7 +14,6 @@ use App\Inventory\Entity\PriceList;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\StockItem;
 use App\Inventory\Entity\StockLot;
-use App\Inventory\Entity\TenantInventoryPolicy;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use DateTimeImmutable;
@@ -69,35 +68,6 @@ final class InventoryEntityTest extends TestCase
         self::assertSame('Transferencia interna', $op->getName());
         self::assertSame(1, $op->getType());
         self::assertNull($op->getId());
-    }
-
-    // ── TenantInventoryPolicy ─────────────────────────────────────────────────
-
-    public function testTenantInventoryPolicyDefaultPolicy(): void
-    {
-        $policy = new TenantInventoryPolicy();
-        self::assertSame(StockPolicy::STRICT, $policy->getPolicy());
-    }
-
-    public function testTenantInventoryPolicySetters(): void
-    {
-        $policy = new TenantInventoryPolicy();
-        $policy->setTenantId('tenant-42');
-        $policy->setPolicy(StockPolicy::WARNING_ONLY);
-
-        self::assertSame('tenant-42', $policy->getTenantId());
-        self::assertSame(StockPolicy::WARNING_ONLY, $policy->getPolicy());
-        self::assertNull($policy->getId());
-    }
-
-    public function testTenantInventoryPolicyCreatedAtIsSetOnConstruct(): void
-    {
-        $before = new \DateTimeImmutable();
-        $policy = new TenantInventoryPolicy();
-        $after = new \DateTimeImmutable();
-
-        self::assertGreaterThanOrEqual($before, $policy->getCreatedAt());
-        self::assertLessThanOrEqual($after, $policy->getCreatedAt());
     }
 
     // ── StockItem ─────────────────────────────────────────────────────────────

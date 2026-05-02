@@ -4,51 +4,51 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use App\Efact\Service\SettingsService;
 use App\Efact\Config\EfactConstants as Constants;
+use App\Efact\Service\SettingsService;
 use App\Identity\Dto\AuthUserDto;
+use App\Inventory\Core\Enum\StockPolicy;
 use App\Catalog\Entity\Product;
 
 /**
- * Resolves the negative stock policy and determines whether a user can sell below zero.
+ * Resolves the negative stock policy for the legacy sales pipeline.
+ *
+ * Reads the same `inventory_negative_stock_policy` config key as
+ * TenantStockValidationPolicy so that both code paths are driven by a
+ * single source of truth.  The policy value is stored as a StockPolicy
+ * enum string (STRICT / WARNING_ONLY / ALLOW_NEGATIVE); legacy DB values
+ * (BLOCK / ALLOW_WITH_ROLE / ALLOW_ALL) are accepted as synonyms.
  */
 final readonly class NegativeStockPolicyResolver
 {
-    public const string BLOCK = 'BLOCK';
-    public const string ALLOW_WITH_ROLE = 'ALLOW_WITH_ROLE';
-    public const string ALLOW_ALL = 'ALLOW_ALL';
-
     public function __construct(
         private SettingsService $settings,
     ) {
     }
 
-    public function resolvePolicy(): string
+    public function resolvePolicy(): StockPolicy
     {
         $raw = strtoupper(trim((string) $this->settings->get(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')));
 
         return match ($raw) {
-            'STRICT' => self::BLOCK,
-            'WARNING_ONLY' => self::ALLOW_WITH_ROLE,
-            'ALLOW_NEGATIVE' => self::ALLOW_ALL,
-            self::BLOCK, self::ALLOW_WITH_ROLE, self::ALLOW_ALL => $raw,
-            default => self::BLOCK,
+            'STRICT', 'BLOCK'                  => StockPolicy::STRICT,
+            'WARNING_ONLY', 'ALLOW_WITH_ROLE'  => StockPolicy::WARNING_ONLY,
+            'ALLOW_NEGATIVE', 'ALLOW_ALL'      => StockPolicy::ALLOW_NEGATIVE,
+            default                            => StockPolicy::STRICT,
         };
     }
 
-    public function canSell(string $policy, AuthUserDto $user): bool
+    /**
+     * Returns true when the current user is allowed to complete a sale that
+     * would result in negative stock, given the resolved policy.
+     */
+    public function canSell(StockPolicy $policy, AuthUserDto $user): bool
     {
-        if ($policy === self::ALLOW_ALL) {
-            return true;
-        }
-
-        if ($policy !== self::ALLOW_WITH_ROLE) {
-            return false;
-        }
-
-        $roles = $user->roles ?? [];
-
-        return in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true);
+        return match ($policy) {
+            StockPolicy::ALLOW_NEGATIVE => true,
+            StockPolicy::WARNING_ONLY   => $this->isAdmin($user),
+            StockPolicy::STRICT         => false,
+        };
     }
 
     public function shouldUseCoreValidation(): bool
@@ -67,5 +67,12 @@ final readonly class NegativeStockPolicyResolver
     public function isStockTracked(Product $product): bool
     {
         return $product->getTrackInventory();
+    }
+
+    private function isAdmin(AuthUserDto $user): bool
+    {
+        $roles = $user->roles ?? [];
+
+        return in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true);
     }
 }

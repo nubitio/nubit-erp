@@ -19,8 +19,10 @@ abstract class EfactConstants
     public const string BINLOG_DIR = 'binlogs';
 
     // Settings
+    /** @deprecated Use ConfigKey::IGV instead */
     public const string TAX = 'app_option_igv';
 
+    /** @deprecated Use ConfigKey::RC instead */
     public const string CONSUMPTION_TAX = 'app_option_rc';
 
     public const string AUTO_INVOICE = 'app_option_auto_invoice';
@@ -40,6 +42,11 @@ abstract class EfactConstants
     public const string SUNAT_SEND_RETRY_BASE_SECONDS = 'app_option_sunat_send_retry_base_seconds';
     public const string SUNAT_SEND_RETRY_MAX_SECONDS = 'app_option_sunat_send_retry_max_seconds';
     public const string SALES_V2_MODE = 'sales_v2_mode';
+    public const string SALES_V2_DUAL_WRITE_ENABLED = 'app_option_sales_v2_dual_write_enabled';
+    public const string SALES_V2_DUAL_WRITE_STRICT = 'app_option_sales_v2_dual_write_strict';
+    public const string SALES_V2_CUTOVER_DATE = 'sales_v2_cutover_date';
+    public const string SALES_V2_DISABLE_LEGACY_CASH_MOVEMENT = 'sales_v2_disable_legacy_cash_movement';
+    public const string SALES_V2_DISABLE_LEGACY_STOCK_PROJ = 'sales_v2_disable_legacy_stock_projection';
     public const string SALES_DEFAULT_CURRENCY = 'sales_default_currency';
     public const string SALES_DEFAULT_USD_EXCHANGE_RATE = 'sales_default_usd_exchange_rate';
     public const string EXCHANGE_RATE_UPDATED_AT = 'sales_usd_exchange_rate_updated_at';

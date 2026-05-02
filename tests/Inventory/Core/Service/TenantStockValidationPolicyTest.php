@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
-use App\Inventory\Core\Dto\StockValidationResult;
+use App\Efact\Config\EfactConstants as Constants;
+use App\Efact\Service\SettingsService;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Inventory\Core\Service\TenantStockValidationPolicy;
-use Doctrine\DBAL\Connection;
-use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class TenantStockValidationPolicyTest extends TestCase
@@ -23,28 +23,25 @@ final class TenantStockValidationPolicyTest extends TestCase
         return $product;
     }
 
-    private function makePolicy(string|false $policyFromDb, ?string $tenantId = 'tenant-1'): TenantStockValidationPolicy
+    private function makeService(string $policyValue = ''): TenantStockValidationPolicy
     {
-        $conn = $this->createStub(Connection::class);
-        $conn->method('fetchOne')->willReturn($policyFromDb);
+        /** @var SettingsService&MockObject $settings */
+        $settings = $this->createStub(SettingsService::class);
+        $settings->method('get')
+            ->with(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')
+            ->willReturn($policyValue);
 
-        $context = null;
-        if ($tenantId !== null) {
-            $context = $this->createStub(TenantContext::class);
-            $context->method('getTenantId')->willReturn(1); // int tenant id
-        }
-
-        return new TenantStockValidationPolicy($conn, $context);
+        return new TenantStockValidationPolicy($settings);
     }
 
     // ── Non-tracked products always pass ─────────────────────────────────────
 
     public function testNonTrackedProductIsAlwaysAllowed(): void
     {
-        $policy = $this->makePolicy(StockPolicy::STRICT->value);
+        $service = $this->makeService(StockPolicy::STRICT->value);
         $product = $this->makeProduct(trackInventory: false);
 
-        $result = $policy->validateSale($product, 'wh-1', '999', '0');
+        $result = $service->validateSale($product, 'wh-1', '999', '0');
 
         self::assertTrue($result->allowed);
         self::assertNull($result->reason);
@@ -65,10 +62,10 @@ final class TenantStockValidationPolicyTest extends TestCase
     #[DataProvider('allPolicies')]
     public function testSufficientStockIsAllowedUnderAnyPolicy(string $policyValue): void
     {
-        $policy = $this->makePolicy($policyValue);
+        $service = $this->makeService($policyValue);
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '5', '10');
+        $result = $service->validateSale($product, 'wh-1', '5', '10');
 
         self::assertTrue($result->allowed);
         self::assertNull($result->reason);
@@ -77,10 +74,10 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testExactStockIsAllowed(): void
     {
-        $policy = $this->makePolicy(StockPolicy::STRICT->value);
+        $service = $this->makeService(StockPolicy::STRICT->value);
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '10', '10');
+        $result = $service->validateSale($product, 'wh-1', '10', '10');
 
         self::assertTrue($result->allowed);
     }
@@ -89,10 +86,10 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testInsufficientStockBlocksUnderStrictPolicy(): void
     {
-        $policy = $this->makePolicy(StockPolicy::STRICT->value);
+        $service = $this->makeService(StockPolicy::STRICT->value);
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '10', '5');
+        $result = $service->validateSale($product, 'wh-1', '10', '5');
 
         self::assertFalse($result->allowed);
         self::assertStringContainsString('STRICT', $result->reason ?? '');
@@ -100,10 +97,10 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testInsufficientStockWarnsUnderWarningOnlyPolicy(): void
     {
-        $policy = $this->makePolicy(StockPolicy::WARNING_ONLY->value);
+        $service = $this->makeService(StockPolicy::WARNING_ONLY->value);
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '10', '5');
+        $result = $service->validateSale($product, 'wh-1', '10', '5');
 
         self::assertTrue($result->allowed);
         self::assertNotNull($result->warning);
@@ -112,40 +109,48 @@ final class TenantStockValidationPolicyTest extends TestCase
 
     public function testInsufficientStockAllowedUnderAllowNegativePolicy(): void
     {
-        $policy = $this->makePolicy(StockPolicy::ALLOW_NEGATIVE->value);
+        $service = $this->makeService(StockPolicy::ALLOW_NEGATIVE->value);
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '100', '1');
+        $result = $service->validateSale($product, 'wh-1', '100', '1');
 
         self::assertTrue($result->allowed);
         self::assertNull($result->warning);
         self::assertNull($result->reason);
     }
 
-    // ── Policy fallback chain ─────────────────────────────────────────────────
+    // ── Legacy synonym values are accepted ────────────────────────────────────
 
-    public function testDefaultsToStrictWhenNoPolicyInDb(): void
+    public function testLegacyBlockValueMapsToStrict(): void
     {
-        $policy = $this->makePolicy(false);
+        $service = $this->makeService('BLOCK');
         $product = $this->makeProduct();
 
-        $result = $policy->validateSale($product, 'wh-1', '10', '5');
+        $result = $service->validateSale($product, 'wh-1', '10', '5');
+
+        self::assertFalse($result->allowed);
+    }
+
+    public function testLegacyAllowAllValueMapsToAllowNegative(): void
+    {
+        $service = $this->makeService('ALLOW_ALL');
+        $product = $this->makeProduct();
+
+        $result = $service->validateSale($product, 'wh-1', '100', '1');
+
+        self::assertTrue($result->allowed);
+    }
+
+    // ── Empty / unknown config defaults to STRICT ─────────────────────────────
+
+    public function testDefaultsToStrictWhenNoPolicyConfigured(): void
+    {
+        $service = $this->makeService('');
+        $product = $this->makeProduct();
+
+        $result = $service->validateSale($product, 'wh-1', '10', '5');
 
         self::assertFalse($result->allowed);
         self::assertStringContainsString('STRICT', $result->reason ?? '');
-    }
-
-    public function testWorksWithoutTenantContext(): void
-    {
-        $conn = $this->createStub(Connection::class);
-        $conn->method('fetchOne')->willReturn(false);
-
-        $policy = new TenantStockValidationPolicy($conn, null);
-        $product = $this->makeProduct();
-
-        // Without tenant context defaults to STRICT
-        $result = $policy->validateSale($product, 'wh-1', '10', '5');
-
-        self::assertFalse($result->allowed);
     }
 }

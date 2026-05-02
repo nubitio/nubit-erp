@@ -33,6 +33,20 @@ export const ConfigKey = {
   PURCHASES_V2_MODE:                     'purchases_v2_mode',
   PURCHASES_V2_DUAL_WRITE_ENABLED:       'app_option_purchases_v2_dual_write_enabled',
   PURCHASES_V2_DUAL_WRITE_STRICT:        'app_option_purchases_v2_dual_write_strict',
+
+  // Technical inventory-core migration flags (hidden from UI)
+  INVENTORY_CORE_MODE:                   'inventory_core_mode',
+  INVENTORY_CORE_DUAL_WRITE_ENABLED:     'inventory_core_dual_write_enabled',
+  INVENTORY_CORE_READ_STOCK_ITEMS:       'inventory_core_read_stock_items_enabled',
+
+  // SUNAT send/retry internals (hidden from UI)
+  RECEIPT_REQUIRED:                      'app_option_receipt_required',
+  SUNAT_SEND_ENABLED:                    'app_option_sunat_send_enabled',
+  SUNAT_REJECTION_STREAK:                'app_option_sunat_rejection_streak',
+  SUNAT_REJECTION_THRESHOLD:             'app_option_sunat_rejection_threshold',
+  SUNAT_SEND_RETRY_MAX_ATTEMPTS:         'app_option_sunat_send_retry_max_attempts',
+  SUNAT_SEND_RETRY_BASE_SECONDS:         'app_option_sunat_send_retry_base_seconds',
+  SUNAT_SEND_RETRY_MAX_SECONDS:          'app_option_sunat_send_retry_max_seconds',
 } as const;
 
 export type ConfigKeyValue = (typeof ConfigKey)[keyof typeof ConfigKey];
@@ -44,17 +58,31 @@ export interface ConfigDto {
   type: 'string' | 'int' | 'float' | 'bool' | 'json';
 }
 
-/** Keys that are internal migration config — hidden from normal UI */
+/** Keys that are internal / migration config — hidden from the normal UI */
 export const TECHNICAL_KEYS = new Set<string>([
+  // Sales v2 migration
   ConfigKey.SALES_V2_MODE,
   ConfigKey.SALES_V2_DUAL_WRITE_ENABLED,
   ConfigKey.SALES_V2_DUAL_WRITE_STRICT,
   ConfigKey.SALES_V2_CUTOVER_DATE,
   ConfigKey.SALES_V2_DISABLE_LEGACY_CASH_MOVEMENT,
   ConfigKey.SALES_V2_DISABLE_LEGACY_STOCK_PROJ,
+  // Purchases v2 migration
   ConfigKey.PURCHASES_V2_MODE,
   ConfigKey.PURCHASES_V2_DUAL_WRITE_ENABLED,
   ConfigKey.PURCHASES_V2_DUAL_WRITE_STRICT,
+  // Inventory-core migration
+  ConfigKey.INVENTORY_CORE_MODE,
+  ConfigKey.INVENTORY_CORE_DUAL_WRITE_ENABLED,
+  ConfigKey.INVENTORY_CORE_READ_STOCK_ITEMS,
+  // SUNAT send/retry internals (managed by the backend, not user-facing)
+  ConfigKey.RECEIPT_REQUIRED,
+  ConfigKey.SUNAT_SEND_ENABLED,
+  ConfigKey.SUNAT_REJECTION_STREAK,
+  ConfigKey.SUNAT_REJECTION_THRESHOLD,
+  ConfigKey.SUNAT_SEND_RETRY_MAX_ATTEMPTS,
+  ConfigKey.SUNAT_SEND_RETRY_BASE_SECONDS,
+  ConfigKey.SUNAT_SEND_RETRY_MAX_SECONDS,
 ]);
 
 export function isFeatureFlag(_key: string): boolean {
