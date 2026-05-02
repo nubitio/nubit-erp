@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:schema:normalize:tenants',
     description: 'Apply safe schema normalization across tenants (legacy core low-risk fixes).',
 )]
-final class TenantSchemaNormalizeCommand extends TenantAwareCommand
+final class TenantSchemaNormalizeCommand extends PerTenantCommand
 {
     private const string NO_DEFAULT = '__NO_DEFAULT__';
 

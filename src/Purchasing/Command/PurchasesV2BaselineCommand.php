@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Override;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:purchases:v2:baseline',
     description: 'Apply Purchases V2 baseline flags (mode/dual-write/strict).',
 )]
-final class PurchasesV2BaselineCommand extends TenantAwareCommand
+final class PurchasesV2BaselineCommand extends PerTenantCommand
 {
     private const array ALLOWED_MODES = ['legacy', 'dual_write', 'v2_authoritative'];
 

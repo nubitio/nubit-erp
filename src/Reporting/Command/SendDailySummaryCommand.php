@@ -10,7 +10,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use RuntimeException;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -26,7 +26,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 #[AsCommand(name: 'notify:daily-summary', description: 'Send daily summary to all customers', help: <<<'TXT'
 Send daily summary to all customers
 TXT)]
-class SendDailySummaryCommand extends TenantAwareCommand
+class SendDailySummaryCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

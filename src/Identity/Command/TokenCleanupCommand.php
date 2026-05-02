@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Identity\Auth\RefreshTokenService;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,7 +18,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
     description: 'Clean up expired and revoked refresh tokens for all tenants',
 )]
 #[AsCronTask('0 0 * * *')] // every day at midnight
-class TokenCleanupCommand extends TenantAwareCommand
+class TokenCleanupCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly RefreshTokenService $refreshTokenService,

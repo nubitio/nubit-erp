@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Catalog\Entity\PaymentMethod;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:sales:v2:backfill-payments',
     description: 'Create cash sale_payments for legacy Sales V2 rows that have none.',
 )]
-final class SalesV2BackfillPaymentsCommand extends TenantAwareCommand
+final class SalesV2BackfillPaymentsCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

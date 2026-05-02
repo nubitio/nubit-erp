@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Command;
 
 use Override;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *             Stock is now managed exclusively through stock_items (Inventory V2).
  *             The command is kept as a stub to surface a clear error if invoked.
  */
-class InitializeWarehouseStockCommand extends TenantAwareCommand
+class InitializeWarehouseStockCommand extends PerTenantCommand
 {
     public function __construct()
     {

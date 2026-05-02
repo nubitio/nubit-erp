@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationService;
 use App\Inventory\Repository\ProductStockRepository;
@@ -37,7 +37,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:notification:generate-stock',
     description: 'Emit stock_low in-app notifications for products at or below minimum stock',
 )]
-final class GenerateStockNotificationsCommand extends TenantAwareCommand
+final class GenerateStockNotificationsCommand extends PerTenantCommand
 {
     /** Deduplication window in seconds (24 hours). */
     private const int DEDUP_WINDOW_SECONDS = 86_400;

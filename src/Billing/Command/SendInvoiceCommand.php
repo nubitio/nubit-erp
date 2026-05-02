@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\Billing\Invoice\Domain\InvoiceSendOrchestrator;
 use App\Billing\Invoice\Domain\InvoiceSendRetryService;
@@ -24,7 +24,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
     description: 'Send pending invoices to SUNAT',
 )]
 #[AsCronTask('*/5 * * * *')]
-class SendInvoiceCommand extends TenantAwareCommand
+class SendInvoiceCommand extends PerTenantCommand
 {
     private const int CHUNK_SIZE = 100;
 

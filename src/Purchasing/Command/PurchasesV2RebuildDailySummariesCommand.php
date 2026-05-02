@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
@@ -21,7 +21,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
     description: 'Rebuild Purchases V2 daily summary tables for a date range.',
 )]
 #[AsCronTask('20 * * * *', arguments: '--days=2 --parallel=4')]
-final class PurchasesV2RebuildDailySummariesCommand extends TenantAwareCommand
+final class PurchasesV2RebuildDailySummariesCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

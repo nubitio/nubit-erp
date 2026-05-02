@@ -6,7 +6,7 @@ namespace App\ControlPlane\Tenant\Command;
 
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:tenant:setup',
     description: 'Run initial setup (admin/company/branch) for a tenant.',
 )]
-class TenantSetupCommand extends TenantAwareCommand
+class TenantSetupCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly InitialTenantSetupPortInterface $initialTenantSetup,

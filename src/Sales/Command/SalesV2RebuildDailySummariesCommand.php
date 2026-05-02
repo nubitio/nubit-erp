@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
@@ -21,7 +21,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
     description: 'Rebuild branch_daily_summary for the last N days from the sales table.',
 )]
 #[AsCronTask('*/30 * * * *', arguments: '--days=2')]
-final class SalesV2RebuildDailySummariesCommand extends TenantAwareCommand
+final class SalesV2RebuildDailySummariesCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

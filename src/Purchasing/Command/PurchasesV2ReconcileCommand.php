@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:purchases:v2:reconcile',
     description: 'Reconcile legacy inbound movements against Purchases V2 goods receipts by day.',
 )]
-final class PurchasesV2ReconcileCommand extends TenantAwareCommand
+final class PurchasesV2ReconcileCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly Connection $connection,

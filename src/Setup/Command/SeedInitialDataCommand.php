@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Setup\Command;
 
 use Override;
-use Nubit\Platform\Symfony\Console\TenantAwareCommand;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Setup\Service\InitialDataSeeder;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 Seed initial reference data (idempotent).
 TXT
 )]
-class SeedInitialDataCommand extends TenantAwareCommand
+class SeedInitialDataCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly InitialDataSeeder $initialDataSeeder,
