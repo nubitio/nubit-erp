@@ -15,6 +15,7 @@ enum StockMovementType: string
     case MANUAL_IN         = 'MANUAL_IN';
     case MANUAL_OUT        = 'MANUAL_OUT';
     case VOID_REVERSAL     = 'VOID_REVERSAL';
+    case PURCHASE_VOID     = 'PURCHASE_VOID';
 
     public function label(): string
     {
@@ -28,6 +29,7 @@ enum StockMovementType: string
             self::MANUAL_IN          => 'Entrada manual',
             self::MANUAL_OUT         => 'Salida manual',
             self::VOID_REVERSAL      => 'Reversa anulación',
+            self::PURCHASE_VOID      => 'Anulación compra',
         };
     }
 

@@ -20,7 +20,7 @@ use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use App\Purchasing\Repository\PurchaseRepository;
 use App\Purchasing\State\PurchaseProcessor;
 use App\Purchasing\State\PurchaseProvider;
-use App\Purchasing\State\PurchaseSoftDeleteProcessor;
+use App\Purchasing\State\PurchaseVoidProcessor;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -38,9 +38,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(),
         new Get(),
         new Post(),
-        new Put(),
-        new Patch(),
-        new Delete(processor: PurchaseSoftDeleteProcessor::class, output: false),
+        new Patch(
+            denormalizationContext: ['groups' => ['purchase:admin_patch']],
+            description: 'Update administrative fields only (note, supplier). Stock-affecting fields are immutable.',
+        ),
+        new Delete(processor: PurchaseVoidProcessor::class, output: false),
     ],
     normalizationContext:   ['groups' => ['purchase:read']],
     denormalizationContext: ['groups' => ['purchase:write']],
@@ -76,7 +78,7 @@ class Purchase
     #[ApiProperty(description: 'purchase.warehouse.label')]
     private ?Warehouse $warehouse = null;
 
-    #[Groups(['purchase:read', 'purchase:write'])]
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
     #[ORM\ManyToOne(targetEntity: Supplier::class)]
     #[ORM\JoinColumn(name: 'supplier_id', referencedColumnName: 'proveedor_id', nullable: true)]
     #[ApiProperty(description: 'purchase.supplier.label')]
@@ -124,12 +126,12 @@ class Purchase
     #[ApiProperty(description: 'purchase.grand_total.label')]
     private string $grandTotal = '0.00';
 
-    #[Groups(['purchase:read', 'purchase:write'])]
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
     #[ORM\Column(name: 'note', type: 'string', length: 255, nullable: true)]
     #[ApiProperty(description: 'purchase.note.label')]
     private ?string $note = null;
 
-    #[Groups(['purchase:read', 'purchase:write'])]
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
     #[ORM\Column(name: 'issued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     #[ApiProperty(description: 'purchase.issued_at.label')]
     private ?DateTimeInterface $issuedAt = null;
