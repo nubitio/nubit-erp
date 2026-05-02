@@ -1,3 +1,4 @@
+import { voidPrompt } from '../components/VoidDialog';
 import { saleService } from '../services/saleService';
 
 type ActionDeps = {
@@ -7,9 +8,7 @@ type ActionDeps = {
   notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
 };
 
-type VoidSaleDeps = ActionDeps & {
-  askReason: () => Promise<string | null | undefined>;
-};
+type VoidSaleDeps = ActionDeps;
 
 type MakeInvoiceDeps = ActionDeps & {
   printSale: (saleId: string) => void;
@@ -21,14 +20,12 @@ type MakeInvoiceResponseData = {
 };
 
 export const runVoidSaleAction = async (saleId: string, deps: VoidSaleDeps) => {
-  const reason = await deps.askReason();
-  if (!reason || reason.trim() === '') {
-    return;
-  }
+  const result = await voidPrompt();
+  if (!result) return;
 
   deps.showLoading('Anulando comprobante...');
   saleService
-    .voidSale(saleId, reason)
+    .voidSale(saleId, result.reason, result.restoreStock)
     .subscribe((response) => {
       deps.notify(response.data.message, response.data.success ? 'success' : 'error');
       deps.refreshGrid();

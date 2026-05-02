@@ -251,6 +251,7 @@ const productResource = defineResource<ProductRecord>({
         patch: {
           order: 12,
           width: 130,
+          label: 'Stock mínimo (alerta reposición)',
           visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
         },
       },

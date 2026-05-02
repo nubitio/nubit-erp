@@ -8,6 +8,7 @@ use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Http\ApiResponse;
 use App\Billing\Sale\Void\CashRefundRegistrar;
+use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
 use App\Billing\Service\SaleV2Loader;
@@ -34,6 +35,7 @@ readonly class SaleVoidUseCase
         private AuditLogger $auditLogger,
         private SalesWriteGateway $salesWriteGateway,
         private SaleV2Loader $saleV2Loader,
+        private StockVoidReverserInterface $stockVoidReverser,
     ) {
     }
 
@@ -49,6 +51,7 @@ readonly class SaleVoidUseCase
         string $saleId,
         string $reason,
         int $userId,
+        bool $restoreStock = false,
     ): ApiResponse {
         // Load sale from V2 tables (v2_authoritative mode; no ORM movimiento fallback).
         $sale = $this->saleV2Loader->loadAsSale($saleId);
@@ -88,11 +91,16 @@ readonly class SaleVoidUseCase
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);
 
+            if ($restoreStock) {
+                $this->stockVoidReverser->reverse($sale);
+            }
+
             $this->auditLogger->log('sale.void.result', [
                 'sale_id' => $saleId,
                 'document_type' => $documentType,
                 'success' => true,
                 'message' => ErrorMessages::VOID_SUCCESSFUL,
+                'restore_stock' => $restoreStock,
             ]);
 
             return new ApiResponse(true, ErrorMessages::VOID_SUCCESSFUL);
@@ -135,6 +143,11 @@ readonly class SaleVoidUseCase
 
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);
+
+            if ($restoreStock) {
+                $this->stockVoidReverser->reverse($sale);
+            }
+
             $connection->commit();
 
             $message = $sunatResponse->success

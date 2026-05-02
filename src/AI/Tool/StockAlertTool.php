@@ -41,27 +41,29 @@ final readonly class StockAlertTool
         $branchJoin = '';
         $branchParam = [];
         if ($branchId !== null) {
-            $branchJoin = 'JOIN almacen a ON a.almacen_id = ps.warehouse_id AND a.local_id = :branch_id';
+            $branchJoin = 'JOIN almacen a ON a.almacen_id = si.warehouse_id AND a.local_id = :branch_id';
             $branchParam = ['branch_id' => $branchId];
         } else {
-            $branchJoin = 'JOIN almacen a ON a.almacen_id = ps.warehouse_id';
+            $branchJoin = 'JOIN almacen a ON a.almacen_id = si.warehouse_id';
         }
 
         // Get products below minimum stock with their unit name
+        // Uses stock_items (V2 source of truth) joined to producto.stock_minimo
         $belowMinSql = <<<SQL
             SELECT
                 p.producto_id           AS product_id,
                 p.descripcion           AS product_name,
                 p.sku                   AS sku,
-                SUM(ps.stock)           AS qty_on_hand,
-                SUM(ps.min_stock)       AS min_stock,
+                SUM(si.qty_on_hand)     AS qty_on_hand,
+                MAX(p.stock_minimo)     AS min_stock,
                 u.name                  AS unit
-            FROM product_stock ps
+            FROM stock_items si
             {$branchJoin}
-            JOIN producto p ON p.producto_id = ps.product_id
+            JOIN producto p ON p.producto_id = si.product_id
             LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
+            WHERE p.stock_minimo IS NOT NULL AND p.stock_minimo > 0
             GROUP BY p.producto_id, p.descripcion, p.sku, u.name
-            HAVING SUM(ps.stock) <= SUM(ps.min_stock)
+            HAVING SUM(si.qty_on_hand) <= MAX(p.stock_minimo)
             SQL;
 
         /** @var list<array{product_id: string, product_name: string, sku: string|null, qty_on_hand: string, min_stock: string, unit: string|null}> $rows */

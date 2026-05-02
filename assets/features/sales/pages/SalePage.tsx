@@ -21,7 +21,6 @@ import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';
-import { prompt } from '@shared/ui/library/prompt-dialog/PromptDialog';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
@@ -90,7 +89,6 @@ export const SalePage = () => {
 
   const voidSale = async (saleId: string) => {
     await runVoidSaleAction(saleId, {
-      askReason: () => prompt('Anular comprobante', 'Motivo de anulación'),
       showLoading: (message) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),

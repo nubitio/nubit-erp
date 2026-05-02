@@ -916,6 +916,17 @@
   line-height: 1.2;
 }
 
+.pos-product-card__stock {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--pos-text-muted, #888);
+  background: var(--pos-bg-surface, #f0f2f5);
+  border-radius: var(--pos-radius-pill, 999px);
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 // Circular add button — right side of footer row
 .pos-product-card__add {
   flex-shrink: 0;

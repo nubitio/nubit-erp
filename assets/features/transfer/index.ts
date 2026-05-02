@@ -1,3 +1,3 @@
-export * from './model';
-export * from './pages';
+// Transfer feature barrel.
+export { TransferPage } from './pages';
 export { transferRoutes } from './routes';

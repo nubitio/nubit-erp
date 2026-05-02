@@ -88,9 +88,9 @@ final readonly class SaleInvoicingAdapter implements SaleInvoicingPortInterface
         return $this->printESCPOSController->__invoke($saleId, $request);
     }
 
-    public function voidSale(string $saleId, string $reason, int $userId): ApiResponse
+    public function voidSale(string $saleId, string $reason, int $userId, bool $restoreStock = false): ApiResponse
     {
-        return $this->saleVoidUseCase->__invoke($saleId, $reason, $userId);
+        return $this->saleVoidUseCase->__invoke($saleId, $reason, $userId, $restoreStock);
     }
 
     private function loadSale(string $saleId): ?SaleRecord

@@ -28,5 +28,5 @@ interface SaleInvoicingPortInterface
     /**
      * @throws \Throwable
      */
-    public function voidSale(string $saleId, string $reason, int $userId): ApiResponse;
+    public function voidSale(string $saleId, string $reason, int $userId, bool $restoreStock = false): ApiResponse;
 }

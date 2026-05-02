@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
 import { CashRegisterStatus, LowStockProduct } from '../types';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
@@ -18,6 +19,15 @@ type Props = {
 };
 
 export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockProducts }: Props) {
+  const navigate = useNavigate();
+
+  const goToKardex = (productId: string | null) => {
+    const params = new URLSearchParams();
+    if (productId) params.set('product', productId);
+    navigate(`/kardex?${params.toString()}`);
+  };
+
+  const goToReceipt = () => navigate('/receipt');
   return (
     <>
       <SectionHeader title="Estado operacional" />
@@ -60,12 +70,23 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
                       ? 'warning'
                       : ''
                 }
+                style={{ cursor: 'pointer' }}
+                onClick={() => goToKardex(item.productId)}
+                title="Ver Kardex"
               >
                 <div className="ranked-list__title">{item.product}</div>
                 <div className="ranked-list__meta">
                   <span className="stock-info">
                     {decimalFormatter(item.currentStock)} / {decimalFormatter(item.minStock)} u.
                     <span className="stock-badge">{item.stockPercentage}%</span>
+                  </span>
+                  <span
+                    role="button"
+                    title="Crear entrada"
+                    onClick={(e) => { e.stopPropagation(); goToReceipt(); }}
+                    style={{ fontSize: 16, marginLeft: 4, color: 'var(--accent-color, #3b82f6)' }}
+                  >
+                    <i className="ph ph-plus-circle" />
                   </span>
                 </div>
               </li>

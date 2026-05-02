@@ -38,6 +38,7 @@ export type TopCustomer = { customer: string; invoices: number; total: number };
 export type VoucherTypeShare = { type: string; count: number; total: number };
 export type LowStockProduct = {
   product: string;
+  productId: string | null;
   currentStock: number;
   minStock: number;
   avgPrice: number;

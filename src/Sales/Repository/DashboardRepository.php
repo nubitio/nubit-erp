@@ -324,15 +324,18 @@ readonly class DashboardRepository
         $lowStockProducts = $this->safeQuery('lowStockProducts', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 p.descripcion AS product,
-                ps.stock AS current_stock,
-                COALESCE(ps.min_stock, 0) AS min_stock,
+                p.producto_id AS product_id,
+                si.qty_on_hand  AS current_stock,
+                COALESCE(p.stock_minimo, 0) AS min_stock,
                 COALESCE(p.precio, 0) AS avg_price
-            FROM product_stock ps
-                INNER JOIN producto p ON ps.product_id = p.producto_id
-                INNER JOIN almacen a ON ps.warehouse_id = a.almacen_id
+            FROM stock_items si
+                INNER JOIN producto p  ON si.product_id  = p.producto_id
+                INNER JOIN almacen  a  ON si.warehouse_id = a.almacen_id
             WHERE a.local_id = :branchId
-              AND ps.stock <= COALESCE(NULLIF(ps.min_stock, 0), 5)
-            ORDER BY (ps.stock / COALESCE(NULLIF(ps.min_stock, 0), 5)) ASC
+              AND p.stock_minimo IS NOT NULL
+              AND p.stock_minimo > 0
+              AND si.qty_on_hand <= p.stock_minimo
+            ORDER BY (si.qty_on_hand / p.stock_minimo) ASC
             LIMIT 10
         ", $params), [], $failedSegments);
 
@@ -457,6 +460,7 @@ readonly class DashboardRepository
                 $fallbackMin = $row['min_stock'] > 0 ? $row['min_stock'] : 5;
                 return [
                     'product' => $row['product'],
+                    'productId' => $row['product_id'] ?? null,
                     'currentStock' => (float) $row['current_stock'],
                     'minStock' => (float) $row['min_stock'],
                     'avgPrice' => (float) $row['avg_price'],
