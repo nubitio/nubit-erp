@@ -67,6 +67,30 @@ final class TenantWipeCommand extends TenantAwareCommand
              ->addOption('wipe-catalog', null, InputOption::VALUE_NONE, 'Also delete products, customers and suppliers');
     }
 
+    /**
+     * Override to enforce --tenant is always required.
+     * The parent would iterate ALL tenants if --tenant is omitted, which is
+     * catastrophic for a destructive command.
+     */
+    #[\Override]
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+
+        if (!$input->getOption('tenant')) {
+            $io->error([
+                'El flag --tenant es obligatorio para este comando.',
+                'Ejemplo: php bin/console app:tenant:wipe --tenant=jawka --force',
+                '',
+                'Omitir --tenant ejecutaría el wipe en TODOS los tenants.',
+                'Eso nunca es lo que quieres.',
+            ]);
+
+            return self::FAILURE;
+        }
+
+        return parent::execute($input, $output);
+    }
     #[\Override]
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
