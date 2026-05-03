@@ -85,6 +85,34 @@ describe('sendApiRequest', () => {
     expect(result.errorMessage).toBe('temporary');
   });
 
+  it('parses API Platform problem details metadata for actionable domain errors', async () => {
+    fetchMock.mockResolvedValueOnce(
+      asResponse(422, {
+        type: '/errors/sale-cash-session-required',
+        title: 'Cash register session required',
+        status: 422,
+        detail: 'No puedes realizar ventas, no tienes una caja abierta',
+        errorCode: 'SALE_CASH_SESSION_REQUIRED',
+        action: 'OPEN_CASH_REGISTER',
+        numericCode: 1000,
+      }),
+    );
+
+    const result = await sendApiRequest({
+      method: 'POST',
+      url: '/api/sales',
+      body: { total: 100 },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(422);
+    expect(result.recoverable).toBe(false);
+    expect(result.errorMessage).toBe('No puedes realizar ventas, no tienes una caja abierta');
+    expect(result.errorCode).toBe('SALE_CASH_SESSION_REQUIRED');
+    expect(result.action).toBe('OPEN_CASH_REGISTER');
+    expect(result.numericCode).toBe(1000);
+  });
+
   it('marks 429 responses as recoverable and prioritizes hydra error description', async () => {
     fetchMock.mockResolvedValueOnce(asResponse(429, { 'hydra:description': 'Slow down' }));
 
@@ -114,6 +142,24 @@ describe('sendApiRequest', () => {
     expect(result.status).toBe(401);
     expect(result.requiresLogin).toBe(true);
     expect(result.recoverable).toBe(false);
+  });
+
+  it('uses validation violation messages when problem detail is missing', async () => {
+    fetchMock.mockResolvedValueOnce(
+      asResponse(422, {
+        title: 'Validation Failed',
+        violations: [{ message: 'Debe seleccionar un cliente' }, { message: 'Total inválido' }],
+      }),
+    );
+
+    const result = await sendApiRequest({
+      method: 'POST',
+      url: '/api/sales',
+      body: { total: 0 },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errorMessage).toBe('Debe seleccionar un cliente\nTotal inválido');
   });
 
   it('falls back to generic message when payload is not valid json', async () => {

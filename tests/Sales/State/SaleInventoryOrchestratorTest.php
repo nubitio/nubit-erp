@@ -29,7 +29,7 @@ use Psr\Log\NullLogger;
 final class SaleInventoryOrchestratorTest extends TestCase
 {
     private Connection&MockObject $connection;
-    private SettingsService&MockObject $settings;
+    private TenantSettingsService&MockObject $tenantSettings;
     private StockValidationPolicyInterface&MockObject $validationPolicy;
     private SalesInventoryPortInterface $salesInventory;
     private NegativeStockPolicyResolver $policyResolver;

@@ -36,6 +36,7 @@ let PASSWORD = process.env.E2E_PASSWORD ?? '';
 
 // ── Seed constants — siempre disponibles en el entorno E2E ───────────────────
 const SEED_PRODUCT_NAME = 'Producto CI E2E';
+const SEED_PRODUCT_CODE = 'E2E-CI-PRODUCT';
 const PURCHASE_QTY = 3;
 const PURCHASE_UNIT_COST = '5.00';
 
@@ -259,7 +260,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // Capturar warehouseId y productId del seed via API para poder verificar stock después.
     // Usamos page.evaluate para hacer fetch desde el contexto del browser (cookies de sesión).
-    const seedData = await page.evaluate(async ({ baseUrl, productName }) => {
+    const seedData = await page.evaluate(async ({ baseUrl, productCode, productName }) => {
       // Obtener el primer almacén disponible
       const whResp = await fetch(`${baseUrl}/api/warehouses?page=1&itemsPerPage=1`);
       const whData = await whResp.json();
@@ -267,20 +268,26 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         whData['hydra:member'] ?? whData.member ?? whData ?? [];
       const warehouse = warehouses[0] ?? null;
 
-      // Buscar el producto seed por nombre
+      // Buscar el producto seed por código. El filtro por name es parcial en el
+      // backend y puede devolver otro producto cuyo nombre contenga el texto.
       const prodResp = await fetch(
-        `${baseUrl}/api/products?name=${encodeURIComponent(productName)}&page=1&itemsPerPage=1`,
+        `${baseUrl}/api/products?code=${encodeURIComponent(productCode)}&page=1&itemsPerPage=100`,
+        { cache: 'no-store' },
       );
       const prodData = await prodResp.json();
-      const products: Array<{ id: string; name: string }> =
+      const products: Array<{ id: string; code?: string; name: string }> =
         prodData['hydra:member'] ?? prodData.member ?? prodData ?? [];
-      const product = products[0] ?? null;
+      const product =
+        products.find((item) => item.code === productCode) ??
+        products.find((item) => item.name === productName) ??
+        null;
 
       // Capturar stock actual si tenemos ambos IDs
       let stockBefore: number | null = null;
       if (warehouse && product) {
         const stockResp = await fetch(
-          `${baseUrl}/api/products/${product.id}/stock/${warehouse.id}`,
+          `${baseUrl}/api/products/${product.id}/stock/${warehouse.id}?_=${Date.now()}`,
+          { cache: 'no-store' },
         );
         if (stockResp.ok) {
           const stockData = await stockResp.json();
@@ -292,9 +299,10 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         warehouseId: warehouse?.id ?? null,
         warehouseName: warehouse?.name ?? null,
         productId: product?.id ?? null,
+        productCode: (product as { code?: string } | null)?.code ?? null,
         stockBefore,
       };
-    }, { baseUrl: BASE_URL, productName: SEED_PRODUCT_NAME });
+    }, { baseUrl: BASE_URL, productCode: SEED_PRODUCT_CODE, productName: SEED_PRODUCT_NAME });
 
     expect(seedData.warehouseId, 'debe existir al menos un almacén').toBeTruthy();
     expect(seedData.productId, 'debe existir el producto seed').toBeTruthy();
@@ -304,7 +312,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // eslint-disable-next-line no-console
     console.log(
-      `[E2E] Stock inicial de "${SEED_PRODUCT_NAME}" en almacén ${seedData.warehouseName}: ${seedData.stockBefore}`,
+      `[E2E] Stock inicial de "${SEED_PRODUCT_NAME}" (${seedData.productCode ?? seedData.productId}) en almacén ${seedData.warehouseName} (${seedData.warehouseId}): ${seedData.stockBefore}`,
     );
   });
 
@@ -320,7 +328,9 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     const stockBefore = await page.evaluate(
       async ({ baseUrl, productId, warehouseId }) => {
         if (!productId || !warehouseId) return null;
-        const resp = await fetch(`${baseUrl}/api/products/${productId}/stock/${warehouseId}`);
+        const resp = await fetch(`${baseUrl}/api/products/${productId}/stock/${warehouseId}?_=${Date.now()}`, {
+          cache: 'no-store',
+        });
         if (!resp.ok) return null;
         const data = await resp.json();
         return data.stock ?? data.quantity ?? null;
@@ -589,7 +599,9 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       const stockAfter = await page.evaluate(
         async ({ baseUrl, productId, warehouseId }) => {
-          const resp = await fetch(`${baseUrl}/api/products/${productId}/stock/${warehouseId}`);
+          const resp = await fetch(`${baseUrl}/api/products/${productId}/stock/${warehouseId}?_=${Date.now()}`, {
+            cache: 'no-store',
+          });
           if (!resp.ok) return null;
           const data = await resp.json();
           return data.stock ?? data.quantity ?? null;

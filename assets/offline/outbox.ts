@@ -95,7 +95,12 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
 const updateSaleStatus = async (
   saleId: string,
   status: LocalSaleStatus,
-  extra: Partial<Pick<LocalSale, 'serverSaleId' | 'serverCode' | 'errorMessage'>> = {},
+  extra: Partial<
+    Pick<
+      LocalSale,
+      'serverSaleId' | 'serverCode' | 'errorMessage' | 'errorCode' | 'errorAction' | 'numericErrorCode'
+    >
+  > = {},
 ) => {
   await offlineDb.sales.update(saleId, {
     status,
@@ -123,6 +128,10 @@ const processOutboxItem = async (item: OutboxItem) => {
       await updateSaleStatus(item.saleId, 'synced', {
         serverSaleId: result.data?.id ? String(result.data.id) : undefined,
         serverCode: buildServerSaleCode(result.data, item.saleId),
+        errorMessage: undefined,
+        errorCode: undefined,
+        errorAction: undefined,
+        numericErrorCode: undefined,
       });
     });
     await logSyncEvent({
@@ -144,9 +153,17 @@ const processOutboxItem = async (item: OutboxItem) => {
           status: 'error',
           attempts,
           lastError: errorMessage,
+          lastErrorCode: result.errorCode,
+          lastErrorAction: result.action,
+          lastNumericErrorCode: result.numericCode,
           nextRetryAt: undefined,
         });
-        await updateSaleStatus(item.saleId, 'error', { errorMessage });
+        await updateSaleStatus(item.saleId, 'error', {
+          errorMessage,
+          errorCode: result.errorCode,
+          errorAction: result.action,
+          numericErrorCode: result.numericCode,
+        });
       });
       await logSyncEvent({
         eventType: 'sale_sync_error',
@@ -162,10 +179,16 @@ const processOutboxItem = async (item: OutboxItem) => {
         status: 'retrying',
         attempts,
         lastError: result.errorMessage ?? 'Error temporal',
+        lastErrorCode: result.errorCode,
+        lastErrorAction: result.action,
+        lastNumericErrorCode: result.numericCode,
         nextRetryAt,
       });
       await updateSaleStatus(item.saleId, 'pending', {
         errorMessage: result.errorMessage ?? 'Error temporal',
+        errorCode: result.errorCode,
+        errorAction: result.action,
+        numericErrorCode: result.numericCode,
       });
     });
     await logSyncEvent({
@@ -185,9 +208,17 @@ const processOutboxItem = async (item: OutboxItem) => {
       status: 'error',
       attempts: item.attempts + 1,
       lastError: errorMessage,
+      lastErrorCode: result.errorCode,
+      lastErrorAction: result.action,
+      lastNumericErrorCode: result.numericCode,
       nextRetryAt: undefined,
     });
-    await updateSaleStatus(item.saleId, 'error', { errorMessage });
+    await updateSaleStatus(item.saleId, 'error', {
+      errorMessage,
+      errorCode: result.errorCode,
+      errorAction: result.action,
+      numericErrorCode: result.numericCode,
+    });
   });
 
   await logSyncEvent({
@@ -253,7 +284,12 @@ export const retrySaleSync = async (saleId: string) => {
     nextRetryAt: undefined,
     lastError: undefined,
   });
-  await updateSaleStatus(saleId, 'pending', { errorMessage: undefined });
+  await updateSaleStatus(saleId, 'pending', {
+    errorMessage: undefined,
+    errorCode: undefined,
+    errorAction: undefined,
+    numericErrorCode: undefined,
+  });
   await processOutboxQueue();
   return true;
 };

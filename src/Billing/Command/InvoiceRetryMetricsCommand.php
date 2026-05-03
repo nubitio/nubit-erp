@@ -6,7 +6,7 @@ namespace App\Billing\Command;
 
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Entity\ConfigKey;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -76,11 +76,11 @@ class InvoiceRetryMetricsCommand extends PerTenantCommand
         );
 
         $sunatSendEnabled = filter_var(
-            (string)$this->settings->get(Constants::SUNAT_SEND_ENABLED, 'true'),
+            (string)$this->settings->get(ConfigKey::SUNAT_SEND_ENABLED->value, 'true'),
             FILTER_VALIDATE_BOOLEAN
         );
-        $rejectionStreak = (int)$this->settings->get(Constants::SUNAT_REJECTION_STREAK, '0');
-        $rejectionThreshold = (int)$this->settings->get(Constants::SUNAT_REJECTION_THRESHOLD, '3');
+        $rejectionStreak = (int)$this->settings->get(ConfigKey::SUNAT_REJECTION_STREAK->value, '0');
+        $rejectionThreshold = (int)$this->settings->get(ConfigKey::SUNAT_REJECTION_THRESHOLD->value, '3');
 
         $io->title('SUNAT Retry Metrics');
         $io->text(sprintf('Window: last %d hour(s)', $hours));

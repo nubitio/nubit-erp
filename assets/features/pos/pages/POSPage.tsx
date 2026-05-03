@@ -124,6 +124,10 @@ const POSPage = () => {
       await processNow();
     },
     printSaleInvoice: (saleId: string) => invoicePrinterRef.current.printSaleInvoice(saleId),
+    onCashSessionRequired: () => {
+      setCajaAbierta(false);
+      setActivePanel('cart');
+    },
   });
 
   const formatMoney = (value: number) =>

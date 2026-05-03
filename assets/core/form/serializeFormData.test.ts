@@ -132,7 +132,7 @@ describe('serializeFormFields', () => {
 });
 
 describe('serializeDetailRows', () => {
-  it('serializes entity fields in detail rows to IRIs', () => {
+  it('serializes entity object fields in detail rows to IRIs', () => {
     const field = new FieldBuilder()
       .type(FieldType.ENTITY)
       .name('product')
@@ -145,6 +145,21 @@ describe('serializeDetailRows', () => {
     const result = serializeDetailRows(rows, [field], 'id', false);
 
     expect(result[0].product).toBe('/api/products/1');
+  });
+
+  it('serializes primitive entity IDs in detail rows to IRIs', () => {
+    const field = new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('product')
+      .url('/api/products')
+      .valueField('id')
+      .label('Product')
+      .build();
+
+    const rows = [{ product: 'product-uuid', qty: 2 }];
+    const result = serializeDetailRows(rows, [field], 'id', false);
+
+    expect(result[0].product).toBe('/api/products/product-uuid');
   });
 
   it('removes detail identity field for new rows', () => {

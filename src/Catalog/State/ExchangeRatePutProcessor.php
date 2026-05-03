@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\State;
 
+use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Catalog\Entity\ExchangeRate;
@@ -27,7 +28,7 @@ final readonly class ExchangeRatePutProcessor implements ProcessorInterface
         /** @var ExchangeRate $data */
 
         // POST /exchange-rate/{currency}/sync → pull from BCRP
-        if (str_ends_with((string) $operation->getUriTemplate(), '/sync')) {
+        if ($operation instanceof HttpOperation && str_ends_with((string) $operation->getUriTemplate(), '/sync')) {
             return $this->syncService->syncEntity($data->getCurrency());
         }
 

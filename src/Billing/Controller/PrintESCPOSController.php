@@ -104,9 +104,7 @@ class PrintESCPOSController extends AbstractController
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
 
-        $shouldPrintLogo = 'true' === strval(
-            $this->tenantSettings->isPrintLogo()
-        );
+        $shouldPrintLogo = $this->tenantSettings->isPrintLogo();
 
         // HEADER (logo + company name)
         $printer->setJustification(Printer::JUSTIFY_CENTER);

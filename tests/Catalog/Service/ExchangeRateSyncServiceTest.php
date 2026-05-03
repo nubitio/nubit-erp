@@ -43,6 +43,7 @@ final class ExchangeRateSyncServiceTest extends TestCase
         );
     }
 
+    /** @param array<string, mixed> $data */
     private function stubBcrpResponse(array $data): void
     {
         $response = $this->createStub(ResponseInterface::class);
