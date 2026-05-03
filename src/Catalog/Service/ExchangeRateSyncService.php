@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Catalog\Service;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Catalog\Entity\ExchangeRate;
+use App\Catalog\Enum\ExchangeRateSource;
+use App\Catalog\Repository\ExchangeRateRepository;
 use DateTimeImmutable;
 use DateTimeZone;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
@@ -19,46 +21,27 @@ readonly class ExchangeRateSyncService
         'https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04638PD/json/hoy/hoy/ing';
 
     public function __construct(
-        private SettingsService $settings,
+        private ExchangeRateRepository $repository,
+        private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
     ) {
     }
 
     /**
+     * Syncs the USD rate from BCRP and returns the updated entity.
+     *
      * @return array{success: bool, rate: ?string, updated_at: ?string, message: string}
      */
     public function sync(): array
     {
         try {
-            $response = $this->httpClient->request('GET', self::BCRP_URL, ['timeout' => 10]);
-            $data = $response->toArray();
-            $rate = $this->parseRate($data);
-
-            if ($rate === null) {
-                $this->logger->warning(
-                    'BCRP response did not contain a valid exchange rate',
-                    ['data' => $data]
-                );
-
-                return [
-                    'success' => false,
-                    'rate' => null,
-                    'updated_at' => null,
-                    'message' => 'BCRP did not return a valid rate',
-                ];
-            }
-
-            $formattedRate = number_format($rate, 6, '.', '');
-            $updatedAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-
-            $this->settings->set(Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, 'float', $formattedRate);
-            $this->settings->set(Constants::EXCHANGE_RATE_UPDATED_AT, 'string', $updatedAt);
+            $entity = $this->syncEntity('USD');
 
             return [
                 'success' => true,
-                'rate' => $formattedRate,
-                'updated_at' => $updatedAt,
+                'rate' => $entity->getRate(),
+                'updated_at' => $entity->getUpdatedAt()->format('Y-m-d H:i:s'),
                 'message' => 'Rate synced successfully',
             ];
         } catch (Throwable $e) {
@@ -71,6 +54,36 @@ readonly class ExchangeRateSyncService
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Syncs a specific currency from BCRP and persists it.
+     * Throws on network/parse failure.
+     */
+    public function syncEntity(string $currency): ExchangeRate
+    {
+        $response = $this->httpClient->request('GET', self::BCRP_URL, ['timeout' => 10]);
+        $data = $response->toArray();
+        $rate = $this->parseRate($data);
+
+        if ($rate === null) {
+            throw new \RuntimeException('BCRP did not return a valid rate');
+        }
+
+        $formattedRate = number_format($rate, 6, '.', '');
+        $existing = $this->repository->findByCurrency($currency);
+
+        if ($existing !== null) {
+            $existing->update($formattedRate, ExchangeRateSource::BCRP_AUTO);
+            $this->em->flush();
+            return $existing;
+        }
+
+        $entity = new ExchangeRate($currency, $formattedRate, ExchangeRateSource::BCRP_AUTO);
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        return $entity;
     }
 
     /**

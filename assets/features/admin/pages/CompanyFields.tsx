@@ -6,6 +6,7 @@ import {
   imageField,
   enumField,
   textField,
+  textareaField,
 } from '@core/field/FieldBuilders';
 import { DxFormEvents } from '@core/form/DxForm';
 import { consultService } from '@features/consult';
@@ -77,7 +78,7 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
   );
   fields.push(textField().name('businessName').label('Razon social').required(true).build());
   fields.push(textField().name('tradeName').label('Nombre comercial').build());
-  fields.push(textField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
+  fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
   fields.push(
     entityField(`${Constants.API_BASE_URL}ubigeos`, 'code', 'name')
       .name('ubigeo')

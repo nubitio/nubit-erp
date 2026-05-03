@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Sales\State;
 
 use App\Identity\Dto\AuthUserDto;
-use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\SettingsService;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Sales\State\NegativeStockPolicyResolver;
+use App\Settings\Service\TenantSettingsService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -17,73 +16,53 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 final class NegativeStockPolicyResolverTest extends TestCase
 {
-    private SettingsService&MockObject $settings;
+    private TenantSettingsService&MockObject $tenantSettings;
     private NegativeStockPolicyResolver $resolver;
 
     protected function setUp(): void
     {
-        $this->settings = $this->createMock(SettingsService::class);
-        $this->resolver = new NegativeStockPolicyResolver($this->settings);
+        $this->tenantSettings = $this->createMock(TenantSettingsService::class);
+        $this->resolver = new NegativeStockPolicyResolver($this->tenantSettings);
     }
-
-    // ── resolvePolicy() — returns StockPolicy enum ───────────────────────────
 
     #[DataProvider('stockPolicyMappingProvider')]
-    public function testResolvePolicyMapsRawValuesToEnum(string $raw, StockPolicy $expected): void
+    public function testResolvePolicyReturnsConfiguredEnum(StockPolicy $policy): void
     {
-        $this->settings->method('get')
-            ->with(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')
-            ->willReturn($raw);
+        $this->tenantSettings->method('getNegativeStockPolicy')->willReturn($policy);
 
-        self::assertSame($expected, $this->resolver->resolvePolicy());
+        self::assertSame($policy, $this->resolver->resolvePolicy());
     }
 
-    /** @return array<string, array{string, StockPolicy}> */
+    /** @return array<string, array{StockPolicy}> */
     public static function stockPolicyMappingProvider(): array
     {
         return [
-            // Canonical new values
-            'STRICT'                      => ['STRICT',          StockPolicy::STRICT],
-            'WARNING_ONLY'                => ['WARNING_ONLY',    StockPolicy::WARNING_ONLY],
-            'ALLOW_NEGATIVE'              => ['ALLOW_NEGATIVE',  StockPolicy::ALLOW_NEGATIVE],
-            // Legacy synonym values (kept for backwards compat with existing DB rows)
-            'BLOCK synonym'               => ['BLOCK',           StockPolicy::STRICT],
-            'ALLOW_WITH_ROLE synonym'     => ['ALLOW_WITH_ROLE', StockPolicy::WARNING_ONLY],
-            'ALLOW_ALL synonym'           => ['ALLOW_ALL',       StockPolicy::ALLOW_NEGATIVE],
-            // Case normalisation
-            'strict lowercase'            => ['strict',          StockPolicy::STRICT],
-            'allow_negative lowercase'    => ['allow_negative',  StockPolicy::ALLOW_NEGATIVE],
-            // Unknown / empty → safe default
-            'empty string → STRICT'       => ['',               StockPolicy::STRICT],
-            'unknown value → STRICT'      => ['GARBAGE',        StockPolicy::STRICT],
+            'STRICT'         => [StockPolicy::STRICT],
+            'WARNING_ONLY'   => [StockPolicy::WARNING_ONLY],
+            'ALLOW_NEGATIVE' => [StockPolicy::ALLOW_NEGATIVE],
         ];
     }
 
-    // ── canSell() — ALLOW_NEGATIVE policy ────────────────────────────────────
+    public function testResolvePolicyDefaultsToStrictWhenServiceReturnsStrict(): void
+    {
+        $this->tenantSettings->method('getNegativeStockPolicy')->willReturn(StockPolicy::STRICT);
+
+        self::assertSame(StockPolicy::STRICT, $this->resolver->resolvePolicy());
+    }
+
+    // ── canSell() ─────────────────────────────────────────────────────────────
 
     public function testAllowNegativePolicyGrantsAnyUser(): void
     {
-        $regular    = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
-        $admin      = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
-        $superAdmin = new AuthUserDto(userId: 3, username: 'root', roles: ['ROLE_SUPER_ADMIN']);
-
-        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $regular));
-        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $admin));
-        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $superAdmin));
+        $user = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
+        self::assertTrue($this->resolver->canSell(StockPolicy::ALLOW_NEGATIVE, $user));
     }
-
-    // ── canSell() — STRICT policy ─────────────────────────────────────────────
 
     public function testStrictPolicyDeniesAnyUser(): void
     {
-        $regular = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
-        $admin   = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
-
-        self::assertFalse($this->resolver->canSell(StockPolicy::STRICT, $regular));
+        $admin = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
         self::assertFalse($this->resolver->canSell(StockPolicy::STRICT, $admin));
     }
-
-    // ── canSell() — WARNING_ONLY policy ──────────────────────────────────────
 
     public function testWarningOnlyPolicyGrantsAdminsOnly(): void
     {
@@ -98,38 +77,11 @@ final class NegativeStockPolicyResolverTest extends TestCase
         self::assertFalse($this->resolver->canSell(StockPolicy::WARNING_ONLY, $noRoles));
     }
 
-    // ── shouldUseCoreValidation() ─────────────────────────────────────────────
+    // ── shouldUseCoreValidation() — always true after migration ──────────────
 
-    public function testV2AuthoritativeModeEnablesCoreValidation(): void
+    public function testShouldUseCoreValidationAlwaysReturnsTrue(): void
     {
-        $this->settings->method('get')
-            ->willReturnMap([
-                [Constants::INVENTORY_CORE_MODE, 'legacy', 'v2_authoritative'],
-                [Constants::INVENTORY_CORE_DUAL_WRITE, 'false', 'false'],
-            ]);
-
+        // All tenants are on v2_authoritative; the flag always returns true.
         self::assertTrue($this->resolver->shouldUseCoreValidation());
-    }
-
-    public function testLegacyModeWithDualWriteEnabledUsesCoreValidation(): void
-    {
-        $this->settings->method('get')
-            ->willReturnMap([
-                [Constants::INVENTORY_CORE_MODE, 'legacy', 'legacy'],
-                [Constants::INVENTORY_CORE_DUAL_WRITE, 'false', 'true'],
-            ]);
-
-        self::assertTrue($this->resolver->shouldUseCoreValidation());
-    }
-
-    public function testLegacyModeWithDualWriteDisabledSkipsCoreValidation(): void
-    {
-        $this->settings->method('get')
-            ->willReturnMap([
-                [Constants::INVENTORY_CORE_MODE, 'legacy', 'legacy'],
-                [Constants::INVENTORY_CORE_DUAL_WRITE, 'false', 'false'],
-            ]);
-
-        self::assertFalse($this->resolver->shouldUseCoreValidation());
     }
 }

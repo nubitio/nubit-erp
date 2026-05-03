@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Catalog\Entity\Product;
@@ -22,20 +21,13 @@ use App\Catalog\Entity\Product;
 final readonly class NegativeStockPolicyResolver
 {
     public function __construct(
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
     ) {
     }
 
     public function resolvePolicy(): StockPolicy
     {
-        $raw = strtoupper(trim((string) $this->settings->get(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')));
-
-        return match ($raw) {
-            'STRICT', 'BLOCK'                  => StockPolicy::STRICT,
-            'WARNING_ONLY', 'ALLOW_WITH_ROLE'  => StockPolicy::WARNING_ONLY,
-            'ALLOW_NEGATIVE', 'ALLOW_ALL'      => StockPolicy::ALLOW_NEGATIVE,
-            default                            => StockPolicy::STRICT,
-        };
+        return $this->tenantSettings->getNegativeStockPolicy();
     }
 
     /**
@@ -53,15 +45,7 @@ final readonly class NegativeStockPolicyResolver
 
     public function shouldUseCoreValidation(): bool
     {
-        $mode = strtolower(trim((string) $this->settings->get(Constants::INVENTORY_CORE_MODE, 'legacy')));
-        if ($mode === 'v2_authoritative') {
-            return true;
-        }
-
-        return filter_var(
-            $this->settings->get(Constants::INVENTORY_CORE_DUAL_WRITE, 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        return true; // Inventory Core V2 is now the only mode — migration flags removed.
     }
 
     public function isStockTracked(Product $product): bool

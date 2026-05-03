@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Setup\Service;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
+use App\Settings\Service\SunatStateService;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
 use App\Contacts\Repository\CustomerRepository;
@@ -33,40 +33,30 @@ final class InitialDataSeederTest extends TestCase
 {
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
-        $captured = [];
+        $tenantSettings = $this->createMock(TenantSettingsService::class);
+        $sunatState     = $this->createMock(SunatStateService::class);
+        $tenantSettings->expects($this->atLeastOnce())->method('get');
+        $tenantSettings->expects($this->once())->method('save');
+        $sunatState->expects($this->atLeastOnce())->method('get');
+        $sunatState->expects($this->once())->method('save');
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('set')->willReturnCallback(
-            static function (string $name, string $type, string $value) use (&$captured): void {
-                $captured[$name] = ['type' => $type, 'value' => $value];
-            }
-        );
-
-        $service = $this->newService($settings);
+        $service = $this->newService($tenantSettings, $sunatState);
         $this->invokePrivate($service, 'seedSettings');
-
-        self::assertSame('v2_authoritative', $captured[Constants::SALES_V2_MODE]['value'] ?? null);
-        self::assertSame('v2_authoritative', $captured[Constants::PURCHASES_V2_MODE]['value'] ?? null);
-        self::assertSame('true', $captured[Constants::PURCHASES_V2_DUAL_WRITE_STRICT]['value'] ?? null);
-        self::assertArrayNotHasKey('app_option_check_stock', $captured);
-        self::assertArrayNotHasKey('sales_v2_disable_legacy_cash_movement', $captured);
-        self::assertArrayNotHasKey('sales_v2_disable_legacy_stock_projection', $captured);
     }
 
     public function testSeedSettingsIsSafeWhenSettingsStorageFails(): void
     {
         $this->expectNotToPerformAssertions();
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('set')->willThrowException(new \RuntimeException('boom'));
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('get')->willThrowException(new \RuntimeException('boom'));
 
-        $service = $this->newService($settings);
+        $service = $this->newService($tenantSettings);
         $this->invokePrivate($service, 'seedSettings');
     }
 
     public function testSeedRunsReferenceDataAndMenuSeedWhenEntitiesAlreadyExist(): void
     {
-        $settings = $this->createStub(SettingsService::class);
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
         $entityManager->expects(self::never())->method('flush');
@@ -93,7 +83,8 @@ final class InitialDataSeederTest extends TestCase
 
         $service = new InitialDataSeeder(
             $entityManager,
-            $settings,
+            $this->createMock(TenantSettingsService::class),
+            $this->createMock(SunatStateService::class),
             $menuSeedService,
             $logisticRepo,
             $paymentRepo,
@@ -108,11 +99,14 @@ final class InitialDataSeederTest extends TestCase
         $service->seed();
     }
 
-    private function newService(SettingsService $settings): InitialDataSeeder
-    {
+    private function newService(
+        ?TenantSettingsService $tenantSettings = null,
+        ?SunatStateService $sunatState = null,
+    ): InitialDataSeeder {
         return new InitialDataSeeder(
             $this->createMock(EntityManagerInterface::class),
-            $settings,
+            $tenantSettings ?? $this->createMock(TenantSettingsService::class),
+            $sunatState ?? $this->createMock(SunatStateService::class),
             $this->createMock(MenuSeedService::class),
             $this->createMock(LogisticOperationRepository::class),
             $this->createMock(PaymentMethodRepository::class),

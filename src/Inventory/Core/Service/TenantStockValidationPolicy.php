@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
-use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\TenantSettingsService;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\StockPolicy;
@@ -22,7 +21,7 @@ use App\Inventory\Core\Enum\StockPolicy;
 final readonly class TenantStockValidationPolicy implements StockValidationPolicyInterface
 {
     public function __construct(
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
     ) {
     }
 
@@ -52,16 +51,7 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
 
     private function resolvePolicy(): StockPolicy
     {
-        $raw = strtoupper(trim((string) $this->settings->get(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')));
-
-        // Accept both the new canonical values and the legacy BLOCK/ALLOW_* synonyms
-        // so tenants whose config row was written by the old UI still work.
-        return match ($raw) {
-            'STRICT', 'BLOCK'                        => StockPolicy::STRICT,
-            'WARNING_ONLY', 'ALLOW_WITH_ROLE'        => StockPolicy::WARNING_ONLY,
-            'ALLOW_NEGATIVE', 'ALLOW_ALL'            => StockPolicy::ALLOW_NEGATIVE,
-            default                                  => StockPolicy::STRICT,
-        };
+        return $this->tenantSettings->getNegativeStockPolicy();
     }
 
     private function tracksInventory(Product $product): bool

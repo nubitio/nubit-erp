@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sales\Service;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
+use App\Catalog\Repository\ExchangeRateRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 
@@ -16,7 +16,8 @@ readonly class SaleCurrencyResolver
 
     public function __construct(
         private Connection $connection,
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
+        private ExchangeRateRepository $exchangeRateRepository,
     ) {
     }
 
@@ -30,7 +31,7 @@ readonly class SaleCurrencyResolver
 
         $currency = $this->normalizeCurrency(
             $sale->getCurrency() !== '' ? $sale->getCurrency() : ($snapshot['currency'] ?? null)
-            ?? (string)$this->settings->get(Constants::SALES_DEFAULT_CURRENCY, self::PEN)
+            ?? $this->tenantSettings->getDefaultCurrency()->value
         );
 
         $exchangeRate = $this->normalizeExchangeRate(
@@ -53,7 +54,7 @@ readonly class SaleCurrencyResolver
     {
         $snapshot = $this->findInSalesTable($saleId);
         $currency = $this->normalizeCurrency(
-            $snapshot['currency'] ?? (string)$this->settings->get(Constants::SALES_DEFAULT_CURRENCY, self::PEN)
+            $snapshot['currency'] ?? $this->tenantSettings->getDefaultCurrency()->value
         );
         $exchangeRate = $this->normalizeExchangeRate($currency, $snapshot['exchange_rate'] ?? null);
 
@@ -108,7 +109,8 @@ SQL,
 
         $candidate = trim((string)$rawExchangeRate);
         if ($candidate === '' || !is_numeric($candidate) || (float)$candidate <= 0) {
-            $candidate = (string)$this->settings->get(Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000');
+            $usdRate = $this->exchangeRateRepository->findByCurrency('USD');
+            $candidate = $usdRate !== null ? $usdRate->getRate() : '3.800000';
         }
 
         if (!is_numeric($candidate) || (float)$candidate <= 0) {

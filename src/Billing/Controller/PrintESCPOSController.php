@@ -6,8 +6,7 @@ namespace App\Billing\Controller;
 
 use App\Billing\Extension\RemoteEscposImage;
 use App\Efact\Service\LogoProvider;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Sales\Dto\SaleItemDto;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Sales\Domain\DocType;
@@ -53,7 +52,7 @@ class PrintESCPOSController extends AbstractController
     public function __construct(
         private readonly LogoProvider $logoProvider,
         private readonly TaxDocumentRepository $taxDocumentRepository,
-        private readonly SettingsService $settingsService,
+        private readonly TenantSettingsService $tenantSettings,
         #[Autowire('%env(PRINTER_LINE_WIDTH)%')]
         private readonly int $printerLineWidth,
     ) {
@@ -106,7 +105,7 @@ class PrintESCPOSController extends AbstractController
         $printer = new Printer($connector);
 
         $shouldPrintLogo = 'true' === strval(
-            $this->settingsService->get(Constants::PRINT_LOGO, 'true')
+            $this->tenantSettings->isPrintLogo()
         );
 
         // HEADER (logo + company name)
@@ -216,8 +215,8 @@ class PrintESCPOSController extends AbstractController
             ));
         }
 
-        $app_option_rc_get = (int)$this->settingsService->get(Constants::CONSUMPTION_TAX);
-        $app_option_igv_get = (int)$this->settingsService->get(Constants::TAX);
+        $app_option_rc_get = (int)$this->tenantSettings->getRc();
+        $app_option_igv_get = (int)$this->tenantSettings->getIgv();
         $hasDetraction = $voucher->voucher_detraction_amount && $voucher->voucher_detraction_amount > 0;
 
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {

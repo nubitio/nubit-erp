@@ -7,7 +7,7 @@ namespace App\Billing\Invoice\Domain;
 use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Entity\ConfigKey;
 use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -91,8 +91,8 @@ readonly class ValidateInvoiceUseCase
             $result = $apiInstance->getToken(
                 self::GRANT_TYPE,
                 self::SCOPE,
-                strval($this->settings->get(Constants::CPE_CLIENT_ID)),
-                strval($this->settings->get(Constants::CPE_CLIENT_SECRET))
+                strval($this->settings->get(ConfigKey::CPE_CLIENT_ID->value)),
+                strval($this->settings->get(ConfigKey::CPE_CLIENT_SECRET->value))
             );
 
             return $result->getAccessToken() ?? '';

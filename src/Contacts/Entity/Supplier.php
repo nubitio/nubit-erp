@@ -43,7 +43,7 @@ class Supplier
     private string $businessName;
 
     #[ApiProperty(description: 'supplier.fiscal_address.label')]
-    #[ORM\Column(name: 'domicilio_fiscal', length: 255, nullable: true)]
+    #[ORM\Column(name: 'domicilio_fiscal', type: 'text', nullable: true)]
     private ?string $fiscalAddress = null;
 
     #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]

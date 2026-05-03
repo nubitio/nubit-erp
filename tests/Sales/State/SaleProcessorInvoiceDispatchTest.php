@@ -8,8 +8,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
 use App\Identity\Auth\BranchContextService;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
@@ -58,8 +57,8 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     private EntityManagerInterface $entityManager;
     /** @var LoggerInterface&MockObject */
     private LoggerInterface $logger;
-    /** @var SettingsService&MockObject */
-    private SettingsService $settings;
+    /** @var TenantSettingsService&MockObject */
+    private TenantSettingsService $tenantSettings;
 
     protected function setUp(): void
     {
@@ -68,7 +67,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->settings = $this->createMock(SettingsService::class);
+        $this->tenantSettings = $this->createMock(TenantSettingsService::class);
     }
 
     /**
@@ -165,12 +164,8 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
 
         // AUTO_INVOICE=false; emitInvoice flag on the entity drives the path.
         // REQUIRE_CASH_REGISTER=false so no cash-shift check.
-        $this->settings
-            ->method('get')
-            ->willReturnMap([
-                [Constants::AUTO_INVOICE, 'false', 'false'],
-                [Constants::REQUIRE_CASH_REGISTER, 'true', 'false'],
-            ]);
+        $this->tenantSettings->method('isAutoInvoice')->willReturn(false);
+        $this->tenantSettings->method('isRequireCashRegister')->willReturn(false);
 
         // Build SaleProcessor bypassing constructor.
         $processorReflection = new ReflectionClass(SaleProcessor::class);
@@ -182,7 +177,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->set($processorReflection, $processor, 'removeProcessor', $this->createMock(ProcessorInterface::class));
         $this->set($processorReflection, $processor, 'security', $this->security);
         $this->set($processorReflection, $processor, 'entityManager', $this->entityManager);
-        $this->set($processorReflection, $processor, 'settings', $this->settings);
+        $this->set($processorReflection, $processor, 'tenantSettings', $this->tenantSettings);
         $this->set($processorReflection, $processor, 'saleInvoicing', $this->saleInvoicing);
         $this->set($processorReflection, $processor, 'logger', $this->logger);
 

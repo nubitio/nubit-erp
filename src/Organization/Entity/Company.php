@@ -55,7 +55,7 @@ class Company
     #[Assert\NotBlank]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.fiscal_address.label')]
-    #[ORM\Column(name: 'domicilio_fiscal', length: 255)]
+    #[ORM\Column(name: 'domicilio_fiscal', type: 'text')]
     private string $fiscalAddress;
 
     #[Groups(['company:read'])]

@@ -4,15 +4,38 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Service;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Catalog\Entity\ExchangeRate;
+use App\Catalog\Enum\ExchangeRateSource;
+use App\Catalog\Repository\ExchangeRateRepository;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Settings\Enum\DefaultCurrency;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 
 final class SaleCurrencyResolverTest extends TestCase
 {
+    private function makeResolver(
+        Connection $connection,
+        string $defaultCurrency = 'PEN',
+        ?string $usdRate = null,
+    ): SaleCurrencyResolver {
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('getDefaultCurrency')
+            ->willReturn(DefaultCurrency::from($defaultCurrency));
+
+        $exchangeRateRepo = $this->createStub(ExchangeRateRepository::class);
+        if ($usdRate !== null) {
+            $rate = new ExchangeRate('USD', $usdRate, ExchangeRateSource::BCRP_AUTO);
+            $exchangeRateRepo->method('findByCurrency')->willReturn($rate);
+        } else {
+            $exchangeRateRepo->method('findByCurrency')->willReturn(null);
+        }
+
+        return new SaleCurrencyResolver($connection, $tenantSettings, $exchangeRateRepo);
+    }
+
     public function testResolveForSaleIdFallsBackToLegacyMovimientoId(): void
     {
         $connection = $this->createMock(Connection::class);
@@ -27,13 +50,7 @@ final class SaleCurrencyResolverTest extends TestCase
                 'exchange_rate' => '3.9',
             ]);
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturnMap([
-            [Constants::SALES_DEFAULT_CURRENCY, 'PEN', 'PEN'],
-            [Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000', '3.800000'],
-        ]);
-
-        $resolver = new SaleCurrencyResolver($connection, $settings);
+        $resolver = $this->makeResolver($connection);
         $result = $resolver->resolveForSaleId('legacy-123');
 
         self::assertSame('USD', $result['currency']);
@@ -47,15 +64,9 @@ final class SaleCurrencyResolverTest extends TestCase
             ->method('fetchAssociative')
             ->willReturn(false);
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturnMap([
-            [Constants::SALES_DEFAULT_CURRENCY, 'PEN', 'PEN'],
-            [Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000', '3.800000'],
-        ]);
-
         $sale = (new SaleRecord())->setId('sale-1');
 
-        $resolver = new SaleCurrencyResolver($connection, $settings);
+        $resolver = $this->makeResolver($connection, 'PEN');
         $result = $resolver->resolveForWrite($sale);
 
         self::assertSame('PEN', $result['currency']);
@@ -70,13 +81,7 @@ final class SaleCurrencyResolverTest extends TestCase
             ->with($this->anything(), ['id' => 'missing-sale'])
             ->willReturn(false);
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturnMap([
-            [Constants::SALES_DEFAULT_CURRENCY, 'PEN', 'PEN'],
-            [Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000', '3.800000'],
-        ]);
-
-        $resolver = new SaleCurrencyResolver($connection, $settings);
+        $resolver = $this->makeResolver($connection, 'PEN');
         $result = $resolver->resolveForSaleId('missing-sale');
 
         self::assertSame('PEN', $result['currency']);
@@ -93,13 +98,7 @@ final class SaleCurrencyResolverTest extends TestCase
                 'exchange_rate' => '0',
             ]);
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturnMap([
-            [Constants::SALES_DEFAULT_CURRENCY, 'PEN', 'PEN'],
-            [Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000', '3.55'],
-        ]);
-
-        $resolver = new SaleCurrencyResolver($connection, $settings);
+        $resolver = $this->makeResolver($connection, 'PEN', '3.55');
         $result = $resolver->resolveForSaleId('sale-2');
 
         self::assertSame('USD', $result['currency']);

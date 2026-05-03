@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Service;
 
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\TenantSettingsService;
 use App\Billing\Service\SaleV2Loader;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
@@ -22,8 +22,8 @@ final class SaleV2LoaderTest extends TestCase
 {
     private function makeLoader(Connection $connection, EntityManagerInterface $em): SaleV2Loader
     {
-        $settings = $this->createMock(SettingsService::class);
-        $settings->method('get')->willReturn('18');
+        $settings = $this->createMock(TenantSettingsService::class);
+        $settings->method('getIgv')->willReturn(18.0);
 
         return new SaleV2Loader($connection, $em, $settings);
     }
@@ -330,8 +330,8 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturn('18');
+        $settings = $this->createStub(TenantSettingsService::class);
+        $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
         $sale   = $loader->loadAsSale('sale-taxzero');
@@ -368,8 +368,8 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturn('18');
+        $settings = $this->createStub(TenantSettingsService::class);
+        $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
         $sale   = $loader->loadAsSale('sale-subzero');
@@ -406,8 +406,8 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('get')->willReturn('10'); // not used
+        $settings = $this->createStub(TenantSettingsService::class);
+        // tenantSettings not needed for this test
 
         $loader = new SaleV2Loader($connection, $em, $settings);
         $sale   = $loader->loadAsSale('sale-igv-derive');

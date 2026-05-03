@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Setup;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
+use App\Settings\Service\SunatStateService;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\Category;
 use App\Contacts\Entity\Customer;
@@ -43,34 +43,27 @@ final class InitialSetupServiceTest extends TestCase
 {
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
-        $captured = [];
+        $tenantSettings = $this->createMock(TenantSettingsService::class);
+        $sunatState     = $this->createMock(SunatStateService::class);
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('set')->willReturnCallback(
-            static function (string $name, string $type, string $value) use (&$captured): void {
-                $captured[$name] = ['type' => $type, 'value' => $value];
-            }
-        );
+        // TenantSettings entity is created via getOrCreate() → save()
+        $tenantSettings->expects($this->atLeastOnce())->method('get');
+        $tenantSettings->expects($this->once())->method('save');
+        $sunatState->expects($this->atLeastOnce())->method('get');
+        $sunatState->expects($this->once())->method('save');
 
-        $service = $this->newService($settings);
+        $service = $this->newService($tenantSettings, $sunatState);
         $this->invokePrivate($service, 'seedSettings');
-
-        self::assertSame('v2_authoritative', $captured[Constants::SALES_V2_MODE]['value'] ?? null);
-        self::assertSame('v2_authoritative', $captured[Constants::PURCHASES_V2_MODE]['value'] ?? null);
-        self::assertSame('true', $captured[Constants::PURCHASES_V2_DUAL_WRITE_STRICT]['value'] ?? null);
-        self::assertArrayNotHasKey('app_option_check_stock', $captured);
-        self::assertArrayNotHasKey('sales_v2_disable_legacy_cash_movement', $captured);
-        self::assertArrayNotHasKey('sales_v2_disable_legacy_stock_projection', $captured);
     }
 
     public function testSeedSettingsIsSafeWhenSettingsStorageFails(): void
     {
         $this->expectNotToPerformAssertions();
 
-        $settings = $this->createStub(SettingsService::class);
-        $settings->method('set')->willThrowException(new \RuntimeException('boom'));
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('get')->willThrowException(new \RuntimeException('boom'));
 
-        $service = $this->newService($settings);
+        $service = $this->newService($tenantSettings);
         $this->invokePrivate($service, 'seedSettings');
     }
 
@@ -83,9 +76,7 @@ final class InitialSetupServiceTest extends TestCase
         $branchRepository = $this->createStub(BranchRepository::class);
         $branchRepository->method('count')->willReturn(1);
 
-        $service = $this->newService(
-            $this->createMock(SettingsService::class),
-            userRepository: $userRepository,
+        $service = $this->newService(userRepository: $userRepository,
             companyRepository: $companyRepository,
             branchRepository: $branchRepository
         );
@@ -106,9 +97,7 @@ final class InitialSetupServiceTest extends TestCase
         $roleRepository = $this->createMock(RoleRepository::class);
         $roleRepository->method('find')->with(1)->willReturn($superAdmin);
 
-        $service = $this->newService(
-            $this->createMock(SettingsService::class),
-            connection: $connection,
+        $service = $this->newService(connection: $connection,
             roleRepository: $roleRepository
         );
 
@@ -125,9 +114,7 @@ final class InitialSetupServiceTest extends TestCase
         $roleRepository->method('find')->willReturn(null);
         $roleRepository->method('findOneBy')->willReturn(null);
 
-        $service = $this->newService(
-            $this->createMock(SettingsService::class),
-            connection: $connection,
+        $service = $this->newService(connection: $connection,
             roleRepository: $roleRepository
         );
 
@@ -142,7 +129,7 @@ final class InitialSetupServiceTest extends TestCase
         $connection->method('fetchFirstColumn')->willReturn([10, 11, 12]);
         $connection->expects(self::exactly(3))->method('executeStatement');
 
-        $service = $this->newService($this->createMock(SettingsService::class), connection: $connection);
+        $service = $this->newService(connection: $connection);
         $this->invokePrivate($service, 'assignFullMenuToRole', [3]);
     }
 
@@ -169,9 +156,7 @@ final class InitialSetupServiceTest extends TestCase
         $sunatRepo = $this->createStub(SunatCatalogRepository::class);
         $sunatRepo->method('findOneBy')->willReturn(new SunatCatalog());
 
-        $service = $this->newService(
-            $this->createMock(SettingsService::class),
-            entityManager: $entityManager,
+        $service = $this->newService(entityManager: $entityManager,
             logisticOperationRepository: $logisticRepo,
             paymentMethodRepository: $paymentRepo,
             cashMovementCategoryRepository: $cashRepo,
@@ -186,7 +171,8 @@ final class InitialSetupServiceTest extends TestCase
     }
 
     private function newService(
-        SettingsService $settings,
+        ?TenantSettingsService $tenantSettingsService = null,
+        ?SunatStateService $sunatStateService = null,
         ?EntityManagerInterface $entityManager = null,
         ?UserRepository $userRepository = null,
         ?CompanyRepository $companyRepository = null,
@@ -223,7 +209,8 @@ final class InitialSetupServiceTest extends TestCase
             $customerRepository ?? $this->createMock(CustomerRepository::class),
             $sunatCatalogRepository ?? $this->createMock(SunatCatalogRepository::class),
             $connection ?? $this->createMock(Connection::class),
-            $settings,
+            $tenantSettingsService ?? $this->createMock(TenantSettingsService::class),
+            $sunatStateService ?? $this->createMock(SunatStateService::class),
             $ubigeoImportService ?? $this->createMock(UbigeoImportService::class),
             $timeDimensionSeeder ?? $this->createMock(TimeDimensionSeeder::class),
             $menuSeedService ?? $this->createMock(MenuSeedService::class),

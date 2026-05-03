@@ -3,6 +3,7 @@
   "name": "efact",
   "version": "1.0.0",
   "devDependencies": {
+    "openapi-typescript": "^7.6.1",
     "@playwright/test": "^1.58.2",
     "@storybook/addon-essentials": "^8",
     "@storybook/blocks": "^8",
@@ -41,6 +42,7 @@
     "dev": "vite",
     "build": "yarn build:themes && vite build",
     "build:themes": "sass --load-path=node_modules --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=import assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass --load-path=node_modules --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=import assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map && node scripts/wrap-dx-layer.mjs",
+    "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
     "postinstall": "yarn build:themes",
     "test": "vitest run --coverage",
     "test:watch": "vitest",

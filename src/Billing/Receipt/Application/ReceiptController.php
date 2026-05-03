@@ -7,8 +7,7 @@ namespace App\Billing\Receipt\Application;
 use App\Efact\Http\BaseController;
 use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Service\PdfExporter;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Billing\Receipt\Domain\ReceiptCdrUseCase;
 use App\Billing\Receipt\Domain\ReceiptPdfUseCase;
 use App\Billing\Receipt\Domain\ReceiptRequest;
@@ -65,7 +64,7 @@ class ReceiptController extends BaseController
         Request $request,
         string $id,
         TaxDocumentRepository $taxDocumentRepository,
-        SettingsService $settingsService,
+        TenantSettingsService $tenantSettings,
     ): Response {
         $voucher = $taxDocumentRepository->getVoucher($id);
         $qr = '';
@@ -73,9 +72,7 @@ class ReceiptController extends BaseController
             $qr = new QRCode()->render(strval($voucher->voucher_qr_data));
         }
 
-        $shouldPrintLogo = 'true' === strval(
-            $settingsService->get(Constants::PRINT_LOGO, 'true')
-        );
+        $shouldPrintLogo = $tenantSettings->isPrintLogo();
 
         $format = strval($request->get('format', 'ticket'));
         $template = $format === 'a4'

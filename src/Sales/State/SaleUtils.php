@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Domain\DocType;
 use Doctrine\DBAL\Connection;
@@ -16,7 +15,7 @@ readonly class SaleUtils
 {
     public function __construct(
         private Connection $connection,
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
     ) {
     }
 
@@ -97,12 +96,8 @@ readonly class SaleUtils
         );
         $sale->setNumero($this->getSaleNumber($sale->getSerie()));
 
-        $sale->setIgv((string)$this->settings->get(Constants::TAX));
-        $sale->setRecargoConsumo(
-            intval(
-                $this->settings->get(Constants::CONSUMPTION_TAX)
-            )
-        );
+        $sale->setIgv((string)$this->tenantSettings->getIgv());
+        $sale->setRecargoConsumo((int)$this->tenantSettings->getRc());
 
         return $sale;
     }
