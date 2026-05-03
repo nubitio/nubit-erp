@@ -33,9 +33,8 @@ final class Version20260503000003_drop_tenant_inventory_policy extends AbstractM
         //    The policy column stores StockPolicy enum strings already
         //    (STRICT / WARNING_ONLY / ALLOW_NEGATIVE).
         $this->addSql(<<<'SQL'
-            INSERT INTO config (tenant_id, name, value, type)
+            INSERT INTO config (name, value, type)
             SELECT
-                tip.tenant_id,
                 'inventory_negative_stock_policy',
                 tip.policy,
                 'string'
