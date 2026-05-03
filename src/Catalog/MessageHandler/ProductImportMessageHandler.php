@@ -6,6 +6,8 @@ namespace App\Catalog\MessageHandler;
 
 use App\Catalog\Message\ProductImportMessage;
 use App\Catalog\Service\ProductImportProcessorService;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -32,16 +34,24 @@ final readonly class ProductImportMessageHandler
         private ProductImportProcessorService $processor,
         private HubInterface $mercureHub,
         private LoggerInterface $logger,
+        private TenantContext $tenantContext,
+        private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
     ) {
     }
 
     public function __invoke(ProductImportMessage $message): void
     {
         $topic = $this->topic($message);
-
-        $this->logger->info('product_import.start', ['job_id' => $message->jobId]);
+        $manuallySetTenant = false;
 
         try {
+            $manuallySetTenant = $this->ensureTenantContext($message);
+
+            $this->logger->info('product_import.start', [
+                'job_id' => $message->jobId,
+                'tenant' => $this->tenantContext->getTenantName(),
+            ]);
+
             $lastPublishedAt = 0;
 
             $result = $this->processor->process(
@@ -89,7 +99,32 @@ final readonly class ProductImportMessageHandler
             if (file_exists($message->filePath)) {
                 @unlink($message->filePath);
             }
+
+            if ($manuallySetTenant) {
+                $this->tenantContext->clear();
+            }
         }
+    }
+
+    private function ensureTenantContext(ProductImportMessage $message): bool
+    {
+        if ($message->tenantName === null || $message->tenantName === '') {
+            return false;
+        }
+
+        if ($this->tenantContext->getTenantName() === $message->tenantName) {
+            return false;
+        }
+
+        $this->tenantContext->setTenant(
+            $message->tenantId,
+            $message->tenantName,
+            $message->tenantDomain,
+            $message->requestId,
+        );
+        $this->tenantConnectionSwitcher->switchConnection($message->tenantName);
+
+        return true;
     }
 
     private function topic(ProductImportMessage $message): string

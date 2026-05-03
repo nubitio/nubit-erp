@@ -221,14 +221,14 @@ final readonly class ProductImportProcessorService
         }
 
         // ---- Resolve relations ----
-        $category = $categoryMap[mb_strtolower($categoryName)] ?? null;
+        $category = $categoryMap[$this->normalizeLookupName($categoryName)] ?? null;
         if ($category === null) {
             $result->addError($row, "Categoría '{$categoryName}' no encontrada");
 
             return;
         }
 
-        $unit = $unitMap[mb_strtolower($unitName)] ?? null;
+        $unit = $unitMap[$this->normalizeLookupName($unitName)] ?? null;
         if ($unit === null) {
             $result->addError($row, "Unidad de medida '{$unitName}' no encontrada");
 
@@ -320,9 +320,21 @@ final readonly class ProductImportProcessorService
     {
         $map = [];
         foreach ($entities as $entity) {
-            $map[mb_strtolower($entity->getName())] = $entity;
+            $map[$this->normalizeLookupName($entity->getName())] = $entity;
         }
 
         return $map;
+    }
+
+    private function normalizeLookupName(string $value): string
+    {
+        $value = str_replace("\u{00A0}", ' ', $value);
+        $value = preg_replace('/\s+/u', ' ', trim($value)) ?? trim($value);
+
+        if (class_exists(\Normalizer::class)) {
+            $value = \Normalizer::normalize($value, \Normalizer::FORM_C) ?: $value;
+        }
+
+        return mb_strtolower($value);
     }
 }

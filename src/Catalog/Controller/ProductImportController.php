@@ -7,6 +7,7 @@ namespace App\Catalog\Controller;
 use App\Catalog\Message\ProductImportMessage;
 use App\Catalog\Service\ProductImportTemplateService;
 use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +24,7 @@ final class ProductImportController extends AbstractController
         private readonly ProductImportTemplateService $templateService,
         private readonly MessageBusInterface $bus,
         private readonly TenantContext $tenantContext,
+        private readonly TenantRegistryInterface $tenantRegistry,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     ) {
@@ -104,12 +106,19 @@ final class ProductImportController extends AbstractController
                 : $request->getSchemeAndHttpHost();
         }
 
+        $tenantHost = $forwardedHost ?: ($this->tenantContext->getTenantDomain() ?: $request->getHost());
+        $tenant = $this->resolveTenantFromContextOrHost($tenantHost);
+
         $topic = $tenantOrigin . '/api/product-imports/' . $jobId;
 
         $this->bus->dispatch(new ProductImportMessage(
             jobId:        $jobId,
             filePath:     $filePath,
             tenantOrigin: $tenantOrigin,
+            tenantName:   $tenant['name'] ?? null,
+            tenantId:     isset($tenant['id']) ? (int) $tenant['id'] : null,
+            tenantDomain: $tenant['domain'] ?? $tenantHost,
+            requestId:    (string) ($request->attributes->get('request_id') ?? ''),
         ));
 
         return $this->json([
@@ -117,5 +126,35 @@ final class ProductImportController extends AbstractController
             'status' => 'queued',
             'topic'  => $topic,
         ], Response::HTTP_ACCEPTED);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function resolveTenantFromContextOrHost(string $host): ?array
+    {
+        $tenantName = $this->tenantContext->getTenantName();
+        if ($tenantName !== null && $tenantName !== '') {
+            return [
+                'id'     => $this->tenantContext->getTenantId(),
+                'name'   => $tenantName,
+                'domain' => $this->tenantContext->getTenantDomain(),
+            ];
+        }
+
+        $host = strtolower(trim(explode(':', $host)[0]));
+        if ($host === '') {
+            return null;
+        }
+
+        $tenant = $this->tenantRegistry->getTenantByDomain($host);
+        if ($tenant !== null) {
+            return $tenant;
+        }
+
+        $subdomain = explode('.', $host)[0];
+        if ($subdomain === '' || in_array($subdomain, ['localhost', 'dev', 'stg', 'host'], true)) {
+            return null;
+        }
+
+        return $this->tenantRegistry->getTenantByName($subdomain);
     }
 }

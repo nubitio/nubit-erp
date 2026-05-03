@@ -13,6 +13,10 @@ final readonly class ProductImportMessage
         public string $jobId,
         public string $filePath,
         public string $tenantOrigin,
+        public ?string $tenantName = null,
+        public ?int $tenantId = null,
+        public ?string $tenantDomain = null,
+        public ?string $requestId = null,
     ) {
     }
 }
