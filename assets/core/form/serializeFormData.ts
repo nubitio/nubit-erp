@@ -199,7 +199,12 @@ export function serializeDetailRows(
     if (field.type === FieldType.ENTITY) {
       details.forEach((detail) => {
         const currentValue = detail[field.name];
-        if (typeof currentValue === 'object' && currentValue !== null) {
+        if (currentValue === null || currentValue === undefined || currentValue === '' || currentValue === -999) {
+          delete detail[field.name];
+          return;
+        }
+
+        if (typeof currentValue === 'object') {
           const entityValue = currentValue as FormRecord;
           const atId = entityValue['@id'];
           if (typeof atId === 'string') {
@@ -212,6 +217,11 @@ export function serializeDetailRows(
                 : String(entityValue[field.valueField]);
             detail[field.name] = getIRI(field.url ?? '', resolvedId);
           }
+          return;
+        }
+
+        if (typeof currentValue === 'string' || typeof currentValue === 'number') {
+          detail[field.name] = getIRI(field.url ?? '', String(currentValue));
         }
       });
     }

@@ -40,6 +40,9 @@ export interface LocalSale {
   serverSaleId?: string;
   serverCode?: string;
   errorMessage?: string;
+  errorCode?: string;
+  errorAction?: string;
+  numericErrorCode?: number;
 }
 
 export interface OutboxRequest {
@@ -56,6 +59,9 @@ export interface OutboxItem {
   status: OutboxStatus;
   attempts: number;
   lastError?: string;
+  lastErrorCode?: string;
+  lastErrorAction?: string;
+  lastNumericErrorCode?: number;
   createdAt: string;
   nextRetryAt?: string;
 }

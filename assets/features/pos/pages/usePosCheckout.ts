@@ -9,6 +9,14 @@ import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
 import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
 
+const getActionableSaleErrorMessage = (sale: { errorCode?: string; errorMessage?: string }) => {
+  if (sale.errorCode === 'SALE_CASH_SESSION_REQUIRED') {
+    return 'Caja cerrada: abre una caja antes de registrar ventas.';
+  }
+
+  return sale.errorMessage ?? 'La venta fue rechazada por el servidor.';
+};
+
 type UsePosCheckoutParams = {
   tenantId: string;
   storeId: string;
@@ -22,6 +30,7 @@ type UsePosCheckoutParams = {
   isOnline: boolean;
   onQueuedSaleCreated: () => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
+  onCashSessionRequired?: () => void;
 };
 
 export const usePosCheckout = ({
@@ -37,6 +46,7 @@ export const usePosCheckout = ({
   isOnline,
   onQueuedSaleCreated,
   printSaleInvoice,
+  onCashSessionRequired,
 }: UsePosCheckoutParams) => {
   // ── Draft-persistence helpers ────────────────────────────────────────────
   const storageKey = `pos_draft_${storeId || 'default'}`;
@@ -298,17 +308,23 @@ export const usePosCheckout = ({
         return;
       }
 
-      toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
       setLastSaleCode(sale.correlativoTemporal);
-      clearCart();
       await onQueuedSaleCreated();
       const syncedSale = await offlineDb.sales.get(sale.id);
       if (syncedSale?.serverSaleId) {
+        toast(`Venta registrada (${syncedSale.serverCode ?? sale.correlativoTemporal})`, 'success');
+        clearCart();
         printSaleInvoice(syncedSale.serverSaleId).catch(() => {
           toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
         });
       } else if (syncedSale?.status === 'error') {
-        toast(syncedSale.errorMessage ?? 'La venta fue rechazada por el servidor.', 'error');
+        if (syncedSale.errorCode === 'SALE_CASH_SESSION_REQUIRED') {
+          onCashSessionRequired?.();
+        }
+        toast(getActionableSaleErrorMessage(syncedSale), 'error', 6000);
+      } else {
+        toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
+        clearCart();
       }
     } finally {
       setIsProcessingSale(false);

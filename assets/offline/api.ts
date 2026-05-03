@@ -12,6 +12,9 @@ export interface ApiResult {
   status?: number;
   data?: any;
   errorMessage?: string;
+  errorCode?: string;
+  action?: string;
+  numericCode?: number;
   recoverable: boolean;
   requiresLogin?: boolean;
 }
@@ -25,14 +28,27 @@ const parseJsonSafely = async (response: Response) => {
 };
 
 const parseErrorMessage = (payload: any, fallback: string) => {
+  const violations = Array.isArray(payload?.violations)
+    ? payload.violations
+        .map((item: any) => item?.message)
+        .filter((message: unknown): message is string => typeof message === 'string' && message.length > 0)
+    : [];
+
   return (
     payload?.detail ||
     payload?.message ||
     payload?.['hydra:description'] ||
+    violations.join('\n') ||
     payload?.title ||
     fallback
   );
 };
+
+const parseErrorMetadata = (payload: any) => ({
+  errorCode: typeof payload?.errorCode === 'string' ? payload.errorCode : undefined,
+  action: typeof payload?.action === 'string' ? payload.action : undefined,
+  numericCode: typeof payload?.numericCode === 'number' ? payload.numericCode : undefined,
+});
 
 const refreshAuthToken = async (): Promise<boolean> => {
   try {
@@ -100,9 +116,10 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
     const payload = await parseJsonSafely(response);
     const status = response.status;
     const errorMessage = parseErrorMessage(payload, `Error HTTP ${status}`);
+    const metadata = parseErrorMetadata(payload);
 
     if (status >= 500 || status === 429) {
-      return { ok: false, status, errorMessage, recoverable: true };
+      return { ok: false, status, errorMessage, ...metadata, recoverable: true };
     }
 
     if (status === 401) {
@@ -115,7 +132,7 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
       };
     }
 
-    return { ok: false, status, errorMessage, recoverable: false };
+    return { ok: false, status, errorMessage, ...metadata, recoverable: false };
   } catch (error) {
     return {
       ok: false,

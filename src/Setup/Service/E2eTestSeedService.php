@@ -349,6 +349,23 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
         $this->entityManager->flush();
 
+        $this->connection->executeStatement(
+            <<<'SQL'
+            INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+            VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
+            ON DUPLICATE KEY UPDATE
+                qty_on_hand = VALUES(qty_on_hand),
+                qty_reserved = 0,
+                updated_at = NOW(),
+                version = version + 1
+            SQL,
+            [
+                'warehouse_id' => (string) $warehouse->getId(),
+                'product_id' => (string) $product->getId(),
+                'qty_on_hand' => '100.000000',
+            ]
+        );
+
         return $product;
     }
 

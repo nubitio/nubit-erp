@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Efact\Http;
 
 use Throwable;
+use Nubit\Platform\Exception\DomainProblemException;
 use Nubit\Platform\Exception\NotFoundException;
 use Nubit\Platform\Exception\QuotaExceededException;
 use Nubit\Platform\Exception\ServiceException;
@@ -42,10 +43,23 @@ final readonly class ExceptionListener
         $statusCode = $this->getStatusCode($exception);
 
         $data = [
+            'type' => '/errors/service-error',
+            'title' => 'Service error',
+            'status' => $statusCode,
+            'detail' => $exception->getMessage(),
+            // Legacy fields kept during migration for older frontend paths.
             'success' => false,
             'message' => $exception->getMessage(),
             'code' => $exception->getCode(),
         ];
+
+        if ($exception instanceof DomainProblemException) {
+            $data['type'] = $exception->type;
+            $data['title'] = $exception->title;
+            $data['errorCode'] = $exception->errorCode->value;
+            $data['action'] = $exception->action;
+            $data['numericCode'] = $exception->numericCode;
+        }
 
         if ($exception instanceof ValidationException) {
             $data['errors'] = $exception->getErrors();
@@ -58,6 +72,7 @@ final readonly class ExceptionListener
         }
 
         $response = new JsonResponse($data, $statusCode);
+        $response->headers->set('Content-Type', 'application/problem+json');
         $event->setResponse($response);
     }
 

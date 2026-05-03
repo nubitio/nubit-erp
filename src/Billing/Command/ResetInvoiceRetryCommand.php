@@ -6,7 +6,7 @@ namespace App\Billing\Command;
 
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Entity\ConfigKey;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -122,7 +122,7 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            $this->settings->set(Constants::SUNAT_REJECTION_STREAK, 'int', '0');
+            $this->settings->set(ConfigKey::SUNAT_REJECTION_STREAK->value, 'int', '0');
 
             $this->connection->commit();
         } catch (\Throwable $exception) {

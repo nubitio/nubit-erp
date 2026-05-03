@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
+use Nubit\Platform\Exception\DomainErrorCode;
+use Nubit\Platform\Exception\DomainProblemException;
 use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
 use App\Settings\Service\TenantSettingsService;
@@ -130,7 +132,14 @@ readonly class SaleProcessor implements ProcessorInterface
                     $this->logger->warning('Sale processing failed: No open cash session found', [
                         'user_id' => $user->userId,
                     ]);
-                    throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
+                    throw new DomainProblemException(
+                        errorCode: DomainErrorCode::SaleCashSessionRequired,
+                        detail: 'No puedes realizar ventas, no tienes una caja abierta',
+                        title: 'Cash register session required',
+                        type: '/errors/sale-cash-session-required',
+                        action: 'OPEN_CASH_REGISTER',
+                        numericCode: 1000,
+                    );
                 }
             }
 

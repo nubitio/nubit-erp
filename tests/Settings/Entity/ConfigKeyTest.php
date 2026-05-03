@@ -60,6 +60,8 @@ final class ConfigKeyTest extends TestCase
 
     public function testTryFromReturnsNullForNonexistentValue(): void
     {
-        self::assertNull(ConfigKey::tryFrom('nonexistent'));
+        $value = getenv('EFACT_CONFIG_KEY_TEST_UNKNOWN') ?: 'nonexistent';
+
+        self::assertNull(ConfigKey::tryFrom($value));
     }
 }
