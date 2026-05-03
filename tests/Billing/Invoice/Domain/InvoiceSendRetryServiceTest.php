@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Invoice\Domain;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
 use App\Billing\Invoice\Domain\InvoiceSendRetryService;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
@@ -19,7 +17,6 @@ use RuntimeException;
 final class InvoiceSendRetryServiceTest extends TestCase
 {
     private Connection&MockObject $connection;
-    private SettingsService&MockObject $settings;
     private LoggerInterface&MockObject $logger;
     private FeatureCheckerInterface&MockObject $featureChecker;
     private InvoiceSendRetryService $service;
@@ -27,18 +24,18 @@ final class InvoiceSendRetryServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->connection     = $this->createMock(Connection::class);
-        $this->settings       = $this->createMock(SettingsService::class);
         $this->logger         = $this->createMock(LoggerInterface::class);
         $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
 
-        // Default: sunat_auto_retry enabled so existing tests pass unchanged.
         $this->featureChecker->method('hasFeature')->willReturn(true);
 
         $this->service = new InvoiceSendRetryService(
             $this->connection,
-            $this->settings,
             $this->logger,
             $this->featureChecker,
+            retryMaxAttempts: 8,
+            retryBaseSeconds: 60,
+            retryMaxSeconds: 1800,
         );
     }
 
@@ -87,87 +84,56 @@ final class InvoiceSendRetryServiceTest extends TestCase
     }
 
     // -----------------------------------------------------------------------
-    // getRetryPolicy – happy path
+    private function makeServiceWithRetry(int $maxAttempts, int $baseSeconds, int $maxSeconds): InvoiceSendRetryService
+    {
+        return new InvoiceSendRetryService(
+            $this->connection,
+            $this->logger,
+            $this->featureChecker,
+            retryMaxAttempts: $maxAttempts,
+            retryBaseSeconds: $baseSeconds,
+            retryMaxSeconds:  $maxSeconds,
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // getRetryPolicy
     // -----------------------------------------------------------------------
 
     public function testGetRetryPolicyHappyPath(): void
     {
-        $this->settings
-            ->method('get')
-            ->willReturnMap([
-                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '5'],
-                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '30'],
-                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '900'],
-            ]);
+        $service = $this->makeServiceWithRetry(5, 30, 900);
+        $policy  = $service->getRetryPolicy('tenant_test');
 
-        $policy = $this->service->getRetryPolicy('tenant_test');
-
-        self::assertSame(5, $policy['max_attempts']);
-        self::assertSame(30, $policy['base_seconds']);
+        self::assertSame(5,   $policy['max_attempts']);
+        self::assertSame(30,  $policy['base_seconds']);
         self::assertSame(900, $policy['max_seconds']);
     }
 
     public function testGetRetryPolicyEnforcesMinimumMaxAttempts(): void
     {
-        $this->settings
-            ->method('get')
-            ->willReturnMap([
-                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '0'],
-                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '10'],
-                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '1800'],
-            ]);
-
-        $policy = $this->service->getRetryPolicy(null);
-
+        $policy = $this->makeServiceWithRetry(0, 10, 1800)->getRetryPolicy(null);
         self::assertSame(1, $policy['max_attempts']);
     }
 
     public function testGetRetryPolicyEnforcesMinimumBaseSeconds(): void
     {
-        $this->settings
-            ->method('get')
-            ->willReturnMap([
-                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '8'],
-                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '0'],
-                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '1800'],
-            ]);
-
-        $policy = $this->service->getRetryPolicy(null);
-
+        $policy = $this->makeServiceWithRetry(8, 0, 1800)->getRetryPolicy(null);
         self::assertSame(1, $policy['base_seconds']);
     }
 
     public function testGetRetryPolicyMaxSecondsNotLessThanBaseSeconds(): void
     {
-        $this->settings
-            ->method('get')
-            ->willReturnMap([
-                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '8'],
-                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '200'],
-                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '100'],
-            ]);
-
-        $policy = $this->service->getRetryPolicy(null);
-
+        // max_seconds < base_seconds → max_seconds is clamped to base_seconds
+        $policy = $this->makeServiceWithRetry(8, 200, 100)->getRetryPolicy(null);
         self::assertSame(200, $policy['max_seconds']);
     }
 
-    // -----------------------------------------------------------------------
-    // getRetryPolicy – settings exception → fallback
-    // -----------------------------------------------------------------------
-
     public function testGetRetryPolicyFallbackOnSettingsException(): void
     {
-        $this->settings
-            ->method('get')
-            ->willThrowException(new RuntimeException('DB error'));
-
-        $this->logger
-            ->expects(self::once())
-            ->method('error');
-
+        // Params come from constructor — no exception path possible anymore.
+        // Just verify defaults from setUp() are returned.
         $policy = $this->service->getRetryPolicy('tenant_test');
-
         self::assertSame(['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800], $policy);
     }
 

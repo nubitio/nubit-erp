@@ -11,8 +11,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
 use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashMovementCategory;
@@ -1043,15 +1042,10 @@ final class SaleProcessorTest extends TestCase
         string $autoInvoice = 'false',
         string $disableLegacyCashMovement = 'false',
     ): SaleProcessor {
-        // Configure the main settings mock (new mock each call to avoid "already configured" issues)
-        $settingsMock = $this->createStub(SettingsService::class);
-        $settingsMock
-            ->method('get')
-            ->willReturnMap([
-                [Constants::AUTO_INVOICE, 'false', $autoInvoice],
-                [Constants::REQUIRE_CASH_REGISTER, 'true', $requireCashRegister],
-                ['sales_v2_disable_legacy_cash_movement', 'false', $disableLegacyCashMovement],
-            ]);
+        // Configure the main tenantSettings mock
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('isAutoInvoice')->willReturn($autoInvoice === 'true');
+        $tenantSettings->method('isRequireCashRegister')->willReturn($requireCashRegister === 'true');
 
         // Build SaleProcessor bypassing readonly constructor
         $processorReflection = new ReflectionClass(SaleProcessor::class);
@@ -1067,7 +1061,7 @@ final class SaleProcessorTest extends TestCase
         $inj('security', $this->security);
         $inj('entityManager', $this->entityManager);
         $inj('saleUtils', $this->saleUtils);
-        $inj('settings', $settingsMock);
+        $inj('tenantSettings', $tenantSettings);
         $inj('saleInvoicing', $this->saleInvoicing);
         $inj('logger', $this->logger);
         $inj('branchContextService', $this->branchContextService);
@@ -1284,29 +1278,33 @@ final class SaleProcessorTest extends TestCase
         // stockValidationPolicy — no-op interface mock
         /** @var \App\Inventory\Core\Contract\StockValidationPolicyInterface&MockObject $svp */
         $svp = $this->createStub(\App\Inventory\Core\Contract\StockValidationPolicyInterface::class);
+        if ($shouldThrow) {
+            $svp->method('validateSale')
+                ->willReturn(\App\Inventory\Core\Dto\StockValidationResult::blocked('insufficient stock'));
+        } else {
+            $svp->method('validateSale')
+                ->willReturn(\App\Inventory\Core\Dto\StockValidationResult::allowed());
+        }
         $rc->getProperty('stockValidationPolicy')->setValue($stub, $svp);
 
-        // policyResolver (final) — bypass constructor, inject SettingsService mock
+        // policyResolver (final) — bypass constructor, inject TenantSettingsService mock
         $policyResolverClass = (string) $rc->getProperty('policyResolver')->getType();
         $rcPr = new ReflectionClass($policyResolverClass);
         /** @var \App\Sales\State\NegativeStockPolicyResolver $prStub */
         $prStub = $rcPr->newInstanceWithoutConstructor();
 
-        // SettingsService is NOT final — we can mock it
-        /** @var SettingsService&MockObject $policySettings */
-        $policySettings = $this->createStub(SettingsService::class);
+        /** @var TenantSettingsService&MockObject $policySettings */
+        $policySettings = $this->createStub(TenantSettingsService::class);
 
         if ($shouldThrow) {
-            // BLOCK policy: resolvePolicy() returns BLOCK (default for empty/unknown setting)
-            // → enforceNonNegative=true → with stock=0 and cantidad=5 → ServiceException thrown
-            $policySettings->method('get')->willReturn('');
+            $policySettings->method('getNegativeStockPolicy')
+                ->willReturn(\App\Inventory\Core\Enum\StockPolicy::STRICT);
         } else {
-            // ALLOW_ALL policy → canSell returns true → enforceNonNegative=false for tipoId=2
-            // But sale has no warehouse anyway → orchestrator returns early
-            $policySettings->method('get')->willReturn('ALLOW_NEGATIVE');
+            $policySettings->method('getNegativeStockPolicy')
+                ->willReturn(\App\Inventory\Core\Enum\StockPolicy::ALLOW_NEGATIVE);
         }
 
-        $rcPr->getProperty('settings')->setValue($prStub, $policySettings);
+        $rcPr->getProperty('tenantSettings')->setValue($prStub, $policySettings);
         $rc->getProperty('policyResolver')->setValue($stub, $prStub);
 
         $rc->getProperty('logger')->setValue($stub, $this->logger);

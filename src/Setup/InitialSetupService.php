@@ -7,8 +7,8 @@ namespace App\Setup;
 use Throwable;
 use RuntimeException;
 use DateTimeImmutable;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
+use App\Settings\Service\SunatStateService;
 use App\Setup\Dto\InitialSetupInput;
 use App\Setup\Dto\SetupStatusDto;
 use App\Organization\Entity\Branch;
@@ -67,7 +67,8 @@ readonly class InitialSetupService
         private CustomerRepository $customerRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
         private Connection $connection,
-        private SettingsService $settingsService,
+        private TenantSettingsService $tenantSettingsService,
+        private SunatStateService $sunatStateService,
         private UbigeoImportService $ubigeoImportService,
         private TimeDimensionSeeder $timeDimensionSeeder,
         private MenuSeedService $menuSeedService,
@@ -178,28 +179,25 @@ readonly class InitialSetupService
     private function seedSettings(): void
     {
         try {
-            $this->settingsService->set(Constants::TAX, 'int', '18');
-            $this->settingsService->set(Constants::CONSUMPTION_TAX, 'int', '0');
-            $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
-            $this->settingsService->set(Constants::PRINT_LOGO, 'bool', 'true');
-            $this->settingsService->set(Constants::REQUIRE_CASH_REGISTER, 'bool', 'true');
-            $this->settingsService->set(Constants::RECEIPT_REQUIRED, 'bool', 'false');
-            $this->settingsService->set(Constants::SUNAT_SEND_ENABLED, 'bool', 'true');
-            $this->settingsService->set(Constants::SUNAT_REJECTION_STREAK, 'int', '0');
-            $this->settingsService->set(Constants::SUNAT_REJECTION_THRESHOLD, 'int', '3');
-            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, 'int', '8');
-            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_BASE_SECONDS, 'int', '60');
-            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_SECONDS, 'int', '1800');
-            $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'v2_authoritative');
-            $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'v2_authoritative');
-            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
-            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
-            $this->settingsService->set(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, 'string', 'BLOCK');
-            $this->settingsService->set(Constants::INVENTORY_CORE_MODE, 'string', 'v2_authoritative');
-            $this->settingsService->set(Constants::INVENTORY_CORE_DUAL_WRITE, 'bool', 'true');
-            $this->settingsService->set(Constants::INVENTORY_CORE_READ_FROM_STOCK_ITEMS, 'bool', 'true');
+            $settings = $this->tenantSettingsService->get();
+            $settings->setIgv(18.0);
+            $settings->setRc(0.0);
+            $settings->setAutoInvoice(true);
+            $settings->setPrintLogo(true);
+            $settings->setRequireCashRegister(true);
+            $settings->setPrintMethod(\App\Settings\Enum\PrintMethod::WEBUSB);
+            $settings->setDefaultCurrency(\App\Settings\Enum\DefaultCurrency::PEN);
+            $settings->setNegativeStockPolicy(\App\Inventory\Core\Enum\StockPolicy::STRICT);
+            $this->tenantSettingsService->save($settings);
+
+            $sunat = $this->sunatStateService->get();
+            $sunat->setSendEnabled(true);
+            $sunat->setReceiptRequired(false);
+            $sunat->setRejectionStreak(0);
+            $sunat->setRejectionThreshold(3);
+            $this->sunatStateService->save($sunat);
         } catch (Throwable) {
-            // Settings table might not be ready yet; fail silently to avoid blocking setup.
+            // Entities might not be ready yet; fail silently to avoid blocking setup.
         }
     }
 

@@ -11,8 +11,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
 use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Auth\BranchContextService;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Efact\Domain\Money;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
@@ -50,7 +49,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private Security $security,
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
         private SaleInvoicingPortInterface $saleInvoicing,
         private LoggerInterface $logger,
         private BranchContextService $branchContextService,
@@ -119,10 +118,7 @@ readonly class SaleProcessor implements ProcessorInterface
                 'payment_method' => $data->getTipoPago()->getId(),
             ]);
 
-            $requireOpenSession = filter_var(
-                $this->settings->get(Constants::REQUIRE_CASH_REGISTER, 'true'),
-                FILTER_VALIDATE_BOOLEAN
-            );
+            $requireOpenSession = $this->tenantSettings->isRequireCashRegister();
 
             // Check for open cash session in v2 table
             if ($requireOpenSession) {
@@ -298,10 +294,7 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        $autoInvoiceEnabled = filter_var(
-            $this->settings->get(Constants::AUTO_INVOICE, 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        $autoInvoiceEnabled = $this->tenantSettings->isAutoInvoice();
         $emitInvoice = $data->getEmitInvoice();
         $shouldEmitInvoice = $emitInvoice !== null ? $emitInvoice : $autoInvoiceEnabled;
         if ($isNew && $data->getTipoId() === 2 && $shouldEmitInvoice) {

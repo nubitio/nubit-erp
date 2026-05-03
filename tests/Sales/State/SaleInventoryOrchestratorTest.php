@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Sales\State;
 
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Inventory\Core\Enum\StockPolicy;
+use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
@@ -39,11 +39,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->settings = $this->createMock(SettingsService::class);
+        $this->tenantSettings = $this->createMock(TenantSettingsService::class);
         $this->validationPolicy = $this->createMock(StockValidationPolicyInterface::class);
 
         $this->salesInventory = new TestSalesInventoryPort($this->connection);
-        $this->policyResolver = new NegativeStockPolicyResolver($this->settings);
+        $this->policyResolver = new NegativeStockPolicyResolver($this->tenantSettings);
 
         $this->orchestrator = new SaleInventoryOrchestrator(
             $this->salesInventory,
@@ -110,17 +110,12 @@ final class SaleInventoryOrchestratorTest extends TestCase
      */
     private function configureSettings(
         string $stockPolicy = 'STRICT',
-        string $coreMode = 'legacy',
-        string $dualWrite = 'false',
-        string $readFromStockItems = 'false',
+        string $coreMode = 'v2_authoritative',
+        string $dualWrite = 'true',
+        string $readFromStockItems = 'true',
     ): void {
-        $this->settings->method('get')
-            ->willReturnMap([
-                [Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '', $stockPolicy],
-                [Constants::INVENTORY_CORE_MODE, 'legacy', $coreMode],
-                [Constants::INVENTORY_CORE_DUAL_WRITE, 'false', $dualWrite],
-                [Constants::INVENTORY_CORE_READ_FROM_STOCK_ITEMS, 'false', $readFromStockItems],
-            ]);
+        $this->tenantSettings->method('getNegativeStockPolicy')
+            ->willReturn(StockPolicy::from($stockPolicy));
     }
 
     /**
@@ -196,9 +191,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 3.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('STRICT', 'legacy'); // STRICT → canSell=false, but stock is sufficient
+        $this->configureSettings('STRICT', 'legacy'); // STRICT — but stock is sufficient
         $this->stubStockBalance(10.0); // plenty of stock
         $this->stubSuccessfulLedgerWrite();
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::allowed());
 
         $this->connection->expects(self::once())->method('beginTransaction');
 
@@ -218,6 +215,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('STRICT', 'legacy');
         $this->stubStockBalance(5.0); // not enough
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::blocked('Stock insuficiente para venta'));
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/Stock insuficiente/');
@@ -236,9 +235,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('ALLOW_NEGATIVE', 'legacy'); // ALLOW_NEGATIVE → canSell=true
+        $this->configureSettings('ALLOW_NEGATIVE', 'legacy'); // ALLOW_NEGATIVE
         $this->stubStockBalance(1.0); // below requested qty
         $this->stubSuccessfulLedgerWrite();
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::allowed());
 
         // Should not throw
         $this->connection->expects(self::once())->method('beginTransaction');
@@ -257,9 +258,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 10.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('WARNING_ONLY', 'legacy'); // WARNING_ONLY → canSell for admins only
+        $this->configureSettings('WARNING_ONLY', 'legacy'); // WARNING_ONLY — warning = allowed
         $this->stubStockBalance(1.0);
         $this->stubSuccessfulLedgerWrite();
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::warning('Stock bajo, permite continuar'));
 
         $adminUser = new AuthUserDto(userId: 1, username: 'admin', roles: ['ROLE_ADMIN']);
 
@@ -281,6 +284,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('WARNING_ONLY', 'legacy');
         $this->stubStockBalance(1.0);
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::blocked('Stock insuficiente bajo WARNING_ONLY para no-admin'));
 
         $regularUser = new AuthUserDto(userId: 2, username: 'cashier', roles: ['ROLE_USER']);
 
@@ -461,6 +466,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('ALLOW_NEGATIVE', 'legacy');
         $this->stubStockBalance(10.0);
+        $this->validationPolicy->method('validateSale')
+            ->willReturn(StockValidationResult::allowed());
 
         $this->connection->method('fetchAssociative')->willReturn([
             'on_hand_qty' => '100.000000',

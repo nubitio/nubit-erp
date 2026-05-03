@@ -176,6 +176,9 @@ final class SunatRucScraper
         $active    = str_contains($estado, 'ACTIVO') && str_contains($condicion, 'HABIDO');
 
         $address = trim($fields['Domicilio Fiscal:'] ?? $fields['Dirección del Domicilio Fiscal:'] ?? '');
+        // SUNAT HTML contains excessive internal whitespace (padded table cells).
+        // Normalize to single spaces so the value is clean before persistence.
+        $address = preg_replace('/\s+/', ' ', $address) ?? $address;
 
         return new DocumentInfo(
             id: $parsedRuc ?: $ruc,

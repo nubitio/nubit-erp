@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Sales\State;
 
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\TenantSettingsService;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
@@ -22,17 +22,17 @@ use PHPUnit\Framework\TestCase;
 class SaleUtilsTest extends TestCase
 {
     private Connection&MockObject $connection;
-    private SettingsService&MockObject $settings;
+    private TenantSettingsService&MockObject $tenantSettings;
     private SaleUtils $utils;
 
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->settings = $this->createMock(SettingsService::class);
+        $this->tenantSettings = $this->createMock(TenantSettingsService::class);
 
         $this->utils = new SaleUtils(
             $this->connection,
-            $this->settings,
+            $this->tenantSettings,
         );
     }
 
@@ -139,7 +139,8 @@ class SaleUtilsTest extends TestCase
         $this->connection->method('executeStatement')->willReturn(1);
         $this->connection->method('beginTransaction');
         $this->connection->method('commit');
-        $this->settings->method('get')->willReturn('18');
+        $this->tenantSettings->method('getIgv')->willReturn(18.0);
+        $this->tenantSettings->method('getRc')->willReturn(0.0);
 
         $result = $this->utils->fillSaleValues($sale, DocType::NOTA_VENTA);
 
@@ -159,7 +160,8 @@ class SaleUtilsTest extends TestCase
         $this->connection->method('executeStatement')->willReturn(1);
         $this->connection->method('beginTransaction');
         $this->connection->method('commit');
-        $this->settings->method('get')->willReturn('18');
+        $this->tenantSettings->method('getIgv')->willReturn(18.0);
+        $this->tenantSettings->method('getRc')->willReturn(0.0);
 
         $result = $this->utils->fillSaleValues($sale, DocType::BOLETA);
 

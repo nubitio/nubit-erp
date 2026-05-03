@@ -1,0 +1,4 @@
+parameters:
+    sunat.retry.max_attempts: 8
+    sunat.retry.base_seconds: 60
+    sunat.retry.max_seconds: 1800

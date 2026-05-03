@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Service;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\TenantSettingsService;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItem;
@@ -25,7 +24,7 @@ readonly class SaleV2Loader
     public function __construct(
         private Connection $connection,
         private EntityManagerInterface $entityManager,
-        private SettingsService $settings,
+        private TenantSettingsService $tenantSettings,
     ) {
     }
 
@@ -174,6 +173,6 @@ SQL,
             return (string) (int) round($tax / $sub * 100);
         }
 
-        return (string) ($this->settings->get(Constants::TAX) ?? '18');
+        return (string) $this->tenantSettings->getIgv();
     }
 }

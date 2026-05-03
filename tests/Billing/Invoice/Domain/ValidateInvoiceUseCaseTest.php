@@ -7,7 +7,7 @@ namespace App\Tests\Billing\Invoice\Domain;
 use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Entity\ConfigKey;
 use App\Billing\Invoice\Domain\ValidateInvoiceUseCase;
 use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Entity\TaxDocument;
@@ -157,8 +157,8 @@ final class ValidateInvoiceUseCaseTest extends TestCase
 
         $this->settings->method('get')
             ->willReturnMap([
-                [Constants::CPE_CLIENT_ID, null, 'client-id-value'],
-                [Constants::CPE_CLIENT_SECRET, null, 'client-secret-value'],
+                [ConfigKey::CPE_CLIENT_ID->value, null, 'client-id-value'],
+                [ConfigKey::CPE_CLIENT_SECRET->value, null, 'client-secret-value'],
             ]);
 
         // Token NOT in cache — callback will be invoked for getToken()

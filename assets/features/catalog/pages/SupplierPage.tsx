@@ -2,6 +2,7 @@ import { SmartCrudPage, defineResource } from '@core/crud';
 import { defineFields } from '@core/crud/fieldContract';
 import type { MutableRefObject } from 'react';
 import type { FormRef } from 'devextreme-react/form';
+import { FieldType } from '@core/field/FieldType';
 import { supplierEvents } from '@features/supplier';
 import { supplierEndpoints } from '../api/catalogEndpoints';
 import { consultService } from '@features/consult';
@@ -91,6 +92,11 @@ const resource = defineResource<SupplierRecord>({
             },
           ],
         },
+      },
+      {
+        kind: 'override',
+        key: 'fiscalAddress',
+        patch: { type: FieldType.TEXTAREA },
       },
     ],
   }),

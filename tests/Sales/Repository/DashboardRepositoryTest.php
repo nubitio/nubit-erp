@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Sales\Repository;
 
 use Nubit\Platform\Cache\CacheManager;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\SunatStateService;
 use App\Sales\Repository\DashboardRepository;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -31,24 +30,22 @@ use RuntimeException;
 final class DashboardRepositoryTest extends TestCase
 {
     private Connection&MockObject $connection;
-    private SettingsService&MockObject $settings;
+    private SunatStateService&MockObject $sunatState;
     private CacheManager&MockObject $cache;
     private DashboardRepository $repository;
 
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->settings   = $this->createMock(SettingsService::class);
+        $this->sunatState = $this->createMock(SunatStateService::class);
         $this->cache      = $this->createMock(CacheManager::class);
 
         // By default: no receipt filter requirement
-        $this->settings->method('get')
-            ->with(Constants::RECEIPT_REQUIRED)
-            ->willReturn('');
+        $this->sunatState->method('isReceiptRequired')->willReturn(false);
 
         $this->repository = new DashboardRepository(
             $this->connection,
-            $this->settings,
+            $this->sunatState,
             $this->cache,
         );
     }
@@ -249,11 +246,9 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->stubCacheMiss();
 
-        // Override settings mock for this test
-        $settings = $this->createMock(SettingsService::class);
-        $settings->method('get')
-            ->with(Constants::RECEIPT_REQUIRED)
-            ->willReturn('true');
+        // Override sunat state mock for this test
+        $sunatState = $this->createMock(SunatStateService::class);
+        $sunatState->method('isReceiptRequired')->willReturn(true);
 
         $capturedSqls = [];
         $this->connection->method('fetchAllAssociative')
@@ -263,7 +258,7 @@ final class DashboardRepositoryTest extends TestCase
             });
         $this->connection->method('fetchAssociative')->willReturn([]);
 
-        $repo = new DashboardRepository($this->connection, $settings, $this->cache);
+        $repo = new DashboardRepository($this->connection, $sunatState, $this->cache);
         $repo->getLiteOverview('branch-1');
 
         // At least one SQL should contain the EXISTS subquery

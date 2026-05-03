@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Repository;
 
 use Nubit\Platform\Cache\CacheManager;
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Settings\Service\SunatStateService;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
@@ -21,7 +20,7 @@ readonly class DashboardRepository
 
     public function __construct(
         private Connection $connection,
-        private SettingsService $settings,
+        private SunatStateService $sunatState,
         private CacheManager $cache,
     ) {
     }
@@ -754,7 +753,7 @@ readonly class DashboardRepository
 
     private function receiptFilter(string $salesAlias = 's'): string
     {
-        if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
+        if ($this->sunatState->isReceiptRequired()) {
             return 'AND EXISTS (SELECT 1 FROM tax_document td2 '
                 . 'WHERE ('
                 . "({$salesAlias}.legacy_movimiento_id IS NOT NULL AND td2.movimiento_id = {$salesAlias}.legacy_movimiento_id)"

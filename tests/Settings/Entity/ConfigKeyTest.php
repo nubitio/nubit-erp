@@ -23,21 +23,16 @@ final class ConfigKeyTest extends TestCase
         self::assertTrue($key->isTechnical());
     }
 
-    /**
-     * @return array<string, array{ConfigKey}>
-     */
+    /** @return array<string, array{ConfigKey}> */
     public static function provideTechnicalKeys(): array
     {
         return [
-            'SALES_V2_MODE'                         => [ConfigKey::SALES_V2_MODE],
-            'SALES_V2_DUAL_WRITE_ENABLED'           => [ConfigKey::SALES_V2_DUAL_WRITE_ENABLED],
-            'SALES_V2_DUAL_WRITE_STRICT'            => [ConfigKey::SALES_V2_DUAL_WRITE_STRICT],
-            'SALES_V2_CUTOVER_DATE'                 => [ConfigKey::SALES_V2_CUTOVER_DATE],
-            'SALES_V2_DISABLE_LEGACY_CASH_MOVEMENT' => [ConfigKey::SALES_V2_DISABLE_LEGACY_CASH_MOVEMENT],
-            'SALES_V2_DISABLE_LEGACY_STOCK_PROJ'    => [ConfigKey::SALES_V2_DISABLE_LEGACY_STOCK_PROJ],
-            'PURCHASES_V2_MODE'                     => [ConfigKey::PURCHASES_V2_MODE],
-            'PURCHASES_V2_DUAL_WRITE_ENABLED'       => [ConfigKey::PURCHASES_V2_DUAL_WRITE_ENABLED],
-            'PURCHASES_V2_DUAL_WRITE_STRICT'        => [ConfigKey::PURCHASES_V2_DUAL_WRITE_STRICT],
+            'RECEIPT_REQUIRED'          => [ConfigKey::RECEIPT_REQUIRED],
+            'SUNAT_SEND_ENABLED'        => [ConfigKey::SUNAT_SEND_ENABLED],
+            'SUNAT_REJECTION_STREAK'    => [ConfigKey::SUNAT_REJECTION_STREAK],
+            'SUNAT_REJECTION_THRESHOLD' => [ConfigKey::SUNAT_REJECTION_THRESHOLD],
+            'CPE_CLIENT_ID'             => [ConfigKey::CPE_CLIENT_ID],
+            'CPE_CLIENT_SECRET'         => [ConfigKey::CPE_CLIENT_SECRET],
         ];
     }
 
@@ -47,9 +42,7 @@ final class ConfigKeyTest extends TestCase
         self::assertFalse($key->isTechnical());
     }
 
-    /**
-     * @return array<string, array{ConfigKey}>
-     */
+    /** @return array<string, array{ConfigKey}> */
     public static function provideNonTechnicalKeys(): array
     {
         return [
@@ -60,25 +53,6 @@ final class ConfigKeyTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('provideAllKeys')]
-    public function testIsFeatureFlagAlwaysReturnsFalse(ConfigKey $key): void
-    {
-        self::assertFalse($key->isFeatureFlag());
-    }
-
-    /**
-     * @return array<string, array{ConfigKey}>
-     */
-    public static function provideAllKeys(): array
-    {
-        $result = [];
-        foreach (ConfigKey::cases() as $case) {
-            $result[$case->name] = [$case];
-        }
-
-        return $result;
-    }
-
     public function testFromReturnsCorrectCase(): void
     {
         self::assertSame(ConfigKey::IGV, ConfigKey::from('app_option_igv'));
@@ -86,8 +60,6 @@ final class ConfigKeyTest extends TestCase
 
     public function testTryFromReturnsNullForNonexistentValue(): void
     {
-        $value = 'nonexistent';
-        // @phpstan-ignore staticMethod.alreadyNarrowedType
-        self::assertNull(ConfigKey::tryFrom($value));
+        self::assertNull(ConfigKey::tryFrom('nonexistent'));
     }
 }

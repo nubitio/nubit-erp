@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use App\Efact\Service\SettingsService;
-use App\Efact\Config\EfactConstants as Constants;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
@@ -16,9 +14,11 @@ readonly class InvoiceSendRetryService
 {
     public function __construct(
         private Connection $connection,
-        private SettingsService $settings,
         private LoggerInterface $logger,
         private FeatureCheckerInterface $featureChecker,
+        private int $retryMaxAttempts = 8,
+        private int $retryBaseSeconds = 60,
+        private int $retryMaxSeconds = 1800,
     ) {
     }
 
@@ -98,36 +98,10 @@ readonly class InvoiceSendRetryService
      */
     public function getRetryPolicy(?string $tenantName): array
     {
-        try {
-            $maxAttempts = max(
-                1,
-                (int)$this->settings->get(Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8')
-            );
-            $baseSeconds = max(
-                1,
-                (int)$this->settings->get(Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60')
-            );
-            $maxSeconds = max(
-                $baseSeconds,
-                (int)$this->settings->get(Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800')
-            );
-        } catch (Throwable $exception) {
-            $this->logger->error('Failed to read SUNAT retry policy, using fallback', [
-                'tenant' => $tenantName,
-                'exception' => $exception,
-            ]);
-
-            return [
-                'max_attempts' => 8,
-                'base_seconds' => 60,
-                'max_seconds' => 1800,
-            ];
-        }
-
         return [
-            'max_attempts' => $maxAttempts,
-            'base_seconds' => $baseSeconds,
-            'max_seconds' => $maxSeconds,
+            'max_attempts' => max(1, $this->retryMaxAttempts),
+            'base_seconds' => max(1, $this->retryBaseSeconds),
+            'max_seconds'  => max($this->retryBaseSeconds, $this->retryMaxSeconds),
         ];
     }
 

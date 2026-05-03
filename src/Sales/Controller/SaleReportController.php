@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Sales\Controller;
 
 use App\Identity\Auth\BranchContextService;
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\SunatStateService;
 use App\Efact\Service\XlsExporter;
-use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Util\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -25,7 +24,7 @@ class SaleReportController extends AbstractController
     public function __construct(
         private readonly XlsExporter $xlsExporter,
         private readonly Connection $connection,
-        private readonly SettingsService $settings,
+        private readonly SunatStateService $sunatState,
     ) {
     }
 
@@ -203,7 +202,7 @@ class SaleReportController extends AbstractController
 
     private function receiptFilter(string $salesAlias = 's'): string
     {
-        if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
+        if ($this->sunatState->isReceiptRequired()) {
             return 'AND EXISTS (SELECT 1 FROM tax_document td '
                 . "WHERE (td.movimiento_id = {$salesAlias}.legacy_movimiento_id OR td.sale_id = {$salesAlias}.id) "
                 . "AND td.document_type IN ('01','03'))";
