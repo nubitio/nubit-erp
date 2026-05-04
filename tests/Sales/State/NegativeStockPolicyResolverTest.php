@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
+use App\Catalog\Entity\Product;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Sales\State\NegativeStockPolicyResolver;
@@ -83,5 +84,32 @@ final class NegativeStockPolicyResolverTest extends TestCase
     {
         // All tenants are on v2_authoritative; the flag always returns true.
         self::assertTrue($this->resolver->shouldUseCoreValidation());
+    }
+
+    public function testStockTrackedOnlyForStockableProducts(): void
+    {
+        $product = new Product();
+        $product->setType(1);
+
+        self::assertTrue($this->resolver->isStockTracked($product));
+    }
+
+    public function testServiceProductDoesNotTrackStockEvenWhenLegacyFlagIsStale(): void
+    {
+        $product = new Product();
+        $product->setType(2);
+        $product->setTrackInventory(true);
+
+        self::assertFalse($this->resolver->isStockTracked($product));
+    }
+
+    public function testDigitalProductDoesNotTrackStock(): void
+    {
+        $product = new Product();
+        $product->setType(1);
+        $product->setProductType('DIGITAL');
+        $product->setTrackInventory(true);
+
+        self::assertFalse($this->resolver->isStockTracked($product));
     }
 }

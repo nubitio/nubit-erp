@@ -16,6 +16,7 @@ final class TenantStockValidationPolicyTest extends TestCase
     private function makeProduct(bool $trackInventory = true): Product
     {
         $product = new Product();
+        $product->setType(1);
         $product->setTrackInventory($trackInventory);
 
         return $product;
@@ -38,6 +39,31 @@ final class TenantStockValidationPolicyTest extends TestCase
 
         self::assertTrue($result->allowed);
         self::assertNull($result->reason);
+    }
+
+    public function testServiceProductIsAlwaysAllowedEvenWhenLegacyTrackFlagIsStale(): void
+    {
+        $service = $this->makeService(StockPolicy::STRICT);
+        $product = new Product();
+        $product->setType(2);
+        $product->setTrackInventory(true);
+
+        $result = $service->validateSale($product, 'wh-1', '999', '0');
+
+        self::assertTrue($result->allowed);
+        self::assertNull($result->reason);
+    }
+
+    public function testDigitalProductIsAlwaysAllowed(): void
+    {
+        $service = $this->makeService(StockPolicy::STRICT);
+        $product = $this->makeProduct();
+        $product->setProductType('DIGITAL');
+        $product->setTrackInventory(true);
+
+        $result = $service->validateSale($product, 'wh-1', '999', '0');
+
+        self::assertTrue($result->allowed);
     }
 
     public function testSufficientStockIsAllowed(): void

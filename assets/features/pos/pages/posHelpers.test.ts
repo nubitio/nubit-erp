@@ -30,6 +30,32 @@ describe('posHelpers', () => {
     expect(product.barcode).toBe('9988');
   });
 
+  it('normalizes service products as non stock-tracked even when legacy flag is stale', () => {
+    const product = normalizeProduct({
+      id: 'svc-1',
+      name: 'Instalación',
+      type: 2,
+      productType: 'SERVICE',
+      trackInventory: true,
+      stock: 0,
+    });
+
+    expect(product.trackInventory).toBe(false);
+  });
+
+  it('normalizes digital products as non stock-tracked', () => {
+    const product = normalizeProduct({
+      id: 'dig-1',
+      name: 'Licencia digital',
+      type: 1,
+      productType: 'DIGITAL',
+      trackInventory: true,
+      stock: 0,
+    });
+
+    expect(product.trackInventory).toBe(false);
+  });
+
   it('extracts collection from hydra and items payloads', () => {
     expect(extractCollection({ 'hydra:member': [1, 2] })).toEqual([1, 2]);
     expect(extractCollection({ items: [3] })).toEqual([3]);

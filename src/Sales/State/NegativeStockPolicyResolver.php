@@ -8,6 +8,9 @@ use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Catalog\Entity\Product;
+use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\ProductKind;
+use App\Inventory\Core\Enum\ProductType;
 
 /**
  * Resolves the negative stock policy for the legacy sales pipeline.
@@ -50,6 +53,25 @@ final readonly class NegativeStockPolicyResolver
 
     public function isStockTracked(Product $product): bool
     {
+        $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior());
+        if ($behavior === InventoryBehavior::NOT_TRACKED) {
+            return false;
+        }
+
+        $productType = ProductType::tryFrom($product->getProductType());
+        if ($productType !== null && !$productType->tracksInventory()) {
+            return false;
+        }
+
+        $productKind = ProductKind::tryFrom($product->getProductKind());
+        if (in_array($productKind, [ProductKind::SERVICE, ProductKind::DIGITAL], true)) {
+            return false;
+        }
+
+        if ($product->getType() !== 1) {
+            return false;
+        }
+
         return $product->getTrackInventory();
     }
 

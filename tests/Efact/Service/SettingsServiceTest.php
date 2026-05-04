@@ -48,7 +48,7 @@ final class SettingsServiceTest extends TestCase
         $this->db
             ->expects(self::once())
             ->method('fetchOne')
-            ->with('SELECT value FROM config WHERE name = ?', ['my_key'])
+            ->with('SELECT value FROM tenant_settings WHERE name = ?', ['my_key'])
             ->willReturn('val');
 
         self::assertSame('val', $this->service->get('my_key'));
@@ -60,7 +60,7 @@ final class SettingsServiceTest extends TestCase
             ->expects(self::once())
             ->method('executeStatement')
             ->with(
-                self::stringContains('INSERT INTO config'),
+                self::stringContains('INSERT INTO tenant_settings'),
                 ['rate_limit', 'string', '100', '100']
             );
 

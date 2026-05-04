@@ -320,6 +320,41 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     expect(row.qty).toBe('');
   });
 
+  it('skips stock check for service products', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
+
+    const row: any = {};
+    const currentRow: any = {
+      product: { id: 'svc-1', type: 2, productType: 'SERVICE', trackInventory: false },
+      unitPrice: 25,
+    };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 999, currentRow);
+
+    expect(getStockMock).not.toHaveBeenCalled();
+    expect(toastMock).not.toHaveBeenCalledWith('No hay stock suficiente', 'error', 2000);
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 999, currentRow);
+  });
+
+  it('skips stock check for digital products even when legacy track flag is stale', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
+
+    const row: any = {};
+    const currentRow: any = {
+      product: { id: 'dig-1', type: 1, productType: 'DIGITAL', trackInventory: true },
+      unitPrice: 50,
+    };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 999, currentRow);
+
+    expect(getStockMock).not.toHaveBeenCalled();
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 999, currentRow);
+  });
+
   it('allows the edit when qty is within available stock', async () => {
     settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'BLOCK' });
     getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 10 });

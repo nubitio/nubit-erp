@@ -26,22 +26,35 @@ export const toOptionalNumber = (value: unknown): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-export const normalizeProduct = (raw: any): PosItem => ({
-  ...raw,
-  id: String(raw?.id ?? ''),
-  name: String(raw?.name ?? 'Producto'),
-  salePrice: toNumber(raw?.salePrice ?? raw?.precio_unitario ?? raw?.price, 0),
-  productType: String(
-    raw?.productType ?? raw?.product_type ?? (raw?.type === 1 ? 'STOCKABLE' : 'SERVICE'),
-  ).toUpperCase() as PosItem['productType'],
-  trackInventory: Boolean(
-    raw?.trackInventory ?? raw?.track_inventory ?? raw?.trackInventoryFlag ?? raw?.type === 1,
-  ),
-  saleUnitCode: raw?.saleUnitCode ? String(raw.saleUnitCode) : undefined,
-  stock: toOptionalNumber(raw?.stock),
-  sku: raw?.sku ? String(raw.sku) : undefined,
-  barcode: raw?.barcode ? String(raw.barcode) : undefined,
-  category:
+export const normalizeProduct = (raw: any): PosItem => {
+  const legacyType = raw?.type === undefined ? undefined : Number(raw.type);
+  const productType = String(
+    raw?.productType ?? raw?.product_type ?? (legacyType === 1 ? 'STOCKABLE' : 'SERVICE'),
+  ).toUpperCase() as PosItem['productType'];
+  const productKind = String(raw?.productKind ?? raw?.product_kind ?? '').toUpperCase();
+  const inventoryBehavior = String(raw?.inventoryBehavior ?? raw?.inventory_behavior ?? '').toUpperCase();
+  const nonStockable =
+    productType === 'SERVICE' ||
+    productType === 'DIGITAL' ||
+    productKind === 'SERVICE' ||
+    productKind === 'DIGITAL' ||
+    inventoryBehavior === 'NOT_TRACKED' ||
+    (legacyType !== undefined && legacyType !== 1);
+
+  return {
+    ...raw,
+    id: String(raw?.id ?? ''),
+    name: String(raw?.name ?? 'Producto'),
+    salePrice: toNumber(raw?.salePrice ?? raw?.precio_unitario ?? raw?.price, 0),
+    productType,
+    trackInventory: nonStockable
+      ? false
+      : Boolean(raw?.trackInventory ?? raw?.track_inventory ?? raw?.trackInventoryFlag ?? legacyType === 1),
+    saleUnitCode: raw?.saleUnitCode ? String(raw.saleUnitCode) : undefined,
+    stock: toOptionalNumber(raw?.stock),
+    sku: raw?.sku ? String(raw.sku) : undefined,
+    barcode: raw?.barcode ? String(raw.barcode) : undefined,
+    category:
     raw?.category && raw.category.id
       ? {
           id: String(raw.category.id),
@@ -53,7 +66,8 @@ export const normalizeProduct = (raw: any): PosItem => ({
           id: 'uncategorized',
           name: 'Sin categoria',
         },
-});
+  };
+};
 
 export const extractCollection = <T>(raw: any): T[] => {
   if (Array.isArray(raw)) {

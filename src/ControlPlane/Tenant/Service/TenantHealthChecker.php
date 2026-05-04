@@ -103,7 +103,7 @@ final readonly class TenantHealthChecker
             $connection = $this->connectionRegistry->getConnection('tenant');
             $schemaManager = $connection->createSchemaManager();
 
-            $requiredTables = ['user', 'config', 'branch'];
+            $requiredTables = ['user', 'tenant_settings', 'branch'];
             $existingTables = $schemaManager->listTableNames();
             $missing = array_diff($requiredTables, $existingTables);
 
