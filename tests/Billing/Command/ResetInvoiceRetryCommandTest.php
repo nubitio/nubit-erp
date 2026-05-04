@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Command;
 
 use App\Billing\Command\ResetInvoiceRetryCommand;
-use App\Efact\Service\SettingsService;
+use App\Settings\Service\SunatStateService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +21,7 @@ final class ResetInvoiceRetryCommandTest extends TestCase
     {
         $command = new ResetInvoiceRetryCommand(
             $this->createStub(Connection::class),
-            $this->createStub(SettingsService::class),
+            $this->createStub(SunatStateService::class),
         );
 
         $ref = new \ReflectionMethod($command, 'isRejectedStatus');
