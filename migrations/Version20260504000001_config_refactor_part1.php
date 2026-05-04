@@ -30,6 +30,10 @@ final class Version20260504000001_config_refactor_part1 extends AbstractMigratio
 
     public function up(Schema $schema): void
     {
+        // Drop legacy key/value tenant_settings if it exists (created by Version20260504000000).
+        // The new schema uses typed columns instead of name/value/type rows.
+        $this->addSql('DROP TABLE IF EXISTS tenant_settings');
+
         // ── 1. tenant_settings ────────────────────────────────────────────────
         $this->addSql(
             <<<'SQL'
