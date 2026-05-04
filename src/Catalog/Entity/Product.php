@@ -73,7 +73,7 @@ class Product
     #[Groups(['product:read', 'product:write'])]
     #[ApiProperty(description: 'product.type.label')]
     #[ORM\Column(name: 'tipo_id')]
-    private int $type;
+    private int $type = 1;
 
     /** @deprecated Use $productKind + $inventoryBehavior instead. Kept for backward compatibility. */
     #[Groups(['product:read'])]

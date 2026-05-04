@@ -1,0 +1,270 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e9]:
+    - generic [ref=e267]:
+      - banner [ref=e268]:
+        - toolbar [ref=e269]:
+          - generic [ref=e270]:
+            - button "ph ph-list" [ref=e273] [cursor=pointer]:
+              - generic [ref=e275]: 
+            - generic [ref=e278]: Principal
+            - 'button "Tema: Sistema" [ref=e282] [cursor=pointer]':
+              - generic [ref=e284]: 
+            - button "ph ph-bell" [ref=e288] [cursor=pointer]:
+              - generic [ref=e290]: 
+            - button "ph ph-sparkle" [ref=e294] [cursor=pointer]:
+              - generic [ref=e296]: 
+            - group [ref=e301]:
+              - button "dropdownbutton" [ref=e303] [cursor=pointer]
+            - text: 
+      - generic [ref=e306]:
+        - generic [ref=e308]:
+          - generic [ref=e309]:
+            - generic [ref=e310]: Cargando menú...
+            - generic [ref=e315]:
+              - group
+          - contentinfo [ref=e316]:
+            - text: Copyright © 2026
+            - text: Nubit Labs.
+        - generic [ref=e324]:
+          - generic [ref=e325]:
+            - heading "Configuraciones" [level=2] [ref=e326]
+            - paragraph [ref=e327]: Ajusta el comportamiento de la aplicación para tu empresa.
+          - generic [ref=e328]:
+            - generic [ref=e329]:
+              - heading "General" [level=3] [ref=e330]
+              - generic [ref=e331]:
+                - generic [ref=e332]:
+                  - generic [ref=e333]:
+                    - generic [ref=e334]: IGV (%)
+                    - generic [ref=e335]: Porcentaje de IGV aplicado a las ventas.
+                  - generic [ref=e337]:
+                    - generic [ref=e338]: "18"
+                    - button "Editar" [ref=e339] [cursor=pointer]
+                - generic [ref=e340]:
+                  - generic [ref=e341]:
+                    - generic [ref=e342]: Recargo al Consumo (%)
+                    - generic [ref=e343]: Porcentaje de recargo al consumo (RC) impreso en el comprobante.
+                  - generic [ref=e345]:
+                    - generic [ref=e346]: "0"
+                    - button "Editar" [ref=e347] [cursor=pointer]
+                - generic [ref=e348]:
+                  - generic [ref=e349]:
+                    - generic [ref=e350]: Imprimir logo en comprobantes
+                    - generic [ref=e351]: Muestra el logo de la empresa en los comprobantes.
+                  - generic [ref=e353]:
+                    - generic [ref=e354]: Sí
+                    - button "Editar" [ref=e355] [cursor=pointer]
+                - generic [ref=e356]:
+                  - generic [ref=e357]:
+                    - generic [ref=e358]: Requerir caja registradora
+                    - generic [ref=e359]: Obliga a seleccionar una caja antes de vender.
+                  - generic [ref=e361]:
+                    - generic [ref=e362]: Sí
+                    - button "Editar" [ref=e363] [cursor=pointer]
+                - generic [ref=e364]:
+                  - generic [ref=e366]: app_option_receipt_required
+                  - generic [ref=e368]:
+                    - generic [ref=e369]: "No"
+                    - button "Editar" [ref=e370] [cursor=pointer]
+                - generic [ref=e371]:
+                  - generic [ref=e373]: app_option_sunat_send_enabled
+                  - generic [ref=e375]:
+                    - generic [ref=e376]: Sí
+                    - button "Editar" [ref=e377] [cursor=pointer]
+                - generic [ref=e378]:
+                  - generic [ref=e380]: app_option_sunat_rejection_streak
+                  - generic [ref=e382]:
+                    - generic [ref=e383]: "0"
+                    - button "Editar" [ref=e384] [cursor=pointer]
+                - generic [ref=e385]:
+                  - generic [ref=e387]: app_option_sunat_rejection_threshold
+                  - generic [ref=e389]:
+                    - generic [ref=e390]: "3"
+                    - button "Editar" [ref=e391] [cursor=pointer]
+                - generic [ref=e392]:
+                  - generic [ref=e394]: app_option_sunat_send_retry_max_attempts
+                  - generic [ref=e396]:
+                    - generic [ref=e397]: "8"
+                    - button "Editar" [ref=e398] [cursor=pointer]
+                - generic [ref=e399]:
+                  - generic [ref=e401]: app_option_sunat_send_retry_base_seconds
+                  - generic [ref=e403]:
+                    - generic [ref=e404]: "60"
+                    - button "Editar" [ref=e405] [cursor=pointer]
+                - generic [ref=e406]:
+                  - generic [ref=e408]: app_option_sunat_send_retry_max_seconds
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: "1800"
+                    - button "Editar" [ref=e412] [cursor=pointer]
+                - generic [ref=e413]:
+                  - generic [ref=e415]: inventory_core_mode
+                  - generic [ref=e417]:
+                    - generic [ref=e418]: v2_authoritative
+                    - button "Editar" [ref=e419] [cursor=pointer]
+                - generic [ref=e420]:
+                  - generic [ref=e422]: inventory_core_dual_write_enabled
+                  - generic [ref=e424]:
+                    - generic [ref=e425]: Sí
+                    - button "Editar" [ref=e426] [cursor=pointer]
+                - generic [ref=e427]:
+                  - generic [ref=e429]: inventory_core_read_stock_items_enabled
+                  - generic [ref=e431]:
+                    - generic [ref=e432]: "No"
+                    - button "Editar" [ref=e433] [cursor=pointer]
+                - generic [ref=e434]:
+                  - generic [ref=e436]: sales_usd_exchange_rate_updated_at
+                  - generic [ref=e438]:
+                    - generic [ref=e439]: 2026-04-12 00:23:14
+                    - button "Editar" [ref=e440] [cursor=pointer]
+                - generic [ref=e441]:
+                  - generic [ref=e443]: app_option_check_stock
+                  - generic [ref=e445]:
+                    - generic [ref=e446]: "No"
+                    - button "Editar" [ref=e447] [cursor=pointer]
+            - generic [ref=e448]:
+              - heading "Ventas" [level=3] [ref=e449]
+              - generic [ref=e450]:
+                - generic [ref=e451]:
+                  - generic [ref=e452]:
+                    - generic [ref=e453]: Facturación automática
+                    - generic [ref=e454]: Emite el comprobante electrónico automáticamente.
+                  - generic [ref=e456]:
+                    - generic [ref=e457]: Sí
+                    - button "Editar" [ref=e458] [cursor=pointer]
+                - generic [ref=e459]:
+                  - generic [ref=e460]:
+                    - generic [ref=e461]: Tipo de cambio USD por defecto
+                    - generic [ref=e462]: Valor inicial del tipo de cambio USD/PEN.
+                  - generic [ref=e464]:
+                    - generic [ref=e465]: "3.500000"
+                    - button "Editar" [ref=e466] [cursor=pointer]
+            - generic [ref=e467]:
+              - heading "Inventario" [level=3] [ref=e468]
+              - generic [ref=e470]:
+                - generic [ref=e471]:
+                  - generic [ref=e472]: Política de stock negativo
+                  - generic [ref=e473]: Define qué ocurre cuando el stock llega a cero.
+                - generic [ref=e475]:
+                  - generic [ref=e476]: Permitir a todos los usuarios
+                  - button "Editar" [ref=e477] [cursor=pointer]
+            - generic [ref=e478]:
+              - heading "Otras" [level=3] [ref=e479]
+              - generic [ref=e480]:
+                - generic [ref=e481]:
+                  - generic [ref=e483]: app_option_receipt_required
+                  - generic [ref=e485]:
+                    - generic [ref=e486]: "No"
+                    - button "Editar" [ref=e487] [cursor=pointer]
+                - generic [ref=e488]:
+                  - generic [ref=e490]: app_option_sunat_send_enabled
+                  - generic [ref=e492]:
+                    - generic [ref=e493]: Sí
+                    - button "Editar" [ref=e494] [cursor=pointer]
+                - generic [ref=e495]:
+                  - generic [ref=e497]: app_option_sunat_rejection_streak
+                  - generic [ref=e499]:
+                    - generic [ref=e500]: "0"
+                    - button "Editar" [ref=e501] [cursor=pointer]
+                - generic [ref=e502]:
+                  - generic [ref=e504]: app_option_sunat_rejection_threshold
+                  - generic [ref=e506]:
+                    - generic [ref=e507]: "3"
+                    - button "Editar" [ref=e508] [cursor=pointer]
+                - generic [ref=e509]:
+                  - generic [ref=e511]: app_option_sunat_send_retry_max_attempts
+                  - generic [ref=e513]:
+                    - generic [ref=e514]: "8"
+                    - button "Editar" [ref=e515] [cursor=pointer]
+                - generic [ref=e516]:
+                  - generic [ref=e518]: app_option_sunat_send_retry_base_seconds
+                  - generic [ref=e520]:
+                    - generic [ref=e521]: "60"
+                    - button "Editar" [ref=e522] [cursor=pointer]
+                - generic [ref=e523]:
+                  - generic [ref=e525]: app_option_sunat_send_retry_max_seconds
+                  - generic [ref=e527]:
+                    - generic [ref=e528]: "1800"
+                    - button "Editar" [ref=e529] [cursor=pointer]
+                - generic [ref=e530]:
+                  - generic [ref=e532]: inventory_core_mode
+                  - generic [ref=e534]:
+                    - generic [ref=e535]: v2_authoritative
+                    - button "Editar" [ref=e536] [cursor=pointer]
+                - generic [ref=e537]:
+                  - generic [ref=e539]: inventory_core_dual_write_enabled
+                  - generic [ref=e541]:
+                    - generic [ref=e542]: Sí
+                    - button "Editar" [ref=e543] [cursor=pointer]
+                - generic [ref=e544]:
+                  - generic [ref=e546]: inventory_core_read_stock_items_enabled
+                  - generic [ref=e548]:
+                    - generic [ref=e549]: "No"
+                    - button "Editar" [ref=e550] [cursor=pointer]
+                - generic [ref=e551]:
+                  - generic [ref=e553]: sales_usd_exchange_rate_updated_at
+                  - generic [ref=e555]:
+                    - generic [ref=e556]: 2026-04-12 00:23:14
+                    - button "Editar" [ref=e557] [cursor=pointer]
+                - generic [ref=e558]:
+                  - generic [ref=e560]: app_option_check_stock
+                  - generic [ref=e562]:
+                    - generic [ref=e563]: "No"
+                    - button "Editar" [ref=e564] [cursor=pointer]
+    - generic [ref=e168]:
+      - img [ref=e170]
+      - button "Open Tanstack query devtools" [ref=e218] [cursor=pointer]:
+        - img [ref=e219]
+  - region "Symfony Web Debug Toolbar" [ref=e11]:
+    - generic [ref=e13]:
+      - link "200 @ home_index" [ref=e15] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=request
+        - generic [ref=e16]:
+          - generic [ref=e17]: "200"
+          - generic [ref=e18]: "@"
+          - generic [ref=e19]: home_index
+      - link [ref=e21] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=api_platform.data_collector.request
+        - img [ref=e23]
+      - link "192 ms" [ref=e48] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=time
+        - generic [ref=e49]:
+          - generic [ref=e50]: "192"
+          - generic [ref=e51]: ms
+      - link "15.0 MiB" [ref=e53] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=time
+        - generic [ref=e54]:
+          - generic [ref=e55]: "15.0"
+          - generic [ref=e56]: MiB
+      - generic [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - generic [ref=e63]: "28"
+      - link "Logger 3" [ref=e65] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=logger
+        - generic [ref=e66]:
+          - img "Logger" [ref=e67]
+          - generic [ref=e71]: "3"
+      - link "Twig 9 ms" [ref=e73] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=twig
+        - generic [ref=e74]:
+          - img "Twig" [ref=e75]
+          - generic [ref=e79]: "9"
+          - generic [ref=e80]: ms
+      - link "4 in 4.83 ms" [ref=e82] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=db
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - generic [ref=e89]: "4"
+          - generic [ref=e90]: in 4.83 ms
+      - link "Vite" [ref=e92] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=pentatrion_vite.vite_collector
+        - generic [ref=e93]:
+          - img [ref=e94]
+          - generic [ref=e98]: Vite
+      - link "Symfony 7.4.7" [ref=e100] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=config
+        - generic [ref=e101]:
+          - img "Symfony" [ref=e103]
+          - generic [ref=e105]: 7.4.7
+      - button [expanded] [ref=e106] [cursor=pointer]:
+        - generic "Close Toolbar" [ref=e107]:
+          - img [ref=e108]

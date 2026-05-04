@@ -105,8 +105,8 @@ final class InvoiceSendRetryServiceTest extends TestCase
         $service = $this->makeServiceWithRetry(5, 30, 900);
         $policy  = $service->getRetryPolicy('tenant_test');
 
-        self::assertSame(5,   $policy['max_attempts']);
-        self::assertSame(30,  $policy['base_seconds']);
+        self::assertSame(5, $policy['max_attempts']);
+        self::assertSame(30, $policy['base_seconds']);
         self::assertSame(900, $policy['max_seconds']);
     }
 

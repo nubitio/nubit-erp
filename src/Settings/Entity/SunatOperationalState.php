@@ -74,30 +74,45 @@ class SunatOperationalState
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function isSendEnabled(): bool { return $this->sendEnabled; }
+    public function isSendEnabled(): bool
+    {
+        return $this->sendEnabled;
+    }
     public function setSendEnabled(bool $sendEnabled): static
     {
         $this->sendEnabled = $sendEnabled;
         return $this;
     }
 
-    public function isReceiptRequired(): bool { return $this->receiptRequired; }
+    public function isReceiptRequired(): bool
+    {
+        return $this->receiptRequired;
+    }
     public function setReceiptRequired(bool $receiptRequired): static
     {
         $this->receiptRequired = $receiptRequired;
         return $this;
     }
 
-    public function getRejectionStreak(): int { return $this->rejectionStreak; }
+    public function getRejectionStreak(): int
+    {
+        return $this->rejectionStreak;
+    }
     public function setRejectionStreak(int $rejectionStreak): static
     {
         $this->rejectionStreak = max(0, $rejectionStreak);
         return $this;
     }
 
-    public function getRejectionThreshold(): int { return $this->rejectionThreshold; }
+    public function getRejectionThreshold(): int
+    {
+        return $this->rejectionThreshold;
+    }
     public function setRejectionThreshold(int $rejectionThreshold): static
     {
         $this->rejectionThreshold = max(1, $rejectionThreshold);

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import ScrollView from 'devextreme-react/scroll-view';
 import toast from '@shared/lib/SharedUtils';
 import { configService } from '@features/config/services/configService';
-import { type ConfigDto, ConfigKey, isBoolValue, isTechnical } from '@features/config/model/ConfigKey';
+import type { ConfigDto } from '@features/config/model/ConfigKey';
+import { isTechnical } from '@features/config/model/ConfigKey';
 import './ConfigPage.scss';
 
 // ── Label registry ────────────────────────────────────────────────────────────
@@ -10,32 +11,17 @@ import './ConfigPage.scss';
 interface ConfigMeta {
   label: string;
   description?: string;
-  group: 'general' | 'sales' | 'inventory';
+  group: 'general' | 'sales' | 'inventory' | 'feature';
   options?: { value: string; label: string }[];  // if set → renders as <select>
 }
 
 const CONFIG_META: Record<string, ConfigMeta> = {
-  [ConfigKey.IGV]: {
-    label: 'IGV (%)',
-    description: 'Porcentaje de IGV aplicado a las ventas.',
-    group: 'general',
-  },
-  [ConfigKey.RC]: {
-    label: 'Recargo al Consumo (%)',
-    description: 'Porcentaje de recargo al consumo (RC) impreso en el comprobante.',
-    group: 'general',
-  },
-  [ConfigKey.PRINT_LOGO]: {
-    label: 'Imprimir logo en comprobantes',
-    description: 'Muestra el logo de la empresa en los comprobantes.',
-    group: 'general',
-  },
-  [ConfigKey.REQUIRE_CASH_REGISTER]: {
-    label: 'Requerir caja registradora',
-    description: 'Obliga a seleccionar una caja antes de vender.',
-    group: 'general',
-  },
-  [ConfigKey.PRINT_METHOD]: {
+  app_option_igv:                    { label: 'IGV (%)',                          description: 'Porcentaje de IGV aplicado a las ventas.',                  group: 'general' },
+  app_option_rc:                     { label: 'Recargo al Consumo (%)',           description: 'Porcentaje de recargo al consumo (RC) impreso en el comprobante.', group: 'general' },
+  app_option_print_logo:             { label: 'Imprimir logo en comprobantes',    description: 'Muestra el logo de la empresa en los comprobantes.',        group: 'general' },
+  app_option_require_cash_register:  { label: 'Requerir caja registradora',       description: 'Obliga a seleccionar una caja antes de vender.',            group: 'general' },
+  app_option_receipt_required:       { label: 'Requerir boleta/factura',          description: 'Obliga a emitir un comprobante en cada venta.',             group: 'general' },
+  print_method:                      {
     label: 'Método de impresión',
     description: 'Cómo se envían los comprobantes a la impresora térmica.',
     group: 'general',
@@ -44,45 +30,23 @@ const CONFIG_META: Record<string, ConfigMeta> = {
       { value: 'LOCAL_AGENT', label: 'Agente eFact (app local instalada)' },
     ],
   },
-  [ConfigKey.AUTO_INVOICE]: {
-    label: 'Facturación automática',
-    description: 'Emite el comprobante electrónico automáticamente.',
-    group: 'sales',
-  },
-  [ConfigKey.DEFAULT_CURRENCY]: {
-    label: 'Moneda por defecto',
-    description: 'Moneda predeterminada para nuevas ventas.',
-    group: 'sales',
-  },
-  [ConfigKey.DEFAULT_USD_EXCHANGE_RATE]: {
-    label: 'Tipo de cambio USD por defecto',
-    description: 'Valor inicial del tipo de cambio USD/PEN.',
-    group: 'sales',
-  },
-  [ConfigKey.INVENTORY_NEGATIVE_STOCK_POLICY]: {
+  app_option_auto_invoice:           { label: 'Facturación automática',           description: 'Emite el comprobante electrónico automáticamente.',         group: 'sales' },
+  sales_default_currency:            { label: 'Moneda por defecto',              description: 'Moneda predeterminada para nuevas ventas.',                 group: 'sales' },
+  sales_default_usd_exchange_rate:   { label: 'Tipo de cambio USD por defecto',  description: 'Valor inicial del tipo de cambio USD/PEN.',                group: 'sales' },
+  inventory_negative_stock_policy:   {
     label: 'Política de stock negativo',
     description: 'Define qué ocurre cuando el stock llega a cero.',
     group: 'inventory',
     options: [
-      { value: 'STRICT',          label: 'Bloquear venta (no permite stock negativo)' },
-      { value: 'WARNING_ONLY',    label: 'Permitir solo a administradores' },
-      { value: 'ALLOW_NEGATIVE',  label: 'Permitir a todos los usuarios' },
+      { value: 'BLOCK',          label: 'Bloquear venta (no permite stock negativo)' },
+      { value: 'ALLOW_WITH_ROLE', label: 'Permitir solo a administradores' },
+      { value: 'ALLOW_ALL',      label: 'Permitir a todos los usuarios' },
     ],
   },
 };
 
 function getMeta(key: string): ConfigMeta {
   return CONFIG_META[key] ?? { label: key, group: 'general' };
-}
-
-function formatDisplayValue(config: ConfigDto, meta: ConfigMeta): string {
-  if (meta.options) {
-    return meta.options.find((o) => o.value === config.value)?.label ?? config.value;
-  }
-  if (config.type === 'bool' || isBoolValue(config.value)) {
-    return config.value === 'true' ? 'Sí' : 'No';
-  }
-  return config.value;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -131,8 +95,17 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
     if (e.key === 'Escape') handleCancel();
   };
 
+  // Bool configs that are NOT feature flags get a bool select
+  const isBool = config.type === 'bool' || config.value === 'true' || config.value === 'false';
+  // Enum configs have a fixed options list in meta
   const isEnum = Boolean(meta.options?.length);
-  const isBool = !isEnum && (config.type === 'bool' || isBoolValue(config.value));
+
+  // Display label for current value
+  const displayValue = isEnum
+    ? (meta.options!.find((o) => o.value === config.value)?.label ?? config.value)
+    : isBool
+      ? (config.value === 'true' ? 'Sí' : 'No')
+      : config.value;
 
   return (
     <div className="config-setting-row">
@@ -197,7 +170,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
           </div>
         ) : (
           <div className="config-setting-display">
-            <span className="config-setting-current">{formatDisplayValue(config, meta)}</span>
+            <span className="config-setting-current">{displayValue}</span>
             <button
               type="button"
               className="config-btn config-btn--ghost"
@@ -258,43 +231,45 @@ export const ConfigPage = () => {
     toast('Configuración guardada', 'success');
   };
 
-  // Only show keys that are registered in CONFIG_META (known, labeled configs).
-  // Technical / migration keys are filtered by isTechnical(); any remaining
-  // unknown key is also hidden to avoid exposing raw DB keys in the UI.
-  const visible = configs.filter((c) => !isTechnical(c.name) && CONFIG_META[c.name]);
+  // Partition configs — hide technical migration keys
+  const visible = configs.filter((c) => !isTechnical(c.name));
 
   const general   = visible.filter((c) => getMeta(c.name).group === 'general');
   const sales     = visible.filter((c) => getMeta(c.name).group === 'sales');
   const inventory = visible.filter((c) => getMeta(c.name).group === 'inventory');
+  const other     = visible.filter((c) => !CONFIG_META[c.name]);
 
   return (
     <ScrollView className="view-wrapper-scroll">
-      <div className="config-page">
-        <div className="config-page-header">
-          <h2 className="config-page-title">Configuraciones</h2>
-          <p className="config-page-subtitle">
-            Ajusta el comportamiento de la aplicación para tu empresa.
-          </p>
-        </div>
-
-        <div className="config-content">
-          {loading ? (
-            <div className="config-loading">
-              <i className="ph ph-circle-notch config-loading-icon" />
-              Cargando configuraciones…
-            </div>
-          ) : (
-            <>
-              <SettingGroup title="General"    configs={general}   onSave={handleSave} />
-              <SettingGroup title="Ventas"     configs={sales}     onSave={handleSave} />
-              <SettingGroup title="Inventario" configs={inventory} onSave={handleSave} />
-              {visible.length === 0 && (
-                <p className="config-empty">No hay configuraciones disponibles.</p>
-              )}
-            </>
-          )}
-        </div>
+    <div className="config-page">
+      <div className="config-page-header">
+        <h2 className="config-page-title">Configuraciones</h2>
+        <p className="config-page-subtitle">
+          Ajusta el comportamiento de la aplicación para tu empresa.
+        </p>
       </div>
+
+      <div className="config-content">
+        {loading ? (
+          <div className="config-loading">
+            <i className="ph ph-circle-notch config-loading-icon" />
+            Cargando configuraciones…
+          </div>
+        ) : (
+          <>
+            <SettingGroup title="General"    configs={general}   onSave={handleSave} />
+            <SettingGroup title="Ventas"     configs={sales}     onSave={handleSave} />
+            <SettingGroup title="Inventario" configs={inventory} onSave={handleSave} />
+            {other.length > 0 && (
+              <SettingGroup title="Otras" configs={other} onSave={handleSave} />
+            )}
+            {visible.length === 0 && (
+              <p className="config-empty">No hay configuraciones disponibles.</p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
     </ScrollView>
   );
 };

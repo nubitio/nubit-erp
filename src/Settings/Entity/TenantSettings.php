@@ -91,46 +91,85 @@ class TenantSettings
 
     // ── Getters / Setters ─────────────────────────────────────────────────────
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getIgv(): float { return $this->igv; }
-    public function setIgv(float $igv): static { $this->igv = $igv; return $this; }
+    public function getIgv(): float
+    {
+        return $this->igv;
+    }
+    public function setIgv(float $igv): static
+    {
+        $this->igv = $igv;
+        return $this;
+    }
 
-    public function getRc(): float { return $this->rc; }
-    public function setRc(float $rc): static { $this->rc = $rc; return $this; }
+    public function getRc(): float
+    {
+        return $this->rc;
+    }
+    public function setRc(float $rc): static
+    {
+        $this->rc = $rc;
+        return $this;
+    }
 
-    public function isPrintLogo(): bool { return $this->printLogo; }
-    public function setPrintLogo(bool $printLogo): static { $this->printLogo = $printLogo; return $this; }
+    public function isPrintLogo(): bool
+    {
+        return $this->printLogo;
+    }
+    public function setPrintLogo(bool $printLogo): static
+    {
+        $this->printLogo = $printLogo;
+        return $this;
+    }
 
-    public function isRequireCashRegister(): bool { return $this->requireCashRegister; }
+    public function isRequireCashRegister(): bool
+    {
+        return $this->requireCashRegister;
+    }
     public function setRequireCashRegister(bool $requireCashRegister): static
     {
         $this->requireCashRegister = $requireCashRegister;
         return $this;
     }
 
-    public function getPrintMethod(): PrintMethod { return $this->printMethod; }
+    public function getPrintMethod(): PrintMethod
+    {
+        return $this->printMethod;
+    }
     public function setPrintMethod(PrintMethod $printMethod): static
     {
         $this->printMethod = $printMethod;
         return $this;
     }
 
-    public function isAutoInvoice(): bool { return $this->autoInvoice; }
+    public function isAutoInvoice(): bool
+    {
+        return $this->autoInvoice;
+    }
     public function setAutoInvoice(bool $autoInvoice): static
     {
         $this->autoInvoice = $autoInvoice;
         return $this;
     }
 
-    public function getDefaultCurrency(): DefaultCurrency { return $this->defaultCurrency; }
+    public function getDefaultCurrency(): DefaultCurrency
+    {
+        return $this->defaultCurrency;
+    }
     public function setDefaultCurrency(DefaultCurrency $defaultCurrency): static
     {
         $this->defaultCurrency = $defaultCurrency;
         return $this;
     }
 
-    public function getNegativeStockPolicy(): StockPolicy { return $this->negativeStockPolicy; }
+    public function getNegativeStockPolicy(): StockPolicy
+    {
+        return $this->negativeStockPolicy;
+    }
     public function setNegativeStockPolicy(StockPolicy $policy): static
     {
         $this->negativeStockPolicy = $policy;

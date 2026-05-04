@@ -76,7 +76,8 @@ final class InitialSetupServiceTest extends TestCase
         $branchRepository = $this->createStub(BranchRepository::class);
         $branchRepository->method('count')->willReturn(1);
 
-        $service = $this->newService(userRepository: $userRepository,
+        $service = $this->newService(
+            userRepository: $userRepository,
             companyRepository: $companyRepository,
             branchRepository: $branchRepository
         );
@@ -97,7 +98,8 @@ final class InitialSetupServiceTest extends TestCase
         $roleRepository = $this->createMock(RoleRepository::class);
         $roleRepository->method('find')->with(1)->willReturn($superAdmin);
 
-        $service = $this->newService(connection: $connection,
+        $service = $this->newService(
+            connection: $connection,
             roleRepository: $roleRepository
         );
 
@@ -114,7 +116,8 @@ final class InitialSetupServiceTest extends TestCase
         $roleRepository->method('find')->willReturn(null);
         $roleRepository->method('findOneBy')->willReturn(null);
 
-        $service = $this->newService(connection: $connection,
+        $service = $this->newService(
+            connection: $connection,
             roleRepository: $roleRepository
         );
 
@@ -156,7 +159,8 @@ final class InitialSetupServiceTest extends TestCase
         $sunatRepo = $this->createStub(SunatCatalogRepository::class);
         $sunatRepo->method('findOneBy')->willReturn(new SunatCatalog());
 
-        $service = $this->newService(entityManager: $entityManager,
+        $service = $this->newService(
+            entityManager: $entityManager,
             logisticOperationRepository: $logisticRepo,
             paymentMethodRepository: $paymentRepo,
             cashMovementCategoryRepository: $cashRepo,

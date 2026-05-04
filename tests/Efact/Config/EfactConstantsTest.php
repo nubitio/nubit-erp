@@ -12,8 +12,8 @@ final class EfactConstantsTest extends TestCase
     public function testStoragePathConstants(): void
     {
         self::assertSame('invoices', EfactConstants::INVOICE_DIR);
-        self::assertSame('images',   EfactConstants::IMAGE_DIR);
-        self::assertSame('backups',  EfactConstants::BACKUP_DIR);
-        self::assertSame('binlogs',  EfactConstants::BINLOG_DIR);
+        self::assertSame('images', EfactConstants::IMAGE_DIR);
+        self::assertSame('backups', EfactConstants::BACKUP_DIR);
+        self::assertSame('binlogs', EfactConstants::BINLOG_DIR);
     }
 }
