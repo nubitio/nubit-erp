@@ -11,7 +11,7 @@ use App\Settings\Repository\ConfigRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
-#[ORM\Table(name: 'tenant_settings')]
+#[ORM\Table(name: 'config')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
     mercure: true,
