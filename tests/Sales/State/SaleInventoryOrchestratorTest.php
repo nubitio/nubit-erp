@@ -74,6 +74,10 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $product->method('getId')->willReturn($id);
         $product->method('getName')->willReturn('Widget');
         $product->method('getLotTrackingStrategyEnum')->willReturn(LotTrackingStrategy::NONE);
+        $product->method('getType')->willReturn(1);
+        $product->method('getInventoryBehavior')->willReturn($tracked ? 'TRACKED' : 'NOT_TRACKED');
+        $product->method('getProductType')->willReturn('STOCKABLE');
+        $product->method('getProductKind')->willReturn('GOOD');
 
         return $product;
     }

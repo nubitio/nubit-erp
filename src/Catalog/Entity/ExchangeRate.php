@@ -72,15 +72,30 @@ class ExchangeRate
         $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getCurrency(): string { return $this->currency; }
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
 
-    public function getRate(): string { return $this->rate; }
+    public function getRate(): string
+    {
+        return $this->rate;
+    }
 
-    public function getSource(): ExchangeRateSource { return $this->source; }
+    public function getSource(): ExchangeRateSource
+    {
+        return $this->source;
+    }
 
-    public function getUpdatedAt(): \DateTimeImmutable { return $this->updatedAt; }
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 
     public function update(string $rate, ExchangeRateSource $source): void
     {

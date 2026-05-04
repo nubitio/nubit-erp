@@ -1,0 +1,68 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - text: For evaluation purposes only. Redistribution prohibited. Please
+      - link "register" [ref=e4] [cursor=pointer]:
+        - /url: https://go.devexpress.com/Licensing_Documentation_DevExtremeReact.aspx
+      - text: an existing license or
+      - link "purchase a new license" [ref=e5] [cursor=pointer]:
+        - /url: https://go.devexpress.com/Licensing_Installer_Watermark_DevExtremeReact.aspx
+      - text: "to continue use of DevExpress product libraries (v25.2.5). Included in Subscriptions: Universal, DXperience, ASP.NET and Blazor, DevExtreme Complete"
+    - img [ref=e7] [cursor=pointer]
+  - region "Symfony Web Debug Toolbar" [ref=e11]:
+    - generic [ref=e13]:
+      - link "200 @ home_index" [ref=e15] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=request
+        - generic [ref=e16]:
+          - generic [ref=e17]: "200"
+          - generic [ref=e18]: "@"
+          - generic [ref=e19]: home_index
+      - link [ref=e21] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=api_platform.data_collector.request
+        - img [ref=e23]
+      - link "192 ms" [ref=e48] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=time
+        - generic [ref=e49]:
+          - generic [ref=e50]: "192"
+          - generic [ref=e51]: ms
+      - link "15.0 MiB" [ref=e53] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=time
+        - generic [ref=e54]:
+          - generic [ref=e55]: "15.0"
+          - generic [ref=e56]: MiB
+      - generic [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - generic [ref=e63]: "2"
+      - link "Logger 3" [ref=e65] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=logger
+        - generic [ref=e66]:
+          - img "Logger" [ref=e67]
+          - generic [ref=e71]: "3"
+      - link "Twig 9 ms" [ref=e73] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=twig
+        - generic [ref=e74]:
+          - img "Twig" [ref=e75]
+          - generic [ref=e79]: "9"
+          - generic [ref=e80]: ms
+      - link "4 in 4.83 ms" [ref=e82] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=db
+        - generic [ref=e83]:
+          - img [ref=e84]
+          - generic [ref=e89]: "4"
+          - generic [ref=e90]: in 4.83 ms
+      - link "Vite" [ref=e92] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=pentatrion_vite.vite_collector
+        - generic [ref=e93]:
+          - img [ref=e94]
+          - generic [ref=e98]: Vite
+      - link "Symfony 7.4.7" [ref=e100] [cursor=pointer]:
+        - /url: http://localhost:8080/_profiler/392bb6?panel=config
+        - generic [ref=e101]:
+          - img "Symfony" [ref=e103]
+          - generic [ref=e105]: 7.4.7
+      - button [expanded] [ref=e106] [cursor=pointer]:
+        - generic "Close Toolbar" [ref=e107]:
+          - img [ref=e108]
+  - generic [ref=e114]:
+    - alert "Cargando..."
+    - generic [ref=e115]: Cargando...
