@@ -18,6 +18,14 @@ final class ConfigTest extends TestCase
         self::assertNull($config->getId());
     }
 
+    public function testMapsToTenantSettingsTable(): void
+    {
+        $attributes = (new \ReflectionClass(Config::class))->getAttributes(\Doctrine\ORM\Mapping\Table::class);
+
+        self::assertCount(1, $attributes);
+        self::assertSame('tenant_settings', $attributes[0]->newInstance()->name);
+    }
+
     public function testSetNameGetNameRoundTrip(): void
     {
         $config = new Config();

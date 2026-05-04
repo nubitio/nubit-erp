@@ -90,7 +90,7 @@ final class TenantHealthCheckCommandTest extends TestCase
     private function healthyTenantConnection(): TenantConnection
     {
         $schema = $this->createStub(AbstractSchemaManager::class);
-        $schema->method('listTableNames')->willReturn(['user', 'config', 'branch']);
+        $schema->method('listTableNames')->willReturn(['user', 'tenant_settings', 'branch']);
 
         $connection = $this->createMock(TenantConnection::class);
         $connection->method('switchTenantParams');

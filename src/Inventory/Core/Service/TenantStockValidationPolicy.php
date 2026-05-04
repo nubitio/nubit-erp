@@ -8,6 +8,9 @@ use App\Catalog\Entity\Product;
 use App\Settings\Service\TenantSettingsService;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
+use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\ProductKind;
+use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockPolicy;
 
 /**
@@ -56,6 +59,25 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
 
     private function tracksInventory(Product $product): bool
     {
+        $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior());
+        if ($behavior === InventoryBehavior::NOT_TRACKED) {
+            return false;
+        }
+
+        $productType = ProductType::tryFrom($product->getProductType());
+        if ($productType !== null && !$productType->tracksInventory()) {
+            return false;
+        }
+
+        $productKind = ProductKind::tryFrom($product->getProductKind());
+        if (in_array($productKind, [ProductKind::SERVICE, ProductKind::DIGITAL], true)) {
+            return false;
+        }
+
+        if ($product->getType() !== 1) {
+            return false;
+        }
+
         return $product->getTrackInventory();
     }
 }

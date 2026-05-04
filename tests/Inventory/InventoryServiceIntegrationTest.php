@@ -6,6 +6,7 @@ namespace App\Tests\Inventory;
 
 use App\Catalog\Entity\Product;
 use App\Inventory\Core\Dto\MovementDraft;
+use App\Inventory\Core\Contract\UnitConversionServiceInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
@@ -141,6 +142,31 @@ final class InventoryServiceIntegrationTest extends TestCase
 
         self::assertFalse($result->allowed);
         self::assertStringContainsString('STRICT', (string) $result->reason);
+    }
+
+    public function testValidateForSaleSkipsUnitConversionForServiceProducts(): void
+    {
+        $unitConversion = $this->createMock(UnitConversionServiceInterface::class);
+        $unitConversion->expects(self::never())->method('toBase');
+
+        $policy = $this->createMock(\App\Inventory\Core\Contract\StockValidationPolicyInterface::class);
+        $policy->expects(self::never())->method('validateSale');
+
+        $service = new InventoryService(
+            connection: $this->conn,
+            validationPolicy: $policy,
+            unitConversion: $unitConversion,
+            eventDispatcher: $this->dispatcher,
+            enrichers: [],
+        );
+
+        $product = $this->makeProduct('prod-svc', InventoryBehavior::TRACKED);
+        $product->setType(2);
+        $product->setTrackInventory(true);
+
+        $result = $service->validateForSale($product, 'wh-test', '999.000000', 1);
+
+        self::assertTrue($result->allowed);
     }
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -374,6 +400,7 @@ final class InventoryServiceIntegrationTest extends TestCase
     private function makeProduct(string $id, InventoryBehavior $behavior): Product
     {
         $product = new Product();
+        $product->setType(1);
         $product->setInventoryBehavior($behavior);
         $product->setProductKind(ProductKind::GOOD);
 

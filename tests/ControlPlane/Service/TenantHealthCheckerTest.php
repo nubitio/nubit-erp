@@ -22,7 +22,7 @@ final class TenantHealthCheckerTest extends TestCase
     public function testCheckReturnsHealthyWhenTenantConnectionAndSchemaAreValid(): void
     {
         $schema = $this->createStub(AbstractSchemaManager::class);
-        $schema->method('listTableNames')->willReturn(['user', 'config', 'branch']);
+        $schema->method('listTableNames')->willReturn(['user', 'tenant_settings', 'branch']);
 
         $tenantConnection = $this->createMock(TenantConnection::class);
         $tenantConnection->expects(self::once())->method('switchTenantParams');
@@ -102,7 +102,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         self::assertFalse($result['healthy']);
         self::assertFalse($result['checks']['schema']['ok']);
-        self::assertStringContainsString('config', $result['checks']['schema']['message']);
+        self::assertStringContainsString('tenant_settings', $result['checks']['schema']['message']);
     }
 
     public function testCheckHandlesControlPlaneLookupException(): void

@@ -14,6 +14,8 @@ use App\Inventory\Core\Contract\UnitConversionServiceInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\ProductKind;
+use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Event\StockMovementRecorded;
 use Doctrine\DBAL\Connection;
@@ -96,10 +98,7 @@ final class InventoryService
         string $requestedQty,
         int $unitId,
     ): StockValidationResult {
-        $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior())
-            ?? InventoryBehavior::TRACKED;
-
-        if (!$behavior->tracksInventory()) {
+        if (!$this->productTracksInventory($product)) {
             return StockValidationResult::allowed();
         }
 
@@ -107,6 +106,30 @@ final class InventoryService
         $onHand = $this->getOnHand($warehouseId, (string) $product->getId());
 
         return $this->validationPolicy->validateSale($product, $warehouseId, $qtyBase, $onHand);
+    }
+
+    private function productTracksInventory(Product $product): bool
+    {
+        $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior());
+        if ($behavior === InventoryBehavior::NOT_TRACKED) {
+            return false;
+        }
+
+        $productType = ProductType::tryFrom($product->getProductType());
+        if ($productType !== null && !$productType->tracksInventory()) {
+            return false;
+        }
+
+        $productKind = ProductKind::tryFrom($product->getProductKind());
+        if (in_array($productKind, [ProductKind::SERVICE, ProductKind::DIGITAL], true)) {
+            return false;
+        }
+
+        if ($product->getType() !== 1) {
+            return false;
+        }
+
+        return $product->getTrackInventory();
     }
 
     // ─── Read path ───────────────────────────────────────────────────────────────
