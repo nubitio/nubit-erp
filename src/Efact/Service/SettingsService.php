@@ -9,7 +9,7 @@ use Doctrine\DBAL\Exception;
 
 readonly class SettingsService
 {
-    private const string TABLE_NAME = 'tenant_settings';
+    private const string TABLE_NAME = 'config';
 
     public function __construct(
         private Connection $db,

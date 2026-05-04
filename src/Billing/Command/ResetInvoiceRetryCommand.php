@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Billing\Command;
 
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
-use App\Efact\Service\SettingsService;
-use App\Settings\Entity\ConfigKey;
+use App\Settings\Service\SunatStateService;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +23,7 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly \Doctrine\DBAL\Connection $connection,
-        private readonly SettingsService $settings,
+        private readonly SunatStateService $sunatState,
     ) {
         parent::__construct();
     }
@@ -122,7 +121,7 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            $this->settings->set(ConfigKey::SUNAT_REJECTION_STREAK->value, 'int', '0');
+            $this->sunatState->resetRejectionStreak();
 
             $this->connection->commit();
         } catch (\Throwable $exception) {
