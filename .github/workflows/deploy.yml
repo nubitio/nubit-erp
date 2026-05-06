@@ -60,11 +60,12 @@ jobs:
           echo "Waiting for application to become healthy..."
           sleep 20
           for i in {1..12}; do
-            if curl -sf "${APP_URL}/health" >/dev/null 2>&1; then
-              echo "Healthy."
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${APP_URL}/health/live" 2>/dev/null || true)
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Healthy (HTTP 200)."
               exit 0
             fi
-            echo "Attempt ${i}/12 failed. Retrying..."
+            echo "Attempt ${i}/12 failed (HTTP ${HTTP_STATUS:-000}). Retrying..."
             sleep 10
           done
 
