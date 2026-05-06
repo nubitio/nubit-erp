@@ -12,6 +12,7 @@ use App\Identity\Security\Security;
 use Nubit\Platform\Exception\DomainErrorCode;
 use Nubit\Platform\Exception\DomainProblemException;
 use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Exception\ValidationException;
 use App\Identity\Auth\BranchContextService;
 use App\Settings\Service\TenantSettingsService;
 use App\Efact\Domain\Money;
@@ -122,12 +123,23 @@ readonly class SaleProcessor implements ProcessorInterface
 
             $requireOpenSession = $this->tenantSettings->isRequireCashRegister();
 
-            // Check for open cash session in v2 table
+            // Check for open cash session in v2 table, with fallback to legacy cash_shift table.
             if ($requireOpenSession) {
-                $hasOpenSession = (bool) $this->entityManager->getConnection()->fetchOne(
+                $conn = $this->entityManager->getConnection();
+
+                $hasOpenSession = (bool) $conn->fetchOne(
                     "SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
                     [$user->userId]
                 );
+
+                // Fallback: accept an open legacy cash_shift row (status = 'OPEN') for the same user.
+                if (!$hasOpenSession) {
+                    $hasOpenSession = (bool) $conn->fetchOne(
+                        "SELECT 1 FROM cash_shift WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
+                        [$user->userId]
+                    );
+                }
+
                 if (!$hasOpenSession) {
                     $this->logger->warning('Sale processing failed: No open cash session found', [
                         'user_id' => $user->userId,
@@ -369,7 +381,36 @@ readonly class SaleProcessor implements ProcessorInterface
 
             $qty       = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
             $unitPrice = $itemData['unitPrice'] ?? $itemData['precio_unitario'] ?? '0.00';
-            $discount  = $itemData['discount'] ?? $itemData['descuento'] ?? '0.00';
+            $discount  = $itemData['discount'] ?? $itemData['descuento'] ?? null;
+
+            // Resolve discountPercent: prefer explicit percent over legacy flat amount.
+            // discountPercent takes precedence when provided; derives discountAmount via BigDecimal.
+            $discountPercent = $itemData['discountPercent'] ?? $itemData['descuento_porcentaje'] ?? null;
+
+            if ($discountPercent !== null) {
+                $percentValue = (float) $discountPercent;
+
+                if ($percentValue < 0 || $percentValue > 100) {
+                    throw ValidationException::withErrors([
+                        'discountPercent' => [
+                            sprintf(
+                                'El porcentaje de descuento debe estar entre 0 y 100. Valor recibido: %s.',
+                                $discountPercent
+                            ),
+                        ],
+                    ]);
+                }
+
+                // discountAmount = qty × unitPrice × (discountPercent / 100), HALF_UP to 2 dp
+                $discountAmount = Money::money(
+                    BigDecimal::of((string) $unitPrice)
+                        ->multipliedBy($qty)
+                        ->multipliedBy(Money::rate($discountPercent))
+                );
+                $discount = Money::toString($discountAmount);
+            }
+
+            $discount = $discount ?? '0.00';
 
             // Calculate item total: (qty × unitPrice) − discount
             $itemTotal = $itemData['total'] ?? $itemData['precio_total'] ?? null;
@@ -381,14 +422,18 @@ readonly class SaleProcessor implements ProcessorInterface
             $item->setCantidad($qty);
             $item->setPrecioUnitario($unitPrice);
             $item->setDescuento($discount);
+            if ($discountPercent !== null) {
+                $item->setDescuentoPorcentaje((string) $discountPercent);
+            }
             $item->setPrecioTotal($itemTotal);
 
             $this->logger->debug('Converted sale item', [
-                'product_id' => $item->getProducto()?->getId(),
-                'qty'        => $qty,
-                'unit_price' => $unitPrice,
-                'discount'   => $discount,
-                'total'      => $itemTotal,
+                'product_id'       => $item->getProducto()?->getId(),
+                'qty'              => $qty,
+                'unit_price'       => $unitPrice,
+                'discount_percent' => $discountPercent,
+                'discount'         => $discount,
+                'total'            => $itemTotal,
             ]);
 
             $items[] = $item;

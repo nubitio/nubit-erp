@@ -76,7 +76,8 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         foreach ($sale->getItems() as $item) {
             $lines[] = new InvoiceLineInput(
                 quantity: (string)$item->getCantidad(),
-                unitPrice: $item->getPrecioUnitario() ?? '0'
+                unitPrice: $item->getPrecioUnitario() ?? '0',
+                discountPercent: $item->getDescuentoPorcentaje() ?? '0',
             );
         }
 

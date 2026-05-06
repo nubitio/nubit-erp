@@ -281,6 +281,143 @@ final class VoucherHydratorTest extends TestCase
     }
 
     // ──────────────────────────────────────────────────────────────────────────
+    // AC-16: VoucherHydrator maps discountAmount and discountPercent per item
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function testHydrateItemMapsDiscountAmountAndDiscountPercent(): void
+    {
+        // AC-16: SaleItem with descuento=18.00 and descuento_porcentaje=10.00
+        // → HydratedVoucherItem.discountAmount=18.00, discountPercent=10.00
+        $item = new VoucherItem();
+        $item->product_code       = 'PROD-DISC';
+        $item->product_uom        = 'NIU';
+        $item->quantity           = '1';
+        $item->product_name       = 'Discounted Product';
+        $item->unit_value         = '152.54';
+        $item->taxed_amount       = '152.54';
+        $item->tax_percentage     = '18.00';
+        $item->tax_amount         = '27.46';
+        $item->tax_type           = '10';
+        $item->unit_price         = '180.00';
+        $item->discount_amount    = '18.00';
+        $item->discount_percentage = '10.00';
+
+        $voucher = $this->makeVoucher(['voucher_items' => [$item]]);
+
+        $result = $this->sut->hydrate($voucher);
+
+        self::assertCount(1, $result->voucherItems);
+        $hydratedItem = $result->voucherItems[0];
+
+        // AC-16: discountAmount must be 18.00
+        self::assertEqualsWithDelta(18.0, $hydratedItem->discountAmount, 0.001);
+        // AC-16: discountPercent must be 10.00
+        self::assertEqualsWithDelta(10.0, $hydratedItem->discountPercent ?? 0.0, 0.001);
+    }
+
+    public function testHydrateItemSetsDiscountAmountToZeroAndDiscountPercentToNullWhenNoDiscount(): void
+    {
+        // AC-16: item with no discount fields → discountAmount=0.0, discountPercent=null
+        $item = new VoucherItem();
+        $item->product_code       = 'PROD-NODISC';
+        $item->product_uom        = 'NIU';
+        $item->quantity           = '1';
+        $item->product_name       = 'Full Price Product';
+        $item->unit_value         = '84.75';
+        $item->taxed_amount       = '84.75';
+        $item->tax_percentage     = '18.00';
+        $item->tax_amount         = '15.25';
+        $item->tax_type           = '10';
+        $item->unit_price         = '100.00';
+        $item->discount_amount    = null;
+        $item->discount_percentage = null;
+
+        $voucher = $this->makeVoucher(['voucher_items' => [$item]]);
+
+        $result = $this->sut->hydrate($voucher);
+
+        $hydratedItem = $result->voucherItems[0];
+
+        // No discount → discountAmount defaults to 0.0
+        self::assertEqualsWithDelta(0.0, $hydratedItem->discountAmount, 0.001);
+        // No discount → discountPercent is null
+        self::assertNull($hydratedItem->discountPercent);
+    }
+
+    public function testHydrateVoucherDiscountTotalEqualsItemDiscountsPlusGlobalDiscount(): void
+    {
+        // AC-16: voucherDiscountTotal = sum(item discounts) + global discount amount
+        // Item 1: discount_amount = 18.00
+        // Item 2: discount_amount = 7.00
+        // Global voucher discount: voucher_discount_amount = 5.00
+        // Expected voucherDiscountTotal = 18 + 7 + 5 = 30.00
+        $item1 = new VoucherItem();
+        $item1->product_code       = 'PROD-A';
+        $item1->product_uom        = 'NIU';
+        $item1->quantity           = '1';
+        $item1->product_name       = 'Product A';
+        $item1->unit_value         = '152.54';
+        $item1->taxed_amount       = '152.54';
+        $item1->tax_percentage     = '18.00';
+        $item1->tax_amount         = '27.46';
+        $item1->tax_type           = '10';
+        $item1->unit_price         = '180.00';
+        $item1->discount_amount    = '18.00';
+        $item1->discount_percentage = '10.00';
+
+        $item2 = new VoucherItem();
+        $item2->product_code       = 'PROD-B';
+        $item2->product_uom        = 'NIU';
+        $item2->quantity           = '1';
+        $item2->product_name       = 'Product B';
+        $item2->unit_value         = '59.32';
+        $item2->taxed_amount       = '59.32';
+        $item2->tax_percentage     = '18.00';
+        $item2->tax_amount         = '10.68';
+        $item2->tax_type           = '10';
+        $item2->unit_price         = '70.00';
+        $item2->discount_amount    = '7.00';
+        $item2->discount_percentage = '10.00';
+
+        $voucher = $this->makeVoucher([
+            'voucher_items'           => [$item1, $item2],
+            'voucher_discount_amount' => '5.00',
+        ]);
+
+        $result = $this->sut->hydrate($voucher);
+
+        // voucherDiscountTotal = 18 + 7 + 5 = 30.00
+        self::assertEqualsWithDelta(30.0, $result->voucherDiscountTotal, 0.001);
+    }
+
+    public function testHydrateVoucherDiscountTotalIsZeroWhenNoDiscounts(): void
+    {
+        // AC-16: no item discounts and no global discount → voucherDiscountTotal = 0.00
+        $item = new VoucherItem();
+        $item->product_code       = 'PROD-X';
+        $item->product_uom        = 'NIU';
+        $item->quantity           = '1';
+        $item->product_name       = 'Product X';
+        $item->unit_value         = '84.75';
+        $item->taxed_amount       = '84.75';
+        $item->tax_percentage     = '18.00';
+        $item->tax_amount         = '15.25';
+        $item->tax_type           = '10';
+        $item->unit_price         = '100.00';
+        $item->discount_amount    = null;
+        $item->discount_percentage = null;
+
+        $voucher = $this->makeVoucher([
+            'voucher_items'           => [$item],
+            'voucher_discount_amount' => '0.00',
+        ]);
+
+        $result = $this->sut->hydrate($voucher);
+
+        self::assertEqualsWithDelta(0.0, $result->voucherDiscountTotal, 0.001);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
     // Passthrough nullable string fields
     // ──────────────────────────────────────────────────────────────────────────
 

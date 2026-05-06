@@ -920,7 +920,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
         .first();
       await committedRow.waitFor({ state: 'visible', timeout: 8000 });
       const priceText = await committedRow.locator('td').nth(2).textContent();
-      const totalText = await committedRow.locator('td').nth(3).textContent();
+      // nth(3)=discountPercent, nth(4)=discountAmount were added in SPEC-006; netAmount is now nth(5)
+      const totalText = await committedRow.locator('td').nth(5).textContent();
       expect(Number((priceText ?? '').replace(/[^\d.-]/g, ''))).toBeGreaterThan(0);
       expect(Number((totalText ?? '').replace(/[^\d.-]/g, ''))).toBeGreaterThan(0);
     });

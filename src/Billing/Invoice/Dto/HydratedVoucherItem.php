@@ -17,6 +17,8 @@ readonly class HydratedVoucherItem
         public float $taxAmount,
         public string $taxType,
         public float $unitPrice,
+        public float $discountAmount = 0.0,
+        public ?float $discountPercent = null,
     ) {
     }
 }

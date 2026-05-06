@@ -35,9 +35,10 @@ class DxUtils {
       if (loadOptions.prependData) {
         data = [...loadOptions.prependData, ...data];
       }
+      const headerCount = Number(response.headers['x-total-count']);
       return {
         data: data,
-        totalCount: Number(response.headers['x-total-count']),
+        totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
       } as GridData<any>;
     });
   }

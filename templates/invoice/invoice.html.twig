@@ -286,12 +286,36 @@
         <div class="hr"></div>
 
         {# TOTALES #}
+        {# Compute discount breakdown #}
+        {% set total_item_discounts = 0 %}
+        {% for item in voucher.voucher_items %}
+            {% set total_item_discounts = total_item_discounts + (item.discount_amount|default(0)) %}
+        {% endfor %}
+        {% set gross_subtotal = voucher.voucher_sale_amount + total_item_discounts + (voucher.voucher_discount_amount|default(0)) %}
+        {% set net_subtotal = gross_subtotal - total_item_discounts %}
+
         <div class="block">
             <table class="totals">
                 <tbody>
-                {% if voucher.voucher_discount_percentage > 0 %}
+                <tr>
+                    <td class="label">Subtotal bruto</td>
+                    <td class="value">{{ gross_subtotal|number_format(2, '.', '') }}</td>
+                </tr>
+
+                {% if total_item_discounts > 0 %}
                     <tr>
-                        <td class="label">Descuento</td>
+                        <td class="label">Descuentos por ítem</td>
+                        <td class="value">-{{ total_item_discounts|number_format(2, '.', '') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Subtotal neto</td>
+                        <td class="value">{{ net_subtotal|number_format(2, '.', '') }}</td>
+                    </tr>
+                {% endif %}
+
+                {% if voucher.voucher_discount_amount and voucher.voucher_discount_amount > 0 %}
+                    <tr>
+                        <td class="label">Descuento global</td>
                         <td class="value">-{{ voucher.voucher_discount_amount|number_format(2, '.', '') }}</td>
                     </tr>
                 {% endif %}

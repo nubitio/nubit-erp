@@ -32,6 +32,7 @@ readonly class HydratedVoucher
         public ?float $voucherExchangeRate,
         public float $voucherDiscountAmount,
         public ?float $voucherDiscountPercentage,
+        public float $voucherDiscountTotal,
         public float $voucherConsumptionSurchargeAmount,
         public ?float $voucherConsumptionSurchargePercentage,
         public float $voucherTaxedAmount,
