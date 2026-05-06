@@ -70,15 +70,10 @@ abstract class PerTenantCommand extends Command
 
         try {
             if ($this->tenants === []) {
-                $this->logger->warning('No tenants found');
-                $io->warning('No tenants found');
-                $io->info('Using default connection');
-                $result = $this->executeTenantCommand($input, $output);
-                if ($result === Command::SUCCESS) {
-                    $io->success('Done!');
-                }
+                $this->logger->info('No tenants provisioned — nothing to do.');
+                $io->note('No tenants provisioned — nothing to do.');
 
-                return $result;
+                return Command::SUCCESS;
             }
 
             if ($tenantName = $input->getOption('tenant')) {

@@ -84,7 +84,7 @@ final class ImportUbigeoCommandTest extends TestCase
     private function newCommand(UbigeoImportService $importService): ImportUbigeoCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([]);
+        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
 
         $command = new ImportUbigeoCommand($importService);
         $command->initDependencies(

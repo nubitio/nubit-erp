@@ -22,7 +22,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class PerTenantCommandTest extends TestCase
 {
-    public function testExecutesWithDefaultConnectionWhenNoTenantsExist(): void
+    public function testReturnsSuccessWithoutExecutingWhenNoTenantsExist(): void
     {
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
@@ -39,8 +39,8 @@ final class PerTenantCommandTest extends TestCase
         $exitCode = $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertSame(['default'], $command->executedTenants);
-        self::assertStringContainsString('No tenants found', $tester->getDisplay());
+        self::assertSame([], $command->executedTenants);
+        self::assertStringContainsString('No tenants provisioned', $tester->getDisplay());
     }
 
     public function testFailsWhenRequestedTenantDoesNotExist(): void

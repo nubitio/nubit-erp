@@ -7,6 +7,7 @@ namespace App\ControlPlane\Tenant\Command;
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Migrations\TenantMigrationFactory;
 use Doctrine\Persistence\ConnectionRegistry;
+use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
