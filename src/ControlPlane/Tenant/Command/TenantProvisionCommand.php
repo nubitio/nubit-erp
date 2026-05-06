@@ -129,7 +129,7 @@ class TenantProvisionCommand extends Command
     private function doProvision(SymfonyStyle $io, InputInterface $input, string $tenant, string $domain): void
     {
         $provisioningUrl = trim((string) ($input->getOption('provisioning-url') ?: $this->provisioningDatabaseUrl));
-        $provisioningConn = DriverManager::getConnection(['url' => $provisioningUrl]);
+        $provisioningConn = DriverManager::getConnection($this->parseDbUrl($provisioningUrl));
 
         $io->section('Creating database');
         $provisioningConn->executeStatement(
@@ -308,6 +308,49 @@ class TenantProvisionCommand extends Command
             (string) ($input->getOption('branch-address') ?: 'Av. Principal 123'),
             (string) ($input->getOption('branch-phone') ?: '999999999'),
         );
+    }
+
+    /**
+     * Parse a database URL into DBAL connection params.
+     *
+     * DBAL 4 no longer infers the driver from the URL scheme when only 'url' is
+     * passed — it requires an explicit 'driver' key. Rather than mixing 'url'
+     * with 'driver' (which produces an empty DSN), we parse the URL ourselves
+     * and return a plain params array that DBAL 4 accepts without ambiguity.
+     *
+     * @return array<string, mixed>
+     */
+    private function parseDbUrl(string $url): array
+    {
+        $parts = parse_url($url);
+
+        if ($parts === false || empty($parts['host'])) {
+            throw new \InvalidArgumentException(sprintf('Invalid provisioning database URL: "%s"', $url));
+        }
+
+        $params = [
+            'driver'  => 'pdo_mysql',
+            'host'    => $parts['host'],
+            'port'    => $parts['port'] ?? 3306,
+            'user'    => isset($parts['user']) ? urldecode($parts['user']) : '',
+            'password' => isset($parts['pass']) ? urldecode($parts['pass']) : '',
+            'charset' => 'utf8mb4',
+        ];
+
+        $dbname = ltrim($parts['path'] ?? '', '/');
+        if ($dbname !== '') {
+            $params['dbname'] = $dbname;
+        }
+
+        // Forward serverVersion from query string if present (informational only)
+        if (!empty($parts['query'])) {
+            parse_str($parts['query'], $query);
+            if (!empty($query['serverVersion'])) {
+                $params['serverVersion'] = $query['serverVersion'];
+            }
+        }
+
+        return $params;
     }
 
     private function resolveAdminPassword(InputInterface $input): string
