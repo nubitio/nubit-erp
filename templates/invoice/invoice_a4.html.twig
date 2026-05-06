@@ -338,6 +338,14 @@
             </div>
 
             {# TOTALES #}
+            {# Compute discount breakdown #}
+            {% set total_item_discounts = 0 %}
+            {% for item in voucher.voucher_items %}
+                {% set total_item_discounts = total_item_discounts + (item.discount_amount|default(0)) %}
+            {% endfor %}
+            {% set gross_subtotal = voucher.voucher_sale_amount + total_item_discounts + (voucher.voucher_discount_amount|default(0)) %}
+            {% set net_subtotal = gross_subtotal - total_item_discounts %}
+
             <div class="row g-3 mb-3 align-items-start">
                 <div class="col-7">
                     <div class="card">
@@ -353,6 +361,29 @@
                     <div class="totals">
                         <table>
                             <tbody>
+                            <tr>
+                                <td class="label">Subtotal bruto</td>
+                                <td class="value">{{ currency_symbol }} {{ gross_subtotal|number_format(2, '.', '') }}</td>
+                            </tr>
+
+                            {% if total_item_discounts > 0 %}
+                                <tr>
+                                    <td class="label">Descuentos por ítem</td>
+                                    <td class="value">-{{ currency_symbol }} {{ total_item_discounts|number_format(2, '.', '') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Subtotal neto</td>
+                                    <td class="value">{{ currency_symbol }} {{ net_subtotal|number_format(2, '.', '') }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if voucher.voucher_discount_amount and voucher.voucher_discount_amount > 0 %}
+                                <tr>
+                                    <td class="label">Descuento global</td>
+                                    <td class="value">-{{ currency_symbol }} {{ voucher.voucher_discount_amount|number_format(2, '.', '') }}</td>
+                                </tr>
+                            {% endif %}
+
                             {% if voucher.voucher_type != '00' %}
                                 <tr>
                                     <td class="label">Op. Gravadas</td>

@@ -274,6 +274,105 @@ class SalesWriteGatewayTest extends TestCase
         $this->assertNotEmpty($taxInserts, 'Expected a sale_taxes INSERT when igv > 0');
     }
 
+    public function testWriteInsertsItemDiscountRowWhenDescuentoPorcentajeIsGreaterThanZero(): void
+    {
+        $sale = $this->buildMinimalSale();
+
+        $uom = $this->createStub(UnitOfMeasure::class);
+        $uom->method('getCode')->willReturn('NIU');
+
+        $product = $this->createStub(Product::class);
+        $product->method('getId')->willReturn('product-uuid');
+        $product->method('getCode')->willReturn('SKU-001');
+        $product->method('getName')->willReturn('Test Product');
+        $product->method('getUnitOfMeasure')->willReturn($uom);
+        $product->method('getPurchasePrice')->willReturn('50.00');
+
+        $item = new SaleItem();
+        $item->setProducto($product);
+        $item->setCantidad(1.0);
+        $item->setPrecioUnitario('100.00');
+        $item->setPrecioTotal('90.00');
+        $item->setDescuento('10.00');
+        $item->setDescuentoPorcentaje('10.00');
+        $sale->addItem($item);
+
+        $this->stubCurrencyResolver();
+
+        $this->connection->method('beginTransaction');
+        $this->connection->method('commit');
+        // lastInsertId() is called after the sale_items INSERT to get the FK for sale_discounts
+        $this->connection->method('lastInsertId')->willReturn('42');
+
+        $callArgs = [];
+        $this->connection->method('executeStatement')
+            ->willReturnCallback(function (string $sql, array $params = []) use (&$callArgs): int {
+                $callArgs[] = ['sql' => $sql, 'params' => $params];
+                return 1;
+            });
+
+        $this->gateway->write($sale, null);
+
+        $itemDiscountInserts = array_values(array_filter(
+            $callArgs,
+            fn ($call) => str_contains($call['sql'], 'sale_discounts')
+                && str_contains($call['sql'], 'INSERT')
+                && isset($call['params']['sale_item_id'])
+        ));
+
+        $this->assertCount(1, $itemDiscountInserts, 'Expected exactly 1 item-level sale_discounts INSERT');
+        $this->assertSame('42', $itemDiscountInserts[0]['params']['sale_item_id']);
+        $this->assertSame('10.0000', $itemDiscountInserts[0]['params']['value']);
+        $this->assertSame('10.00', $itemDiscountInserts[0]['params']['amount_applied']);
+    }
+
+    public function testWriteDoesNotInsertItemDiscountWhenDescuentoPorcentajeIsZero(): void
+    {
+        $sale = $this->buildMinimalSale();
+
+        $uom = $this->createStub(UnitOfMeasure::class);
+        $uom->method('getCode')->willReturn('NIU');
+
+        $product = $this->createStub(Product::class);
+        $product->method('getId')->willReturn('product-uuid');
+        $product->method('getCode')->willReturn('SKU-001');
+        $product->method('getName')->willReturn('Test Product');
+        $product->method('getUnitOfMeasure')->willReturn($uom);
+        $product->method('getPurchasePrice')->willReturn('50.00');
+
+        $item = new SaleItem();
+        $item->setProducto($product);
+        $item->setCantidad(1.0);
+        $item->setPrecioUnitario('100.00');
+        $item->setPrecioTotal('100.00');
+        $item->setDescuento('0');
+        $item->setDescuentoPorcentaje(null); // no discount
+        $sale->addItem($item);
+
+        $this->stubCurrencyResolver();
+
+        $this->connection->method('beginTransaction');
+        $this->connection->method('commit');
+
+        $callArgs = [];
+        $this->connection->method('executeStatement')
+            ->willReturnCallback(function (string $sql, array $params = []) use (&$callArgs): int {
+                $callArgs[] = ['sql' => $sql, 'params' => $params];
+                return 1;
+            });
+
+        $this->gateway->write($sale, null);
+
+        $itemDiscountInserts = array_filter(
+            $callArgs,
+            fn ($call) => str_contains($call['sql'], 'sale_discounts')
+                && str_contains($call['sql'], 'INSERT')
+                && isset($call['params']['sale_item_id'])
+        );
+
+        $this->assertEmpty($itemDiscountInserts, 'Expected no item-level sale_discounts INSERT when no discount');
+    }
+
     public function testWriteInsertsRowForEachSaleItem(): void
     {
         $sale = $this->buildMinimalSale();

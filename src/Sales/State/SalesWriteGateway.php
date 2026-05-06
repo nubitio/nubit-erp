@@ -257,6 +257,7 @@ INSERT INTO sale_items (
     unit_price,
     gross_amount,
     discount_amount,
+    descuento_porcentaje,
     tax_amount,
     net_amount,
     unit_cost_snapshot,
@@ -283,6 +284,7 @@ INSERT INTO sale_items (
     :unit_price,
     :gross_amount,
     :discount_amount,
+    :descuento_porcentaje,
     :tax_amount,
     :net_amount,
     :unit_cost_snapshot,
@@ -311,6 +313,7 @@ SQL,
                         'unit_price' => $unitPrice->__toString(),
                         'gross_amount' => Money::toString($grossAmount),
                         'discount_amount' => Money::toString($itemDiscount),
+                        'descuento_porcentaje' => $item->getDescuentoPorcentaje(),
                         'tax_amount' => Money::toString(
                             Money::money($item->getPrecioTotal() ?? '0')->multipliedBy(
                                 Money::of($sale->getIgv() ?? '0')->dividedBy(100, 10, \Brick\Math\RoundingMode::HALF_UP)
@@ -330,6 +333,44 @@ SQL,
                         'last_modified_at' => $issuedAt->format('Y-m-d H:i:s'),
                     ]
                 );
+
+                // AC-17: persist item-level discount to sale_discounts when the item carries a percentage discount.
+                $itemDiscountPct = Money::of($item->getDescuentoPorcentaje() ?? '0');
+                if ($itemDiscountPct->isGreaterThan(BigDecimal::zero())) {
+                    $saleItemId = $this->connection->lastInsertId();
+                    $this->connection->executeStatement(
+                        <<<'SQL'
+INSERT INTO sale_discounts (
+    sale_id,
+    sale_item_id,
+    discount_type,
+    source,
+    value,
+    amount_applied,
+    reason_code,
+    reason_text,
+    created_at
+) VALUES (
+    :sale_id,
+    :sale_item_id,
+    'PERCENT',
+    'MANUAL',
+    :value,
+    :amount_applied,
+    'LEGACY',
+    '',
+    :created_at
+)
+SQL,
+                        [
+                            'sale_id' => $saleId,
+                            'sale_item_id' => $saleItemId,
+                            'value' => $itemDiscountPct->toScale(4, RoundingMode::HALF_UP)->__toString(),
+                            'amount_applied' => Money::toString($itemDiscount),
+                            'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        ]
+                    );
+                }
             }
 
             $paymentIdx = 0;

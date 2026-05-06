@@ -223,6 +223,112 @@ final class InvoiceCalculatorTest extends TestCase
                     'total' => '13.00',
                 ],
             ],
+            // ── AC-5: item discount applied first, then global discount on net subtotal ──
+            // qty=2, unitPrice=100 (tax-exclusive, tax=0%), itemDiscountPercent=10, globalDiscount=5%
+            // item net = 2×100×(1-0.10) = 180.00
+            // global discount = 180.00 × 0.05 = 9.00
+            // total = 180.00 - 9.00 = 171.00
+            'ac5_item_discount_before_global' => [
+                'lines' => [
+                    new InvoiceLineInput('2', '100', '10'),
+                ],
+                'discount' => '5',
+                'tax' => '0',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '180.00',
+                    'discount' => '9.00',
+                    'taxable' => '171.00',
+                    'tax' => '0.00',
+                    'charges' => '0.00',
+                    'total' => '171.00',
+                ],
+            ],
+            // ── AC-18: zero-discount sales are unaffected — identical to existing behavior ──
+            // When itemDiscountPercent=0 and globalDiscount=0, result must equal the no-discount path.
+            'ac18_zero_discount_unaffected' => [
+                'lines' => [
+                    new InvoiceLineInput('1', '1.18', '0'),
+                    new InvoiceLineInput('2', '1.18', '0'),
+                ],
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '3.00',
+                    'discount' => '0.00',
+                    'taxable' => '3.00',
+                    'tax' => '0.54',
+                    'charges' => '0.00',
+                    'total' => '3.54',
+                ],
+            ],
+            // ── AC-3: discountPercent=0 → discountAmount=0.00, netAmount = qty × unitPrice ──
+            // qty=3, unitPrice=33.33 (tax-exclusive, tax=0%), itemDiscountPercent=0, globalDiscount=0%
+            // item net = 3×33.33×(1-0.00) = 99.99
+            // global discount = 0.00
+            // total = 99.99
+            'ac3_zero_discount_no_discount_applied' => [
+                'lines' => [
+                    new InvoiceLineInput('3', '33.33', '0'),
+                ],
+                'discount' => '0',
+                'tax' => '0',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '99.99',
+                    'discount' => '0.00',
+                    'taxable' => '99.99',
+                    'tax' => '0.00',
+                    'charges' => '0.00',
+                    'total' => '99.99',
+                ],
+            ],
+            // ── AC-19: BigDecimal precision — unitPrice=33.33, qty=3, discountPercent=10 ──
+            // item net = 3×33.33 = 99.99
+            // item discount = 99.99 × 0.10 = 9.999 → rounded HALF_UP to 10.00
+            // net after item discount = 99.99 - 10.00 = 89.99
+            // global discount = 0%, tax = 0%
+            // total = 89.99
+            'ac19_bigdecimal_precision_33_33_qty3_discount10' => [
+                'lines' => [
+                    new InvoiceLineInput('3', '33.33', '10'),
+                ],
+                'discount' => '0',
+                'tax' => '0',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '89.99',
+                    'discount' => '0.00',
+                    'taxable' => '89.99',
+                    'tax' => '0.00',
+                    'charges' => '0.00',
+                    'total' => '89.99',
+                ],
+            ],
+            // ── AC-18 variant: item discount=0 but global discount present — global still applies ──
+            'ac18_zero_item_discount_global_still_applies' => [
+                'lines' => [
+                    new InvoiceLineInput('1', '1.18', '0'),
+                    new InvoiceLineInput('1', '2.36', '0'),
+                ],
+                'discount' => '10',
+                'tax' => '18',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '3.00',
+                    'discount' => '0.30',
+                    'taxable' => '2.70',
+                    'tax' => '0.48',
+                    'charges' => '0.00',
+                    'total' => '3.18',
+                ],
+            ],
         ];
     }
 

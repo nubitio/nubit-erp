@@ -66,6 +66,7 @@ export interface DxFormEvents {
   setFieldValue: (name: string, value: unknown) => void;
   getDetailData: () => FormRecord[] | undefined;
   setDetailData: (data: FormRecord[]) => void;
+  saveDetailData: () => Promise<void> | void;
   reloadDetailData: () => void;
   setValues: (data: FormRecord) => void;
   setReadonly: (field: string, value: boolean) => void;

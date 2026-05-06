@@ -10,6 +10,7 @@ use App\Sales\Repository\SaleItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SaleItemRepository::class)]
 class SaleItem
@@ -38,6 +39,15 @@ class SaleItem
     #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'descuento', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $descuento = null;
+
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
+    #[Assert\Range(
+        min: 0,
+        max: 100,
+        notInRangeMessage: 'El porcentaje de descuento debe estar entre {{ min }} y {{ max }}.',
+    )]
+    #[ORM\Column(name: 'descuento_porcentaje', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?string $descuento_porcentaje = null;
 
     #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'precio_total', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
@@ -106,6 +116,18 @@ class SaleItem
     public function setDescuento(?string $descuento): static
     {
         $this->descuento = $descuento;
+
+        return $this;
+    }
+
+    public function getDescuentoPorcentaje(): ?string
+    {
+        return $this->descuento_porcentaje;
+    }
+
+    public function setDescuentoPorcentaje(?string $descuento_porcentaje): static
+    {
+        $this->descuento_porcentaje = $descuento_porcentaje;
 
         return $this;
     }

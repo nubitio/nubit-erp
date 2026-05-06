@@ -5,7 +5,11 @@ import { DxDialog } from '@core/dialog/DxDialog';
 import { saleEndpoints } from '../api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DiscountDialog, DiscountDialogEvent } from '@shared/ui/discount-dialog/DiscountDialog';
+import {
+  DiscountDialog,
+  DiscountDialogApplyPayload,
+  DiscountDialogEvent,
+} from '@shared/ui/discount-dialog/DiscountDialog';
 import {
   applySaleAutoInvoiceOnAdd,
   cloneSaleToForm,
@@ -39,16 +43,66 @@ export const SalePage = () => {
     () =>
       SaleFields(formRef.current, {
         onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
-        onOpenDiscount: ({ total, discountPercent }) =>
-          emit(DiscountDialogEvent.OPEN, { total, discountPercent }),
+        onOpenDiscount: async ({ total, discountPercent }) => {
+          await formRef.current?.saveDetailData();
+          const rows = formRef.current?.getDetailData() ?? [];
+          const detailTotal = rows.reduce(
+            (sum, row) => sum + Number((row as Record<string, unknown>).netAmount ?? 0),
+            0,
+          );
+          const currentDiscountPercent = Number(
+            formRef.current?.getFieldValue('discountPercent') ?? discountPercent * 100,
+          );
+          emit(DiscountDialogEvent.OPEN, {
+            total: detailTotal > 0 ? detailTotal : total,
+            discountPercent: currentDiscountPercent / 100,
+          });
+        },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
-  const detailFields = useMemo(() => SaleDetailFields(formRef.current), []);
+
+  /** Callbacks for item-level discount icon in the detail grid. */
+  const itemDiscountCallbacks = useMemo(
+    () => ({
+      onOpenItemDiscount: ({
+        rowIndex,
+        baseValue,
+        discountPercent,
+        discountAmount: _discountAmount,
+      }: {
+        rowIndex: number;
+        baseValue: number;
+        discountPercent: number;
+        discountAmount: number;
+      }) => {
+        emit(DiscountDialogEvent.OPEN, {
+          title: 'Descuento por ítem',
+          total: baseValue,
+          // DiscountDialog works with fractions [0,1]; discountPercent in the row is 0–100.
+          discountPercent: discountPercent / 100,
+          context: { rowIndex },
+        });
+      },
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const detailFields = useMemo(
+    () => SaleDetailFields(formRef.current, 'PEN', itemDiscountCallbacks),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const gridDetailFields = useMemo(
     () => (parentRow: Record<string, unknown>) =>
-      SaleDetailFields(formRef.current, (parentRow?.currency as string) ?? 'PEN'),
+      SaleDetailFields(
+        formRef.current,
+        (parentRow?.currency as string) ?? 'PEN',
+        itemDiscountCallbacks,
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -68,9 +122,29 @@ export const SalePage = () => {
     customerSuccessEvent: CustomerPage.EVENTS.SUCCESS,
     setPrintEnabled,
     setCloneEnabled,
-    onDiscountApply: (discountPercent) => {
-      const discount = Number(discountPercent * 100).toFixed(2);
-      formRef.current?.setFieldValue('discountPercent', Number(discount));
+    onDiscountApply: (payload: DiscountDialogApplyPayload) => {
+      const { discountPercent, discountAmount, context } = payload;
+
+      if (context != null && typeof context === 'object' && 'rowIndex' in context) {
+        // Item-level discount: update the specific detail row.
+        const { rowIndex } = context as { rowIndex: number };
+        const rows = formRef.current?.getDetailData() ?? [];
+        const row = rows[rowIndex] as Record<string, unknown> | undefined;
+        if (row) {
+          row.discountPercent = Number((discountPercent * 100).toFixed(2));
+          row.discountAmount = discountAmount;
+          const qty = Number(row.qty ?? 0);
+          const unitPrice = Number(row.unitPrice ?? 0);
+          row.netAmount = Number((qty * unitPrice - discountAmount).toFixed(2));
+          formRef.current?.setDetailData([...rows]);
+          setTotal(formRef.current);
+        }
+      } else {
+        // Global discount: apply to the sale header.
+        const discount = Number(discountPercent * 100).toFixed(2);
+        formRef.current?.setFieldValue('discountPercent', Number(discount));
+        setTotal(formRef.current);
+      }
     },
     onDetailRowsChanged: () => {
       setTotal(formRef.current);

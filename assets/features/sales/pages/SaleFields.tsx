@@ -48,6 +48,19 @@ export type SaleFieldCallbacks = {
   onOpenDiscount?: (params: { total: number; discountPercent: number }) => void;
 };
 
+export type SaleDetailFieldCallbacks = {
+  /**
+   * Called when the user clicks the discount icon on an item row.
+   * `rowIndex` is the 0-based index of the row in the detail data array.
+   */
+  onOpenItemDiscount?: (params: {
+    rowIndex: number;
+    baseValue: number;
+    discountPercent: number;
+    discountAmount: number;
+  }) => void;
+};
+
 export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallbacks) => {
   const fields: Field[] = [];
 
@@ -205,7 +218,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .defaultValue(0)
       .readonly(true)
       .onClick((_e: any) => {
-        const total = Number(form?.getFieldValue('grandTotal') ?? 0);
+        const total = getSubTotal(form);
         const rawDiscountPercent = form?.getFieldValue('discountPercent');
         const discountPercent = rawDiscountPercent ? Number(rawDiscountPercent) / 100 : 0;
         callbacks?.onOpenDiscount?.({ total, discountPercent });
@@ -248,7 +261,11 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
   return fields;
 };
 
-export const SaleDetailFields = (form: DxFormEvents | null, currency: string = 'PEN') => {
+export const SaleDetailFields = (
+  form: DxFormEvents | null,
+  currency: string = 'PEN',
+  callbacks?: SaleDetailFieldCallbacks,
+) => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -270,6 +287,8 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
         row.product = product;
         row.qty = 1;
         row.unitPrice = price;
+        row.discountPercent = 0;
+        row.discountAmount = 0;
         row.netAmount = price;
         this.defaultSetCellValue(row, product, currentRow);
       })
@@ -290,7 +309,12 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
 
         const stockPolicy = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
 
-        row.netAmount = currentRow.unitPrice * value;
+        const discountPercent = Number(currentRow.discountPercent ?? 0);
+        const grossAmount = currentRow.unitPrice * value;
+        const discountAmount = Number((grossAmount * (discountPercent / 100)).toFixed(2));
+        row.discountAmount = discountAmount;
+        row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
+
         if (value > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE' && isStockTrackedProduct(currentRow.product)) {
           if (!selectedWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
@@ -302,6 +326,7 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
             toast('No hay stock suficiente', 'error', 2000);
             value = '';
             row.qty = '';
+            row.discountAmount = '';
             row.netAmount = '';
           }
         }
@@ -318,11 +343,48 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.netAmount = currentRow.qty * value;
+        const discountPercent = Number(currentRow.discountPercent ?? 0);
+        const grossAmount = currentRow.qty * value;
+        const discountAmount = Number((grossAmount * (discountPercent / 100)).toFixed(2));
+        row.discountAmount = discountAmount;
+        row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
         this.defaultSetCellValue(row, value, currentRow);
       })
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
+      .sortable(false)
+      .build(),
+  );
+  fields.push(
+    numberField()
+      .name('discountPercent')
+      .label('Desc. %')
+      .align('right')
+      .valueType('number')
+      .precision(2)
+      .defaultValue(0)
+      .editorOptions({ min: 0, max: 100, step: 0.01 })
+      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+        if (value === '') return;
+        const percent = Math.min(100, Math.max(0, Number(value)));
+        const grossAmount = currentRow.qty * currentRow.unitPrice;
+        const discountAmount = Number((grossAmount * (percent / 100)).toFixed(2));
+        row.discountAmount = discountAmount;
+        row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
+        this.defaultSetCellValue(row, percent, currentRow);
+      })
+      .filterable(false)
+      .sortable(false)
+      .build(),
+  );
+  fields.push(
+    currencyField()
+      .name('discountAmount')
+      .label('Desc. S/')
+      .defaultValue(0)
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value ?? 0, currency))
+      .filterable(false)
+      .disabled(true)
       .sortable(false)
       .build(),
   );
@@ -343,6 +405,53 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .sortable(false)
       .build(),
   );
+
+  // Discount icon button — opens the global DiscountDialog scoped to this item row.
+  if (callbacks?.onOpenItemDiscount) {
+    const openItemDiscount = callbacks.onOpenItemDiscount;
+    fields.push(
+      noneField()
+        .name('_itemDiscountAction')
+        .label('')
+        .width(40)
+        .align('center')
+        .filterable(false)
+        .sortable(false)
+        .formatter((cell: ColumnCellTemplateData) => {
+          const row = cell.data as {
+            qty?: number;
+            unitPrice?: number;
+            discountPercent?: number;
+            discountAmount?: number;
+          };
+          const qty = Number(row.qty ?? 0);
+          const unitPrice = Number(row.unitPrice ?? 0);
+          const baseValue = qty * unitPrice;
+          const discountPercent = Number(row.discountPercent ?? 0);
+          const discountAmount = Number(row.discountAmount ?? 0);
+          const rowIndex: number = cell.rowIndex ?? 0;
+          return (
+            <button
+              type="button"
+              title="Descuento por ítem"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                color: discountPercent > 0 ? '#0d6efd' : '#6c757d',
+              }}
+              onClick={() =>
+                openItemDiscount({ rowIndex, baseValue, discountPercent, discountAmount })
+              }
+            >
+              <i className="ph ph-tag-chevron" style={{ fontSize: '1.1rem' }} />
+            </button>
+          );
+        })
+        .build(),
+    );
+  }
 
   return fields;
 };

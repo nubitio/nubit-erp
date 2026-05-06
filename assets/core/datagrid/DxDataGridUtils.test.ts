@@ -111,7 +111,32 @@ describe('DxDataGridUtils › buildColumns', () => {
 
     const result = buildColumns(fields, true);
 
-    expect(result[0]).toBeNull();
+    expect(result[0]).not.toBeNull();
+    expect(React.isValidElement(result[0])).toBe(true);
+  });
+
+  it('does not make non-filterable fields read-only', () => {
+    const fields: Field[] = [makeField({ name: 'discountPercent', filterable: false })];
+
+    const result = buildColumns(fields);
+
+    expect(React.isValidElement(result[0])).toBe(true);
+    expect(
+      (result[0] as React.ReactElement<{ editorOptions: { readOnly: boolean } }>).props
+        .editorOptions.readOnly,
+    ).toBe(false);
+  });
+
+  it('preserves explicit read-only fields', () => {
+    const fields: Field[] = [makeField({ name: 'total', filterable: false, readonly: true })];
+
+    const result = buildColumns(fields);
+
+    expect(React.isValidElement(result[0])).toBe(true);
+    expect(
+      (result[0] as React.ReactElement<{ editorOptions: { readOnly: boolean } }>).props
+        .editorOptions.readOnly,
+    ).toBe(true);
   });
 
   it('returns a React element for a visible TEXT field', () => {

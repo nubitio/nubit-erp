@@ -413,7 +413,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         const firstOption = page.locator('.dx-overlay-wrapper:visible .dx-list-item:visible').first();
         const hasOptions = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
         if (hasOptions) {
-          await firstOption.click();
+          await firstOption.click({ force: true });
           await page.waitForTimeout(300);
         } else {
           // No hay proveedores — cerrar dropdown y continuar (campo opcional)

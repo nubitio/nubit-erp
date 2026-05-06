@@ -299,10 +299,8 @@ export function buildEntityCellRender(
 export const buildColumns = (fields: Field[], forceLookup = false) => {
   return fields.map((field: Field, index) => {
     const clone = { ...field };
-    clone.readonly = !field.filterable;
     if (!field.visible) return null;
-    if (forceLookup && field.type === FieldType.NONE) return null;
-    if (forceLookup) clone.filterable = true;
+    if (forceLookup && field.type !== FieldType.NONE) clone.filterable = true;
     const editorOptions = buildEditorOptions(clone);
 
     // For ENTITY fields, calculateCellValue extracts the primitive key from any

@@ -147,7 +147,7 @@ describe('SaleFields', () => {
         return null;
       }),
       setFieldValue: vi.fn(),
-      getDetailData: vi.fn(() => []),
+      getDetailData: vi.fn(() => [{ netAmount: 40 }, { netAmount: 60 }]),
       setDetailData: vi.fn(),
       reloadDetailData: vi.fn(),
       getFormData: vi.fn(),
@@ -172,6 +172,8 @@ describe('SaleFields', () => {
     const callArg = onOpenDiscount.mock.calls[0][0];
     expect(callArg).toHaveProperty('total');
     expect(callArg).toHaveProperty('discountPercent');
+    expect(callArg.total).toBe(100);
+    expect(callArg.discountPercent).toBe(0.1);
   });
 
   // 5. SaleFields(null) without callbacks — onClick on discountPercent does NOT throw
@@ -225,7 +227,7 @@ describe('SaleFields', () => {
 
 describe('SaleDetailFields', () => {
   // 6. SaleDetailFields(null) returns array with expected fields
-  it('returns array containing id, product, qty, unitPrice, netAmount fields', () => {
+  it('returns array containing id, product, qty, unitPrice, discountPercent, discountAmount, netAmount fields', () => {
     const fields = SaleDetailFields(null);
 
     const names = fields.map((f) => f.name);
@@ -234,6 +236,8 @@ describe('SaleDetailFields', () => {
     expect(names).toContain('product');
     expect(names).toContain('qty');
     expect(names).toContain('unitPrice');
+    expect(names).toContain('discountPercent');
+    expect(names).toContain('discountAmount');
     expect(names).toContain('netAmount');
   });
 
@@ -243,6 +247,64 @@ describe('SaleDetailFields', () => {
     const idField = fields.find((f) => f.name === 'id');
 
     expect(idField?.isIdentity).toBe(true);
+  });
+
+  it('discountPercent field has defaultValue 0 and is not disabled', () => {
+    const fields = SaleDetailFields(null);
+    const f = fields.find((f) => f.name === 'discountPercent');
+    expect(f).toBeDefined();
+    expect(f?.defaultValue).toBe(0);
+    expect(f?.disabled).toBe(false);
+  });
+
+  it('discountAmount field is disabled (read-only derived)', () => {
+    const fields = SaleDetailFields(null);
+    const f = fields.find((f) => f.name === 'discountAmount');
+    expect(f).toBeDefined();
+    expect(f?.disabled).toBe(true);
+  });
+
+  it('discountPercent onChange derives discountAmount and netAmount correctly', async () => {
+    const fields = SaleDetailFields(null);
+    const discountField = fields.find((f) => f.name === 'discountPercent') as any;
+
+    const row: any = {};
+    const currentRow: any = { qty: 4, unitPrice: 25 }; // gross = 100
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    await discountField?.onChange?.call(self, row, 10, currentRow); // 10%
+
+    expect(row.discountAmount).toBe(10);   // 100 * 0.10
+    expect(row.netAmount).toBe(90);        // 100 - 10
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 10, currentRow);
+  });
+
+  it('discountPercent onChange clamps value to 0–100', async () => {
+    const fields = SaleDetailFields(null);
+    const discountField = fields.find((f) => f.name === 'discountPercent') as any;
+
+    const row: any = {};
+    const currentRow: any = { qty: 2, unitPrice: 50 }; // gross = 100
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    await discountField?.onChange?.call(self, row, 150, currentRow); // clamped to 100
+
+    expect(row.discountAmount).toBe(100);
+    expect(row.netAmount).toBe(0);
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 100, currentRow);
+  });
+
+  it('discountPercent onChange returns early when value is empty string', async () => {
+    const fields = SaleDetailFields(null);
+    const discountField = fields.find((f) => f.name === 'discountPercent') as any;
+
+    const row: any = {};
+    const currentRow: any = { qty: 2, unitPrice: 50 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    await discountField?.onChange?.call(self, row, '', currentRow);
+
+    expect(self.defaultSetCellValue).not.toHaveBeenCalled();
   });
 });
 
@@ -292,7 +354,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 3 });
 
     const row: any = {};
-    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10, discountPercent: 0 };
     const self: any = { defaultSetCellValue: vi.fn() };
 
     const onChange = getQtyOnChange();
@@ -310,7 +372,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 2 });
 
     const row: any = {};
-    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10 };
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10, discountPercent: 0 };
     const self: any = { defaultSetCellValue: vi.fn() };
 
     const onChange = getQtyOnChange();
@@ -360,7 +422,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     getStockMock.mockResolvedValue({ id: 'p1', name: 'Product', stock: 10 });
 
     const row: any = {};
-    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5, discountPercent: 0 };
     const self: any = { defaultSetCellValue: vi.fn() };
 
     const onChange = getQtyOnChange();
@@ -375,7 +437,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'ALLOW_NEGATIVE' });
 
     const row: any = {};
-    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5, discountPercent: 0 };
     const self: any = { defaultSetCellValue: vi.fn() };
 
     const onChange = getQtyOnChange();
@@ -389,7 +451,7 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     settingsGetMock.mockResolvedValue(undefined);
 
     const row: any = {};
-    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5 };
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 5, discountPercent: 0 };
     const self: any = { defaultSetCellValue: vi.fn() };
 
     const onChange = getQtyOnChange();
@@ -410,5 +472,53 @@ describe('SaleDetailFields › qty onChange stock check', () => {
     expect(getStockMock).not.toHaveBeenCalled();
     expect(self.defaultSetCellValue).not.toHaveBeenCalled();
   });
+
+  it('propagates existing discountPercent when qty changes (ALLOW_NEGATIVE)', async () => {
+    settingsGetMock.mockResolvedValue({ id: 1, name: 'inventory_negative_stock_policy', value: 'ALLOW_NEGATIVE' });
+
+    const row: any = {};
+    // 20% discount already set on the row
+    const currentRow: any = { product: { id: 'p1' }, unitPrice: 10, discountPercent: 20 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    const onChange = getQtyOnChange();
+    await onChange!.call(self, row, 5, currentRow); // gross = 50, discount = 10, net = 40
+
+    expect(row.discountAmount).toBe(10);
+    expect(row.netAmount).toBe(40);
+  });
 });
 
+// ---------------------------------------------------------------------------
+// SaleDetailFields › unitPrice onChange — discount propagation
+// ---------------------------------------------------------------------------
+
+describe('SaleDetailFields › unitPrice onChange discount propagation', () => {
+  it('recalculates discountAmount and netAmount when unitPrice changes with existing discountPercent', async () => {
+    const fields = SaleDetailFields(null);
+    const unitPriceField = fields.find((f) => f.name === 'unitPrice') as any;
+
+    const row: any = {};
+    const currentRow: any = { qty: 2, discountPercent: 25 }; // 25% discount
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    await unitPriceField?.onChange?.call(self, row, 100, currentRow); // gross = 200, discount = 50, net = 150
+
+    expect(row.discountAmount).toBe(50);
+    expect(row.netAmount).toBe(150);
+    expect(self.defaultSetCellValue).toHaveBeenCalledWith(row, 100, currentRow);
+  });
+
+  it('returns early when unitPrice value is empty string', async () => {
+    const fields = SaleDetailFields(null);
+    const unitPriceField = fields.find((f) => f.name === 'unitPrice') as any;
+
+    const row: any = {};
+    const currentRow: any = { qty: 2, discountPercent: 10 };
+    const self: any = { defaultSetCellValue: vi.fn() };
+
+    await unitPriceField?.onChange?.call(self, row, '', currentRow);
+
+    expect(self.defaultSetCellValue).not.toHaveBeenCalled();
+  });
+});

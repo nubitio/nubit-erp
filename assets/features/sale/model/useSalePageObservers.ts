@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { DATA_GRID_EVENTS } from '@core/datagrid/DxDataGrid';
 import { FORM_EVENTS } from '@core/form/DxForm';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
+import { DiscountDialogApplyPayload } from '@shared/ui/discount-dialog/DiscountDialog';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -15,7 +16,7 @@ type UseSalePageObserversParams = {
   setPrintEnabled: (value: boolean) => void;
   setCloneEnabled: (value: boolean) => void;
   setGridError?: (value: string | null) => void;
-  onDiscountApply: (discountPercent: number) => void;
+  onDiscountApply: (payload: DiscountDialogApplyPayload) => void;
   onDetailRowsChanged: () => void;
   onCustomerCreated: (payload: any) => void;
   onSaleAdd: () => void | Promise<void>;
@@ -62,7 +63,7 @@ export const useSalePageObservers = ({
   };
 
   useEffect(() => {
-    on<number>(callbacksRef.current.discountApplyEvent, (payload) => {
+    on<DiscountDialogApplyPayload>(callbacksRef.current.discountApplyEvent, (payload) => {
       callbacksRef.current.onDiscountApply(payload);
     });
 

@@ -26,7 +26,7 @@ class VoucherHydrator implements VoucherHydratorInterface
             $value
         );
 
-        $voucherItems = array_map(function ($item) use ($moneyToFloat) {
+        $voucherItems = array_map(function ($item) use ($moneyToFloat, $toNullableFloat) {
             return new HydratedVoucherItem(
                 productCode: strval($item->product_code),
                 productUom: $item->product_uom ?? 'NIU',
@@ -38,11 +38,19 @@ class VoucherHydrator implements VoucherHydratorInterface
                 taxAmount: $moneyToFloat($item->tax_amount),
                 taxType: strval($item->tax_type),
                 unitPrice: $moneyToFloat($item->unit_price),
+                discountAmount: $moneyToFloat($item->discount_amount),
+                discountPercent: $toNullableFloat($item->discount_percentage),
             );
         }, $voucher->voucher_items);
 
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
+
+        $itemDiscountTotal = array_sum(
+            array_map(static fn (HydratedVoucherItem $i): float => $i->discountAmount, $voucherItems)
+        );
+        $globalDiscountAmount = $moneyToFloat($voucher->voucher_discount_amount);
+        $voucherDiscountTotal = round($itemDiscountTotal + $globalDiscountAmount, 2);
 
         return new HydratedVoucher(
             saleId: strval($voucher->sale_id),
@@ -65,8 +73,9 @@ class VoucherHydrator implements VoucherHydratorInterface
             voucherDate: new DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC')),
             voucherCurrency: strval($voucher->voucher_currency),
             voucherExchangeRate: $toNullableFloat($voucher->voucher_exchange_rate),
-            voucherDiscountAmount: $moneyToFloat($voucher->voucher_discount_amount),
+            voucherDiscountAmount: $globalDiscountAmount,
             voucherDiscountPercentage: $toNullableFloat($voucher->voucher_discount_percentage),
+            voucherDiscountTotal: $voucherDiscountTotal,
             voucherConsumptionSurchargeAmount: $moneyToFloat($voucher->voucher_consumption_surcharge_amount ?? 0),
             voucherConsumptionSurchargePercentage: $toNullableFloat($voucher->voucher_consumption_surcharge_percentage),
             voucherTaxedAmount: $moneyToFloat($voucher->voucher_taxed_amount),

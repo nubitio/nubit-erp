@@ -166,14 +166,16 @@ readonly class BillCreateUseCase
             $bill->setCargos([$charge]);
         }
 
-        if ($hydratedVoucher->voucherDiscountAmount > 0) {
-            $discountAmount = $hydratedVoucher->voucherDiscountAmount;
+        if ($hydratedVoucher->voucherDiscountTotal > 0) {
+            $discountTotal = $hydratedVoucher->voucherDiscountTotal;
             $charge = new Charge()
                 ->setCodTipo(ChargeType::DISCOUNT->value)
-                ->setMontoBase($discountAmount)
+                ->setMontoBase($discountTotal)
                 ->setFactor(1)
-                ->setMonto($discountAmount);
+                ->setMonto($discountTotal);
             $bill->setDescuentos([$charge]);
+            // AC-15: AllowanceTotalAmount = sum of all item discounts + global discount
+            $bill->setMtoDescuentos($discountTotal);
         }
 
         $details = [];
@@ -192,6 +194,26 @@ readonly class BillCreateUseCase
                 ->setTotalImpuestos($item->taxAmount)
                 ->setMtoValorVenta($item->taxedAmount)
                 ->setMtoPrecioUnitario($item->unitPrice);
+
+            // AC-14: Add AllowanceCharge on InvoiceLine only when item has a discount
+            if ($item->discountAmount > 0.0) {
+                $detail->setDescuento($item->discountAmount);
+
+                $baseAmount = Money::toFloat(
+                    Money::of($item->quantity)->multipliedBy(Money::of($item->unitPrice))
+                );
+                $factor = $item->discountPercent !== null
+                    ? $item->discountPercent / 100.0
+                    : ($baseAmount > 0.0 ? $item->discountAmount / $baseAmount : 0.0);
+
+                $lineDiscount = new Charge()
+                    ->setCodTipo(ChargeType::DISCOUNT->value)
+                    ->setFactor($factor)
+                    ->setMonto($item->discountAmount)
+                    ->setMontoBase($baseAmount);
+                $detail->setDescuentos([$lineDiscount]);
+            }
+
             $details[] = $detail;
         }
 

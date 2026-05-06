@@ -98,6 +98,7 @@ final class BillCreateUseCaseTest extends TestCase
             voucherExchangeRate: null,
             voucherDiscountAmount: $discount,
             voucherDiscountPercentage: null,
+            voucherDiscountTotal: $discount,
             voucherConsumptionSurchargeAmount: $surcharge,
             voucherConsumptionSurchargePercentage: null,
             voucherTaxedAmount: 84.75,
@@ -388,6 +389,7 @@ final class BillCreateUseCaseTest extends TestCase
             voucherExchangeRate: 3.89,
             voucherDiscountAmount: 0.0,
             voucherDiscountPercentage: null,
+            voucherDiscountTotal: 0.0,
             voucherConsumptionSurchargeAmount: 0.0,
             voucherConsumptionSurchargePercentage: null,
             voucherTaxedAmount: 762.71,
@@ -482,6 +484,7 @@ final class BillCreateUseCaseTest extends TestCase
             voucherExchangeRate: null,
             voucherDiscountAmount: 0.0,
             voucherDiscountPercentage: null,
+            voucherDiscountTotal: 0.0,
             voucherConsumptionSurchargeAmount: 0.0,
             voucherConsumptionSurchargePercentage: null,
             voucherTaxedAmount: 84.75,
@@ -517,5 +520,153 @@ final class BillCreateUseCaseTest extends TestCase
         $invoice = $this->useCase->__invoke('td-1');
 
         self::assertSame('Nota de prueba', $invoice->getObservacion());
+    }
+
+    // -----------------------------------------------------------------------
+    // AC-14: InvoiceLine AllowanceCharge for discounted items
+    // -----------------------------------------------------------------------
+
+    public function testDiscountedItemHasLineAllowanceChargeWithCorrectFields(): void
+    {
+        $this->setupTaxDocument();
+
+        // Item: qty=2, unitPrice=50.00, discountAmount=10.00, discountPercent=10.0
+        // baseAmount = 2 * 50 = 100.00, factor = 10/100 = 0.10
+        $item = new HydratedVoucherItem(
+            productCode: 'PROD-001',
+            productUom: 'NIU',
+            quantity: 2.0,
+            productName: 'Test Product',
+            unitValue: 42.37,
+            taxedAmount: 84.75,
+            taxPercentage: 18.0,
+            taxAmount: 15.25,
+            taxType: '10',
+            unitPrice: 50.0,
+            discountAmount: 10.0,
+            discountPercent: 10.0,
+        );
+
+        $voucher = $this->makeBaseVoucher(discount: 10.0, item: $item);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        $details = $invoice->getDetails();
+        self::assertCount(1, $details);
+        $detail = $details[0];
+
+        // setDescuento still set
+        self::assertEqualsWithDelta(10.0, $detail->getDescuento(), 0.001);
+
+        // setDescuentos (AllowanceCharge array) must be set
+        $descuentos = $detail->getDescuentos();
+        self::assertNotNull($descuentos);
+        self::assertCount(1, $descuentos);
+
+        $lineCharge = $descuentos[0];
+        // codTipo = '02' (DISCOUNT)
+        self::assertSame('02', $lineCharge->getCodTipo());
+        // factor = discountPercent / 100 = 0.10
+        self::assertEqualsWithDelta(0.10, $lineCharge->getFactor(), 0.0001);
+        // monto = discountAmount = 10.00
+        self::assertEqualsWithDelta(10.0, $lineCharge->getMonto(), 0.001);
+        // montoBase = qty * unitPrice = 2 * 50 = 100.00
+        self::assertEqualsWithDelta(100.0, $lineCharge->getMontoBase(), 0.001);
+    }
+
+    public function testNonDiscountedItemHasNoLineAllowanceCharge(): void
+    {
+        $this->setupTaxDocument();
+
+        $item = $this->makeItem(); // discountAmount = 0.0 by default
+        $voucher = $this->makeBaseVoucher(item: $item);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        $details = $invoice->getDetails();
+        self::assertCount(1, $details);
+        $detail = $details[0];
+
+        // No AllowanceCharge on non-discounted line
+        self::assertNull($detail->getDescuentos());
+        self::assertNull($detail->getDescuento());
+    }
+
+    public function testDiscountedItemWithoutPercentFallsBackToComputedFactor(): void
+    {
+        $this->setupTaxDocument();
+
+        // discountPercent = null → factor computed as discountAmount / baseAmount
+        // qty=2, unitPrice=50 → base=100, discount=10 → factor=0.10
+        $item = new HydratedVoucherItem(
+            productCode: 'PROD-001',
+            productUom: 'NIU',
+            quantity: 2.0,
+            productName: 'Test Product',
+            unitValue: 42.37,
+            taxedAmount: 84.75,
+            taxPercentage: 18.0,
+            taxAmount: 15.25,
+            taxType: '10',
+            unitPrice: 50.0,
+            discountAmount: 10.0,
+            discountPercent: null,
+        );
+
+        $voucher = $this->makeBaseVoucher(discount: 10.0, item: $item);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        $detail = $invoice->getDetails()[0];
+        $lineCharge = $detail->getDescuentos()[0];
+        // factor = 10 / 100 = 0.10
+        self::assertEqualsWithDelta(0.10, $lineCharge->getFactor(), 0.0001);
+    }
+
+    // -----------------------------------------------------------------------
+    // AC-15: LegalMonetaryTotal AllowanceTotalAmount
+    // -----------------------------------------------------------------------
+
+    public function testMtoDescuentosSetWhenDiscountTotalIsPositive(): void
+    {
+        $this->setupTaxDocument();
+
+        $voucher = $this->makeBaseVoucher(discount: 15.0);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        // mtoDescuentos maps to LegalMonetaryTotal/AllowanceTotalAmount
+        self::assertEqualsWithDelta(15.0, $invoice->getMtoDescuentos(), 0.001);
+    }
+
+    public function testMtoDescuentosNotSetWhenNoDiscount(): void
+    {
+        $this->setupTaxDocument();
+
+        $voucher = $this->makeBaseVoucher(discount: 0.0);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        self::assertNull($invoice->getMtoDescuentos());
     }
 }

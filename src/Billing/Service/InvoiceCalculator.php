@@ -51,7 +51,14 @@ readonly class InvoiceCalculator
             $unitPrice = Money::money($line->unitPrice);
             $unitValue = Money::div($unitPrice, $divisor, 6);
 
-            $baseAmount = Money::money($unitValue->multipliedBy($qty));
+            // Step 1: apply per-line item discount first (before global discount).
+            $itemDiscountRate = Money::rate($line->discountPercent);
+            $baseAmount6raw   = $unitValue->multipliedBy($qty);
+            $itemDiscount6    = $baseAmount6raw->multipliedBy($itemDiscountRate);
+            $baseAmount6      = $baseAmount6raw->minus($itemDiscount6);
+
+            // Step 2: apply global document-level discount on the item-discounted net.
+            $baseAmount = Money::money($baseAmount6);
             $discountAmount = Money::money($baseAmount->multipliedBy($discountRate));
             $taxableAmount = Money::money($baseAmount->minus($discountAmount));
             $chargesAmount = Money::money($taxableAmount->multipliedBy($chargesRate));
@@ -60,7 +67,6 @@ readonly class InvoiceCalculator
             // cascade rounding errors on non-trivial tax rates such as 10.5%.
             // taxAmount is then the residual so that
             //   taxableAmount + chargesAmount + taxAmount = lineTotal exactly.
-            $baseAmount6   = $unitValue->multipliedBy($qty);
             $discount6     = $baseAmount6->multipliedBy($discountRate);
             $taxable6      = $baseAmount6->minus($discount6);
             $lineTotal     = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));

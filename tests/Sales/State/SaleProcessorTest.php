@@ -1008,6 +1008,73 @@ final class SaleProcessorTest extends TestCase
         self::assertFalse($sale->isHasInvoice(), 'New sale: has_invoice must always be forced to false');
     }
 
+    // -------------------------------------------------------------------------
+    // TC-39: AC-3 — discountPercent=0 on a sale item → discountAmount=0.00, total = qty × unitPrice
+    // -------------------------------------------------------------------------
+
+    public function testItemDiscountPercentZeroProducesNoDiscount(): void
+    {
+        $sale = $this->buildNewSale(tipoId: 1);
+        $sale->setWriteItems([
+            [
+                'qty'             => 3,
+                'unitPrice'       => '33.33',
+                'discountPercent' => '0',
+            ],
+        ]);
+
+        $this->buildAndRunProcessor($sale, new Post());
+
+        $items = $sale->getItems()->toArray();
+        $this->assertCount(1, $items);
+
+        /** @var SaleItem $item */
+        $item = $items[0];
+        $this->assertSame('0.00', $item->getDescuento(), 'AC-3: discountPercent=0 must produce discountAmount=0.00');
+        $this->assertSame('99.99', $item->getPrecioTotal(), 'AC-3: total must equal qty × unitPrice when discount=0');
+    }
+
+    // -------------------------------------------------------------------------
+    // TC-40: AC-4 — discountPercent=101 throws ValidationException (HTTP 422)
+    // -------------------------------------------------------------------------
+
+    public function testItemDiscountPercentAbove100ThrowsValidationException(): void
+    {
+        $sale = $this->buildNewSale(tipoId: 1);
+        $sale->setWriteItems([
+            [
+                'qty'             => 1,
+                'unitPrice'       => '100.00',
+                'discountPercent' => '101',
+            ],
+        ]);
+
+        $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
+        $this->expectExceptionMessage('Validation failed');
+
+        $this->buildAndRunProcessor($sale, new Post());
+    }
+
+    // -------------------------------------------------------------------------
+    // TC-41: AC-4 variant — discountPercent=-1 also throws ValidationException
+    // -------------------------------------------------------------------------
+
+    public function testItemDiscountPercentNegativeThrowsValidationException(): void
+    {
+        $sale = $this->buildNewSale(tipoId: 1);
+        $sale->setWriteItems([
+            [
+                'qty'             => 1,
+                'unitPrice'       => '50.00',
+                'discountPercent' => '-1',
+            ],
+        ]);
+
+        $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
+
+        $this->buildAndRunProcessor($sale, new Post());
+    }
+
     // =========================================================================
     // Core builder — builds and runs the processor in one shot
     // =========================================================================

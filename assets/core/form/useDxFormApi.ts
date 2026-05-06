@@ -65,6 +65,10 @@ export function useDxFormApi(
     reloadDetailData();
   };
 
+  const saveDetailData = () => {
+    return gridRef.current?.instance().saveEditData();
+  };
+
   const reloadDetailData = () => {
     gridRef.current?.instance().getDataSource().reload();
   };
@@ -111,6 +115,7 @@ export function useDxFormApi(
     setFieldValue,
     getDetailData,
     setDetailData,
+    saveDetailData,
     reloadDetailData,
     setValues,
     setReadonly,
