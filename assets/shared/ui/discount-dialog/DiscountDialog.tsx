@@ -125,7 +125,7 @@ export const DiscountDialog = () => {
         showTitle={true}
         title={title}
         width={420}
-        height={320}
+        height={'auto'}
       >
         <ToolbarItem
           key="apply-button"
