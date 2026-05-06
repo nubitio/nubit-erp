@@ -337,10 +337,8 @@ class TenantProvisionCommand extends Command
             'charset' => 'utf8mb4',
         ];
 
-        $dbname = ltrim($parts['path'] ?? '', '/');
-        if ($dbname !== '') {
-            $params['dbname'] = $dbname;
-        }
+        // Do NOT set dbname: the provisioning connection must connect without
+        // selecting a database so it can run CREATE DATABASE for new tenants.
 
         // Forward serverVersion from query string if present (informational only)
         if (!empty($parts['query'])) {
