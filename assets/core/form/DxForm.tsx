@@ -58,6 +58,10 @@ export interface DxFormOptions {
   onFieldDataChanged?: (formData: Record<string, unknown>) => void;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
   computedValues?: Record<string, unknown>;
+  /**
+   * @deprecated — no longer used, sidebar is always single column.
+   */
+  sidebarColCount?: never;
 }
 
 export interface DxFormEvents {
@@ -409,6 +413,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const fieldChangeHandler = onFieldDataChanged ? handleFieldDataChanged : undefined;
 
     if ((options.detailFields?.length ?? 0) > 0) {
+      const sidebarColCount = 1;
       return (
         <Form
           ref={formRef}
@@ -417,7 +422,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
           onFieldDataChanged={fieldChangeHandler}
         >
           <Item itemType="group" colCount={4}>
-            <GroupItem>{buildFields(options.fields)}</GroupItem>
+            <GroupItem colCount={sidebarColCount}>{buildFields(options.fields)}</GroupItem>
             <GroupItem colSpan={3}>
               <DxFormDetailGrid
                 gridRef={gridRef}

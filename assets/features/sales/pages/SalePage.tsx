@@ -222,7 +222,7 @@ export const SalePage = () => {
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
       />
-      <DxDialog width={1000} events={saleEvents}>
+      <DxDialog width={1200} events={saleEvents}>
         <DxForm
           ref={formRef}
           url={API_URL}
