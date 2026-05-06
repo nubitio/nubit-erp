@@ -105,7 +105,8 @@ final class TenantSetupCommandTest extends TestCase
     private function newCommand(InitialTenantSetupPortInterface $initialSetupService): TenantSetupCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([]);
+        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
+        $tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']);
 
         $command = new TenantSetupCommand($initialSetupService);
         $command->initDependencies(

@@ -77,7 +77,7 @@ final class FillTimeDimensionCommandTest extends TestCase
     private function newCommand(TimeDimensionSeeder $seeder): FillTimeDimensionCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([]);
+        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
 
         $command = new FillTimeDimensionCommand($seeder);
         $command->initDependencies(

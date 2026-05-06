@@ -19,11 +19,12 @@ readonly class LogoProvider
     ) {
     }
 
-    /**
-     * @throws Exception
-     */
     public function __invoke(): string
     {
+        if ($this->tenantContext->getTenantName() === null) {
+            return '';
+        }
+
         try {
             $company = $this->connection->fetchAssociative('SELECT logo FROM empresa LIMIT 1');
         } catch (Exception) {
