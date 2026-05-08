@@ -563,9 +563,14 @@ SQL,
     private function applyNotaVentaTotals(SaleRecord $sale, VoucherHeaderDto $header): void
     {
         $subtotal = Money::money($sale->getSubtotal());
-        $discountRate = Money::rate($sale->getDescuento() ?? 0);
-        $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
         $total = Money::money($sale->getTotal());
+
+        // Prefer the persisted discount_total over recalculating from discountPercent,
+        // because SaleV2Loader only hydrates discount_total (not discountPercent).
+        $discountTotal = $sale->getDiscountTotal();
+        $discountAmount = ($discountTotal !== '0.00')
+            ? Money::money($discountTotal)
+            : Money::money($subtotal->multipliedBy(Money::rate($sale->getDescuento() ?? 0)));
 
         $header->voucherDiscountAmount = Money::toString($discountAmount);
         $header->voucherTaxedAmount = '0.00';
