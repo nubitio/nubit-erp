@@ -85,6 +85,7 @@ SQL,
         $sale->setExchangeRate($row['exchange_rate']);
         $sale->setSubtotal($row['subtotal']);
         $sale->setTotal($row['grand_total']);
+        $sale->setDiscountTotal($row['discount_total'] ?? '0.00');
         $sale->setEstado($row['status'] === 'VOIDED' ? 0 : 1);
 
         if (!empty($row['series'])) {

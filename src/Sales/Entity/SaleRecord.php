@@ -334,6 +334,26 @@ class SaleRecord
         $this->updatedAt = new \DateTime();
     }
 
+    /**
+     * Compute discountPercent from the stored discount_total and subtotal so that
+     * it is available for API reads without requiring a separate write cycle.
+     *
+     * Formula: discountPercent = discount_total / (subtotal + discount_total) * 100
+     * Falls back to 0 when subtotal + discount_total is zero.
+     */
+    #[ORM\PostLoad]
+    public function computeDiscountPercentOnLoad(): void
+    {
+        $discountTotal = (float) ($this->discountTotal ?? '0');
+        $subtotal = (float) ($this->subtotal ?? '0');
+        $base = $subtotal + $discountTotal;
+        if ($base > 0 && $discountTotal > 0) {
+            $this->discountPercent = (string) round($discountTotal / $base * 100, 4);
+        } else {
+            $this->discountPercent = '0';
+        }
+    }
+
     public function getId(): ?string
     {
         return $this->id;
