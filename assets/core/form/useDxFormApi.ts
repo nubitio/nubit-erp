@@ -36,6 +36,10 @@ export function useDxFormApi(
   };
 
   const setFieldValue = (field: string, value: unknown) => {
+    // updateData writes into formData directly — critical for readonly/disabled
+    // editors whose editor option() change is not propagated back into formData
+    // by DevExtreme (e.g. discountPercent, grandTotal).
+    formRef.current?.instance().updateData(field, value);
     formRef.current?.instance().getEditor(field)?.option('value', value);
   };
 
