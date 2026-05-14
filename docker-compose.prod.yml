@@ -29,6 +29,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       # Mailer
       MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM:-noreply@efact.app}
       # Messenger
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       # FrankenPHP settings
@@ -110,6 +111,7 @@ services:
       BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM:-noreply@efact.app}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
@@ -181,6 +183,7 @@ services:
       BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM:-noreply@efact.app}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}

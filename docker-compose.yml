@@ -42,6 +42,7 @@ services:
       E2E_SEED_ENABLED: '1'
       APP_COOKIE_SECURE: 'false'
       DECOLECTA_TOKEN: '${DECOLECTA_TOKEN:-}'
+      MAILER_FROM: '${MAILER_FROM:-noreply@efact.app}'
       TZ: UTC
       # Mercure hub — proxy via Caddy (SLICE-014)
       MERCURE_URL: 'http://mercure/.well-known/mercure'
@@ -100,6 +101,7 @@ services:
       MERCURE_PUBLIC_URL: '${MERCURE_PUBLIC_URL:-http://demo.localhost:8080/.well-known/mercure}'
       MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}'
       MESSENGER_TRANSPORT_DSN: '${MESSENGER_TRANSPORT_DSN:-doctrine://control_plane?queue_name=default}'
+      MAILER_FROM: '${MAILER_FROM:-noreply@efact.app}'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
     depends_on:
       - database

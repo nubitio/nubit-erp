@@ -25,6 +25,7 @@ final class SubscriptionNotifyExpiringCommand extends Command
         private readonly SubscriptionManager $subscriptionManager,
         private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger,
+        private readonly string $mailerFrom = 'noreply@efact.app',
     ) {
         parent::__construct();
     }
@@ -60,6 +61,7 @@ final class SubscriptionNotifyExpiringCommand extends Command
             try {
                 $message = new TemplatedEmail();
                 $message
+                    ->from($this->mailerFrom)
                     ->to($email)
                     ->subject('Tu suscripcion de eFact esta por vencer - ' . $tenantName)
                     ->htmlTemplate('onboarding/emails/subscription_expiring.html.twig')

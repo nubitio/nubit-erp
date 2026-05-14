@@ -31,6 +31,7 @@ readonly class TenantNotificationService
         private ConnectionRegistry $connectionRegistry,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
+        private string $mailerFrom = 'noreply@efact.app',
     ) {
     }
 
@@ -384,7 +385,7 @@ readonly class TenantNotificationService
         }
 
         $email = (new Email())
-            ->from('noreply@efact.app')
+            ->from($this->mailerFrom)
             ->subject($subject)
             ->text($message);
 

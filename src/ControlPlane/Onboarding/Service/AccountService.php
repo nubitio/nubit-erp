@@ -20,6 +20,7 @@ final readonly class AccountService
         private ConnectionRegistry $connectionRegistry,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
+        private string $mailerFrom = 'noreply@efact.app',
     ) {
     }
 
@@ -261,6 +262,7 @@ final readonly class AccountService
     {
         $message = new TemplatedEmail();
         $message
+            ->from($this->mailerFrom)
             ->to($email)
             ->subject('Codigo de verificacion - eFact')
             ->htmlTemplate('onboarding/emails/verification_code.html.twig')
