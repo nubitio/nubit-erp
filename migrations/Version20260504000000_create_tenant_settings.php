@@ -31,14 +31,16 @@ final class Version20260504000000_create_tenant_settings extends AbstractMigrati
             ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
 
-        $this->addSql(<<<'SQL'
-            INSERT INTO tenant_settings (name, value, type)
-            SELECT c.name, c.value, c.type
-            FROM config c
-            WHERE NOT EXISTS (
-                SELECT 1 FROM tenant_settings ts WHERE ts.name = c.name
-            )
-        SQL);
+        if ($this->columnExists('tenant_settings', 'name')) {
+            $this->addSql(<<<'SQL'
+                INSERT INTO tenant_settings (name, value, type)
+                SELECT c.name, c.value, c.type
+                FROM config c
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM tenant_settings ts WHERE ts.name = c.name
+                )
+            SQL);
+        }
     }
 
     public function down(Schema $schema): void
@@ -53,5 +55,18 @@ final class Version20260504000000_create_tenant_settings extends AbstractMigrati
         SQL);
 
         $this->addSql('DROP TABLE IF EXISTS tenant_settings');
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        $result = $this->connection->executeQuery(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME   = :table
+                AND COLUMN_NAME  = :column',
+            ['table' => $table, 'column' => $column]
+        );
+
+        return (int) $result->fetchOne() > 0;
     }
 }
