@@ -432,20 +432,22 @@ A spec is **done** when all of the following are true:
 
 1. **PHP coverage target** — `COVERAGE_MIN_PHP` in CI is currently `8.0` (8 %), which functions only as a regression floor. Should this be raised to a meaningful target (e.g., 60 %)? Who owns this decision?
 
-2. **`config/tenant_plans.php` missing file** — `config/services.yaml` references this file but it does not exist. Does any active service consume the `tenant_plans` parameter? Should the file be created (with plan definitions) or the reference removed?
+2. **`assets/api/auth.tsx` mock stub** — A hardcoded stub `signIn()` coexists with the real `authService.ts`. Should it be deleted to avoid developer confusion?
 
-3. **`assets/api/auth.tsx` mock stub** — A hardcoded stub `signIn()` coexists with the real `authService.ts`. Should it be deleted to avoid developer confusion?
+3. **PayPal vs MercadoPago gateways** — Both payment gateways are implemented in `src/Onboarding/Payment/`. Are both active in production? What is the primary gateway for Peruvian tenants?
 
-4. **Scheduler wiring** — `src/Schedule.php` is registered but empty. Should `SendInvoiceCommand`, `ExchangeRateSyncCommand`, `InvoiceRetryMetricsCommand`, and `SendDailySummaryCommand` be wired as scheduled tasks? What are the desired cron frequencies?
+4. **BOM/recipe explosion in production** — `BomExplosionService` is wired as an inventory movement enricher for COMPOSITE products. Is this GA for restaurant/recipe flows, or should it remain behind a plan/vertical feature gate?
 
-5. **PayPal vs MercadoPago gateways** — Both payment gateways are implemented in `src/Onboarding/Payment/`. Are both active in production? What is the primary gateway for Peruvian tenants?
+5. **Multi-branch vs multi-tenant boundary** — The architecture supports multi-branch inside a tenant and database-per-tenant isolation across companies. Are there plans for cross-tenant/franchisor reporting, or is isolation permanent?
 
-6. **BOM/recipe explosion in production** — `BomExplosionService` exists in the inventory core. Is it used in live production flows (e.g., restaurant manufacturing), or is it experimental?
+6. **Lot/expiry tracking for pharmacies** — `StockLot` and `LotDeductionService` implement FIFO/FEFO deduction. Is this used in production pharmacies today, or should it remain experimental/gated?
 
-7. **Multi-branch vs multi-tenant boundary** — The architecture supports both multi-branch (within a tenant) and multi-tenant (separate databases). Are there plans for tenant-to-tenant data sharing (e.g., franchisor reporting), or is isolation permanent?
+7. **Frontend coverage scope** — Vitest coverage currently targets only 2 files (`posHelpers.ts`, `offline/api.ts`). Should coverage be expanded to the full `assets/features/` surface area? What is the timeline?
 
-8. **Lot/expiry tracking for pharmacies** — `StockLot` and `LotDeductionService` exist. Is FEFO/FIFO lot tracking used in production pharmacies today, or still experimental?
+8. **Scheduler operational ownership** — Scheduler wiring now exists through `#[AsCronTask]` commands and `src/Schedule.php` provider tasks. Who owns production monitoring, missed-run alerting, and runbook maintenance for these jobs?
 
-9. **Frontend coverage scope** — Vitest coverage currently targets only 2 files (`posHelpers.ts`, `offline/api.ts`). Should coverage be expanded to the full `assets/features/` surface area? What is the timeline?
+### Recently Resolved
 
-10. **`symfony/mcp-bundle` configuration** — `McpBundle` is registered in `bundles.php`. Is the bundle functional in production, or experimental? Does it need explicit YAML configuration?
+- **Plan configuration source** — Current `config/services.yaml` no longer references `config/tenant_plans.php`; plan/features are represented in ControlPlane repositories and managers.
+- **Scheduler wiring** — `src/Schedule.php` now schedules AI daily briefing and stock notification generation; recurring operational commands also use `#[AsCronTask]`.
+- **`symfony/mcp-bundle` configuration** — `McpBundle` is registered and route wiring exists at `config/routes/mcp.yaml` with `type: mcp`.

@@ -102,7 +102,7 @@ The model can be swapped via `symfony/ai-bundle`'s provider abstraction without 
 
 ### Negative
 
-- **Bundle maturity** — `symfony/ai-bundle` and `symfony/mcp-bundle` are experimental (`dev-main` required); API changes in these bundles may require adaptation work.
+- **Bundle maturity** — `symfony/ai-bundle` and `symfony/mcp-bundle` remain relatively young integrations; current Composer constraints use the `^0.6` line, so minor-version API changes may still require adaptation work.
 - **LLM cost** — Every assistant query incurs OpenAI API cost. High-volume tenants with frequent assistant use add to platform costs.
 - **Hallucination risk** — The AI may provide inaccurate business answers if tool results are ambiguous. Tools must return structured data and clear error messages.
 - **No streaming in current implementation** — If the assistant endpoint is synchronous (not streaming), large responses block the HTTP worker. Streaming should be added if response latency becomes an issue.

@@ -1,520 +1,279 @@
----
+# PRD — eFact SaaS POS + Facturacion Electronica
 
-# PRD — eFact SaaS
-
-**Versión:** v1.0
-**Autor:** Johan Guerreros
-**Producto:** eFact POS + Facturación Electrónica
-**Tipo:** Multi-tenant SaaS
-**Mercado objetivo:** Perú
+**Version:** 2026-05-14
+**Estado:** activo
+**Producto:** eFact POS, facturacion electronica SUNAT y control plane SaaS
+**Mercado objetivo:** Peru
 
 ---
 
-# 1. Visión del Producto
+## 1. Vision
 
-**eFact** es una plataforma SaaS multi-tenant que permite a pequeñas y medianas empresas en Perú gestionar:
+eFact es una plataforma SaaS multi-tenant para pequenas y medianas empresas peruanas que necesitan vender, controlar inventario, operar caja y emitir comprobantes electronicos SUNAT desde un mismo flujo operativo.
 
-* Punto de venta (POS)
-* Facturación electrónica SUNAT
-* Inventario
-* Control de caja
-* Reportes comerciales
+El producto combina tres superficies:
 
-El objetivo es ofrecer una **alternativa moderna, simple y económica** a los sistemas POS tradicionales, con soporte offline y sincronización automática.
+| Superficie | Repo | Proposito |
+|---|---|---|
+| Backend + Web POS | `efact` | Monolito Symfony/API Platform multi-tenant con frontend React |
+| Android POS | `efact-app` | Terminal POS tablet/offline con impresion local |
+| Marketing site | `efact-site` | Sitio publico, catalogo de planes y captacion |
 
----
-
-# 2. Problema
-
-Las pequeñas empresas en Perú enfrentan varios problemas:
-
-### Sistemas actuales
-
-* POS antiguos instalables
-* Interfaces complejas
-* Costos elevados
-* Mala integración con SUNAT
-* Sin modo offline
-
-### Problemas operativos
-
-Negocios como:
-
-* restaurantes
-* minimarkets
-* farmacias
-* tiendas retail
-
-necesitan:
-
-* vender rápido
-* emitir comprobantes SUNAT
-* controlar inventario
-* ver reportes simples
-
-pero los sistemas existentes son:
-
-* lentos
-* caros
-* difíciles de usar
-* dependientes de internet
+La promesa principal es reducir el tiempo desde registro hasta primera venta facturada, manteniendo aislamiento por tenant, cumplimiento SUNAT y continuidad operativa ante cortes de internet.
 
 ---
 
-# 3. Objetivo del Producto
+## 2. Problema
 
-Crear una plataforma SaaS que permita a un negocio:
+Las pymes peruanas deben emitir boletas/facturas validas ante SUNAT, pero suelen operar con herramientas fragmentadas:
 
-* empezar a vender en **menos de 30 minutos**
-* operar **incluso sin internet**
-* emitir **facturación electrónica SUNAT**
-* gestionar inventario y caja
-* escalar a múltiples sucursales
+- POS instalables o antiguos sin buena experiencia touch.
+- Facturacion electronica separada del punto de venta.
+- Inventario y caja controlados manualmente.
+- Poca visibilidad de comprobantes pendientes/rechazados.
+- Dependencia de conectividad para vender o imprimir.
+- Onboarding tecnico lento: certificados, series, sucursales, almacenes, usuarios y credenciales SUNAT.
 
----
-
-# 4. Usuarios
-
-## 1 — Dueño del negocio
-
-Perfil:
-
-* dueño de restaurante
-* dueño de minimarket
-* pequeño comercio
-
-Necesita:
-
-* ver ventas
-* ver utilidades
-* controlar inventario
-* revisar reportes
+El resultado es cola en caja, errores fiscales, stock poco confiable y alto costo de soporte por cliente.
 
 ---
 
-## 2 — Cajero / vendedor
+## 3. Objetivos
 
-Necesita:
-
-* vender rápido
-* buscar productos
-* cobrar
-* emitir boletas/facturas
+1. **Tiempo a primera factura <= 10 minutos:** un tenant nuevo debe poder registrarse, configurar empresa/sucursal/series y emitir el primer comprobante sin intervencion manual.
+2. **Aceptacion SUNAT >= 99.5 %:** comprobantes enviados deben quedar aceptados o recuperados via consulta CDR dentro de 24 horas por ciclo de facturacion.
+3. **Operacion POS offline:** el cajero debe poder crear ventas e imprimir recibos aun sin internet, con outbox sincronizable y sin perdida de datos.
+4. **Aislamiento por tenant:** cada empresa opera en su propia base MariaDB; el control plane administra tenants, dominios, planes, cuotas, backups y certificados desde una base separada.
 
 ---
 
-## 3 — Administrador
+## 4. Usuarios
 
-Necesita:
-
-* gestionar productos
-* controlar inventario
-* abrir/cerrar caja
-* revisar reportes
-
----
-
-# 5. Propuesta de Valor
-
-eFact ofrece:
-
-### 1 — POS rápido
-
-* optimizado para tablets Android
-* búsqueda rápida de productos
-* interfaz simple
-
-### 2 — Offline First
-
-El sistema funciona sin internet:
-
-* ventas se guardan localmente
-* sincronización automática cuando vuelve internet
+| Persona | Necesidad principal | Superficie |
+|---|---|---|
+| Cajero | Vender rapido, cobrar, imprimir y emitir comprobante sin pasos fiscales extras | Web POS / Android POS |
+| Supervisor o dueno | Revisar ventas, caja, inventario, series, comprobantes y reportes | Web admin tenant |
+| Operador eFact | Provisionar tenants, revisar planes, certificados, cuotas, backups y webhooks | `/admin` control plane |
+| Prospecto | Entender planes, beneficios y registrarse | `efact-site` |
 
 ---
 
-### 3 — Facturación electrónica SUNAT
+## 5. Estado Actual Del Producto
 
-Soporte para:
+### Backend `efact`
 
-* Boleta electrónica
-* Factura electrónica
-* Nota de crédito
-* Nota de débito
-* Resumen diario
-* Comunicación de baja
+- PHP 8.5, Symfony 7.4, API Platform 4.1, Doctrine ORM/Migrations y FrankenPHP.
+- Arquitectura modular por bounded contexts: `Sales`, `Billing`, `Inventory`, `Purchasing`, `CashRegister`, `Catalog`, `Contacts`, `Organization`, `Identity`, `ControlPlane`, `Reporting`, `Settings`, `Setup`, `Media`, `AI`, `Platform`, `Core` y `Efact`.
+- MariaDB database-per-tenant y base separada de control plane.
+- Redis para cache/colas Messenger y Mercure para eventos realtime.
+- Observabilidad OpenTelemetry con instrumentacion Symfony, Doctrine y Monolog.
+- S3/Flysystem para adjuntos, CDR/XML, backups y media tenant.
 
----
+### Frontend Web
 
-### 4 — Inventario integrado
+- React 19, TypeScript strict, Vite 6, DevExtreme 25.2, TailwindCSS 4.
+- PWA con Workbox, Dexie/IndexedDB para modo offline y outbox.
+- React Query para cache de servidor, Axios para HTTP y Mercure SSE para realtime.
+- Modulos actuales: venta, facturacion, compras, inventario/movimientos, transferencias, clientes, caja, configuracion, admin, asistente AI y notificaciones.
 
-Control de:
+### Android POS
 
-* stock por almacén
-* movimientos de inventario
-* compras
-* ajustes
-
----
-
-### 5 — Multi-tenant SaaS
-
-Cada empresa tiene:
-
-* su propio tenant
-* datos aislados
-* configuración independiente
+- Kotlin, Jetpack Compose, Room, Retrofit, Koin, Coroutines/Flow.
+- Flujo POS equivalente: login, seleccion de sucursal, productos, carrito, cliente, venta, caja e impresion ESC/POS Bluetooth.
+- El estado del repo indica documentacion de slices y QA; debe tratarse como cliente de la API eFact, no como fuente de verdad fiscal.
 
 ---
 
-# 6. Funcionalidades Principales
+## 6. Funcionalidades Principales
 
-## 6.1 Autenticación
+### 6.1 Autenticacion y Sesion
 
-Usuarios pueden:
+- JWT propio con cookies HttpOnly y refresh tokens.
+- Seleccion de sucursal posterior al login; el contexto de sucursal queda en el token.
+- Roles tenant (`ROLE_USER`, `ROLE_CASHIER`, `ROLE_ADMIN`) y roles de plataforma/control plane.
+- Limpieza programada de tokens via Symfony Scheduler.
 
-* iniciar sesión
-* cambiar contraseña
-* gestionar sesiones
+### 6.2 POS y Ventas
 
-Roles:
+- Busqueda de productos por nombre, codigo, SKU o codigo de barras.
+- Carrito con cantidades, precios, descuentos por item y descuento global.
+- Metodo de pago efectivo, tarjeta o mixto; calculo de vuelto.
+- Creacion de venta con descuento de stock y pagos asociados.
+- Generacion de comprobante desde venta y anulacion de venta.
+- Impresion por ESC/POS, QZ Tray, WebUSB o agente local segun cliente.
+- URL publica de recibo con descarga de ticket, PDF, XML y CDR.
 
-* Admin
-* Cajero
-* Supervisor
-
----
-
-# 6.2 Punto de Venta
-
-Funciones principales:
-
-* buscar producto
-* agregar producto
-* modificar cantidad
-* aplicar descuentos
-* seleccionar cliente
-* elegir método de pago
-
-Métodos de pago:
-
-* efectivo
-* tarjeta
-* mixto
-
----
-
-# 6.3 Gestión de Caja
-
-Flujos:
-
-Abrir caja
-
-```
-usuario → abrir caja
-ingresar monto inicial
-estado = abierta
-```
-
-Cerrar caja
-
-```
-calcular ventas
-comparar efectivo
-generar reporte de cierre
-```
-
----
-
-# 6.4 Productos
-
-Gestión de:
-
-* nombre
-* SKU
-* código de barras
-* precio
-* costo
-* impuestos
-
-Tipos de producto:
-
-* stockable
-* servicio
-
----
-
-# 6.5 Inventario
-
-Operaciones:
-
-* compra de productos
-* ajuste de inventario
-* transferencia entre almacenes
-* consumo por venta
-
-Modelo técnico:
-
-```
-stock_movements (ledger)
-stock_balances (materialized)
-```
-
----
-
-# 6.6 Facturación electrónica
+### 6.3 Facturacion Electronica SUNAT
 
 Documentos soportados:
 
-| Tipo         | SUNAT |
-| ------------ | ----- |
-| Boleta       | 03    |
-| Factura      | 01    |
-| Nota crédito | 07    |
-| Nota débito  | 08    |
+| Codigo | Documento |
+|---|---|
+| 01 | Factura electronica |
+| 03 | Boleta electronica |
+| 07 | Nota de credito |
+| 08 | Nota de debito |
+| RA | Resumen diario |
+| RC | Comunicacion de baja |
 
-Flujo:
+Flujo actual:
 
-```
-venta
-→ generar XML UBL
-→ firmar con certificado
-→ enviar a SUNAT
-→ recibir CDR
-```
+1. `POST /api/sales/{id}/invoice` crea `TaxDocument` y lineas desde la venta.
+2. `POST /api/tax-documents/{id}/validate` genera y firma UBL 2.1 con Greenter.
+3. `POST /api/tax-documents/{id}/send` despacha envio asincrono a SUNAT.
+4. `GET /api/tax-documents/{id}/consult` consulta CDR y reconcilia estado.
+5. `POST /api/tax-documents/{id}/email` envia comprobante a cliente.
 
-Estados:
+Mecanismos de seguridad fiscal:
 
-```
-PENDING
-ACCEPTED
-REJECTED
-```
+- Circuit breaker por racha de rechazos.
+- Retry con backoff exponencial.
+- Eventos `TaxDocumentEvent` para auditoria.
+- Almacenamiento de CDR/XML en storage tenant.
+- Calculo monetario exacto con `brick/math` y politica de descuentos secuencial documentada en ADR-023.
 
----
+### 6.4 Inventario y Compras
 
-# 6.7 Clientes
+- Productos con UUID, SKU, codigo de barras, categoria, unidad, precio, costo, comportamiento de inventario y trazabilidad de lote.
+- Almacenes por sucursal.
+- Ledger unificado de `stock_movements` y read model `stock_items`.
+- Idempotencia por clave SHA-256 para evitar movimientos duplicados.
+- Compras (`goods_receipts`) con sincronizacion offline, estado y anulacion.
+- Transferencias, ajustes, ingresos y salidas.
+- Productos compuestos con explosion BOM via `BomExplosionService`.
+- Lotes con FIFO/FEFO via `LotDeductionService` usando aritmetica decimal `bcmath`.
 
-Gestión de:
+### 6.5 Caja
 
-* nombre
-* DNI
-* RUC
-* dirección
+- Cajas por sucursal.
+- Sesiones de caja `OPEN`, `RECONCILING`, `CLOSED`.
+- Monto inicial, esperado, contado y diferencia.
+- Movimientos de ingreso/egreso categorizados.
 
-Consulta automática de RUC.
+### 6.6 Clientes y Proveedores
 
----
+- Clientes con DNI/RUC, razon social, direccion y lista de precios.
+- Consulta DNI/RUC via endpoints `GET /api/consults/dni/{id}` y `GET /api/consults/ruc/{id}`.
+- Proveedores para compras e inventario.
 
-# 6.8 Reportes
+### 6.7 Reportes, BI y Notificaciones
 
-Reportes principales:
+- Dashboard con ventas diarias, productos top, ventas por hora, alertas de stock y comprobantes pendientes.
+- Exportes Excel de ventas con PHPSpreadsheet.
+- Resumenes diarios de ventas/compras reconstruibles por comandos programados.
+- Notificaciones in-app, incluyendo alertas de stock generadas periodicamente.
 
-Ventas:
+### 6.8 AI y MCP
 
-* por día
-* por producto
-* por vendedor
+- Endpoint `POST /api/assistant` con herramientas para ventas, productos, caja, documentacion, stock, SUNAT y clientes.
+- Indice de conocimiento reconstruido diariamente.
+- Endpoint MCP en `/mcp` via `symfony/mcp-bundle` para exponer herramientas a clientes compatibles.
 
-Inventario:
+### 6.9 Control Plane SaaS
 
-* stock actual
-* movimientos
-
-Caja:
-
-* apertura
-* cierre
-* diferencias
-
----
-
-# 7. Arquitectura
-
-## Backend
-
-Tecnologías:
-
-* PHP 8
-* Symfony
-* API Platform
-* MariaDB
-
-Arquitectura:
-
-```
-Multi-tenant
-DB per tenant
-```
+- Registro self-service: `/register`, verificacion email y wizard `/register/new-tenant`.
+- Provisioning automatico de base tenant, migraciones, admin inicial, sucursal, almacen, series, catalogos y metodos de pago.
+- Admin `/admin` con Http Basic separado del tenant auth.
+- Planes, cuotas y feature gates por plan/tenant.
+- Overrides temporales auditables y limpieza programada.
+- Webhooks PayPal/MercadoPago con semantica idempotente.
+- Certificados SUNAT con lifecycle en control plane y sincronizacion recuperable con lycet.
+- Backups, binlogs, pruning y descarga protegida por `ROLE_SUPER_ADMIN`.
 
 ---
 
-## Frontend Web
+## 7. Arquitectura
 
-Tecnologías:
+### Principios
 
-* React
-* Vite
-* PWA
+- **Database-per-tenant:** no introducir `tenant_id` en tablas tenant; el aislamiento se resuelve por conexion.
+- **Host como tenant resolver:** `TenantListener` resuelve tenant por dominio/subdominio; rutas publicas/control plane son excepciones explicitas.
+- **API-first:** contratos API Platform antes de UI.
+- **Offline-first en POS:** ventas y catalogo deben tolerar desconexion mediante IndexedDB/Room y outbox.
+- **Asincrono para trabajo pesado:** facturacion, backups, provisioning, auditoria y exportes no deben bloquear requests.
+- **Observabilidad obligatoria:** operaciones criticas deben emitir logs/spans rastreables.
+- **Platform boundary:** `src/Platform` y `src/Core` no deben depender de dominios concretos eFact; ver `docs/architecture/platform-boundary-map.md`.
 
----
+### Decisiones vigentes
 
-## Android POS
-
-Tecnologías:
-
-* Kotlin
-* Jetpack Compose
-* Clean Architecture
-* Offline first
-
----
-
-# 8. Arquitectura Offline
-
-Cliente POS:
-
-```
-local DB
-→ ventas locales
-→ sync queue
-→ servidor
-```
-
-Servidor:
-
-```
-API
-→ procesar sync
-→ reconciliar inventario
-```
+- ADR-001: database-per-tenant.
+- ADR-002: base tenant + base control plane.
+- ADR-003: JWT custom.
+- ADR-004: FrankenPHP runtime.
+- ADR-009 / ADR-018: inventory ledger/read model y cutover de servicio de inventario.
+- ADR-012: facturacion Greenter/SUNAT.
+- ADR-019 a ADR-021: hardening y frontera de ControlPlane.
+- ADR-022: feature gates por plan.
+- ADR-023: estrategia de descuentos.
+- ADR-024: Scheduler operativo como modelo mixto provider + atributos.
 
 ---
 
-# 9. Seguridad
+## 8. API Surface Prioritaria
 
-Medidas:
-
-* autenticación JWT
-* HTTPS
-* certificados digitales SUNAT
-* auditoría de eventos
-
----
-
-# 10. Pricing
-
-Ejemplo de planes:
-
-| Plan     | Precio   |
-| -------- | -------- |
-| Free     | limitado |
-| Basic    | S/29     |
-| Business | S/69     |
-| Pro      | S/129    |
+| Area | Endpoints |
+|---|---|
+| Auth | `POST /api/auth/login`, `/refresh`, `/logout`, `/select-branch` |
+| CRUD core | `/api/products`, `/api/sales`, `/api/tax-documents`, `/api/purchases`, `/api/customers`, `/api/users`, `/api/branches`, `/api/warehouses`, `/api/cash-sessions`, `/api/voucher-series`, `/api/stock-lots` |
+| Operaciones venta/factura | `/api/sales/{id}/invoice`, `/api/sales/{id}/void`, `/api/sales/{id}/print-invoice`, `/api/tax-documents/{id}/validate`, `/send`, `/consult`, `/email` |
+| Consultas externas | `/api/consults/ruc/{id}`, `/api/consults/dni/{id}` |
+| BI/exportes | `/api/bi/{type}`, `/api/sales/report` |
+| Setup | `GET /api/setup`, `POST /api/setup` |
+| AI/MCP | `POST /api/assistant`, `/mcp` |
+| Publico | `/receipt/{id}`, `/receipt/{id}/ticket`, `/pdf`, `/xml`, `/cdr`, `/sale/consult` |
+| Webhooks | `/webhook/paypal`, `/webhook/mercadopago` |
 
 ---
 
-# 11. Métricas de éxito
+## 9. Metricas De Exito
 
-Objetivo inicial:
-
-Primer año:
-
-* 50 clientes activos
-
-KPIs:
-
-* MRR
-* número de ventas procesadas
-* uptime
-* retención mensual
+- `tenant_time_to_first_invoice_minutes` p95 <= 10.
+- `sunat_acceptance_rate_24h` >= 99.5 % por tenant/ciclo.
+- `offline_sale_sync_success_rate` >= 99.9 %.
+- `invoice_rejection_streak_breaker_incidents` revisados con runbook.
+- `provisioning_success_rate` >= 99 % sin intervencion manual.
+- `backup_success_rate` >= 99 % por tenant activo.
+- MRR, churn mensual y tenants activos por plan.
 
 ---
 
-# 12. Roadmap
+## 10. Alcance Actual y Roadmap
 
-### Fase 1
+### En alcance activo
 
-MVP
+- Web POS tenant y backend fiscal.
+- Facturacion electronica SUNAT para boleta/factura/notas/resumenes/bajas.
+- Inventario con ledger, stock items, compras, lotes y BOM.
+- Caja, reportes, notificaciones y asistente AI.
+- Control plane con provisioning, billing, cuotas/features, certificados y backups.
+- Android POS como cliente offline de la API.
 
-* POS
-* inventario
-* boletas
-* reportes básicos
+### Fuera de alcance
 
----
+- Regimenes fiscales no peruanos.
+- ERP contable completo con partida doble.
+- Fabricacion o certificacion de hardware propio.
+- Marketplace e-commerce completo.
+- Data sharing entre tenants; el aislamiento sigue siendo permanente salvo decision futura explicita.
 
-### Fase 2
+### Proximas decisiones recomendadas
 
-* facturas
-* notas de crédito
-* multi-almacén
-* clientes
-
----
-
-### Fase 3
-
-* vertical restaurantes
-* integraciones pagos
-* dashboard analítico
-
----
-
-# 13. Riesgos
-
-Principales riesgos:
-
-SUNAT cambios regulatorios
-
-Mitigación:
-
-* arquitectura desacoplada de tax engine
+- Definir target real de cobertura PHP y ampliar cobertura frontend mas alla de `posHelpers.ts` y `offline/api.ts`.
+- Confirmar gateway primario en Peru entre MercadoPago y PayPal.
+- Documentar formalmente estado productivo de Android POS por vertical.
+- Definir si lotes/FEFO y BOM son features GA o gated por plan/vertical.
+- Migrar consumidores legacy de `App\Core` hacia `App\Platform` cuando el guardrail este estable.
 
 ---
 
-Problemas de conectividad
+## 11. Criterios De Aceptacion Para Specs
 
-Mitigación:
-
-* offline first
-
----
-
-# 14. Diferenciadores
-
-eFact se diferencia por:
-
-* offline first
-* Android POS optimizado
-* SaaS multi-tenant
-* integración SUNAT nativa
-* costo bajo
-
----
-
-# 15. Integraciones Futuras
-
-Posibles integraciones:
-
-* pasarelas de pago
-* SUNAT APIs
-* contabilidad
-* ecommerce
-
----
-
-# 16. Alcance Inicial
-
-Vertical inicial recomendada:
-
-**restaurantes pequeños**
-
-porque:
-
-* alto volumen
-* necesidad de POS rápido
-* inventario simple
-
----
+- Criterios de aceptacion del slice verificados.
+- Tests backend relevantes pasan con PHPUnit.
+- `vendor/bin/grumphp run` sin fallos para cambios backend.
+- `yarn tsc --noEmit`, Vitest y ESLint pasan para cambios frontend.
+- Playwright happy path sin regresion cuando se toca POS.
+- No romper outbox/offline si se toca venta, catalogo o sincronizacion.
+- No romper circuit breaker, retry ni consulta CDR si se toca facturacion.
+- No introducir dependencias prohibidas en `src/Platform`/`src/Core`.
+- No mezclar logica tenant con control plane salvo puertos/adaptadores documentados.
