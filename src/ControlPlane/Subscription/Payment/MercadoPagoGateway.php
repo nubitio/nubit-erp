@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\ControlPlane\Subscription\Payment;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -24,12 +23,9 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly HttpClientInterface $httpClient,
-        #[Autowire(env: 'MERCADOPAGO_ACCESS_TOKEN')]
-        private readonly string $accessToken,
-        #[Autowire(env: 'MERCADOPAGO_WEBHOOK_SECRET')]
-        private readonly string $webhookSecret,
-        #[Autowire(env: 'MERCADOPAGO_PLAN_MAP')]
-        private readonly string $planMapJson,
+        private readonly string $accessToken = '',
+        private readonly string $webhookSecret = '',
+        private readonly string $planMapJson = '{}',
     ) {
     }
 
@@ -148,6 +144,10 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
      */
     private function apiRequest(string $method, string $path, ?array $body = null): array
     {
+        if ($this->accessToken === '') {
+            throw new \RuntimeException('MercadoPago access token is not configured.');
+        }
+
         $options = [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->accessToken,

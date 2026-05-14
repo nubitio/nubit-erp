@@ -12,6 +12,9 @@ parameters:
   tenant_rate_limit: '300'
   tenant_rate_window: '60'
   app.api_base_url: '%env(APP_API_BASE_URL)%'
+  mercadopago_access_token: ''
+  mercadopago_webhook_secret: ''
+  mercadopago_plan_map: '{}'
 
 services:
   # default configuration for services in *this* file
@@ -178,6 +181,10 @@ services:
       - { name: app.payment_gateway }
 
   App\ControlPlane\Subscription\Payment\MercadoPagoGateway:
+    arguments:
+      $accessToken: '%env(default:mercadopago_access_token:MERCADOPAGO_ACCESS_TOKEN)%'
+      $webhookSecret: '%env(default:mercadopago_webhook_secret:MERCADOPAGO_WEBHOOK_SECRET)%'
+      $planMapJson: '%env(default:mercadopago_plan_map:MERCADOPAGO_PLAN_MAP)%'
     tags:
       - { name: app.payment_gateway }
 
