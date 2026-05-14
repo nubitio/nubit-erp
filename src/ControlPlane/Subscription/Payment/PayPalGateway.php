@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\ControlPlane\Subscription\Payment;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -23,16 +22,11 @@ final class PayPalGateway implements PaymentGatewayInterface
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly HttpClientInterface $httpClient,
-        #[Autowire(env: 'PAYPAL_CLIENT_ID')]
-        private readonly string $clientId,
-        #[Autowire(env: 'PAYPAL_CLIENT_SECRET')]
-        private readonly string $clientSecret,
-        #[Autowire(env: 'PAYPAL_WEBHOOK_ID')]
-        private readonly string $webhookId,
-        #[Autowire(env: 'PAYPAL_MODE')]
-        private readonly string $mode,
-        #[Autowire(env: 'PAYPAL_PLAN_MAP')]
-        private readonly string $planMapJson,
+        private readonly string $clientId = '',
+        private readonly string $clientSecret = '',
+        private readonly string $webhookId = '',
+        private readonly string $mode = 'sandbox',
+        private readonly string $planMapJson = '{}',
     ) {
     }
 
@@ -187,6 +181,10 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     private function getAccessToken(): string
     {
+        if ($this->clientId === '' || $this->clientSecret === '') {
+            throw new \RuntimeException('PayPal credentials are not configured.');
+        }
+
         if ($this->accessToken !== null) {
             return $this->accessToken;
         }
