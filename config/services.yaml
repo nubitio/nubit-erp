@@ -15,6 +15,11 @@ parameters:
   mercadopago_access_token: ''
   mercadopago_webhook_secret: ''
   mercadopago_plan_map: '{}'
+  paypal_client_id: ''
+  paypal_client_secret: ''
+  paypal_webhook_id: ''
+  paypal_mode: 'sandbox'
+  paypal_plan_map: '{}'
 
 services:
   # default configuration for services in *this* file
@@ -174,9 +179,15 @@ services:
     class: App\ControlPlane\Certificate\TenantCertificateRepository
 
   App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
-    class: App\ControlPlane\Subscription\Payment\PayPalGateway
+    alias: App\ControlPlane\Subscription\Payment\PayPalGateway
 
   App\ControlPlane\Subscription\Payment\PayPalGateway:
+    arguments:
+      $clientId: '%env(default:paypal_client_id:PAYPAL_CLIENT_ID)%'
+      $clientSecret: '%env(default:paypal_client_secret:PAYPAL_CLIENT_SECRET)%'
+      $webhookId: '%env(default:paypal_webhook_id:PAYPAL_WEBHOOK_ID)%'
+      $mode: '%env(default:paypal_mode:PAYPAL_MODE)%'
+      $planMapJson: '%env(default:paypal_plan_map:PAYPAL_PLAN_MAP)%'
     tags:
       - { name: app.payment_gateway }
 
