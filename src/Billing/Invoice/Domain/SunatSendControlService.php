@@ -30,6 +30,7 @@ readonly class SunatSendControlService
         private TenantNotificationService $notificationService,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
+        private string $mailerFrom = 'noreply@efact.app',
         private ?SettingsService $settings = null,
     ) {
     }
@@ -183,7 +184,7 @@ readonly class SunatSendControlService
         }
 
         $email = new Email()
-            ->from('noreply@efact.app')
+            ->from($this->mailerFrom)
             ->subject($subject)
             ->text($body);
 

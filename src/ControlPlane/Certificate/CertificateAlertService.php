@@ -28,6 +28,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         private MailerInterface $mailer,
         private HubInterface $hub,
         private LoggerInterface $logger,
+        private string $mailerFrom = 'noreply@efact.app',
     ) {
     }
 
@@ -111,6 +112,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         }
 
         $email = (new Email())
+            ->from($this->mailerFrom)
             ->subject($title)
             ->text($body);
 

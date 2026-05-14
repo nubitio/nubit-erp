@@ -32,6 +32,7 @@ readonly class InvoiceEmailUseCase
         private SettingsService $settings,
         private CompanyContext $companyContext,
         private TaxDocumentRepository $taxDocumentRepository,
+        private string $mailerFrom = 'noreply@efact.app',
     ) {
     }
 
@@ -89,7 +90,7 @@ readonly class InvoiceEmailUseCase
         ]);
 
         $email = new Email()
-            ->from('noreply@efact.app')
+            ->from($this->mailerFrom)
             ->to($voucher->customer_email ?: 'johangm90@gmail.com')
             ->cc(strval($this->settings->get('email_accounting') ?: 'johangm90@gmail.com'))
             ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
