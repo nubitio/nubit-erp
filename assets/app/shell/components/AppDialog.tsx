@@ -4,17 +4,22 @@ import { createPortal } from 'react-dom';
 import './AppDialog.scss';
 
 interface AppDialogProps {
-  visible: boolean;
+  visible?: boolean;
+  /** Alias for visible — prefer open for new code */
+  open?: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   width?: number | string;
+  maxWidth?: number | string;
   height?: number | string;
   fullScreen?: boolean;
   showCloseButton?: boolean;
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
   className?: string;
+  role?: string;
 }
 
 const formatSize = (value?: number | string) => {
@@ -24,22 +29,27 @@ const formatSize = (value?: number | string) => {
 
 export const AppDialog = ({
   visible,
+  open,
   title,
   onClose,
   children,
+  footer,
   width,
+  maxWidth,
   height,
   fullScreen = false,
   showCloseButton = true,
   closeOnOutsideClick = true,
   closeOnEscape = true,
   className,
+  role = 'dialog',
 }: AppDialogProps) => {
+  const isVisible = visible ?? open ?? false;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!isVisible) return;
 
     lastFocusedElementRef.current = document.activeElement as HTMLElement | null;
     window.setTimeout(() => {
@@ -52,10 +62,10 @@ export const AppDialog = ({
     return () => {
       lastFocusedElementRef.current?.focus?.();
     };
-  }, [visible]);
+  }, [isVisible]);
 
   useEffect(() => {
-    if (!visible || !closeOnEscape) return;
+    if (!isVisible || !closeOnEscape) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -66,9 +76,9 @@ export const AppDialog = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [closeOnEscape, onClose, visible]);
+  }, [closeOnEscape, onClose, isVisible]);
 
-  if (!visible) return null;
+  if (!isVisible) return null;
 
   return createPortal(
     <div className="app-dialog-root">
@@ -84,11 +94,15 @@ export const AppDialog = ({
           fullScreen ? 'app-dialog--fullscreen' : '',
           className,
         ].filter(Boolean).join(' ')}
-        role="dialog"
+        role={role}
         aria-modal="true"
         aria-labelledby="app-dialog-title"
         ref={dialogRef}
-        style={{ width: formatSize(width), height: formatSize(height) }}
+        style={{
+          width: formatSize(width),
+          maxWidth: formatSize(maxWidth),
+          height: formatSize(height),
+        }}
       >
         <div className="app-dialog__header">
           <h2 className="app-dialog__title" id="app-dialog-title">{title}</h2>
@@ -99,6 +113,7 @@ export const AppDialog = ({
           )}
         </div>
         <div className="app-dialog__body">{children}</div>
+        {footer && <div className="app-dialog__footer">{footer}</div>}
       </div>
     </div>,
     document.body,

@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
-import { Button } from 'devextreme-react/button';
+// eslint-disable-next-line no-restricted-imports
+import { AppDialog } from '@app/shell/components/AppDialog';
 import { useTranslation } from 'react-i18next';
 
 export interface ConfirmDialogProps {
@@ -27,66 +26,33 @@ export function ConfirmDialog({
   const { t } = useTranslation();
   const resolvedConfirmLabel = confirmLabel ?? t('common.confirm');
   const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
-  const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  // Move focus to the Cancel button when the dialog opens (safer default)
-  useEffect(() => {
-    if (open) {
-      // Allow DevExtreme to finish rendering before focusing
-      const id = setTimeout(() => cancelBtnRef.current?.focus(), 50);
-      return () => clearTimeout(id);
-    }
-  }, [open]);
-
-  const confirmType = variant === 'danger' ? 'danger' : variant === 'info' ? 'default' : 'normal';
+  const confirmClass =
+    variant === 'danger'
+      ? 'app-button app-button-danger'
+      : variant === 'info'
+        ? 'app-button app-button-primary'
+        : 'app-button app-button-primary';
 
   return (
-    <Popup
-      visible={open}
+    <AppDialog
+      open={open}
       title={title}
-      dragEnabled={false}
-      hideOnOutsideClick={false}
-      showCloseButton={false}
-      onHiding={onCancel}
+      onClose={onCancel}
       maxWidth={420}
-      height="auto"
-      wrapperAttr={{
-        role: 'alertdialog',
-        'aria-modal': 'true',
-        'aria-labelledby': 'confirm-dialog-title',
-        'aria-describedby': 'confirm-dialog-message',
-      }}
+      role="alertdialog"
+      footer={
+        <>
+          <button type="button" className="app-button app-button-secondary" onClick={onCancel} autoFocus>
+            {resolvedCancelLabel}
+          </button>
+          <button type="button" className={confirmClass} onClick={onConfirm}>
+            {resolvedConfirmLabel}
+          </button>
+        </>
+      }
     >
-      {/* Accessible IDs for screen readers */}
-      <span id="confirm-dialog-title" className="dx-popup-title" style={{ display: 'none' }}>
-        {title}
-      </span>
-
-      <p id="confirm-dialog-message" style={{ margin: '0.5rem 0 1rem', lineHeight: 1.5 }}>
-        {message}
-      </p>
-
-      <ToolbarItem toolbar="bottom" location="before">
-        <button
-          ref={cancelBtnRef}
-          type="button"
-          className="dx-button dx-button-normal dx-button-mode-outlined"
-          onClick={onCancel}
-          aria-label={resolvedCancelLabel}
-          style={{ minWidth: 100 }}
-        >
-          <span className="dx-button-text">{resolvedCancelLabel}</span>
-        </button>
-      </ToolbarItem>
-
-      <ToolbarItem toolbar="bottom" location="after">
-        <Button
-          text={resolvedConfirmLabel}
-          type={confirmType}
-          stylingMode="contained"
-          onClick={onConfirm}
-        />
-      </ToolbarItem>
-    </Popup>
+      <p style={{ margin: '0.5rem 0 1rem', lineHeight: 1.5 }}>{message}</p>
+    </AppDialog>
   );
 }

@@ -1,8 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import DateBox from 'devextreme-react/date-box';
-import SelectBox, { type SelectBoxTypes } from 'devextreme-react/select-box';
-import { Button } from 'devextreme-react';
 import { Constants } from '@core/common/Constants';
 import { DateUtils } from '@shared/lib/DateUtils';
 import { defineFields } from '@core/crud/fieldContract';
@@ -193,11 +190,6 @@ export const KardexPage = () => {
       .catch(() => {});
   }, []);
 
-  const handleSearch = useCallback(
-    () => setActiveUrl(buildUrl(warehouseId, productId, fromDate, toDate)),
-    [warehouseId, productId, fromDate, toDate],
-  );
-
   const handleClear = useCallback(() => {
     setWarehouseId(null);
     setProductId(null);
@@ -236,6 +228,13 @@ export const KardexPage = () => {
     setActiveUrl(buildUrl(warehouseId, productId, fromDate, toDate));
   }, [warehouseId, productId, fromDate, toDate]);
 
+  /** Parse YYYY-MM-DD without UTC-midnight shift */
+  const parseLocal = (s: string): Date | null => {
+    if (!s) return null;
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+
   return (
     <div id="wrapper">
       {/* ── Filtros ── */}
@@ -249,79 +248,69 @@ export const KardexPage = () => {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>Almacén</label>
-          <SelectBox
-            dataSource={warehouses}
-            placeholder="Todos"
-            displayExpr="name"
-            valueExpr="id"
-            value={warehouseId}
-            width={220}
-            stylingMode="outlined"
-            showClearButton
-            searchEnabled
-            onValueChanged={(e: SelectBoxTypes.ValueChangedEvent) =>
-              setWarehouseId(e.value ?? null)
-            }
+          <label htmlFor="kardex-warehouse" style={{ fontSize: 12, color: '#666' }}>Almacén</label>
+          <select
+            id="kardex-warehouse"
+            className="form-select"
+            style={{ width: 220 }}
+            value={warehouseId ?? ''}
+            onChange={(e) => setWarehouseId(e.target.value || null)}
+          >
+            <option value="">Todos</option>
+            {warehouses.map((w) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label htmlFor="kardex-product" style={{ fontSize: 12, color: '#666' }}>Producto</label>
+          <select
+            id="kardex-product"
+            className="form-select"
+            style={{ width: 280 }}
+            value={productId ?? ''}
+            onChange={(e) => setProductId(e.target.value || null)}
+          >
+            <option value="">Todos</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label htmlFor="kardex-from" style={{ fontSize: 12, color: '#666' }}>Desde</label>
+          <input
+            id="kardex-from"
+            type="date"
+            className="form-control"
+            style={{ width: 140 }}
+            value={fromDate ? DateUtils.dateFormatter(fromDate) : ''}
+            onChange={(e) => setFromDate(parseLocal(e.target.value))}
           />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>Producto</label>
-          <SelectBox
-            dataSource={products}
-            placeholder="Todos"
-            displayExpr="name"
-            valueExpr="id"
-            value={productId}
-            width={280}
-            stylingMode="outlined"
-            showClearButton
-            searchEnabled
-            onValueChanged={(e: SelectBoxTypes.ValueChangedEvent) =>
-              setProductId(e.value ?? null)
-            }
+          <label htmlFor="kardex-to" style={{ fontSize: 12, color: '#666' }}>Hasta</label>
+          <input
+            id="kardex-to"
+            type="date"
+            className="form-control"
+            style={{ width: 140 }}
+            value={toDate ? DateUtils.dateFormatter(toDate) : ''}
+            onChange={(e) => setToDate(parseLocal(e.target.value))}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>Desde</label>
-          <DateBox
-            value={fromDate}
-            width={140}
-            stylingMode="outlined"
-            displayFormat="dd/MM/yyyy"
-            showClearButton
-            onValueChanged={(e) => setFromDate(e.value ?? null)}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>Hasta</label>
-          <DateBox
-            value={toDate}
-            width={140}
-            stylingMode="outlined"
-            displayFormat="dd/MM/yyyy"
-            showClearButton
-            onValueChanged={(e) => setToDate(e.value ?? null)}
-          />
-        </div>
-
-        <Button
-          text="Filtrar"
-          type="default"
-          stylingMode="contained"
-          icon="search"
-          onClick={applySearch}
-        />
-        <Button
-          text="Limpiar"
-          type="normal"
-          stylingMode="outlined"
-          icon="clear"
-          onClick={handleClear}
-        />
+        <button type="button" className="app-button app-button-primary" onClick={applySearch}>
+          <i className="ph ph-magnifying-glass" aria-hidden="true" />
+          Filtrar
+        </button>
+        <button type="button" className="app-button app-button-secondary" onClick={handleClear}>
+          <i className="ph ph-x" aria-hidden="true" />
+          Limpiar
+        </button>
       </div>
 
       {/* ── Grilla ── */}

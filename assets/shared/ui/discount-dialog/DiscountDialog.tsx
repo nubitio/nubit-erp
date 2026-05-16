@@ -1,5 +1,5 @@
-import { NumberBox, Popup } from 'devextreme-react';
-import { ToolbarItem } from 'devextreme-react/popup';
+// eslint-disable-next-line no-restricted-imports
+import { AppDialog } from '@app/shell/components/AppDialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@core/event/EventHook';
@@ -105,72 +105,69 @@ export const DiscountDialog = () => {
     });
   }, []);
 
-  const handlePercentChange = (value: number) => {
+  const handlePercentInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     lastChanged.current = 'percent';
-    setDiscountPercent(value);
+    const raw = parseFloat(e.target.value);
+    setDiscountPercent(isNaN(raw) ? 0 : raw / 100);
   };
 
-  const handleAmountChange = (value: number) => {
+  const handleAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     lastChanged.current = 'amount';
-    setDiscountAmount(value);
+    const raw = parseFloat(e.target.value);
+    setDiscountAmount(isNaN(raw) ? 0 : raw);
   };
 
   return (
-    <div>
-      <Popup
-        visible={visible}
-        onHiding={() => setVisible(false)}
-        dragEnabled={false}
-        hideOnOutsideClick={true}
-        showTitle={true}
-        title={title}
-        width={420}
-        height={'auto'}
-      >
-        <ToolbarItem
-          key="apply-button"
-          location="after"
-          widget="dxButton"
-          toolbar="bottom"
-          options={{
-            text: 'Aceptar',
-            onClick: () => onApply(discountPercent, discountAmount),
-          }}
-        />
-        <h3 className="text-center">{NumberUtils.formatCurrency(total - discountAmount)}</h3>
-        {discountAmount > 0 && (
-          <h6 className="text-center text-decoration-line-through">
-            {NumberUtils.formatCurrency(total)}
-          </h6>
-        )}
-        <div className="p-2">
-          <div className="mb-4">
-            <NumberBox
-              label={'Descuento %'}
-              format="#0.##%"
-              step={0.01}
-              value={discountPercent}
-              min={0}
-              max={1}
-              showClearButton={true}
-              stylingMode={'outlined'}
-              onValueChanged={(event) => handlePercentChange(event.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <NumberBox
-              label={'Descuento S/'}
-              format="#,##0.00"
-              value={discountAmount}
-              min={0}
-              max={total}
-              showClearButton={true}
-              stylingMode={'outlined'}
-              onValueChanged={(event) => handleAmountChange(event.value)}
-            />
-          </div>
+    <AppDialog
+      open={visible}
+      title={title}
+      onClose={() => setVisible(false)}
+      maxWidth={420}
+      showCloseButton={true}
+      footer={
+        <button
+          type="button"
+          className="app-button app-button-primary"
+          onClick={() => onApply(discountPercent, discountAmount)}
+        >
+          Aceptar
+        </button>
+      }
+    >
+      <h3 className="text-center">{NumberUtils.formatCurrency(total - discountAmount)}</h3>
+      {discountAmount > 0 && (
+        <h6 className="text-center text-decoration-line-through">
+          {NumberUtils.formatCurrency(total)}
+        </h6>
+      )}
+      <div className="p-2">
+        <div className="mb-4">
+          <label className="form-label" htmlFor="discount-percent">Descuento %</label>
+          <input
+            id="discount-percent"
+            type="number"
+            className="form-control"
+            min={0}
+            max={100}
+            step={1}
+            value={Number((discountPercent * 100).toFixed(2))}
+            onChange={handlePercentInput}
+          />
         </div>
-      </Popup>
-    </div>
+        <div className="mb-4">
+          <label className="form-label" htmlFor="discount-amount">Descuento S/</label>
+          <input
+            id="discount-amount"
+            type="number"
+            className="form-control"
+            min={0}
+            max={total}
+            step={0.01}
+            value={Number(discountAmount.toFixed(2))}
+            onChange={handleAmountInput}
+          />
+        </div>
+      </div>
+    </AppDialog>
   );
 };
