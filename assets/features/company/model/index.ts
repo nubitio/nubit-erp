@@ -1,1 +1,0 @@
-export { companyEvents } from './events';

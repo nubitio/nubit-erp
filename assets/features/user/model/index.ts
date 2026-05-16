@@ -1,1 +1,0 @@
-export { userEvents } from './events';

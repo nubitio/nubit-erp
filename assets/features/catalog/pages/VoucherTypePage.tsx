@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
-import { voucherTypeEvents } from '@features/voucherType';
+import { voucherTypeEvents } from '@core/event/domainEvents';
 import { voucherTypeEndpoints } from '../api/catalogEndpoints';
 
 const resource = defineResource({

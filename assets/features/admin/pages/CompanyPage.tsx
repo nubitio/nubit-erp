@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { DxDataGrid } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm, type DxFormEvents } from '@core/form/DxForm';
-import { companyEvents } from '@features/company';
+import { companyEvents } from '@core/event/domainEvents';
 import { CompanyFields } from './CompanyFields';
 import { companyEndpoints } from '../api/companyEndpoints';
 import { useCompanyObservers } from '../model/useCompanyObservers';

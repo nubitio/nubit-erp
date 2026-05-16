@@ -1,1 +1,0 @@
-export { voucherSeriesEvents } from './events';

@@ -1,6 +1,6 @@
 import { Constants } from '@core/common/Constants';
 import { SmartCrudPage, defineResource } from '@core/crud';
-import { voucherSeriesEvents } from '@features/voucherSeries';
+import { voucherSeriesEvents } from '@core/event/domainEvents';
 
 const resource = defineResource({
   id: 'voucherSeries',
