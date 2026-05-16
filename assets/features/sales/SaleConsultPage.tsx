@@ -1,10 +1,8 @@
-import DateBox from 'devextreme-react/date-box';
 import { useRef, useState } from 'react';
-import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { Card } from '@shared/ui';
-import SelectBox from 'devextreme-react/select-box';
 import { DateUtils } from '@shared/lib/DateUtils';
 import { Constants } from '@core/common/Constants';
+import './SaleConsultPage.scss';
 
 const reportTypes = [
   { value: 'sale-by-product',      text: 'Ventas por producto' },
@@ -17,12 +15,12 @@ const reportTypes = [
 ];
 
 export const SaleConsultPage = () => {
-  const [selectedReport, setSelectedReport] = useState<string | undefined>();
-  const [startDate,      setStartDate]      = useState<Date | undefined>();
-  const [endDate,        setEndDate]        = useState<Date | undefined>();
+  const [selectedReport, setSelectedReport] = useState('');
+  const [startDate,      setStartDate]      = useState('');
+  const [endDate,        setEndDate]        = useState('');
   const [loading,        setLoading]        = useState(false);
   const [error,          setError]          = useState<string | null>(null);
-  const formRef = useRef<FormRef>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const canGenerate = !!selectedReport && !!startDate && !!endDate;
 
@@ -42,14 +40,13 @@ export const SaleConsultPage = () => {
       return;
     }
 
-    const dateFrom = DateUtils.dateFormatter(startDate);
-    const dateTo   = DateUtils.dateFormatter(endDate);
+    // Parse YYYY-MM-DD as local date (avoid UTC midnight → day-before bug)
+    const parseLocal = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    const dateFrom = DateUtils.dateFormatter(parseLocal(startDate));
+    const dateTo   = DateUtils.dateFormatter(parseLocal(endDate));
     const url      = `${Constants.API_BASE_URL}sales/report?report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
 
     setLoading(true);
-
-    // window.open is synchronous — simulate a brief loading state so the user
-    // gets visual feedback before the browser hands off to the new tab.
     const win = window.open(url);
     setTimeout(() => {
       setLoading(false);
@@ -62,93 +59,94 @@ export const SaleConsultPage = () => {
   };
 
   const handleClear = () => {
-    setSelectedReport(undefined);
-    setStartDate(undefined);
-    setEndDate(undefined);
+    setSelectedReport('');
+    setStartDate('');
+    setEndDate('');
     setError(null);
-    formRef.current?.instance().reset();
+    formRef.current?.reset();
   };
 
   return (
     <Card title="Reportes de venta">
-      <Form ref={formRef} width={320} labelMode="floating">
-        <SimpleItem label={{ text: 'Tipo de reporte' }}>
-          <SelectBox
-            dataSource={reportTypes}
-            displayExpr="text"
-            valueExpr="value"
+      <form ref={formRef} className="consult-form" onSubmit={(e) => e.preventDefault()}>
+
+        {/* Tipo de reporte */}
+        <div className="consult-field">
+          <label className="consult-field__label" htmlFor="report-type">
+            Tipo de reporte
+          </label>
+          <select
+            id="report-type"
+            className="consult-select"
             value={selectedReport}
-            stylingMode="outlined"
-            placeholder="Seleccionar…"
-            showClearButton
-            onValueChanged={(e) => {
-              setSelectedReport(e.value ?? undefined);
-              setError(null);
-            }}
-          />
-        </SimpleItem>
+            onChange={(e) => { setSelectedReport(e.target.value); setError(null); }}
+          >
+            <option value="">Seleccionar…</option>
+            {reportTypes.map((r) => (
+              <option key={r.value} value={r.value}>{r.text}</option>
+            ))}
+          </select>
+        </div>
 
-        <SimpleItem label={{ text: 'Fecha desde' }}>
-          <DateBox
+        {/* Fecha desde */}
+        <div className="consult-field">
+          <label className="consult-field__label" htmlFor="date-from">
+            Fecha desde
+          </label>
+          <input
+            id="date-from"
+            type="date"
+            className="consult-input"
             value={startDate}
-            stylingMode="outlined"
-            displayFormat="dd/MM/yyyy"
-            showClearButton
-            max={endDate}
-            onValueChanged={(e) => {
-              setStartDate(e.value ?? undefined);
-              setError(null);
-            }}
+            max={endDate || undefined}
+            onChange={(e) => { setStartDate(e.target.value); setError(null); }}
           />
-        </SimpleItem>
+        </div>
 
-        <SimpleItem label={{ text: 'Fecha hasta' }}>
-          <DateBox
+        {/* Fecha hasta */}
+        <div className="consult-field">
+          <label className="consult-field__label" htmlFor="date-to">
+            Fecha hasta
+          </label>
+          <input
+            id="date-to"
+            type="date"
+            className="consult-input"
             value={endDate}
-            stylingMode="outlined"
-            displayFormat="dd/MM/yyyy"
-            showClearButton
-            min={startDate}
-            onValueChanged={(e) => {
-              setEndDate(e.value ?? undefined);
-              setError(null);
-            }}
+            min={startDate || undefined}
+            onChange={(e) => { setEndDate(e.target.value); setError(null); }}
           />
-        </SimpleItem>
+        </div>
 
+        {/* Error */}
         {error && (
-          <SimpleItem>
-            <p style={{ color: 'var(--dx-color-danger, #d9534f)', fontSize: 13, margin: '4px 0 0' }}>
-              {error}
-            </p>
-          </SimpleItem>
+          <p className="consult-error" role="alert">{error}</p>
         )}
 
-        <SimpleItem>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              className="app-button app-button--primary app-button--full"
-              disabled={!canGenerate || loading}
-              onClick={handleGenerateReport}
-            >
-              {loading && <span className="app-button-spinner" aria-hidden="true" />}
-              {loading ? 'Generando…' : 'Generar reporte'}
-            </button>
-            <button
-              type="button"
-              className="app-icon-button"
-              title="Limpiar"
-              disabled={loading}
-              onClick={handleClear}
-            >
-              <i className="ph ph-x" aria-hidden="true" />
-            </button>
-          </div>
-        </SimpleItem>
-      </Form>
+        {/* Acciones */}
+        <div className="consult-actions">
+          <button
+            type="submit"
+            className="app-button app-button--primary app-button--full"
+            disabled={!canGenerate || loading}
+            onClick={handleGenerateReport}
+          >
+            {loading && <span className="app-button-spinner" aria-hidden="true" />}
+            {loading ? 'Generando…' : 'Generar reporte'}
+          </button>
+          <button
+            type="button"
+            className="app-icon-button"
+            title="Limpiar"
+            disabled={loading}
+            onClick={handleClear}
+          >
+            <i className="ph ph-x" aria-hidden="true" />
+          </button>
+        </div>
+      </form>
 
-      <p style={{ marginTop: 16, fontSize: 12, color: '#888', maxWidth: 320 }}>
+      <p className="consult-hint">
         El reporte se abrirá en una nueva pestaña en formato PDF.
         Si el navegador bloquea ventanas emergentes, permite el origen de esta aplicación.
       </p>
