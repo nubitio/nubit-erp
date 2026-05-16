@@ -124,6 +124,7 @@ export const DiscountDialog = () => {
       onClose={() => setVisible(false)}
       maxWidth={420}
       showCloseButton={true}
+      restoreFocus={false}
       footer={
         <button
           type="button"

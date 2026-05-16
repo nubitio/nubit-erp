@@ -18,6 +18,7 @@ interface AppDialogProps {
   showCloseButton?: boolean;
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
+  restoreFocus?: boolean;
   className?: string;
   role?: string;
 }
@@ -41,12 +42,15 @@ export const AppDialog = ({
   showCloseButton = true,
   closeOnOutsideClick = true,
   closeOnEscape = true,
+  restoreFocus = true,
   className,
   role = 'dialog',
 }: AppDialogProps) => {
   const isVisible = visible ?? open ?? false;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+  const restoreFocusRef = useRef(restoreFocus);
+  restoreFocusRef.current = restoreFocus;
 
   useEffect(() => {
     if (!isVisible) return;
@@ -60,7 +64,9 @@ export const AppDialog = ({
     });
 
     return () => {
-      lastFocusedElementRef.current?.focus?.();
+      if (restoreFocusRef.current) {
+        lastFocusedElementRef.current?.focus?.();
+      }
     };
   }, [isVisible]);
 
