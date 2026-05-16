@@ -4,7 +4,7 @@ import type { Field } from '@core/field/Field';
 import { enumField } from '@core/field/FieldBuilders';
 import React from 'react';
 import { operationEvents } from '@core/event/domainEvents';
-import { operationEndpoints } from '../api/catalogEndpoints';
+import { operationEndpoints } from './api/catalogEndpoints';
 
 interface OperationRecord extends Record<string, unknown> {
   id: string;

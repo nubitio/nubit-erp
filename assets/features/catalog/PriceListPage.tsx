@@ -3,7 +3,7 @@ import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { PriceListFields } from './PriceListFields';
-import { priceListEndpoints } from '../api/priceListEndpoints';
+import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
 import { DataGrid } from 'devextreme-react';
 import { Column, type DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
@@ -12,7 +12,7 @@ import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@core/event/EventHook';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
-import { usePriceListObservers } from '../model/usePriceListObservers';
+import { usePriceListObservers } from './model/usePriceListObservers';
 import { priceListEvents, priceEvents } from '@core/event/domainEvents';
 
 const API_URL = priceListEndpoints.list();

@@ -3,9 +3,9 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import { buildLoginRedirectSearch } from '@shared/lib/authRedirect';
 
-const LoginPage = lazyNamed(() => import('@features/auth/pages/LoginPage'), 'LoginPage');
+const LoginPage = lazyNamed(() => import('@features/auth/LoginPage'), 'LoginPage');
 const InitialSetupPage = lazyNamed(
-  () => import('@features/setup/pages/InitialSetupPage'),
+  () => import('@features/setup/InitialSetupPage'),
   'InitialSetupPage',
 );
 

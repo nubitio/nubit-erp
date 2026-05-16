@@ -1,6 +1,6 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { paymentMethodEvents } from '@core/event/domainEvents';
-import { paymentMethodEndpoints } from '../api/catalogEndpoints';
+import { paymentMethodEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource({
   id: 'payment-methods',
