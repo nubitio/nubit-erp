@@ -152,6 +152,58 @@ $white: #fff;
   padding: 0.25rem 0.65rem;
 }
 
+// ── Danger variant ────────────────────────────────────────────────────────────
+.app-button--danger {
+  background: $danger;
+  border: 1px solid $danger;
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, #{$danger} 85%, #000);
+    outline: none;
+  }
+}
+
+// ── Form controls ─────────────────────────────────────────────────────────────
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.form-control {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--base-text-color);
+  display: block;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.65rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+
+  &:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent);
+    outline: none;
+  }
+
+  &[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+// ── Spacing / layout utilities (minimal — avoid Bootstrap dependency) ─────────
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.p-2  { padding: 0.5rem; }
+.text-center { text-align: center; }
+.text-decoration-line-through { text-decoration: line-through; }
+
 // ── Shared icon button ────────────────────────────────────────────────────────
 .app-icon-button {
   align-items: center;

@@ -62,7 +62,7 @@ export const CashRegisterOpen = () => {
 
           <button
             type="submit"
-            className="app-button app-button-success app-button-full"
+            className="app-button app-button--success app-button--full"
             disabled={isProcessing}
             data-testid="cash-open-submit-btn"
           >
