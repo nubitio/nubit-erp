@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { FORM_EVENTS, type DxFormEvents } from '@core/form/DxForm';
+import { FORM_EVENTS } from '@core/ui/CrudViews';
+import type { FormHandle } from '@core/form/FormHandle';
 import { loadMovementItemsOnEdit } from '../lib/loadMovementItemsOnEdit';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
@@ -8,7 +9,7 @@ type UseMovementFormObserversParams = {
   on: OnEventFn;
   apiUrl: string;
   editEventName: string;
-  formRef: RefObject<DxFormEvents | null>;
+  formRef: RefObject<FormHandle | null>;
   onDetailRowsChanged?: () => void;
 };
 

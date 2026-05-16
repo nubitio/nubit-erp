@@ -1,8 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { Constants } from '@core/common/Constants';
-import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm } from '@core/form/DxForm';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
 import { invoiceEvents } from '@features/invoice/model/events';
@@ -21,7 +19,7 @@ const detailFields = (parentRow: Record<string, unknown>) =>
   InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN');
 
 export const InvoicePage = () => {
-  const gridRef = useRef<DxDataGridEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
 
   const actionDeps = useMemo(
     () => ({
@@ -64,7 +62,7 @@ export const InvoicePage = () => {
 
   return (
     <div id="wrapper" className="invoice-page">
-      <DxDataGrid
+      <DataGridView
         id="invoice"
         ref={gridRef}
         title="Comprobantes"
@@ -76,14 +74,14 @@ export const InvoicePage = () => {
         events={invoiceEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
       />
-      <DxDialog title="Comprobante" width={900} maxHeight={720} events={invoiceEvents}>
-        <DxForm
+      <DialogView title="Comprobante" width={900} maxHeight={720} events={invoiceEvents}>
+        <FormView
           className="plain-styled-form entity-form"
           url={API_URL}
           fields={fields}
           events={invoiceEvents}
         />
-      </DxDialog>
+      </DialogView>
     </div>
   );
 };

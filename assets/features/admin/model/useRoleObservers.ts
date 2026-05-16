@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { TreeViewRef } from 'devextreme-react/tree-view';
+import type { GridHandle } from '@core/datagrid/GridHandle';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
+import type { PermissionTreeHandle } from '../components/PermissionTreeView';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -15,8 +15,8 @@ type UseRoleObserversParams = {
     SAVE: string;
     SUCCESS: string;
   };
-  gridRef: React.RefObject<DxDataGridEvents | null>;
-  treeRef: React.RefObject<TreeViewRef | null>;
+  gridRef: React.RefObject<GridHandle | null>;
+  treeRef: React.RefObject<PermissionTreeHandle | null>;
 };
 
 export const useRoleObservers = ({
@@ -42,15 +42,7 @@ export const useRoleObservers = ({
     onEvent(ev.SAVE, () => {
       const row = grid.current?.getSelectedRow();
       if (!row) return;
-      const data = tree.current?.instance().getSelectedNodes();
-      let permissions: any[] = [];
-      data?.forEach((item) => {
-        if (item.parent?.key) {
-          permissions.push(item.parent.key);
-        }
-        permissions.push(item.key);
-      });
-      permissions = [...new Set(permissions)];
+      const permissions = tree.current?.getSelectedPermissionIds() ?? [];
       httpClient
         .post<AppResponse>(roleEndpoints.saveMenu(), {
           roleId: row.id,

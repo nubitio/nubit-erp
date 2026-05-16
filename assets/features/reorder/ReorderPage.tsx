@@ -4,7 +4,7 @@ import { SmartCrudPage, defineResource } from '@core/crud';
 import { defineFields } from '@core/crud/fieldContract';
 import { Constants } from '@core/common/Constants';
 import { FieldType } from '@core/field/FieldType';
-import type { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ const coverage = (stock: string, minStock: string): number => {
   return Math.min(100, Math.round((s / m) * 100));
 };
 
-function CoverageCell({ data }: ColumnCellTemplateData) {
+function CoverageCell({ data }: GridCellContext) {
   const pct = coverage(String(data?.qtyOnHand ?? '0'), String(data?.minStock ?? '0'));
   const color = pct <= 0 ? '#ef4444' : pct < 30 ? '#f97316' : '#eab308';
   return (
@@ -84,7 +84,7 @@ export const ReorderPage = () => {
 
   const makeActionsCell = useCallback(
     () =>
-      function ActionsCell({ data }: ColumnCellTemplateData) {
+      function ActionsCell({ data }: GridCellContext) {
         const product = data?.product;
         const productId = product && typeof product === 'object'
           ? (product as { id?: string }).id

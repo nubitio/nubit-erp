@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { CrudPage, defineResource } from '@core/crud';
-import type { DxFormEvents } from '@core/form/DxForm';
+import type { FormHandle } from '@core/form/FormHandle';
 import { Constants } from '@core/common/Constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 import { purchasesEvents } from '@features/purchases/model/events';
@@ -16,7 +16,7 @@ const purchasesResource = defineResource({
   sort: [{ selector: 'createdAt', desc: true }],
   dialogWidth: 900,
   dialogHeight: 600,
-  onDetailRowsChanged: (formRef: RefObject<DxFormEvents | null>) => {
+  onDetailRowsChanged: (formRef: RefObject<FormHandle | null>) => {
     const rows = formRef.current?.getDetailData() ?? [];
     const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);
     formRef.current?.setFieldValue('grandTotal', Number(total));

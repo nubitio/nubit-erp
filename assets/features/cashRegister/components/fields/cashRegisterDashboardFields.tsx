@@ -1,6 +1,6 @@
 import { Field } from '../../../../core/field/Field';
 import { identityField, currencyField, textField } from '../../../../core/field/FieldBuilders';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
@@ -12,7 +12,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
     textField()
       .name('status')
       .label('Estado')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.data.status === 'open') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Abierta</span>;
         } else {
@@ -28,7 +28,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
     currencyField()
       .name('todaySales')
       .label('Ventas hoy')
-      .formatter((cell: ColumnCellTemplateData) =>
+      .formatter((cell: GridCellContext) =>
         cell.value != null ? NumberUtils.formatCurrency(Number(cell.value)) : '—',
       )
       .build(),
@@ -37,7 +37,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
     currencyField()
       .name('balance')
       .label('Saldo actual')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .build(),
   );
   fields.push(
@@ -46,7 +46,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
       .label('')
       .align('center')
       .filterable(false)
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.data.status === 'open') {
           return (
             <div style={{ display: 'flex', gap: '8px' }}>

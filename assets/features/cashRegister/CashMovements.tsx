@@ -1,8 +1,6 @@
 import './CashMovements.scss';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
 import NumberUtils from '../../shared/lib/NumberUtils';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm } from '@core/form/DxForm';
 import { useEffect, useRef, useState } from 'react';
 import { Constants } from '@core/common/Constants';
 import cashMovementsFields from './components/fields/cashMovementsFields';
@@ -17,7 +15,7 @@ type CashMovementsParams = {
 export const CashMovements = () => {
   const { id } = useParams<CashMovementsParams>();
   const API_URL = Constants.API_BASE_URL + 'cash-movements';
-  const gridRef = useRef<DxDataGridEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
   const fields = cashMovementsFields(id);
   const [balance, setBalance] = useState<number | undefined>(undefined);
   const [gridError, setGridError] = useState<string | null>(null);
@@ -47,15 +45,13 @@ export const CashMovements = () => {
   const onContentReady = () => {
     setGridError(null);
     let balance = 0;
-    gridRef.current
-      ?.getDataSource()
-      ?.load()
-      .then((response: any) => {
-        response.data.forEach((item: any) => {
+    gridRef.current?.loadData().then((response: any) => {
+      const rows = Array.isArray(response) ? response : response?.data ?? [];
+      rows.forEach((item: any) => {
           balance += item.type === 'income' ? Number(item.amount) : -Number(item.amount);
         });
-        setBalance(balance);
-      });
+      setBalance(balance);
+    });
   };
 
   useEffect(() => {
@@ -66,7 +62,7 @@ export const CashMovements = () => {
 
   return (
     <div className="cash-movements-page">
-      <DxDataGrid
+      <DataGridView
         ref={gridRef}
         id="cash-movements"
         title="Movimientos de caja"
@@ -89,9 +85,9 @@ export const CashMovements = () => {
         onContentReady={onContentReady}
         paging={false}
       />
-      <DxDialog title="Movimiento de caja" events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
-      </DxDialog>
+      <DialogView title="Movimiento de caja" events={EVENTS}>
+        <FormView url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+      </DialogView>
     </div>
   );
 };

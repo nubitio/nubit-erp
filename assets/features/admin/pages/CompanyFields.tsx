@@ -8,13 +8,13 @@ import {
   textField,
   textareaField,
 } from '@core/field/FieldBuilders';
-import { DxFormEvents } from '@core/form/DxForm';
+import type { FormHandle } from '@core/form/FormHandle';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { Constants } from '@core/common/Constants';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
-export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
+export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -107,7 +107,7 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
     imageField(Constants.API_BASE_URL)
       .name('logo')
       .label('Logo')
-      .formatter((e: ColumnCellTemplateData) => {
+      .formatter((e: GridCellContext) => {
         return SharedUtils.imageFormatter(e.data?.logo?.path, e.data?.nombre_comercial);
       })
       .build(),

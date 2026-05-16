@@ -6,7 +6,12 @@ import { SharedUtils } from '@shared/lib/SharedUtils';
 import toast from '@shared/lib/SharedUtils';
 import type { MutableRefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { FormRef } from 'devextreme-react/form';
+
+type FormEditorRef = {
+  instance: () => {
+    getEditor: (name: string) => { option: (name: string, value?: unknown) => unknown } | undefined;
+  };
+};
 
 interface CustomerRecord extends Record<string, unknown> {
   id: string;
@@ -19,10 +24,10 @@ interface CustomerRecord extends Record<string, unknown> {
 }
 
 interface ButtonContext {
-  formRef: MutableRefObject<FormRef | null>;
+  formRef: MutableRefObject<FormEditorRef | null>;
 }
 
-function setField(formRef: MutableRefObject<FormRef | null>, name: string, value: unknown) {
+function setField(formRef: MutableRefObject<FormEditorRef | null>, name: string, value: unknown) {
   formRef.current?.instance().getEditor(name)?.option('value', value);
 }
 

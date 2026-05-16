@@ -1,7 +1,12 @@
 import './SalePage.scss';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxForm, DxFormEvents, FORM_EVENTS } from '@core/form/DxForm';
-import { DxDialog } from '@core/dialog/DxDialog';
+import {
+  DataGridView,
+  DialogView,
+  FormView,
+  FORM_EVENTS,
+  type FormHandle,
+  type GridHandle,
+} from '@core/ui/CrudViews';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -28,9 +33,9 @@ import toast from '@shared/lib/SharedUtils';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
-  const gridRef = useRef<DxDataGridEvents>(null);
-  const formRef = useRef<DxFormEvents>(null);
-  const customerFormRef = useRef<DxFormEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
+  const formRef = useRef<FormHandle>(null);
+  const customerFormRef = useRef<FormHandle>(null);
   const invoicePrinterRef = useRef(createInvoicePrinter());
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
@@ -209,7 +214,7 @@ export const SalePage = () => {
 
   return (
     <div id={container}>
-      <DxDataGrid
+      <DataGridView
         id={'sales'}
         ref={gridRef}
         title={'Ventas'}
@@ -222,8 +227,8 @@ export const SalePage = () => {
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
       />
-      <DxDialog width={1200} events={saleEvents}>
-        <DxForm
+      <DialogView width={1200} events={saleEvents}>
+        <FormView
           ref={formRef}
           url={API_URL}
           fields={fields}
@@ -232,16 +237,16 @@ export const SalePage = () => {
           events={saleEvents}
           useIRI={true}
         />
-      </DxDialog>
+      </DialogView>
       <DiscountDialog />
-      <DxDialog events={CustomerPage.EVENTS}>
-        <DxForm
+      <DialogView events={CustomerPage.EVENTS}>
+        <FormView
           ref={customerFormRef}
           url={CustomerPage.API_URL}
           fields={customerFields}
           events={CustomerPage.EVENTS}
         />
-      </DxDialog>
+      </DialogView>
       <SalePrintPreviewPopup
         saleId={salePrintPreview.selectedSaleIdRef.current}
         visible={salePrintPreview.isPreviewVisible}

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DATA_GRID_EVENTS } from '@core/datagrid/DxDataGrid';
-import { FORM_EVENTS } from '@core/form/DxForm';
+import { DATA_GRID_EVENTS, FORM_EVENTS } from '@core/ui/CrudViews';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 import { DiscountDialogApplyPayload } from '@shared/ui/discount-dialog/DiscountDialog';
 

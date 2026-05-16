@@ -17,6 +17,7 @@ import type { FormLayout } from '../crud/FormLayout';
 import { buildEmptyRow, normalizeFormData } from './DxFormDataTransform';
 import { DxFormDetailGrid } from './DxFormDetailGrid';
 import { useDxFormApi } from './useDxFormApi';
+import type { FormHandle } from './FormHandle';
 
 type FormRecord = Record<string, unknown>;
 type FormError = { propertyPath: string; message: string };
@@ -64,25 +65,7 @@ export interface DxFormOptions {
   sidebarColCount?: never;
 }
 
-export interface DxFormEvents {
-  getFormData: () => FormRecord | undefined;
-  getFieldValue: (name: string) => unknown;
-  setFieldValue: (name: string, value: unknown) => void;
-  getDetailData: () => FormRecord[] | undefined;
-  setDetailData: (data: FormRecord[]) => void;
-  saveDetailData: () => Promise<void> | void;
-  reloadDetailData: () => void;
-  setValues: (data: FormRecord) => void;
-  setReadonly: (field: string, value: boolean) => void;
-  setDisabled: (field: string, value: boolean) => void;
-  enableValidation: (field: string) => void;
-  disableValidation: (field: string) => void;
-  setError: (field: string, message: string) => void;
-  showField: (field: string) => void;
-  hideField: (field: string) => void;
-  validate: () => boolean;
-  setIsEdit: (value: boolean) => void;
-}
+export type DxFormEvents = FormHandle;
 
 export function syncComputedValuesIntoFormData(
   formData: Record<string, unknown>,

@@ -1,4 +1,3 @@
-import type { LoadOptions } from 'devextreme/data/load_options';
 import { ProductDto } from '@features/product/types/product.dto';
 import { businessHttpClient, httpRequest, httpRequestData } from '@shared/api/network';
 import GridData from '@shared/data/GridData';
@@ -7,7 +6,7 @@ import { Constants } from '@core/common/Constants';
 import { ProductStockDto } from '@features/product/types/product.stock.dto';
 
 class ProductService {
-  getAll(loadOptions: LoadOptions): Promise<GridData<ProductDto>> {
+  getAll(loadOptions: Record<string, unknown>): Promise<GridData<ProductDto>> {
     const request$ = businessHttpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
       params: loadOptions as Record<string, unknown>,
     });

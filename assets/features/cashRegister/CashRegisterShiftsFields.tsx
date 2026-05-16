@@ -6,7 +6,7 @@ import {
   enumField,
   textareaField,
 } from '@core/field/FieldBuilders';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashRegisterShiftsFields = () => {
@@ -21,7 +21,7 @@ export const CashRegisterShiftsFields = () => {
     ])
       .name('status')
       .label('Estado')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value === 'OPEN') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Abierto</span>;
         }
@@ -49,7 +49,7 @@ export const CashRegisterShiftsFields = () => {
       .name('openedAt')
       .defaultValue(undefined)
       .label('Apertura')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateTimeFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value))
       .build(),
   );
 
@@ -58,7 +58,7 @@ export const CashRegisterShiftsFields = () => {
       .name('closedAt')
       .defaultValue(undefined)
       .label('Cierre')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateTimeFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value))
       .build(),
   );
 

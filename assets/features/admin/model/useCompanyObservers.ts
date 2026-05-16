@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import { DxFormEvents, FORM_EVENTS } from '@core/form/DxForm';
+import { FORM_EVENTS } from '@core/ui/CrudViews';
+import type { FormHandle } from '@core/form/FormHandle';
 import { useEvents } from '@core/event/EventHook';
 import { httpClient } from '@shared/api/HttpClient';
 import { companyEndpoints } from '../api/companyEndpoints';
 
 type UseCompanyObserversParams = {
   loadingEvent: string;
-  formRef: React.RefObject<DxFormEvents | null>;
+  formRef: React.RefObject<FormHandle | null>;
 };
 
 export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserversParams) => {

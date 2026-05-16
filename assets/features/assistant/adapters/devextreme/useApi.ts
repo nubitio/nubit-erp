@@ -6,7 +6,7 @@ import {
   assistantService,
   type AssistantAttachmentPayload,
   type AssistantChatMessage,
-} from './services/assistantService';
+} from '../../services/assistantService';
 
 const wait = (delay: number): Promise<void> =>
   new Promise((resolve) => {

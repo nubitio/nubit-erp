@@ -1,5 +1,5 @@
 import { Constants } from '@core/common/Constants';
-import { DxFormEvents } from '@core/form/DxForm';
+import type { FormHandle } from '@core/form/FormHandle';
 import { Field } from '@core/field/Field';
 import {
   identityField,
@@ -21,13 +21,40 @@ import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
-export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallbacks) => {
+interface SaleFieldCallbacks {
+  onOpenAddCustomer?: () => void;
+  onOpenDiscount?: (payload: { total: number; discountPercent: number }) => void | Promise<void>;
+}
+
+interface SaleDetailFieldCallbacks {
+  onOpenItemDiscount?: (payload: {
+    rowIndex: number;
+    baseValue: number;
+    discountPercent: number;
+    discountAmount: number;
+  }) => void;
+}
+
+let priceList: PriceListItemDto[] = [];
+let selectedWarehouseId = '';
+
+const isStockTrackedProduct = (product: ProductDto | Record<string, unknown> | undefined) => {
+  if (!product) return false;
+
+  const inventoryBehavior = String(product.inventoryBehavior ?? '').toUpperCase();
+  if (inventoryBehavior) return inventoryBehavior === 'TRACKED';
+
+  if (typeof product.trackInventory === 'boolean') return product.trackInventory;
+
+  const productKind = String(product.productKind ?? '').toUpperCase();
+  const productType = String(product.productType ?? '').toUpperCase();
+  return productKind === 'GOOD' || productType === 'STOCKABLE' || product.type === 1;
+};
+
+export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbacks) => {
   const fields: Field[] = [];
-
-  let priceList: PriceListItemDto[] = [];
-  let selectedWarehouseId = '';
 
   fields.push(identityField().build());
   fields.push(
@@ -45,7 +72,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .name('issuedAt')
       .label('Fecha')
       .required(true)
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .valueType('date')
       .build(),
   );
@@ -75,7 +102,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .mode('remote')
       .defaultValue(1)
       .required(true)
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => cell.value?.businessName)
       .onSelect((event: any) => {
         if (event.itemData.price_list) {
           form?.setFieldValue('price_list', event.itemData.price_list.id);
@@ -128,7 +155,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .valueType('number')
       .defaultValue(1)
       .required(true)
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .formatter((cell: GridCellContext) => cell.value?.name)
       .build(),
   );
   fields.push(
@@ -160,7 +187,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
     noneField()
       .name('invoiceFullNumber')
       .label('Comprobante')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value) {
           const url = `/receipt/${cell.data.id}/ticket?format=a4`;
           return (
@@ -198,7 +225,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .col(6)
       .name('grandTotal')
       .label('Total')
-      .formatter((cell: ColumnCellTemplateData) =>
+      .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
       )
       .disabled(true)
@@ -209,7 +236,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .name('status')
       .label('Estado')
       .align('center')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         return SharedUtils.saleStatusFormatter(cell.data);
       })
       .build(),
@@ -227,7 +254,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
 };
 
 export const SaleDetailFields = (
-  form: DxFormEvents | null,
+  form: FormHandle | null,
   currency: string = 'PEN',
   callbacks?: SaleDetailFieldCallbacks,
 ) => {
@@ -257,7 +284,7 @@ export const SaleDetailFields = (
         row.netAmount = price;
         this.defaultSetCellValue(row, product, currentRow);
       })
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .formatter((cell: GridCellContext) => cell.value?.name)
       .required(true)
       .sortable(false)
       .build(),
@@ -315,7 +342,7 @@ export const SaleDetailFields = (
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
         this.defaultSetCellValue(row, value, currentRow);
       })
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
       .sortable(false)
       .build(),
@@ -347,7 +374,7 @@ export const SaleDetailFields = (
       .name('discountAmount')
       .label('Desc. S/')
       .defaultValue(0)
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value ?? 0, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value ?? 0, currency))
       .filterable(false)
       .disabled(true)
       .sortable(false)
@@ -363,7 +390,7 @@ export const SaleDetailFields = (
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);
       })
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
       .filterable(false)
       .disabled(true)
@@ -382,7 +409,7 @@ export const SaleDetailFields = (
         .align('center')
         .filterable(false)
         .sortable(false)
-        .formatter((cell: ColumnCellTemplateData) => {
+        .formatter((cell: GridCellContext) => {
           const row = cell.data as {
             qty?: number;
             unitPrice?: number;
@@ -421,7 +448,7 @@ export const SaleDetailFields = (
   return fields;
 };
 
-const getSubTotal = (form: DxFormEvents | null) => {
+const getSubTotal = (form: FormHandle | null) => {
   const rows: { netAmount?: unknown }[] = form?.getDetailData() ?? [];
   let total = 0;
   rows.forEach((row) => {
@@ -430,7 +457,7 @@ const getSubTotal = (form: DxFormEvents | null) => {
   return total;
 };
 
-export const setTotal = (form: DxFormEvents | null) => {
+export const setTotal = (form: FormHandle | null) => {
   const subTotal = getSubTotal(form);
   const discountPercent = Number(form?.getFieldValue('discountPercent') ?? 0);
   const discount = subTotal * (discountPercent / 100);

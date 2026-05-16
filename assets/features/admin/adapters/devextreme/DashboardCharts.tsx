@@ -9,7 +9,7 @@ import {
   ValueAxis,
 } from 'devextreme-react/chart';
 import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
-import { SalesByMonth, SalesByDay } from '../types';
+import { SalesByMonth, SalesByDay } from '../../pages/types';
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {

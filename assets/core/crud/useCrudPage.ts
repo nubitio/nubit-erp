@@ -3,7 +3,7 @@ import { usePermissions } from './usePermissions';
 import { useSelectionState } from './useSelectionState';
 import { useColumnPreset } from './useColumnPreset';
 import type { Field } from '../field/Field';
-import type { DxFormEvents } from '../form/DxForm';
+import type { FormHandle } from '../form/FormHandle';
 import type { FormEventNames } from '../event/EventTypes';
 import type { ResourceConfig, FieldsFactory } from './ResourceConfig';
 import type { ResolvedPermissions } from './usePermissions';
@@ -17,7 +17,7 @@ export function useCrudPage<T extends Record<string, unknown> = Record<string, u
   events: FormEventNames;
   resource: ResolvedCrudResource<T>;
   fields: Field[];
-  formRef: React.RefObject<DxFormEvents | null>;
+  formRef: React.RefObject<FormHandle | null>;
   permissions: ResolvedPermissions;
   selectionState: SelectionState & {
     onSelectionChanged: (rows: Record<string, unknown>[]) => void;
@@ -26,7 +26,7 @@ export function useCrudPage<T extends Record<string, unknown> = Record<string, u
 } {
   const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
   const events = resolvedResource.events;
-  const formRef = useRef<DxFormEvents | null>(null);
+  const formRef = useRef<FormHandle | null>(null);
   const fields = useMemo(() => {
     if (typeof resolvedResource.fields === 'function') {
       // eslint-disable-next-line react-hooks/refs -- fields factories intentionally receive the live form ref contract

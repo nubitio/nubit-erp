@@ -1,6 +1,6 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DataGridView, type GridHandle } from '@core/ui/CrudViews';
 import { Constants } from '@core/common/Constants';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
@@ -10,7 +10,7 @@ import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 export const CashRegisterDashboard = () => {
   const url = Constants.API_BASE_URL + 'cash-registers/dashboard';
   const navigate = useNavigate();
-  const gridRef = useRef<DxDataGridEvents | null>(null);
+  const gridRef = useRef<GridHandle | null>(null);
   const [gridError, setGridError] = useState<string | null>(null);
   const [on] = useEvents();
   const fields = cashRegisterDashboardFields(navigate);
@@ -25,7 +25,7 @@ export const CashRegisterDashboard = () => {
 
   return (
     <div className="cash-register-dashboard-page">
-      <DxDataGrid
+      <DataGridView
         ref={gridRef}
         id="cashbox"
         title="Cajas"

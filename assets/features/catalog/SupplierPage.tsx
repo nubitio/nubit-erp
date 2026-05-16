@@ -1,12 +1,17 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { defineFields } from '@core/crud/fieldContract';
 import type { MutableRefObject } from 'react';
-import type { FormRef } from 'devextreme-react/form';
 import { FieldType } from '@core/field/FieldType';
 import { supplierEvents } from '@core/event/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
+
+type FormEditorRef = {
+  instance: () => {
+    getEditor: (name: string) => { option: (name: string, value?: unknown) => unknown } | undefined;
+  };
+};
 
 interface SupplierRecord extends Record<string, unknown> {
   id: string;
@@ -17,10 +22,10 @@ interface SupplierRecord extends Record<string, unknown> {
 }
 
 interface ButtonContext {
-  formRef: MutableRefObject<FormRef | null>;
+  formRef: MutableRefObject<FormEditorRef | null>;
 }
 
-function setField(formRef: MutableRefObject<FormRef | null>, name: string, value: unknown) {
+function setField(formRef: MutableRefObject<FormEditorRef | null>, name: string, value: unknown) {
   formRef.current?.instance().getEditor(name)?.option('value', value);
 }
 

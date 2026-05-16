@@ -5,7 +5,7 @@ import ArrayStore from 'devextreme/data/array_store';
 import toast from '../../shared/lib/SharedUtils';
 import { Field } from '../field/Field';
 import { normalizeFormData } from './DxFormDataTransform';
-import type { DxFormEvents } from './DxForm';
+import type { FormHandle } from './FormHandle';
 
 type FormRecord = Record<string, unknown>;
 
@@ -19,12 +19,12 @@ export interface UseDxFormApiRefs {
  * Imperative API methods for DxForm, exposed via `useImperativeHandle`.
  *
  * Extracted from DxForm to reduce component size while keeping a stable
- * API surface — callers use `DxFormEvents` as before.
+ * API surface exposed by the form adapter.
  */
 export function useDxFormApi(
   refs: UseDxFormApiRefs,
   fields: Field[],
-): DxFormEvents {
+): FormHandle {
   const { formRef, gridRef, isEdit } = refs;
 
   const getFormData = () => {
