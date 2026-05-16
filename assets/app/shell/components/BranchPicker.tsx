@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'devextreme-react';
-import List from 'devextreme-react/list';
-import { Popup, PopupRef, ToolbarItem } from 'devextreme-react/popup';
-import ArrayStore from 'devextreme/data/array_store';
 
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
@@ -11,6 +7,8 @@ import { resolveBranchSelectionRedirect, resolvePostLoginRedirect } from '@share
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@utils/media-query';
+
+import { AppDialog } from './AppDialog';
 
 import './BranchPicker.scss';
 
@@ -32,18 +30,14 @@ export const BranchPicker = ({
   initialBranches = [],
   redirectPath,
 }: BranchPickerProps) => {
-  const ref = useRef<PopupRef>(null);
+  const firstOptionRef = useRef<HTMLButtonElement | null>(null);
   const navigate = useNavigate();
   const { isXSmall } = useScreenSize();
-  const [dataSource, setDataSource] = useState<ArrayStore | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [selecting, setSelecting] = useState(false);
   const [loadingBranches, setLoadingBranches] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-
-  const onSelectionChanged = (e: { addedItems?: Branch[] }) => {
-    setSelectedBranch((e.addedItems?.[0] as Branch) ?? null);
-  };
 
   const close = useCallback(() => {
     setVisible(false);
@@ -78,12 +72,7 @@ export const BranchPicker = ({
   }, [selectedBranch, selecting, close, navigate, redirectPath]);
 
   const loadBranchData = useCallback((data: Branch[]) => {
-    setDataSource(
-      new ArrayStore({
-        key: 'id',
-        data,
-      }),
-    );
+    setBranches(data);
 
     const lastBranchId = branchService.getSelectedBranchId();
     const rememberedBranch = data.find((item) => item.id === lastBranchId) ?? null;
@@ -97,19 +86,28 @@ export const BranchPicker = ({
   }, []);
 
   useEffect(() => {
+    if (visible && branches.length > 0) {
+      firstOptionRef.current?.focus();
+    }
+  }, [visible, branches.length]);
+
+  useEffect(() => {
     if (!visible || initialBranches.length === 0) {
       return;
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading initial branch options into local popup state is intentional during visibility sync
     loadBranchData(initialBranches);
-  }, [visible, initialBranches, loadBranchData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run only on visibility toggle and length changes, not on identity changes of the array
+  }, [visible, initialBranches.length, loadBranchData]);
 
   useEffect(() => {
-    if (!visible || hasLoaded) {
+    // Skip fetch if initialBranches were provided (or already loaded by that effect)
+    if (!visible || hasLoaded || initialBranches.length > 0) {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- marks the async branch loading state when the picker opens
     setLoadingBranches(true);
 
     let cancelled = false;
@@ -126,6 +124,7 @@ export const BranchPicker = ({
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialBranches.length is checked as a guard but this effect should not re-run when it changes; effect above handles the initialBranches case
   }, [visible, hasLoaded, loadBranchData]);
 
   useEffect(() => {
@@ -135,53 +134,60 @@ export const BranchPicker = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- reset cached visibility state when the shell picker closes
       setHasLoaded(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only react to visibility changes, not state setters
   }, [visible]);
 
   return (
-    <Popup
-      ref={ref}
+    <AppDialog
       title="Seleccionar local"
       width={480}
       height={360}
       fullScreen={isXSmall}
       visible={visible}
       showCloseButton={false}
-      hideOnOutsideClick={!selecting}
-      wrapperAttr={{ class: 'picker-popup' }}
+      closeOnOutsideClick={!selecting}
+      closeOnEscape={!selecting}
+      onClose={close}
+      className="picker-popup"
     >
-      <ToolbarItem toolbar="bottom" location="after">
-        <div className="picker-popup-buttons-container">
-          <Button
-            text="Cancelar"
-            stylingMode="outlined"
-            onClick={onCancelClick}
-            disabled={selecting}
-          />
-          <Button
-            text="Aceptar"
-            stylingMode="outlined"
-            type="default"
-            onClick={onAcceptClick}
-            disabled={selecting}
-          />
+      <div className="branch-picker">
+        <div className="branch-picker__list" role="radiogroup" aria-label="Locales disponibles">
+          {loadingBranches ? (
+            <div className="branch-picker__empty">Cargando locales...</div>
+          ) : branches.length === 0 ? (
+            <div className="branch-picker__empty">No hay locales disponibles</div>
+          ) : (
+            branches.map((branch, index) => {
+              const selected = selectedBranch?.id === branch.id;
+
+              return (
+                <button
+                  className={`branch-picker__option${selected ? ' is-selected' : ''}`}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  data-testid="branch-picker-option"
+                  data-branch-id={branch.id}
+                  key={branch.id}
+                  ref={index === 0 ? firstOptionRef : undefined}
+                  onClick={() => setSelectedBranch(branch)}
+                >
+                  <span className="branch-picker__radio" aria-hidden="true" />
+                  <span>{branch.name}</span>
+                </button>
+              );
+            })
+          )}
         </div>
-      </ToolbarItem>
-      <List
-        dataSource={dataSource}
-        showSelectionControls={true}
-        selectionMode="single"
-        displayExpr="name"
-        selectByClick={true}
-        noDataText={loadingBranches ? 'Cargando locales...' : 'No hay locales disponibles'}
-        onSelectionChanged={onSelectionChanged}
-        selectedItemKeys={selectedBranch ? [selectedBranch.id] : []}
-        repaintChangesOnly={true}
-        itemRender={(item: Branch) => (
-          <span data-testid="branch-picker-option" data-branch-id={item.id}>
-            {item.name}
-          </span>
-        )}
-      />
-    </Popup>
+        <div className="picker-popup-buttons-container">
+          <button className="app-button app-button--secondary" type="button" onClick={onCancelClick} disabled={selecting}>
+            Cancelar
+          </button>
+          <button className="app-button app-button--primary" type="button" onClick={onAcceptClick} disabled={selecting}>
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </AppDialog>
   );
 };

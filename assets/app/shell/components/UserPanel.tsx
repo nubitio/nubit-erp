@@ -1,7 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import DropDownButton from 'devextreme-react/drop-down-button';
-import { ListRef } from 'devextreme-react/list';
-import { Template } from 'devextreme-react/core/template';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { UserPanelProps } from '@app/types';
 import { useAuth } from '@app/contexts/auth';
@@ -13,48 +10,61 @@ import './UserPanel.scss';
 
 export const UserPanel = ({ menuMode }: UserPanelProps) => {
   const { user } = useAuth();
-  const listRef = useRef<ListRef>(null);
+  const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const avatarIcon = useMemo(() => createUserAvatarDataUri(user?.username ?? ''), [user?.username]);
 
-  const dropDownButtonAttributes = {
-    class: 'user-button',
-  };
+  useEffect(() => {
+    if (!open) return;
 
-  const buttonDropDownOptions = {
-    width: '200',
-  };
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (target instanceof Element && target.closest('.app-dialog-root')) {
+        return;
+      }
+      if (!panelRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
 
-  const dropDownButtonContentReady = useCallback(
-    ({
-      component,
-    }: {
-      component: { registerKeyHandler: (key: string, handler: () => void) => void };
-    }) => {
-      component.registerKeyHandler('downArrow', () => {
-        listRef.current?.instance().focus();
-      });
-    },
-    [],
-  );
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  if (menuMode === 'list') {
+    return (
+      <div className="user-panel">
+        <UserMenuSection showAvatar />
+      </div>
+    );
+  }
 
   return (
-    <div className="user-panel">
-      {menuMode === 'context' && (
-        <DropDownButton
-          stylingMode="text"
-          icon={avatarIcon}
-          showArrowIcon={false}
-          elementAttr={dropDownButtonAttributes}
-          dropDownOptions={buttonDropDownOptions}
-          dropDownContentTemplate="dropDownTemplate"
-          onContentReady={dropDownButtonContentReady}
-        >
-          <Template name="dropDownTemplate">
-            <UserMenuSection listRef={listRef} />
-          </Template>
-        </DropDownButton>
+    <div className="user-panel user-panel--dropdown" ref={panelRef}>
+      <button
+        className="user-button"
+        type="button"
+        aria-label="Menú de usuario"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <img src={avatarIcon} alt="" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="user-panel__dropdown" role="menu">
+          <UserMenuSection onAction={() => setOpen(false)} />
+        </div>
       )}
-      {menuMode === 'list' && <UserMenuSection showAvatar />}
     </div>
   );
 };

@@ -1,21 +1,22 @@
-import dxTreeView from 'devextreme/ui/tree_view';
-import { ClickEvent } from 'devextreme/ui/button';
-import { EventInfo } from 'devextreme/events';
-import { ListRef } from 'devextreme-react/list';
 import React from 'react';
 
 export interface AppHeaderProps {
   menuToggleEnabled: boolean;
   title?: string;
-  toggleMenu: (e: ClickEvent) => void;
+  toggleMenu: (e: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
 }
 
 export interface SideNavigationMenuProps {
-  selectedItemChanged: (e: any) => void;
+  selectedItemChanged: (e: SideNavigationSelectEvent) => void;
   openMenu: (e: React.PointerEvent) => void;
   compactMode: boolean;
-  onMenuReady: (e: EventInfo<dxTreeView>) => void;
+}
+
+export interface SideNavigationSelectEvent {
+  path?: string;
+  selected: boolean;
+  event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>;
 }
 
 export interface UserPanelProps {
@@ -24,7 +25,7 @@ export interface UserPanelProps {
 
 export interface UserMenuSectionProps {
   showAvatar?: boolean;
-  listRef?: React.RefObject<ListRef | null>;
+  onAction?: () => void;
 }
 
 export interface User {
@@ -58,4 +59,3 @@ export interface SingleCardProps {
 }
 
 export type Handle = () => void;
-

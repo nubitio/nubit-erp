@@ -281,20 +281,28 @@
   height: 3rem;
   border-top: 1px solid var(--border-color);
   background-color: transparent;
+}
 
-  // Make the DX text-button visible with accent color
-  .dx-button-text {
-    color: var(--accent-color);
-    font-size: 13px;
-    font-weight: 500;
-  }
+.notification-mark-all-button {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--accent-color);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0.35rem 0.6rem;
+  transition: background 150ms ease, color 150ms ease;
 
-  .dx-button.dx-state-disabled .dx-button-text {
+  &:disabled {
     color: var(--text-secondary);
+    cursor: default;
   }
 
-  // Ensure pointer cursor even when processing
-  .dx-button:not(.dx-state-disabled) {
-    cursor: pointer;
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    outline: none;
   }
 }

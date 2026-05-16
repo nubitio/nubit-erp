@@ -13,11 +13,15 @@ export const Content = () => {
     <SchemaProvider>
       <SideNavBarLayout title={userInformation().currentBranchName}>
         <Routes>
-          {appRoutes.map(({ path, element }) => (
+          {appRoutes.map(({ path, element: RouteComponent }) => (
             <Route
               key={path}
               path={path}
-              element={<RouteErrorBoundary>{element}</RouteErrorBoundary>}
+              element={(
+                <RouteErrorBoundary>
+                  <RouteComponent />
+                </RouteErrorBoundary>
+              )}
             />
           ))}
           <Route path="*" element={<Navigate to={defaultPath} />} />

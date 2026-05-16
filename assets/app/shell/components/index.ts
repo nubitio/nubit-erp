@@ -1,4 +1,5 @@
 export { AppFooter } from './AppFooter';
+export { AppDialog } from './AppDialog';
 export { AppHeader } from './AppHeader';
 export { BranchPicker } from './BranchPicker';
 export { NotificationPanel } from './NotificationPanel';

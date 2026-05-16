@@ -1,35 +1,61 @@
 @use 'variables' as *;
 
 .user-info {
-  display: flex;
   align-items: center;
-  cursor: default;
-  padding: var(--list-padding-vertical) var(--list-padding-left);
   border-bottom: 1px solid var(--border-color);
+  cursor: default;
+  display: flex;
+  padding: var(--list-padding-vertical) var(--list-padding-left);
 
   .user-name {
-    font-size: 14px;
     color: var(--base-text-color);
+    font-size: 14px;
   }
 
   .image-container {
-    display: inline-flex;
     align-items: center;
+    display: inline-flex;
     justify-content: center;
     margin-right: var(--list-padding-left);
   }
 }
 
-.dx-list.user-info-list.dx-scrollable.dx-widget {
+.user-info-list {
+  display: flex;
+  flex-direction: column;
   height: auto;
+  padding: 0.25rem 0;
 }
 
-.dx-list-item .dx-icon {
-  vertical-align: middle;
-  margin-right: 16px;
-}
+.user-info-list__item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--base-text-color);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 0.75rem;
+  min-height: 38px;
+  padding: 0.5rem var(--list-padding-left);
+  text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+  width: 100%;
 
-.dx-rtl .dx-list-item .dx-icon {
-  margin-right: 0;
-  margin-left: 16px;
+  i {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    width: 1.25rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    color: var(--accent-color);
+    outline: none;
+
+    i {
+      color: var(--accent-color);
+    }
+  }
 }

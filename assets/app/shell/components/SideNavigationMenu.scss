@@ -3,87 +3,120 @@
 .side-navigation-menu {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
   height: 100%;
+  min-height: 100%;
   width: 250px !important;
 
   .menu-container {
     background-color: var(--side-panel-background);
-    min-height: 100%;
     display: flex;
     flex: 1;
-    padding-top: var(--toolbar-vertical-padding);
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
     padding-bottom: var(--footer-height);
+    padding-top: var(--toolbar-vertical-padding);
 
-    .dx-treeview {
-      // ## Long text positioning
+    .menu-loading,
+    .menu-empty {
+      color: var(--texteditor-label-color);
+      font-size: 0.875rem;
+      padding: 0.75rem 1rem;
       white-space: nowrap;
-
-      // ##
-
-      // ## Icon width customization
-      .dx-treeview-item {
-        padding-left: 0;
-        flex-direction: row-reverse;
-        transition: background 150ms ease;
-
-        .dx-icon {
-          width: var(--side-panel-min-width) !important;
-          margin: 0 !important;
-        }
-      }
-
-      // Selected item
-      .dx-treeview-item-without-checkbox.dx-state-selected > .dx-treeview-item {
-        background: color-mix(in srgb, var(--accent-color) 18%, transparent);
-        color: var(--accent-color);
-        font-weight: var(--font-weight-semibold);
-        border-left: 3px solid var(--accent-color);
-      }
-
-      // Parent section header when a child is selected
-      .dx-treeview-node[aria-level='1']:has(.dx-state-selected) > .dx-treeview-item {
-        color: var(--accent-color);
-        font-weight: var(--font-weight-semibold);
-      }
-
-      // ##
-
-      .dx-treeview-toggle-item-visibility {
-        right: 10px;
-        left: auto;
-      }
-
-      .dx-rtl .dx-treeview-toggle-item-visibility {
-        left: 10px;
-        right: auto;
-      }
-
-      // ##
-
-      // ## Item levels customization
-      .dx-treeview-node {
-        // ## Arrow customization
-        padding: 0 0 !important;
-
-        &[aria-level='1'] {
-          font-weight: bold;
-          border-bottom: 1px solid var(--border-color);
-        }
-
-        &[aria-level='2'] .dx-treeview-item-content {
-          font-weight: normal;
-          padding: 0 0 0 var(--side-panel-min-width);
-        }
-      }
     }
-
-    // ##
   }
 
-  &.compact .menu-container .dx-treeview {
-    .dx-treeview-item-without-checkbox.dx-state-selected > .dx-treeview-item {
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  &__section {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__item {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    min-height: 44px;
+    padding: 0;
+    text-align: left;
+    transition: background 150ms ease, color 150ms ease;
+    width: 100%;
+
+    &:hover {
+      background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    }
+
+    &.is-selected {
+      background: color-mix(in srgb, var(--accent-color) 18%, transparent);
+      border-left: 3px solid var(--accent-color);
+      color: var(--accent-color);
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  &__item--parent {
+    font-weight: bold;
+  }
+
+  &__chevron {
+    border-bottom: 1.5px solid currentcolor;
+    border-right: 1.5px solid currentcolor;
+    display: inline-flex;
+    flex: 0 0 7px;
+    height: 7px;
+    margin-left: auto;
+    margin-right: 1rem;
+    opacity: 0.75;
+    transform: rotate(45deg);
+    transition: transform 150ms ease;
+    width: 7px;
+
+    &.is-expanded {
+      transform: rotate(225deg);
+    }
+  }
+
+  &__section.has-selected-child > &__item--parent {
+    color: var(--accent-color);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__icon {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 var(--side-panel-min-width);
+    justify-content: center;
+    margin: 0 !important;
+    width: var(--side-panel-min-width) !important;
+  }
+
+  &__text {
+    overflow: hidden;
+    padding-right: 0.75rem;
+    text-overflow: ellipsis;
+  }
+
+  &__item--child &__text {
+    font-weight: normal;
+    padding-left: var(--side-panel-min-width);
+  }
+
+  &.compact {
+    .side-navigation-menu__item.is-selected {
       border-left: none;
+    }
+
+    .side-navigation-menu__text {
+      opacity: 0;
     }
   }
 }

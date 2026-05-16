@@ -1,5 +1,4 @@
 import React from 'react';
-import Button from 'devextreme-react/button';
 import { DateTime } from 'luxon';
 import { useNavigate } from 'react-router-dom';
 
@@ -82,7 +81,14 @@ const NotificationPanel = (props: NotificationPanelProps) => {
           )}
         </div>
         <div className="notification-header-button">
-          <Button icon="ph ph-x" stylingMode="text" onClick={props.onHiding} />
+          <button
+            className="app-icon-button notification-close-button"
+            type="button"
+            aria-label="Cerrar notificaciones"
+            onClick={props.onHiding}
+          >
+            <i className="ph ph-x" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -151,12 +157,14 @@ const NotificationPanel = (props: NotificationPanelProps) => {
       </div>
 
       <div className="notification-footer">
-        <Button
-          text="Marcar todo como leído"
-          stylingMode="text"
+        <button
+          className="notification-mark-all-button"
+          type="button"
           disabled={loading || notifications.every((n) => n.readAt !== null)}
           onClick={markAllRead}
-        />
+        >
+          Marcar todo como leído
+        </button>
       </div>
     </>
   );

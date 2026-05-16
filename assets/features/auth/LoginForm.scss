@@ -5,148 +5,163 @@
   flex-direction: column;
   gap: 0;
 
-  // ── DevExtreme form wrapper ─────────────────────────────────────────────
-  .dx-form {
-    background: transparent;
-  }
+  // ── Field wrapper ────────────────────────────────────────────────────────
+  .login-field {
+    margin-bottom: 16px;
 
-  // ── Field items ─────────────────────────────────────────────────────────
-  .dx-field-item {
-    padding-bottom: 16px !important;
-  }
-
-  // ── Text editor base ────────────────────────────────────────────────────
-  .dx-texteditor {
-    min-height: 48px;
-    border-radius: 10px !important;
-    border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent) !important;
-    background: color-mix(in srgb, var(--surface-2) 70%, var(--card-background)) !important;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-
-    &.dx-state-focused {
-      border-color: var(--accent-color) !important;
-      background: var(--card-background) !important;
-      box-shadow: var(--focus-ring-color) 0 0 0 3px !important;
+    &--error .login-input {
+      border-color: var(--error-color) !important;
+      background: color-mix(in srgb, var(--error-color) 4%, var(--card-background)) !important;
     }
 
-    &.dx-state-hover:not(.dx-state-focused) {
-      border-color: var(--text-secondary) !important;
-      background: var(--card-background) !important;
+    &__error {
+      display: block;
+      margin-top: 4px;
+      padding: 0 2px;
+      font-size: 12px;
+      color: var(--error-color);
+      line-height: 1.3;
     }
-
-    // hide the default DevExtreme border
-    &.dx-texteditor-with-label::before,
-    &::before,
-    &::after { display: none !important; }
   }
 
-  // outlined styling overrides
-  .dx-texteditor-input-container,
-  .dx-texteditor-container {
-    border-radius: 10px !important;
-  }
-
-  .dx-texteditor-input {
-    padding: 14px 15px !important;
-    font-size: 14px !important;
-    color: var(--text-primary) !important;
-    background: transparent !important;
-    height: auto !important;
-  }
-
-  // DevExtreme Fluent renders placeholder text via .dx-placeholder::before { content: attr(data-dx_placeholder) }
-  // Full path needed to beat DevExtreme's internal specificity
-  .dx-texteditor.dx-editor-outlined .dx-texteditor-input-container .dx-placeholder,
-  .dx-texteditor.dx-editor-outlined .dx-texteditor-input-container .dx-placeholder::before {
-    color: var(--texteditor-label-color) !important;
-    opacity: 1 !important;
-    font-size: 14px !important;
-  }
-
-  // ── Password toggle button ──────────────────────────────────────────────
-  .dx-texteditor-buttons-container {
+  // ── Password input wrapper (input + toggle) ──────────────────────────────
+  .login-input-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
 
-    .dx-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 4px !important;
-      min-width: 40px;
-      min-height: 40px;
-      border-radius: 6px !important;
-
-      &.dx-button-mode-text {
-        opacity: 0.5;
-        transition: opacity 0.2s ease;
-
-        &:hover { opacity: 1; }
-
-        .dx-button-content {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 40px;
-          padding: 0 !important;
-        }
-
-        .dx-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 17px;
-          line-height: 1;
-          color: var(--text-secondary);
-        }
-      }
+    .login-input {
+      padding-right: 48px !important;
     }
   }
 
-  // ── Submit button ───────────────────────────────────────────────────────
-  .dx-button-submit-input + .dx-button,
-  .dx-field-button-item .dx-button {
-    border-radius: 10px !important;
-    height: 48px !important;
-    background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 80%, #000) 100%) !important;
-    border: none !important;
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--focus-ring-color) 85%, transparent) !important;
-    transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease !important;
+  // ── Text input ───────────────────────────────────────────────────────────
+  .login-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 14px 15px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--surface-2) 70%, var(--card-background));
+    border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    appearance: none;
+
+    &::placeholder {
+      color: var(--texteditor-label-color, var(--text-secondary));
+      opacity: 1;
+    }
+
+    &:focus {
+      border-color: var(--accent-color);
+      background: var(--card-background);
+      box-shadow: 0 0 0 3px var(--focus-ring-color);
+    }
+
+    &:hover:not(:focus) {
+      border-color: var(--text-secondary);
+      background: var(--card-background);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Password toggle ───────────────────────────────────────────────────────
+  .login-password-toggle {
+    position: absolute;
+    right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+    color: var(--text-secondary);
 
     &:hover {
-      opacity: 0.93 !important;
-      box-shadow: 0 6px 20px var(--focus-ring-color) !important;
-      transform: translateY(-1px) !important;
+      opacity: 1;
     }
 
-    &:active {
-      transform: translateY(0) !important;
-      box-shadow: 0 2px 8px var(--focus-ring-color) !important;
-    }
-
-    .dx-button-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 !important;
-    }
-
-    .dx-button-text,
-    .dx-button-text * {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff !important;
-      font-size: 15px !important;
-      font-weight: 600 !important;
-      letter-spacing: 0.2px;
+    i {
+      font-size: 17px;
       line-height: 1;
     }
   }
 
+  // ── Submit button ─────────────────────────────────────────────────────────
+  .login-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48px;
+    padding: 0;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #fff;
+    background: linear-gradient(
+      135deg,
+      var(--accent-color) 0%,
+      color-mix(in srgb, var(--accent-color) 80%, #000) 100%
+    );
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--focus-ring-color) 85%, transparent);
+    cursor: pointer;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    margin-top: 4px;
+
+    &:hover:not(:disabled) {
+      opacity: 0.93;
+      box-shadow: 0 6px 20px var(--focus-ring-color);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px var(--focus-ring-color);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Spinner ───────────────────────────────────────────────────────────────
+  .login-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: login-spin 0.7s linear infinite;
+  }
+
+  @keyframes login-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // ── Error box ─────────────────────────────────────────────────────────────
   .login-error {
-    margin-top: 8px;
+    margin-top: 12px;
     padding: 10px 12px;
     border: 1px solid var(--error-color);
     border-radius: 10px;
@@ -156,5 +171,3 @@
     line-height: 1.4;
   }
 }
-
-

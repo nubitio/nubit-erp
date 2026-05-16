@@ -65,132 +65,21 @@ $white: #fff;
   }
 }
 
-.dx-button {
-  &.dx-button-mode-contained {
-    &.dx-button-default {
-      color: $white !important;
+.app-loading {
+  align-items: center;
+  background: rgb(0 0 0 / 18%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 2000;
+}
 
-      .dx-button-text,
-      .dx-icon {
-        color: $white !important;
-      }
-    }
-
-    &.dx-button-primary {
-      background-color: $primary !important;
-    }
-
-    &.dx-button-secondary {
-      background-color: $secondary !important;
-    }
-
-    &.dx-button-success {
-      background-color: $success !important;
-    }
-
-    &.dx-button-danger {
-      background-color: $danger !important;
-    }
-
-    &.dx-button-warning {
-      background-color: $warning !important;
-    }
-
-    &.dx-button-info {
-      background-color: $info !important;
-    }
-  }
-
-  &.dx-button-mode-outlined {
-    &.dx-button-primary,
-    &.dx-button-secondary,
-    &.dx-button-success,
-    &.dx-button-danger,
-    &.dx-button-warning,
-    &.dx-button-info {
-      border-color: currentColor !important;
-      color: currentColor !important;
-
-      .dx-icon {
-        color: currentColor !important;
-      }
-    }
-
-    &.dx-button-primary {
-      color: $primary !important;
-    }
-
-    &.dx-button-secondary {
-      color: $secondary !important;
-    }
-
-    &.dx-button-success {
-      color: $success !important;
-    }
-
-    &.dx-button-danger {
-      color: $danger !important;
-    }
-
-    &.dx-button-warning {
-      color: $warning !important;
-    }
-
-    &.dx-button-info {
-      color: $info !important;
-    }
-
-    &:hover,
-    &:focus {
-      &.dx-button-primary {
-        background-color: rgba($primary, 0.08) !important;
-      }
-
-      &.dx-button-secondary {
-        background-color: rgba($secondary, 0.08) !important;
-      }
-
-      &.dx-button-success {
-        background-color: rgba($success, 0.08) !important;
-      }
-
-      &.dx-button-danger {
-        background-color: rgba($danger, 0.08) !important;
-      }
-
-      &.dx-button-warning {
-        background-color: rgba($warning, 0.08) !important;
-      }
-
-      &.dx-button-info {
-        background-color: rgba($info, 0.08) !important;
-      }
-    }
-
-    &:active {
-      &.dx-button-primary {
-        background-color: rgba($primary, 0.36) !important;
-      }
-
-      &.dx-button-secondary {
-        background-color: rgba($secondary, 0.36) !important;
-      }
-
-      &.dx-button-success {
-        background-color: rgba($success, 0.36) !important;
-      }
-
-      &.dx-button-danger {
-        background-color: rgba($danger, 0.36) !important;
-      }
-
-      &.dx-button-warning {
-        background-color: rgba($warning, 0.36) !important;
-      }
-
-      &.dx-button-info {
-        background-color: rgba($info, 0.36) !important;
-      }
-    }
-  }
+.app-loading__spinner {
+  animation: app-spinner-rotate 800ms linear infinite;
+  border: 3px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+  border-radius: 50%;
+  border-top-color: var(--accent-color);
+  height: 38px;
+  width: 38px;
 }

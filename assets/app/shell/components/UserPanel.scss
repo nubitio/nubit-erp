@@ -3,54 +3,57 @@
 .user-panel {
   display: flex;
   flex-direction: column;
+}
 
-  .user-button.dx-dropdownbutton {
-    margin-left: 5px;
+.user-panel--dropdown {
+  position: relative;
+}
 
-    img.dx-icon {
-      border-radius: 50%;
-      margin: 0;
-      aspect-ratio: 1 / 1;
-      box-sizing: border-box;
-      border: 1px solid var(--border-color);
-      object-fit: cover;
-      object-position: top;
-      background: rgb(255, 255, 255);
-      background-clip: padding-box;
+.user-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  margin-left: 5px;
+  padding: 2px;
+  width: 36px;
 
-      .dx-theme-generic & {
-        width: auto;
-        height: var(--drop-down-gnrc-button-height);
-      }
+  img {
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    background-clip: padding-box;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    box-sizing: border-box;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    width: 100%;
+  }
 
-      .dx-theme-material & {
-        width: auto;
-        height: 100%;
-      }
+  &:hover,
+  &:focus-visible {
+    outline: none;
 
-      .dx-theme-fluent & {
-        width: auto;
-        height: 100%;
-      }
-    }
-
-    .dx-buttongroup {
-      vertical-align: middle;
-
-      .dx-button.dx-button-has-icon:not(.dx-button-has-text) {
-        .dx-button-content {
-          padding: 0;
-        }
-
-        &.dx-state-hover,
-        &.dx-state-focused {
-          background-color: transparent;
-
-          img.dx-icon {
-            border-color: var(--accent-color);
-          }
-        }
-      }
+    img {
+      border-color: var(--accent-color);
     }
   }
+}
+
+.user-panel__dropdown {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  min-width: 220px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 1600;
 }

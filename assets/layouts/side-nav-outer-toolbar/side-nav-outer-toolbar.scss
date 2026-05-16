@@ -1,8 +1,8 @@
 @use 'variables' as *;
 
 .side-nav-outer-toolbar {
-  flex-direction: column;
   display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
 }
@@ -15,9 +15,66 @@
   background-color: var(--background-color);
 }
 
-.drawer {
+.side-nav-outer-toolbar__body {
+  display: flex;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.side-nav-outer-toolbar__panel {
+  background-color: var(--side-panel-background);
+  box-shadow: var(--shadow-sm);
+  flex: 0 0 250px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  transition: flex-basis 180ms ease, transform 180ms ease, width 180ms ease;
+  width: 250px;
+  z-index: 1500;
+}
+
+.side-nav-outer-toolbar__content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.side-nav-outer-toolbar__scrim {
+  background: rgb(0 0 0 / 32%);
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  z-index: 1499;
+}
+
+.side-nav-outer-toolbar__body.is-large.is-compact {
+  .side-nav-outer-toolbar__panel {
+    flex-basis: var(--side-panel-min-width);
+    width: var(--side-panel-min-width);
+  }
+}
+
+.side-nav-outer-toolbar__body.is-overlay {
+  .side-nav-outer-toolbar__panel {
+    inset: 0 auto 0 0;
+    position: absolute;
+  }
+
+  &.is-closed:not(.is-xsmall) {
+    .side-nav-outer-toolbar__panel {
+      width: var(--side-panel-min-width);
+    }
+  }
+
+  &.is-closed.is-xsmall {
+    .side-nav-outer-toolbar__panel {
+      transform: translateX(-100%);
+    }
+  }
 }
 
 .content {

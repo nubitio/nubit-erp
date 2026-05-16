@@ -2,8 +2,6 @@ import React, { Suspense, useEffect, useState } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
-import LoadPanel from 'devextreme-react/load-panel';
-
 import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '../../utils/media-query';
 import { Content } from './Content';
@@ -18,13 +16,19 @@ import { FullScreenContent } from './FullScreenContent';
 import { MercureManager } from '@core/mercure';
 import { AppProviders } from '../AppProviders';
 
+const AppLoading = () => (
+  <div className="app-loading" role="status" aria-label="Cargando">
+    <span className="app-loading__spinner" aria-hidden="true" />
+  </div>
+);
+
 export function RootApp() {
   const { user, loading } = useAuth();
   const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
   const hasCommittedSession = hasCommittedAuthSession();
 
   if (loading || (!user && hasCommittedSession)) {
-    return <LoadPanel visible />;
+    return <AppLoading />;
   }
 
   if (user) {
@@ -60,7 +64,7 @@ export const EfactApp = () => {
     <AppProviders themeContext={themeContext} mercureHubUrl={mercureHubUrl}>
       <div className={`app ${screenSizeClass}`}>
         {themeContext.isLoaded ? (
-          <Suspense fallback={<LoadPanel visible />}>
+          <Suspense fallback={<AppLoading />}>
             <RootApp />
           </Suspense>
         ) : (
