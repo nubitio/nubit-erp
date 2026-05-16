@@ -4,7 +4,7 @@ import Button from 'devextreme-react/button';
 import { Template } from 'devextreme-react/core/template';
 import Toolbar, { Item } from 'devextreme-react/toolbar';
 
-import type { AppHeaderProps } from '@assets/types';
+import type { AppHeaderProps } from '@app/types';
 import Assistant from '@features/assistant/Assistant';
 import { useNotifications } from '@features/notifications';
 import { useScreenSize } from '@utils/media-query';

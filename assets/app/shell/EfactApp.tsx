@@ -12,7 +12,7 @@ import { configureDevExtreme } from '@app/providers/devextreme';
 
 import '../../styles.scss';
 import '../../theme/theme';
-import '../../styles/custom.scss';
+import './custom.scss';
 import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
 import { MercureManager } from '@core/mercure';

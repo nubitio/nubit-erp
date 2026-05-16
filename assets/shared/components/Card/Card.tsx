@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { SingleCardProps } from '@assets/types';
+import type { SingleCardProps } from '@app/types';
 
 import './Card.scss';
 

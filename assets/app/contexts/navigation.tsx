@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
-import type { NavigationContextType } from '../../types';
+import type { NavigationContextType } from '@app/types';
 
 const NavigationContext = createContext<NavigationContextType>({
   navigationData: { currentPath: '' },

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Handle } from '../types';
+import type { Handle } from '@app/types';
 
 export const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState(getScreenSize());
@@ -75,9 +75,3 @@ function getScreenSize() {
   };
 }
 
-export function getSizeQualifier(width: number) {
-  if (width <= 420) return 'xs';
-  if (width <= 992) return 'sm';
-  if (width < 1200) return 'md';
-  return 'lg';
-}

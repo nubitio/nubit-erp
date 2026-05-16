@@ -3,7 +3,7 @@ import DropDownButton from 'devextreme-react/drop-down-button';
 import { ListRef } from 'devextreme-react/list';
 import { Template } from 'devextreme-react/core/template';
 
-import type { UserPanelProps } from '@assets/types';
+import type { UserPanelProps } from '@app/types';
 import { useAuth } from '@app/contexts/auth';
 import { createUserAvatarDataUri } from './UserAvatar';
 
