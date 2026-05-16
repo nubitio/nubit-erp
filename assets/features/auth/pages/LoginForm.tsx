@@ -12,7 +12,7 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 import './LoginForm.scss';
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
-import { BranchPicker } from '@shared/ui/utils/branch-picker/BranchPicker';
+import { BranchPicker } from '@app/shell/components/BranchPicker';
 import { resolveLoginRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import { StorageUtils } from '@shared/lib/StorageUtils';
