@@ -1,8 +1,5 @@
 import { Card } from '@shared/ui';
-import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { useRef, useState } from 'react';
-import { currencyField } from '@core/field/FieldBuilders';
-import { buildField } from '@core/form/FormUtils';
 import cashRegisterService from './services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
@@ -12,26 +9,21 @@ type CashRegisterOpenParams = {
 };
 
 export const CashRegisterOpen = () => {
-  const formRef = useRef<FormRef>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { id } = useParams<CashRegisterOpenParams>();
   const navigate = useNavigate();
 
-  const openingBalanceField = currencyField()
-    .name('openingBalance')
-    .label('Saldo inicial')
-    .required(true)
-    .build();
-
   const openCashRegister = () => {
-    const formData = formRef.current?.instance().option('formData');
-    if (id === undefined || formData === undefined) {
+    const raw = inputRef.current?.value;
+    const openingBalance = raw !== undefined && raw !== '' ? parseFloat(raw) : NaN;
+    if (id === undefined || isNaN(openingBalance)) {
       toast('No se pudo abrir la caja', 'error');
       return;
     }
     setIsProcessing(true);
     cashRegisterService()
-      .openCashRegister(id, formData.openingBalance)
+      .openCashRegister(id, openingBalance)
       .then((response) => {
         toast('Caja abierta', 'success');
         const cashShiftId = response.data.id;
@@ -45,22 +37,39 @@ export const CashRegisterOpen = () => {
   return (
     <>
       <Card title="Apertura de caja">
-        <Form ref={formRef} width={300}>
-          {buildField(openingBalanceField, openingBalanceField.name)}
+        <form
+          style={{ width: 300 }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            openCashRegister();
+          }}
+        >
+          <div className="mb-3">
+            <label htmlFor="cash-opening-balance" className="form-label">
+              Saldo inicial <span aria-hidden="true" style={{ color: 'red' }}>*</span>
+            </label>
+            <input
+              ref={inputRef}
+              id="cash-opening-balance"
+              type="number"
+              className="form-control"
+              min={0}
+              step={0.01}
+              required
+              placeholder="0.00"
+            />
+          </div>
 
-          <SimpleItem>
-            <button
-              type="button"
-              className="app-button app-button--success app-button--full"
-              disabled={isProcessing}
-              data-testid="cash-open-submit-btn"
-              onClick={openCashRegister}
-            >
-              {isProcessing && <span className="app-button-spinner" aria-hidden="true" />}
-              {isProcessing ? 'Procesando...' : 'Abrir caja'}
-            </button>
-          </SimpleItem>
-        </Form>
+          <button
+            type="submit"
+            className="app-button app-button-success app-button-full"
+            disabled={isProcessing}
+            data-testid="cash-open-submit-btn"
+          >
+            {isProcessing && <span className="app-button-spinner" aria-hidden="true" />}
+            {isProcessing ? 'Procesando...' : 'Abrir caja'}
+          </button>
+        </form>
       </Card>
     </>
   );

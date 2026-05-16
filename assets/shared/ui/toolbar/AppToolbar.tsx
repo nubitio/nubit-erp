@@ -1,6 +1,4 @@
 import React, { ReactNode } from 'react';
-import Button from 'devextreme-react/button';
-import Toolbar, { Item } from 'devextreme-react/toolbar';
 import './AppToolbar.scss';
 
 type AppToolbarProps = {
@@ -14,22 +12,28 @@ type AppToolbarProps = {
 export const AppToolbar = (props: AppToolbarProps & React.PropsWithChildren) => {
   return (
     <div className="view-wrapper view-wrapper-dashboard">
-      <Toolbar className="theme-dependent">
-        <Item location="before" cssClass="toolbar-title">
+      <div className="app-toolbar theme-dependent">
+        <div className="app-toolbar__start">
           {props.icon && <i className={props.icon} aria-hidden="true" />}
           <span className="toolbar-header">{props.title}</span>
-        </Item>
-        {props.additionalToolbarContent}
-        <Item
-          location="after"
-          locateInMenu="auto"
-          widget="dxButton"
-          showText="inMenu"
-          visible={props.showRefreshButton ?? true}
-        >
-          <Button text="Actualizar" icon="ph ph-arrow-clockwise" stylingMode="text" onClick={props.onRefresh} />
-        </Item>
-      </Toolbar>
+        </div>
+        <div className="app-toolbar__center">
+          {props.additionalToolbarContent}
+        </div>
+        <div className="app-toolbar__end">
+          {(props.showRefreshButton ?? true) && (
+            <button
+              type="button"
+              className="app-icon-button"
+              title="Actualizar"
+              aria-label="Actualizar"
+              onClick={props.onRefresh}
+            >
+              <i className="ph ph-arrow-clockwise" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
       {props.children}
     </div>
   );
