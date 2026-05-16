@@ -8,7 +8,6 @@ import { createCrudEvents } from './createCrudEvents';
 export const branchEvents        = createCrudEvents('branch');
 export const categoryEvents      = createCrudEvents('category');
 export const companyEvents       = createCrudEvents('company');
-export const configEvents        = createCrudEvents('config');
 export const inboundEvents       = createCrudEvents('inbound');
 export const operationEvents     = createCrudEvents('operation');
 export const paymentMethodEvents = createCrudEvents('payment-methods');
