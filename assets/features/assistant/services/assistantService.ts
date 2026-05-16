@@ -1,4 +1,4 @@
-import { lastValueFrom } from 'rxjs';
+
 import { Constants } from '@core/common/Constants';
 import { httpClient } from '@shared/api/HttpClient';
 import ApiResponse from '@shared/api/ApiResponse';
@@ -34,9 +34,7 @@ class AssistantService {
       body.attachments = attachments;
     }
 
-    return lastValueFrom(
-      httpClient.post<AssistantResponse>(`${Constants.API_BASE_URL}assistant`, body),
-    ).then((response: ApiResponse<AssistantResponse>) => {
+    return httpClient.post<AssistantResponse>(`${Constants.API_BASE_URL}assistant`, body).then((response: ApiResponse<AssistantResponse>) => {
       const message = response.data?.message;
 
       if (!message) {

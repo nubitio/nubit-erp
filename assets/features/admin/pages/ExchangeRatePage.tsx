@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { lastValueFrom } from 'rxjs';
+
 import { httpClient } from '@shared/api/HttpClient';
 import toast from '@shared/lib/SharedUtils';
 
@@ -20,7 +20,7 @@ export const ExchangeRatePage = () => {
 
   const load = async () => {
     try {
-      const response = await lastValueFrom(httpClient.get<ExchangeRateData>(API_URL));
+      const response = await httpClient.get<ExchangeRateData>(API_URL);
       setData(response.data);
       setRateInput(response.data.rate);
     } catch {
@@ -42,8 +42,7 @@ export const ExchangeRatePage = () => {
     }
     setSaving(true);
     try {
-      const response = await lastValueFrom(
-        httpClient.put<ExchangeRateData>(API_URL, { rate: rateInput }),
+      const response = await httpClient.put<ExchangeRateData>(API_URL, { rate: rateInput },
       );
       setData(response.data);
       setRateInput(response.data.rate);
@@ -58,8 +57,7 @@ export const ExchangeRatePage = () => {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const response = await lastValueFrom(
-        httpClient.post<ExchangeRateData>(`${API_URL}/sync`),
+      const response = await httpClient.post<ExchangeRateData>(`${API_URL}/sync`,
       );
       setData(response.data);
       setRateInput(response.data.rate);

@@ -112,22 +112,19 @@ export const useFormSubmit = (
       options.onLoadingChange?.(false);
     };
 
-    const observer = {
-      next: (response: unknown) => {
-        if (successEvent) emit(successEvent, response);
-        (isEdit.current ? options.onSaveSuccess : options.onSaveSuccess)?.(response);
-      },
-      error: (err: unknown) => {
-        finalize();
-        options.onSaveError?.(err);
-      },
-    };
-
-    const request$ = isEdit.current
+    const request = isEdit.current
       ? httpClient.patch(`${options.url}/${id}`, payload)
       : httpClient.post(options.url, payload);
 
-    request$.subscribe(observer).add(finalize);
+    request
+      .then((response) => {
+        if (successEvent) emit(successEvent, response);
+        options.onSaveSuccess?.(response);
+      })
+      .catch((err: unknown) => {
+        options.onSaveError?.(err);
+      })
+      .finally(finalize);
   };
 
   /** Handle the DELETE event: confirm dialog → DELETE HTTP */
@@ -146,17 +143,14 @@ export const useFormSubmit = (
 
       httpClient
         .delete(`${options.url}/${payload.row[getIdField()]}`)
-        .subscribe({
-          next: (response: unknown) => {
-            if (successEvent) emit(successEvent, response);
-            options.onDeleteSuccess?.(response);
-          },
-          error: (err: unknown) => {
-            finalize();
-            options.onDeleteError?.(err);
-          },
+        .then((response: unknown) => {
+          if (successEvent) emit(successEvent, response);
+          options.onDeleteSuccess?.(response);
         })
-        .add(finalize);
+        .catch((err: unknown) => {
+          options.onDeleteError?.(err);
+        })
+        .finally(finalize);
     });
   };
 

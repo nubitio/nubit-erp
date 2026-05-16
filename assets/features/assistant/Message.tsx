@@ -1,22 +1,12 @@
 import React, { FC, useCallback, useState } from 'react';
 import { Button, type ButtonTypes } from 'devextreme-react/button';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import rehypeMinifyWhitespace from 'rehype-minify-whitespace';
-import rehypeStringify from 'rehype-stringify';
+import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
 
 import { REGENERATION_TEXT } from './data';
 
 function convertToHtml(value: string): string {
-  return unified()
-    .use(remarkParse)
-    .use(remarkRehype)
-    .use(rehypeMinifyWhitespace)
-    .use(rehypeStringify)
-    .processSync(value)
-    .toString();
+  return marked(value) as string;
 }
 
 interface MessageProps {

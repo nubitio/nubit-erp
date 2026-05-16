@@ -38,7 +38,7 @@ import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGr
 import { DxDetailDataGrid } from './DxDetailDataGrid';
 import { DxFilterRule } from '../common/FilterRule';
 import { useEvents } from '../event/EventHook';
-import toast from '../utils/SharedUtils';
+import toast from '@shared/lib/SharedUtils';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { Field } from '../field/Field';
 import { DataGridEventNames, ToolbarButtonItem } from '../event/EventTypes';

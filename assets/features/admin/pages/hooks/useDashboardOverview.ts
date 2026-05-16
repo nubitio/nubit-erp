@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs';
+
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@core/common/Constants';
@@ -93,9 +93,7 @@ export const useDashboardOverview = (options?: DashboardOverviewOptions) => {
     queryKey: ['dashboard-overview', lite],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- normalize handles shape validation
     queryFn: () =>
-      firstValueFrom(
-        httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview' + queryString),
-      ).then((response) => normalize(response.data)),
+      httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview' + queryString).then((response) => normalize(response.data)),
     staleTime: 5 * 60 * 1000, // 5 minutes — keeps parity with the old setInterval
     refetchInterval: 5 * 60 * 1000,
     placeholderData: initialData,

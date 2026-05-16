@@ -53,25 +53,22 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
       email: string,
       password: string,
     ): Promise<{ isOk: boolean; data?: User; message?: string }> => {
-      return new Promise((resolve) => {
-        authService.login(email, password).subscribe({
-          next: (response) => {
-            const userData = response.data.user as User | undefined;
-            if (userData) {
-              StorageUtils.setItem('user', userData);
-              setUser(userData);
-            }
-            resolve({ isOk: true, data: userData });
-          },
-          error: (err) => {
-            const message =
-              err?.response?.data?.detail ||
-              err?.response?.data?.message ||
-              'Authentication failed';
-            resolve({ isOk: false, message });
-          },
-        });
-      });
+      try {
+        const response = await authService.login(email, password);
+        const userData = response.data.user as User | undefined;
+        if (userData) {
+          StorageUtils.setItem('user', userData);
+          setUser(userData);
+        }
+        return { isOk: true, data: userData };
+      } catch (err: unknown) {
+        const anyErr = err as { data?: { detail?: string; message?: string } };
+        const message =
+          anyErr?.data?.detail ||
+          anyErr?.data?.message ||
+          'Authentication failed';
+        return { isOk: false, message };
+      }
     },
     [],
   );

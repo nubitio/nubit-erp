@@ -265,6 +265,12 @@ Ver documento técnico estratégico:
 
 - `docs/ai/EFACT_TECHNICAL_ARCHITECTURE.md`
 
+## Plan de producto
+
+- `docs/PRD.md` — PRD operacional actualizado.
+- `PRD.md` — north-star para agentes y contributors.
+- `docs/product-next-level-plan.md` — plan de 90 dias para llevar eFact al siguiente nivel como producto SaaS.
+
 ## Inconsistencias / pendientes detectados (código actual)
 
 1. No existe `assets/admin` como raíz; lo real está en `assets/features/admin`.

@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs';
+
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@core/common/Constants';
@@ -13,9 +13,7 @@ export const useCashRegisters = () => {
   } = useQuery<CashRegisterStatus[], Error>({
     queryKey: ['cash-registers-dashboard'],
     queryFn: () =>
-      firstValueFrom(
-        httpClient.get<CashRegisterStatus[]>(Constants.API_BASE_URL + 'cash-registers/dashboard'),
-      ).then((response) => response.data ?? []),
+      httpClient.get<CashRegisterStatus[]>(Constants.API_BASE_URL + 'cash-registers/dashboard').then((response) => response.data ?? []),
     staleTime: 30_000,
     refetchInterval: 60_000,
     placeholderData: [],

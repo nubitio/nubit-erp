@@ -3,12 +3,12 @@ import List from 'devextreme-react/list';
 import { useAuth } from '@app/contexts/auth';
 import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@assets/types';
-import { UserAvatar } from '@shared/ui/library/user-avatar/UserAvatar';
+import { UserAvatar } from './UserAvatar';
 
 import { BranchPicker } from './BranchPicker';
 import { ChangePasswordModal } from './ChangePasswordModal';
 
-import '../../../shared/ui/library/user-menu-section/UserMenuSection.scss';
+import './UserMenuSection.scss';
 
 type MenuItem = {
   text: string;
@@ -23,18 +23,17 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
   const [canChangeBranch, setCanChangeBranch] = useState(false);
 
   useEffect(() => {
-    const subscription = branchService.getAll().subscribe({
-      next: (response) => {
+    let cancelled = false;
+    branchService.getAll().then((response) => {
+        if (cancelled) return;
         const branches = response?.data ?? [];
         setCanChangeBranch(Array.isArray(branches) && branches.length > 1);
-      },
-      error: () => {
-        setCanChangeBranch(true);
-      },
-    });
+      }).catch(() => {
+        if (!cancelled) setCanChangeBranch(true);
+      });
 
     return () => {
-      subscription?.unsubscribe?.();
+      cancelled = true;
     };
   }, []);
 

@@ -127,8 +127,7 @@ export const createWebUsbInvoicePrinter = (): WebUsbInvoicePrinter => {
     const endpointNumber = getEndpointNumber(d);
 
     await new Promise<void>((resolve, reject) => {
-      saleService.printInvoice(saleId).subscribe({
-        next: async (response) => {
+      saleService.printInvoice(saleId).then(async (response) => {
           try {
             const data = new Uint8Array(response.data);
             // Split into chunks to avoid USB transfer size limits (~16 KB)
@@ -141,9 +140,7 @@ export const createWebUsbInvoicePrinter = (): WebUsbInvoicePrinter => {
           } catch (error) {
             reject(error);
           }
-        },
-        error: reject,
-      });
+        }).catch(reject);
     });
   };
 

@@ -1,4 +1,3 @@
-import { lastValueFrom } from 'rxjs';
 import { httpClient } from '@shared/api/HttpClient';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -38,27 +37,19 @@ class TenantSettingsService {
   private readonly SUNAT_BASE = '/api/tenant/sunat-state';
 
   getSettings(): Promise<TenantSettingsDto> {
-    return lastValueFrom(
-      httpClient.get<TenantSettingsDto>(this.BASE),
-    ).then((res) => res.data);
+    return httpClient.get<TenantSettingsDto>(this.BASE).then((res) => res.data);
   }
 
   patchSettings(patch: Partial<TenantSettingsDto>): Promise<TenantSettingsDto> {
-    return lastValueFrom(
-      httpClient.patch<TenantSettingsDto>(this.BASE, patch),
-    ).then((res) => res.data);
+    return httpClient.patch<TenantSettingsDto>(this.BASE, patch).then((res) => res.data);
   }
 
   getSunatState(): Promise<SunatStateDto> {
-    return lastValueFrom(
-      httpClient.get<SunatStateDto>(this.SUNAT_BASE),
-    ).then((res) => res.data);
+    return httpClient.get<SunatStateDto>(this.SUNAT_BASE).then((res) => res.data);
   }
 
   patchSunatState(patch: Partial<SunatStateDto>): Promise<SunatStateDto> {
-    return lastValueFrom(
-      httpClient.patch<SunatStateDto>(this.SUNAT_BASE, patch),
-    ).then((res) => res.data);
+    return httpClient.patch<SunatStateDto>(this.SUNAT_BASE, patch).then((res) => res.data);
   }
 }
 

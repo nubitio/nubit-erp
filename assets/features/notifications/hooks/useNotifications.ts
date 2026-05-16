@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Subscription } from 'rxjs';
 
 import { Constants } from '@core/common/Constants';
 import { httpClient } from '@shared/api/HttpClient';
@@ -19,27 +18,25 @@ export interface UseNotificationsResult {
 export function useNotifications(): UseNotificationsResult {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const lastSubscription = useRef<Subscription | null>(null);
+  const lastAbortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
 
   const fetchNotifications = useCallback(() => {
-    lastSubscription.current?.unsubscribe();
+    lastAbortRef.current?.abort();
+    const controller = new AbortController();
+    lastAbortRef.current = controller;
 
-    const subscription = httpClient
-      .get<Notification[]>(Constants.API_BASE_URL + 'user-notifications')
-      .subscribe({
-        next: (response) => {
-          if (!mountedRef.current) return;
-          setNotifications(response.data ?? []);
-          setLoading(false);
-        },
-        error: () => {
-          if (!mountedRef.current) return;
-          setLoading(false);
-        },
+    httpClient
+      .get<Notification[]>(Constants.API_BASE_URL + 'user-notifications', { signal: controller.signal })
+      .then((response) => {
+        if (!mountedRef.current) return;
+        setNotifications(response.data ?? []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!mountedRef.current) return;
+        setLoading(false);
       });
-
-    lastSubscription.current = subscription;
   }, []);
 
   useEffect(() => {
@@ -50,7 +47,7 @@ export function useNotifications(): UseNotificationsResult {
     return () => {
       mountedRef.current = false;
       clearInterval(timer);
-      lastSubscription.current?.unsubscribe();
+      lastAbortRef.current?.abort();
     };
   }, [fetchNotifications]);
 

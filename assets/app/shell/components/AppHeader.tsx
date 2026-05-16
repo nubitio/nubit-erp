@@ -13,7 +13,7 @@ import { NotificationPanel } from './NotificationPanel';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { UserPanel } from './UserPanel';
 
-import '../../../shared/ui/library/app-header/AppHeader.scss';
+import './AppHeader.scss';
 
 export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);

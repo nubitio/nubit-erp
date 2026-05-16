@@ -5,11 +5,11 @@ import { Template } from 'devextreme-react/core/template';
 
 import type { UserPanelProps } from '@assets/types';
 import { useAuth } from '@app/contexts/auth';
-import { createUserAvatarDataUri } from '@shared/ui/library/user-avatar/UserAvatar';
+import { createUserAvatarDataUri } from './UserAvatar';
 
 import { UserMenuSection } from './UserMenuSection';
 
-import '../../../shared/ui/library/user-panel/UserPanel.scss';
+import './UserPanel.scss';
 
 export const UserPanel = ({ menuMode }: UserPanelProps) => {
   const { user } = useAuth();

@@ -17,7 +17,7 @@ import { MutableRefObject } from 'react';
 import { dispatch } from '../event/EventHook';
 import { FORM_EVENTS, UploadedFile } from './DxForm';
 import { ValidationRule } from '../field/ValidationRule';
-import { getIRI } from '../utils/SharedUtils';
+import { getIRI } from '@shared/lib/SharedUtils';
 import { Template } from 'devextreme-react/core/template';
 
 export const buildField = (

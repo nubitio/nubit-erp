@@ -36,8 +36,10 @@ export const useOfflineCatalog = () => {
     const loadFromApi = () => {
       setLoading(true);
       setLoadError(null);
-      const subscription = httpClient.get<any>(`${Constants.API_BASE_URL}products?itemsPerPage=9999`).subscribe({
-        next: async (response) => {
+      let cancelled = false;
+      const controller = new AbortController();
+      httpClient.get<any>(`${Constants.API_BASE_URL}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
+          if (cancelled) return;
           const rawProducts = extractCollection<any>(response.data);
           const normalizedProducts = rawProducts.map(normalizeProduct);
           const categoryMap = new Map<string, Category>();
@@ -51,13 +53,11 @@ export const useOfflineCatalog = () => {
           setLoading(false);
           await persistProducts(rawProducts);
           setLastUpdatedAt(await getLastProductsSyncAt());
-        },
-        error: async () => {
-          await loadFromOffline();
+        }).catch(() => {
+          if (cancelled) return;
           setLoadError('Mostrando catálogo offline: no se pudo actualizar desde el servidor.');
-        },
-      });
-      return () => subscription.unsubscribe();
+        });
+      return () => { cancelled = true; controller.abort(); };
     };
 
     if (isOnline) {

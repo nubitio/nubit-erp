@@ -1,5 +1,4 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import type { Subscription } from 'rxjs';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@core/common/Constants';
 import type { CustomerOption } from './types';
@@ -16,18 +15,20 @@ export const usePosCustomers = () => {
   const [customersHasMore, setCustomersHasMore] = useState(false);
   const [customersLoading, setCustomersLoading] = useState(false);
 
-  const customersRequestRef = useRef<Subscription | null>(null);
+  const customersRequestRef = useRef<AbortController | null>(null);
   const lastSelectedCustomerRef = useRef<CustomerOption | null>(null);
   /** When true, the user explicitly cleared the customer — suppress auto-restore */
   const clearedRef = useRef(false);
 
   const loadCustomers = useCallback(
     (query: string, page: number, append: boolean) => {
-      customersRequestRef.current?.unsubscribe();
+      customersRequestRef.current?.abort();
+      const controller = new AbortController();
+      customersRequestRef.current = controller;
       setCustomersLoading(true);
 
-      customersRequestRef.current = httpClient.get<any>(buildCustomersUrl(query, page)).subscribe({
-        next: (response) => {
+      httpClient.get<any>(buildCustomersUrl(query, page), { signal: controller.signal }).then((response) => {
+          if (controller.signal.aborted) return;
           const list = extractCollection<any>(response.data).map((customer) => ({
             id: Number(customer.id),
             businessName: String(
@@ -66,16 +67,15 @@ export const usePosCustomers = () => {
           } else if (!append) {
             setCustomersHasMore(false);
           }
-        },
-        error: () => {
+        }).catch(() => {
+          if (controller.signal.aborted) return;
           if (!append) {
             setCustomers([]);
             setCustomersHasMore(false);
           }
-        },
-      });
-
-      customersRequestRef.current.add(() => setCustomersLoading(false));
+        }).finally(() => {
+          if (!controller.signal.aborted) setCustomersLoading(false);
+        });
     },
     [selectedCustomerId],
   );
@@ -84,7 +84,7 @@ export const usePosCustomers = () => {
     loadCustomers(deferredCustomerSearch, 1, false);
 
     return () => {
-      customersRequestRef.current?.unsubscribe();
+      customersRequestRef.current?.abort();
     };
   }, [deferredCustomerSearch, loadCustomers]);
 
@@ -105,10 +105,12 @@ export const usePosCustomers = () => {
       return;
     }
 
-    const subscription = httpClient
-      .get<any>(`${Constants.API_BASE_URL}customers/${DEFAULT_CUSTOMER_ID}`)
-      .subscribe({
-        next: (response) => {
+    let cancelled = false;
+    const controller = new AbortController();
+    httpClient
+      .get<any>(`${Constants.API_BASE_URL}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
+      .then((response) => {
+          if (cancelled) return;
           const customer = response.data;
           const mapped: CustomerOption = {
             id: Number(customer.id),
@@ -123,11 +125,11 @@ export const usePosCustomers = () => {
           setCustomerSearch(
             mapped.doc ? `${mapped.businessName} - ${mapped.doc}` : mapped.businessName,
           );
-        },
-      });
+        });
 
     return () => {
-      subscription.unsubscribe();
+      cancelled = true;
+      controller.abort();
     };
   }, [customers, selectedCustomerId]);
 

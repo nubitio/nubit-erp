@@ -34,9 +34,7 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
   };
 
   const printSaleInvoice = async (saleId: string): Promise<void> => {
-    const response = await new Promise<ArrayBuffer>((resolve, reject) => {
-      saleService.printInvoice(saleId).subscribe({ next: (r) => resolve(r.data), error: reject });
-    });
+    const response = await saleService.printInvoice(saleId).then((r) => r.data);
 
     let res: Response;
     try {

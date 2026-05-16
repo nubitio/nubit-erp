@@ -9,7 +9,7 @@ import { ProductStockDto } from '@features/product/types/product.stock.dto';
 class ProductService {
   getAll(loadOptions: LoadOptions): Promise<GridData<ProductDto>> {
     const request$ = businessHttpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
-      params: loadOptions,
+      params: loadOptions as Record<string, unknown>,
     });
 
     return httpRequest(request$).then((response: ApiResponse<ProductDto[]>) => {

@@ -34,12 +34,12 @@ export const CashRegisterOpen = () => {
     setIsProcessing(true);
     cashRegisterService()
       .openCashRegister(id, formData.openingBalance)
-      .subscribe((response) => {
+      .then((response) => {
         toast('Caja abierta', 'success');
         const cashShiftId = response.data.id;
         navigate('/cash-shift/' + cashShiftId + '/movements');
       })
-      .add(() => {
+      .finally(() => {
         setIsProcessing(false);
       });
   };

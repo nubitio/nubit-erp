@@ -264,6 +264,8 @@ Mecanismos de seguridad fiscal:
 - Definir si lotes/FEFO y BOM son features GA o gated por plan/vertical.
 - Migrar consumidores legacy de `App\Core` hacia `App\Platform` cuando el guardrail este estable.
 
+Plan de crecimiento recomendado: ver `docs/product-next-level-plan.md`.
+
 ---
 
 ## 11. Criterios De Aceptacion Para Specs
