@@ -4,7 +4,7 @@ import ApiResponse from '../api/ApiResponse';
 import CustomStore from 'devextreme/data/custom_store';
 import { FilterDescriptor, SortDescriptor } from 'devextreme/data';
 import GridData from './GridData';
-import { DxFilterRule } from '@core/common/FilterRule';
+import { DxFilterRule } from '@core/field/FilterRule';
 import { LoadOption } from '@core/field/Field';
 
 class DxUtils {

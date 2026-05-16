@@ -36,7 +36,7 @@ import { dxUtils } from '../../shared/data/DxUtils';
 import { EXPORT_FORMATS, handleDataGridExport } from './DxDataGridExport';
 import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
 import { DxDetailDataGrid } from './DxDetailDataGrid';
-import { DxFilterRule } from '../common/FilterRule';
+import { DxFilterRule } from '../field/FilterRule';
 import { useEvents } from '../event/EventHook';
 import toast from '@shared/lib/SharedUtils';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';

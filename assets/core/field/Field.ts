@@ -1,5 +1,5 @@
 import { FieldType } from './FieldType';
-import { FilterRule } from '../common/FilterRule';
+import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, GridOnChangeFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 import React from 'react';

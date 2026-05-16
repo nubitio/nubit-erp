@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
-import type { DxFilterRule } from '../common/FilterRule';
+import type { DxFilterRule } from '../field/FilterRule';
 import type { FormEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import type { DxFormEvents } from '../form/DxForm';
 import type { BulkAction } from './BulkAction';
