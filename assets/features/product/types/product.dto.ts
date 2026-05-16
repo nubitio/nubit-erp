@@ -1,5 +1,10 @@
 import { MediaDto } from '@shared/api/media.dto';
-import { UnitOfMeasureDto } from '@features/unitOfMeasure/types/UnitOfMeasureDto';
+
+interface UnitOfMeasureDto {
+  id: number;
+  name: string;
+  ratio: number;
+}
 
 export interface ProductDto {
   id: string;

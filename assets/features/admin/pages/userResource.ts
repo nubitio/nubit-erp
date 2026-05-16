@@ -1,7 +1,7 @@
 import { defineResource } from '@core/crud/defineResource';
 import { defineFields } from '@core/crud/fieldContract';
 import { passwordField } from '@core/field/FieldBuilders';
-import { userEvents } from '@features/user';
+import { userEvents } from '@core/event/domainEvents';
 import { userEndpoints } from '../api/adminEndpoints';
 
 interface UserRecord extends Record<string, unknown> {

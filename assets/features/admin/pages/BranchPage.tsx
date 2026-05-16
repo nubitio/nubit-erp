@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
-import { branchEvents } from '@features/branch';
+import { branchEvents } from '@core/event/domainEvents';
 import { branchEndpoints } from '../api/adminEndpoints';
 
 const resource = defineResource({

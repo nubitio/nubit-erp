@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
-import { permissionEvents, roleEvents } from '@features/role';
+import { permissionEvents, roleEvents } from '@core/event/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import { RoleFields } from './RoleFields';

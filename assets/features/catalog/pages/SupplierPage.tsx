@@ -3,7 +3,7 @@ import { defineFields } from '@core/crud/fieldContract';
 import type { MutableRefObject } from 'react';
 import type { FormRef } from 'devextreme-react/form';
 import { FieldType } from '@core/field/FieldType';
-import { supplierEvents } from '@features/supplier';
+import { supplierEvents } from '@core/event/domainEvents';
 import { supplierEndpoints } from '../api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';

@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
-import { sunatCatalogEvents } from '@features/sunatCatalog';
+import { sunatCatalogEvents } from '@core/event/domainEvents';
 import { sunatCatalogEndpoints } from '../api/catalogEndpoints';
 
 const resource = defineResource({

@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
-import { warehouseEvents } from '@features/warehouse';
+import { warehouseEvents } from '@core/event/domainEvents';
 import { warehouseEndpoints } from '../api/catalogEndpoints';
 
 const resource = defineResource({

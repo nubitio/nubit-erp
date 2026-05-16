@@ -1,1 +1,0 @@
-export { paymentMethodEvents } from './events';
