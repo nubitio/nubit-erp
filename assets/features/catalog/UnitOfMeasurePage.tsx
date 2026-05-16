@@ -4,7 +4,7 @@ import type { Field } from '@core/field/Field';
 import { enumField, selectField, switchField } from '@core/field/FieldBuilders';
 import { unitOfMeasureEvents } from '@core/event/domainEvents';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { unitOfMeasureEndpoints } from '../api/catalogEndpoints';
+import { unitOfMeasureEndpoints } from './api/catalogEndpoints';
 
 interface UnitOfMeasureRecord extends Record<string, unknown> {
   id: number;
