@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldType } from './FieldType';
 import { Field, LoadOption } from './Field';
-import { FilterRule } from '../common/FilterRule';
+import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 
