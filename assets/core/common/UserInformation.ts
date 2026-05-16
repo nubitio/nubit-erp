@@ -1,5 +1,5 @@
 import { StorageUtils } from '@shared/lib/StorageUtils';
-import { User } from '../../types';
+import { User } from '@app/types';
 import { branchService } from '../../features/branch';
 
 export const userInformation = () => {

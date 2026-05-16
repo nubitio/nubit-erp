@@ -9,9 +9,9 @@ import { useNavigate } from 'react-router';
 
 import { AppFooter, AppHeader, SideNavigationMenu } from '@app/shell/components';
 import { useScreenSize } from '@utils/media-query';
-import { useMenuPatch } from '../../utils/patches';
+import { useMenuPatch } from './patches';
 
-import type { SideNavToolbarProps } from '../../types';
+import type { SideNavToolbarProps } from '@app/types';
 
 import './side-nav-outer-toolbar.scss';
 import type { SideNavigationItem } from '@app/shell/components';

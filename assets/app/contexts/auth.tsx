@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import type { AuthContextType, User } from '../../types';
+import type { AuthContextType, User } from '@app/types';
 import { StorageUtils } from '../../shared/lib/StorageUtils';
 import { branchService } from '../../features/branch';
 import { authService } from '../../features/auth';

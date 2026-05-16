@@ -3,7 +3,7 @@ import * as events from 'devextreme/events';
 import { TreeView, TreeViewRef } from 'devextreme-react/tree-view';
 import { useLocation } from 'react-router-dom';
 
-import type { SideNavigationMenuProps } from '@assets/types';
+import type { SideNavigationMenuProps } from '@app/types';
 import { useNavigation } from '@app/contexts/navigation';
 import { userInformation } from '@core/common/UserInformation';
 import { menuService } from '@features/navigation';

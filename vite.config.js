@@ -25,10 +25,8 @@ const frontendAliases = {
   '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
 
   // Supporting aliases outside the canonical layer set
-  '@layouts': fileURLToPath(new URL('./assets/layouts', import.meta.url)),
   '@utils': fileURLToPath(new URL('./assets/utils', import.meta.url)),
   '@theme': fileURLToPath(new URL('./assets/theme', import.meta.url)),
-  '@types': fileURLToPath(new URL('./assets/types', import.meta.url)),
   '@assets': fileURLToPath(new URL('./assets', import.meta.url)),
   '@offline': fileURLToPath(new URL('./assets/offline', import.meta.url)),
 };

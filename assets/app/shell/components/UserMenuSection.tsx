@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import List from 'devextreme-react/list';
 import { useAuth } from '@app/contexts/auth';
 import { branchService } from '@features/branch';
-import type { UserMenuSectionProps } from '@assets/types';
+import type { UserMenuSectionProps } from '@app/types';
 import { UserAvatar } from './UserAvatar';
 
 import { BranchPicker } from './BranchPicker';

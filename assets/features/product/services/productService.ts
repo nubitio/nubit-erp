@@ -1,7 +1,7 @@
 import type { LoadOptions } from 'devextreme/data/load_options';
 import { ProductDto } from '@features/product/types/product.dto';
 import { businessHttpClient, httpRequest, httpRequestData } from '@shared/api/network';
-import GridData from '../../../types/GridData';
+import GridData from '@shared/data/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
 import { Constants } from '@core/common/Constants';
 import { ProductStockDto } from '@features/product/types/product.stock.dto';

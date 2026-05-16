@@ -22,10 +22,8 @@
 
       // Supporting aliases outside the canonical layer set
       "@pages/*": ["assets/pages/*"],
-      "@layouts/*": ["assets/layouts/*"],
       "@utils/*": ["assets/utils/*"],
       "@theme/*": ["assets/theme/*"],
-      "@types/*": ["assets/types/*"],
       "@assets/*": ["assets/*"],
       "@offline/*": ["assets/offline/*"]
     }
