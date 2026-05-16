@@ -29,10 +29,10 @@ export function ConfirmDialog({
 
   const confirmClass =
     variant === 'danger'
-      ? 'app-button app-button-danger'
+      ? 'app-button app-button--danger'
       : variant === 'info'
-        ? 'app-button app-button-primary'
-        : 'app-button app-button-primary';
+        ? 'app-button app-button--primary'
+        : 'app-button app-button--primary';
 
   return (
     <AppDialog
@@ -43,7 +43,7 @@ export function ConfirmDialog({
       role="alertdialog"
       footer={
         <>
-          <button type="button" className="app-button app-button-secondary" onClick={onCancel} autoFocus>
+          <button type="button" className="app-button app-button--secondary" onClick={onCancel} autoFocus>
             {resolvedCancelLabel}
           </button>
           <button type="button" className={confirmClass} onClick={onConfirm}>

@@ -303,11 +303,11 @@ export const KardexPage = () => {
           />
         </div>
 
-        <button type="button" className="app-button app-button-primary" onClick={applySearch}>
+        <button type="button" className="app-button app-button--primary" onClick={applySearch}>
           <i className="ph ph-magnifying-glass" aria-hidden="true" />
           Filtrar
         </button>
-        <button type="button" className="app-button app-button-secondary" onClick={handleClear}>
+        <button type="button" className="app-button app-button--secondary" onClick={handleClear}>
           <i className="ph ph-x" aria-hidden="true" />
           Limpiar
         </button>

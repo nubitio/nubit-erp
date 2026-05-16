@@ -127,7 +127,7 @@ export const DiscountDialog = () => {
       footer={
         <button
           type="button"
-          className="app-button app-button-primary"
+          className="app-button app-button--primary"
           onClick={() => onApply(discountPercent, discountAmount)}
         >
           Aceptar
