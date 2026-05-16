@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stepper } from 'devextreme-react/stepper';
-import Button from 'devextreme-react/button';
-import LoadIndicator from 'devextreme-react/load-indicator';
 import Form, {
   FormRef,
   GroupItem,
@@ -126,7 +124,7 @@ export const InitialSetupPage = () => {
     return (
       <div className={`initial-setup-page ${screenSizeClass}`}>
         <div className="loading">
-          <LoadIndicator visible width={48} height={48} />
+          <span className="setup-spinner" aria-label="Cargando" />
           <p>Preparando asistente...</p>
         </div>
       </div>
@@ -224,34 +222,32 @@ export const InitialSetupPage = () => {
           </Form>
 
           <div className="actions">
-            <Button
-              type="normal"
-              stylingMode="outlined"
+            <button
+              type="button"
+              className="app-button app-button--secondary"
               onClick={goBack}
               disabled={stepIndex === 0 || submitting}
-              text="Atrás"
-            />
-            <Button
-              type="default"
-              stylingMode="contained"
+            >
+              Atrás
+            </button>
+            <button
+              type="button"
+              className="app-button app-button--primary"
               onClick={goNext}
               disabled={submitting}
-              icon={
-                submitting ? undefined : stepIndex === steps.length - 1 ? 'check' : 'chevronnext'
-              }
-              text={
-                submitting
-                  ? 'Guardando...'
-                  : stepIndex === steps.length - 1
-                    ? 'Finalizar configuración'
-                    : 'Siguiente'
-              }
-            />
+            >
+              {submitting && <span className="app-button-spinner" aria-hidden="true" />}
+              {submitting
+                ? 'Guardando...'
+                : stepIndex === steps.length - 1
+                  ? 'Finalizar configuración'
+                  : 'Siguiente'}
+            </button>
           </div>
           {submitting && (
             <div className="setup-overlay">
               <div className="overlay-content">
-                <LoadIndicator visible width={32} height={32} />
+                <span className="setup-spinner" aria-hidden="true" />
                 <span>Guardando configuración...</span>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
-import { Button } from 'devextreme-react';
 
+// eslint-disable-next-line no-restricted-imports -- SalePrintPreviewPopup is an injection point for AppDialog from the sales feature
+import { AppDialog } from '@app/shell/components/AppDialog';
 import './SalePrintPreviewPopup.scss';
 import { useScreenSize } from '@utils/media-query';
 
@@ -16,27 +16,43 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
   const { isXSmall } = useScreenSize();
 
   return (
-    <Popup
-      title={'Vista previa'}
-      showTitle={true}
+    <AppDialog
+      title="Vista previa"
+      width={isXSmall ? undefined : '90mm'}
+      height={isXSmall ? undefined : 650}
       fullScreen={isXSmall}
-      width="90mm"
-      height={650}
       visible={props.visible}
-      wrapperAttr={{ class: `form-popup sale-print-preview-popup` }}
+      showCloseButton={false}
+      closeOnOutsideClick={false}
+      closeOnEscape={false}
+      onClose={props.onNegative}
+      className="sale-print-preview-popup"
     >
-      <ToolbarItem toolbar="bottom" location="after">
-        <div className={`form-popup-buttons-container`}>
-          <Button text="Cerrar" stylingMode="outlined" onClick={props.onNegative} />
-          <Button text="Ver PDF" stylingMode="outlined" type="default" onClick={props.onPositive} />
-        </div>
-      </ToolbarItem>
-      <iframe
-        src={`/receipt/${props.saleId}/ticket?preview=true`}
-        width={'100%'}
-        height={'100%'}
-        style={{ border: 'none' }}
-      />
-    </Popup>
+      <div className="sale-print-preview-body">
+        <iframe
+          src={`/receipt/${props.saleId}/ticket?preview=true`}
+          width="100%"
+          height="100%"
+          style={{ border: 'none', display: 'block' }}
+          title="Vista previa de comprobante"
+        />
+      </div>
+      <div className="form-popup-buttons-container">
+        <button
+          type="button"
+          className="app-button app-button--secondary"
+          onClick={props.onNegative}
+        >
+          Cerrar
+        </button>
+        <button
+          type="button"
+          className="app-button app-button--primary"
+          onClick={props.onPositive}
+        >
+          Ver PDF
+        </button>
+      </div>
+    </AppDialog>
   );
 };

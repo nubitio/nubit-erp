@@ -1,8 +1,6 @@
 import { Card } from '@shared/ui';
 import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { useRef, useState } from 'react';
-import { Button } from 'devextreme-react';
-import LoadIndicator from 'devextreme-react/load-indicator';
 import { currencyField } from '@core/field/FieldBuilders';
 import { buildField } from '@core/form/FormUtils';
 import cashRegisterService from './services/cashRegisterService';
@@ -51,17 +49,16 @@ export const CashRegisterOpen = () => {
           {buildField(openingBalanceField, openingBalanceField.name)}
 
           <SimpleItem>
-            <Button
-              width="100%"
+            <button
+              type="button"
+              className="app-button app-button--success app-button--full"
+              disabled={isProcessing}
+              data-testid="cash-open-submit-btn"
               onClick={openCashRegister}
-              type="success"
-              elementAttr={{ 'data-testid': 'cash-open-submit-btn' }}
             >
-              <LoadIndicator className="button-indicator" visible={isProcessing} />
-              <span className="dx-button-text">
-                {isProcessing ? 'Procesando...' : 'Abrir caja'}
-              </span>
-            </Button>
+              {isProcessing && <span className="app-button-spinner" aria-hidden="true" />}
+              {isProcessing ? 'Procesando...' : 'Abrir caja'}
+            </button>
           </SimpleItem>
         </Form>
       </Card>

@@ -49,6 +49,9 @@
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0.45rem 0.75rem 0.45rem 1rem;
+  // Ensure header sits above any iframe content in the body
+  position: relative;
+  z-index: 1;
 }
 
 .app-dialog__title {
