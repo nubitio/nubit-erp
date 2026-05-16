@@ -13,7 +13,7 @@ import { useEvents } from '@core/event/EventHook';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 import { usePriceListObservers } from '../model/usePriceListObservers';
-import { priceListEvents, priceEvents } from '../model/events';
+import { priceListEvents, priceEvents } from '@core/event/domainEvents';
 
 const API_URL = priceListEndpoints.list();
 const fields = PriceListFields();

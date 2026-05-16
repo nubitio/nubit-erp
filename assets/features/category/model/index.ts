@@ -1,1 +1,0 @@
-export { categoryEvents } from './events';
