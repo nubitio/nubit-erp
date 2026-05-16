@@ -1,1 +1,1 @@
-export { ProductPage } from '@features/catalog/pages/ProductPage';
+export { ProductPage } from './ProductPage';

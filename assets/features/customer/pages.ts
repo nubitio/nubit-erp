@@ -1,2 +1,2 @@
-export { CustomerPage } from '@features/catalog/pages/CustomerPage';
-export { CustomerFields } from '@features/catalog/pages/CustomerFields';
+export { CustomerPage } from './CustomerPage';
+export { CustomerFields } from './CustomerFields';

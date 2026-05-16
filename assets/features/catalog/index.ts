@@ -3,8 +3,6 @@
 export { catalogRoutes } from './routes';
 
 // Sub-feature barrels (use these for direct page/field imports)
-export * from './pages/products';
-export * from './pages/customers';
 export * from './pages/suppliers';
 export * from './pages/inventory';
 export * from './pages/pricing';
