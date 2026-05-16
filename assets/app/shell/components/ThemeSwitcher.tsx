@@ -1,5 +1,4 @@
 import React, { useCallback, useContext } from 'react';
-import Button from 'devextreme-react/button';
 
 import { ThemeContext } from '@theme/theme';
 
@@ -7,9 +6,9 @@ export const ThemeSwitcher = () => {
   const themeContext = useContext(ThemeContext);
   const mode = themeContext?.mode ?? 'light';
   const iconByMode = {
-    light: 'sun',
-    dark: 'moon',
-    auto: 'preferences',
+    light: 'ph ph-sun',
+    dark: 'ph ph-moon',
+    auto: 'ph ph-desktop',
   } as const;
   const hintByMode = {
     light: 'Tema: Claro',
@@ -23,14 +22,15 @@ export const ThemeSwitcher = () => {
 
   return (
     <div>
-      <Button
-        className="theme-button"
-        stylingMode="text"
-        icon={iconByMode[mode]}
-        hint={hintByMode[mode]}
-        elementAttr={{ 'aria-label': hintByMode[mode] }}
+      <button
+        className="app-icon-button theme-button"
+        type="button"
+        aria-label={hintByMode[mode]}
+        title={hintByMode[mode]}
         onClick={onButtonClick}
-      />
+      >
+        <i className={iconByMode[mode]} aria-hidden="true" />
+      </button>
     </div>
   );
 };

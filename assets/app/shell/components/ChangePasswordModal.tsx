@@ -1,12 +1,12 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
-import Form, { Item, RequiredRule, StringLengthRule, FormRef } from 'devextreme-react/form';
-import { Button } from 'devextreme-react';
-import LoadIndicator from 'devextreme-react/load-indicator';
+import React, { useCallback, useState } from 'react';
 
 import { authService } from '@features/auth';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@utils/media-query';
+
+import { AppDialog } from './AppDialog';
+
+import './ChangePasswordModal.scss';
 
 interface ChangePasswordModalProps {
   visible: boolean;
@@ -19,18 +19,26 @@ interface FormData {
   confirmPassword: string;
 }
 
+type FormErrors = Partial<Record<keyof FormData, string>>;
+
+const initialFormData: FormData = {
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+};
+
 export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalProps) => {
   const { isXSmall } = useScreenSize();
-  const formRef = useRef<FormRef | null>(null);
-  const formData = useRef<FormData>({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const resetForm = useCallback(() => {
-    formData.current = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    formRef.current?.instance().option('formData', formData.current);
+    setFormData(initialFormData);
+    setErrors({});
     setShowCurrent(false);
     setShowNew(false);
     setShowConfirm(false);
@@ -41,121 +49,148 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
     onClose();
   }, [onClose, resetForm]);
 
-  const handleSubmit = useCallback(() => {
-    const validation = formRef.current?.instance().validate();
-    if (!validation?.isValid) return;
+  const updateField = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
 
-    const { currentPassword, newPassword, confirmPassword } = formData.current;
-
-    if (newPassword !== confirmPassword) {
-      toast('Las contraseñas nuevas no coinciden.', 'error');
-      return;
+  const validate = useCallback(() => {
+    const nextErrors: FormErrors = {};
+    if (!formData.currentPassword) {
+      nextErrors.currentPassword = 'La contraseña actual es requerida.';
+    }
+    if (!formData.newPassword) {
+      nextErrors.newPassword = 'La nueva contraseña es requerida.';
+    } else if (formData.newPassword.length < 6) {
+      nextErrors.newPassword = 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    if (!formData.confirmPassword) {
+      nextErrors.confirmPassword = 'Confirma tu nueva contraseña.';
+    } else if (formData.newPassword !== formData.confirmPassword) {
+      nextErrors.confirmPassword = 'Las contraseñas nuevas no coinciden.';
     }
 
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }, [formData]);
+
+  const handleSubmit = useCallback(() => {
+    if (!validate()) return;
+
     setLoading(true);
-    authService.changePassword(currentPassword, newPassword).then(() => {
+    authService
+      .changePassword(formData.currentPassword, formData.newPassword)
+      .then(() => {
         toast('Contraseña actualizada correctamente.', 'success');
         handleClose();
-      }).catch((err: unknown) => {
+      })
+      .catch((err: unknown) => {
         const anyErr = err as { data?: { message?: string } };
         const message =
           anyErr?.data?.message ||
           'No se pudo cambiar la contraseña. Inténtalo nuevamente.';
         toast(message, 'error');
-      }).finally(() => {
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, [handleClose]);
+  }, [formData, handleClose, validate]);
 
-  const passwordEditorOptions = useCallback(
-    (show: boolean, onToggle: () => void, placeholder: string) => ({
-      stylingMode: 'outlined',
-      placeholder,
-      mode: show ? 'text' : 'password',
-      disabled: loading,
-      buttons: [
-        {
-          name: 'toggle',
-          location: 'after',
-          options: {
-            icon: show ? 'ph ph-eye' : 'ph ph-eye-slash',
-            type: 'default',
-            stylingMode: 'text',
-            onClick: onToggle,
-          },
-        },
-      ],
-    }),
-    [loading],
-  );
+  const renderPasswordField = (
+    field: keyof FormData,
+    label: string,
+    placeholder: string,
+    showValue: boolean,
+    onToggle: () => void,
+  ) => {
+    const error = errors[field];
+
+    return (
+      <label className="change-password-field">
+        <span className="change-password-field__label">{label}</span>
+        <span className={`change-password-field__control${error ? ' has-error' : ''}`}>
+          <input
+            className="change-password-field__input"
+            type={showValue ? 'text' : 'password'}
+            placeholder={placeholder}
+            value={formData[field]}
+            disabled={loading}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${field}-error` : undefined}
+            onChange={(event) => updateField(field, event.target.value)}
+          />
+          <button
+            className="change-password-field__toggle"
+            type="button"
+            aria-label={showValue ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            disabled={loading}
+            onClick={onToggle}
+          >
+            <i className={showValue ? 'ph ph-eye' : 'ph ph-eye-slash'} aria-hidden="true" />
+          </button>
+        </span>
+        {error && <span className="change-password-field__error" id={`${field}-error`}>{error}</span>}
+      </label>
+    );
+  };
 
   return (
-    <Popup
+    <AppDialog
       title="Cambiar contraseña"
       visible={visible}
       width={420}
       height="auto"
       fullScreen={isXSmall}
       showCloseButton={!loading}
-      hideOnOutsideClick={!loading}
-      onHiding={handleClose}
+      closeOnOutsideClick={!loading}
+      closeOnEscape={!loading}
+      onClose={handleClose}
+      className="change-password-modal"
     >
-      <Form
-        ref={formRef}
-        // eslint-disable-next-line react-hooks/refs -- DevExtreme binding pattern: formData ref holds mutable form state intentionally
-        formData={formData.current}
-        disabled={loading}
-        labelMode="outside"
-        showColonAfterLabel={false}
-        showRequiredMark={false}
-      >
-        <Item
-          dataField="currentPassword"
-          label={{ text: 'Contraseña actual' }}
-          editorType="dxTextBox"
-          editorOptions={passwordEditorOptions(showCurrent, () => setShowCurrent((s) => !s), 'Contraseña actual')}
-        >
-          <RequiredRule message="La contraseña actual es requerida." />
-        </Item>
-        <Item
-          dataField="newPassword"
-          label={{ text: 'Nueva contraseña' }}
-          editorType="dxTextBox"
-          editorOptions={passwordEditorOptions(showNew, () => setShowNew((s) => !s), 'Nueva contraseña')}
-        >
-          <RequiredRule message="La nueva contraseña es requerida." />
-          <StringLengthRule min={6} message="La contraseña debe tener al menos 6 caracteres." />
-        </Item>
-        <Item
-          dataField="confirmPassword"
-          label={{ text: 'Confirmar nueva contraseña' }}
-          editorType="dxTextBox"
-          editorOptions={passwordEditorOptions(showConfirm, () => setShowConfirm((s) => !s), 'Confirmar contraseña')}
-        >
-          <RequiredRule message="Confirma tu nueva contraseña." />
-        </Item>
-      </Form>
+      <div className="change-password-modal__content">
+        <div className="change-password-modal__form">
+          {renderPasswordField(
+            'currentPassword',
+            'Contraseña actual',
+            'Contraseña actual',
+            showCurrent,
+            () => setShowCurrent((prev) => !prev),
+          )}
+          {renderPasswordField(
+            'newPassword',
+            'Nueva contraseña',
+            'Nueva contraseña',
+            showNew,
+            () => setShowNew((prev) => !prev),
+          )}
+          {renderPasswordField(
+            'confirmPassword',
+            'Confirmar nueva contraseña',
+            'Confirmar contraseña',
+            showConfirm,
+            () => setShowConfirm((prev) => !prev),
+          )}
+        </div>
 
-      <ToolbarItem toolbar="bottom" location="after">
-        <div style={{ display: 'flex', gap: '8px', padding: '8px 0' }}>
-          <Button
-            text="Cancelar"
-            stylingMode="outlined"
+        <div className="change-password-modal__actions">
+          <button
+            className="app-button app-button--secondary"
+            type="button"
             disabled={loading}
             onClick={handleClose}
-          />
-          <Button
-            type="default"
-            stylingMode="outlined"
+          >
+            Cancelar
+          </button>
+          <button
+            className="app-button app-button--primary"
+            type="button"
             disabled={loading}
             onClick={handleSubmit}
           >
-            <span className="dx-button-text">
-              {loading ? <LoadIndicator width="20px" height="20px" visible /> : 'Guardar'}
-            </span>
-          </Button>
+            {loading ? <span className="app-spinner" aria-label="Guardando" /> : 'Guardar'}
+          </button>
         </div>
-      </ToolbarItem>
-    </Popup>
+      </div>
+    </AppDialog>
   );
 };

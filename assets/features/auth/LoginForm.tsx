@@ -1,17 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Form, {
-  ButtonItem,
-  ButtonOptions,
-  FormRef,
-  Item,
-  RequiredRule,
-} from 'devextreme-react/form';
-import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
+// eslint-disable-next-line no-restricted-imports -- LoginForm is the injection point for BranchPicker; this boundary is intentional
 import { BranchPicker } from '@app/shell/components/BranchPicker';
 import { resolveLoginRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
@@ -25,38 +18,42 @@ interface BranchOption {
 export const LoginForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const formRef = useRef<FormRef | null>(null);
-  const [loading, setLoading] = useState(false);
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const formData = useRef({ username: '', password: '' });
+  const [loading, setLoading] = useState(false);
   const [showLocalPicker, setShowLocalPicker] = useState(false);
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [redirectPath] = useState(() =>
     resolveLoginRedirect(location.search, window.location.hash),
   );
 
   useEffect(() => {
-    const editor = formRef.current?.instance().getEditor('username');
-    editor?.focus();
+    usernameRef.current?.focus();
   }, []);
 
-  const onFieldDataChanged = useCallback(() => {
-    if (submitError) {
-      setSubmitError(null);
-    }
+  const clearFieldErrors = useCallback(() => {
+    setUsernameError(null);
+    setPasswordError(null);
+    if (submitError) setSubmitError(null);
   }, [submitError]);
 
   const applyBranchAndRedirect = useCallback(
     (branch: BranchOption) => {
-      authService.selectBranch(branch.id).then(() => {
+      authService
+        .selectBranch(branch.id)
+        .then(() => {
           branchService.setSelectedBranchId(branch.id);
           branchService.setSelectedBranchName(branch.name);
           const nextPath = resolvePostLoginRedirect(redirectPath);
-
           requestAuthSessionSync();
           navigate(nextPath, { replace: true });
-        }).catch((err: unknown) => {
+        })
+        .catch((err: unknown) => {
           const anyErr = err as { data?: { detail?: string; message?: string } };
           const message =
             anyErr?.data?.detail ||
@@ -72,22 +69,32 @@ export const LoginForm = () => {
   const onSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (loading) {
-        return;
-      }
+      if (loading) return;
 
-      const validationResult = formRef.current?.instance().validate();
-      if (validationResult && !validationResult.isValid) {
+      // client-side validation
+      let valid = true;
+      if (!username.trim()) {
+        setUsernameError('Usuario es requerido');
+        valid = false;
+      }
+      if (!password) {
+        setPasswordError('Contraseña es requerida');
+        valid = false;
+      }
+      if (!valid) {
         setSubmitError('Completa los campos requeridos para continuar.');
         return;
       }
 
-      const { username, password } = formData.current;
       setSubmitError(null);
+      setUsernameError(null);
+      setPasswordError(null);
       setBranchOptions([]);
       setLoading(true);
 
-      authService.login(username.trim(), password).then(async (response) => {
+      authService
+        .login(username.trim(), password)
+        .then(async (response) => {
           if (response.data.user) {
             StorageUtils.setItem('user', response.data.user);
           }
@@ -128,7 +135,8 @@ export const LoginForm = () => {
             setSubmitError(message);
             setLoading(false);
           }
-        }).catch((err: unknown) => {
+        })
+        .catch((err: unknown) => {
           const anyErr = err as { data?: { detail?: string; message?: string } };
           const message =
             anyErr?.data?.detail ||
@@ -138,61 +146,79 @@ export const LoginForm = () => {
           setLoading(false);
         });
     },
-    [loading, applyBranchAndRedirect],
+    [loading, username, password, applyBranchAndRedirect],
   );
 
   return (
-    <form className="login-form" onSubmit={onSubmit} autoComplete="off">
-      <Form
-        ref={formRef}
-        // eslint-disable-next-line react-hooks/refs -- formData ref holds mutable form state intentionally accessed during render for DevExtreme binding
-        formData={formData.current}
-        onFieldDataChanged={onFieldDataChanged}
-        disabled={loading}
-        labelMode="hidden"
-        showColonAfterLabel={false}
-        showRequiredMark={false}
-      >
-        <Item dataField="username" editorType="dxTextBox" editorOptions={usernameEditorOptions}>
-          <RequiredRule message="Usuario es requerido" />
-        </Item>
-        <Item
-          dataField="password"
-          editorType="dxTextBox"
-          editorOptions={{
-            stylingMode: 'outlined',
-            placeholder: 'Contraseña',
-            mode: showPassword ? 'text' : 'password',
-            inputAttr: {
-              autoComplete: 'current-password',
-              'aria-label': 'Contraseña',
-            },
-            buttons: [
-              {
-                name: 'password',
-                location: 'after',
-                options: {
-                  icon: showPassword ? 'ph ph-eye' : 'ph ph-eye-slash',
-                  type: 'default',
-                  stylingMode: 'text',
-                  onClick: () => setShowPassword(!showPassword),
-                  hint: showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña',
-                },
-              },
-            ],
+    <form className="login-form" onSubmit={onSubmit} autoComplete="off" noValidate>
+      {/* Username */}
+      <div className={`login-field${usernameError ? ' login-field--error' : ''}`}>
+        <input
+          ref={usernameRef}
+          id="login-username"
+          className="login-input"
+          type="text"
+          placeholder="Usuario"
+          autoComplete="username"
+          aria-label="Usuario"
+          aria-invalid={!!usernameError}
+          aria-describedby={usernameError ? 'login-username-error' : undefined}
+          disabled={loading}
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            clearFieldErrors();
           }}
-        >
-          <RequiredRule message="Contraseña es requerida" />
-        </Item>
-        <ButtonItem>
-          <ButtonOptions width="100%" type="default" useSubmitBehavior>
-            <span className="dx-button-text">
-              {loading ? <LoadIndicator width="24px" height="24px" visible /> : 'Ingresar'}
-            </span>
-          </ButtonOptions>
-        </ButtonItem>
-      </Form>
+        />
+        {usernameError && (
+          <span id="login-username-error" className="login-field__error" role="alert">
+            {usernameError}
+          </span>
+        )}
+      </div>
 
+      {/* Password */}
+      <div className={`login-field${passwordError ? ' login-field--error' : ''}`}>
+        <div className="login-input-wrapper">
+          <input
+            id="login-password"
+            className="login-input"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Contraseña"
+            autoComplete="current-password"
+            aria-label="Contraseña"
+            aria-invalid={!!passwordError}
+            aria-describedby={passwordError ? 'login-password-error' : undefined}
+            disabled={loading}
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearFieldErrors();
+            }}
+          />
+          <button
+            type="button"
+            className="login-password-toggle"
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            tabIndex={0}
+            onClick={() => setShowPassword((v) => !v)}
+          >
+            <i className={showPassword ? 'ph ph-eye' : 'ph ph-eye-slash'} aria-hidden="true" />
+          </button>
+        </div>
+        {passwordError && (
+          <span id="login-password-error" className="login-field__error" role="alert">
+            {passwordError}
+          </span>
+        )}
+      </div>
+
+      {/* Submit */}
+      <button type="submit" className="login-submit" disabled={loading} aria-busy={loading}>
+        {loading ? <span className="login-spinner" aria-hidden="true" /> : 'Ingresar'}
+      </button>
+
+      {/* General error */}
       {submitError && (
         <div className="login-error" role="alert" aria-live="assertive">
           {submitError}
@@ -207,15 +233,4 @@ export const LoginForm = () => {
       />
     </form>
   );
-};
-
-const usernameEditorOptions = {
-  stylingMode: 'outlined',
-  placeholder: 'Usuario',
-  mode: 'text',
-  inputAttr: {
-    autoComplete: 'username',
-    'aria-label': 'Usuario',
-  },
-  value: '',
 };

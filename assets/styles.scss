@@ -180,14 +180,17 @@ samp {
 .embedded {
   .layout-header,
   .dx-swatch-additional,
-  .dx-drawer-shader {
+  .dx-drawer-shader,
+  .side-nav-outer-toolbar__scrim {
     display: none !important;
   }
 
+  .side-nav-outer-toolbar__content,
   .dx-drawer-content {
     padding: initial !important;
   }
 
+  .side-nav-outer-toolbar__panel,
   .dx-drawer-panel-content,
   .dx-drawer-panel-content .dx-overlay-content {
     width: initial !important;
@@ -296,7 +299,8 @@ samp {
     font-family: var(--font-family-sans);
   }
 
-  .dx-drawer-panel-content {
+  .dx-drawer-panel-content,
+  .side-nav-outer-toolbar__panel {
     box-shadow: var(--shadow-sm);
   }
 

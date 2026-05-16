@@ -12,7 +12,7 @@
   right: 0;
   opacity: 0;
 
-  .dx-drawer-opened & {
+  .side-nav-outer-toolbar__body.is-open & {
     opacity: 1;
     transition: opacity 0.4s;
   }
