@@ -10,7 +10,7 @@ import {
   textField,
 } from '@core/field/FieldBuilders';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -125,7 +125,7 @@ export const StockEntryFields = (mode: StockEntryMode): Field[] => {
       .label('Fecha')
       .readonly(true)
       .visibleOnForm(false)
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
 

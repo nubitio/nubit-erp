@@ -23,10 +23,10 @@ async function completeBranchSelectionIfVisible(page: Page) {
     return;
   }
 
-  const seededBranchOption = branchDialog.getByRole('option', { name: 'CI E2E Branch' });
+  const seededBranchOption = branchDialog.getByRole('radio', { name: 'CI E2E Branch' });
 
   if (await seededBranchOption.isVisible({ timeout: 1_000 }).catch(() => false)) {
-    await seededBranchOption.getByRole('radio').click();
+    await seededBranchOption.click();
   } else {
     await branchDialog.getByRole('radio').first().click();
   }
@@ -58,11 +58,7 @@ test.describe('Post-login shell entry regression', () => {
     await fillDxInput(page, 'Usuario', seed.username);
     await fillDxInput(page, 'Contraseña', seed.password);
 
-    await page
-      .locator('form.login-form .dx-button')
-      .filter({ hasText: 'Ingresar' })
-      .first()
-      .click();
+    await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
 
     await completeBranchSelectionIfVisible(page);
 

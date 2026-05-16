@@ -6,7 +6,7 @@ import {
   enumField,
   textareaField,
 } from '../../../../core/field/FieldBuilders';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { Constants } from '../../../../core/common/Constants';
 
@@ -30,7 +30,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
     entityField(Constants.API_BASE_URL + 'cash-movement-categories', 'id', 'name')
       .name('category')
       .label('Categoría')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .formatter((cell: GridCellContext) => cell.value?.name)
       .required(true)
       .build(),
   );
@@ -41,7 +41,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
     ])
       .name('type')
       .label('Tipo')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value === 'income') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Ingreso</span>;
         } else if (cell.value === 'expense') {
@@ -58,7 +58,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
     currencyField()
       .name('amount')
       .label('Monto')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .required(true)
       .build(),
   );

@@ -1,0 +1,326 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, FileUploader, ProgressBar as DxProgressBar } from 'devextreme-react';
+import { Popup, ToolbarItem } from 'devextreme-react/popup';
+import { useScreenSize } from '@utils/media-query';
+import MercureManager from '@core/mercure/MercureManager';
+import { useMercureHub } from '@core/mercure/useMercureHub';
+import { businessHttpClient } from '@shared/api/network';
+
+import '../../components/ProductImportDialog.scss';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type ImportStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
+
+interface Progress {
+  current: number;
+  total: number;
+}
+
+interface ImportError {
+  row: number;
+  message: string;
+}
+
+interface ImportResult {
+  created: number;
+  updated: number;
+  errors: ImportError[];
+}
+
+interface MercureEvent {
+  jobId: string;
+  status: 'processing' | 'completed' | 'failed';
+  progress?: Progress;
+  result?: ImportResult;
+  error?: string;
+}
+
+interface ProductImportDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onImportDone?: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+function progressPercent(p: Progress | null): number {
+  if (!p || p.total === 0) return 0;
+  return Math.round((p.current / p.total) * 100);
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductImportDialogProps) {
+  const { isXSmall } = useScreenSize();
+  const hubUrl = useMercureHub();
+
+  const [status, setStatus] = useState<ImportStatus>('idle');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const jobIdRef = useRef<string | null>(null);
+
+  const prevIsOpenRef = useRef(isOpen);
+  useEffect(() => {
+    const wasOpen = prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+    if (wasOpen && !isOpen) {
+      const id = setTimeout(() => {
+        setStatus('idle');
+        setSelectedFile(null);
+        setProgress(null);
+        setResult(null);
+        setErrorMessage(null);
+        jobIdRef.current = null;
+      }, 300);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [isOpen]);
+
+  // ---------------------------------------------------------------------------
+  // Mercure
+  // ---------------------------------------------------------------------------
+
+  const subscribeMercure = useCallback(
+    (topic: string) => {
+      if (!hubUrl) return;
+
+      const handler = (data: unknown) => {
+        const event = data as MercureEvent;
+        if (event.status === 'processing' && event.progress) {
+          setProgress(event.progress);
+        } else if (event.status === 'completed' && event.result) {
+          setResult(event.result);
+          setStatus('completed');
+          MercureManager.unsubscribe(topic, handler);
+          onImportDone?.();
+        } else if (event.status === 'failed') {
+          setErrorMessage(event.error ?? 'Error desconocido');
+          setStatus('failed');
+          MercureManager.unsubscribe(topic, handler);
+        }
+      };
+
+      MercureManager.subscribe(topic, handler);
+    },
+    [hubUrl, onImportDone],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
+
+  const handleFileUploadValueChange = (files: File[]) => {
+    const file = files[0] ?? null;
+    setSelectedFile(file);
+    setStatus('idle');
+    setResult(null);
+    setErrorMessage(null);
+  };
+
+  const handleImport = async () => {
+    if (!selectedFile) return;
+    setStatus('uploading');
+    setProgress(null);
+    setResult(null);
+    setErrorMessage(null);
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await businessHttpClient.post<{ jobId: string; status: string; topic: string }>(
+          '/api/v1/products/import',
+          formData,
+      );
+      jobIdRef.current = response.data.jobId;
+      setStatus('processing');
+      subscribeMercure(response.data.topic);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Error al subir el archivo');
+      setStatus('failed');
+    }
+  };
+
+  const handleClose = () => {
+    if (status === 'uploading' || status === 'processing') return;
+    onClose();
+  };
+
+  const isRunning = status === 'uploading' || status === 'processing';
+  const pct = progressPercent(progress);
+
+  // ---------------------------------------------------------------------------
+  // Body sections
+  // ---------------------------------------------------------------------------
+
+  const renderIdleBody = () => (
+    <div className="product-import-steps">
+      {/* Step 1 */}
+      <div className="product-import-step">
+        <span className="product-import-step__badge">1</span>
+        <div className="product-import-step__content">
+          <p className="product-import-step__title">Descarga la plantilla</p>
+          <p className="product-import-step__desc">
+            Incluye columnas con listas desplegables para categorías y unidades de medida.
+          </p>
+          <Button
+            text="Descargar plantilla .xlsx"
+            stylingMode="outlined"
+            onClick={() => window.open('/api/v1/products/import/template', '_blank')}
+          />
+        </div>
+      </div>
+
+      {/* Step 2 */}
+      <div className="product-import-step">
+        <span className="product-import-step__badge">2</span>
+        <div className="product-import-step__content">
+          <p className="product-import-step__title">Completa y sube el archivo</p>
+          <p className="product-import-step__desc">
+            Rellena las filas con tus productos y sube el archivo .xlsx.
+          </p>
+          <FileUploader
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            uploadMode="useForm"
+            selectButtonText="Seleccionar archivo .xlsx"
+            labelText=""
+            multiple={false}
+            onValueChange={handleFileUploadValueChange}
+            value={selectedFile ? [selectedFile] : []}
+            width="100%"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProcessingBody = () => (
+    <div className="product-import-progress">
+      <p className="product-import-progress__label">
+        {status === 'uploading' ? 'Subiendo archivo…' : `Importando productos… ${pct}%`}
+      </p>
+      <DxProgressBar
+        value={pct}
+        min={0}
+        max={100}
+        showStatus={false}
+        width="100%"
+      />
+      {progress && (
+        <p className="product-import-progress__detail">
+          {progress.current} / {progress.total} filas procesadas
+        </p>
+      )}
+    </div>
+  );
+
+  const renderCompletedBody = () => {
+    if (!result) return null;
+    return (
+      <div className="product-import-result">
+        <div className="product-import-result__cards">
+          <div className="product-import-result__card product-import-result__card--created">
+            <span className="product-import-result__value">{result.created}</span>
+            <span className="product-import-result__label">Creados</span>
+          </div>
+          <div className="product-import-result__card product-import-result__card--updated">
+            <span className="product-import-result__value">{result.updated}</span>
+            <span className="product-import-result__label">Actualizados</span>
+          </div>
+          <div className={`product-import-result__card${result.errors.length > 0 ? ' product-import-result__card--error' : ''}`}>
+            <span className="product-import-result__value">{result.errors.length}</span>
+            <span className="product-import-result__label">Errores</span>
+          </div>
+        </div>
+        {result.errors.length > 0 && (
+          <div className="product-import-result__errors">
+            <p className="product-import-result__errors-title">Filas con errores:</p>
+            {result.errors.map((e, i) => (
+              <div key={i} className="product-import-result__error-row">
+                Fila {e.row}: {e.message}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderFailedBody = () => (
+    <div className="product-import-failed">
+      <i className="dx-icon dx-icon-warning product-import-failed__icon" />
+      <p className="product-import-failed__message">
+        <strong>Error:</strong> {errorMessage}
+      </p>
+    </div>
+  );
+
+  const bodyNode = isRunning
+    ? renderProcessingBody()
+    : status === 'completed'
+      ? renderCompletedBody()
+      : status === 'failed'
+        ? renderFailedBody()
+        : renderIdleBody();
+
+  return (
+    <Popup
+      visible={isOpen}
+      title="Importar productos"
+      fullScreen={isXSmall}
+      width={520}
+      height="auto"
+      maxHeight="90vh"
+      showCloseButton={!isRunning}
+      dragEnabled={false}
+      hideOnOutsideClick={false}
+      onHiding={handleClose}
+      wrapperAttr={{ class: 'form-popup' }}
+    >
+      <ToolbarItem toolbar="bottom" location="after">
+        <div className="form-popup-buttons-container">
+          <Button
+            text="Cerrar"
+            stylingMode="outlined"
+            onClick={handleClose}
+            disabled={isRunning}
+          />
+          {status === 'idle' && (
+            <Button
+              text="Importar"
+              stylingMode="outlined"
+              type="default"
+              disabled={!selectedFile}
+              onClick={() => void handleImport()}
+            />
+          )}
+          {status === 'completed' && (
+            <Button
+              text="Importar otro"
+              stylingMode="outlined"
+              type="default"
+              onClick={() => {
+                setStatus('idle');
+                setSelectedFile(null);
+                setResult(null);
+              }}
+            />
+          )}
+        </div>
+      </ToolbarItem>
+
+      <div className="product-import-body">{bodyNode}</div>
+    </Popup>
+  );
+}

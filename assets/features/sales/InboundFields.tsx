@@ -14,7 +14,7 @@ import { productService } from '@features/product';
 import { ProductDto } from '@features/product/types/product.dto';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 export const InboundFields = () => {
   const fields: Field[] = [];
@@ -34,7 +34,7 @@ export const InboundFields = () => {
     dateField()
       .name('issuedAt')
       .label('Fecha')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
   fields.push(
@@ -63,7 +63,7 @@ export const InboundFields = () => {
       .name('grandTotal')
       .label('Total')
       .defaultValue(0)
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
       .build(),
   );
@@ -119,7 +119,7 @@ export const InboundDetailFields = () => {
       .name('unitCost')
       .label('Precio unitario')
       .defaultValue(0)
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
         row.totalAmount = Number(currentRow.qty ?? 0) * Number(value ?? 0);
@@ -133,7 +133,7 @@ export const InboundDetailFields = () => {
       .name('totalAmount')
       .label('Precio total')
       .defaultValue(0)
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)
       .filterable(false)
       .build(),

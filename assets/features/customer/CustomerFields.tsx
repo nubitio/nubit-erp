@@ -1,14 +1,14 @@
 import { type RefObject } from 'react';
 import { Constants } from '@core/common/Constants';
-import { DxFormEvents } from '@core/form/DxForm';
+import type { FormHandle } from '@core/form/FormHandle';
 import { Field } from '@core/field/Field';
 import { entityField, textField, textareaField } from '@core/field/FieldBuilders';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 import toast from '@shared/lib/SharedUtils';
 
-export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
+export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
 
   fields.push(
@@ -118,7 +118,7 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
     entityField(Constants.API_BASE_URL + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .formatter((cell: GridCellContext) => cell.value?.name)
       .valueType('number')
       .build(),
   );

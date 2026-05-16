@@ -1,8 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { Constants } from '@core/common/Constants';
-import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm, type DxFormEvents } from '@core/form/DxForm';
+import { DataGridView, DialogView, FormView, type FormHandle, type GridHandle } from '@core/ui/CrudViews';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@core/event/EventHook';
@@ -24,8 +22,8 @@ const gridDetailFields = (parentRow: Record<string, unknown>) =>
 
 export const CreditNotePage = () => {
   const [on] = useEvents();
-  const gridRef = useRef<DxDataGridEvents>(null);
-  const formRef = useRef<DxFormEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
+  const formRef = useRef<FormHandle>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
   const [formDetailFields, setFormDetailFields] = useState(() => CreditNoteDetailFields());
 
@@ -77,7 +75,7 @@ export const CreditNotePage = () => {
 
   return (
     <div id="wrapper">
-      <DxDataGrid
+      <DataGridView
         id="creditNote"
         ref={gridRef}
         title="Notas de crédito"
@@ -94,8 +92,8 @@ export const CreditNotePage = () => {
         events={creditNoteEvents}
         onSelectionChanged={handleSelectionChanged}
       />
-      <DxDialog width={1200} height={720} events={creditNoteEvents}>
-        <DxForm
+      <DialogView width={1200} height={720} events={creditNoteEvents}>
+        <FormView
           ref={formRef}
           url={API_URL}
           fields={fields}
@@ -108,7 +106,7 @@ export const CreditNotePage = () => {
           requiredDetail
           events={creditNoteEvents}
         />
-      </DxDialog>
+      </DialogView>
     </div>
   );
 };

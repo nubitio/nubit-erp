@@ -44,6 +44,7 @@ import { Field } from '../field/Field';
 import { DataGridEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import { Store } from 'devextreme/data';
 import { RowPreparedEvent, SelectionChangedEvent } from 'devextreme/ui/data_grid';
+import type { GridHandle } from './GridHandle';
 
 export interface DxDataGridOptions {
   id: string;
@@ -94,20 +95,10 @@ export interface DxDataGridOptions {
   visibleColumns?: string[] | null;
 }
 
-export interface DxDataGridEvents {
-  showLoading: (message?: string) => void;
-  hideLoading: () => void;
-  refresh: () => void;
-  reset: () => void;
+export interface DxDataGridEvents extends GridHandle {
   getVisibleRows: () => DataGridTypes.Row[] | undefined;
-  getSelectedRowKey: () => string | number | undefined;
-  getSelectedRow: () => Record<string, unknown> | undefined;
-  getSelectedRowKeys: () => unknown[];
-  getSelectedRows: () => Record<string, unknown>[];
   getDataSource: () => Store | null;
   setDataSource: (dataSource: Store | null) => void;
-  getFilter(): unknown[];
-  filter(filterRule: DxFilterRule | null): void;
 }
 
 export const DATA_GRID_EVENTS = {
@@ -134,7 +125,7 @@ function extractFilterRulesFromExpression(
   return expression.flatMap((part) => extractFilterRulesFromExpression(part));
 }
 
-export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
+export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, ref) => {
   const { t } = useCoreTranslation();
   const gridRef = useRef<DataGridRef | null>(null);
   const [data, setData] = useState<Store | null>(null);
@@ -155,6 +146,10 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     gridRef.current?.instance().clearSorting();
     gridRef.current?.instance().clearFilter();
     gridRef.current?.instance().resetOption('focusedRowKey');
+  };
+
+  const loadData = () => {
+    return gridRef.current?.instance().getDataSource().load() ?? Promise.resolve([]);
   };
 
   const onExporting = (e: DataGridTypes.ExportingEvent) => handleDataGridExport(e, options.title);
@@ -370,6 +365,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     hideLoading,
     refresh,
     reset,
+    loadData,
     getVisibleRows,
     getSelectedRowKey,
     getSelectedRow,

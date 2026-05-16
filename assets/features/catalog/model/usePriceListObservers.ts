@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DataGridRef } from 'devextreme-react/data-grid';
+import type { GridHandle } from '@core/datagrid/GridHandle';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
 import { priceListEndpoints } from '../api/priceListEndpoints';
-import ArrayStore from 'devextreme/data/array_store';
-import DataSource from 'devextreme/data/data_source';
 import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
+import type { PriceEditorGridHandle, PriceEditorRow } from '../components/PriceEditorGrid';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -18,9 +16,8 @@ type UsePriceListObserversParams = {
     SAVE: string;
     SUCCESS: string;
   };
-  gridRef: React.RefObject<DxDataGridEvents | null>;
-  pricesRef: React.RefObject<DataGridRef | null>;
-  pricesData: React.RefObject<DataSource>;
+  gridRef: React.RefObject<GridHandle | null>;
+  pricesRef: React.RefObject<PriceEditorGridHandle | null>;
 };
 
 type SelectedPriceListRow = {
@@ -33,11 +30,10 @@ export const usePriceListObservers = ({
   pricesEvent,
   gridRef,
   pricesRef,
-  pricesData,
 }: UsePriceListObserversParams) => {
-  const callbacksRef = useRef({ on, emit, pricesEvent, gridRef, pricesRef, pricesData });
+  const callbacksRef = useRef({ on, emit, pricesEvent, gridRef, pricesRef });
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix
-  callbacksRef.current = { on, emit, pricesEvent, gridRef, pricesRef, pricesData };
+  callbacksRef.current = { on, emit, pricesEvent, gridRef, pricesRef };
 
   useEffect(() => {
     const {
@@ -46,7 +42,6 @@ export const usePriceListObservers = ({
       pricesEvent: ev,
       gridRef: grid,
       pricesRef: prices,
-      pricesData: data,
     } = callbacksRef.current;
 
     onEvent(ev.ADD, () => {
@@ -56,24 +51,19 @@ export const usePriceListObservers = ({
         return;
       }
 
-      prices.current?.instance().beginCustomLoading('Cargando precios...');
+      prices.current?.showLoading('Cargando precios...');
 
-      void httpRequestData<any[]>(
-        businessHttpClient.get<any[]>(priceListEndpoints.prices(selectedRow.id)),
+      void httpRequestData<PriceEditorRow[]>(
+        businessHttpClient.get<PriceEditorRow[]>(priceListEndpoints.prices(selectedRow.id)),
       )
         .then((items) => {
-          const store = data.current.store() as ArrayStore;
-          store.clear();
-          items.forEach((item: any) => {
-            store.insert(item);
-          });
-          data.current.reload();
+          prices.current?.setRows(items);
         })
         .catch(() => {
           toast('No se pudieron cargar los precios', 'error');
         })
         .finally(() => {
-          prices.current?.instance().endCustomLoading();
+          prices.current?.hideLoading();
         });
     });
 
@@ -84,15 +74,10 @@ export const usePriceListObservers = ({
         return;
       }
 
-      const pricesPayload: any[] = [];
-      const updatedPrices = prices.current?.instance().getDataSource().items();
-      updatedPrices?.forEach((item: any) => {
-        if (!item.updated) return;
-        pricesPayload.push({
-          productId: item.id,
-          price: Number(item.price),
-        });
-      });
+      const pricesPayload = (prices.current?.getUpdatedRows() ?? []).map((item) => ({
+        productId: item.id,
+        price: Number(item.price),
+      }));
       if (pricesPayload.length === 0) {
         toast('No se han realizado cambios', 'warning');
         return;

@@ -248,10 +248,7 @@ async function ensureLoggedIn(page: Page) {
   // Re-login
   await fillDxInput(page, 'Usuario', USERNAME);
   await fillDxInput(page, 'Contraseña', PASSWORD);
-  const submitBtn = page
-    .locator('form.login-form .dx-button')
-    .filter({ hasText: 'Ingresar' })
-    .first();
+  const submitBtn = page.locator('form.login-form').getByRole('button', { name: 'Ingresar' });
   await submitBtn.click();
 
   // Handle branch picker if it appears
@@ -265,9 +262,8 @@ async function ensureLoggedIn(page: Page) {
       (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
     await targetOption.click();
     const acceptBtn = page
-      .locator('.dx-overlay-content .dx-button')
-      .filter({ hasText: /aceptar/i })
-      .first();
+      .getByRole('dialog', { name: 'Seleccionar local' })
+      .getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
   } catch {
@@ -407,12 +403,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Contraseña: aria-label="Contraseña" definido en inputAttr
       await fillDxInput(page, 'Contraseña', PASSWORD);
 
-      // Botón "Ingresar" — es un <button type="submit"> dentro del DxForm
-      // DxForm ButtonItem renderiza un .dx-button con texto span
-      const submitBtn = page
-        .locator('form.login-form .dx-button')
-        .filter({ hasText: 'Ingresar' })
-        .first();
+      const submitBtn = page.locator('form.login-form').getByRole('button', { name: 'Ingresar' });
       await submitBtn.click();
     });
 
@@ -432,9 +423,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await targetOption.click();
         // Hacer click en "Aceptar" para confirmar la selección
         const acceptBtn = page
-          .locator('.dx-overlay-content .dx-button')
-          .filter({ hasText: /aceptar/i })
-          .first();
+          .getByRole('dialog', { name: 'Seleccionar local' })
+          .getByRole('button', { name: /aceptar/i });
         await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
         await acceptBtn.click();
       } catch {
@@ -534,7 +524,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Fill the initial balance form
       await expect(page.locator('text=Apertura de caja')).toBeVisible({ timeout: 10000 });
-      await fillDxInput(page, 'Saldo inicial', '100');
+      await page.getByLabel('Saldo inicial').fill('100');
 
       // Confirm opening
       const abrirCajaBtn = page.getByTestId('cash-open-submit-btn').first();
@@ -1270,8 +1260,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Confirmar el diálogo de cierre', async () => {
-      // CashRegisterClose ahora usa un <div> React propio con data-testid en lugar de confirm() de DX
-      const confirmDialog = page.locator('[data-testid="close-cash-confirm-dialog"]');
+      const confirmDialog = page.getByRole('alertdialog', { name: 'Cerrar caja' });
       await confirmDialog.waitFor({ state: 'visible', timeout: 8000 });
 
       const closeResponsePromise = page
@@ -1283,8 +1272,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         )
         .catch(() => null);
 
-      // Botón de confirmación positiva — wait for it to be visible inside the dialog
-      const confirmYesBtn = confirmDialog.locator('[data-testid="close-cash-confirm-yes"]');
+      const confirmYesBtn = confirmDialog.getByRole('button', { name: 'Sí' });
       await confirmYesBtn.waitFor({ state: 'visible', timeout: 8000 });
       await confirmYesBtn.click();
 

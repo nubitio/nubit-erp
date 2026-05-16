@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DataGridView, type GridHandle } from '@core/ui/CrudViews';
 import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
 import { Constants } from '@core/common/Constants';
 import { createCashRegisterShiftsToolbar } from '@features/cashRegister';
@@ -11,7 +11,7 @@ type CashRegisterShiftParams = {
 
 export const CashRegisterShiftsPage = () => {
   const { id } = useParams<CashRegisterShiftParams>();
-  const gridRef = useRef<DxDataGridEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
   const fields = useMemo(() => CashRegisterShiftsFields(), []);
   const API_URL = `${Constants.API_BASE_URL}cash-registers/${id}/shifts`;
 
@@ -25,7 +25,7 @@ export const CashRegisterShiftsPage = () => {
 
   return (
     <div id="wrapper">
-      <DxDataGrid
+      <DataGridView
         ref={gridRef}
         id="cash-register-shifts"
         title="Historial de turnos"

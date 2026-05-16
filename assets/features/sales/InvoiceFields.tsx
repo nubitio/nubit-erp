@@ -13,7 +13,7 @@ import {
 } from '@core/field/FieldBuilders';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -25,14 +25,14 @@ export const InvoiceFields = () => {
       .label('Fecha')
       .defaultValue(undefined)
       .valueType('date')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
   fields.push(
     textField()
       .name('ruc')
       .label('DNI/RUC')
-      .formatter((cell: ColumnCellTemplateData) => cell.data.customer?.ruc)
+      .formatter((cell: GridCellContext) => cell.data?.customer?.ruc)
       .filterable(false)
       .sortable(false)
       .build(),
@@ -41,7 +41,7 @@ export const InvoiceFields = () => {
     entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => cell.value?.businessName)
       .build(),
   );
   fields.push(
@@ -51,7 +51,7 @@ export const InvoiceFields = () => {
     ])
       .name('documentType')
       .label('Tipo')
-      .formatter((cell: ColumnCellTemplateData) =>
+      .formatter((cell: GridCellContext) =>
         cell.data.documentType === '01' ? 'Factura' : 'Boleta',
       )
       .build(),
@@ -62,7 +62,7 @@ export const InvoiceFields = () => {
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: ColumnCellTemplateData) =>
+      .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
       )
       .build(),
@@ -74,7 +74,7 @@ export const InvoiceFields = () => {
       .label('Anulado')
       .filterable(false)
       .sortable(false)
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value === true) {
           return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>;
         }
@@ -88,7 +88,7 @@ export const InvoiceFields = () => {
     textField()
       .name('sunatStatus')
       .label('Envio sunat')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.billStatusFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value))
       .align('center')
       .build(),
   );
@@ -98,7 +98,7 @@ export const InvoiceFields = () => {
       .name('detraccionCodigo')
       .label('Cód. Detrac.')
       .align('center')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (!cell.value) return '';
         return <span className="badge text-bg-info">{cell.value}</span>;
       })
@@ -108,7 +108,7 @@ export const InvoiceFields = () => {
     currencyField()
       .name('detraccionMonto')
       .label('Detracción')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value == null || cell.value === 0) return '';
         return (
           <span className="badge text-bg-warning">{`S/ ${Number(cell.value).toFixed(2)}`}</span>
@@ -140,21 +140,21 @@ export const InvoiceDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .build(),
   );
   fields.push(
     currencyField()
       .name('taxAmount')
       .label('IGV')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .build(),
   );
   fields.push(
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .build(),
   );
 

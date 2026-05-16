@@ -1,8 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm } from '@core/form/DxForm';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
 import { Constants } from '@core/common/Constants';
 import { cashRegisterEvents } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
@@ -12,7 +10,7 @@ const fields = CashRegisterFields();
 
 export const CashRegisterPage = () => {
   const navigate = useNavigate();
-  const gridRef = useRef<DxDataGridEvents>(null);
+  const gridRef = useRef<GridHandle>(null);
 
   const toolbar = useMemo(
     () => [
@@ -31,7 +29,7 @@ export const CashRegisterPage = () => {
 
   return (
     <div id="wrapper">
-      <DxDataGrid
+      <DataGridView
         ref={gridRef}
         id="cash-register"
         title="Cajas"
@@ -44,9 +42,9 @@ export const CashRegisterPage = () => {
         events={cashRegisterEvents}
         toolbar={toolbar}
       />
-      <DxDialog events={cashRegisterEvents}>
-        <DxForm url={API_URL} fields={fields} events={cashRegisterEvents} />
-      </DxDialog>
+      <DialogView events={cashRegisterEvents}>
+        <FormView url={API_URL} fields={fields} events={cashRegisterEvents} />
+      </DialogView>
     </div>
   );
 };

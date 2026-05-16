@@ -3,7 +3,7 @@ import { SmartCrudPage, defineResource } from '@core/crud';
 import { defineFields } from '@core/crud/fieldContract';
 import { Constants } from '@core/common/Constants';
 import { FieldType } from '@core/field/FieldType';
-import type { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ const iriToId = (iri: string) => iri.split('/').pop() ?? iri;
  *   ✏  Ajustar → /stock-adjustment              (opens adjustment page)
  */
 function makeActionsFormatter(navigate: ReturnType<typeof useNavigate>) {
-  return function ActionsCell({ data }: ColumnCellTemplateData) {
+  return function ActionsCell({ data }: GridCellContext) {
     const wh = data?.warehouse;
     const pr = data?.product;
 

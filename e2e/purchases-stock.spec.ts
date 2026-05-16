@@ -129,10 +129,7 @@ async function ensureLoggedIn(page: Page) {
 
   await fillDxInput(page, 'Usuario', USERNAME);
   await fillDxInput(page, 'Contraseña', PASSWORD);
-  const submitBtn = page
-    .locator('form.login-form .dx-button')
-    .filter({ hasText: 'Ingresar' })
-    .first();
+  const submitBtn = page.locator('form.login-form').getByRole('button', { name: 'Ingresar' });
   await submitBtn.click();
 
   try {
@@ -145,9 +142,8 @@ async function ensureLoggedIn(page: Page) {
       (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
     await targetOption.click();
     const acceptBtn = page
-      .locator('.dx-overlay-content .dx-button')
-      .filter({ hasText: /aceptar/i })
-      .first();
+      .getByRole('dialog', { name: 'Seleccionar local' })
+      .getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
   } catch {
@@ -218,10 +214,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await fillDxInput(page, 'Usuario', USERNAME);
     await fillDxInput(page, 'Contraseña', PASSWORD);
 
-    const submitBtn = page
-      .locator('form.login-form .dx-button')
-      .filter({ hasText: 'Ingresar' })
-      .first();
+    const submitBtn = page.locator('form.login-form').getByRole('button', { name: 'Ingresar' });
     await submitBtn.click();
 
     try {
@@ -234,9 +227,8 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
       await targetOption.click();
       const acceptBtn = page
-        .locator('.dx-overlay-content .dx-button')
-        .filter({ hasText: /aceptar/i })
-        .first();
+        .getByRole('dialog', { name: 'Seleccionar local' })
+        .getByRole('button', { name: /aceptar/i });
       await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
       await acceptBtn.click();
     } catch {

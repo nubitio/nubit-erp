@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
 import type { DxFilterRule } from '../field/FilterRule';
 import type { FormEventNames, ToolbarButtonItem } from '../event/EventTypes';
-import type { DxFormEvents } from '../form/DxForm';
+import type { FormHandle } from '../form/FormHandle';
 import type { BulkAction } from './BulkAction';
 import type { FormLayout } from './FormLayout';
 import type { ColumnPreset } from './ColumnPreset';
@@ -14,7 +14,7 @@ import type { SmartCrudFieldContract } from './fieldContract';
  * Defaults to `Record<string, unknown>` for backward compatibility.
  */
 export type FieldsFactory<T extends Record<string, unknown> = Record<string, unknown>> = (
-  formRef: RefObject<DxFormEvents | null>,
+  formRef: RefObject<FormHandle | null>,
 ) => FieldDef<T>[];
 
 /**
@@ -117,9 +117,9 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
    * Use this to recompute header-form fields that depend on detail data
    * (e.g., recalculating a `total` field from line items).
    *
-   * @param formRef - ref to the DxForm instance (call `formRef.current?.setFieldValue(...)` etc.)
+   * @param formRef - ref to the form handle (call `formRef.current?.setFieldValue(...)` etc.)
    */
-  onDetailRowsChanged?: (formRef: RefObject<DxFormEvents | null>) => void;
+  onDetailRowsChanged?: (formRef: RefObject<FormHandle | null>) => void;
   /**
    * Enable or disable real-time Mercure subscription for this resource.
    *

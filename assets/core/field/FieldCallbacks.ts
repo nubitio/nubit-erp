@@ -1,15 +1,25 @@
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import React from 'react';
 
+export interface GridCellContext<
+  TData extends Record<string, any> = Record<string, any>,
+  TValue = any,
+> {
+  value?: TValue;
+  data: TData;
+  rowIndex?: number;
+  columnIndex?: number;
+  [key: string]: unknown;
+}
+
 /**
- * Callback for grid column `cellRender` — renders a cell in a DxDataGrid column.
- * Receives the full DevExtreme cell template data object.
+ * Callback for grid column cell rendering.
+ * Receives the app-owned cell context; UI adapters may provide extra fields.
  *
  * @example
  *   .formatter(cell => cell.value?.name)
  *   .formatter(cell => NumberUtils.formatCurrency(cell.value))
  */
-export type FormatterFn = (cell: ColumnCellTemplateData) => React.ReactNode;
+export type FormatterFn = (cell: GridCellContext) => React.ReactNode;
 
 /**
  * Callback for grid column `setCellValue` — called when the user edits a cell in a

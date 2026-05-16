@@ -1,7 +1,7 @@
 import { Constants } from '@core/common/Constants';
 import { Field } from '@core/field/Field';
 import { identityField, entityField, textField } from '@core/field/FieldBuilders';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 export const CashRegisterFields = () => {
   const fields: Field[] = [];
@@ -11,7 +11,7 @@ export const CashRegisterFields = () => {
     entityField(Constants.API_BASE_URL + 'branches', 'id', 'name')
       .name('branch')
       .label('Sucursal')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .formatter((cell: GridCellContext) => cell.value?.name)
       .required(true)
       .build(),
   );

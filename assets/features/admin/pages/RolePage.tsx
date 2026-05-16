@@ -1,23 +1,17 @@
-import { useRef, useState } from 'react';
-import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm } from '@core/form/DxForm';
+import { useRef } from 'react';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
 import { permissionEvents, roleEvents } from '@core/event/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import { RoleFields } from './RoleFields';
 import toast from '@shared/lib/SharedUtils';
-import TreeView, { type TreeViewRef } from 'devextreme-react/tree-view';
-import DataSource from 'devextreme/data/data_source';
-import ArrayStore from 'devextreme/data/array_store';
 import { useRoleObservers } from '../model/useRoleObservers';
 import { useEvents } from '@core/event/EventHook';
-
-type RoleMenu = {
-  id: number;
-  text: string;
-  items: { id: number; text: string; selected: boolean }[];
-};
+import {
+  PermissionTreeView,
+  type PermissionTreeHandle,
+  type RoleMenu,
+} from '../components/PermissionTreeView';
 
 type SelectedRole = {
   id: string | number;
@@ -29,11 +23,8 @@ const fields = RoleFields();
 
 export const RolePage = () => {
   const [on, emit] = useEvents();
-  const gridRef = useRef<DxDataGridEvents>(null);
-  const treeRef = useRef<TreeViewRef>(null);
-  const [permissionsData] = useState(
-    () => new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
-  );
+  const gridRef = useRef<GridHandle>(null);
+  const treeRef = useRef<PermissionTreeHandle>(null);
 
   const toolbar = [
     {
@@ -44,10 +35,7 @@ export const RolePage = () => {
         if (row) {
           emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
           httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
-            const store = permissionsData.store() as ArrayStore;
-            store.clear();
-            response.data.forEach((item: RoleMenu) => store.insert(item));
-            permissionsData.reload();
+            treeRef.current?.setItems(response.data);
           });
         } else {
           toast('Debe seleccionar un rol', 'error');
@@ -60,7 +48,7 @@ export const RolePage = () => {
 
   return (
     <div id="wrapper">
-      <DxDataGrid
+      <DataGridView
         id="roles"
         ref={gridRef}
         title="Roles"
@@ -72,17 +60,12 @@ export const RolePage = () => {
         fields={fields}
         events={roleEvents}
       />
-      <DxDialog events={roleEvents}>
-        <DxForm url={API_URL} fields={fields} events={roleEvents} />
-      </DxDialog>
-      <DxDialog events={permissionEvents}>
-        <TreeView
-          ref={treeRef}
-          dataSource={permissionsData}
-          showCheckBoxesMode="normal"
-          selectByClick={true}
-        />
-      </DxDialog>
+      <DialogView events={roleEvents}>
+        <FormView url={API_URL} fields={fields} events={roleEvents} />
+      </DialogView>
+      <DialogView events={permissionEvents}>
+        <PermissionTreeView ref={treeRef} />
+      </DialogView>
     </div>
   );
 };

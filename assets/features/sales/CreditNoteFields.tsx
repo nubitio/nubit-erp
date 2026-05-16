@@ -13,7 +13,7 @@ import {
 } from '@core/field/FieldBuilders';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 const reasonCodes: { value: string; text: string }[] = [
   {
@@ -92,7 +92,7 @@ export const CreditNoteFields = () => {
     dateField()
       .name('issueDate')
       .label('Fecha')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .required(true)
       .build(),
   );
@@ -100,7 +100,7 @@ export const CreditNoteFields = () => {
     entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => cell.value?.businessName)
       .visibleOnForm(false)
       .build(),
   );
@@ -108,7 +108,7 @@ export const CreditNoteFields = () => {
     noneField()
       .name('documentType')
       .label('Tipo')
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         if (cell.value === '07') {
           return 'Nota de Crédito';
         } else if (cell.value === '08') {
@@ -125,7 +125,7 @@ export const CreditNoteFields = () => {
       .name('reasonCode')
       .label('Código')
       .data(reasonCodes)
-      .formatter((cell: ColumnCellTemplateData) => {
+      .formatter((cell: GridCellContext) => {
         const reason = reasonCodes.find((r) => r.value === cell.value);
         return reason ? reason.value + ' - ' + reason.text : cell.value;
       })
@@ -142,7 +142,7 @@ export const CreditNoteFields = () => {
       .name('affectedDocument')
       .label('Doc. afectado')
       .align('center')
-      .formatter((cell: ColumnCellTemplateData) => cell.value ?? cell.data.sale?.invoice ?? '')
+      .formatter((cell: GridCellContext) => cell.value ?? cell.data?.sale?.invoice ?? '')
       .build(),
   );
   fields.push(
@@ -150,7 +150,7 @@ export const CreditNoteFields = () => {
       .name('sunatStatus')
       .label('Envio sunat')
       .align('center')
-      .formatter((cell: ColumnCellTemplateData) => SharedUtils.billStatusFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value))
       .build(),
   );
   fields.push(noneField().name('sunatMessage').label('Mensaje sunat').build());
@@ -204,7 +204,7 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .readonly(true)
       .build(),
   );
@@ -212,7 +212,7 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
       .readonly(true)
       .build(),
   );
