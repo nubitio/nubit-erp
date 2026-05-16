@@ -76,17 +76,14 @@ const resource = defineResource<SupplierRecord>({
                     return;
                   }
 
-                  consultService.consultRuc(doc).subscribe({
-                    next: (response) => {
+                  consultService.consultRuc(doc).then((response) => {
                       if (!response.data.active) {
                         toast('El RUC ingresado no se encuentra activo', 'error');
                         return;
                       }
                       setField(formRef, 'businessName', response.data.name);
                       setField(formRef, 'fiscalAddress', response.data.address);
-                    },
-                    error: () => toast('No se pudo consultar el RUC', 'error'),
-                  });
+                    }).catch(() => toast('No se pudo consultar el RUC', 'error'));
                 },
               },
             },

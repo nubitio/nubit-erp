@@ -27,22 +27,20 @@ export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserve
       emit(loadingEvent, true);
       httpClient
         .get<any>(companyEndpoints.ubigeo(data.value))
-        .subscribe({
-          next: (response) => {
+        .then((response) => {
             const ubigeo = response.data;
             formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
             formRef.current?.setFieldValue('department', ubigeo.department ?? '');
             formRef.current?.setFieldValue('province', ubigeo.province ?? '');
             formRef.current?.setFieldValue('district', ubigeo.district ?? '');
-          },
-          error: () => {
+          })
+        .catch(() => {
             formRef.current?.setFieldValue('ubigeoCode', '');
             formRef.current?.setFieldValue('department', '');
             formRef.current?.setFieldValue('province', '');
             formRef.current?.setFieldValue('district', '');
-          },
-        })
-        .add(() => emit(loadingEvent, false));
+          })
+        .finally(() => emit(loadingEvent, false));
     });
 
     return () => (sub as any)?.unsubscribe();

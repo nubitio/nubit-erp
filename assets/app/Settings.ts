@@ -1,6 +1,5 @@
 import { settingsService } from '../features/settings';
 import { SettingDto } from '@shared/api/setting.dto';
-import { lastValueFrom } from 'rxjs';
 
 export const Setting = {
   AUTO_INVOICE: 'app_option_auto_invoice',
@@ -45,7 +44,7 @@ class Settings {
 
   private async doRefresh(): Promise<void> {
     try {
-      const response = await lastValueFrom(settingsService.getAll());
+      const response = await settingsService.getAll();
       this.settings = response.data;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
       localStorage.setItem(STORAGE_TS_KEY, new Date().toISOString());

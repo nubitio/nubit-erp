@@ -1,5 +1,5 @@
 import { httpClient } from '../api/HttpClient';
-import { lastValueFrom } from 'rxjs';
+
 import ApiResponse from '../api/ApiResponse';
 import CustomStore from 'devextreme/data/custom_store';
 import { FilterDescriptor, SortDescriptor } from 'devextreme/data';
@@ -27,7 +27,7 @@ class DxUtils {
   private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
     const subscription = httpClient.get<any[]>(url, { params: loadOptions });
 
-    return lastValueFrom(subscription).then((response: ApiResponse<any[]>) => {
+    return subscription.then((response: ApiResponse<any[]>) => {
       let data = response.data;
       if (loadOptions.appendData) {
         data = [...data, ...loadOptions.appendData];
@@ -59,7 +59,7 @@ class DxUtils {
     const resolvedUrl = typeof id === 'string' && id.startsWith('/') ? id : `${url}/${id}`;
     const subscription = httpClient.get<any>(resolvedUrl);
 
-    return lastValueFrom(subscription)
+    return subscription
       .then((response: ApiResponse<any>) => {
         return response.data;
       })

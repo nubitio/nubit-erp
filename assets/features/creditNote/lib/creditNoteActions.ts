@@ -37,11 +37,11 @@ export const runSendCreditNoteToSunatAction = (deps: ActionDeps) => {
     deps.showLoading('Enviando comprobante a SUNAT...');
     taxDocumentService
       .sendDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };
 
@@ -62,11 +62,11 @@ export const runConsultCreditNoteCdrAction = (deps: ActionDeps) => {
     deps.showLoading('Consultando CDR...');
     taxDocumentService
       .consultDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };
 
@@ -75,10 +75,10 @@ export const runConsultCreditNoteCpeAction = (deps: ActionDeps) => {
     deps.showLoading('Consultando CPE...');
     taxDocumentService
       .validateDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };

@@ -1,4 +1,3 @@
-import { firstValueFrom, type Observable } from 'rxjs';
 import type ApiResponse from './ApiResponse';
 import { httpClient } from './HttpClient';
 
@@ -8,12 +7,12 @@ import { httpClient } from './HttpClient';
  */
 export const businessHttpClient = httpClient;
 
-export const httpRequest = <T>(request$: Observable<ApiResponse<T>>): Promise<ApiResponse<T>> => {
-  return firstValueFrom(request$);
+export const httpRequest = <T>(request: Promise<ApiResponse<T>>): Promise<ApiResponse<T>> => {
+  return request;
 };
 
-export const httpRequestData = <T>(request$: Observable<ApiResponse<T>>): Promise<T> => {
-  return httpRequest(request$).then((response) => response.data);
+export const httpRequestData = <T>(request: Promise<ApiResponse<T>>): Promise<T> => {
+  return request.then((response) => response.data);
 };
 
 export type DirectFetchReason =

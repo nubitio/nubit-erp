@@ -5,7 +5,7 @@
   $mode: 'dark',
   $base-accent: #10b981
 );
-@use 'devextreme/scss/widgets/fluent/sizes' with ($size: 'default');
+@use 'devextreme/scss/widgets/fluent/sizes' with ($size: 'compact');
 @use 'devextreme/scss/widgets/fluent/typography';
 @use 'devextreme/scss/widgets/fluent/icons';
 @use 'devextreme/scss/widgets/fluent/widget';

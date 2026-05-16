@@ -1,4 +1,4 @@
-import { StorageUtils } from '../utils/StorageUtils';
+import { StorageUtils } from '@shared/lib/StorageUtils';
 import { User } from '../../types';
 import { branchService } from '../../features/branch';
 

@@ -1,7 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { FORM_EVENTS, type DxFormEvents } from '@core/form/DxForm';
 import { httpClient } from '@shared/api/HttpClient';
-import { switchMap } from 'rxjs/operators';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -44,14 +43,12 @@ export const useCreditNoteRelatedDocumentObserver = ({
       // before DevExtreme repaints the grid rows.
       httpClient
         .get<any>(`${callbacksRef.current.apiUrl}/${value}`)
-        .pipe(
-          switchMap((headerResponse) => {
-            const currency = (headerResponse.data?.currency as string) ?? 'PEN';
-            callbacksRef.current.onCurrencyChange?.(currency);
-            return httpClient.get<any>(`${callbacksRef.current.apiUrl}/${value}/lines`);
-          }),
-        )
-        .subscribe((linesResponse) => {
+        .then((headerResponse) => {
+          const currency = (headerResponse.data?.currency as string) ?? 'PEN';
+          callbacksRef.current.onCurrencyChange?.(currency);
+          return httpClient.get<any>(`${callbacksRef.current.apiUrl}/${value}/lines`);
+        })
+        .then((linesResponse) => {
           const rows = linesResponse.data ?? [];
           // Defer by one tick so React commits the new detailFields (currency columns)
           // before DevExtreme repaints the grid with the new row data.

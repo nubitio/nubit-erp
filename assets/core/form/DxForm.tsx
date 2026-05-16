@@ -318,10 +318,10 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         emit(FORM_EVENTS.LOADING, true);
         httpClient
           .get<FormRecord[]>(detailUrl)
-          .subscribe((response) => {
+          .then((response) => {
             setDetailData(response.data);
           })
-          .add(() => emit(FORM_EVENTS.LOADING, false));
+          .finally(() => emit(FORM_EVENTS.LOADING, false));
       });
 
     if (options.events?.DELETE)

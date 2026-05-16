@@ -11,7 +11,7 @@ export const loadMovementItemsOnEdit = ({
   movementId,
   setDetailData,
 }: LoadMovementItemsOnEditParams) => {
-  httpClient.get<any>(`${apiUrl}/${movementId}/items`).subscribe((response) => {
+  httpClient.get<any>(`${apiUrl}/${movementId}/items`).then((response) => {
     setDetailData(response.data);
   });
 };

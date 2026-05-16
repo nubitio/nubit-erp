@@ -10,7 +10,7 @@ import type {
   UseNotificationsResult,
 } from '@features/notifications';
 
-import '../../../shared/ui/library/notification-panel/NotificationPanel.scss';
+import './NotificationPanel.scss';
 
 interface NotificationPanelProps extends Pick<
   UseNotificationsResult,

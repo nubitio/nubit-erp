@@ -53,22 +53,18 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
     }
 
     setLoading(true);
-    authService.changePassword(currentPassword, newPassword).subscribe({
-      next: () => {
+    authService.changePassword(currentPassword, newPassword).then(() => {
         toast('Contraseña actualizada correctamente.', 'success');
         handleClose();
-      },
-      error: (err) => {
+      }).catch((err: unknown) => {
+        const anyErr = err as { data?: { message?: string } };
         const message =
-          err?.response?.data?.message ||
+          anyErr?.data?.message ||
           'No se pudo cambiar la contraseña. Inténtalo nuevamente.';
         toast(message, 'error');
+      }).finally(() => {
         setLoading(false);
-      },
-      complete: () => {
-        setLoading(false);
-      },
-    });
+      });
   }, [handleClose]);
 
   const passwordEditorOptions = useCallback(

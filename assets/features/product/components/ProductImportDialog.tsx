@@ -5,7 +5,7 @@ import { useScreenSize } from '@utils/media-query';
 import MercureManager from '@core/mercure/MercureManager';
 import { useMercureHub } from '@core/mercure/useMercureHub';
 import { businessHttpClient } from '@shared/api/network';
-import { firstValueFrom } from 'rxjs';
+
 import './ProductImportDialog.scss';
 
 // ---------------------------------------------------------------------------
@@ -139,11 +139,9 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
     formData.append('file', selectedFile);
 
     try {
-      const response = await firstValueFrom(
-        businessHttpClient.post<{ jobId: string; status: string; topic: string }>(
+      const response = await businessHttpClient.post<{ jobId: string; status: string; topic: string }>(
           '/api/v1/products/import',
           formData,
-        ),
       );
       jobIdRef.current = response.data.jobId;
       setStatus('processing');

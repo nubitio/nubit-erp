@@ -8,7 +8,7 @@ import { DateUtils } from '@shared/lib/DateUtils';
 import { defineFields } from '@core/crud/fieldContract';
 import { defineResource, SmartCrudPage } from '@core/crud';
 import { httpClient } from '@shared/api/HttpClient';
-import { lastValueFrom } from 'rxjs';
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -171,7 +171,7 @@ export const KardexPage = () => {
   const [products,   setProducts]   = useState<SimpleOption[]>([]);
 
   useEffect(() => {
-    lastValueFrom(httpClient.get<any>(`${Constants.API_BASE_URL}warehouses?itemsPerPage=200`))
+    httpClient.get<any>(`${Constants.API_BASE_URL}warehouses?itemsPerPage=200`)
       .then((r) =>
         setWarehouses(
           (r.data?.['hydra:member'] ?? []).map((w: any) => ({ id: w.id, name: w.name })),
@@ -181,7 +181,7 @@ export const KardexPage = () => {
   }, []);
 
   useEffect(() => {
-    lastValueFrom(httpClient.get<any>(`${Constants.API_BASE_URL}products?itemsPerPage=500`))
+    httpClient.get<any>(`${Constants.API_BASE_URL}products?itemsPerPage=500`)
       .then((r) =>
         setProducts(
           (r.data?.['hydra:member'] ?? []).map((p: any) => ({

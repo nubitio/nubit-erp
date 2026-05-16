@@ -68,7 +68,7 @@ export const CashRegisterClose = () => {
 
     cashRegisterService()
       .closeCashRegister(id, data)
-      .subscribe((response) => {
+      .then((response) => {
         void response;
         toast('Caja cerrada correctamente', 'success');
         navigate('/cashbox');
@@ -78,7 +78,7 @@ export const CashRegisterClose = () => {
   useEffect(() => {
     httpClient
       .get<any>(Constants.API_BASE_URL + 'cash-shifts/' + id + '/summary')
-      .subscribe((response) => {
+      .then((response) => {
         gridRef.current?.instance().beginCustomLoading('Cargando datos...');
         gridRef.current?.instance().option('dataSource', response.data);
         const store = data.current.store() as ArrayStore;

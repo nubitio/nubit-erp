@@ -60,8 +60,7 @@ export const BranchPicker = ({
     }
 
     setSelecting(true);
-    authService.selectBranch(selectedBranch.id).subscribe({
-      next: () => {
+    authService.selectBranch(selectedBranch.id).then(() => {
         branchService.setSelectedBranchId(selectedBranch.id);
         branchService.setSelectedBranchName(selectedBranch.name);
         close();
@@ -71,14 +70,11 @@ export const BranchPicker = ({
 
         requestAuthSessionSync();
         navigate(nextPath, { replace: true });
-      },
-      error: () => {
+      }).catch(() => {
         setSelecting(false);
-      },
-      complete: () => {
+      }).finally(() => {
         setSelecting(false);
-      },
-    });
+      });
   }, [selectedBranch, selecting, close, navigate, redirectPath]);
 
   const loadBranchData = useCallback((data: Branch[]) => {
@@ -114,22 +110,21 @@ export const BranchPicker = ({
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- setting loading flag before async branch fetch is the expected control flow here
     setLoadingBranches(true);
 
-    const subscription = branchService.getAll().subscribe({
-      next: (response) => {
+    let cancelled = false;
+    branchService.getAll().then((response) => {
+        if (cancelled) return;
         const data: Branch[] = response?.data ?? [];
         loadBranchData(data);
-      },
-      error: () => {
+      }).catch(() => {
+        if (cancelled) return;
         setHasLoaded(false);
         setLoadingBranches(false);
-      },
-    });
+      });
 
     return () => {
-      subscription?.unsubscribe?.();
+      cancelled = true;
     };
   }, [visible, hasLoaded, loadBranchData]);
 

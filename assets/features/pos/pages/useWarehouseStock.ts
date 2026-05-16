@@ -34,21 +34,18 @@ export const useWarehouseStock = (
         return inFlight;
       }
 
-      const request = new Promise<number | undefined>((resolve) => {
-        httpClient
-          .get<any>(`${Constants.API_BASE_URL}products/${productId}/stock/${warehouseId}`)
-          .subscribe({
-            next: (response) => {
-              const stock = toOptionalNumber(response.data?.stock);
-              setWarehouseStockByProductId((prev) => ({ ...prev, [productId]: stock ?? 0 }));
-              resolve(stock ?? 0);
-            },
-            error: () => resolve(undefined),
-          })
-          .add(() => {
+      const request = httpClient
+        .get<any>(`${Constants.API_BASE_URL}products/${productId}/stock/${warehouseId}`)
+        .then((response) => {
+            const stock = toOptionalNumber(response.data?.stock);
+            setWarehouseStockByProductId((prev) => ({ ...prev, [productId]: stock ?? 0 }));
             stockRequestsRef.current.delete(requestKey);
+            return stock ?? 0;
+          })
+        .catch(() => {
+            stockRequestsRef.current.delete(requestKey);
+            return undefined;
           });
-      });
 
       stockRequestsRef.current.set(requestKey, request);
       return request;

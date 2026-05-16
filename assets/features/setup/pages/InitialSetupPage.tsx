@@ -52,19 +52,18 @@ export const InitialSetupPage = () => {
   const [, setStatus] = useState<SetupStatus | null>(null);
 
   useEffect(() => {
-    const subscription = setupService.getStatus().subscribe({
-      next: (response) => {
+    let cancelled = false;
+    setupService.getStatus().then((response) => {
+        if (cancelled) return;
         const data = response.data;
         if (data.configured || data.userCount > 0) {
           navigate('/');
           return;
         }
         setLoading(false);
-      },
-      error: () => setLoading(false),
-    });
+      }).catch(() => { if (!cancelled) setLoading(false); });
 
-    return () => subscription.unsubscribe();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const handleFieldChanged = (e: any) => {
@@ -113,18 +112,14 @@ export const InitialSetupPage = () => {
 
   const submit = () => {
     setSubmitting(true);
-    setupService.complete(formData).subscribe({
-      next: (response) => {
+    setupService.complete(formData).then((response) => {
         setStatus(response.data);
-        setSubmitting(false);
         navigate('/login');
-      },
-      error: (err) => {
-        const message = err?.response?.data?.detail || 'No se pudo completar la configuración.';
+      }).catch((err: unknown) => {
+        const anyErr = err as { data?: { detail?: string } };
+        const message = anyErr?.data?.detail || 'No se pudo completar la configuración.';
         toast(message, 'error');
-        setSubmitting(false);
-      },
-    });
+      }).finally(() => setSubmitting(false));
   };
 
   if (loading) {

@@ -26,11 +26,11 @@ export const runVoidSaleAction = async (saleId: string, deps: VoidSaleDeps) => {
   deps.showLoading('Anulando comprobante...');
   saleService
     .voidSale(saleId, result.reason, result.restoreStock)
-    .subscribe((response) => {
+    .then((response) => {
       deps.notify(response.data.message, response.data.success ? 'success' : 'error');
       deps.refreshGrid();
     })
-    .add(() => {
+    .finally(() => {
       deps.hideLoading();
     });
 };
@@ -39,7 +39,7 @@ export const runMakeInvoiceAction = (saleId: string, deps: MakeInvoiceDeps) => {
   deps.showLoading('Generando comprobante...');
   saleService
     .makeInvoice(saleId)
-    .subscribe((response) => {
+    .then((response) => {
       deps.notify(response.data.message, response.data.success ? 'success' : 'error');
       const invoiceData = (response.data.data ?? null) as MakeInvoiceResponseData | null;
       if (response.data.success && invoiceData?.detraccionMonto != null) {
@@ -50,7 +50,7 @@ export const runMakeInvoiceAction = (saleId: string, deps: MakeInvoiceDeps) => {
       deps.refreshGrid();
       deps.printSale(saleId);
     })
-    .add(() => {
+    .finally(() => {
       deps.hideLoading();
     });
 };

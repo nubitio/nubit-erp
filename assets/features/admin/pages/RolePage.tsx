@@ -43,7 +43,7 @@ export const RolePage = () => {
         const row = gridRef.current?.getSelectedRow() as SelectedRole | undefined;
         if (row) {
           emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
-          httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).subscribe((response) => {
+          httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
             const store = permissionsData.store() as ArrayStore;
             store.clear();
             response.data.forEach((item: RoleMenu) => store.insert(item));

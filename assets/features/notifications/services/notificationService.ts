@@ -1,5 +1,3 @@
-import { lastValueFrom } from 'rxjs';
-
 import { Constants } from '@core/common/Constants';
 import { httpClient } from '@shared/api/HttpClient';
 
@@ -26,21 +24,21 @@ export interface Notification {
 
 class NotificationService {
   getNotifications(): Promise<Notification[]> {
-    return lastValueFrom(
-      httpClient.get<Notification[]>(Constants.API_BASE_URL + 'user-notifications'),
-    ).then((response) => response.data);
+    return httpClient
+      .get<Notification[]>(Constants.API_BASE_URL + 'user-notifications')
+      .then((response) => response.data);
   }
 
   markRead(id: number): Promise<void> {
-    return lastValueFrom(
-      httpClient.patch<void>(Constants.API_BASE_URL + `user-notifications/${id}/read`, {}),
-    ).then(() => undefined);
+    return httpClient
+      .patch<void>(Constants.API_BASE_URL + `user-notifications/${id}/read`, {})
+      .then(() => undefined);
   }
 
   markAllRead(): Promise<void> {
-    return lastValueFrom(
-      httpClient.post<void>(Constants.API_BASE_URL + 'user-notifications/read-all'),
-    ).then(() => undefined);
+    return httpClient
+      .post<void>(Constants.API_BASE_URL + 'user-notifications/read-all')
+      .then(() => undefined);
   }
 }
 

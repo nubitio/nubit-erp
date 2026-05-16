@@ -49,24 +49,22 @@ export const LoginForm = () => {
 
   const applyBranchAndRedirect = useCallback(
     (branch: BranchOption) => {
-      authService.selectBranch(branch.id).subscribe({
-        next: () => {
+      authService.selectBranch(branch.id).then(() => {
           branchService.setSelectedBranchId(branch.id);
           branchService.setSelectedBranchName(branch.name);
           const nextPath = resolvePostLoginRedirect(redirectPath);
 
           requestAuthSessionSync();
           navigate(nextPath, { replace: true });
-        },
-        error: (err) => {
+        }).catch((err: unknown) => {
+          const anyErr = err as { data?: { detail?: string; message?: string } };
           const message =
-            err?.response?.data?.detail ||
-            err?.response?.data?.message ||
+            anyErr?.data?.detail ||
+            anyErr?.data?.message ||
             'No se pudo seleccionar el local. Inténtalo nuevamente.';
           setSubmitError(message);
           setLoading(false);
-        },
-      });
+        });
     },
     [navigate, redirectPath],
   );
@@ -89,8 +87,7 @@ export const LoginForm = () => {
       setBranchOptions([]);
       setLoading(true);
 
-      authService.login(username.trim(), password).subscribe({
-        next: (response) => {
+      authService.login(username.trim(), password).then(async (response) => {
           if (response.data.user) {
             StorageUtils.setItem('user', response.data.user);
           }
@@ -104,44 +101,42 @@ export const LoginForm = () => {
             return;
           }
 
-          branchService.getAll().subscribe({
-            next: (branchesResponse) => {
-              const branches: BranchOption[] = branchesResponse?.data ?? [];
+          try {
+            const branchesResponse = await branchService.getAll();
+            const branches: BranchOption[] = branchesResponse?.data ?? [];
 
-              if (branches.length === 0) {
-                setSubmitError('No hay locales disponibles para este usuario.');
-                setLoading(false);
-                return;
-              }
-
-              if (branches.length === 1) {
-                applyBranchAndRedirect(branches[0]);
-                return;
-              }
-
-              setBranchOptions(branches);
-              setShowLocalPicker(true);
+            if (branches.length === 0) {
+              setSubmitError('No hay locales disponibles para este usuario.');
               setLoading(false);
-            },
-            error: (err) => {
-              const message =
-                err?.response?.data?.detail ||
-                err?.response?.data?.message ||
-                'No se pudo cargar la lista de locales.';
-              setSubmitError(message);
-              setLoading(false);
-            },
-          });
-        },
-        error: (err) => {
+              return;
+            }
+
+            if (branches.length === 1) {
+              applyBranchAndRedirect(branches[0]);
+              return;
+            }
+
+            setBranchOptions(branches);
+            setShowLocalPicker(true);
+            setLoading(false);
+          } catch (err: unknown) {
+            const anyErr = err as { data?: { detail?: string; message?: string } };
+            const message =
+              anyErr?.data?.detail ||
+              anyErr?.data?.message ||
+              'No se pudo cargar la lista de locales.';
+            setSubmitError(message);
+            setLoading(false);
+          }
+        }).catch((err: unknown) => {
+          const anyErr = err as { data?: { detail?: string; message?: string } };
           const message =
-            err?.response?.data?.detail ||
-            err?.response?.data?.message ||
+            anyErr?.data?.detail ||
+            anyErr?.data?.message ||
             'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.';
           setSubmitError(message);
           setLoading(false);
-        },
-      });
+        });
     },
     [loading, applyBranchAndRedirect],
   );

@@ -8,7 +8,7 @@ import { useEvents } from '../event/EventHook';
 import { DialogEventNames } from '../event/EventTypes';
 import LoadIndicator from 'devextreme-react/load-indicator';
 import LoadPanel from 'devextreme-react/load-panel';
-import { SharedUtils } from '../utils/SharedUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 
 export interface DxDialogOptions {

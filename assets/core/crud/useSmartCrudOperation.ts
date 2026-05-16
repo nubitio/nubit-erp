@@ -1,5 +1,5 @@
 import { useReducer, useCallback, useEffect } from 'react';
-import type { Subscription } from 'rxjs';
+import type { EventSubscription as Subscription } from '../event/EventHook';
 import type { FormEventNames } from '../event/EventTypes';
 import { useEvents } from '../event/EventHook';
 import type { SmartCrudOperation } from './fieldOperationSemantics';

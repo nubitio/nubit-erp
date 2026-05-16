@@ -2,7 +2,6 @@ import './SideForm.scss';
 import { Item, Toolbar } from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
 import { DxForm, DxFormEvents } from '../../form/DxForm';
-import classNames from 'classnames';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useEvents } from '../../event/EventHook';
 import { httpClient } from '../../../shared/api/HttpClient';
@@ -63,10 +62,10 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
     setLoading(true);
     httpClient
       .get(props.url + '/' + props.sub)
-      .subscribe((response) => {
+      .then((response) => {
         formRef.current?.setValues(response.data as Record<string, unknown>);
       })
-      .add(() => setLoading(false));
+      .finally(() => setLoading(false));
   };
 
   useImperativeHandle(ref, () => formRef.current!);
@@ -113,7 +112,7 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
       </Toolbar>
       <div className="side-form-wrapper">
         <DxForm
-          className={classNames({ form: true, 'plain-styled-form': true, 'view-mode': !editing })}
+          className={`form plain-styled-form${!editing ? ' view-mode' : ''}`}
           ref={formRef}
           url={props.url}
           fields={props.fields}

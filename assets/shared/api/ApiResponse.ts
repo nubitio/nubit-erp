@@ -1,16 +1,11 @@
-import { AxiosResponse } from 'axios';
-
 export default class ApiResponse<T> {
   headers: Record<string, string>;
   data: T;
 
-  constructor(response: AxiosResponse<T>) {
+  constructor(response: Response, data: T) {
     this.headers = Object.fromEntries(
-      Object.entries(response.headers).map(([key, value]) => [
-        key,
-        Array.isArray(value) ? value.join(', ') : String(value ?? ''),
-      ]),
+      Array.from(response.headers.entries()).map(([key, value]) => [key, value]),
     );
-    this.data = response.data;
+    this.data = data;
   }
 }

@@ -58,8 +58,7 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
                 toast('Ingresa un RUC válido de 11 dígitos', 'warning');
                 return;
               }
-              consultService.consultRuc(doc).subscribe({
-                next: (response) => {
+              consultService.consultRuc(doc).then((response) => {
                   if (!response.data.active) {
                     toast('El RUC ingresado no se encuentra activo', 'error');
                     return;
@@ -67,9 +66,7 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
                   formRef.current?.setFieldValue('businessName', response.data.name);
                   formRef.current?.setFieldValue('tradeName', response.data.name);
                   formRef.current?.setFieldValue('fiscalAddress', response.data.address);
-                },
-                error: () => toast('No se pudo consultar el RUC', 'error'),
-              });
+                }).catch(() => toast('No se pudo consultar el RUC', 'error'));
             },
           },
         },

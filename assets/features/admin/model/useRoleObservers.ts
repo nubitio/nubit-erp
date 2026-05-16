@@ -56,14 +56,12 @@ export const useRoleObservers = ({
           roleId: row.id,
           permissions,
         })
-        .subscribe({
-          next: (response) => {
-            toast(response.data.message, 'success');
-            emitEvent(ev.SUCCESS);
-          },
-          error: () => {
-            toast('No se pudieron guardar los permisos', 'error');
-          },
+        .then((response) => {
+          toast(response.data.message, 'success');
+          emitEvent(ev.SUCCESS);
+        })
+        .catch(() => {
+          toast('No se pudieron guardar los permisos', 'error');
         });
     });
   }, []);

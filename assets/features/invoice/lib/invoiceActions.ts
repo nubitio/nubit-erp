@@ -37,11 +37,11 @@ export const runSendInvoiceToSunatAction = (deps: ActionDeps) => {
     deps.showLoading('Enviando comprobante a SUNAT...');
     taxDocumentService
       .sendDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };
 
@@ -50,11 +50,11 @@ export const runSendInvoiceEmailAction = (deps: ActionDeps) => {
     deps.showLoading('Enviando comprobante por correo...');
     taxDocumentService
       .sendEmail(selectedRow.id)
-      .subscribe(() => {
+      .then(() => {
         deps.notify('El comprobante fue enviado por correo', 'success');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };
 
@@ -75,11 +75,11 @@ export const runConsultInvoiceCdrAction = (deps: ActionDeps) => {
     deps.showLoading('Consultando CDR...');
     taxDocumentService
       .consultDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };
 
@@ -88,10 +88,10 @@ export const runConsultInvoiceCpeAction = (deps: ActionDeps) => {
     deps.showLoading('Consultando CPE...');
     taxDocumentService
       .validateDocument(selectedRow.id)
-      .subscribe((response) => {
+      .then((response) => {
         deps.notify(response.data.message, response.data.success ? 'success' : 'error');
         deps.refreshGrid();
       })
-      .add(() => deps.hideLoading());
+      .finally(() => deps.hideLoading());
   });
 };

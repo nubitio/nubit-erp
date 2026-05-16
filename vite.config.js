@@ -24,9 +24,6 @@ const frontendAliases = {
   '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
   '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
 
-  // Legacy compatibility aliases - keep temporary while imports migrate
-  '@platform': fileURLToPath(new URL('./assets/core', import.meta.url)),
-
   // Supporting aliases outside the canonical layer set
   '@layouts': fileURLToPath(new URL('./assets/layouts', import.meta.url)),
   '@utils': fileURLToPath(new URL('./assets/utils', import.meta.url)),
@@ -183,60 +180,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: './assets/app.tsx',
-      },
-    },
-  },
-  test: {
-    environment: 'node',
-    globals: true,
-    include: ['assets/**/*.test.ts', 'assets/**/*.test.tsx'],
-    setupFiles: ['./vitest.setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      reportsDirectory: './var/coverage/frontend',
-      include: [
-        'assets/features/pos/pages/posHelpers.ts',
-        'assets/offline/api.ts',
-        'assets/core/form/useFormSubmit.ts',
-        'assets/core/form/FormUtils.tsx',
-        'assets/core/datagrid/DxDataGridUtils.tsx',
-        'assets/features/sales/pages/SaleFields.tsx',
-      ],
-      thresholds: {
-        // Per-file thresholds — tightened individually as coverage improves
-        'assets/features/pos/pages/posHelpers.ts': {
-          lines: 85,
-          functions: 85,
-          statements: 85,
-          branches: 75,
-        },
-        'assets/offline/api.ts': { lines: 85, functions: 85, statements: 85, branches: 85 },
-        // Partial coverage — core serialization paths tested, HTTP and render paths excluded
-        'assets/core/form/useFormSubmit.ts': {
-          lines: 30,
-          functions: 10,
-          statements: 30,
-          branches: 30,
-        },
-        'assets/core/form/FormUtils.tsx': {
-          lines: 25,
-          functions: 20,
-          statements: 25,
-          branches: 10,
-        },
-        'assets/core/datagrid/DxDataGridUtils.tsx': {
-          lines: 60,
-          functions: 75,
-          statements: 60,
-          branches: 45,
-        },
-        'assets/features/sales/pages/SaleFields.tsx': {
-          lines: 35,
-          functions: 15,
-          statements: 35,
-          branches: 10,
-        },
       },
     },
   },

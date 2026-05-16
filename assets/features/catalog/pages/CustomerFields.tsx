@@ -63,11 +63,11 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
             onClick: (e: any) => {
               const doc: string = e.component.option('value');
               if (doc.length === 8) {
-                consultService.consultDni(doc).subscribe((response) => {
+                consultService.consultDni(doc).then((response) => {
                   formRef.current?.setFieldValue('businessName', response.data.name);
                 });
               } else if (doc.length === 11) {
-                consultService.consultRuc(doc).subscribe((response) => {
+                consultService.consultRuc(doc).then((response) => {
                   if (!response.data.active) {
                     toast('El RUC ingresado no se encuentra activo', 'error');
                     return;

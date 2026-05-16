@@ -11,7 +11,7 @@ import { useScreenSize } from '@utils/media-query';
 
 import { AppFooter } from './AppFooter';
 
-import '../../../shared/ui/library/side-navigation-menu/SideNavigationMenu.scss';
+import './SideNavigationMenu.scss';
 
 export type SideNavigationItem = {
   expanded: boolean;
@@ -46,15 +46,17 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
 
   useEffect(() => {
     const roleId = userInformation().currentUserRoleId;
-    const subscription = menuService.getMenuByRoleId(roleId ?? 0).subscribe({
-      next: (response) => {
+    let cancelled = false;
+    menuService.getMenuByRoleId(roleId ?? 0).then((response) => {
+        if (cancelled) return;
         const nextItems = normalizePath(response.data);
         setItems(nextItems);
-      },
-      complete: () => setIsLoading(false),
-      error: () => setIsLoading(false),
-    });
-    return () => subscription.unsubscribe();
+      }).catch(() => {
+        if (!cancelled) setIsLoading(false);
+      }).finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [normalizePath]);
 
   useEffect(() => {

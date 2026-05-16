@@ -1,5 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
 import { useScreenSize } from '@utils/media-query';
 import Button from 'devextreme-react/button';
 import './right-side-panel.scss';
@@ -22,21 +21,13 @@ export const RightSidePanel = ({
     <>
       <div
         id="right-side-panel"
-        className={classNames({
-          'right-side-panel': true,
-          overlap: !isLarge,
-          'x-small': isXSmall,
-          open: isOpened,
-        })}
+        className={`right-side-panel${!isLarge ? ' overlap' : ''}${isXSmall ? ' x-small' : ''}${isOpened ? ' open' : ''}`}
       >
         {children}
       </div>
       {isLarge && showOpenButton && (
         <Button
-          className={classNames({
-            'right-panel-open-button': true,
-            hidden: isOpened,
-          })}
+          className={`right-panel-open-button${isOpened ? ' hidden' : ''}`}
           icon="panelright"
           onClick={toggleOpen}
         />
