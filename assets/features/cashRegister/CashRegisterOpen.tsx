@@ -5,7 +5,7 @@ import { Button } from 'devextreme-react';
 import LoadIndicator from 'devextreme-react/load-indicator';
 import { currencyField } from '@core/field/FieldBuilders';
 import { buildField } from '@core/form/FormUtils';
-import cashRegisterService from '../services/cashRegisterService';
+import cashRegisterService from './services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 

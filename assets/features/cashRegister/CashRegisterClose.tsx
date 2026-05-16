@@ -8,7 +8,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@core/common/Constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
-import cashRegisterService from '../services/cashRegisterService';
+import cashRegisterService from './services/cashRegisterService';
 import './CashRegisterClose.scss';
 
 type CashClosureParams = {

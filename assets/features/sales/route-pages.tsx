@@ -1,10 +1,10 @@
 import { lazyNamed } from '@app/router/lazy';
 
 export const CreditNotePage = lazyNamed(
-  () => import('@features/sales/pages/CreditNotePage'),
+  () => import('@features/sales/CreditNotePage'),
   'CreditNotePage',
 );
 export const SaleConsultPage = lazyNamed(
-  () => import('@features/sales/pages/SaleConsultPage'),
+  () => import('@features/sales/SaleConsultPage'),
   'SaleConsultPage',
 );
