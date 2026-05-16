@@ -1,11 +1,11 @@
 import './CashMovements.scss';
 import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
-import NumberUtils from '../../../shared/lib/NumberUtils';
+import NumberUtils from '../../shared/lib/NumberUtils';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { useEffect, useRef, useState } from 'react';
 import { Constants } from '@core/common/Constants';
-import cashMovementsFields from '../components/fields/cashMovementsFields';
+import cashMovementsFields from './components/fields/cashMovementsFields';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEvents } from '@core/event/EventHook';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';

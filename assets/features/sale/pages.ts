@@ -1,1 +1,1 @@
-export { SalePage } from '@features/sales/pages/SalePage';
+export { SalePage } from '@features/sales/SalePage';

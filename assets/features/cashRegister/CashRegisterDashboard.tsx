@@ -1,5 +1,5 @@
 import './CashRegisterDashboard.scss';
-import cashRegisterDashboardFields from '../components/fields/cashRegisterDashboardFields';
+import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
 import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { Constants } from '@core/common/Constants';
 import { useNavigate } from 'react-router-dom';

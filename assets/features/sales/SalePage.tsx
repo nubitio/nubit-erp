@@ -2,7 +2,7 @@ import './SalePage.scss';
 import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxForm, DxFormEvents, FORM_EVENTS } from '@core/form/DxForm';
 import { DxDialog } from '@core/dialog/DxDialog';
-import { saleEndpoints } from '../api/saleEndpoints';
+import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
