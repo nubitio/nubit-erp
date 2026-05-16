@@ -1,6 +1,6 @@
 import { SmartCrudPage, defineResource } from '@core/crud';
 import { defineFields } from '@core/crud/fieldContract';
-import { customerApiUrl, customerEvents } from '@features/customer';
+import { customerApiUrl, customerEvents } from './model/constants';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import toast from '@shared/lib/SharedUtils';

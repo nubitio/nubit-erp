@@ -4,7 +4,7 @@ import { Constants } from '@core/common/Constants';
 import type { Field } from '@core/field/Field';
 import { enumField, imageField } from '@core/field/FieldBuilders';
 import React, { useCallback, useRef, useState } from 'react';
-import { ProductImportDialog } from '@features/product/components/ProductImportDialog';
+import { ProductImportDialog } from './components/ProductImportDialog';
 
 interface ProductRecord extends Record<string, unknown> {
   id: string;
