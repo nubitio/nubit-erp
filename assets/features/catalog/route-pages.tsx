@@ -20,17 +20,9 @@ export const ReorderPage = lazyNamed(
   'ReorderPage',
 );
 
-export const ProductPage = lazyNamed(
-  () => import('@features/catalog/pages/ProductPage'),
-  'ProductPage',
-);
 export const CategoryPage = lazyNamed(
   () => import('@features/catalog/pages/CategoryPage'),
   'CategoryPage',
-);
-export const CustomerPage = lazyNamed(
-  () => import('@features/catalog/pages/CustomerPage'),
-  'CustomerPage',
 );
 export const WarehousePage = lazyNamed(
   () => import('@features/catalog/pages/WarehousePage'),
