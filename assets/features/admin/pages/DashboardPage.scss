@@ -2,6 +2,32 @@
 @use 'sass:math';
 @use 'sass:color';
 
+// ─── Loading overlay (replaces DevExtreme LoadPanel) ─────────────────────────
+.dashboard-loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.dashboard-loading-spinner {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--accent-color, #fff);
+  border-radius: 50%;
+  animation: dashboard-spin 0.7s linear infinite;
+}
+
+@keyframes dashboard-spin {
+  to { transform: rotate(360deg); }
+}
+
 // ─── Shared spacing inside AppToolbar content ────────────────────────────────
 .app-toolbar-content {
   display: flex;

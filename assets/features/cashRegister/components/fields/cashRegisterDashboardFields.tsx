@@ -1,7 +1,6 @@
 import { Field } from '../../../../core/field/Field';
 import { identityField, currencyField, textField } from '../../../../core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { Button } from 'devextreme-react';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
@@ -50,43 +49,38 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.data.status === 'open') {
           return (
-            <>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button
-                  hint="Ver Movimientos"
-                  type="default"
-                  stylingMode="outlined"
-                  icon="ph ph-eye"
-                  elementAttr={{ 'data-testid': 'cash-btn-movements' }}
-                  onClick={() => {
-                    navigate(`/cash-shift/${cell.data.cashShiftId}/movements`);
-                  }}
-                />
-                <Button
-                  hint="Cerrar Caja"
-                  type="danger"
-                  stylingMode="outlined"
-                  icon="ph ph-cash-register"
-                  elementAttr={{ 'data-testid': 'cash-btn-close' }}
-                  onClick={() => {
-                    navigate(`/cash-register/${cell.data.cashShiftId}/close`);
-                  }}
-                />
-              </div>
-            </>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className="app-icon-button"
+                title="Ver Movimientos"
+                data-testid="cash-btn-movements"
+                onClick={() => navigate(`/cash-shift/${cell.data.cashShiftId}/movements`)}
+              >
+                <i className="ph ph-eye" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="app-icon-button app-icon-button--danger"
+                title="Cerrar Caja"
+                data-testid="cash-btn-close"
+                onClick={() => navigate(`/cash-register/${cell.data.cashShiftId}/close`)}
+              >
+                <i className="ph ph-cash-register" aria-hidden="true" />
+              </button>
+            </div>
           );
         } else {
           return (
-            <Button
-              text="Abrir"
-              type="success"
-              stylingMode="outlined"
-              icon="ph ph-cash-register"
-              elementAttr={{ 'data-testid': 'cash-btn-open' }}
-              onClick={() => {
-                navigate(`/cash-register/${cell.data.id}/open`);
-              }}
-            />
+            <button
+              type="button"
+              className="app-button app-button--success app-button--sm"
+              data-testid="cash-btn-open"
+              onClick={() => navigate(`/cash-register/${cell.data.id}/open`)}
+            >
+              <i className="ph ph-cash-register" aria-hidden="true" />
+              Abrir
+            </button>
           );
         }
       })

@@ -1,5 +1,4 @@
 import DateBox from 'devextreme-react/date-box';
-import { Button, LoadIndicator } from 'devextreme-react';
 import { useRef, useState } from 'react';
 import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { Card } from '@shared/ui';
@@ -127,26 +126,24 @@ export const SaleConsultPage = () => {
 
         <SimpleItem>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button
-              text={loading ? 'Generando…' : 'Generar reporte'}
-              type="default"
-              stylingMode="contained"
-              width="100%"
+            <button
+              type="button"
+              className="app-button app-button--primary app-button--full"
               disabled={!canGenerate || loading}
               onClick={handleGenerateReport}
             >
-              {loading && (
-                <LoadIndicator height={16} width={16} visible style={{ marginRight: 6 }} />
-              )}
-            </Button>
-            <Button
-              icon="clear"
-              type="normal"
-              stylingMode="outlined"
-              hint="Limpiar"
-              onClick={handleClear}
+              {loading && <span className="app-button-spinner" aria-hidden="true" />}
+              {loading ? 'Generando…' : 'Generar reporte'}
+            </button>
+            <button
+              type="button"
+              className="app-icon-button"
+              title="Limpiar"
               disabled={loading}
-            />
+              onClick={handleClear}
+            >
+              <i className="ph ph-x" aria-hidden="true" />
+            </button>
           </div>
         </SimpleItem>
       </Form>

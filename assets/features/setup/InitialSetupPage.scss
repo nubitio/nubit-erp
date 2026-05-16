@@ -7,6 +7,22 @@
   padding: 32px 16px;
 }
 
+// ── Spinner (replaces DevExtreme LoadIndicator) ────────────────────────────────
+.setup-spinner {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: setup-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes setup-spin {
+  to { transform: rotate(360deg); }
+}
+
 .initial-setup-page .loading {
   text-align: center;
   color: var(--text-color);

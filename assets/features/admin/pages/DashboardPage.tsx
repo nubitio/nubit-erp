@@ -1,6 +1,4 @@
 import './DashboardPage.scss';
-import LoadPanel from 'devextreme-react/load-panel';
-import ScrollView from 'devextreme-react/scroll-view';
 import { AppToolbar } from '@shared/ui/toolbar/AppToolbar';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
@@ -24,7 +22,7 @@ export const DashboardPage = () => {
   const isPartial = !!(data.meta?.partial && !error);
 
   return (
-    <ScrollView className="view-wrapper-scroll">
+    <div className="view-wrapper-scroll">
       <AppToolbar title="Dashboard" onRefresh={refetch}>
         {error && <div className="dashboard-error">{error}</div>}
         {isPartial && (
@@ -80,11 +78,11 @@ export const DashboardPage = () => {
           />
         )}
       </AppToolbar>
-      <LoadPanel
-        container=".content"
-        visible={loading || cashboxLoading}
-        position={{ of: '.layout-body' }}
-      />
-    </ScrollView>
+      {(loading || cashboxLoading) && (
+        <div className="dashboard-loading-overlay" aria-hidden="true">
+          <span className="dashboard-loading-spinner" />
+        </div>
+      )}
+    </div>
   );
 };

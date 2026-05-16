@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
-import Form, { SimpleItem } from 'devextreme-react/form';
-import { Button } from 'devextreme-react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
+// eslint-disable-next-line no-restricted-imports -- VoidDialog is an injection point for AppDialog from the sale feature
+import { AppDialog } from '@app/shell/components/AppDialog';
 import { useScreenSize } from '@utils/media-query';
+import './VoidDialog.scss';
 
 export type VoidDialogResult = {
   reason: string;
@@ -18,14 +18,21 @@ interface VoidDialogProps {
 const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
   const { isXSmall } = useScreenSize();
   const [visible, setVisible] = useState(true);
-  const [formData, setFormData] = useState<VoidDialogResult>({
-    reason: '',
-    restoreStock: false,
-  });
+  const [reason, setReason] = useState('');
+  const [restoreStock, setRestoreStock] = useState(false);
+  const [reasonError, setReasonError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const handleConfirm = () => {
-    if (!formData.reason?.trim()) return;
-    onConfirm(formData);
+    if (!reason.trim()) {
+      setReasonError('El motivo es obligatorio');
+      return;
+    }
+    onConfirm({ reason: reason.trim(), restoreStock });
     setVisible(false);
   };
 
@@ -35,53 +42,76 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
   };
 
   return (
-    <Popup
-      visible={visible}
+    <AppDialog
       title="Anular comprobante"
       fullScreen={isXSmall}
-      maxWidth={420}
-      height="auto"
-      onHiding={handleCancel}
-      wrapperAttr={{ class: 'form-popup' }}
+      width={isXSmall ? undefined : 420}
+      visible={visible}
+      showCloseButton={false}
+      closeOnOutsideClick={false}
+      closeOnEscape
+      onClose={handleCancel}
+      className="void-dialog"
     >
-      <ToolbarItem toolbar="bottom" location="after">
-        <div className="form-popup-buttons-container">
-          <Button text="Cancelar" stylingMode="outlined" onClick={handleCancel} />
-          <Button
-            text="Confirmar"
-            stylingMode="outlined"
-            type="default"
-            onClick={handleConfirm}
-            disabled={!formData.reason?.trim()}
+      <div className="void-dialog__body">
+        {/* Motivo */}
+        <div className={`void-field${reasonError ? ' void-field--error' : ''}`}>
+          <label className="void-field__label" htmlFor="void-reason">
+            Motivo de anulación
+          </label>
+          <input
+            ref={inputRef}
+            id="void-reason"
+            type="text"
+            className="void-input"
+            placeholder="Escribe el motivo..."
+            aria-invalid={!!reasonError}
+            aria-describedby={reasonError ? 'void-reason-error' : undefined}
+            value={reason}
+            onChange={(e) => {
+              setReason(e.target.value);
+              if (reasonError) setReasonError(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleConfirm();
+            }}
           />
+          {reasonError && (
+            <span id="void-reason-error" className="void-field__error" role="alert">
+              {reasonError}
+            </span>
+          )}
         </div>
-      </ToolbarItem>
 
-      <Form
-        formData={formData}
-        labelMode="floating"
-        onFieldDataChanged={(e) =>
-          setFormData((prev) => ({ ...prev, [e.dataField as string]: e.value }))
-        }
-      >
-        <SimpleItem
-          dataField="reason"
-          label={{ text: 'Motivo de anulación' }}
-          editorType="dxTextBox"
-          editorOptions={{
-            stylingMode: 'outlined',
-            onEnterKey: handleConfirm,
-          }}
-          validationRules={[{ type: 'required', message: 'El motivo es obligatorio' }]}
-        />
-        <SimpleItem
-          dataField="restoreStock"
-          label={{ text: 'Restaurar stock de productos' }}
-          editorType="dxCheckBox"
-          editorOptions={{ text: 'Restaurar stock al anular' }}
-        />
-      </Form>
-    </Popup>
+        {/* Restaurar stock */}
+        <label className="void-checkbox">
+          <input
+            type="checkbox"
+            checked={restoreStock}
+            onChange={(e) => setRestoreStock(e.target.checked)}
+          />
+          <span>Restaurar stock al anular</span>
+        </label>
+      </div>
+
+      <div className="form-popup-buttons-container">
+        <button
+          type="button"
+          className="app-button app-button--secondary"
+          onClick={handleCancel}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="app-button app-button--primary"
+          disabled={!reason.trim()}
+          onClick={handleConfirm}
+        >
+          Confirmar
+        </button>
+      </div>
+    </AppDialog>
   );
 };
 

@@ -83,3 +83,126 @@ $white: #fff;
   height: 38px;
   width: 38px;
 }
+
+// ── Shared app-button system ──────────────────────────────────────────────────
+// Base token shared by BranchPicker.scss, VoidDialog.scss, etc.
+.app-button {
+  align-items: center;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 500;
+  gap: 6px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.45rem 0.9rem;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.65;
+  }
+}
+
+.app-button--secondary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--base-text-color);
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    outline: none;
+  }
+}
+
+.app-button--primary {
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, var(--accent-color) 85%, #000);
+    outline: none;
+  }
+}
+
+.app-button--success {
+  background: $success;
+  border: 1px solid $success;
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, #{$success} 85%, #000);
+    outline: none;
+  }
+}
+
+.app-button--full {
+  width: 100%;
+}
+
+.app-button--sm {
+  font-size: 0.85em;
+  min-height: 30px;
+  padding: 0.25rem 0.65rem;
+}
+
+// ── Shared icon button ────────────────────────────────────────────────────────
+.app-icon-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  color: var(--base-text-color);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 36px;
+  justify-content: center;
+  min-width: 36px;
+  padding: 0 0.5rem;
+  transition: background 150ms ease, color 150ms ease;
+
+  i {
+    font-size: 1.25rem;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    color: var(--accent-color);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.app-icon-button--danger {
+  &:hover {
+    background: color-mix(in srgb, #{$danger} 12%, transparent);
+    color: $danger;
+  }
+}
+
+// ── Inline button spinner ─────────────────────────────────────────────────────
+.app-button-spinner {
+  animation: app-spinner-rotate 700ms linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  border-top-color: #fff;
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+}
+

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import ScrollView from 'devextreme-react/scroll-view';
 import toast from '@shared/lib/SharedUtils';
 import { configService, type ConfigDto, isTechnical } from '@features/config';
 import './ConfigPage.scss';
@@ -238,7 +237,7 @@ export const ConfigPage = () => {
   const other     = visible.filter((c) => !CONFIG_META[c.name]);
 
   return (
-    <ScrollView className="view-wrapper-scroll">
+    <div className="view-wrapper-scroll">
     <div className="config-page">
       <div className="config-page-header">
         <h2 className="config-page-title">Configuraciones</h2>
@@ -268,6 +267,6 @@ export const ConfigPage = () => {
         )}
       </div>
     </div>
-    </ScrollView>
+    </div>
   );
 };
