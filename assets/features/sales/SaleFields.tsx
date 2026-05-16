@@ -23,46 +23,11 @@ import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
-let priceList: PriceListItemDto[] = [];
-let selectedWarehouseId = '';
-
-const isStockTrackedProduct = (product?: Partial<ProductDto> | null): boolean => {
-  if (!product) return true;
-
-  const inventoryBehavior = String(product.inventoryBehavior ?? '').toUpperCase();
-  if (inventoryBehavior === 'NOT_TRACKED') return false;
-
-  const productType = String(product.productType ?? '').toUpperCase();
-  if (productType === 'SERVICE' || productType === 'DIGITAL') return false;
-
-  const productKind = String(product.productKind ?? '').toUpperCase();
-  if (productKind === 'SERVICE' || productKind === 'DIGITAL') return false;
-
-  if (product.type !== undefined && Number(product.type) !== 1) return false;
-
-  return product.trackInventory !== false;
-};
-
-export type SaleFieldCallbacks = {
-  onOpenAddCustomer?: () => void;
-  onOpenDiscount?: (params: { total: number; discountPercent: number }) => void;
-};
-
-export type SaleDetailFieldCallbacks = {
-  /**
-   * Called when the user clicks the discount icon on an item row.
-   * `rowIndex` is the 0-based index of the row in the detail data array.
-   */
-  onOpenItemDiscount?: (params: {
-    rowIndex: number;
-    baseValue: number;
-    discountPercent: number;
-    discountAmount: number;
-  }) => void;
-};
-
 export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallbacks) => {
   const fields: Field[] = [];
+
+  let priceList: PriceListItemDto[] = [];
+  let selectedWarehouseId = '';
 
   fields.push(identityField().build());
   fields.push(

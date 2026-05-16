@@ -1,2 +1,2 @@
-export { TaxDocumentService, taxDocumentService } from './taxDocumentService';
+export { taxDocumentService } from './taxDocumentService';
 
