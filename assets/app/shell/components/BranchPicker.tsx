@@ -12,7 +12,7 @@ import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@utils/media-query';
 
-import '../../../shared/ui/utils/branch-picker/BranchPicker.scss';
+import './BranchPicker.scss';
 
 interface Branch {
   id: string;
