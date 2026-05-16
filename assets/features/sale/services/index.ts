@@ -1,2 +1,2 @@
-export { SaleService, saleService } from './saleService';
+export { saleService } from './saleService';
 

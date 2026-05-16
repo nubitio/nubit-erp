@@ -1,6 +1,6 @@
 import { CrudPage, defineResource } from '@core/crud';
 import { Constants } from '@core/common/Constants';
-import { createCrudEvents } from '@features/movement';
+import { createCrudEvents } from '@core/event/createCrudEvents';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 

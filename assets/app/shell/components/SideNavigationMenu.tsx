@@ -2,9 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as events from 'devextreme/events';
 import { TreeView, TreeViewRef } from 'devextreme-react/tree-view';
 import { useLocation } from 'react-router-dom';
-
 import type { SideNavigationMenuProps } from '@app/types';
-import { useNavigation } from '@app/contexts/navigation';
 import { userInformation } from '@core/common/UserInformation';
 import { menuService } from '@features/navigation';
 import { useScreenSize } from '@utils/media-query';
@@ -69,9 +67,6 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
     );
   }, [isLarge]);
 
-  const {
-    navigationData: { currentPath },
-  } = useNavigation();
   const location = useLocation();
 
   const treeViewRef = useRef<TreeViewRef>(null);
@@ -116,7 +111,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
       return paths.filter(Boolean);
     };
 
-    const requestedPath = normalizeRoute(currentPath || location.pathname);
+    const requestedPath = normalizeRoute(location.pathname);
     const allPaths = flattenPaths(items);
     const activePath =
       allPaths.find((path) => path === requestedPath) ??
@@ -132,7 +127,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
     if (compactMode) {
       treeView.collapseAll();
     }
-  }, [currentPath, location.pathname, compactMode, items]);
+  }, [location.pathname, compactMode, items]);
 
   return (
     <div

@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ScrollView from 'devextreme-react/scroll-view';
 import toast from '@shared/lib/SharedUtils';
-import { configService } from '@features/config/services/configService';
-import type { ConfigDto } from '@features/config/model/ConfigKey';
-import { isTechnical } from '@features/config/model/ConfigKey';
+import { configService, type ConfigDto, isTechnical } from '@features/config';
 import './ConfigPage.scss';
 
 // ── Label registry ────────────────────────────────────────────────────────────

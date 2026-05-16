@@ -3,7 +3,6 @@ import { HashRouter as Router } from 'react-router-dom';
 
 import { ThemeContext, useThemeContext } from '../theme/theme';
 import { AuthProvider } from '@app/contexts/auth';
-import { NavigationProvider } from '@app/contexts/navigation';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
 import { MercureProvider } from '@core/mercure';
@@ -24,7 +23,7 @@ export const AppProviders = ({ children, themeContext, mercureHubUrl }: AppProvi
             <ConnectivityProvider>
               <OutboxSyncProvider>
                 <MercureProvider hubUrl={mercureHubUrl}>
-                  <NavigationProvider>{children}</NavigationProvider>
+                  {children}
                 </MercureProvider>
               </OutboxSyncProvider>
             </ConnectivityProvider>

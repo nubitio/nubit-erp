@@ -5,14 +5,14 @@ import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
+import { invoiceEvents } from '@features/invoice/model/events';
 import {
-  invoiceEvents,
   runConsultInvoiceCdrAction,
   runConsultInvoiceCpeAction,
   runOpenInvoiceReceiptAction,
   runSendInvoiceEmailAction,
   runSendInvoiceToSunatAction,
-} from '@features/invoice';
+} from '@features/invoice/lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
 
 const API_URL = Constants.API_BASE_URL + 'tax-documents';

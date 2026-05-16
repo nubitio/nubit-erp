@@ -1,3 +1,3 @@
 export * from './services';
-export * from './pages';
+export { ProductPage } from './ProductPage';
 export { productRoutes } from './routes';

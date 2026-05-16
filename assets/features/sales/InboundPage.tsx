@@ -3,7 +3,7 @@ import { CrudPage, defineResource } from '@core/crud';
 import type { DxFormEvents } from '@core/form/DxForm';
 import { Constants } from '@core/common/Constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
-import { purchasesEvents } from '@features/purchases/model';
+import { purchasesEvents } from '@features/purchases/model/events';
 
 const purchasesResource = defineResource({
   id: 'purchases',
@@ -25,5 +25,5 @@ const purchasesResource = defineResource({
 
 export const PurchasesPage = () => <CrudPage resource={purchasesResource} />;
 
-// Backward-compatible alias while routes/menu migrate from /inbound to /purchases.
+// Route alias: /inbound redirects to the same page as /purchases.
 export const InboundPage = PurchasesPage;

@@ -2,7 +2,7 @@ import { businessHttpClient } from '@shared/api/network';
 import AppResponse from '@shared/api/AppResponse';
 import { Constants } from '@core/common/Constants';
 
-export class SaleService {
+class SaleService {
   getOne(saleId: string) {
     return businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`);
   }

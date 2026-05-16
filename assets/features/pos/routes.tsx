@@ -1,4 +1,6 @@
+import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
-import { POSPage } from './route-pages';
+
+const POSPage = lazyNamed(() => import('./pages/POSPage'), 'POSPage');
 
 export const posRoutes: AppRouteDefinition[] = [{ path: '/pos', element: POSPage }];

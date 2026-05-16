@@ -1,2 +1,2 @@
-export { ConsultService, consultService } from './consultService';
+export { consultService } from './consultService';
 

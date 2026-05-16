@@ -1,4 +1,4 @@
-import { taxDocumentService } from '@features/invoice';
+import { taxDocumentService } from '@features/invoice/services/taxDocumentService';
 
 export type CreditNoteRow = {
   id: string;
