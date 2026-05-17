@@ -10,7 +10,7 @@ use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
@@ -83,7 +83,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     /**
-     * @param list<SaleItem> $items
+     * @param list<SaleItemRecord> $items
      */
     private function makeSale(int $tipoId, Warehouse $warehouse, array $items = []): SaleRecord&MockObject
     {
@@ -91,20 +91,19 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $sale->method('getAlmacen')->willReturn($warehouse);
         $sale->method('getTipoId')->willReturn($tipoId);
         $sale->method('getId')->willReturn('sale-1');
-        $sale->method('getItems')->willReturn(new ArrayCollection($items));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection($items));
         $sale->method('getFecha')->willReturn(new \DateTimeImmutable());
 
         return $sale;
     }
 
-    private function makeSaleItem(Product $product, float $cantidad): SaleItem&MockObject
+    private function makeSaleItem(Product $product, float $cantidad): SaleItemRecord&MockObject
     {
-        $item = $this->createMock(SaleItem::class);
-        $item->method('getProducto')->willReturn($product);
-        $item->method('getCantidad')->willReturn($cantidad);
-        $item->method('getDescuento')->willReturn(null);
-        $item->method('getPrecioUnitario')->willReturn('10.00');
-        $item->method('getPrecioTotal')->willReturn('10.00');
+        $item = $this->createMock(SaleItemRecord::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getQty')->willReturn((string) $cantidad);
+        $item->method('getUnitPrice')->willReturn('10.00');
+        $item->method('getNetAmount')->willReturn('10.00');
 
         return $item;
     }
@@ -421,9 +420,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
     {
         $warehouse = $this->makeWarehouse();
 
-        $item = $this->createStub(SaleItem::class);
-        $item->method('getProducto')->willReturn(null);
-        $item->method('getDescuento')->willReturn(null);
+        $item = $this->createStub(SaleItemRecord::class);
+        $item->method('getProduct')->willReturn(null);
 
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
@@ -504,7 +502,7 @@ final readonly class TestSalesInventoryPort implements SalesInventoryPortInterfa
 
     public function applyMovementFromSaleItem(
         SaleRecord $sale,
-        SaleItem $item,
+        SaleItemRecord $item,
         int $lineNo,
         bool $enforceNonNegativeStock = true,
     ): void {

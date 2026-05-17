@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Entity;
 
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +25,7 @@ final class SaleEntityTest extends TestCase
         self::assertFalse($sale->isHasInvoice());
         self::assertNull($sale->getBranch());
         self::assertNull($sale->getCustomer());
-        self::assertTrue($sale->getItems()->isEmpty());
+        self::assertTrue($sale->getSaleItemRecords()->isEmpty());
     }
 
     public function testSaleRecordStatusRoundTrip(): void
@@ -81,45 +81,45 @@ final class SaleEntityTest extends TestCase
         self::assertSame('Test note', $sale->getGlosa());
     }
 
-    // ── SaleItem defaults ────────────────────────────────────────────────────
+    // ── SaleItemRecord basics ────────────────────────────────────────────────
 
-    public function testSaleItemDefaults(): void
+    public function testSaleItemRecordDefaults(): void
     {
-        $item = new SaleItem();
+        $item = new SaleItemRecord();
 
         self::assertNull($item->getId());
-        self::assertNull($item->getMovimiento());
-        self::assertNull($item->getProducto());
+        self::assertNull($item->getProduct());
+        self::assertNull($item->getSaleRecord());
     }
 
-    public function testSaleItemCantidadRoundTrip(): void
+    public function testSaleItemRecordQtyRoundTrip(): void
     {
-        $item = new SaleItem();
-        $item->setCantidad(3.5);
+        $item = new SaleItemRecord();
+        $item->setQty('3.5');
 
-        self::assertSame(3.5, $item->getCantidad());
+        self::assertSame('3.5', $item->getQty());
     }
 
-    public function testSaleItemPrecioUnitarioRoundTrip(): void
+    public function testSaleItemRecordUnitPriceRoundTrip(): void
     {
-        $item = (new SaleItem())->setPrecioUnitario('25.50');
+        $item = (new SaleItemRecord())->setUnitPrice('25.50');
 
-        self::assertSame('25.50', $item->getPrecioUnitario());
+        self::assertSame('25.50', $item->getUnitPrice());
     }
 
-    public function testSaleItemPrecioTotalRoundTrip(): void
+    public function testSaleItemRecordNetAmountRoundTrip(): void
     {
-        $item = (new SaleItem())->setPrecioTotal('76.50');
+        $item = (new SaleItemRecord())->setNetAmount('76.50');
 
-        self::assertSame('76.50', $item->getPrecioTotal());
+        self::assertSame('76.50', $item->getNetAmount());
     }
 
-    public function testSaleItemLinksToSaleRecord(): void
+    public function testSaleItemRecordLinksSaleRecord(): void
     {
         $sale = new SaleRecord();
-        $item = new SaleItem();
-        $item->setMovimiento($sale);
+        $item = new SaleItemRecord();
+        $item->setSaleRecord($sale);
 
-        self::assertSame($sale, $item->getMovimiento());
+        self::assertSame($sale, $item->getSaleRecord());
     }
 }

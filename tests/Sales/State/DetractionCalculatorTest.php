@@ -8,7 +8,7 @@ use Nubit\Platform\Exception\ServiceException;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Sales\State\DetractionCalculator;
@@ -55,27 +55,27 @@ final class DetractionCalculatorTest extends TestCase
     }
 
     /**
-     * @param list<SaleItem> $items
+     * @param list<SaleItemRecord> $items
      */
     private function makeSale(?Customer $customer, string $total, array $items = [], string $currency = 'PEN', string $exchangeRate = '1.000000'): SaleRecord&MockObject
     {
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn($total);
-        $sale->method('getItems')->willReturn(new ArrayCollection($items));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection($items));
         $sale->method('getCurrency')->willReturn($currency);
         $sale->method('getExchangeRate')->willReturn($exchangeRate);
 
         return $sale;
     }
 
-    private function makeSaleItemWithCatalog(?SunatCatalog $catalog): SaleItem&MockObject
+    private function makeSaleItemWithCatalog(?SunatCatalog $catalog): SaleItemRecord&MockObject
     {
         $product = $this->createStub(Product::class);
         $product->method('getDetractionCatalog')->willReturn($catalog);
 
-        $item = $this->createMock(SaleItem::class);
-        $item->method('getProducto')->willReturn($product);
+        $item = $this->createMock(SaleItemRecord::class);
+        $item->method('getProduct')->willReturn($product);
 
         return $item;
     }
@@ -194,7 +194,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
 
         // After setting code and percentage, getDetraccionPorcentaje returns 4.0 and getTotal returns '1000.00'
         $sale->method('getDetraccionPorcentaje')->willReturn(4.0);
@@ -227,7 +227,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('200.00'); // below 700 but no threshold applies
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
         $sale->method('getDetraccionPorcentaje')->willReturn(10.0);
 
         $sale->expects(self::once())->method('setDetraccionCodigo')->with('008');
@@ -280,7 +280,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('2000.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$itemA, $itemB]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$itemA, $itemB]));
         $sale->method('getDetraccionPorcentaje')->willReturn(4.0);
 
         $sale->expects(self::once())->method('setDetraccionCodigo')->with('037');
@@ -310,7 +310,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createStub(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1500.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
         $sale->method('getDetraccionPorcentaje')->willReturn(4.0);
 
         // Payment method not found
@@ -335,7 +335,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
         $sale->method('getDetraccionPorcentaje')->willReturn(4.0);
         $sale->method('getTipoOperacion')->willReturn('9999'); // already set
 
@@ -413,7 +413,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
         $sale->method('getDetraccionPorcentaje')->willReturn(null); // null percentage
         $sale->method('getCurrency')->willReturn('PEN');
         $sale->method('getExchangeRate')->willReturn('1.000000');
@@ -457,7 +457,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('200.00');
-        $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
+        $sale->method('getSaleItemRecords')->willReturn(new ArrayCollection([$item]));
         $sale->method('getCurrency')->willReturn('USD');
         $sale->method('getExchangeRate')->willReturn('3.890000');
         $sale->method('getDetraccionPorcentaje')->willReturn(4.0);

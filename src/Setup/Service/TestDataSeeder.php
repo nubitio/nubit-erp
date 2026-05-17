@@ -15,7 +15,7 @@ use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\ProductStock;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Contacts\Entity\Supplier;
 use App\Inventory\Entity\Warehouse;
 use App\Catalog\Repository\CategoryRepository;
@@ -588,6 +588,8 @@ final readonly class TestDataSeeder
             $sale->setEstado(1);
             $sale->setDateCreated($saleDate);
             $sale->setCreatedBy(1);
+            $sale->setLastModifiedAt($saleDate);
+            $sale->setSyncedAt($saleDate);
             $sale->setIgv('18');
             $sale->setRecargoConsumo(0);
 
@@ -601,16 +603,23 @@ final readonly class TestDataSeeder
                 $lineTotal = round($unitPrice * $qty, 2);
                 $subtotal += $lineTotal;
 
-                $saleItem = new SaleItem();
-                $saleItem->setMovimiento($sale);
-                $saleItem->setProducto($product);
-                $saleItem->setCantidad($qty);
-                $saleItem->setPrecioUnitario($unitPrice);
-                $saleItem->setDescuento('0');
-                $saleItem->setPrecioTotal(number_format($lineTotal, 2, '.', ''));
+                $saleItem = new SaleItemRecord();
+                $saleItem->setProduct($product);
+                $saleItem->setQty((string) $qty);
+                $saleItem->setUnitPrice((string) $unitPrice);
+                $saleItem->setDiscountAmount('0');
+                $saleItem->setGrossAmount(number_format($lineTotal, 2, '.', ''));
+                $saleItem->setNetAmount(number_format($lineTotal, 2, '.', ''));
+                $saleItem->setTaxAmount('0.00');
+                $saleItem->setLineNo($j + 1);
+                $saleItem->setNameSnapshot($product->getName());
+                $saleItem->setSkuSnapshot($product->getCode());
+                $saleItem->setUomSnapshot($product->getUnitOfMeasure()->getCode());
+                $saleItem->setLastModifiedAt($saleDate);
+                $saleItem->setSyncedAt($saleDate);
 
                 $this->entityManager->persist($saleItem);
-                $sale->addItem($saleItem);
+                $sale->addSaleItemRecord($saleItem);
             }
 
             $total = $subtotal - ($subtotal * ($sale->getDescuento() / 100));
@@ -620,10 +629,10 @@ final readonly class TestDataSeeder
             $this->entityManager->persist($sale);
 
             $lines = [];
-            foreach ($sale->getItems() as $item) {
+            foreach ($sale->getSaleItemRecords() as $item) {
                 $lines[] = new InvoiceLineInput(
-                    quantity: (string) $item->getCantidad(),
-                    unitPrice: (string) ($item->getPrecioUnitario() ?? '0')
+                    quantity: $item->getQty(),
+                    unitPrice: $item->getUnitPrice()
                 );
             }
 

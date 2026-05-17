@@ -468,19 +468,19 @@ SQL,
 
         return array_map(
             fn ($item): VoucherLineDto => new VoucherLineDto(
-                productId: $item->getProducto()?->getId(),
-                productCode: $item->getProducto()?->getCode(),
-                productUom: $item->getProducto()?->getUnitOfMeasure()?->getCode(),
-                productName: $item->getProducto()?->getName() ?? '-',
-                quantity: (string)$item->getCantidad(),
-                unitPrice: $item->getPrecioUnitario() ?? '0',
-                discountAmount: $item->getDescuento(),
-                discountPercentage: $item->getDescuentoPorcentaje(),
+                productId: $item->getProduct()?->getId(),
+                productCode: $item->getProduct()?->getCode() ?? $item->getSkuSnapshot(),
+                productUom: $item->getProduct()?->getUnitOfMeasure()?->getCode() ?? $item->getUomSnapshot(),
+                productName: $item->getProduct()?->getName() ?? ($item->getNameSnapshot() !== '' ? $item->getNameSnapshot() : '-'),
+                quantity: $item->getQty(),
+                unitPrice: $item->getUnitPrice(),
+                discountAmount: $item->getDiscountAmount(),
+                discountPercentage: $item->getDiscountPercent(),
                 taxPercentage: (string)($sale->getIgv() ?? 0),
                 taxType: '10',
-                total: $item->getPrecioTotal() ?? '0',
+                total: $item->getNetAmount(),
             ),
-            $sale->getItems()->toArray()
+            $sale->getSaleItemRecords()->toArray()
         );
     }
 

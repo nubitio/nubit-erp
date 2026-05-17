@@ -12,6 +12,23 @@ import type {
   OutboxStatus,
 } from './types';
 
+/**
+ * Generate a v4 UUID. Uses crypto.randomUUID() when available (secure contexts),
+ * falls back to a Math.random-based implementation for HTTP/insecure contexts
+ * such as local Docker dev and Playwright e2e environments.
+ */
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // RFC 4122 v4 fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 const OFFLINE_CORRELATIVE_PREFIX = 'OFF';
 let activeSyncPromise: Promise<void> | null = null;
 
@@ -40,10 +57,10 @@ const buildServerSaleCode = (created: any, fallback: string) => {
 export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) => {
   const now = new Date();
   const nowIso = asIso(now);
-  const saleId = crypto.randomUUID();
-  const idempotencyKey = crypto.randomUUID();
+  const saleId = generateUUID();
+  const idempotencyKey = generateUUID();
   const correlativoTemporal = await buildTemporalCorrelative();
-  const outboxId = crypto.randomUUID();
+  const outboxId = generateUUID();
 
   const sale: LocalSale = {
     id: saleId,

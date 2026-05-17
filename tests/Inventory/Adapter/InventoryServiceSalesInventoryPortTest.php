@@ -12,7 +12,7 @@ use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Core\Service\UnitConversionService;
 use App\Inventory\Entity\Warehouse;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -147,11 +147,11 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
         return $sale;
     }
 
-    private function item(Product $product, float $qty): SaleItem&MockObject
+    private function item(Product $product, float $qty): SaleItemRecord&MockObject
     {
-        $item = $this->createMock(SaleItem::class);
-        $item->method('getProducto')->willReturn($product);
-        $item->method('getCantidad')->willReturn($qty);
+        $item = $this->createMock(SaleItemRecord::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getQty')->willReturn((string) $qty);
 
         return $item;
     }

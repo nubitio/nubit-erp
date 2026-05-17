@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Sales\Repository\SaleItemRecordRepository;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -29,6 +30,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 #[ORM\Entity(repositoryClass: SaleItemRecordRepository::class)]
 #[ORM\Table(name: 'sale_items')]
+#[ORM\HasLifecycleCallbacks]
 class SaleItemRecord
 {
     #[Groups(['sale_item_record:read'])]
@@ -96,9 +98,11 @@ class SaleItemRecord
     #[ORM\Column(name: 'unit_cost_snapshot', type: Types::DECIMAL, precision: 12, scale: 4, nullable: true)]
     private ?string $unitCostSnapshot = null;
 
+    #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'name_snapshot', type: 'string', length: 255)]
     private string $nameSnapshot = '';
 
+    #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'sku_snapshot', type: 'string', length: 64, nullable: true)]
     private ?string $skuSnapshot = null;
 
@@ -107,6 +111,60 @@ class SaleItemRecord
 
     #[ORM\Column(name: 'margin_amount', type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
     private ?string $marginAmount = null;
+
+    #[ORM\Column(name: 'variant_id', type: 'integer', nullable: true)]
+    private ?int $variantId = null;
+
+    #[ORM\Column(name: 'descuento_porcentaje', type: Types::DECIMAL, precision: 8, scale: 4, nullable: true)]
+    private ?string $discountPercent = null;
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'sync_status', type: 'string', length: 20, options: ['default' => 'SYNCED'])]
+    private string $syncStatus = 'SYNCED';
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'local_uuid', type: 'string', length: 36, nullable: true)]
+    private ?string $localUuid = null;
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'idempotency_key', type: 'string', length: 36, nullable: true)]
+    private ?string $idempotencyKey = null;
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'synced_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $syncedAt = null;
+
+    #[ORM\Column(name: 'device_id', type: 'string', length: 64, nullable: true)]
+    private ?string $deviceId = null;
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'version_no', type: 'integer', options: ['default' => 1])]
+    private int $versionNo = 1;
+
+    #[Groups(['sale_item_record:read'])]
+    #[ORM\Column(name: 'last_modified_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastModifiedAt = null;
+
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $updatedAt = null;
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnPersist(): void
+    {
+        $now = new \DateTime();
+        if ($this->createdAt === null) {
+            $this->createdAt = $now;
+        }
+        if ($this->lastModifiedAt === null) {
+            $this->lastModifiedAt = $now;
+        }
+        if ($this->syncedAt === null) {
+            $this->syncedAt = $now;
+        }
+    }
 
     public function getId(): ?int
     {
@@ -284,5 +342,137 @@ class SaleItemRecord
     public function getMarginAmount(): ?string
     {
         return $this->marginAmount;
+    }
+
+    public function getDiscountPercent(): ?string
+    {
+        return $this->discountPercent;
+    }
+
+    public function setDiscountPercent(?string $discountPercent): static
+    {
+        $this->discountPercent = $discountPercent;
+
+        return $this;
+    }
+
+    public function getVariantId(): ?int
+    {
+        return $this->variantId;
+    }
+
+    public function setVariantId(?int $variantId): static
+    {
+        $this->variantId = $variantId;
+
+        return $this;
+    }
+
+    public function getSyncStatus(): string
+    {
+        return $this->syncStatus;
+    }
+
+    public function setSyncStatus(string $syncStatus): static
+    {
+        $this->syncStatus = $syncStatus;
+
+        return $this;
+    }
+
+    public function getLocalUuid(): ?string
+    {
+        return $this->localUuid;
+    }
+
+    public function setLocalUuid(?string $localUuid): static
+    {
+        $this->localUuid = $localUuid;
+
+        return $this;
+    }
+
+    public function getIdempotencyKey(): ?string
+    {
+        return $this->idempotencyKey;
+    }
+
+    public function setIdempotencyKey(?string $idempotencyKey): static
+    {
+        $this->idempotencyKey = $idempotencyKey;
+
+        return $this;
+    }
+
+    public function getSyncedAt(): ?DateTimeInterface
+    {
+        return $this->syncedAt;
+    }
+
+    public function setSyncedAt(?DateTimeInterface $syncedAt): static
+    {
+        $this->syncedAt = $syncedAt;
+
+        return $this;
+    }
+
+    public function getDeviceId(): ?string
+    {
+        return $this->deviceId;
+    }
+
+    public function setDeviceId(?string $deviceId): static
+    {
+        $this->deviceId = $deviceId;
+
+        return $this;
+    }
+
+    public function getVersionNo(): int
+    {
+        return $this->versionNo;
+    }
+
+    public function setVersionNo(int $versionNo): static
+    {
+        $this->versionNo = $versionNo;
+
+        return $this;
+    }
+
+    public function getLastModifiedAt(): ?DateTimeInterface
+    {
+        return $this->lastModifiedAt;
+    }
+
+    public function setLastModifiedAt(?DateTimeInterface $lastModifiedAt): static
+    {
+        $this->lastModifiedAt = $lastModifiedAt;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
     }
 }

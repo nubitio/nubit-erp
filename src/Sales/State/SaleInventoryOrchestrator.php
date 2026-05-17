@@ -7,7 +7,7 @@ namespace App\Sales\State;
 use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Dto\AuthUserDto;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use Psr\Log\LoggerInterface;
@@ -73,22 +73,22 @@ final readonly class SaleInventoryOrchestrator
      */
     private function validateStock(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
     {
-        /** @var SaleItem $item */
-        foreach ($sale->getItems() as $item) {
-            if (!$item->getProducto() || !$this->policyResolver->isStockTracked($item->getProducto())) {
+        /** @var SaleItemRecord $item */
+        foreach ($sale->getSaleItemRecords() as $item) {
+            if (!$item->getProduct() || !$this->policyResolver->isStockTracked($item->getProduct())) {
                 continue;
             }
 
             $currentStock = $this->salesInventory->getStockForProductInWarehouse(
-                $item->getProducto(),
+                $item->getProduct(),
                 $sale->getAlmacen()
             );
 
             if ($useCoreValidation) {
                 $validation = $this->stockValidationPolicy->validateSale(
-                    $item->getProducto(),
+                    $item->getProduct(),
                     (string) $sale->getAlmacen()->getId(),
-                    number_format((float) $item->getCantidad(), 6, '.', ''),
+                    number_format((float) $item->getQty(), 6, '.', ''),
                     number_format($currentStock, 6, '.', ''),
                 );
 
@@ -96,33 +96,33 @@ final readonly class SaleInventoryOrchestrator
                     throw new ServiceException(sprintf(
                         'Stock insuficiente para "%s" en el almacén seleccionado (%s).'
                         . ' Disponible: %s, solicitado: %s',
-                        $item->getProducto()->getName(),
+                        $item->getProduct()->getName(),
                         $validation->reason ?? 'STRICT',
                         rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                        rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
+                        rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.')
                     ));
                 }
 
                 if ($validation->warning !== null) {
                     $this->logger->warning('Inventory policy warning on sale validation', [
                         'sale_id' => $sale->getId(),
-                        'product_id' => $item->getProducto()->getId(),
+                        'product_id' => $item->getProduct()->getId(),
                         'warehouse_id' => $sale->getAlmacen()->getId(),
                         'warning' => $validation->warning,
                         'available_qty' => $currentStock,
-                        'requested_qty' => $item->getCantidad(),
+                        'requested_qty' => $item->getQty(),
                     ]);
                 }
 
                 continue;
             }
 
-            if ($enforceNonNegative && $currentStock < $item->getCantidad()) {
+            if ($enforceNonNegative && $currentStock < (float) $item->getQty()) {
                 throw new ServiceException(sprintf(
                     'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
-                    $item->getProducto()->getName(),
+                    $item->getProduct()->getName(),
                     rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                    rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
+                    rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.')
                 ));
             }
         }
@@ -135,19 +135,18 @@ final readonly class SaleInventoryOrchestrator
     {
         $lineNo = 0;
 
-        /** @var SaleItem $item */
-        foreach ($sale->getItems() as $item) {
+        /** @var SaleItemRecord $item */
+        foreach ($sale->getSaleItemRecords() as $item) {
             ++$lineNo;
-            $item->setDescuento($item->getDescuento());
 
-            if (!$item->getProducto() || !$this->policyResolver->isStockTracked($item->getProducto())) {
+            if (!$item->getProduct() || !$this->policyResolver->isStockTracked($item->getProduct())) {
                 continue;
             }
 
-            $productId = $item->getProducto()->getId();
+            $productId = $item->getProduct()->getId();
             $warehouseId = $sale->getAlmacen()->getId();
             $currentStock = $this->salesInventory->getStockForProductInWarehouse(
-                $item->getProducto(),
+                $item->getProduct(),
                 $sale->getAlmacen()
             );
 
@@ -161,7 +160,7 @@ final readonly class SaleInventoryOrchestrator
                 $this->logger->info('Increasing stock for purchase', [
                     'product_id' => $productId,
                     'warehouse_id' => $warehouseId,
-                    'quantity_added' => $item->getCantidad(),
+                    'quantity_added' => $item->getQty(),
                 ]);
 
                 $this->salesInventory->applyMovementFromSaleItem(
@@ -174,7 +173,7 @@ final readonly class SaleInventoryOrchestrator
                 $this->logger->info('Decreasing stock for sale', [
                     'product_id' => $productId,
                     'warehouse_id' => $warehouseId,
-                    'quantity_removed' => $item->getCantidad(),
+                    'quantity_removed' => $item->getQty(),
                 ]);
 
                 $this->salesInventory->applyMovementFromSaleItem(

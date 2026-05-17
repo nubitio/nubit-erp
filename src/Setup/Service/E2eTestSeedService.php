@@ -405,7 +405,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setSubtotal('10.00')
             ->setTotal('10.00')
             ->setCurrency('PEN')
-            ->setExchangeRate('1.000000');
+            ->setExchangeRate('1.000000')
+            ->setLastModifiedAt(new \DateTime())
+            ->setSyncedAt(new \DateTime());
 
         $item = new SaleItemRecord();
         $item
@@ -416,7 +418,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setQty('1.000')
             ->setUnitPrice('10.0000')
             ->setGrossAmount('10.00')
-            ->setNetAmount('10.00');
+            ->setNetAmount('10.00')
+            ->setLastModifiedAt(new \DateTime())
+            ->setSyncedAt(new \DateTime());
 
         $this->entityManager->persist($sale);
         $this->entityManager->persist($item);

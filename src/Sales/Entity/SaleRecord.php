@@ -191,22 +191,58 @@ class SaleRecord
     #[ORM\Column(name: 'deleted_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $deletedAt = null;
 
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'sync_status', type: 'string', length: 20, options: ['default' => 'SYNCED'])]
+    private string $syncStatus = 'SYNCED';
+
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'local_uuid', type: 'string', length: 36, nullable: true)]
+    private ?string $localUuid = null;
+
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'idempotency_key', type: 'string', length: 36, nullable: true)]
+    private ?string $idempotencyKey = null;
+
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'synced_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $syncedAt = null;
+
+    #[ORM\Column(name: 'device_id', type: 'string', length: 64, nullable: true)]
+    private ?string $deviceId = null;
+
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'version_no', type: 'integer', options: ['default' => 1])]
+    private int $versionNo = 1;
+
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'last_modified_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastModifiedAt = null;
+
     /**
      * ORM-managed V2 items. Not in normalization group to avoid N+1.
      *
      * @var Collection<int, SaleItemRecord>
      */
-    #[ORM\OneToMany(targetEntity: SaleItemRecord::class, mappedBy: 'saleRecord')]
+    #[ORM\OneToMany(targetEntity: SaleItemRecord::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $saleItemRecords;
 
-    // ── Legacy pipeline items (transient, not ORM-mapped) ────────────────────
+    /**
+     * @var Collection<int, SalePayment>
+     */
+    #[ORM\OneToMany(targetEntity: SalePayment::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $salePayments;
 
     /**
-     * Pipeline-only SaleItem objects used by the write pipeline.
-     *
-     * @var Collection<int, SaleItem>
+     * @var Collection<int, SaleTax>
      */
-    private Collection $legacyItems;
+    #[ORM\OneToMany(targetEntity: SaleTax::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $saleTaxes;
+
+    /**
+     * @var Collection<int, SaleDiscount>
+     */
+    #[ORM\OneToMany(targetEntity: SaleDiscount::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $saleDiscounts;
 
     // ── Transient fields enriched by SaleV2Provider ──────────────────────────
 
@@ -274,7 +310,7 @@ class SaleRecord
     private array $payments = [];
 
     /**
-     * Items for write path (mapped to SaleItem entities by processor).
+     * Items for write path (mapped to SaleItemRecord entities by processor).
      * Not in read group; use /api/sales/{id}/items sub-resource.
      *
      * @var array<int, mixed>
@@ -317,7 +353,9 @@ class SaleRecord
     public function __construct()
     {
         $this->saleItemRecords = new ArrayCollection();
-        $this->legacyItems = new ArrayCollection();
+        $this->salePayments    = new ArrayCollection();
+        $this->saleTaxes       = new ArrayCollection();
+        $this->saleDiscounts   = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -325,6 +363,9 @@ class SaleRecord
     {
         if ($this->createdAt === null) {
             $this->createdAt = new \DateTime();
+        }
+        if ($this->lastModifiedAt === null) {
+            $this->lastModifiedAt = new \DateTime();
         }
     }
 
@@ -628,40 +669,182 @@ class SaleRecord
         return $this->saleItemRecords;
     }
 
-    /**
-     * Pipeline-only legacy SaleItem objects (transient).
-     *
-     * @return Collection<int, SaleItem>
-     */
-    public function getItems(): Collection
+    public function addSaleItemRecord(SaleItemRecord $item): static
     {
-        return $this->legacyItems;
-    }
-
-    /** Bridge alias for addLegacyItem() — keeps legacy call-sites working during Wave 2. */
-    public function addItem(SaleItem $item): static
-    {
-        return $this->addLegacyItem($item);
-    }
-
-    public function addLegacyItem(SaleItem $item): static
-    {
-        $this->legacyItems->add($item);
+        if (!$this->saleItemRecords->contains($item)) {
+            $this->saleItemRecords->add($item);
+            $item->setSaleRecord($this);
+        }
 
         return $this;
     }
 
+    // ── SalePayment collection ────────────────────────────────────────────────
+
     /**
-     * @param Collection<int, SaleItem> $items
+     * @return Collection<int, SalePayment>
      */
-    public function setLegacyItems(Collection $items): static
+    public function getSalePayments(): Collection
     {
-        $this->legacyItems = $items;
+        return $this->salePayments;
+    }
+
+    public function addSalePayment(SalePayment $payment): static
+    {
+        if (!$this->salePayments->contains($payment)) {
+            $this->salePayments->add($payment);
+            $payment->setSaleRecord($this);
+        }
 
         return $this;
     }
 
-    // ── Transient getters/setters ─────────────────────────────────────────────
+    public function clearSalePayments(): static
+    {
+        $this->salePayments->clear();
+
+        return $this;
+    }
+
+    // ── SaleTax collection ────────────────────────────────────────────────────
+
+    /**
+     * @return Collection<int, SaleTax>
+     */
+    public function getSaleTaxes(): Collection
+    {
+        return $this->saleTaxes;
+    }
+
+    public function addSaleTax(SaleTax $tax): static
+    {
+        if (!$this->saleTaxes->contains($tax)) {
+            $this->saleTaxes->add($tax);
+            $tax->setSaleRecord($this);
+        }
+
+        return $this;
+    }
+
+    public function clearSaleTaxes(): static
+    {
+        $this->saleTaxes->clear();
+
+        return $this;
+    }
+
+    // ── SaleDiscount collection ───────────────────────────────────────────────
+
+    /**
+     * @return Collection<int, SaleDiscount>
+     */
+    public function getSaleDiscounts(): Collection
+    {
+        return $this->saleDiscounts;
+    }
+
+    public function addSaleDiscount(SaleDiscount $discount): static
+    {
+        if (!$this->saleDiscounts->contains($discount)) {
+            $this->saleDiscounts->add($discount);
+            $discount->setSaleRecord($this);
+        }
+
+        return $this;
+    }
+
+    public function clearSaleDiscounts(): static
+    {
+        $this->saleDiscounts->clear();
+
+        return $this;
+    }
+
+    // ── Offline/sync field accessors ─────────────────────────────────────────
+
+    public function getSyncStatus(): string
+    {
+        return $this->syncStatus;
+    }
+
+    public function setSyncStatus(string $syncStatus): static
+    {
+        $this->syncStatus = $syncStatus;
+
+        return $this;
+    }
+
+    public function getLocalUuid(): ?string
+    {
+        return $this->localUuid;
+    }
+
+    public function setLocalUuid(?string $localUuid): static
+    {
+        $this->localUuid = $localUuid;
+
+        return $this;
+    }
+
+    public function getIdempotencyKey(): ?string
+    {
+        return $this->idempotencyKey;
+    }
+
+    public function setIdempotencyKey(?string $idempotencyKey): static
+    {
+        $this->idempotencyKey = $idempotencyKey;
+
+        return $this;
+    }
+
+    public function getSyncedAt(): ?DateTimeInterface
+    {
+        return $this->syncedAt;
+    }
+
+    public function setSyncedAt(?DateTimeInterface $syncedAt): static
+    {
+        $this->syncedAt = $syncedAt;
+
+        return $this;
+    }
+
+    public function getDeviceId(): ?string
+    {
+        return $this->deviceId;
+    }
+
+    public function setDeviceId(?string $deviceId): static
+    {
+        $this->deviceId = $deviceId;
+
+        return $this;
+    }
+
+    public function getVersionNo(): int
+    {
+        return $this->versionNo;
+    }
+
+    public function setVersionNo(int $versionNo): static
+    {
+        $this->versionNo = $versionNo;
+
+        return $this;
+    }
+
+    public function getLastModifiedAt(): ?DateTimeInterface
+    {
+        return $this->lastModifiedAt;
+    }
+
+    public function setLastModifiedAt(?DateTimeInterface $lastModifiedAt): static
+    {
+        $this->lastModifiedAt = $lastModifiedAt;
+
+        return $this;
+    }
 
     public function getTaxDocumentId(): ?string
     {

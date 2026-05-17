@@ -12,7 +12,7 @@ use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Entity\Warehouse;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Exception;
 
@@ -43,18 +43,18 @@ final readonly class InventoryServiceSalesInventoryPort implements SalesInventor
      */
     public function applyMovementFromSaleItem(
         SaleRecord $sale,
-        SaleItem $item,
+        SaleItemRecord $item,
         int $lineNo,
         bool $enforceNonNegativeStock = true,
     ): void {
         $warehouse = $sale->getAlmacen();
-        $product = $item->getProducto();
+        $product = $item->getProduct();
         if ($warehouse === null || $product === null) {
             return;
         }
 
         $movementType = $sale->getTipoId() === 1 ? StockMovementType::PURCHASE : StockMovementType::SALE;
-        $qtyOriginal = number_format((float) $item->getCantidad(), 6, '.', '');
+        $qtyOriginal = number_format((float) $item->getQty(), 6, '.', '');
         $qtyDeltaBase = $movementType === StockMovementType::PURCHASE ? $qtyOriginal : '-' . $qtyOriginal;
         $saleId = (string) ($sale->getId() ?? 'pending-sale');
 
