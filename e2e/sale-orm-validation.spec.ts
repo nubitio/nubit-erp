@@ -57,6 +57,14 @@ async function fillDxInput(page: Page, ariaLabel: string, value: string) {
   await input.pressSequentially(value, { delay: 30 });
 }
 
+function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
+  return page.getByRole('dialog', { name }).last();
+}
+
+function crudDialogBody(page: Page, name?: RegExp) {
+  return crudDialog(page, name).locator('.crud-dialog__body');
+}
+
 async function login(page: Page) {
   await page.goto(`${BASE_URL}/#/login`);
   await expect(page.locator('form.login-form')).toBeVisible({ timeout: 15000 });
@@ -537,7 +545,8 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await expect(page.getByRole('dialog', { name: /nuevo|new/i })).toBeVisible({ timeout: 12000 });
 
     // Select warehouse if visible
-    const almacenInput = page.locator('.dx-popup-content input[aria-label="Almacen"]').first();
+    const dialogBody = crudDialogBody(page, /nuevo|new/i);
+    const almacenInput = dialogBody.locator('input[aria-label="Almacen"]').first();
     if (await almacenInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       const val = await almacenInput.inputValue().catch(() => '');
       if (val.trim() === '') {
@@ -553,7 +562,8 @@ test.describe('Fase 3 — ORM migration validation', () => {
     // Add a note
     const ts = Date.now();
     const noteInput = page
-      .locator('.dx-popup-content textarea[aria-label="Nota"], .dx-popup-content input[aria-label="Nota"]')
+      .getByRole('dialog', { name: /nuevo|new/i })
+      .locator('textarea[aria-label="Nota"], input[aria-label="Nota"]')
       .first();
     await noteInput.fill(`ORM validation ${ts}`);
     await page.keyboard.press('Tab');
@@ -622,7 +632,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     expect(saleId, 'sale id must be returned').toBeTruthy();
 
     await expect(
-      page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last(),
+      saleDialog,
     ).toBeHidden({ timeout: 15000 });
 
     // Validate ORM fields via API

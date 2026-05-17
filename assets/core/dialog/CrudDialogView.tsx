@@ -109,9 +109,9 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
         rootClassName="crud-dialog-root"
         className={['crud-dialog', options.fitContent ? 'fit-content' : 'form-popup'].join(' ')}
         headerClassName="crud-dialog__header"
-        titleClassName="dx-popup-title"
-        bodyClassName="dx-popup-content"
-        footerClassName="crud-dialog__footer dx-popup-bottom dx-toolbar"
+        titleClassName="crud-dialog__title"
+        bodyClassName="crud-dialog__body"
+        footerClassName="crud-dialog__footer"
         footer={
           (options.footerVisible ?? true) ? (
             <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>

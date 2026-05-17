@@ -96,6 +96,14 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
   await btn.click();
 }
 
+function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
+  return page.getByRole('dialog', { name }).last();
+}
+
+function crudDialogBody(page: Page, name?: RegExp) {
+  return crudDialog(page, name).locator('.crud-dialog__body');
+}
+
 async function waitForPostLoginLanding(page: Page) {
   await page
     .waitForFunction(
@@ -333,9 +341,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     // ── Abrir formulario de nueva compra ─────────────────────────────────────
     await test.step('Abrir formulario de nueva compra', async () => {
       await clickGridToolbarButton(page, 'Nuevo');
-      await expect(
-        page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last(),
-      ).toBeVisible({ timeout: 12000 });
+      await expect(crudDialog(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
     });
 
     // ── Seleccionar almacén ───────────────────────────────────────────────────
@@ -351,7 +357,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await page.waitForTimeout(600);
 
       const almacenInput = page
-        .locator('.dx-popup-content input[aria-label="Almacen"]')
+        .locator('.crud-dialog__body input[aria-label="Almacen"]')
         .first();
       const almacenVisible = await almacenInput.isVisible({ timeout: 2000 }).catch(() => false);
 
@@ -360,7 +366,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         if (currentVal.trim().length === 0) {
           // Abrir dropdown manualmente
           const almacenContainer = page
-            .locator('.dx-popup-content .dx-selectbox')
+            .locator('.crud-dialog__body .dx-selectbox')
             .filter({ has: page.locator('input[aria-label="Almacen"]') })
             .first();
           const ddBtn = almacenContainer.locator('.dx-dropdowneditor-button').first();
@@ -417,7 +423,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     // ── Agregar fila de detalle ───────────────────────────────────────────────
     await test.step('Agregar fila de detalle con producto seed', async () => {
       const addRowBtn = page
-        .locator('.dx-popup-content .dx-button')
+        .locator('#form-detail-grid .dx-button')
         .filter({ hasText: 'Agregar una fila' })
         .first();
       await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
@@ -445,7 +451,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       // Esperar a que aparezca el input del editor inline
       const productInput = page
-        .locator('.dx-popup-content input[aria-label="Producto"], .dx-popup-content input.dx-texteditor-input[aria-autocomplete]')
+        .locator('.crud-dialog__body input[aria-label="Producto"], .crud-dialog__body input.dx-texteditor-input[aria-autocomplete]')
         .last();
       await productInput.waitFor({ state: 'visible', timeout: 5000 }).catch(async () => {
         // Fallback: click en el botón dropdown si existe
@@ -496,7 +502,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       // Hacer click fuera del grid para confirmar la fila insertada
       const noteInput = page
         .locator(
-          '.dx-popup-content textarea[aria-label="Glosa"], .dx-popup-content input[aria-label="Glosa"]',
+          '.crud-dialog__body textarea[aria-label="Glosa"], .crud-dialog__body input[aria-label="Glosa"]',
         )
         .first();
       const noteVisible = await noteInput.isVisible({ timeout: 2000 }).catch(() => false);
@@ -504,7 +510,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         await noteInput.click();
       } else {
         // Fallback: click en el título del popup
-        await page.locator('.dx-popup-title').last().click({ force: true });
+        await crudDialog(page, /nuevo|new/i).click({ force: true });
       }
 
       await insertedRow.waitFor({ state: 'hidden', timeout: 10000 });
@@ -535,10 +541,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await page.waitForTimeout(300);
 
       // Click en el botón Guardar del footer del popup
-      await page
-        .locator('button.dialog-save-button, .dx-popup-bottom .dx-button')
-        .last()
-        .click({ force: true });
+      await crudDialog(page, /nuevo|new/i).locator('button.dialog-save-button').click({ force: true });
 
       const createPurchaseResponse = await createPurchaseResponsePromise.catch(async (err) => {
         // eslint-disable-next-line no-console
@@ -575,7 +578,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       // El popup debe cerrarse tras guardar exitosamente
       await expect(
-        page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last(),
+        crudDialog(page, /nuevo|new/i),
       ).toBeHidden({ timeout: 15000 });
 
       await waitForDxLoadPanel(page);
