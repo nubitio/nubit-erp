@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@core/event/EventHook';
 
+import './DiscountDialog.scss';
+
 export enum DiscountDialogEvent {
   OPEN = 'discount:dialog:open',
   APPLY = 'discount:apply',
@@ -123,6 +125,7 @@ export const DiscountDialog = () => {
       title={title}
       onClose={() => setVisible(false)}
       maxWidth={420}
+      rootClassName="discount-dialog-root"
       showCloseButton={true}
       restoreFocus={false}
       footer={
