@@ -1,28 +1,13 @@
-import { MutableRefObject } from 'react';
 import { httpClient } from '../../shared/api/HttpClient';
 import { Field } from '../field/Field';
 import { FormEventNames } from '../event/EventTypes';
-import { serializeFormFields, serializeDetailRows } from './serializeFormData';
+import { serializeFormFields, serializeDetailRows, UploadedFileEntry } from './serializeFormData';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 
 export type { UploadedFileEntry as UploadedFile } from './serializeFormData';
 
 type FormRecord = Record<string, unknown>;
 type DeletePayload = { row: FormRecord };
-
-type SubmitFormRef = {
-  instance: () => {
-    option: (name: 'formData') => unknown;
-  };
-};
-
-type SubmitGridRef = {
-  instance: () => {
-    getDataSource: () => {
-      items: () => unknown[];
-    };
-  };
-};
 
 export interface UseFormSubmitOptions {
   url: string;
@@ -39,11 +24,12 @@ export interface UseFormSubmitOptions {
   onLoadingChange?: (loading: boolean) => void;
 }
 
-export interface UseFormSubmitRefs {
-  formRef: MutableRefObject<SubmitFormRef | null>;
-  gridRef: MutableRefObject<SubmitGridRef | null>;
-  uploadedFiles: MutableRefObject<{ name: string; iri: string }[]>;
-  isEdit: MutableRefObject<boolean>;
+export interface UseFormSubmitAccessors {
+  getDetailRows: () => FormRecord[];
+  getFieldValue: (field: string) => unknown;
+  getFormData: () => FormRecord;
+  getUploadedFiles: () => UploadedFileEntry[];
+  isEditMode: () => boolean;
 }
 
 export type EmitFn = <T>(name: string, payload?: T) => void;
@@ -54,13 +40,11 @@ export type EmitFn = <T>(name: string, payload?: T) => void;
  */
 export const useFormSubmit = (
   options: UseFormSubmitOptions,
-  refs: UseFormSubmitRefs,
+  accessors: UseFormSubmitAccessors,
   emit: EmitFn,
-  getFieldValueFn: (field: string) => unknown,
   validateFn: () => boolean,
 ) => {
   const { t } = useCoreTranslation();
-  const { formRef, gridRef, uploadedFiles, isEdit } = refs;
 
   const getIdField = () => options.fields.find((f) => f.isIdentity)?.name ?? '';
   const getDetailIdField = () => options.detailFields?.find((f) => f.isIdentity)?.name ?? '';
@@ -80,8 +64,8 @@ export const useFormSubmit = (
   /** Serialize main form fields for submission */
   const serializeFields = (rawData: FormRecord): FormRecord => {
     return serializeFormFields(rawData, options.fields, {
-      uploadedFiles: uploadedFiles.current,
-      getFieldValue: getFieldValueFn,
+      uploadedFiles: accessors.getUploadedFiles(),
+      getFieldValue: accessors.getFieldValue,
       format: options.format,
     });
   };
@@ -90,12 +74,11 @@ export const useFormSubmit = (
   const appendDetailRows = (formData: FormRecord): void => {
     if (!options.detailFields) return;
 
-    const items = (gridRef.current?.instance().getDataSource().items() ?? []) as FormRecord[];
     formData[options.detailPropertyName] = serializeDetailRows(
-      items,
+      accessors.getDetailRows(),
       options.detailFields,
       getDetailIdField(),
-      isEdit.current,
+      accessors.isEditMode(),
     );
   };
 
@@ -107,7 +90,7 @@ export const useFormSubmit = (
     if (loadingEvent) emit(loadingEvent, true);
     options.onLoadingChange?.(true);
 
-    const rawData = (formRef.current?.instance().option('formData') ?? {}) as FormRecord;
+    const rawData = accessors.getFormData();
     const formData = serializeFields(rawData);
     appendDetailRows(formData);
 
@@ -123,7 +106,7 @@ export const useFormSubmit = (
       options.onLoadingChange?.(false);
     };
 
-    const request = isEdit.current
+    const request = accessors.isEditMode()
       ? httpClient.patch(`${options.url}/${id}`, payload)
       : httpClient.post(options.url, payload);
 

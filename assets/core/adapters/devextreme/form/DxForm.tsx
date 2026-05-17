@@ -13,6 +13,10 @@ import { DxFormLayoutRenderer } from './DxFormLayoutRenderer';
 import { useDxFormObservers } from './useDxFormObservers';
 import { useDxFormRuntime } from './useDxFormRuntime';
 import { useDxFormFieldRenderer } from './useDxFormFieldRenderer';
+import { useDxFormSubmitAccessors } from './useDxFormSubmitAccessors';
+import { useDxFormValidationAccessors } from './useDxFormValidationAccessors';
+import { useDxFormComputedValuesAccessors } from './useDxFormComputedValuesAccessors';
+import { useDxFormSectionOptionsAccessors } from './useDxFormSectionOptionsAccessors';
 
 export type DxFormOptions = FormViewOptions;
 
@@ -32,11 +36,15 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     ? t('form.detailRequired')
     : t('form.detailEmpty');
 
+  const validationAccessors = useDxFormValidationAccessors({ formRef, gridRef });
+  const submitAccessors = useDxFormSubmitAccessors({ formRef, gridRef, isEdit, uploadedFiles });
+  const computedValuesAccessors = useDxFormComputedValuesAccessors(formRef);
+  const sectionOptionsAccessors = useDxFormSectionOptionsAccessors(formRef);
+
   const validate = useFormValidation({
+    accessors: validationAccessors,
     detailFields: options.detailFields,
     detailNoDataText,
-    formRef,
-    gridRef,
     requiredDetail: options.requiredDetail,
     validationErrorText: t('form.validationError'),
   });
@@ -56,17 +64,21 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       onDeleteError: options.onDeleteError,
       onLoadingChange: options.onLoadingChange,
     },
-    { formRef, gridRef, uploadedFiles, isEdit },
+    submitAccessors,
     emit,
-    getFieldValue,
     validate,
   );
 
   const renderFields = useDxFormFieldRenderer(options.editable, uploadedFiles, formRef);
 
-  useFormSectionOptions(options.formLayout, formRef);
+  useFormSectionOptions(options.formLayout, sectionOptionsAccessors);
 
-  useFormComputedValues({ computedFieldNames, computedValues, formRef, onFieldDataChanged });
+  useFormComputedValues({
+    accessors: computedValuesAccessors,
+    computedFieldNames,
+    computedValues,
+    onFieldDataChanged,
+  });
 
   const api = useDxFormApi({ formRef, gridRef, isEdit }, options.fields);
   // Destructure methods used by internal observers
