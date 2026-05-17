@@ -22,6 +22,7 @@ import type { FormHandle } from '@core/form/FormHandle';
 type FormRecord = Record<string, unknown>;
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormRecord & { row?: FormRecord };
+type PendingAddPayload = { payload: EventRowPayload | undefined };
 
 export interface DxFormOptions {
   className?: string;
@@ -145,6 +146,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const gridRef = useRef<DataGridRef | null>(null);
   const uploadedFiles = useRef<UploadedFile[]>([]);
   const isEdit = useRef<boolean>(false);
+  const pendingAddPayload = useRef<PendingAddPayload | null>(null);
   const data = useRef<DataSource>(
     new DataSource({
       store: new ArrayStore({
@@ -244,6 +246,40 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
   const getData = (rawData: FormRecord) => normalizeFormData(rawData, options.fields);
 
+  const applyAddPayload = (payload: EventRowPayload | undefined) => {
+    const form = formRef.current?.instance();
+    if (!form) return false;
+
+    uploadedFiles.current = [];
+    const store = data.current?.store() as ArrayStore;
+    store.clear();
+    data.current?.reload();
+    if (payload) {
+      const row = getData(payload);
+      form.option('formData', row);
+      options.onFieldDataChanged?.(row);
+      if (Array.isArray(payload[detailPropertyName])) {
+        setDetailData(payload[detailPropertyName] as FormRecord[]);
+      }
+    } else {
+      const row = buildEmptyRow(options.fields);
+      form.option('formData', row);
+      options.onFieldDataChanged?.(row);
+    }
+    isEdit.current = false;
+    return true;
+  };
+
+  const flushPendingAddPayload = () => {
+    const pending = pendingAddPayload.current;
+    if (!pending) return;
+    if (applyAddPayload(pending.payload)) {
+      pendingAddPayload.current = null;
+      return;
+    }
+    window.setTimeout(flushPendingAddPayload, 0);
+  };
+
   const setupObservers = () => {
     on(FORM_ERRORS_EVENT, (errors: FormError[]) => {
       toast(t('form.validationError'), 'error');
@@ -264,23 +300,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
     if (options.events?.ADD)
       on(options.events.ADD, (payload: EventRowPayload | undefined) => {
-        uploadedFiles.current = [];
-        const store = data.current?.store() as ArrayStore;
-        store.clear();
-        data.current?.reload();
-        if (payload) {
-          const row = getData(payload);
-          formRef.current?.instance().option('formData', row);
-          options.onFieldDataChanged?.(row);
-          if (Array.isArray(payload[detailPropertyName])) {
-            setDetailData(payload[detailPropertyName] as FormRecord[]);
-          }
-        } else {
-          const row = buildEmptyRow(options.fields);
-          formRef.current?.instance().option('formData', row);
-          options.onFieldDataChanged?.(row);
-        }
-        isEdit.current = false;
+        if (applyAddPayload(payload)) return;
+        pendingAddPayload.current = { payload };
+        window.setTimeout(flushPendingAddPayload, 0);
       });
 
     if (options.events?.EDIT)
@@ -340,6 +362,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
   useEffect(() => {
     setupObserversRef.current();
+    window.setTimeout(flushPendingAddPayload, 0);
   }, []);
 
   useEffect(() => {

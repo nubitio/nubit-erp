@@ -147,10 +147,7 @@ async function clickDialogButton(page: Page, buttonText: string) {
     Cancelar: /^(Cancelar|Cancel)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page
-    .locator('.dx-popup-bottom .dx-button, .dx-overlay-content .dx-popup-bottom .dx-button')
-    .filter({ hasText: text })
-    .first();
+  const btn = page.getByRole('dialog').last().getByRole('button', { name: text });
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -779,7 +776,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Abrir formulario de nueva venta', async () => {
       await clickGridToolbarButton(page, 'Nuevo');
-      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last()).toBeVisible({
+      await expect(page.getByRole('dialog', { name: /nuevo|new/i })).toBeVisible({
         timeout: 12000,
       });
     });
@@ -788,11 +785,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // The Almacen field renders in the form (visibleOnForm defaults to true).
       // We explicitly select the first warehouse to avoid async autoSelectIfSingle timing issues.
       // Try multiple selector strategies to find the Almacen dropdown.
-      const almacenDropdownBtn = page.locator(
-        '.dx-popup-content .dx-selectbox[aria-label="Almacen"] .dx-dropdowneditor-button,' +
-        '.dx-popup-content input[aria-label="Almacen"] ~ .dx-dropdowneditor-button,' +
-        '.dx-popup-content .dx-field-item-label-text:has-text("Almacen") ~ .dx-field-item-content .dx-dropdowneditor-button'
-      ).first();
+      const almacenDropdownBtn = page
+        .locator(
+          '.dx-popup-content .dx-selectbox[aria-label="Almacen"] .dx-dropdowneditor-button,' +
+            '.dx-popup-content input[aria-label="Almacen"] ~ .dx-dropdowneditor-button,' +
+            '.dx-popup-content .dx-field-item-label-text:has-text("Almacen") ~ .dx-field-item-content .dx-dropdowneditor-button',
+        )
+        .first();
 
       // Simpler: find the DX select widget that contains the label "Almacen"
       const almacenInput = page.locator('.dx-popup-content input[aria-label="Almacen"]').first();
@@ -800,20 +799,27 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       if (almacenVisible) {
         const currentVal = await almacenInput.inputValue().catch(() => '');
-        if (currentVal.trim().length === 0) {
+        const renderedValue = await almacenInput
+          .locator('xpath=ancestor::*[contains(@class, "dx-texteditor")][1]')
+          .textContent()
+          .catch(() => '');
+        if (currentVal.trim().length === 0 && (renderedValue ?? '').trim().length === 0) {
           // Click the input to focus, then open the dropdown via ArrowDown or dropdown button
           await almacenInput.click();
           await page.keyboard.press('ArrowDown');
           const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
           await firstOption.waitFor({ state: 'visible', timeout: 8000 });
-          await firstOption.click();
+          await page.keyboard.press('Enter');
           await page.waitForTimeout(300);
         }
       } else {
         // Try finding by label text in the form item
-        const almacenItem = page.locator('.dx-popup-content .dx-field-item').filter({
-          hasText: 'Almacen',
-        }).first();
+        const almacenItem = page
+          .locator('.dx-popup-content .dx-field-item')
+          .filter({
+            hasText: 'Almacen',
+          })
+          .first();
         const itemVisible = await almacenItem.isVisible({ timeout: 2000 }).catch(() => false);
         if (itemVisible) {
           const ddBtn = almacenItem.locator('.dx-dropdowneditor-button').first();
@@ -830,13 +836,15 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Agregar producto al detalle de la venta', async () => {
       const noteInput = page
-        .locator('.dx-popup-content textarea[aria-label="Nota"], .dx-popup-content input[aria-label="Nota"]')
+        .locator(
+          '.dx-popup-content textarea[aria-label="Nota"], .dx-popup-content input[aria-label="Nota"]',
+        )
         .first();
       await noteInput.fill(`Venta módulo ventas ${ts}`);
       await page.keyboard.press('Tab');
 
       const addRowBtn = page
-        .locator('.dx-popup-content .dx-button')
+        .locator('#form-detail-grid .dx-button')
         .filter({ hasText: 'Agregar una fila' })
         .first();
       await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
@@ -850,7 +858,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
         }
       }
       // Wait for any open overlays (e.g. Almacen dropdown) to fully close before interacting with the grid
-      await page.locator('.dx-overlay-content .dx-list-item').first().waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      await page
+        .locator('.dx-overlay-content .dx-list-item')
+        .first()
+        .waitFor({ state: 'hidden', timeout: 5000 })
+        .catch(() => {});
 
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -867,7 +879,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await productDropdownBtn.click();
       } else {
         // Fallback: click the input to focus it
-        const productInput = productCell.locator('input[role="combobox"], input.dx-texteditor-input').last();
+        const productInput = productCell
+          .locator('input[role="combobox"], input.dx-texteditor-input')
+          .last();
         await productInput.waitFor({ state: 'visible', timeout: 5000 });
         await productInput.click({ clickCount: 3 });
       }
@@ -883,7 +897,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
       );
 
       // Type to filter for the seed product
-      const productInput = productCell.locator('input[role="combobox"], input.dx-texteditor-input').last();
+      const productInput = productCell
+        .locator('input[role="combobox"], input.dx-texteditor-input')
+        .last();
       await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
       salesModuleProductName = SEED_PRODUCT_NAME;
 
@@ -891,7 +907,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         hasText: SEED_PRODUCT_NAME,
       });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
-      await seedProductOption.first().click();
+      await page.keyboard.press('Enter');
 
       // Tab through remaining cells (qty, price) to trigger DX cell commit,
       // then click outside the grid to commit the entire inserted row.
@@ -924,27 +940,27 @@ test.describe('Happy Path — flujo completo de venta', () => {
       });
 
       const createSaleResponsePromise = page.waitForResponse(
-        (response) => /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+        (response) =>
+          /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
         { timeout: 15000 },
       );
 
-      const saleDialog = page.getByRole('dialog', { name: /Nuevo|New/i }).last();
+      const saleDialog = page
+        .getByRole('dialog', { name: /Nuevo|New/i })
+        .filter({ has: page.locator('#form-detail-grid') });
 
-      // Ensure the detail grid has no pending edit data before saving.
-      // DX may keep hasEditData()=true briefly after the row visually commits.
-      // Pressing Escape on the grid explicitly cancels any lingering edit state.
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+      // The row has already been committed by blurring the grid in the previous step.
+      // Do not press Escape here: the CRUD shell no longer uses a DevExtreme popup,
+      // and Escape can be captured by nested widgets as a close/cancel command.
 
       // Watch for a toast that would indicate silent validation failure
       const toastLocator = page.locator('.dx-toast-message, [class*="toast"]').first();
-      const toastPromise = toastLocator.waitFor({ state: 'visible', timeout: 3000 })
+      const toastPromise = toastLocator
+        .waitFor({ state: 'visible', timeout: 3000 })
         .then(() => toastLocator.textContent())
         .catch(() => null);
 
-      // Click the save button — use page-level locator since DX renders toolbar
-      // items outside the dialog's DOM subtree in some versions.
-      await page.locator('button.dialog-save-button, .dx-popup-bottom .dx-button').last().click({ force: true });
+      await saleDialog.locator('button.dialog-save-button').click({ force: true });
 
       const toastText = await toastPromise;
       if (toastText) {
@@ -968,24 +984,32 @@ test.describe('Happy Path — flujo completo de venta', () => {
       salesModuleSaleId = createdSale.id ?? null;
       expect(salesModuleSaleId, 'la respuesta de /api/sales debe incluir id').toBeTruthy();
 
-      await expect(page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last()).toBeHidden({
+      await expect(
+        page
+          .locator('.dx-popup-title')
+          .filter({ hasText: /nuevo|new/i })
+          .last(),
+      ).toBeHidden({
         timeout: 15000,
       });
       await waitForDxLoadPanel(page);
 
-      const persistedSale = await page.evaluate(async ({ baseUrl, saleId }) => {
-        // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
-        const saleResponse = await fetch(`${baseUrl}/api/sales/${saleId}`);
-        const sale = await saleResponse.json();
-        // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
-        const itemsResponse = await fetch(`${baseUrl}/api/sales/${saleId}/items`);
-        const items = await itemsResponse.json();
-        return {
-          saleStatus: sale.status,
-          grandTotal: sale.grandTotal,
-          items,
-        };
-      }, { baseUrl: BASE_URL, saleId: salesModuleSaleId! });
+      const persistedSale = await page.evaluate(
+        async ({ baseUrl, saleId }) => {
+          // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
+          const saleResponse = await fetch(`${baseUrl}/api/sales/${saleId}`);
+          const sale = await saleResponse.json();
+          // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
+          const itemsResponse = await fetch(`${baseUrl}/api/sales/${saleId}/items`);
+          const items = await itemsResponse.json();
+          return {
+            saleStatus: sale.status,
+            grandTotal: sale.grandTotal,
+            items,
+          };
+        },
+        { baseUrl: BASE_URL, saleId: salesModuleSaleId! },
+      );
 
       expect(persistedSale.saleStatus).toBe('COMPLETED');
       expect(Number(persistedSale.grandTotal ?? 0)).toBeGreaterThan(0);
@@ -1236,19 +1260,21 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Wait for DX to process the cell update and for React to re-render
       // the calculateCellValue for the 'Diferencia' column (which updates differenceData state).
       // We wait for the Diferencia cell to have a non-empty value rather than a fixed timeout.
-      await page.waitForFunction(
-        () => {
-          const row = document.querySelector('.dx-data-row');
-          const cells = row?.querySelectorAll('td');
-          // Diferencia is column index 3 (0=paymentMethod, 1=expected, 2=counted, 3=difference, 4=note)
-          const diffCell = cells?.[3];
-          return diffCell && diffCell.textContent?.trim() !== '';
-        },
-        undefined,
-        { timeout: 8000 },
-      ).catch(() => {
-        // If we can't confirm differenceData loaded, wait a fixed amount as fallback
-      });
+      await page
+        .waitForFunction(
+          () => {
+            const row = document.querySelector('.dx-data-row');
+            const cells = row?.querySelectorAll('td');
+            // Diferencia is column index 3 (0=paymentMethod, 1=expected, 2=counted, 3=difference, 4=note)
+            const diffCell = cells?.[3];
+            return diffCell && diffCell.textContent?.trim() !== '';
+          },
+          undefined,
+          { timeout: 8000 },
+        )
+        .catch(() => {
+          // If we can't confirm differenceData loaded, wait a fixed amount as fallback
+        });
       await page.waitForTimeout(500);
     });
 
@@ -1302,7 +1328,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Verificación best-effort del estado final en dashboard.
       await waitForDxLoadPanel(page);
       await expect(
-        page.locator('.dx-data-row').filter({ hasText: /cerrada|abierta|ci e2e branch|caja/i }).first(),
+        page
+          .locator('.dx-data-row')
+          .filter({ hasText: /cerrada|abierta|ci e2e branch|caja/i })
+          .first(),
       ).toBeVisible({ timeout: 15000 });
     });
   });

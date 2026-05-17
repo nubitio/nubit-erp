@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-// eslint-disable-next-line no-restricted-imports -- VoidDialog is an injection point for AppDialog from the sale feature
-import { AppDialog } from '@app/shell/components/AppDialog';
+import { AppDialog } from '@shared/ui/app-dialog';
 import { useScreenSize } from '@utils/media-query';
 import './VoidDialog.scss';
 
@@ -95,11 +94,7 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
       </div>
 
       <div className="form-popup-buttons-container">
-        <button
-          type="button"
-          className="app-button app-button--secondary"
-          onClick={handleCancel}
-        >
+        <button type="button" className="app-button app-button--secondary" onClick={handleCancel}>
           Cancelar
         </button>
         <button

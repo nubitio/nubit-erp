@@ -534,9 +534,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
       .first();
     await newBtn.waitFor({ state: 'visible', timeout: 10000 });
     await newBtn.click();
-    await expect(
-      page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i }).last(),
-    ).toBeVisible({ timeout: 12000 });
+    await expect(page.getByRole('dialog', { name: /nuevo|new/i })).toBeVisible({ timeout: 12000 });
 
     // Select warehouse if visible
     const almacenInput = page.locator('.dx-popup-content input[aria-label="Almacen"]').first();
@@ -547,7 +545,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
         await page.keyboard.press('ArrowDown');
         const firstOpt = page.locator('.dx-overlay-content .dx-list-item').first();
         await firstOpt.waitFor({ state: 'visible', timeout: 8000 });
-        await firstOpt.click();
+        await page.keyboard.press('Enter');
         await page.waitForTimeout(300);
       }
     }
@@ -562,7 +560,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
 
     // Add a row in the detail grid
     const addRowBtn = page
-      .locator('.dx-popup-content .dx-button')
+      .locator('#form-detail-grid .dx-button')
       .filter({ hasText: 'Agregar una fila' })
       .first();
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
@@ -599,7 +597,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
       .locator('.dx-overlay-content .dx-list-item')
       .filter({ hasText: SEED_PRODUCT_NAME });
     await seedOption.first().waitFor({ state: 'visible', timeout: 15000 });
-    await seedOption.first().click();
+    await page.keyboard.press('Enter');
 
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
@@ -612,9 +610,10 @@ test.describe('Fase 3 — ORM migration validation', () => {
       (r) => /\/api\/sales(?:\?.*)?$/.test(r.url()) && r.request().method() === 'POST',
       { timeout: 15000 },
     );
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-    await page.locator('button.dialog-save-button, .dx-popup-bottom .dx-button').last().click({ force: true });
+    const saleDialog = page
+      .getByRole('dialog', { name: /nuevo|new/i })
+      .filter({ has: page.locator('#form-detail-grid') });
+    await saleDialog.locator('button.dialog-save-button').click({ force: true });
 
     const saleResponse = await saleResponsePromise;
     expect(saleResponse.ok(), 'POST /api/sales must return 2xx').toBeTruthy();

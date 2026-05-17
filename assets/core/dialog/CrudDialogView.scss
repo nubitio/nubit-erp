@@ -1,0 +1,90 @@
+.crud-dialog-root {
+  // DevExtreme editors inside the still-DevExtreme form render dropdown overlays
+  // outside the dialog subtree. Keep the CRUD dialog below those overlays until
+  // the form renderer is replaced too.
+  z-index: 2500;
+}
+
+.dx-dropdowneditor-overlay {
+  z-index: 3000 !important;
+}
+
+.dx-dropdowneditor-overlay .dx-overlay-content,
+.dx-popover-wrapper .dx-overlay-content {
+  z-index: 3001 !important;
+}
+
+.crud-dialog-editor-overlay {
+  z-index: 3000 !important;
+}
+
+.crud-dialog {
+  overflow: visible;
+
+  .crud-dialog__header {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .dx-popup-title {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .app-dialog__body {
+    overflow: visible;
+    position: relative;
+  }
+
+  &.fit-content {
+    .app-dialog__body {
+      padding: 0;
+
+      .view-wrapper {
+        padding: 0;
+        margin: 0 !important;
+      }
+    }
+  }
+}
+
+.crud-dialog__footer {
+  .form-popup-buttons-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px !important;
+  }
+
+  .button-indicator {
+    display: inline-block;
+    height: 1em;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    width: 1em;
+  }
+}
+
+.crud-dialog__loading {
+  align-items: center;
+  background: rgb(0 0 0 / 28%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 3;
+}
+
+.crud-dialog__loading-indicator {
+  animation: crud-dialog-spin 700ms linear infinite;
+  border: 3px solid rgb(255 255 255 / 40%);
+  border-radius: 999px;
+  border-top-color: var(--accent-color, #0e7a50);
+  height: 28px;
+  width: 28px;
+}
+
+@keyframes crud-dialog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

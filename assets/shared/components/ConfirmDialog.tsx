@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-restricted-imports
-import { AppDialog } from '@app/shell/components/AppDialog';
+import { AppDialog } from '@shared/ui/app-dialog';
 import { useTranslation } from 'react-i18next';
 
 export interface ConfirmDialogProps {
@@ -43,7 +42,12 @@ export function ConfirmDialog({
       role="alertdialog"
       footer={
         <>
-          <button type="button" className="app-button app-button--secondary" onClick={onCancel} autoFocus>
+          <button
+            type="button"
+            className="app-button app-button--secondary"
+            onClick={onCancel}
+            autoFocus
+          >
             {resolvedCancelLabel}
           </button>
           <button type="button" className={confirmClass} onClick={onConfirm}>

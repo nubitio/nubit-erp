@@ -1,7 +1,6 @@
 import React from 'react';
 
-// eslint-disable-next-line no-restricted-imports -- SalePrintPreviewPopup is an injection point for AppDialog from the sales feature
-import { AppDialog } from '@app/shell/components/AppDialog';
+import { AppDialog } from '@shared/ui/app-dialog';
 import './SalePrintPreviewPopup.scss';
 import { useScreenSize } from '@utils/media-query';
 
@@ -45,11 +44,7 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
         >
           Cerrar
         </button>
-        <button
-          type="button"
-          className="app-button app-button--primary"
-          onClick={props.onPositive}
-        >
+        <button type="button" className="app-button app-button--primary" onClick={props.onPositive}>
           Ver PDF
         </button>
       </div>

@@ -49,6 +49,10 @@ export const buildField = (
         paginate: true,
         pageSize: 10,
       },
+      dropDownOptions: {
+        container: 'body',
+        wrapperAttr: { class: 'crud-dialog-editor-overlay' },
+      },
       valueExpr: field.valueField,
       displayExpr: field.textField,
       searchEnabled: field.searchEnabled,
