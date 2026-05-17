@@ -1,3 +1,4 @@
-export { DxForm as FormView, FORM_EVENTS } from '@core/adapters/devextreme/form/DxForm';
-export type { DxFormOptions as FormViewOptions } from '@core/adapters/devextreme/form/DxForm';
+export { DxForm as FormView } from '@core/adapters/devextreme/form/DxForm';
+export { FORM_EVENTS } from './FormEvents';
 export type { FormHandle } from './FormHandle';
+export type { FormViewOptions } from './FormViewOptions';

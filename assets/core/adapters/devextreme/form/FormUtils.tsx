@@ -15,7 +15,8 @@ import {
 } from 'devextreme-react/form';
 import { MutableRefObject } from 'react';
 import { dispatch } from '@core/event/EventHook';
-import { FORM_EVENTS, UploadedFile } from './DxForm';
+import { FORM_EVENTS } from '@core/form/FormEvents';
+import type { UploadedFile } from './DxForm';
 import { ValidationRule } from '@core/field/ValidationRule';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { Template } from 'devextreme-react/core/template';
