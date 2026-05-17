@@ -138,8 +138,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
 }
 
 /**
- * Hace click en un botón del popup/dialog DX (footer toolbar).
- * Los botones del footer del DxDialog tienen .dx-popup-bottom .dx-toolbar .dx-button
+ * Hace click en un botón del diálogo CRUD visible.
  */
 async function clickDialogButton(page: Page, buttonText: string) {
   const alternatives: Record<string, RegExp> = {
@@ -150,6 +149,14 @@ async function clickDialogButton(page: Page, buttonText: string) {
   const btn = page.getByRole('dialog').last().getByRole('button', { name: text });
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
+}
+
+function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
+  return page.getByRole('dialog', { name }).last();
+}
+
+function crudDialogBody(page: Page, name?: RegExp) {
+  return crudDialog(page, name).locator('.crud-dialog__body');
 }
 
 /**
@@ -785,16 +792,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // The Almacen field renders in the form (visibleOnForm defaults to true).
       // We explicitly select the first warehouse to avoid async autoSelectIfSingle timing issues.
       // Try multiple selector strategies to find the Almacen dropdown.
-      const almacenDropdownBtn = page
-        .locator(
-          '.dx-popup-content .dx-selectbox[aria-label="Almacen"] .dx-dropdowneditor-button,' +
-            '.dx-popup-content input[aria-label="Almacen"] ~ .dx-dropdowneditor-button,' +
-            '.dx-popup-content .dx-field-item-label-text:has-text("Almacen") ~ .dx-field-item-content .dx-dropdowneditor-button',
-        )
-        .first();
+      const dialogBody = crudDialogBody(page, /nuevo|new/i);
 
       // Simpler: find the DX select widget that contains the label "Almacen"
-      const almacenInput = page.locator('.dx-popup-content input[aria-label="Almacen"]').first();
+      const almacenInput = dialogBody.locator('input[aria-label="Almacen"]').first();
       const almacenVisible = await almacenInput.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (almacenVisible) {
@@ -815,7 +816,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       } else {
         // Try finding by label text in the form item
         const almacenItem = page
-          .locator('.dx-popup-content .dx-field-item')
+          .locator('.dx-field-item')
           .filter({
             hasText: 'Almacen',
           })
@@ -836,9 +837,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Agregar producto al detalle de la venta', async () => {
       const noteInput = page
-        .locator(
-          '.dx-popup-content textarea[aria-label="Nota"], .dx-popup-content input[aria-label="Nota"]',
-        )
+        .getByRole('dialog', { name: /nuevo|new/i })
+        .locator('textarea[aria-label="Nota"], input[aria-label="Nota"]')
         .first();
       await noteInput.fill(`Venta módulo ventas ${ts}`);
       await page.keyboard.press('Tab');
@@ -985,10 +985,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       expect(salesModuleSaleId, 'la respuesta de /api/sales debe incluir id').toBeTruthy();
 
       await expect(
-        page
-          .locator('.dx-popup-title')
-          .filter({ hasText: /nuevo|new/i })
-          .last(),
+        saleDialog,
       ).toBeHidden({
         timeout: 15000,
       });
@@ -1062,16 +1059,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await clickGridToolbarButton(page, 'Nuevo');
       // DxDialog opens in ADD mode with title 'Nuevo' (DxDialog.tsx line 65: payload?.title ?? 'Nuevo')
       // The title prop "Movimiento de caja" in CashMovements.tsx is the initial state only.
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i });
-      await popup.waitFor({ state: 'visible', timeout: 12000 });
+      await expect(crudDialog(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
     });
 
     await test.step('Llenar campos del movimiento', async () => {
+      const dialogBody = crudDialogBody(page, /nuevo|new/i);
       // cashMovementsFields: name('category').label('Categoría') — DxSelectBox ENTITY required
       // Requiere categorías de movimiento en BD (seed de datos de prueba)
       await test.step('Seleccionar categoría de movimiento', async () => {
         const categoryWidget = page
-          .locator('.dx-popup-content .dx-field-item')
+          .locator('.crud-dialog__body .dx-field-item')
           .filter({ has: page.locator('text=Categoría') })
           .locator('.dx-selectbox, .dx-lookup')
           .first();
@@ -1080,7 +1077,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
           await categoryWidget.click({ timeout: 5000 });
         } catch {
           await page
-            .locator('.dx-popup-content input[aria-label="Categoría"]')
+            .locator('.crud-dialog__body input[aria-label="Categoría"]')
             .click({ timeout: 5000 });
         }
 
@@ -1099,21 +1096,20 @@ test.describe('Happy Path — flujo completo de venta', () => {
       createdMovementRowText = movementDescription; // guardamos para el paso 8
 
       // aria-label generado automáticamente por FormUtils (label sin acento tal como está en código)
-      const descInput = page.locator('.dx-popup-content [aria-label="Descripcion"]').first();
+      const descInput = dialogBody.locator('[aria-label="Descripcion"]').first();
       await descInput.waitFor({ state: 'visible', timeout: 6000 });
       await descInput.fill(movementDescription);
       await page.keyboard.press('Tab');
 
       // cashMovementsFields: name('amount').label('Monto') — FieldType.CURRENCY required
-      await page.locator('.dx-popup-content input[aria-label="Monto"]').fill('50');
+      await dialogBody.locator('input[aria-label="Monto"]').fill('50');
       await page.keyboard.press('Tab');
     });
 
     await test.step('Guardar movimiento y verificar en la lista', async () => {
       await clickDialogButton(page, 'Guardar');
 
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /nuevo|new/i });
-      await popup.waitFor({ state: 'hidden', timeout: 15000 });
+      await expect(crudDialog(page, /nuevo|new/i)).toBeHidden({ timeout: 15000 });
       await waitForDxLoadPanel(page);
 
       // Verificar que el movimiento aparece en el grid
@@ -1157,7 +1153,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Retry loop: click Editar and wait for popup — retry up to 3 times if it doesn't open.
       // This guards against the DX focusedRowChanged race condition where the toolbar receives
       // the click before the component state reflects the newly-selected row.
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar|edit/i });
+      const popup = crudDialog(page, /editar|edit/i);
       let opened = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         await clickGridToolbarButton(page, 'Editar');
@@ -1194,15 +1190,14 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Modificar el monto y guardar', async () => {
       // Cambiar el monto de 50 a 75
-      const montoInput = page.locator('.dx-popup-content input[aria-label="Monto"]');
+      const montoInput = crudDialogBody(page, /editar|edit/i).locator('input[aria-label="Monto"]');
       await montoInput.waitFor({ state: 'visible', timeout: 6000 });
       await montoInput.click({ clickCount: 3 });
       await montoInput.fill('75');
       await page.keyboard.press('Tab');
 
       await clickDialogButton(page, 'Guardar');
-      const popup = page.locator('.dx-popup-title').filter({ hasText: /editar|edit/i });
-      await popup.waitFor({ state: 'hidden', timeout: 15000 });
+      await expect(crudDialog(page, /editar|edit/i)).toBeHidden({ timeout: 15000 });
       await waitForDxLoadPanel(page);
     });
 
@@ -1371,7 +1366,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 //    El test usa `td.col-counted-amount` en lugar de `td.nth(1)`.
 //
 // ✅ 7. CAMPO Descripcion en cashMovementsFields:
-//    Con aria-label automático de FormUtils el selector `.dx-popup-content [aria-label="Descripcion"]`
+//    Con aria-label automático de FormUtils el selector `[aria-label="Descripcion"]`
 //    es ahora fiable. El label sigue sin acento (tal como está en el código fuente).
 //
 // =============================================================================
