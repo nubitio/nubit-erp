@@ -22,13 +22,15 @@
   }
 }
 
-.form-popup-buttons-container {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border-color, #e0e0e0);
-  // Sit above iframe
-  position: relative;
-  z-index: 1;
+.sale-print-preview-popup {
+  .form-popup-buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+    // Sit above iframe
+    position: relative;
+    z-index: 1;
+  }
 }
