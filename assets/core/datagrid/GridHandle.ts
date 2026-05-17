@@ -1,4 +1,4 @@
-import type { DxFilterRule } from '../field/FilterRule';
+import type { FilterRule } from '../field/FilterRule';
 
 export interface GridHandle {
   showLoading: (message?: string) => void;
@@ -11,5 +11,5 @@ export interface GridHandle {
   getSelectedRowKeys: () => unknown[];
   getSelectedRows: () => Record<string, unknown>[];
   getFilter: () => unknown[];
-  filter: (filterRule: DxFilterRule | null) => void;
+  filter: (filterRule: FilterRule | null) => void;
 }

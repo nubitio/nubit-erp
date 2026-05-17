@@ -22,8 +22,8 @@ export interface GridCellContext<
 export type FormatterFn = (cell: GridCellContext) => React.ReactNode;
 
 /**
- * Callback for grid column `setCellValue` — called when the user edits a cell in a
- * DxDataGrid inline editor.  DevExtreme passes three arguments:
+ * Callback for grid column `setCellValue` — called when the user edits a cell in an
+ * inline grid editor. The active grid adapter passes three arguments:
  *   - `newData`       – partial row data object to mutate with the new value
  *   - `value`         – the new cell value
  *   - `currentRowData`– the full row data before the edit
@@ -39,8 +39,7 @@ export type GridOnChangeFn = (
 
 /**
  * Callback for form field `onValueChanged` — called when the user changes a form
- * field value.  The form infrastructure unwraps the DevExtreme event and passes the
- * raw value directly.
+ * field value. The form infrastructure unwraps adapter events and passes the raw value directly.
  *
  * @example
  *   .onChange(value => { selectedWarehouseId = value as number; })

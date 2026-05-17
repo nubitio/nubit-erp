@@ -1,6 +1,5 @@
-import { currentTheme as currentVizTheme, refreshTheme } from 'devextreme/viz/themes';
-import { current as getCurrentDXTheme } from 'devextreme/ui/themes';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { isDevExtremeFluentTheme, syncDevExtremeTheme } from '@core/adapters/devextreme/theme';
 
 const themes = ['light', 'dark'] as const;
 const themeModes = ['light', 'dark', 'auto'] as const;
@@ -54,9 +53,7 @@ function setThemeToDOM(theme: Theme): Promise<void> {
 async function setAppTheme(theme: Theme) {
   await setThemeToDOM(theme);
 
-  const regexTheme = new RegExp(`\\.(${themes.join('|')})`, 'g');
-  currentVizTheme(currentVizTheme().replace(regexTheme, `.${theme}`));
-  refreshTheme();
+  syncDevExtremeTheme(themes, theme);
 }
 
 function toggleTheme(currentMode: ThemeMode): ThemeMode {
@@ -82,7 +79,10 @@ export function useThemeContext() {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       const baseBgColor = getComputedStyle(document.body).getPropertyValue('--base-bg').trim();
-      metaThemeColor.setAttribute('content', baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff'));
+      metaThemeColor.setAttribute(
+        'content',
+        baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff'),
+      );
     }
   }, [theme, isLoaded]);
 
@@ -104,7 +104,7 @@ export function useThemeContext() {
   }, []);
 
   const isFluent = useCallback(() => {
-    return getCurrentDXTheme().includes('fluent');
+    return isDevExtremeFluentTheme();
   }, []);
 
   return useMemo(

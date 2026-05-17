@@ -1,10 +1,10 @@
-import { httpClient } from '../api/HttpClient';
+import { httpClient } from '@shared/api/HttpClient';
 
-import ApiResponse from '../api/ApiResponse';
+import ApiResponse from '@shared/api/ApiResponse';
 import CustomStore from 'devextreme/data/custom_store';
 import { FilterDescriptor, SortDescriptor } from 'devextreme/data';
-import GridData from './GridData';
-import { DxFilterRule } from '@core/field/FilterRule';
+import GridData from '@shared/data/GridData';
+import { FilterRule } from '@core/field/FilterRule';
 import { LoadOption } from '@core/field/Field';
 
 class DxUtils {
@@ -73,7 +73,7 @@ class DxUtils {
     defaultFilterRules: FilterDescriptor[],
   ): FilterDescriptor[] {
     const filters: FilterDescriptor[] = [];
-    defaultFilterRules.forEach((rule: DxFilterRule) => {
+    defaultFilterRules.forEach((rule: FilterRule) => {
       filters.push([rule.field, rule.operator, rule.value]);
     });
     if (filterRules.length === 3 && !(typeof filterRules[0] === 'object')) {
@@ -86,7 +86,7 @@ class DxUtils {
     return filters;
   }
 
-  makeFilterRules(filterRules: DxFilterRule[]): string {
+  makeFilterRules(filterRules: FilterRule[]): string {
     return filterRules
       .map((filter) => `filter[]=["${filter.field}","${filter.operator}","${filter.value}"]`)
       .join('&');
@@ -160,7 +160,7 @@ class DxUtils {
         // DevExtreme unconditionally appends searchOperation=contains to every
         // DataSource request (including plain list fetches); API Platform uses
         // strict parameter whitelisting and returns 404 for unknown params.
-        // searchValue is only meaningful when paired with searchExpr — drop it
+        // searchValue is only meaningful when paired with searchExpr - drop it
         // when searchExpr is absent to avoid sending a dangling param.
         const opts = loadOptions as Record<string, unknown>;
         delete opts['searchOperation'];
@@ -170,17 +170,15 @@ class DxUtils {
 
         if (iriMode) {
           // When DevExtreme tries to resolve a SelectBox value it emits a load
-          // with a single equality filter on the key field ('_iri').  That field
+          // with a single equality filter on the key field ('_iri'). That field
           // is synthetic (does not exist in the backend) so forwarding it to the
           // API would produce a Doctrine / API-Platform error.
           // Detect this pattern (both flat and nested) and short-circuit to a
           // direct byKey fetch instead.
           const filter = loadOptions.filter as unknown[];
-          // Normalise: unwrap [[field, op, val]] → [field, op, val]
+          // Normalise: unwrap [[field, op, val]] -> [field, op, val]
           const flat =
-            Array.isArray(filter) &&
-            filter.length === 1 &&
-            Array.isArray(filter[0])
+            Array.isArray(filter) && filter.length === 1 && Array.isArray(filter[0])
               ? (filter[0] as unknown[])
               : filter;
           if (

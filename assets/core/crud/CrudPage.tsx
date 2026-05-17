@@ -1,9 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Button } from 'devextreme-react';
-import type { SelectionChangedEvent } from 'devextreme/ui/data_grid';
-import { DxDataGrid } from '../datagrid/DxDataGrid';
-import { DxDialog } from '../dialog/DxDialog';
-import { DxForm, FORM_EVENTS } from '../form/DxForm';
+import { DataGridView, DialogView, FormView, FORM_EVENTS } from '../ui/CrudViews';
 import { useCrudPage } from './useCrudPage';
 import { dispatch, useEvents } from '../event/EventHook';
 import type { ResourceConfig } from './ResourceConfig';
@@ -16,6 +12,10 @@ import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { resolveCrudResource } from './resolveCrudResource';
+
+type GridSelectionChange = {
+  selectedRowsData?: unknown[];
+};
 
 interface CrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
   resource: ResourceConfig<T>;
@@ -263,9 +263,9 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     return modeMap[dialogMode] ?? 'Nuevo';
   }, [dialogMode, t]);
 
-  /** Bridge between DxDataGrid's SelectionChangedEvent and our onSelectionChanged.
+  /** Bridge between the grid renderer's selection event and our selection state.
    * Also captures the selected row ID for the audit trail. */
-  const handleSelectionChanged = (e: SelectionChangedEvent) => {
+  const handleSelectionChanged = (e: GridSelectionChange) => {
     selectionState.onSelectionChanged((e.selectedRowsData ?? []) as Record<string, unknown>[]);
     if (hasAuditTrail) {
       const first = (e.selectedRowsData ?? [])[0] as Record<string, unknown> | undefined;
@@ -340,14 +340,15 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
             {t('crudPage.selectedCount', { count: selectionState.selectedCount })}
           </span>
           {resolvedResource.bulkActions!.map((action: BulkAction) => (
-            <Button
+            <button
               key={action.key}
-              text={action.label}
-              icon={action.icon}
-              stylingMode="outlined"
-              type="normal"
+              type="button"
+              className="app-button app-button--secondary app-button--sm"
               onClick={() => handleBulkAction(action)}
-            />
+            >
+              {action.icon && <i className={action.icon} aria-hidden="true" />}
+              {action.label}
+            </button>
           ))}
         </div>
       )}
@@ -363,7 +364,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
           </button>
         </div>
       )}
-      <DxDataGrid
+      <DataGridView
         id={resolvedResource.id}
         title={resolvedResource.title}
         url={resolvedResource.apiUrl}
@@ -390,7 +391,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
         onFilterChange={onFiltersChange}
       />
       {!isInlineEditMode && (
-        <DxDialog
+        <DialogView
           events={events}
           width={resolvedResource.dialogWidth}
           height={resolvedResource.dialogHeight}
@@ -398,7 +399,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
           isOpen={dialogIsOpen}
           onClose={closeDialog}
         >
-          <DxForm
+          <FormView
             ref={formRef}
             url={resolvedResource.apiUrl}
             fields={fields}
@@ -423,7 +424,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
             computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
           />
-        </DxDialog>
+        </DialogView>
       )}
       {hasAuditTrail && (
         <AuditTrailPanel

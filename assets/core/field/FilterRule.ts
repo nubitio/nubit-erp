@@ -3,9 +3,3 @@ export interface FilterRule {
   operator: string;
   value: string | number | boolean;
 }
-
-export interface DxFilterRule {
-  field: string;
-  operator: string;
-  value: string | number | boolean;
-}

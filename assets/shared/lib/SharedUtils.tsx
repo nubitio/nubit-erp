@@ -1,6 +1,71 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
-import notify from 'devextreme/ui/notify';
+
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+type ToastPosition = 'top left' | 'top right' | 'bottom left' | 'bottom right';
+
+const TOAST_STYLE_ID = 'app-toast-styles';
+
+function ensureToastStyles() {
+  if (typeof document === 'undefined' || document.getElementById(TOAST_STYLE_ID)) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = TOAST_STYLE_ID;
+  style.textContent = `
+    .app-toast-container {
+      position: fixed;
+      z-index: 2147483647;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: min(380px, calc(100vw - 32px));
+      pointer-events: none;
+    }
+    .app-toast-container--top-right { top: 16px; right: 16px; align-items: flex-end; }
+    .app-toast-container--top-left { top: 16px; left: 16px; align-items: flex-start; }
+    .app-toast-container--bottom-right { right: 16px; bottom: 16px; align-items: flex-end; }
+    .app-toast-container--bottom-left { left: 16px; bottom: 16px; align-items: flex-start; }
+    .app-toast {
+      pointer-events: auto;
+      border: 1px solid var(--border-color, rgba(15, 23, 42, 0.12));
+      border-left-width: 4px;
+      border-radius: var(--radius-md, 12px);
+      background: var(--surface-1, #fff);
+      color: var(--text-primary, #0f172a);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+      padding: 12px 14px;
+      font-size: 14px;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+    .app-toast--visible { opacity: 1; transform: translateY(0); }
+    .app-toast--success { border-left-color: #16a34a; }
+    .app-toast--error { border-left-color: #dc2626; }
+    .app-toast--warning { border-left-color: #d97706; }
+    .app-toast--info { border-left-color: #2563eb; }
+  `;
+  document.head.appendChild(style);
+}
+
+function getToastContainer(position: ToastPosition) {
+  ensureToastStyles();
+  const positionClass = position.replace(' ', '-');
+  const id = `app-toast-container-${positionClass}`;
+  let container = document.getElementById(id);
+  if (container) {
+    return container;
+  }
+
+  container = document.createElement('div');
+  container.id = id;
+  container.className = `app-toast-container app-toast-container--${positionClass}`;
+  document.body.appendChild(container);
+  return container;
+}
 
 const LOCAL_AVATAR_COLORS = [
   '#4a6fa5',
@@ -251,18 +316,31 @@ export class SharedUtils {
 
 export default function toast(
   message: string,
-  type: 'success' | 'error' | 'warning' | 'info' = 'info',
+  type: ToastType = 'info',
   time = 3000,
-  position: 'top left' | 'top right' | 'bottom left' | 'bottom right' = 'top right',
+  position: ToastPosition = 'top right',
 ) {
-  notify(
-    {
-      message: message,
-      type: type,
-      displayTime: time,
-    },
-    { position: position },
-  );
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  const container = getToastContainer(position);
+  const element = document.createElement('div');
+  element.className = `app-toast app-toast--${type}`;
+  element.setAttribute('role', type === 'error' || type === 'warning' ? 'alert' : 'status');
+  element.textContent = message;
+  container.appendChild(element);
+
+  window.requestAnimationFrame(() => element.classList.add('app-toast--visible'));
+  window.setTimeout(() => {
+    element.classList.remove('app-toast--visible');
+    window.setTimeout(() => {
+      element.remove();
+      if (container.childElementCount === 0) {
+        container.remove();
+      }
+    }, 180);
+  }, time);
 }
 
 export const getIRI = (url: string, value: string) => {

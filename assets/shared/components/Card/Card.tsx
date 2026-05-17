@@ -11,7 +11,7 @@ export const Card = ({
 }: React.PropsWithChildren<SingleCardProps>) => {
   return (
     <div className="app-card">
-      <div className="dx-card content">
+      <div className="app-card__content content">
         <div className="header">
           <div className="title">{title}</div>
           <div className="description">{description}</div>
