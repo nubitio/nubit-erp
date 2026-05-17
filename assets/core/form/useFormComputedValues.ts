@@ -1,38 +1,33 @@
-import { MutableRefObject, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { syncComputedValuesIntoFormData } from './FormComputedValues';
 
 type FormRecord = Record<string, unknown>;
 
-export interface ComputedValuesFormRef {
-  instance: () => {
-    option: {
-      (name: 'formData'): unknown;
-      (name: 'formData', value: FormRecord): void;
-    };
-  };
+export interface UseFormComputedValuesAccessors {
+  getFormData: () => FormRecord | null;
+  setFormData: (formData: FormRecord) => void;
 }
 
 export interface UseFormComputedValuesOptions {
+  accessors: UseFormComputedValuesAccessors;
   computedFieldNames: string[];
   computedValues?: FormRecord;
-  formRef: MutableRefObject<ComputedValuesFormRef | null>;
   onFieldDataChanged?: (formData: FormRecord) => void;
 }
 
 export function useFormComputedValues({
+  accessors,
   computedFieldNames,
   computedValues,
-  formRef,
   onFieldDataChanged,
 }: UseFormComputedValuesOptions): void {
   useEffect(() => {
-    const instance = formRef.current?.instance();
-    if (!instance || computedFieldNames.length === 0) {
+    if (computedFieldNames.length === 0) {
       return;
     }
 
-    const currentFormData = (instance.option('formData') ?? null) as FormRecord | null;
+    const currentFormData = accessors.getFormData();
     if (currentFormData == null) {
       return;
     }
@@ -47,7 +42,7 @@ export function useFormComputedValues({
       return;
     }
 
-    instance.option('formData', nextFormData);
+    accessors.setFormData(nextFormData);
     onFieldDataChanged?.(nextFormData);
-  }, [computedFieldNames, computedValues, formRef, onFieldDataChanged]);
+  }, [accessors, computedFieldNames, computedValues, onFieldDataChanged]);
 }

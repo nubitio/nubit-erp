@@ -407,8 +407,11 @@ test.describe('Compras — crear compra e incremento de stock', () => {
           await supplierCombobox.click({ force: true });
         }
 
-        // Esperar a que aparezca el listbox con opciones en el overlay activo
-        const firstOption = page.locator('.dx-overlay-wrapper:visible .dx-list-item:visible').first();
+        // Esperar a que aparezca el listbox del overlay activo más reciente.
+        // DevExtreme deja overlays anteriores montados durante transiciones.
+        const activeOverlay = page.locator('.dx-overlay-wrapper:visible').last();
+        await activeOverlay.locator('.dx-list').waitFor({ state: 'visible', timeout: 8000 });
+        const firstOption = activeOverlay.locator('.dx-list-item:visible').first();
         const hasOptions = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
         if (hasOptions) {
           await firstOption.click({ force: true });
