@@ -18,7 +18,7 @@ use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashShift;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
@@ -256,10 +256,10 @@ final class SaleProcessorTest extends TestCase
             ->expects($this->never())
             ->method('getRepository');
 
-        $this->persistProcessor
+        // Operational sales use salesWriteGateway->write(), not persistProcessor.
+        $this->salesWriteGateway
             ->expects($this->once())
-            ->method('process')
-            ->willReturnArgument(0);
+            ->method('write');
 
         $result = $this->buildAndRunProcessor(
             $sale,
@@ -298,10 +298,10 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         // No tipoPago → cash-shift block not entered at all
-        $this->persistProcessor
+        // Operational sales use salesWriteGateway->write(), not persistProcessor.
+        $this->salesWriteGateway
             ->expects($this->once())
-            ->method('process')
-            ->willReturnArgument(0);
+            ->method('write');
 
         $result = $this->buildAndRunProcessor(
             $sale,
@@ -393,11 +393,14 @@ final class SaleProcessorTest extends TestCase
         $product->setName('Test Product');
         $product->setTrackInventory(true);
 
-        $item = new SaleItem();
-        $item->setProducto($product);
-        $item->setCantidad(5.0);
-        $item->setPrecioTotal('0.01');
-        $sale->addItem($item);
+        $item = new SaleItemRecord();
+        $item->setProduct($product);
+        $item->setQty('5');
+        $item->setNetAmount('0.01');
+        $item->setUnitPrice('0.01');
+        $item->setGrossAmount('0.01');
+        $item->setNameSnapshot('Test Product');
+        $sale->addSaleItemRecord($item);
 
         // payments sum ≈ total (0.01), so resolveForWrite() passes
         $sale->setPayments([['payment_method_id' => 1, 'amount' => '0.01']]);
@@ -723,10 +726,13 @@ final class SaleProcessorTest extends TestCase
 
         // Add an item so total=10.00, then payments sum=10.00 passes tolerance check,
         // and resolveCashCollectedAmount() returns '10.00' (payment_method_id=1=CASH)
-        $item = new SaleItem();
-        $item->setPrecioTotal('10.00');
-        $item->setCantidad(1.0);
-        $sale->addItem($item);
+        $item = new SaleItemRecord();
+        $item->setNetAmount('10.00');
+        $item->setQty('1');
+        $item->setUnitPrice('10.00');
+        $item->setGrossAmount('10.00');
+        $item->setNameSnapshot('Item');
+        $sale->addSaleItemRecord($item);
         $sale->setPayments([['payment_method_id' => 1, 'amount' => '10.00']]);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
@@ -870,17 +876,20 @@ final class SaleProcessorTest extends TestCase
     public function testSaleItemsAreLinkedToSaleAndTotalsCalculated(): void
     {
         $sale = $this->buildNewSale(tipoId: 1);
-        $item = new SaleItem();
-        $item->setPrecioTotal('100.00');
-        $item->setCantidad(1.0);
-        $sale->addItem($item);
+        $item = new SaleItemRecord();
+        $item->setNetAmount('100.00');
+        $item->setQty('1');
+        $item->setUnitPrice('100.00');
+        $item->setGrossAmount('100.00');
+        $item->setNameSnapshot('Item');
+        $sale->addSaleItemRecord($item);
 
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
         );
 
-        self::assertTrue($sale->getItems()->contains($item));
+        self::assertTrue($sale->getSaleItemRecords()->contains($item));
         self::assertSame('100.00', $sale->getSubtotal());
         self::assertSame('100.00', $sale->getTotal());
     }
@@ -912,18 +921,21 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-35: New operational sale always calls persistProcessor (no skip-persist mode)
+    // TC-35: New operational sale always calls salesWriteGateway::write (not persistProcessor)
     // -------------------------------------------------------------------------
 
-    public function testNewOperationalSaleAlwaysCallsPersistProcessor(): void
+    public function testNewOperationalSaleAlwaysCallsSalesWriteGatewayNotPersistProcessor(): void
     {
         // Sale needs branch+fecha so CashSessionResolver doesn't throw when V2 write runs
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
-        $this->persistProcessor
+        $this->salesWriteGateway
             ->expects($this->once())
-            ->method('process')
-            ->willReturnArgument(0);
+            ->method('write');
+
+        $this->persistProcessor
+            ->expects($this->never())
+            ->method('process');
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 55);
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
@@ -1025,13 +1037,13 @@ final class SaleProcessorTest extends TestCase
 
         $this->buildAndRunProcessor($sale, new Post());
 
-        $items = $sale->getItems()->toArray();
+        $items = $sale->getSaleItemRecords()->toArray();
         $this->assertCount(1, $items);
 
-        /** @var SaleItem $item */
+        /** @var \App\Sales\Entity\SaleItemRecord $item */
         $item = $items[0];
-        $this->assertSame('0.00', $item->getDescuento(), 'AC-3: discountPercent=0 must produce discountAmount=0.00');
-        $this->assertSame('99.99', $item->getPrecioTotal(), 'AC-3: total must equal qty × unitPrice when discount=0');
+        $this->assertSame('0.00', $item->getDiscountAmount(), 'AC-3: discountPercent=0 must produce discountAmount=0.00');
+        $this->assertSame('99.99', $item->getNetAmount(), 'AC-3: total must equal qty × unitPrice when discount=0');
     }
 
     // -------------------------------------------------------------------------
@@ -1333,7 +1345,7 @@ final class SaleProcessorTest extends TestCase
 
             public function applyMovementFromSaleItem(
                 SaleRecord $sale,
-                SaleItem $item,
+                \App\Sales\Entity\SaleItemRecord $item,
                 int $lineNo,
                 bool $enforceNonNegativeStock = true,
             ): void {

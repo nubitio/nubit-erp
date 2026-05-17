@@ -464,7 +464,7 @@ final class SaleV2LoaderTest extends TestCase
         $sale   = $loader->loadAsSale('sale-items');
 
         self::assertNotNull($sale);
-        self::assertCount(1, $sale->getItems());
+        self::assertCount(1, $sale->getSaleItemRecords());
     }
 
     public function testSaleItemIsSkippedWhenProductIdIsNull(): void
@@ -510,7 +510,7 @@ final class SaleV2LoaderTest extends TestCase
         $sale   = $loader->loadAsSale('sale-noproductid');
 
         self::assertNotNull($sale);
-        self::assertCount(0, $sale->getItems());
+        self::assertCount(0, $sale->getSaleItemRecords());
     }
 
     public function testSaleItemIsSkippedWhenProductNotFound(): void
@@ -560,6 +560,6 @@ final class SaleV2LoaderTest extends TestCase
         $sale   = $loader->loadAsSale('sale-productnotfound');
 
         self::assertNotNull($sale);
-        self::assertCount(0, $sale->getItems());
+        self::assertCount(0, $sale->getSaleItemRecords());
     }
 }

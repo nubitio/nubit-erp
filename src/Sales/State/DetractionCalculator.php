@@ -39,8 +39,8 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
 
         $detractionCatalog = null;
 
-        foreach ($sale->getItems() as $item) {
-            $catalog = $item->getProducto()?->getDetractionCatalog();
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $catalog = $item->getProduct()?->getDetractionCatalog();
             if (!$catalog) {
                 continue;
             }

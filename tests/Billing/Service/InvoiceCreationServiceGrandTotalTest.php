@@ -8,7 +8,7 @@ use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceCreationService;
 use App\Billing\Service\InvoiceLineInput;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -220,17 +220,14 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
             ->setTotal($total);
 
         foreach (['1.18', '1.18', '1.18', '1.18'] as $price) {
-            $item = new SaleItem();
-            // SaleItem uses float for cantidad; string for precio_unitario.
-            $refItem = new \ReflectionObject($item);
+            $item = new SaleItemRecord();
+            $item->setQty('1');
+            $item->setUnitPrice($price);
+            $item->setNetAmount($price);
+            $item->setGrossAmount($price);
+            $item->setNameSnapshot('Test Item');
 
-            $cantidadProp = $refItem->getProperty('cantidad');
-            $cantidadProp->setValue($item, 1.0);
-
-            $precioProp = $refItem->getProperty('precio_unitario');
-            $precioProp->setValue($item, $price);
-
-            $sale->addItem($item);
+            $sale->addSaleItemRecord($item);
         }
 
         return $sale;

@@ -73,11 +73,11 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         );
 
         $lines = [];
-        foreach ($sale->getItems() as $item) {
+        foreach ($sale->getSaleItemRecords() as $item) {
             $lines[] = new InvoiceLineInput(
-                quantity: (string)$item->getCantidad(),
-                unitPrice: $item->getPrecioUnitario() ?? '0',
-                discountPercent: $item->getDescuentoPorcentaje() ?? '0',
+                quantity: $item->getQty(),
+                unitPrice: $item->getUnitPrice(),
+                discountPercent: $item->getDiscountPercent() ?? '0',
             );
         }
 
@@ -199,7 +199,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 'branch_id' => $sale->getBranch()?->getId(),
             ]);
 
-            $saleItems = array_values($sale->getItems()->toArray());
+            $saleItems = array_values($sale->getSaleItemRecords()->toArray());
             $lineNumber = 0;
             foreach ($invoiceAmounts->getLines() as $line) {
                 $saleItem = $saleItems[$lineNumber] ?? null;
@@ -207,10 +207,10 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 $connection->insert('tax_document_line', [
                     'tax_document_id' => $taxDocumentId,
                     'line_number' => $lineNumber,
-                    'product_id' => $saleItem?->getProducto()?->getId(),
-                    'product_code' => $saleItem?->getProducto()?->getCode(),
-                    'product_name' => $saleItem?->getProducto()?->getName() ?? '-',
-                    'product_uom' => $saleItem?->getProducto()?->getUnitOfMeasure()?->getCode(),
+                    'product_id' => $saleItem?->getProduct()?->getId(),
+                    'product_code' => $saleItem?->getProduct()?->getCode(),
+                    'product_name' => $saleItem?->getProduct()?->getName() ?? ($saleItem?->getNameSnapshot() ?? '-'),
+                    'product_uom' => $saleItem?->getProduct()?->getUnitOfMeasure()?->getCode() ?? $saleItem?->getUomSnapshot(),
                     'quantity' => $line->quantity,
                     'unit_price' => $line->unitPrice,
                     'unit_value' => $line->unitValue,

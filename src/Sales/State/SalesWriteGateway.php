@@ -4,27 +4,40 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use App\Catalog\Entity\UnitOfMeasure;
+use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
+use App\Sales\Entity\SaleDiscount;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Entity\SaleTax;
 use App\Sales\Repository\DashboardRepository;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Gateway for writes on the new sales schema.
+ *
+ * Fase 3: all writes to sales, sale_items, sale_payments, sale_taxes and
+ * sale_discounts are performed through ORM entities (no raw DBAL INSERT/DELETE
+ * for those tables). markVoided() and writeCashSaleMovement() remain DBAL
+ * because they target tables without a full ORM entity.
  */
 readonly class SalesWriteGateway
 {
     public function __construct(
         private Connection $connection,
+        private EntityManagerInterface $entityManager,
         private SaleCurrencyResolver $saleCurrencyResolver,
         private SalePaymentPlanService $salePaymentPlanService,
         private DashboardRepository $dashboardRepository,
+        private TenantSettingsService $tenantSettingsService,
     ) {
     }
 
@@ -82,436 +95,189 @@ readonly class SalesWriteGateway
             : BigDecimal::zero();
         $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
+        $issuedAtMutable = \DateTime::createFromImmutable($issuedAt);
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
         $saleOffline = $this->buildOfflineMeta('sale:' . $saleId, $issuedAt, 1);
+        $createdAt = $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $createdAtMutable = \DateTime::createFromImmutable(
+            \DateTimeImmutable::createFromInterface($createdAt)
+        );
 
-        $this->connection->beginTransaction();
-        try {
-            $this->connection->executeStatement(
-                <<<'SQL'
-INSERT INTO sales (
-    id,
-    legacy_movimiento_id,
-    series,
-    number,
-    branch_id,
-    warehouse_id,
-    cash_register_id,
-    cash_session_id,
-    customer_id,
-    seller_user_id,
-    status,
-    currency,
-    exchange_rate,
-    subtotal,
-    discount_total,
-    tax_total,
-    grand_total,
-    paid_total,
-    change_total,
-    balance_due,
-    issued_at,
-    created_at,
-    updated_at,
-    sync_status,
-    local_uuid,
-    idempotency_key,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-) VALUES (
-    :id,
-    :legacy_movimiento_id,
-    :series,
-    :number,
-    :branch_id,
-    :warehouse_id,
-    :cash_register_id,
-    :cash_session_id,
-    :customer_id,
-    :seller_user_id,
-    :status,
-    :currency,
-    :exchange_rate,
-    :subtotal,
-    :discount_total,
-    :tax_total,
-    :grand_total,
-    :paid_total,
-    :change_total,
-    :balance_due,
-    :issued_at,
-    :created_at,
-    :updated_at,
-    :sync_status,
-    :local_uuid,
-    :idempotency_key,
-    :synced_at,
-    :device_id,
-    :version_no,
-    :last_modified_at
-)
-ON DUPLICATE KEY UPDATE
-    branch_id = VALUES(branch_id),
-    warehouse_id = VALUES(warehouse_id),
-    cash_register_id = VALUES(cash_register_id),
-    cash_session_id = VALUES(cash_session_id),
-    series = COALESCE(VALUES(series), series),
-    number = COALESCE(VALUES(number), number),
-    customer_id = VALUES(customer_id),
-    seller_user_id = VALUES(seller_user_id),
-    status = VALUES(status),
-    currency = VALUES(currency),
-    exchange_rate = VALUES(exchange_rate),
-    subtotal = VALUES(subtotal),
-    discount_total = VALUES(discount_total),
-    tax_total = VALUES(tax_total),
-    grand_total = VALUES(grand_total),
-    paid_total = VALUES(paid_total),
-    change_total = VALUES(change_total),
-    balance_due = VALUES(balance_due),
-    issued_at = VALUES(issued_at),
-    updated_at = VALUES(updated_at),
-    sync_status = VALUES(sync_status),
-    synced_at = VALUES(synced_at),
-    device_id = COALESCE(VALUES(device_id), device_id),
-    version_no = version_no + 1,
-    last_modified_at = VALUES(last_modified_at)
-SQL,
-                [
-                    'id' => $saleId,
-                    'legacy_movimiento_id' => $saleId,
-                    'series'  => $sale->getSerie(),
-                    'number' => $sale->getNumero(),
-                    'branch_id' => $branchId,
-                    'warehouse_id' => $warehouseId,
-                    'cash_register_id' => $cashRegisterId,
-                    'cash_session_id' => $cashSessionId,
-                    'customer_id' => $sale->getCliente()?->getId(),
-                    'seller_user_id' => $sellerUserId,
-                    'status' => $sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED',
-                    'currency' => $currencyData['currency'],
-                    'exchange_rate' => $currencyData['exchange_rate'],
-                    'subtotal' => Money::toString($subtotal),
-                    'discount_total' => Money::toString($discountAmount),
-                    'tax_total' => '0.00',
-                    'grand_total' => Money::toString($grandTotal),
-                    'paid_total' => Money::toString($paidTotal),
-                    'change_total' => Money::toString($changeTotal),
-                    'balance_due' => Money::toString($balanceDue),
-                    'issued_at' => $issuedAt->format('Y-m-d H:i:s'),
-                    'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                    'updated_at' => $updatedAt?->format('Y-m-d H:i:s'),
-                    'sync_status' => 'SYNCED',
-                    'local_uuid' => $saleOffline['local_uuid'],
-                    'idempotency_key' => $saleOffline['idempotency_key'],
-                    'synced_at' => $saleOffline['synced_at'],
-                    'device_id' => $saleOffline['device_id'],
-                    'version_no' => $saleOffline['version_no'],
-                    'last_modified_at' => $saleOffline['last_modified_at'],
-                ]
-            );
+        // ── Populate offline/sync fields on SaleRecord ────────────────────────
+        $sale->setSyncStatus('SYNCED');
+        $sale->setLocalUuid($saleOffline['local_uuid']);
+        $sale->setIdempotencyKey($saleOffline['idempotency_key']);
+        $sale->setSyncedAt($issuedAtMutable);
+        $sale->setDeviceId(null);
+        // version_no: increment on update, keep 1 on first write
+        if ($sale->getVersionNo() < 1) {
+            $sale->setVersionNo(1);
+        } else {
+            $sale->setVersionNo($sale->getVersionNo() + 1);
+        }
+        $sale->setLastModifiedAt($issuedAtMutable);
 
-            $this->connection->executeStatement(
-                'DELETE FROM sale_taxes WHERE sale_id = :sale_id',
-                ['sale_id' => $saleId]
-            );
-            $this->connection->executeStatement(
-                'DELETE FROM sale_discounts WHERE sale_id = :sale_id',
-                ['sale_id' => $saleId]
-            );
-            $this->connection->executeStatement(
-                'DELETE FROM sale_payments WHERE sale_id = :sale_id',
-                ['sale_id' => $saleId]
-            );
-            $this->connection->executeStatement(
-                'DELETE FROM sale_items WHERE sale_id = :sale_id',
-                ['sale_id' => $saleId]
-            );
+        // Propagate computed totals so ORM flush writes them
+        $sale->setPaidTotal(Money::toString($paidTotal));
+        $sale->setChangeTotal(Money::toString($changeTotal));
+        $sale->setBalanceDue(Money::toString($balanceDue));
+        $sale->setDiscountTotal(Money::toString($discountAmount));
+        $sale->setCurrency($currencyData['currency']);
+        $sale->setExchangeRate((string) $currencyData['exchange_rate']);
+        $sale->setSellerUserId($sellerUserId);
+        $sale->setCashSessionId($cashSessionId);
+        $sale->setStatus($sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED');
+        $sale->setLegacyMovimientoId($saleId);
 
-            $lineNo = 1;
-            foreach ($sale->getItems() as $item) {
-                if ($item->getProducto() === null) {
-                    continue;
-                }
-
-                $qty = Money::of($item->getCantidad())->toScale(3, RoundingMode::HALF_UP);
-                $unitPrice = Money::of($item->getPrecioUnitario() ?? '0')->toScale(4, RoundingMode::HALF_UP);
-                $grossAmount = Money::mul(Money::money($qty), Money::money($unitPrice));
-                $itemDiscount = Money::money($item->getDescuento());
-                $netAmount = Money::money($item->getPrecioTotal());
-
-                $this->connection->executeStatement(
-                    <<<'SQL'
-INSERT INTO sale_items (
-    sale_id,
-    legacy_movimiento_detalle_id,
-    line_no,
-    product_id,
-    variant_id,
-    sku_snapshot,
-    name_snapshot,
-    uom_snapshot,
-    qty,
-    unit_price,
-    gross_amount,
-    discount_amount,
-    descuento_porcentaje,
-    tax_amount,
-    net_amount,
-    unit_cost_snapshot,
-    margin_amount,
-    created_at,
-    updated_at,
-    local_uuid,
-    idempotency_key,
-    sync_status,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-) VALUES (
-    :sale_id,
-    :legacy_movimiento_detalle_id,
-    :line_no,
-    :product_id,
-    :variant_id,
-    :sku_snapshot,
-    :name_snapshot,
-    :uom_snapshot,
-    :qty,
-    :unit_price,
-    :gross_amount,
-    :discount_amount,
-    :descuento_porcentaje,
-    :tax_amount,
-    :net_amount,
-    :unit_cost_snapshot,
-    :margin_amount,
-    :created_at,
-    :updated_at,
-    :local_uuid,
-    :idempotency_key,
-    :sync_status,
-    :synced_at,
-    :device_id,
-    :version_no,
-    :last_modified_at
-)
-SQL,
-                    [
-                        'sale_id' => $saleId,
-                        'legacy_movimiento_detalle_id' => $item->getId(),
-                        'line_no' => $lineNo++,
-                        'product_id' => $item->getProducto()->getId(),
-                        'variant_id' => null,
-                        'sku_snapshot' => $item->getProducto()->getCode(),
-                        'name_snapshot' => $item->getProducto()->getName(),
-                        'uom_snapshot' => $item->getProducto()->getUnitOfMeasure()->getCode(),
-                        'qty' => $qty->__toString(),
-                        'unit_price' => $unitPrice->__toString(),
-                        'gross_amount' => Money::toString($grossAmount),
-                        'discount_amount' => Money::toString($itemDiscount),
-                        'descuento_porcentaje' => $item->getDescuentoPorcentaje(),
-                        'tax_amount' => Money::toString(
-                            Money::money($item->getPrecioTotal() ?? '0')->multipliedBy(
-                                Money::of($sale->getIgv() ?? '0')->dividedBy(100, 10, \Brick\Math\RoundingMode::HALF_UP)
-                            )
-                        ),
-                        'net_amount' => Money::toString($netAmount),
-                        'unit_cost_snapshot' => $item->getProducto()->getPurchasePrice(),
-                        'margin_amount' => null,
-                        'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                        'updated_at' => $updatedAt?->format('Y-m-d H:i:s'),
-                        'local_uuid' => $this->deterministicUuid('sale-item-local:' . $saleId . ':' . ($lineNo - 1)),
-                        'idempotency_key' => $this->deterministicUuid('sale-item:' . $saleId . ':' . ($lineNo - 1)),
-                        'sync_status' => 'SYNCED',
-                        'synced_at' => $issuedAt->format('Y-m-d H:i:s'),
-                        'device_id' => null,
-                        'version_no' => 1,
-                        'last_modified_at' => $issuedAt->format('Y-m-d H:i:s'),
-                    ]
-                );
-
-                // AC-17: persist item-level discount to sale_discounts when the item carries a percentage discount.
-                $itemDiscountPct = Money::of($item->getDescuentoPorcentaje() ?? '0');
-                if ($itemDiscountPct->isGreaterThan(BigDecimal::zero())) {
-                    $saleItemId = $this->connection->lastInsertId();
-                    $this->connection->executeStatement(
-                        <<<'SQL'
-INSERT INTO sale_discounts (
-    sale_id,
-    sale_item_id,
-    discount_type,
-    source,
-    value,
-    amount_applied,
-    reason_code,
-    reason_text,
-    created_at
-) VALUES (
-    :sale_id,
-    :sale_item_id,
-    'PERCENT',
-    'MANUAL',
-    :value,
-    :amount_applied,
-    'LEGACY',
-    '',
-    :created_at
-)
-SQL,
-                        [
-                            'sale_id' => $saleId,
-                            'sale_item_id' => $saleItemId,
-                            'value' => $itemDiscountPct->toScale(4, RoundingMode::HALF_UP)->__toString(),
-                            'amount_applied' => Money::toString($itemDiscount),
-                            'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                        ]
-                    );
-                }
+        // ── Rebuild sale_items with offline meta ──────────────────────────────
+        $lineNo = 1;
+        foreach ($sale->getSaleItemRecords() as $item) {
+            if ($item->getProduct() === null) {
+                continue;
             }
 
-            $paymentIdx = 0;
-            foreach ($paymentLines as $paymentLine) {
-                ++$paymentIdx;
-                $this->connection->executeStatement(
-                    <<<'SQL'
-INSERT INTO sale_payments (
-    sale_id,
-    payment_method_id,
-    amount,
-    currency,
-    tendered_amount,
-    change_amount,
-    paid_at,
-    created_at,
-    local_uuid,
-    idempotency_key,
-    sync_status,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-) VALUES (
-    :sale_id,
-    :payment_method_id,
-    :amount,
-    :currency,
-    :tendered_amount,
-    :change_amount,
-    :paid_at,
-    :created_at,
-    :local_uuid,
-    :idempotency_key,
-    :sync_status,
-    :synced_at,
-    :device_id,
-    :version_no,
-    :last_modified_at
-)
-SQL,
-                    [
-                        'sale_id' => $saleId,
-                        'payment_method_id' => $paymentLine['payment_method_id'],
-                        'amount' => $paymentLine['amount'],
-                        'currency' => $paymentLine['currency'],
-                        'tendered_amount' => $paymentLine['tendered_amount'],
-                        'change_amount' => $paymentLine['change_amount'],
-                        'paid_at' => $issuedAt->format('Y-m-d H:i:s'),
-                        'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                        'local_uuid' => $this->deterministicUuid('sale-payment-local:' . $saleId . ':' . $paymentIdx),
-                        'idempotency_key' => $this->deterministicUuid('sale-payment:' . $saleId . ':' . $paymentIdx),
-                        'sync_status' => 'SYNCED',
-                        'synced_at' => $issuedAt->format('Y-m-d H:i:s'),
-                        'device_id' => null,
-                        'version_no' => 1,
-                        'last_modified_at' => $issuedAt->format('Y-m-d H:i:s'),
-                    ]
-                );
-            }
+            $qty = Money::of($item->getQty())->toScale(3, RoundingMode::HALF_UP);
+            $unitPrice = Money::of($item->getUnitPrice())->toScale(4, RoundingMode::HALF_UP);
+            $grossAmount = Money::mul(Money::money($qty), Money::money($unitPrice));
+            $netAmount = Money::money($item->getNetAmount());
+            $currentLineNo = $lineNo++;
 
-            if (!$discountAmount->isZero()) {
-                $this->connection->executeStatement(
-                    <<<'SQL'
-INSERT INTO sale_discounts (
-    sale_id,
-    sale_item_id,
-    discount_type,
-    source,
-    value,
-    amount_applied,
-    reason_code,
-    reason_text,
-    created_at
-) VALUES (
-    :sale_id,
-    NULL,
-    'PERCENT',
-    'MANUAL',
-    :value,
-    :amount_applied,
-    'LEGACY',
-    '',
-    :created_at
-)
-SQL,
-                    [
-                        'sale_id' => $saleId,
-                        'value' => $discountPercent->toScale(4, RoundingMode::HALF_UP)->__toString(),
-                        'amount_applied' => Money::toString($discountAmount),
-                        'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                    ]
-                );
-            }
+            $itemOffline = $this->buildOfflineMeta('sale-item:' . $saleId . ':' . $currentLineNo, $issuedAt, 1);
 
-            if (Money::of($sale->getIgv() ?? '0')->isGreaterThan(BigDecimal::zero())) {
-                $igvRate = Money::of($sale->getIgv() ?? '0')->toScale(4, RoundingMode::HALF_UP);
-                $taxAmount = number_format(
-                    round((float) Money::toString($subtotal) * ((float) $igvRate->__toString() / 100), 2),
-                    2,
-                    '.',
-                    ''
-                );
-                $this->connection->executeStatement(
-                    <<<'SQL'
-INSERT INTO sale_taxes (
-    sale_id,
-    sale_item_id,
-    tax_code,
-    tax_rate,
-    taxable_base,
-    tax_amount,
-    created_at
-) VALUES (
-    :sale_id,
-    NULL,
-    'IGV',
-    :tax_rate,
-    :taxable_base,
-    :tax_amount,
-    :created_at
-)
-SQL,
-                    [
-                        'sale_id' => $saleId,
-                        'tax_rate' => $igvRate->__toString(),
-                        'taxable_base' => Money::toString($grandTotal),
-                        'tax_amount' => $taxAmount,
-                        'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                    ]
-                );
-            }
-
-            $this->connection->commit();
-        } catch (\Throwable $exception) {
-            $this->connection->rollBack();
-            throw $exception;
+            $item->setLineNo($currentLineNo);
+            $item->setSkuSnapshot($item->getSkuSnapshot() ?? $item->getProduct()->getCode());
+            $item->setNameSnapshot($item->getNameSnapshot() !== '' ? $item->getNameSnapshot() : $item->getProduct()->getName());
+            $item->setUomSnapshot($item->getUomSnapshot() ?? $item->getProduct()->getUnitOfMeasure()->getCode());
+            $item->setGrossAmount(Money::toString($grossAmount));
+            $item->setNetAmount(Money::toString($netAmount));
+            $item->setTaxAmount(Money::toString(
+                Money::money($item->getNetAmount())->multipliedBy(
+                    Money::of($sale->getIgv() ?? '0')->dividedBy(100, 10, RoundingMode::HALF_UP)
+                )
+            ));
+            $item->setUnitCostSnapshot($item->getUnitCostSnapshot() ?? $item->getProduct()->getPurchasePrice());
+            $item->setSyncStatus('SYNCED');
+            $item->setLocalUuid($this->deterministicUuid('sale-item-local:' . $saleId . ':' . $currentLineNo));
+            $item->setIdempotencyKey($itemOffline['idempotency_key']);
+            $item->setSyncedAt($issuedAtMutable);
+            $item->setDeviceId(null);
+            $item->setVersionNo(1);
+            $item->setLastModifiedAt($issuedAtMutable);
+            $item->setCreatedAt($createdAtMutable);
+            $item->setUpdatedAt($updatedAt !== null ? \DateTime::createFromInterface($updatedAt) : null);
         }
 
+        // ── Rebuild sale_payments ─────────────────────────────────────────────
+        $sale->clearSalePayments();
+        $paymentIdx = 0;
+        foreach ($paymentLines as $paymentLine) {
+            ++$paymentIdx;
+            $paymentOffline = $this->buildOfflineMeta('sale-payment:' . $saleId . ':' . $paymentIdx, $issuedAt, 1);
+
+            $paymentMethodId = $paymentLine['payment_method_id'];
+            $paymentMethod = $this->entityManager->getReference(PaymentMethod::class, $paymentMethodId);
+
+            $payment = (new SalePayment())
+                ->setSaleRecord($sale)
+                ->setPaymentMethod($paymentMethod)
+                ->setAmount($paymentLine['amount'])
+                ->setCurrency($paymentLine['currency'])
+                ->setTenderedAmount($paymentLine['tendered_amount'])
+                ->setChangeAmount($paymentLine['change_amount'])
+                ->setPaidAt($issuedAtMutable)
+                ->setCreatedAt($createdAtMutable)
+                ->setSyncStatus('SYNCED')
+                ->setLocalUuid($paymentOffline['local_uuid'])
+                ->setIdempotencyKey($paymentOffline['idempotency_key'])
+                ->setSyncedAt($issuedAtMutable)
+                ->setDeviceId(null)
+                ->setVersionNo(1)
+                ->setLastModifiedAt($issuedAtMutable);
+
+            $sale->addSalePayment($payment);
+        }
+
+        // ── Rebuild sale_discounts ────────────────────────────────────────────
+        $sale->clearSaleDiscounts();
+
+        // Item-level discounts
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $itemDiscountPct = Money::of($item->getDiscountPercent() ?? '0');
+            if ($itemDiscountPct->isGreaterThan(BigDecimal::zero())) {
+                $discount = (new SaleDiscount())
+                    ->setSaleRecord($sale)
+                    ->setSaleItem($item)
+                    ->setDiscountType('PERCENT')
+                    ->setSource('MANUAL')
+                    ->setValue($itemDiscountPct->toScale(4, RoundingMode::HALF_UP)->__toString())
+                    ->setAmountApplied(Money::toString(Money::money($item->getDiscountAmount())))
+                    ->setReasonCode('LEGACY')
+                    ->setReasonText('')
+                    ->setCreatedAt($createdAtMutable);
+
+                $sale->addSaleDiscount($discount);
+            }
+        }
+
+        // Sale-level discount
+        if (!$discountAmount->isZero()) {
+            $saleDiscount = (new SaleDiscount())
+                ->setSaleRecord($sale)
+                ->setSaleItem(null)
+                ->setDiscountType('PERCENT')
+                ->setSource('MANUAL')
+                ->setValue($discountPercent->toScale(4, RoundingMode::HALF_UP)->__toString())
+                ->setAmountApplied(Money::toString($discountAmount))
+                ->setReasonCode('LEGACY')
+                ->setReasonText('')
+                ->setCreatedAt($createdAtMutable);
+
+            $sale->addSaleDiscount($saleDiscount);
+        }
+
+        // ── Rebuild sale_taxes ────────────────────────────────────────────────
+        $sale->clearSaleTaxes();
+
+        // Use the explicit igv rate from the sale payload; fall back to the
+        // tenant-configured IGV rate (e.g. 18.0) so POS sales always generate
+        // a SaleTax row even when the client doesn't send the rate explicitly.
+        $saleIgvRaw = $sale->getIgv() ?? '0';
+        $igvRateValue = Money::of($saleIgvRaw)->isGreaterThan(BigDecimal::zero())
+            ? (float) $saleIgvRaw
+            : $this->tenantSettingsService->getIgv();
+
+        if ($igvRateValue > 0) {
+            $igvRate = Money::of((string) $igvRateValue)->toScale(4, RoundingMode::HALF_UP);
+            $taxAmount = number_format(
+                round((float) Money::toString($subtotal) * ($igvRateValue / 100), 2),
+                2,
+                '.',
+                ''
+            );
+
+            $saleTax = (new SaleTax())
+                ->setSaleRecord($sale)
+                ->setSaleItem(null)
+                ->setTaxCode('IGV')
+                ->setTaxRate($igvRate->__toString())
+                ->setTaxableBase(Money::toString($grandTotal))
+                ->setTaxAmount($taxAmount)
+                ->setCreatedAt($createdAtMutable);
+
+            $sale->addSaleTax($saleTax);
+
+            // Also update SaleRecord.taxTotal to reflect the computed IGV amount.
+            if ((float) $sale->getTaxTotal() === 0.0) {
+                $sale->setTaxTotal($taxAmount);
+            }
+        }
+
+        // ── Flush all ORM changes ─────────────────────────────────────────────
+        // Ensure $sale is managed (new entities are not yet tracked until persisted).
+        $this->entityManager->persist($sale);
+        $this->entityManager->flush();
+
         // Post-commit: update daily summary (non-voided sales only).
-        // Runs outside the transaction so a summary failure never rolls back the sale.
         if ($sale->getEstado() !== 0) {
             try {
                 $limaIssuedAt = \DateTimeImmutable::createFromInterface($issuedAt)
@@ -534,7 +300,6 @@ SQL,
 
     /**
      * Re-aggregates branch_daily_summary for the given branch + date from the sales table.
-     * Must be called AFTER the enclosing transaction has committed.
      *
      * @throws Exception
      */

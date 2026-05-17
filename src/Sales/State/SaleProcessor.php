@@ -19,7 +19,7 @@ use App\Efact\Domain\Money;
 use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Sales\Repository\SaleRecordRepository;
@@ -105,14 +105,14 @@ readonly class SaleProcessor implements ProcessorInterface
         $request = $context['request'] ?? null;
         $isOfflineSale = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
 
-        // Convert writeItems array to SaleItem objects
+        // Convert writeItems array to SaleItemRecord objects
         if ($isNew && !empty($data->getWriteItems())) {
-            $this->logger->info('Converting writeItems to SaleItem objects', [
+            $this->logger->info('Converting writeItems to SaleItemRecord objects', [
                 'item_count' => count($data->getWriteItems()),
             ]);
 
             foreach ($this->buildSaleItems($data->getWriteItems()) as $item) {
-                $data->addLegacyItem($item);
+                $data->addSaleItemRecord($item);
             }
         }
 
@@ -164,18 +164,18 @@ readonly class SaleProcessor implements ProcessorInterface
         $subtotal = BigDecimal::zero();
         $itemCount = 0;
 
-        /** @var SaleItem $item */
-        foreach ($data->getItems() as $item) {
+        /** @var SaleItemRecord $item */
+        foreach ($data->getSaleItemRecords() as $item) {
             $itemCount++;
-            $item->setMovimiento($data);
-            $subtotal = $subtotal->plus(Money::money($item->getPrecioTotal() ?? '0'));
+            $item->setSaleRecord($data);
+            $subtotal = $subtotal->plus(Money::money($item->getNetAmount()));
 
             $this->logger->debug('Processed sale item', [
                 'item_number' => $itemCount,
-                'product_id' => $item->getProducto()?->getId(),
-                'quantity' => $item->getCantidad(),
-                'price' => $item->getPrecioUnitario(),
-                'total' => $item->getPrecioTotal(),
+                'product_id' => $item->getProduct()?->getId(),
+                'quantity' => $item->getQty(),
+                'price' => $item->getUnitPrice(),
+                'total' => $item->getNetAmount(),
             ]);
         }
 
@@ -232,21 +232,19 @@ readonly class SaleProcessor implements ProcessorInterface
             'sale_id' => $data->getId(),
             'customer_id' => $data->getCliente()?->getId(),
             'total' => $data->getTotal(),
-            'item_count' => count($data->getItems()),
+            'item_count' => count($data->getSaleItemRecords()),
         ]);
-        $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
         if ($isOperationalSale) {
+            // Resolve cash session and back-propagate IDs onto $data BEFORE the ORM flush so
+            // that seller_user_id, cash_register_id, and cash_session_id are non-null on INSERT.
             try {
                 $cashSessionId = $requireOpenSession
                     ? $this->cashSessionResolver->resolveForSale($data)
                     : $this->cashSessionResolver->tryResolveForSale($data);
                 $resolvedCashSessionId = $cashSessionId;
 
-                // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord
-                // so that SalesWriteGateway::write() (guard at line 51) sees a non-null value.
-                // This is required when the legacy cash_shift lookup returns null (e.g. demo tenant
-                // running in v2_authoritative mode where no open cash_shift row exists).
+                // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord.
                 if ($cashSessionId !== null && $data->getCajaId() === null) {
                     $resolvedRegisterId = $this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId);
                     if ($resolvedRegisterId !== null) {
@@ -254,6 +252,9 @@ readonly class SaleProcessor implements ProcessorInterface
                     }
                 }
 
+                // write() populates all V2 fields on $data (seller_user_id, sync fields, etc.)
+                // and calls entityManager->flush() — so persistProcessor is not needed for
+                // operational sales.
                 $this->salesWriteGateway->write($data, $cashSessionId);
             } catch (\Throwable $exception) {
                 $this->logger->error('Sales V2 write failed', [
@@ -263,7 +264,7 @@ readonly class SaleProcessor implements ProcessorInterface
                     'cash_register_id' => $data->getCajaId(),
                     'resolved_cash_session_id' => $resolvedCashSessionId,
                     'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
-                    'item_count' => count($data->getItems()),
+                    'item_count' => count($data->getSaleItemRecords()),
                     'total' => $data->getTotal(),
                     ...$this->buildThrowableContext($exception),
                 ]);
@@ -274,6 +275,9 @@ readonly class SaleProcessor implements ProcessorInterface
                     $exception
                 );
             }
+        } else {
+            // Non-operational sales: use the standard API Platform persist processor.
+            $this->persistProcessor->process($data, $operation, $uriVariables, $context);
         }
 
         if ($isNew && $isOperationalSale) {
@@ -358,25 +362,27 @@ readonly class SaleProcessor implements ProcessorInterface
     }
 
     /**
-     * Build SaleItem entities from the raw write-items payload.
+     * Build SaleItemRecord entities from the raw write-items payload.
      *
      * @param array<int, array<string, mixed>> $writeItems
      *
-     * @return SaleItem[]
+     * @return SaleItemRecord[]
      */
     private function buildSaleItems(array $writeItems): array
     {
         $items = [];
+        $lineNo = 1;
 
         foreach ($writeItems as $itemData) {
-            $item = new SaleItem();
+            $item = new SaleItemRecord();
 
             // Resolve product from IRI, object with @id / id, or plain UUID
             $productRef = $itemData['product'] ?? null;
             $productId  = $this->extractProductId($productRef);
+            $product    = null;
             if ($productId !== null) {
                 $product = $this->entityManager->find(Product::class, $productId);
-                $item->setProducto($product);
+                $item->setProduct($product);
             }
 
             $qty       = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
@@ -384,7 +390,6 @@ readonly class SaleProcessor implements ProcessorInterface
             $discount  = $itemData['discount'] ?? $itemData['descuento'] ?? null;
 
             // Resolve discountPercent: prefer explicit percent over legacy flat amount.
-            // discountPercent takes precedence when provided; derives discountAmount via BigDecimal.
             $discountPercent = $itemData['discountPercent'] ?? $itemData['descuento_porcentaje'] ?? null;
 
             if ($discountPercent !== null) {
@@ -412,23 +417,36 @@ readonly class SaleProcessor implements ProcessorInterface
 
             $discount = $discount ?? '0.00';
 
-            // Calculate item total: (qty × unitPrice) − discount
+            // gross = qty × unitPrice
+            $grossAmount = Money::money(BigDecimal::of((string) $unitPrice)->multipliedBy($qty));
+            // net = gross − discount
             $itemTotal = $itemData['total'] ?? $itemData['precio_total'] ?? null;
             if ($itemTotal === null || $itemTotal === '' || $itemTotal === '0.00') {
-                $lineTotal = Money::money(BigDecimal::of($unitPrice)->multipliedBy($qty));
-                $itemTotal = Money::toString($lineTotal->minus(Money::money($discount)));
+                $itemTotal = Money::toString(Money::money($grossAmount)->minus(Money::money($discount)));
             }
 
-            $item->setCantidad($qty);
-            $item->setPrecioUnitario($unitPrice);
-            $item->setDescuento($discount);
+            $item->setLineNo($lineNo++);
+            $item->setQty(number_format($qty, 3, '.', ''));
+            $item->setUnitPrice(number_format((float) $unitPrice, 4, '.', ''));
+            $item->setGrossAmount(Money::toString($grossAmount));
+            $item->setDiscountAmount($discount);
+            $item->setNetAmount($itemTotal);
+            $item->setTaxAmount('0.00');
+
             if ($discountPercent !== null) {
-                $item->setDescuentoPorcentaje((string) $discountPercent);
+                $item->setDiscountPercent((string) $discountPercent);
             }
-            $item->setPrecioTotal($itemTotal);
+
+            // Populate snapshots from product when available
+            if ($product !== null) {
+                $item->setNameSnapshot($product->getName());
+                $item->setSkuSnapshot($product->getCode());
+                $item->setUomSnapshot($product->getUnitOfMeasure()->getCode());
+                $item->setUnitCostSnapshot($product->getPurchasePrice());
+            }
 
             $this->logger->debug('Converted sale item', [
-                'product_id'       => $item->getProducto()?->getId(),
+                'product_id'       => $product?->getId(),
                 'qty'              => $qty,
                 'unit_price'       => $unitPrice,
                 'discount_percent' => $discountPercent,

@@ -7,7 +7,7 @@ namespace App\Inventory\Core\Contract;
 use App\Catalog\Entity\Product;
 use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Entity\Warehouse;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Exception;
 
@@ -28,7 +28,7 @@ interface SalesInventoryPortInterface
      */
     public function applyMovementFromSaleItem(
         SaleRecord $sale,
-        SaleItem $item,
+        SaleItemRecord $item,
         int $lineNo,
         bool $enforceNonNegativeStock = true,
     ): void;

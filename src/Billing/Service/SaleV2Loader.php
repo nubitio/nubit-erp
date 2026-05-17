@@ -7,7 +7,7 @@ namespace App\Billing\Service;
 use App\Settings\Service\TenantSettingsService;
 use App\Contacts\Entity\Customer;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItem;
+use App\Sales\Entity\SaleItemRecord;
 use App\Inventory\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -128,7 +128,7 @@ SQL,
         foreach ($itemRows as $itemRow) {
             $saleItem = $this->buildSaleItem($itemRow);
             if ($saleItem !== null) {
-                $sale->addLegacyItem($saleItem);
+                $sale->addSaleItemRecord($saleItem);
             }
         }
 
@@ -138,7 +138,7 @@ SQL,
     /**
      * @param array<string, mixed> $row
      */
-    private function buildSaleItem(array $row): ?SaleItem
+    private function buildSaleItem(array $row): ?SaleItemRecord
     {
         $productId = $row['product_id'] ?? null;
         if (!$productId) {
@@ -150,12 +150,23 @@ SQL,
             return null;
         }
 
-        $item = new SaleItem();
-        $item->setProducto($product);
-        $item->setCantidad((float) ($row['qty'] ?? 0));
-        $item->setPrecioUnitario((string) ($row['unit_price'] ?? '0'));
-        $item->setPrecioTotal((string) ($row['net_amount'] ?? '0'));
-        $item->setDescuento((string) ($row['discount_amount'] ?? '0'));
+        $item = new SaleItemRecord();
+        $item->setProduct($product);
+        $item->setQty((string) ($row['qty'] ?? '0'));
+        $item->setUnitPrice((string) ($row['unit_price'] ?? '0'));
+        $item->setNetAmount((string) ($row['net_amount'] ?? '0'));
+        $item->setDiscountAmount((string) ($row['discount_amount'] ?? '0'));
+        $item->setDiscountPercent(
+            isset($row['descuento_porcentaje'])
+                ? (string) $row['descuento_porcentaje']
+                : null
+        );
+        $item->setGrossAmount((string) ($row['gross_amount'] ?? $row['net_amount'] ?? '0'));
+        $item->setTaxAmount((string) ($row['tax_amount'] ?? '0'));
+        $item->setLineNo((int) ($row['line_no'] ?? 0));
+        $item->setNameSnapshot((string) ($row['name_snapshot'] ?? ''));
+        $item->setSkuSnapshot(isset($row['sku_snapshot']) ? (string) $row['sku_snapshot'] : null);
+        $item->setUomSnapshot(isset($row['uom_snapshot']) ? (string) $row['uom_snapshot'] : null);
 
         return $item;
     }
