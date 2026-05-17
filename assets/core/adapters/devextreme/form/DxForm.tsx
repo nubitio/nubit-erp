@@ -1,25 +1,18 @@
-import { FormRef } from 'devextreme-react/form';
-import { Field } from '@core/field/Field';
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
 import { useFormSubmit } from '@core/form/useFormSubmit';
-import { DataGridRef } from 'devextreme-react/data-grid';
-import ArrayStore from 'devextreme/data/array_store';
-import DataSource from 'devextreme/data/data_source';
 import { useEvents } from '@core/event/EventHook';
-import { buildField } from './FormUtils';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
 import { useDxFormApi } from './useDxFormApi';
 import type { FormHandle } from '@core/form/FormHandle';
 import type { FormViewOptions } from '@core/form/FormViewOptions';
-import type { UploadedFile } from '@core/form/useFormSubmit';
 import { useFormComputedValues } from '@core/form/useFormComputedValues';
 import { useFormValidation } from '@core/form/useFormValidation';
 import { useFormFieldDataChanged } from '@core/form/useFormFieldDataChanged';
 import { useFormSectionOptions } from '@core/form/useFormSectionOptions';
 import { DxFormLayoutRenderer } from './DxFormLayoutRenderer';
 import { useDxFormObservers } from './useDxFormObservers';
-
-type FormRecord = Record<string, unknown>;
+import { useDxFormRuntime } from './useDxFormRuntime';
+import { useDxFormFieldRenderer } from './useDxFormFieldRenderer';
 
 export type DxFormOptions = FormViewOptions;
 
@@ -31,31 +24,13 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const computedFieldNames = options.fields
     .filter((field) => field.computed !== undefined)
     .map((field) => field.name);
-  const formRef = useRef<FormRef | null>(null);
-  const gridRef = useRef<DataGridRef | null>(null);
-  const uploadedFiles = useRef<UploadedFile[]>([]);
-  const isEdit = useRef<boolean>(false);
-  const data = useRef<DataSource>(
-    new DataSource({
-      store: new ArrayStore({
-        key: options.detailFields?.find((field) => field.isIdentity)?.name ?? '',
-        data: [],
-      }),
-    }),
-  );
+  const { formRef, gridRef, uploadedFiles, isEdit, dataSource, getDetailIdField, getFieldValue } =
+    useDxFormRuntime(options.detailFields);
   const [on, emit] = useEvents();
   const detailPropertyName = options.detailPropertyName ?? 'items';
   const detailNoDataText = options.requiredDetail
     ? t('form.detailRequired')
     : t('form.detailEmpty');
-
-  const getDetailIdField = () => {
-    return options.detailFields?.find((field) => field.isIdentity)?.name ?? '';
-  };
-
-  const getFieldValue = (field: string) => {
-    return formRef.current?.instance().getEditor(field)?.option('value');
-  };
 
   const validate = useFormValidation({
     detailFields: options.detailFields,
@@ -87,11 +62,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     validate,
   );
 
-  const buildFields = (fields: Field[]) => {
-    return fields.map((field: Field, index) => {
-      return buildField(field, index, options.editable ?? true, uploadedFiles, formRef);
-    });
-  };
+  const renderFields = useDxFormFieldRenderer(options.editable, uploadedFiles, formRef);
 
   useFormSectionOptions(options.formLayout, formRef);
 
@@ -102,7 +73,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const { setDetailData, setError } = api;
 
   useDxFormObservers({
-    dataSource: data,
+    dataSource,
     detailNoDataText,
     detailPropertyName,
     detailUrl: options.detailUrl,
@@ -137,7 +108,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       allowDeleting={options.allowDeleting}
       allowUpdating={options.allowUpdating}
       className={options.className}
-      dataSource={data.current}
+      dataSource={dataSource.current}
       detailFields={options.detailFields}
       detailIdField={getDetailIdField()}
       detailNoDataText={detailNoDataText}
@@ -148,7 +119,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       formRef={formRef}
       gridRef={gridRef}
       groupOtherText={t('form.groupOther')}
-      renderFields={buildFields}
+      renderFields={renderFields}
     />
   );
 });
