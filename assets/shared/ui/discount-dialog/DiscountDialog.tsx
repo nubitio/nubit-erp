@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-restricted-imports
-import { AppDialog } from '@app/shell/components/AppDialog';
+import { AppDialog } from '@shared/ui/app-dialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@core/event/EventHook';
@@ -143,7 +143,9 @@ export const DiscountDialog = () => {
       )}
       <div className="p-2">
         <div className="mb-4">
-          <label className="form-label" htmlFor="discount-percent">Descuento %</label>
+          <label className="form-label" htmlFor="discount-percent">
+            Descuento %
+          </label>
           <input
             id="discount-percent"
             type="number"
@@ -156,7 +158,9 @@ export const DiscountDialog = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="form-label" htmlFor="discount-amount">Descuento S/</label>
+          <label className="form-label" htmlFor="discount-amount">
+            Descuento S/
+          </label>
           <input
             id="discount-amount"
             type="number"
