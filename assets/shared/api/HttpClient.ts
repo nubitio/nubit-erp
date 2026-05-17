@@ -1,11 +1,18 @@
 import ApiResponse from './ApiResponse';
 import { HttpCode } from './HttpCode';
-import { alert } from 'devextreme/ui/dialog';
 import toast from '../lib/SharedUtils';
 import { dispatch } from '../../core/event/EventHook';
 import { Constants } from '../../core/common/Constants';
 import { StorageUtils } from '../lib/StorageUtils';
 import mercureManager from '../../core/mercure/MercureManager';
+
+function showBlockingAlert(message: string): Promise<void> {
+  if (typeof window !== 'undefined') {
+    window.alert(message);
+  }
+
+  return Promise.resolve();
+}
 
 /**
  * Serializes request params to bracket-notation query strings.
@@ -178,13 +185,13 @@ class HttpClient {
       if (response.status === HttpCode.NO_CONTENT) {
         data = undefined as T;
       } else if (config?.responseType === 'arraybuffer') {
-        data = await response.arrayBuffer() as unknown as T;
+        data = (await response.arrayBuffer()) as unknown as T;
       } else if (config?.responseType === 'blob') {
-        data = await response.blob() as unknown as T;
+        data = (await response.blob()) as unknown as T;
       } else if (config?.responseType === 'text') {
-        data = await response.text() as unknown as T;
+        data = (await response.text()) as unknown as T;
       } else {
-        data = await response.json() as T;
+        data = (await response.json()) as T;
       }
       return new ApiResponse<T>(response, data);
     }
@@ -217,9 +224,7 @@ class HttpClient {
     }
 
     if (status === HttpCode.UNAUTHORIZED) {
-      return this.handleUnauthorizedError(() =>
-        this.request<T>(method, url, body, config),
-      );
+      return this.handleUnauthorizedError(() => this.request<T>(method, url, body, config));
     }
 
     if (status === HttpCode.UNPROCESSABLE_ENTITY) {
@@ -273,7 +278,10 @@ class HttpClient {
 
     return new Promise<T>((resolve, reject) => {
       this.failedQueue.push({
-        resolve: () => retry().then(resolve as () => void).catch(reject),
+        resolve: () =>
+          retry()
+            .then(resolve as () => void)
+            .catch(reject),
         reject,
         retry: retry as () => Promise<unknown>,
       });
@@ -295,7 +303,7 @@ class HttpClient {
   private handleTokenRefreshError() {
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
-      alert(HttpClient.DEFAULT_MESSAGES.unauthorized, 'Error').then(() => {
+      showBlockingAlert(HttpClient.DEFAULT_MESSAGES.unauthorized).then(() => {
         StorageUtils.removeItem('user');
         window.location.href = Constants.BASE_URL;
       });

@@ -6,7 +6,7 @@ import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '../../utils/media-query';
 import { Content } from './Content';
 import { useThemeContext } from '../../theme/theme';
-import { configureDevExtreme } from '@app/providers/devextreme';
+import { configureUiAdapter } from '@app/providers/uiAdapter';
 
 import '../../styles.scss';
 import '../../theme/theme';
@@ -51,7 +51,7 @@ export const EfactApp = () => {
   const [mercureHubUrl, setMercureHubUrl] = useState<string | null>(MercureManager.getHubUrl());
 
   useEffect(() => {
-    configureDevExtreme();
+    configureUiAdapter();
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { configureDevExtreme } from '@app/providers/devextreme';
+import { configureUiAdapter } from '@app/providers/uiAdapter';
 
 import '@assets/styles.scss';
 import '@theme/theme';
@@ -21,7 +21,7 @@ export const LoginPage = () => {
   );
 
   useEffect(() => {
-    configureDevExtreme();
+    configureUiAdapter();
   }, []);
 
   return (
@@ -53,19 +53,30 @@ export const LoginPage = () => {
           </div>
 
           <div className="brand-text">
-            <h1>Simplifica tu trabajo,<br />optimiza tu negocio.</h1>
+            <h1>
+              Simplifica tu trabajo,
+              <br />
+              optimiza tu negocio.
+            </h1>
             <p>La plataforma de facturación electrónica más intuitiva para tu empresa.</p>
           </div>
 
           <ul className="brand-features">
-            <li><i className="ph ph-check-circle" aria-hidden="true" />Facturación electrónica SUNAT</li>
-            <li><i className="ph ph-check-circle" aria-hidden="true" />POS integrado multilocal</li>
-            <li><i className="ph ph-check-circle" aria-hidden="true" />Inventario en tiempo real</li>
+            <li>
+              <i className="ph ph-check-circle" aria-hidden="true" />
+              Facturación electrónica SUNAT
+            </li>
+            <li>
+              <i className="ph ph-check-circle" aria-hidden="true" />
+              POS integrado multilocal
+            </li>
+            <li>
+              <i className="ph ph-check-circle" aria-hidden="true" />
+              Inventario en tiempo real
+            </li>
           </ul>
 
-          {window.app_version && (
-            <span className="brand-version">{window.app_version}</span>
-          )}
+          {window.app_version && <span className="brand-version">{window.app_version}</span>}
         </div>
       </aside>
 

@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
-import type { DxFilterRule } from '../field/FilterRule';
+import type { FilterRule } from '../field/FilterRule';
 import type { FormEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import type { FormHandle } from '../form/FormHandle';
 import type { BulkAction } from './BulkAction';
@@ -68,10 +68,10 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   detailUrl?: string;
   detailPropertyName?: string;
   sort?: Array<{ selector: string; desc: boolean }>;
-  filter?: DxFilterRule[];
+  filter?: FilterRule[];
   mode?: 'normal' | 'minimal';
   paging?: boolean;
-  /** Enables DevExtreme header filter dropdowns. Disabled by default; filter row remains the default. */
+  /** Enables adapter-provided header filter dropdowns. Disabled by default; filter row remains the default. */
   headerFilter?: boolean;
   stateStoring?: boolean;
   /** @deprecated Use `permissions.canAdd` instead. */
@@ -97,9 +97,9 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   /** Bulk actions rendered in the bulk toolbar when rows are selected. */
   bulkActions?: BulkAction[];
   /**
-   * DevExtreme editing mode.
-   * - `'popup'` (default) — opens DxDialog + DxForm.
-   * - `'row'` | `'cell'` | `'batch'` — inline DevExtreme editing (no DxDialog).
+   * Grid editing mode. Inline modes are interpreted by the active grid adapter.
+   * - `'popup'` (default) opens the resource dialog and form.
+   * - `'row'` | `'cell'` | `'batch'` enable inline editing when supported.
    */
   editMode?: 'popup' | 'row' | 'cell' | 'batch';
   /** Optional layout descriptor for the dialog form: tabs or collapsible sections. */

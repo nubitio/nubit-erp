@@ -1,7 +1,4 @@
 import { MutableRefObject } from 'react';
-import { DataGridRef } from 'devextreme-react/data-grid';
-import { FormRef } from 'devextreme-react/form';
-import { confirm } from 'devextreme/ui/dialog';
 import { httpClient } from '../../shared/api/HttpClient';
 import { Field } from '../field/Field';
 import { FormEventNames } from '../event/EventTypes';
@@ -12,6 +9,20 @@ export type { UploadedFileEntry as UploadedFile } from './serializeFormData';
 
 type FormRecord = Record<string, unknown>;
 type DeletePayload = { row: FormRecord };
+
+type SubmitFormRef = {
+  instance: () => {
+    option: (name: 'formData') => unknown;
+  };
+};
+
+type SubmitGridRef = {
+  instance: () => {
+    getDataSource: () => {
+      items: () => unknown[];
+    };
+  };
+};
 
 export interface UseFormSubmitOptions {
   url: string;
@@ -29,8 +40,8 @@ export interface UseFormSubmitOptions {
 }
 
 export interface UseFormSubmitRefs {
-  formRef: MutableRefObject<FormRef | null>;
-  gridRef: MutableRefObject<DataGridRef | null>;
+  formRef: MutableRefObject<SubmitFormRef | null>;
+  gridRef: MutableRefObject<SubmitGridRef | null>;
   uploadedFiles: MutableRefObject<{ name: string; iri: string }[]>;
   isEdit: MutableRefObject<boolean>;
 }
@@ -130,28 +141,29 @@ export const useFormSubmit = (
   /** Handle the DELETE event: confirm dialog → DELETE HTTP */
   const handleDelete = (payload: DeletePayload): void => {
     const { LOADING: loadingEvent, SUCCESS: successEvent } = options.events ?? {};
-    const result = confirm(t('dialog.confirmDelete'), t('dialog.confirmDeleteTitle'));
-    result.then((dialogResult) => {
-      if (!dialogResult) return;
-      if (loadingEvent) emit(loadingEvent, true);
-      options.onLoadingChange?.(true);
+    const confirmed = window.confirm(
+      `${t('dialog.confirmDeleteTitle')}\n\n${t('dialog.confirmDelete')}`,
+    );
+    if (!confirmed) return;
 
-      const finalize = () => {
-        if (loadingEvent) emit(loadingEvent, false);
-        options.onLoadingChange?.(false);
-      };
+    if (loadingEvent) emit(loadingEvent, true);
+    options.onLoadingChange?.(true);
 
-      httpClient
-        .delete(`${options.url}/${payload.row[getIdField()]}`)
-        .then((response: unknown) => {
-          if (successEvent) emit(successEvent, response);
-          options.onDeleteSuccess?.(response);
-        })
-        .catch((err: unknown) => {
-          options.onDeleteError?.(err);
-        })
-        .finally(finalize);
-    });
+    const finalize = () => {
+      if (loadingEvent) emit(loadingEvent, false);
+      options.onLoadingChange?.(false);
+    };
+
+    httpClient
+      .delete(`${options.url}/${payload.row[getIdField()]}`)
+      .then((response: unknown) => {
+        if (successEvent) emit(successEvent, response);
+        options.onDeleteSuccess?.(response);
+      })
+      .catch((err: unknown) => {
+        options.onDeleteError?.(err);
+      })
+      .finally(finalize);
   };
 
   return { handleSave, handleDelete, serializeFields, appendDetailRows };
