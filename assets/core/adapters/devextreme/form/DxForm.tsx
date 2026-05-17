@@ -9,62 +9,22 @@ import { DataGridRef } from 'devextreme-react/data-grid';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 import { useEvents } from '@core/event/EventHook';
-import { FormEventNames } from '@core/event/EventTypes';
 import { buildField } from './FormUtils';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
 import toast from '@shared/lib/SharedUtils';
-import type { FormLayout } from '@core/crud/FormLayout';
 import { buildEmptyRow, normalizeFormData } from '@core/form/DxFormDataTransform';
 import { DxFormDetailGrid } from './DxFormDetailGrid';
 import { useDxFormApi } from './useDxFormApi';
 import type { FormHandle } from '@core/form/FormHandle';
+import { FORM_EVENTS } from '@core/form/FormEvents';
+import type { FormViewOptions } from '@core/form/FormViewOptions';
 
 type FormRecord = Record<string, unknown>;
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormRecord & { row?: FormRecord };
 type PendingAddPayload = { payload: EventRowPayload | undefined };
 
-export interface DxFormOptions {
-  className?: string;
-  url: string;
-  detailUrl?: string;
-  fields: Field[];
-  detailFields?: Field[];
-  detailPropertyName?: string;
-  allowAdding?: boolean;
-  allowUpdating?: boolean;
-  allowDeleting?: boolean;
-  events?: FormEventNames;
-  editable?: boolean;
-  format?: 'json' | 'multipart';
-  requiredDetail?: boolean;
-  /** @deprecated — no tiene efecto, IRI siempre se aplica */
-  useIRI?: boolean;
-  /** Called after a successful POST or PATCH. Receives the server response. */
-  onSaveSuccess?: (response: unknown) => void;
-  /** Called when POST or PATCH fails (after HTTP error). */
-  onSaveError?: (error?: unknown) => void;
-  /** Called after a successful DELETE. */
-  onDeleteSuccess?: (response: unknown) => void;
-  /** Called when DELETE fails. */
-  onDeleteError?: (error?: unknown) => void;
-  /** Called whenever the loading state changes (true = started, false = finished). */
-  onLoadingChange?: (loading: boolean) => void;
-  /** Optional layout descriptor: when set, renders fields inside tabs or collapsible sections. */
-  formLayout?: FormLayout;
-  /**
-   * Called whenever any form field value changes.
-   * Receives a snapshot of the full current form data object.
-   * Use this to implement reactive rules (visibleWhen / disabledWhen / computed).
-   */
-  onFieldDataChanged?: (formData: Record<string, unknown>) => void;
-  /** Latest runtime-computed values pushed down by SmartCrudPage. */
-  computedValues?: Record<string, unknown>;
-  /**
-   * @deprecated — no longer used, sidebar is always single column.
-   */
-  sidebarColCount?: never;
-}
+export type DxFormOptions = FormViewOptions;
 
 export type DxFormEvents = FormHandle;
 
@@ -121,15 +81,6 @@ function validateDetailRows(detailRows: FormRecord[], detailFields: Field[]): bo
     }),
   );
 }
-
-export const FORM_EVENTS = {
-  FIELD_CHANGED: 'on:field:changed',
-  ROW_ADDED: 'on:row:added',
-  ROW_REMOVED: 'on:row:removed',
-  ROW_UPDATED: 'on:row:updated',
-  LOADING: 'on:loading',
-  LOADING_DETAIL: 'on:loading:detail',
-};
 
 export type UploadedFile = {
   name: string;

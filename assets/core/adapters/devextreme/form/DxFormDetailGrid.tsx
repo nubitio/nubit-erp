@@ -9,7 +9,7 @@ import DataGrid, {
 import DataSource from 'devextreme/data/data_source';
 import { buildColumns } from '@core/adapters/devextreme/datagrid/DxDataGridUtils';
 import { Field } from '@core/field/Field';
-import { FORM_EVENTS } from './DxForm';
+import { FORM_EVENTS } from '@core/form/FormEvents';
 import { buildEmptyRow } from '@core/form/DxFormDataTransform';
 
 type FormRecord = Record<string, unknown>;
