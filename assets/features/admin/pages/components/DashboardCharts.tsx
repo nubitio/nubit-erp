@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
-import { SalesByMonth, SalesByDay } from '../../pages/types';
+import { SalesByMonth, SalesByDay } from '../types';
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
@@ -29,11 +29,7 @@ type Props = {
 
 function CurrencyTooltip({ active, payload }: { active?: boolean; payload?: { value: number }[] }) {
   if (!active || !payload?.length) return null;
-  return (
-    <div className="dash-chart-tooltip">
-      {currencyFormatter(payload[0].value)}
-    </div>
-  );
+  return <div className="dash-chart-tooltip">{currencyFormatter(payload[0].value)}</div>;
 }
 
 export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
@@ -41,20 +37,11 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
     <>
       <SectionHeader title="Evolución de ventas" />
       <div className="dash-charts-2col">
-        <CardAnalytics
-          title="Evolución mensual (12 meses)"
-          contentClass="chart-card"
-          menuVisible={false}
-        >
+        <CardAnalytics title="Evolución mensual (12 meses)" contentClass="chart-card" menuVisible={false}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={salesByMonth} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(0,0,0,0.08))" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11 }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis
                 tickFormatter={(v: number) => currencyFormatter(v)}
                 tick={{ fontSize: 11 }}
@@ -68,11 +55,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
           </ResponsiveContainer>
         </CardAnalytics>
 
-        <CardAnalytics
-          title="Ventas diarias (mes actual)"
-          contentClass="chart-card"
-          menuVisible={false}
-        >
+        <CardAnalytics title="Ventas diarias (mes actual)" contentClass="chart-card" menuVisible={false}>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={salesByDay} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <defs>
@@ -82,12 +65,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(0,0,0,0.08))" />
-              <XAxis
-                dataKey="day"
-                tick={{ fontSize: 11 }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis
                 tickFormatter={(v: number) => currencyFormatter(v)}
                 tick={{ fontSize: 11 }}

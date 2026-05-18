@@ -68,9 +68,18 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, CashClosureGrid
     };
 
     return (
-      <div className="grid theme-dependent" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+      <div
+        className="grid theme-dependent"
+        style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 0',
+          }}
+        >
           <div className="grid-header">Cierre de caja</div>
           <button
             type="button"
@@ -82,23 +91,45 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, CashClosureGrid
           </button>
         </div>
 
-        {/* Loading overlay */}
         {loading && (
           <div style={{ padding: '8px', textAlign: 'center', color: 'var(--texteditor-label-color)' }}>
-            {loadingMessage || 'Cargando…'}
+            {loadingMessage || 'Cargando...'}
           </div>
         )}
 
-        {/* Table */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>Forma de pago</th>
-                <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>Monto esperado</th>
-                <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', minWidth: 160 }}>Monto contado</th>
-                <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>Diferencia</th>
-                <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', minWidth: 300 }}>Nota</th>
+                <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                  Forma de pago
+                </th>
+                <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                  Monto esperado
+                </th>
+                <th
+                  style={{
+                    textAlign: 'right',
+                    padding: '6px 8px',
+                    borderBottom: '1px solid var(--base-border-color)',
+                    minWidth: 160,
+                  }}
+                >
+                  Monto contado
+                </th>
+                <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                  Diferencia
+                </th>
+                <th
+                  style={{
+                    textAlign: 'left',
+                    padding: '6px 8px',
+                    borderBottom: '1px solid var(--base-border-color)',
+                    minWidth: 300,
+                  }}
+                >
+                  Nota
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -109,10 +140,19 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, CashClosureGrid
                     <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
                       {row.paymentMethod}
                     </td>
-                    <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', textAlign: 'right' }}>
+                    <td
+                      style={{
+                        padding: '6px 8px',
+                        borderBottom: '1px solid var(--base-border-color)',
+                        textAlign: 'right',
+                      }}
+                    >
                       {NumberUtils.formatCurrency(Number(row.expectedAmount ?? 0))}
                     </td>
-                    <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }} className="col-counted-amount">
+                    <td
+                      style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}
+                      className="col-counted-amount"
+                    >
                       <div>
                         <input
                           type="number"
@@ -122,13 +162,24 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, CashClosureGrid
                           style={{ width: '100%', textAlign: 'right' }}
                         />
                         {row.paymentMethodId !== 1 && (
-                          <small style={{ color: 'var(--texteditor-label-color, #888)', fontSize: '11px' }}>
+                          <small
+                            style={{
+                              color: 'var(--texteditor-label-color, #888)',
+                              fontSize: '11px',
+                            }}
+                          >
                             Ingresa el total de tu terminal o app
                           </small>
                         )}
                       </div>
                     </td>
-                    <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', textAlign: 'right' }}>
+                    <td
+                      style={{
+                        padding: '6px 8px',
+                        borderBottom: '1px solid var(--base-border-color)',
+                        textAlign: 'right',
+                      }}
+                    >
                       {diff != null ? NumberUtils.formatCurrency(diff) : ''}
                     </td>
                     <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>

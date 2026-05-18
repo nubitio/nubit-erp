@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import { configureUiAdapter } from '@app/providers/uiAdapter';
+import { useMemo, useState } from 'react';
 
 import '@assets/styles.scss';
 import '@theme/theme';
@@ -19,10 +18,6 @@ export const LoginPage = () => {
     () => Boolean(window.app_logo) && !mobileLogoFailed,
     [mobileLogoFailed],
   );
-
-  useEffect(() => {
-    configureUiAdapter();
-  }, []);
 
   return (
     <div id="login-root">
