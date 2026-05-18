@@ -2,12 +2,10 @@ import type { MutableRefObject } from 'react';
 import type { FormRef } from 'devextreme-react/form';
 
 import type { DataRecord } from '@core/data/DataRecord';
-import { dispatch } from '@core/event/EventHook';
-import { FORM_EVENTS } from '@core/form/FormEvents';
-import type { FormOnChangeFn } from '@core/field/FieldCallbacks';
 import type { Field } from '@core/field/Field';
 import { getDxCustomButtonsOptions } from './DxFormCustomButtonsOptions';
 import { getDxEditorInputAttr, getDxRestEditorOptions } from './DxFormEditorAttributes';
+import { getDxEditorValueChangedHandler } from './DxFormEditorEvents';
 
 export function getDxCommonEditorOptions(
   field: Field,
@@ -21,12 +19,7 @@ export function getDxCommonEditorOptions(
     readOnly: isEditable ? field.readonly : true,
     disabled: field.disabled,
     onFocusIn: field.onClick,
-    onValueChanged: (e: { value: unknown }) => {
-      dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
-      if (field.onChange) {
-        (field.onChange as FormOnChangeFn)(e.value);
-      }
-    },
+    onValueChanged: getDxEditorValueChangedHandler(field),
     onKeyPress: field.onKeyPress,
     onItemClick: field.onSelect,
     itemRender: field.itemFormatter,
