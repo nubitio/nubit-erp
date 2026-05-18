@@ -1,6 +1,5 @@
 import { Field } from '@core/field/Field';
 import { FormOnChangeFn } from '@core/field/FieldCallbacks';
-import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import {
   CompareRule,
   CustomRule,
@@ -24,6 +23,7 @@ import { getFormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import { getFormFieldPresentation } from '@core/form/FormFieldPresentation';
 import { getFormRemoteOptions } from '@core/form/FormRemoteOptions';
 import { getDxEditorType, getDxSimpleEditorOptions } from './DxFormEditorOptions';
+import { getDxRemoteEditorOptions } from './DxFormRemoteEditorOptions';
 
 export const buildField = (
   field: Field,
@@ -34,79 +34,11 @@ export const buildField = (
 ) => {
   if (getFormEditorKind(field) === null) return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DevExtreme editor options bag varies by widget type
-  let editorOptions: Record<string, any> = {};
-  const remoteOptions = getFormRemoteOptions(field);
-  if (remoteOptions) {
-    // Create a store instance so we can query a small page to decide auto-selection
-    const store = dxUtils.getDataStore(
-      remoteOptions.url,
-      remoteOptions.valueField,
-      remoteOptions.byKeyUrl,
-      remoteOptions.filters,
-      [],
-      remoteOptions.loadOptions,
-      remoteOptions.iriMode,
-    );
-
-    editorOptions = {
-      dataSource: {
-        store: store,
-        paginate: true,
-        pageSize: 10,
-      },
-      dropDownOptions: {
-        container: 'body',
-        wrapperAttr: { class: 'crud-dialog-editor-overlay' },
-      },
-      valueExpr: remoteOptions.valueField,
-      displayExpr: remoteOptions.textField,
-      searchEnabled: remoteOptions.searchEnabled,
-      searchExpr: remoteOptions.searchExpr,
-      wrapItemText: true,
-      selectionMode: remoteOptions.multiple ? 'multiple' : 'single',
-      buttons: ['clear', 'dropDown'],
-    };
-
-    // Auto-select logic: only when the field opts in, and no explicit defaultValue has been provided
-    try {
-      if (remoteOptions.autoSelectIfSingle && remoteOptions.defaultValue === undefined) {
-        // Case: local data already present on the field (mode !== 'remote')
-        if (field.mode !== 'remote' && remoteOptions.localData.length === 1) {
-          const single = remoteOptions.localData[0];
-          const v = remoteOptions.multiple
-            ? [single[remoteOptions.valueField]]
-            : single[remoteOptions.valueField];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          field.defaultValue = v as any;
-          formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
-        } else if (remoteOptions.url) {
-          // For remote stores, load up to 2 items (so we can detect "exactly 1" without fetching all)
-          // Respect any filters embedded in the store.
-          // The CustomStore.load may return either an array or an object with .data
-          // We deliberately request a small page: skip=0, take=2
-          (store as any)
-            .load({ skip: 0, take: 2 })
-            .then((result: any) => {
-              const items = result?.data ?? result;
-              if (Array.isArray(items) && items.length === 1) {
-                const single = items[0];
-                const v = remoteOptions.multiple
-                  ? [single[remoteOptions.valueField]]
-                  : single[remoteOptions.valueField];
-                field.defaultValue = v;
-                // If the form is already mounted, set the editor value immediately
-                formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
-              }
-            })
-            .catch((err: unknown) => {
-              console.warn(`[DevExtremeForm] auto-select failed for "${field.name}":`, err);
-            });
-        }
-      }
-    } catch (err) {
-      console.warn(`[DevExtremeForm] auto-select setup failed for "${field.name}":`, err);
-    }
-  }
+  let editorOptions: Record<string, any> = getDxRemoteEditorOptions(
+    field,
+    getFormRemoteOptions(field),
+    formRef,
+  );
   editorOptions = {
     ...editorOptions,
     ...getDxSimpleEditorOptions(getFormSimpleEditorOptions(field), field, formRef, uploadedFiles),
