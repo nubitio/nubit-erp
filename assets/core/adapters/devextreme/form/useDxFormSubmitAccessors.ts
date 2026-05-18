@@ -4,7 +4,7 @@ import type { FormRef } from 'devextreme-react/form';
 
 import type { UseFormSubmitAccessors } from '@core/form/FormSubmitAccessors';
 import type { UploadedFile } from '@core/form/UploadedFile';
-import type { FormDataRecord } from '@core/form/FormDataSnapshot';
+import { getDxDetailRows, getDxFormData } from './DxFormAccessorReads';
 
 export interface UseDxFormSubmitAccessorsRefs {
   formRef: MutableRefObject<FormRef | null>;
@@ -20,10 +20,9 @@ export function useDxFormSubmitAccessors({
   uploadedFiles,
 }: UseDxFormSubmitAccessorsRefs): UseFormSubmitAccessors {
   return {
-    getDetailRows: () =>
-      (gridRef.current?.instance().getDataSource().items() ?? []) as FormDataRecord[],
+    getDetailRows: () => getDxDetailRows(gridRef),
     getFieldValue: (field) => formRef.current?.instance().getEditor(field)?.option('value'),
-    getFormData: () => (formRef.current?.instance().option('formData') ?? {}) as FormDataRecord,
+    getFormData: () => getDxFormData(formRef),
     getUploadedFiles: () => uploadedFiles.current,
     isEditMode: () => isEdit.current,
   };
