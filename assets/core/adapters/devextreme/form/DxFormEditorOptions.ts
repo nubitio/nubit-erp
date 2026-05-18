@@ -3,41 +3,10 @@ import type { FormRef } from 'devextreme-react/form';
 
 import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
-import type { FormEditorKind } from '@core/form/FormEditorKind';
 import type { FormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getIRI } from '@shared/lib/SharedUtils';
-
-// DevExtreme exposes editorType as a vendor-specific literal union; keep that
-// typing local to this adapter while the app works with FormEditorKind.
-export const getDxEditorType = (editorKind: FormEditorKind | null): any => {
-  switch (editorKind) {
-    case 'text':
-      return 'dxTextBox';
-    case 'number':
-      return 'dxNumberBox';
-    case 'date':
-      return 'dxDateBox';
-    case 'select':
-      return 'dxSelectBox';
-    case 'checkbox':
-      return 'dxCheckBox';
-    case 'radio':
-      return 'dxRadioGroup';
-    case 'textarea':
-      return 'dxTextArea';
-    case 'file':
-      return 'dxFileUploader';
-    case 'switch':
-      return 'dxSwitch';
-    case 'tags':
-      return 'dxTagBox';
-    case 'html':
-      return 'dxHtmlEditor';
-    case null:
-      return undefined;
-  }
-};
+export { getDxEditorType } from './DxFormEditorType';
 
 export const getDxSimpleEditorOptions = (
   options: FormSimpleEditorOptions,

@@ -3,7 +3,7 @@ import { FormRef, SimpleItem } from 'devextreme-react/form';
 import { MutableRefObject } from 'react';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
-import { getDxEditorType } from './DxFormEditorOptions';
+import { getDxEditorType } from './DxFormEditorType';
 import { buildValidationRules } from './DxFormValidationRules';
 import { buildTemplate, getDxFieldPresentation } from './DxFormFieldPresentation';
 import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
