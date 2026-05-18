@@ -1,7 +1,6 @@
 import { MutableRefObject, useEffect, useRef } from 'react';
 import { FormRef } from 'devextreme-react/form';
 import { DataGridRef } from 'devextreme-react/data-grid';
-import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 
 import { FORM_ERRORS_EVENT, httpClient } from '@shared/api/HttpClient';
@@ -12,7 +11,12 @@ import type { Field } from '@core/field/Field';
 import type { FormEventNames } from '@core/event/EventTypes';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import type { FormDataChangedHandler, FormDataRecord } from '@core/form/FormDataSnapshot';
-import { hasDxFormInstance, setDxDetailLoading, setDxFormData } from './DxFormAccessorReads';
+import {
+  hasDxFormInstance,
+  resetDxDetailDataSource,
+  setDxDetailLoading,
+  setDxFormData,
+} from './DxFormAccessorReads';
 
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
@@ -52,9 +56,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
     if (!hasDxFormInstance(options.formRef)) return false;
 
     options.uploadedFiles.current = [];
-    const store = options.dataSource.current?.store() as ArrayStore;
-    store.clear();
-    options.dataSource.current?.reload();
+    resetDxDetailDataSource(options.dataSource);
 
     if (payload) {
       const row = getData(payload);

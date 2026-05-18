@@ -2,6 +2,7 @@ import type { MutableRefObject } from 'react';
 import type { DataGridRef } from 'devextreme-react/data-grid';
 import type { FormRef } from 'devextreme-react/form';
 import type ArrayStore from 'devextreme/data/array_store';
+import type DataSource from 'devextreme/data/data_source';
 
 import type { FormDataRecord } from '@core/form/FormDataSnapshot';
 
@@ -52,6 +53,12 @@ export function setDxDetailLoading(
 
   grid?.endCustomLoading();
   grid?.option('noDataText', noDataText);
+}
+
+export function resetDxDetailDataSource(dataSource: MutableRefObject<DataSource>): void {
+  const store = dataSource.current?.store() as ArrayStore;
+  store.clear();
+  dataSource.current?.reload();
 }
 
 export function getDxFormData(formRef: MutableRefObject<FormRef | null>): FormDataRecord {
