@@ -49,6 +49,14 @@ export function setDxEditorOption(
   formRef.current?.instance().getEditor(field)?.option(optionName, value);
 }
 
+export function getDxEditorOption(
+  formRef: MutableRefObject<FormRef | null>,
+  field: string,
+  optionName: string,
+): unknown {
+  return formRef.current?.instance().getEditor(field)?.option(optionName);
+}
+
 export function setDxEditorOptions(
   formRef: MutableRefObject<FormRef | null>,
   field: string,

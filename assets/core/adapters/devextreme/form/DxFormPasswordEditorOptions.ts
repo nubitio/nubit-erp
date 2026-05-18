@@ -3,6 +3,7 @@ import type { FormRef } from 'devextreme-react/form';
 
 import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
+import { getDxEditorOption, setDxEditorOption } from './DxFormAccessorReads';
 
 export function getDxPasswordEditorOptions(
   field: Field,
@@ -18,11 +19,11 @@ export function getDxPasswordEditorOptions(
           icon: 'ph ph-eye ',
           stylingMode: 'text',
           onClick: (e: any) => {
-            const editor = formRef.current?.instance().getEditor(field.name);
-            editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
+            const mode = getDxEditorOption(formRef, field.name, 'mode') === 'text' ? 'password' : 'text';
+            setDxEditorOption(formRef, field.name, 'mode', mode);
             e.component.option(
               'icon',
-              editor?.option('mode') === 'text' ? 'ph ph-eye-slash' : 'ph ph-eye',
+              mode === 'text' ? 'ph ph-eye-slash' : 'ph ph-eye',
             );
           },
         },
