@@ -78,6 +78,10 @@ export function setDxFormData(
   formRef.current?.instance().option('formData', formData);
 }
 
+export function hasDxFormInstance(formRef: MutableRefObject<FormRef | null>): boolean {
+  return Boolean(formRef.current?.instance());
+}
+
 export function validateDxForm(formRef: MutableRefObject<FormRef | null>): boolean {
   return formRef.current?.instance().validate()?.isValid ?? true;
 }

@@ -12,6 +12,7 @@ import type { Field } from '@core/field/Field';
 import type { FormEventNames } from '@core/event/EventTypes';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import type { FormDataChangedHandler, FormDataRecord } from '@core/form/FormDataSnapshot';
+import { hasDxFormInstance, setDxFormData } from './DxFormAccessorReads';
 
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
@@ -48,8 +49,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
   const getData = (rawData: FormDataRecord) => normalizeFormData(rawData, options.fields);
 
   const applyAddPayload = (payload: EventRowPayload | undefined) => {
-    const form = options.formRef.current?.instance();
-    if (!form) return false;
+    if (!hasDxFormInstance(options.formRef)) return false;
 
     options.uploadedFiles.current = [];
     const store = options.dataSource.current?.store() as ArrayStore;
@@ -58,14 +58,14 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
 
     if (payload) {
       const row = getData(payload);
-      form.option('formData', row);
+      setDxFormData(options.formRef, row);
       options.onFieldDataChanged?.(row);
       if (Array.isArray(payload[options.detailPropertyName])) {
         options.setDetailData(payload[options.detailPropertyName] as FormDataRecord[]);
       }
     } else {
       const row = buildEmptyRow(options.fields);
-      form.option('formData', row);
+      setDxFormData(options.formRef, row);
       options.onFieldDataChanged?.(row);
     }
 
@@ -112,7 +112,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
     if (options.events?.EDIT) {
       options.on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
         const row = getData(payload.row);
-        options.formRef.current?.instance().option('formData', row);
+        setDxFormData(options.formRef, row);
         options.onFieldDataChanged?.(row);
         options.uploadedFiles.current = [];
         options.isEdit.current = true;
