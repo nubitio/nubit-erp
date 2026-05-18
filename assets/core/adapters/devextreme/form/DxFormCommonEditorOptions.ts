@@ -6,6 +6,7 @@ import { dispatch } from '@core/event/EventHook';
 import { FORM_EVENTS } from '@core/form/FormEvents';
 import type { FormOnChangeFn } from '@core/field/FieldCallbacks';
 import type { Field } from '@core/field/Field';
+import { getDxCustomButtonsOptions } from './DxFormCustomButtonsOptions';
 
 export function getDxCommonEditorOptions(
   field: Field,
@@ -42,33 +43,5 @@ export function getDxCommonEditorOptions(
     ...restEditorOptions,
     inputAttr: mergedInputAttr,
     ...getDxCustomButtonsOptions(field, formRef, existingButtons),
-  };
-}
-
-function getDxCustomButtonsOptions(
-  field: Field,
-  formRef: MutableRefObject<FormRef | null>,
-  existingButtons: unknown[],
-): DataRecord {
-  if (!field.buttons || field.buttons.length === 0) {
-    return {};
-  }
-
-  const customButtons = field.buttons.map((btn: DataRecord) => {
-    const opts = btn.options as DataRecord | undefined;
-    if (!opts?.onClick) return btn;
-
-    const originalOnClick = opts.onClick as (...args: unknown[]) => void;
-    return {
-      ...btn,
-      options: {
-        ...opts,
-        onClick: (...args: unknown[]) => originalOnClick(...args, { formRef }),
-      },
-    };
-  });
-
-  return {
-    buttons: [...existingButtons, ...customButtons],
   };
 }
