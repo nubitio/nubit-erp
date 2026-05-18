@@ -3,13 +3,10 @@ import { FormRef, SimpleItem } from 'devextreme-react/form';
 import { MutableRefObject } from 'react';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
-import { getFormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
-import { getFormRemoteOptions } from '@core/form/FormRemoteOptions';
-import { getDxEditorType, getDxSimpleEditorOptions } from './DxFormEditorOptions';
-import { getDxRemoteEditorOptions } from './DxFormRemoteEditorOptions';
-import { getDxCommonEditorOptions } from './DxFormCommonEditorOptions';
+import { getDxEditorType } from './DxFormEditorOptions';
 import { buildValidationRules } from './DxFormValidationRules';
 import { buildTemplate, getDxFieldPresentation } from './DxFormFieldPresentation';
+import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
 
 export const buildField = (
   field: Field,
@@ -19,26 +16,8 @@ export const buildField = (
   formRef: MutableRefObject<FormRef | null> = { current: null },
 ) => {
   if (getFormEditorKind(field) === null) return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DevExtreme editor options bag varies by widget type
-  let editorOptions: Record<string, any> = getDxRemoteEditorOptions(
-    field,
-    getFormRemoteOptions(field),
-    formRef,
-  );
-  editorOptions = {
-    ...editorOptions,
-    ...getDxSimpleEditorOptions(getFormSimpleEditorOptions(field), field, formRef, uploadedFiles),
-  };
-  editorOptions = {
-    ...editorOptions,
-    ...getDxCommonEditorOptions(field, isEditable, formRef, editorOptions.buttons),
-  };
-
   const presentation = getDxFieldPresentation(field);
-  editorOptions = {
-    ...editorOptions,
-    ...presentation.editorOptions,
-  };
+  const editorOptions = getDxFieldEditorOptions(field, isEditable, uploadedFiles, formRef);
 
   return (
     <SimpleItem
