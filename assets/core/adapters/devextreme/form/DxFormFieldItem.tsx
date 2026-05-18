@@ -3,7 +3,6 @@ import { FormRef, SimpleItem } from 'devextreme-react/form';
 import { MutableRefObject } from 'react';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
-import { getDxEditorType } from './DxFormEditorType';
 import { buildValidationRules } from './DxFormValidationRules';
 import { buildTemplate } from './DxFormFieldTemplate';
 import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
@@ -30,7 +29,3 @@ export const buildField = (
     </SimpleItem>
   );
 };
-
-// Exported for testing only — not part of the public API
-export const _getEditorType = (field: Field) => getDxEditorType(getFormEditorKind(field));
-export const _buildValidationRules = buildValidationRules;
