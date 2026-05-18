@@ -5,6 +5,7 @@ import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
 import type { FormRemoteOptions } from '@core/form/FormRemoteOptions';
 import { maybeAutoSelectSingleValue } from './DxFormRemoteAutoSelect';
+import { getDxRemoteOptions } from './DxFormRemoteOptions';
 import { getDxRemoteStore } from './DxFormRemoteStore';
 
 export function getDxRemoteEditorOptions(
@@ -21,22 +22,5 @@ export function getDxRemoteEditorOptions(
 
   maybeAutoSelectSingleValue(field, remoteOptions, store, formRef);
 
-  return {
-    dataSource: {
-      store,
-      paginate: true,
-      pageSize: 10,
-    },
-    dropDownOptions: {
-      container: 'body',
-      wrapperAttr: { class: 'crud-dialog-editor-overlay' },
-    },
-    valueExpr: remoteOptions.valueField,
-    displayExpr: remoteOptions.textField,
-    searchEnabled: remoteOptions.searchEnabled,
-    searchExpr: remoteOptions.searchExpr,
-    wrapItemText: true,
-    selectionMode: remoteOptions.multiple ? 'multiple' : 'single',
-    buttons: ['clear', 'dropDown'],
-  };
+  return getDxRemoteOptions(remoteOptions, store);
 }
