@@ -5,9 +5,9 @@ import type { UploadedFile } from '@core/form/UploadedFile';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
 import { getDxEditorType } from './DxFormEditorType';
 import { buildValidationRules } from './DxFormValidationRules';
-import { getDxFieldPresentation } from './DxFormFieldPresentation';
 import { buildTemplate } from './DxFormFieldTemplate';
 import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
+import { getDxFieldItemProps } from './DxFormFieldItemProps';
 
 export const buildField = (
   field: Field,
@@ -17,23 +17,13 @@ export const buildField = (
   formRef: MutableRefObject<FormRef | null> = { current: null },
 ) => {
   if (getFormEditorKind(field) === null) return null;
-  const presentation = getDxFieldPresentation(field);
   const editorOptions = getDxFieldEditorOptions(field, isEditable, uploadedFiles, formRef);
+  const itemProps = getDxFieldItemProps(field, editorOptions);
 
   return (
     <SimpleItem
       key={key}
-      dataField={field.name}
-      editorType={getDxEditorType(getFormEditorKind(field))}
-      label={presentation.label}
-      isRequired={field.visible !== false && field.required}
-      editorOptions={editorOptions}
-      helpText={field.helpText}
-      colSpan={field.col ?? 12}
-      visible={field.visibleOnForm}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render={field.contentRender as any}
-      cssClass={presentation.cssClass}
+      {...itemProps}
     >
       {buildTemplate(field)}
       {buildValidationRules(field)}
