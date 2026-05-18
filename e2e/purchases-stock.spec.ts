@@ -91,7 +91,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
     Eliminar: /^(Eliminar|Delete)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.dx-toolbar .dx-button').filter({ hasText: text }).first();
+  const btn = page.locator('.dx-toolbar .app-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -149,11 +149,11 @@ async function ensureLoggedIn(page: Page) {
     const targetOption =
       (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
     await targetOption.click();
-    const acceptBtn = page
-      .getByRole('dialog', { name: 'Seleccionar local' })
-      .getByRole('button', { name: /aceptar/i });
+    await page.waitForTimeout(300);
+    const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
+    await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
   } catch {
     // No picker o auto-seleccionado
   }
@@ -234,11 +234,11 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       const targetOption =
         (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
       await targetOption.click();
-      const acceptBtn = page
-        .getByRole('dialog', { name: 'Seleccionar local' })
-        .getByRole('button', { name: /aceptar/i });
+      await page.waitForTimeout(300);
+      const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
       await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
       await acceptBtn.click();
+      await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
     } catch {
       // No picker
     }

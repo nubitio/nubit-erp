@@ -123,7 +123,8 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
  * Hace click en un botón de la toolbar del DxDataGrid identificado por texto.
  */
 async function clickGridToolbarButton(page: Page, buttonText: string) {
-  // DxDataGrid toolbar renderiza botones DX con .dx-toolbar .dx-button.
+  // DxDataGrid toolbar renderiza el contenedor .dx-toolbar (DX) pero los botones
+  // son ahora <button class="app-button ..."> nativos (migración DevExtreme).
   // The current UI can render translated or English labels depending on locale.
   const alternatives: Record<string, RegExp> = {
     Nuevo: /^(Nuevo|New)$/i,
@@ -132,7 +133,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
     Guardar: /^(Guardar|Save)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.dx-toolbar .dx-button').filter({ hasText: text }).first();
+  const btn = page.locator('.dx-toolbar .app-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -425,12 +426,14 @@ test.describe('Happy Path — flujo completo de venta', () => {
         const targetOption =
           (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
         await targetOption.click();
+        // Brief pause to let React commit the selection state before accepting
+        await page.waitForTimeout(300);
         // Hacer click en "Aceptar" para confirmar la selección
-        const acceptBtn = page
-          .getByRole('dialog', { name: 'Seleccionar local' })
-          .getByRole('button', { name: /aceptar/i });
+        const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
         await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
         await acceptBtn.click();
+        // Wait for the dialog to close after accepting
+        await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
       } catch {
         // No apareció el picker — probablemente sólo hay 1 local (auto-seleccionado)
         // o la rama fue seleccionada automáticamente

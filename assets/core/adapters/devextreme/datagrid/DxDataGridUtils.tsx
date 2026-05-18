@@ -16,7 +16,6 @@ import {
   TotalItem,
 } from 'devextreme-react/data-grid';
 import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
-import { Button } from 'devextreme-react';
 import React from 'react';
 import type { DataRecord } from '@core/data/DataRecord';
 import type { DataGridSummaryItem } from '@core/datagrid/DataGridViewOptions';
@@ -28,16 +27,18 @@ export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] 
         <Item location="after" locateInMenu="auto" key={index}>
           {item.map((subItem: ToolbarButtonItem, subIndex: number) => {
             return (
-              <Button
+              <button
                 key={subIndex}
-                icon={subItem.icon}
-                text={subItem.text}
-                hint={subItem.hint}
-                type={subItem.type}
-                stylingMode="outlined"
-                onClick={subItem.onClick}
+                type="button"
+                className="app-button app-button--secondary app-button--sm"
+                onClick={subItem.onClick as React.MouseEventHandler<HTMLButtonElement>}
                 disabled={subItem.disabled}
-              />
+                title={subItem.hint}
+                aria-label={subItem.hint ?? subItem.text}
+              >
+                {subItem.icon && <i className={`ph ${subItem.icon}`} aria-hidden="true" />}
+                {subItem.text && <span>{subItem.text}</span>}
+              </button>
             );
           })}
         </Item>
@@ -45,15 +46,17 @@ export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] 
     }
     return (
       <Item location="after" locateInMenu="auto" key={index} visible={item.visible}>
-        <Button
-          icon={item.icon}
-          text={item.text}
-          hint={item.hint}
-          type={item.type}
-          stylingMode="outlined"
-          onClick={item.onClick}
+        <button
+          type="button"
+          className="app-button app-button--secondary app-button--sm"
+          onClick={item.onClick as React.MouseEventHandler<HTMLButtonElement>}
           disabled={item.disabled}
-        />
+          title={item.hint}
+          aria-label={item.hint ?? item.text}
+        >
+          {item.icon && <i className={`ph ${item.icon}`} aria-hidden="true" />}
+          {item.text && <span>{item.text}</span>}
+        </button>
       </Item>
     );
   });

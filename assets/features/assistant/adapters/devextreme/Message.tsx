@@ -1,5 +1,4 @@
 import React, { FC, useCallback, useState } from 'react';
-import { Button, type ButtonTypes } from 'devextreme-react/button';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
 
@@ -11,18 +10,18 @@ function convertToHtml(value: string): string {
 
 interface MessageProps {
   text: string;
-  onRegenerateButtonClick: ButtonTypes.Properties['onClick'];
+  onRegenerateButtonClick: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 const Message: FC<MessageProps> = ({ text, onRegenerateButtonClick }) => {
-  const [icon, setIcon] = useState('copy');
+  const [copied, setCopied] = useState(false);
 
   const onCopyButtonClick = useCallback(() => {
     navigator.clipboard?.writeText(text);
-    setIcon('check');
+    setCopied(true);
 
     setTimeout(() => {
-      setIcon('copy');
+      setCopied(false);
     }, 2500);
   }, [text]);
 
@@ -34,13 +33,24 @@ const Message: FC<MessageProps> = ({ text, onRegenerateButtonClick }) => {
     <React.Fragment>
       <div className="chat-messagebubble-text">{HTMLReactParser(convertToHtml(text))}</div>
       <div className="bubble-button-container">
-        <Button icon={icon} stylingMode="text" hint="Copy" onClick={onCopyButtonClick} />
-        <Button
-          icon="refresh"
-          stylingMode="text"
-          hint="Regenerate"
+        <button
+          type="button"
+          className="app-icon-button"
+          title="Copy"
+          onClick={onCopyButtonClick}
+          aria-label="Copy"
+        >
+          <i className={`ph ph-${copied ? 'check' : 'copy'}`} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="app-icon-button"
+          title="Regenerate"
           onClick={onRegenerateButtonClick}
-        />
+          aria-label="Regenerate"
+        >
+          <i className="ph ph-arrow-clockwise" aria-hidden="true" />
+        </button>
       </div>
     </React.Fragment>
   );

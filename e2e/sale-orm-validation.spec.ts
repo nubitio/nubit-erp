@@ -81,11 +81,11 @@ async function login(page: Page) {
       .filter({ hasText: 'CI E2E Branch' });
     const target = (await e2eBranch.count()) > 0 ? e2eBranch.first() : firstBranchOption;
     await target.click();
-    const acceptBtn = page
-      .getByRole('dialog', { name: 'Seleccionar local' })
-      .getByRole('button', { name: /aceptar/i });
+    await page.waitForTimeout(300);
+    const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
+    await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
   } catch {
     // no picker
   }
@@ -537,7 +537,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
 
     // Click "Nuevo"
     const newBtn = page
-      .locator('.dx-toolbar .dx-button')
+      .locator('.dx-toolbar .app-button')
       .filter({ hasText: /nuevo|new/i })
       .first();
     await newBtn.waitFor({ state: 'visible', timeout: 10000 });

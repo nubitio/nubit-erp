@@ -3,13 +3,10 @@ import {
   ColumnChooser,
   ColumnFixing,
   DataGridRef,
-  DataGridTypes,
   Editing,
-  Export,
   FilterRow,
   HeaderFilter,
   Item,
-  LoadPanel,
   MasterDetail,
   Pager,
   Paging,
@@ -20,7 +17,7 @@ import {
   Summary,
   Toolbar,
 } from 'devextreme-react/data-grid';
-import { Button, DataGrid } from 'devextreme-react';
+import { DataGrid } from 'devextreme-react';
 import {
   forwardRef,
   useCallback,
@@ -31,7 +28,6 @@ import {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
-import { EXPORT_FORMATS, handleDataGridExport } from './DxDataGridExport';
 import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
 import { DxDetailDataGrid } from './DxDetailDataGrid';
 import type { FilterRule } from '@core/field/FilterRule';
@@ -92,8 +88,6 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
   const loadData = () => {
     return gridRef.current?.instance().getDataSource().load() ?? Promise.resolve([]);
   };
-
-  const onExporting = (e: DataGridTypes.ExportingEvent) => handleDataGridExport(e, options.title);
 
   const onAddClick = () => {
     if (options.events?.ADD) emit(options.events?.ADD);
@@ -349,17 +343,10 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
           columnResizingMode={'widget'}
           columnMinWidth={50}
           columnAutoWidth={true}
-          onExporting={onExporting}
           dateSerializationFormat={'yyyy-MM-dd'}
         >
-          <LoadPanel showPane={false} />
           <ColumnChooser enabled mode="select" />
           <ColumnFixing enabled={true} />
-          <Export
-            enabled={options.allowExport ?? false}
-            allowExportSelectedData
-            formats={EXPORT_FORMATS}
-          />
           <Selection
             mode={options.selectionMode ?? 'single'}
             selectAllMode="page"
@@ -369,9 +356,10 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
           <Scrolling mode="standard" />
           <Toolbar visible={(options.toolbarVisible ?? true) && 'minimal' !== viewMode}>
             <Item location="before" visible={options.hasBackButton ?? false}>
-              <Button
-                icon="ph ph-arrow-left"
-                stylingMode="text"
+              <button
+                type="button"
+                className="app-icon-button"
+                aria-label="Volver"
                 onClick={() => {
                   if (options.onBack) {
                     options.onBack();
@@ -379,57 +367,55 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
                     navigate(-1);
                   }
                 }}
-              />
+              >
+                <i className="ph ph-arrow-left" aria-hidden="true" />
+              </button>
             </Item>
             <Item location="before" visible={'full' === viewMode}>
               <div className="grid-header">{options.title}</div>
             </Item>
             {options.beforeToolbar && options.beforeToolbar()}
             <Item location="after" locateInMenu="auto" visible={options.allowAdd ?? false}>
-              <Button
-                text={t('grid.buttonNew')}
-                type="default"
-                stylingMode="contained"
+              <button
+                type="button"
+                className="app-button app-button--primary app-button--sm"
                 onClick={onAddClick}
                 disabled={options.addDisabled ?? false}
-              />
+              >
+                {t('grid.buttonNew')}
+              </button>
             </Item>
             <Item location="after" locateInMenu="auto" visible={options.allowEdit ?? false}>
-              <Button
-                text={t('grid.buttonEdit')}
-                type="normal"
-                className="dx-button-warning"
-                stylingMode="outlined"
+              <button
+                type="button"
+                className="app-button app-button--secondary app-button--sm"
                 onClick={onEditClick}
                 disabled={options.editDisabled ?? false}
-              />
+              >
+                {t('grid.buttonEdit')}
+              </button>
             </Item>
             <Item location="after" locateInMenu="auto" visible={options.allowDelete ?? false}>
-              <Button
-                text={t('grid.buttonDelete')}
-                type="danger"
-                stylingMode="outlined"
+              <button
+                type="button"
+                className="app-button app-button--danger app-button--sm"
                 onClick={onDeleteClick}
                 disabled={options.deleteDisabled ?? false}
-              />
+              >
+                {t('grid.buttonDelete')}
+              </button>
             </Item>
             {buildToolbar(options.toolbar)}
             <Item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton">
-              <Button
-                icon="ph ph-arrow-clockwise"
-                text={t('grid.buttonRefresh')}
-                stylingMode="text"
+              <button
+                type="button"
+                className="app-icon-button"
+                title={t('grid.buttonRefresh')}
+                aria-label={t('grid.buttonRefresh')}
                 onClick={refresh}
-              />
-            </Item>
-            {options.allowExport && (
-              <Item location="after" locateInMenu="auto">
-                <div className="separator" />
-              </Item>
-            )}
-            <Item name="exportButton" />
-            <Item location="after" locateInMenu="auto">
-              <div className="separator" />
+              >
+                <i className="ph ph-arrow-clockwise" aria-hidden="true" />
+              </button>
             </Item>
             <Item name="columnChooserButton" locateInMenu="auto" />
           </Toolbar>
