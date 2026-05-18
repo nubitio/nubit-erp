@@ -1,5 +1,4 @@
 import { Field } from '@core/field/Field';
-import { FormOnChangeFn } from '@core/field/FieldCallbacks';
 import {
   CompareRule,
   CustomRule,
@@ -12,18 +11,16 @@ import {
   StringLengthRule,
 } from 'devextreme-react/form';
 import { MutableRefObject } from 'react';
-import { dispatch } from '@core/event/EventHook';
-import { FORM_EVENTS } from '@core/form/FormEvents';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { ValidationRule } from '@core/field/ValidationRule';
 import { Template } from 'devextreme-react/core/template';
-import type { DataRecord } from '@core/data/DataRecord';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
 import { getFormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import { getFormFieldPresentation } from '@core/form/FormFieldPresentation';
 import { getFormRemoteOptions } from '@core/form/FormRemoteOptions';
 import { getDxEditorType, getDxSimpleEditorOptions } from './DxFormEditorOptions';
 import { getDxRemoteEditorOptions } from './DxFormRemoteEditorOptions';
+import { getDxCommonEditorOptions } from './DxFormCommonEditorOptions';
 
 export const buildField = (
   field: Field,
@@ -43,44 +40,9 @@ export const buildField = (
     ...editorOptions,
     ...getDxSimpleEditorOptions(getFormSimpleEditorOptions(field), field, formRef, uploadedFiles),
   };
-  if (!isEditable) {
-    editorOptions = {
-      ...editorOptions,
-      elementAttr: { class: 'form-editor' },
-      // inputAttr for read-only mode is merged below together with aria-label
-    };
-  }
-  // Build a merged inputAttr: aria-label from field.label as base,
-  // read-only class (when !isEditable) applied next,
-  // then explicit field.editorOptions.inputAttr values take priority (override).
-  const mergedInputAttr = {
-    'aria-label': field.label,
-    ...(!isEditable ? { class: 'form-editor-input' } : {}),
-    ...(field.editorOptions?.inputAttr ?? {}),
-  };
-  // Spread field.editorOptions but extract inputAttr to avoid it overwriting
-  // the merged value computed above.
-  const restEditorOptions = { ...(field.editorOptions ?? {}) };
-  delete restEditorOptions.inputAttr;
   editorOptions = {
     ...editorOptions,
-    maxLength: field.maxLength,
-    readOnly: isEditable ? field.readonly : true,
-    disabled: field.disabled,
-    onFocusIn: field.onClick,
-    onValueChanged: (e: any) => {
-      dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
-      if (field.onChange) {
-        (field.onChange as FormOnChangeFn)(e.value);
-      }
-    },
-    onKeyPress: field.onKeyPress,
-    onItemClick: field.onSelect,
-    itemRender: field.itemFormatter,
-    itemTemplate: field.itemFormatter ? field.name : 'item',
-    stylingMode: 'outlined',
-    ...restEditorOptions,
-    inputAttr: mergedInputAttr,
+    ...getDxCommonEditorOptions(field, isEditable, formRef, editorOptions.buttons),
   };
 
   const presentation = getFormFieldPresentation(field);
@@ -91,22 +53,6 @@ export const buildField = (
       label: field.label,
       labelMode: 'floating',
     };
-  }
-
-  if (field.buttons && field.buttons.length > 0) {
-    const enrichedButtons = field.buttons.map((btn: DataRecord) => {
-      const opts = btn.options as DataRecord | undefined;
-      if (!opts?.onClick) return btn;
-      const originalOnClick = opts.onClick as (...args: unknown[]) => void;
-      return {
-        ...btn,
-        options: {
-          ...opts,
-          onClick: (...args: unknown[]) => originalOnClick(...args, { formRef }),
-        },
-      };
-    });
-    editorOptions.buttons = [...(editorOptions.buttons ?? []), ...enrichedButtons];
   }
 
   const className = field.hidden ? 'dx-hidden' : '';

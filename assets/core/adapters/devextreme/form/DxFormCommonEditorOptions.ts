@@ -1,0 +1,74 @@
+import type { MutableRefObject } from 'react';
+import type { FormRef } from 'devextreme-react/form';
+
+import type { DataRecord } from '@core/data/DataRecord';
+import { dispatch } from '@core/event/EventHook';
+import { FORM_EVENTS } from '@core/form/FormEvents';
+import type { FormOnChangeFn } from '@core/field/FieldCallbacks';
+import type { Field } from '@core/field/Field';
+
+export function getDxCommonEditorOptions(
+  field: Field,
+  isEditable: boolean,
+  formRef: MutableRefObject<FormRef | null>,
+  existingButtons: unknown[] = [],
+): DataRecord {
+  const mergedInputAttr = {
+    'aria-label': field.label,
+    ...(!isEditable ? { class: 'form-editor-input' } : {}),
+    ...(field.editorOptions?.inputAttr ?? {}),
+  };
+
+  const restEditorOptions = { ...(field.editorOptions ?? {}) };
+  delete restEditorOptions.inputAttr;
+
+  return {
+    ...(!isEditable ? { elementAttr: { class: 'form-editor' } } : {}),
+    maxLength: field.maxLength,
+    readOnly: isEditable ? field.readonly : true,
+    disabled: field.disabled,
+    onFocusIn: field.onClick,
+    onValueChanged: (e: { value: unknown }) => {
+      dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
+      if (field.onChange) {
+        (field.onChange as FormOnChangeFn)(e.value);
+      }
+    },
+    onKeyPress: field.onKeyPress,
+    onItemClick: field.onSelect,
+    itemRender: field.itemFormatter,
+    itemTemplate: field.itemFormatter ? field.name : 'item',
+    stylingMode: 'outlined',
+    ...restEditorOptions,
+    inputAttr: mergedInputAttr,
+    ...getDxCustomButtonsOptions(field, formRef, existingButtons),
+  };
+}
+
+function getDxCustomButtonsOptions(
+  field: Field,
+  formRef: MutableRefObject<FormRef | null>,
+  existingButtons: unknown[],
+): DataRecord {
+  if (!field.buttons || field.buttons.length === 0) {
+    return {};
+  }
+
+  const customButtons = field.buttons.map((btn: DataRecord) => {
+    const opts = btn.options as DataRecord | undefined;
+    if (!opts?.onClick) return btn;
+
+    const originalOnClick = opts.onClick as (...args: unknown[]) => void;
+    return {
+      ...btn,
+      options: {
+        ...opts,
+        onClick: (...args: unknown[]) => originalOnClick(...args, { formRef }),
+      },
+    };
+  });
+
+  return {
+    buttons: [...existingButtons, ...customButtons],
+  };
+}
