@@ -9,4 +9,4 @@ export type {
   DxFormEvents,
 } from '@core/adapters/devextreme/form/DxForm';
 export type { FormViewOptions as DxFormOptions } from './FormViewOptions';
-export type { UploadedFile } from './useFormSubmit';
+export type { UploadedFile } from './UploadedFile';

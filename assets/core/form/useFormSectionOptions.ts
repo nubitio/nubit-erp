@@ -1,19 +1,18 @@
 import { useEffect } from 'react';
 
-import type { FormLayout } from '@core/crud/FormLayout';
+import type { FormLayoutModel } from './FormLayoutModel';
+import type { UseFormSectionOptionsAccessors } from './FormSectionOptionsAccessors';
 
-export interface UseFormSectionOptionsAccessors {
-  setItemOption: (itemName: string, optionName: string, value: unknown) => void;
-}
+export type { UseFormSectionOptionsAccessors } from './FormSectionOptionsAccessors';
 
 export function useFormSectionOptions(
-  formLayout: FormLayout | undefined,
+  formLayoutModel: FormLayoutModel,
   accessors: UseFormSectionOptionsAccessors,
 ): void {
   useEffect(() => {
-    if (formLayout?.type !== 'sections') return;
+    if (formLayoutModel.type !== 'sections') return;
 
-    formLayout.sections.forEach((section) => {
+    formLayoutModel.sections.forEach((section) => {
       try {
         accessors.setItemOption(section.label, 'collapsible', section.collapsible ?? false);
         if (section.defaultCollapsed) {

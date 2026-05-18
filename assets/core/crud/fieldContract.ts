@@ -1,5 +1,6 @@
 import type { FieldDef } from '../field/Field';
 import type { SmartCrudFieldOperationBehavior } from './fieldOperationSemantics';
+import type { DataRecord } from '../data/DataRecord';
 export { SmartCrudFieldContractError, validateFieldContract } from './fieldValidation';
 import { validateFieldContract } from './fieldValidation';
 
@@ -12,7 +13,7 @@ export type {
 
 export type SmartCrudRecord = object;
 export type SmartCrudModelFieldKey<T extends SmartCrudRecord> = Extract<keyof T, string>;
-type SmartCrudFieldRecord<T extends SmartCrudRecord> = T & Record<string, unknown>;
+type SmartCrudFieldRecord<T extends SmartCrudRecord> = T & DataRecord;
 export type SmartCrudFieldSourceMode = 'hydra' | 'manual';
 export type SmartCrudFieldResolutionStrategy = 'augment' | 'replace';
 

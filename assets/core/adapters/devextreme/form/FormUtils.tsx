@@ -16,10 +16,11 @@ import {
 import { MutableRefObject } from 'react';
 import { dispatch } from '@core/event/EventHook';
 import { FORM_EVENTS } from '@core/form/FormEvents';
-import type { UploadedFile } from '@core/form/useFormSubmit';
+import type { UploadedFile } from '@core/form/UploadedFile';
 import { ValidationRule } from '@core/field/ValidationRule';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { Template } from 'devextreme-react/core/template';
+import type { DataRecord } from '@core/data/DataRecord';
 
 export const buildField = (
   field: Field,
@@ -264,8 +265,8 @@ export const buildField = (
   }
 
   if (field.buttons && field.buttons.length > 0) {
-    const enrichedButtons = field.buttons.map((btn: Record<string, unknown>) => {
-      const opts = btn.options as Record<string, unknown> | undefined;
+    const enrichedButtons = field.buttons.map((btn: DataRecord) => {
+      const opts = btn.options as DataRecord | undefined;
       if (!opts?.onClick) return btn;
       const originalOnClick = opts.onClick as (...args: unknown[]) => void;
       return {

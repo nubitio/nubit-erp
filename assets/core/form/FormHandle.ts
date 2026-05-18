@@ -1,14 +1,14 @@
-type FormRecord = Record<string, unknown>;
+import type { FormDataRecord } from './FormDataSnapshot';
 
 export interface FormHandle {
-  getFormData: () => FormRecord | undefined;
+  getFormData: () => FormDataRecord | undefined;
   getFieldValue: (name: string) => unknown;
   setFieldValue: (name: string, value: unknown) => void;
-  getDetailData: () => FormRecord[] | undefined;
-  setDetailData: (data: FormRecord[]) => void;
+  getDetailData: () => FormDataRecord[] | undefined;
+  setDetailData: (data: FormDataRecord[]) => void;
   saveDetailData: () => Promise<void> | void;
   reloadDetailData: () => void;
-  setValues: (data: FormRecord) => void;
+  setValues: (data: FormDataRecord) => void;
   setReadonly: (field: string, value: boolean) => void;
   setDisabled: (field: string, value: boolean) => void;
   enableValidation: (field: string) => void;

@@ -4,11 +4,12 @@ import GridData from '@shared/data/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
 import { Constants } from '@core/common/Constants';
 import { ProductStockDto } from '@features/product/types/product.stock.dto';
+import type { DataRecord } from '@core/data/DataRecord';
 
 class ProductService {
-  getAll(loadOptions: Record<string, unknown>): Promise<GridData<ProductDto>> {
+  getAll(loadOptions: DataRecord): Promise<GridData<ProductDto>> {
     const request$ = businessHttpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
-      params: loadOptions as Record<string, unknown>,
+      params: loadOptions,
     });
 
     return httpRequest(request$).then((response: ApiResponse<ProductDto[]>) => {

@@ -3,17 +3,18 @@ import type { Field, FieldDef } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
 import type { FormEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import type { FormHandle } from '../form/FormHandle';
+import type { FormLayout } from '../form/FormLayout';
 import type { BulkAction } from './BulkAction';
-import type { FormLayout } from './FormLayout';
 import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
 import type { SmartCrudFieldContract } from './fieldContract';
+import type { DataRecord } from '../data/DataRecord';
 
 /**
  * Generic factory that receives a form ref and returns typed field definitions.
- * Defaults to `Record<string, unknown>` for backward compatibility.
+ * Defaults to `DataRecord` for backward compatibility.
  */
-export type FieldsFactory<T extends Record<string, unknown> = Record<string, unknown>> = (
+export type FieldsFactory<T extends DataRecord = DataRecord> = (
   formRef: RefObject<FormHandle | null>,
 ) => FieldDef<T>[];
 
@@ -45,7 +46,7 @@ export interface ResourcePermissions {
   canBulkDelete?: boolean | (() => boolean);
 }
 
-export interface ResourceConfig<T extends Record<string, unknown> = Record<string, unknown>> {
+export interface ResourceConfig<T extends DataRecord = DataRecord> {
   id: string;
   title: string;
   apiUrl: string;

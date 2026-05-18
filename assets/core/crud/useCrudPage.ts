@@ -10,8 +10,9 @@ import type { ResolvedPermissions } from './usePermissions';
 import type { SelectionState } from './useSelectionState';
 import type { ColumnPresetState } from './useColumnPreset';
 import { resolveCrudResource, type ResolvedCrudResource } from './resolveCrudResource';
+import type { DataRecord } from '../data/DataRecord';
 
-export function useCrudPage<T extends Record<string, unknown> = Record<string, unknown>>(
+export function useCrudPage<T extends DataRecord = DataRecord>(
   resource: ResourceConfig<T>,
 ): {
   events: FormEventNames;
@@ -20,7 +21,7 @@ export function useCrudPage<T extends Record<string, unknown> = Record<string, u
   formRef: React.RefObject<FormHandle | null>;
   permissions: ResolvedPermissions;
   selectionState: SelectionState & {
-    onSelectionChanged: (rows: Record<string, unknown>[]) => void;
+    onSelectionChanged: (rows: DataRecord[]) => void;
   };
   presetState: ColumnPresetState;
 } {

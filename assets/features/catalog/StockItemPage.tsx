@@ -4,10 +4,11 @@ import { defineFields } from '@core/crud/fieldContract';
 import { Constants } from '@core/common/Constants';
 import { FieldType } from '@core/field/FieldType';
 import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { DataRecord } from '@core/data/DataRecord';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface StockItemRecord extends Record<string, unknown> {
+interface StockItemRecord extends DataRecord {
   id: string;
   warehouse: { id?: string; name?: string } | string;
   product: { id?: string; code?: string | null; name?: string } | string;

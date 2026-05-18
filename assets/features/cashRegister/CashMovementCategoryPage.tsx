@@ -5,8 +5,9 @@ import type { Field } from '@core/field/Field';
 import { enumField, switchField } from '@core/field/FieldBuilders';
 import { cashMovementCategoryEvents } from '@features/cashRegister';
 import { SharedUtils } from '@shared/lib/SharedUtils';
+import type { DataRecord } from '@core/data/DataRecord';
 
-interface CashMovementCategoryRecord extends Record<string, unknown> {
+interface CashMovementCategoryRecord extends DataRecord {
   id: number;
   code: string;
   name: string;

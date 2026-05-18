@@ -1,20 +1,13 @@
 import { useCallback } from 'react';
 
-type FormRecord = Record<string, unknown>;
-
-export interface FormFieldDataChangedEvent {
-  component: {
-    option: (name: 'formData') => unknown;
-  };
-}
+import type { FormDataChangedHandler, FormDataSnapshot } from './FormDataSnapshot';
 
 export function useFormFieldDataChanged(
-  onFieldDataChanged?: (formData: FormRecord) => void,
-): ((event: FormFieldDataChangedEvent) => void) | undefined {
+  onFieldDataChanged?: FormDataChangedHandler,
+): FormDataChangedHandler | undefined {
   const handleFieldDataChanged = useCallback(
-    (event: FormFieldDataChangedEvent) => {
-      const snapshot = (event.component.option('formData') ?? {}) as FormRecord;
-      onFieldDataChanged?.(snapshot);
+    (formData: FormDataSnapshot) => {
+      onFieldDataChanged?.(formData);
     },
     [onFieldDataChanged],
   );

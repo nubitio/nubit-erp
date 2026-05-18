@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Field } from '../../field/Field';
+import type { FormDataRecord } from '../../form/FormDataSnapshot';
 
 interface DependencyEntry {
   url: string | null;
@@ -30,7 +31,7 @@ function valuesEqual(a: unknown, b: unknown): boolean {
  * Also skips evaluation while `formData` is `null`, which SmartCrudPage uses
  * for edit dialogs that have not hydrated their initial snapshot yet.
  */
-export function useDependsOn(fields: Field[], formData: Record<string, unknown> | null): void {
+export function useDependsOn(fields: Field[], formData: FormDataRecord | null): void {
   const queryClient = useQueryClient();
   const dependentFields = fields.filter((field) => field.dependsOn?.length);
 

@@ -6,6 +6,7 @@ import { SharedUtils } from '@shared/lib/SharedUtils';
 import toast from '@shared/lib/SharedUtils';
 import type { MutableRefObject } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { DataRecord } from '@core/data/DataRecord';
 
 type FormEditorRef = {
   instance: () => {
@@ -13,7 +14,7 @@ type FormEditorRef = {
   };
 };
 
-interface CustomerRecord extends Record<string, unknown> {
+interface CustomerRecord extends DataRecord {
   id: string;
   ruc: string;
   businessName: string;

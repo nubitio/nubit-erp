@@ -1,10 +1,11 @@
 import Form, { FormRef, GroupItem, Item, Tab, TabbedItem } from 'devextreme-react/form';
 import type { DataGridRef } from 'devextreme-react/data-grid';
 import type DataSource from 'devextreme/data/data_source';
-import type { MutableRefObject, ReactNode } from 'react';
+import type { MutableRefObject } from 'react';
 
-import type { FormLayout } from '@core/crud/FormLayout';
 import type { Field } from '@core/field/Field';
+import type { FormFieldRenderer } from '@core/form/FormFieldRenderer';
+import type { FormLayoutModel } from '@core/form/FormLayoutModel';
 
 import { DxFormDetailGrid } from './DxFormDetailGrid';
 
@@ -22,11 +23,10 @@ export interface DxFormLayoutRendererProps {
   emit: <T>(name: string, payload?: T) => void;
   fieldChangeHandler?: FieldDataChangedHandler;
   fields: Field[];
-  formLayout?: FormLayout;
+  formLayoutModel: FormLayoutModel;
   formRef: MutableRefObject<FormRef | null>;
   gridRef: MutableRefObject<DataGridRef | null>;
-  groupOtherText: string;
-  renderFields: (fields: Field[]) => ReactNode;
+  renderFields: FormFieldRenderer;
 }
 
 export function DxFormLayoutRenderer({
@@ -41,17 +41,11 @@ export function DxFormLayoutRenderer({
   emit,
   fieldChangeHandler,
   fields,
-  formLayout,
+  formLayoutModel,
   formRef,
   gridRef,
-  groupOtherText,
   renderFields,
 }: DxFormLayoutRendererProps) {
-  const pickFields = (names: string[]): Field[] =>
-    fields.filter((field) => names.includes(field.name));
-  const remainingFields = (assignedNames: string[]): Field[] =>
-    fields.filter((field) => !assignedNames.includes(field.name));
-
   const formProps = {
     className,
     labelMode: 'floating' as const,
@@ -83,43 +77,45 @@ export function DxFormLayoutRenderer({
     );
   }
 
-  if (formLayout?.type === 'tabs') {
-    const { tabs } = formLayout;
-    const allAssigned = tabs.flatMap((tab) => tab.fields);
-    const overflow = remainingFields(allAssigned);
+  if (formLayoutModel.type === 'tabs') {
     return (
       <Form {...formProps}>
         <TabbedItem>
-          {tabs.map((tab) => (
+          {formLayoutModel.tabs.map((tab) => (
             <Tab key={tab.label} title={tab.label} icon={tab.icon}>
-              {renderFields(pickFields(tab.fields))}
+              {renderFields(tab.fields)}
             </Tab>
           ))}
-          {overflow.length > 0 && <Tab title={groupOtherText}>{renderFields(overflow)}</Tab>}
+          {formLayoutModel.overflow && (
+            <Tab title={formLayoutModel.overflow.label}>
+              {renderFields(formLayoutModel.overflow.fields)}
+            </Tab>
+          )}
         </TabbedItem>
       </Form>
     );
   }
 
-  if (formLayout?.type === 'sections') {
-    const { sections } = formLayout;
-    const allAssigned = sections.flatMap((section) => section.fields);
-    const overflow = remainingFields(allAssigned);
+  if (formLayoutModel.type === 'sections') {
     return (
       <Form {...formProps}>
-        {sections.map((section) => (
+        {formLayoutModel.sections.map((section) => (
           <GroupItem key={section.label} caption={section.label}>
-            {renderFields(pickFields(section.fields))}
+            {renderFields(section.fields)}
           </GroupItem>
         ))}
-        {overflow.length > 0 && <GroupItem>{renderFields(overflow)}</GroupItem>}
+        {formLayoutModel.overflow && (
+          <GroupItem caption={formLayoutModel.overflow.label}>
+            {renderFields(formLayoutModel.overflow.fields)}
+          </GroupItem>
+        )}
       </Form>
     );
   }
 
   return (
     <Form {...formProps}>
-      <GroupItem>{renderFields(fields)}</GroupItem>
+      <GroupItem>{renderFields(formLayoutModel.fields)}</GroupItem>
     </Form>
   );
 }

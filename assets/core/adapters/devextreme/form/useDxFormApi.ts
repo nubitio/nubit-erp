@@ -4,10 +4,9 @@ import { DataGridRef } from 'devextreme-react/data-grid';
 import ArrayStore from 'devextreme/data/array_store';
 import toast from '@shared/lib/SharedUtils';
 import { Field } from '@core/field/Field';
-import { normalizeFormData } from '@core/form/DxFormDataTransform';
+import { normalizeFormData } from '@core/form/FormDataTransform';
 import type { FormHandle } from '@core/form/FormHandle';
-
-type FormRecord = Record<string, unknown>;
+import type { FormDataRecord } from '@core/form/FormDataSnapshot';
 
 export interface UseDxFormApiRefs {
   formRef: MutableRefObject<FormRef | null>;
@@ -52,12 +51,12 @@ export function useDxFormApi(refs: UseDxFormApiRefs, fields: Field[]): FormHandl
     return gridRef.current?.instance().getDataSource().items();
   };
 
-  const setValues = (data: FormRecord) => {
+  const setValues = (data: FormDataRecord) => {
     const row = normalizeFormData(data, fields);
     formRef.current?.instance().option('formData', row);
   };
 
-  const setDetailData = (data: FormRecord[]) => {
+  const setDetailData = (data: FormDataRecord[]) => {
     const store = gridRef.current?.instance().getDataSource().store() as ArrayStore;
     store.clear();
     data.forEach((row) => {

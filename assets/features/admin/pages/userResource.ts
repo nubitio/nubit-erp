@@ -3,8 +3,9 @@ import { defineFields } from '@core/crud/fieldContract';
 import { passwordField } from '@core/field/FieldBuilders';
 import { userEvents } from '@core/event/domainEvents';
 import { userEndpoints } from '../api/adminEndpoints';
+import type { DataRecord } from '@core/data/DataRecord';
 
-interface UserRecord extends Record<string, unknown> {
+interface UserRecord extends DataRecord {
   id: number;
   username: string;
   role: unknown;

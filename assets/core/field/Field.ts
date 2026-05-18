@@ -3,6 +3,7 @@ import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, GridOnChangeFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 import React from 'react';
+import type { DataRecord } from '../data/DataRecord';
 
 export type LoadOption = Record<string, any>;
 
@@ -44,7 +45,7 @@ export interface Field {
     | 'startswith'
     | undefined;
   filterValue: string | number | boolean | Date | null | undefined;
-  data: Array<Record<string, unknown>>;
+  data: DataRecord[];
   formatter: FormatterFn | undefined;
   itemFormatter: ItemFormatterFn | undefined;
   visible: boolean;
@@ -62,7 +63,7 @@ export interface Field {
   required: boolean;
   precision: number;
   accept: string | null | undefined;
-  buttons: Array<Record<string, unknown>>;
+  buttons: DataRecord[];
   hidingPriority: number | undefined;
   searchEnabled: boolean;
   searchExpr: string[] | null;
@@ -73,7 +74,7 @@ export interface Field {
   visibleOnForm: boolean;
   maxLength: number | undefined;
   multiple: boolean;
-  editorOptions: Record<string, unknown> | undefined;
+  editorOptions: DataRecord | undefined;
   sendAsString: boolean;
   /**
    * Column display order hint (maps to DevExtreme `visibleIndex`).
@@ -87,13 +88,13 @@ export interface Field {
   // ---------------------------------------------------------------------------
 
   /** Returns true when the field should be visible */
-  visibleWhen?: (formData: Record<string, unknown>) => boolean;
+  visibleWhen?: (formData: DataRecord) => boolean;
 
   /** Returns true when the field should be disabled (read-only in form) */
-  disabledWhen?: (formData: Record<string, unknown>) => boolean;
+  disabledWhen?: (formData: DataRecord) => boolean;
 
   /** Derived value — field is rendered as read-only with this computed value */
-  computed?: (formData: Record<string, unknown>) => unknown;
+  computed?: (formData: DataRecord) => unknown;
 
   /** When listed fields change, reload this field's options (entityField / enumField) */
   dependsOn?: string[];
@@ -112,12 +113,12 @@ export interface Field {
  * to the value types of a specific resource record type `T`.
  *
  * Use `FieldDef<T>` when you want type-safe field definitions for a known
- * resource shape. Falls back to `Record<string, unknown>` when `T` is omitted.
+ * resource shape. Falls back to `DataRecord` when `T` is omitted.
  *
  * `defaultValue` and `onChange` are re-declared with generic-aware types;
  * all other `Field` properties are inherited unchanged.
  */
-export type FieldDef<T extends Record<string, unknown> = Record<string, unknown>> = Omit<
+export type FieldDef<T extends DataRecord = DataRecord> = Omit<
   Field,
   'defaultValue' | 'onChange'
 > & {

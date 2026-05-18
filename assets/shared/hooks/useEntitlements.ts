@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import type { DataRecord } from '@core/data/DataRecord';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -9,7 +10,7 @@ export interface FeatureEntitlement {
   enabled: boolean;
   /** 'plan' when the value comes from plan_features; 'override' for tenant overrides. */
   source: 'plan' | 'override';
-  config: Record<string, unknown>;
+  config: DataRecord;
 }
 
 export interface EntitlementsResponse {
