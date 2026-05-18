@@ -5,7 +5,7 @@ import type { Field } from '@core/field/Field';
 import type { FormFieldRenderer } from '@core/form/FormFieldRenderer';
 import type { UploadedFile } from '@core/form/UploadedFile';
 
-import { buildField } from './FormUtils';
+import { buildField } from './DxFormFieldItem';
 
 export function useDxFormFieldRenderer(
   editable: boolean | undefined,
