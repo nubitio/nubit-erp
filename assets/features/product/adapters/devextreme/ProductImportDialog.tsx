@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, FileUploader, ProgressBar as DxProgressBar } from 'devextreme-react';
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
+import { useDropzone } from 'react-dropzone';
 import { useScreenSize } from '@utils/media-query';
 import MercureManager from '@core/mercure/MercureManager';
 import { useMercureHub } from '@core/mercure/useMercureHub';
 import { businessHttpClient } from '@shared/api/network';
+import { AppDialog } from '@shared/ui/app-dialog/AppDialog';
 
 import '../../components/ProductImportDialog.scss';
 
@@ -117,16 +117,27 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
   );
 
   // ---------------------------------------------------------------------------
-  // Handlers
+  // Dropzone
   // ---------------------------------------------------------------------------
 
-  const handleFileUploadValueChange = (files: File[]) => {
-    const file = files[0] ?? null;
-    setSelectedFile(file);
-    setStatus('idle');
-    setResult(null);
-    setErrorMessage(null);
-  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+    },
+    multiple: false,
+    disabled: status !== 'idle',
+    onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0] ?? null;
+      setSelectedFile(file);
+      setStatus('idle');
+      setResult(null);
+      setErrorMessage(null);
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
 
   const handleImport = async () => {
     if (!selectedFile) return;
@@ -140,8 +151,8 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
 
     try {
       const response = await businessHttpClient.post<{ jobId: string; status: string; topic: string }>(
-          '/api/v1/products/import',
-          formData,
+        '/api/v1/products/import',
+        formData,
       );
       jobIdRef.current = response.data.jobId;
       setStatus('processing');
@@ -174,11 +185,13 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
           <p className="product-import-step__desc">
             Incluye columnas con listas desplegables para categorías y unidades de medida.
           </p>
-          <Button
-            text="Descargar plantilla .xlsx"
-            stylingMode="outlined"
+          <button
+            type="button"
+            className="app-button app-button--secondary app-button--sm"
             onClick={() => window.open('/api/v1/products/import/template', '_blank')}
-          />
+          >
+            Descargar plantilla .xlsx
+          </button>
         </div>
       </div>
 
@@ -190,16 +203,23 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
           <p className="product-import-step__desc">
             Rellena las filas con tus productos y sube el archivo .xlsx.
           </p>
-          <FileUploader
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            uploadMode="useForm"
-            selectButtonText="Seleccionar archivo .xlsx"
-            labelText=""
-            multiple={false}
-            onValueChange={handleFileUploadValueChange}
-            value={selectedFile ? [selectedFile] : []}
-            width="100%"
-          />
+          <div
+            {...getRootProps()}
+            className={`product-import-dropzone${isDragActive ? ' product-import-dropzone--active' : ''}${selectedFile ? ' product-import-dropzone--has-file' : ''}`}
+          >
+            <input {...getInputProps()} />
+            {selectedFile ? (
+              <span className="product-import-dropzone__filename">
+                <i className="ph ph-file-xls" aria-hidden="true" /> {selectedFile.name}
+              </span>
+            ) : isDragActive ? (
+              <span>Suelta el archivo aquí…</span>
+            ) : (
+              <span>
+                <i className="ph ph-upload-simple" aria-hidden="true" /> Seleccionar archivo .xlsx
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -210,12 +230,11 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
       <p className="product-import-progress__label">
         {status === 'uploading' ? 'Subiendo archivo…' : `Importando productos… ${pct}%`}
       </p>
-      <DxProgressBar
+      <progress
+        className="product-import-progress__bar"
         value={pct}
-        min={0}
         max={100}
-        showStatus={false}
-        width="100%"
+        aria-label="Progreso de importación"
       />
       {progress && (
         <p className="product-import-progress__detail">
@@ -259,7 +278,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
 
   const renderFailedBody = () => (
     <div className="product-import-failed">
-      <i className="dx-icon dx-icon-warning product-import-failed__icon" />
+      <i className="ph ph-warning product-import-failed__icon" aria-hidden="true" />
       <p className="product-import-failed__message">
         <strong>Error:</strong> {errorMessage}
       </p>
@@ -275,52 +294,52 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
         : renderIdleBody();
 
   return (
-    <Popup
-      visible={isOpen}
+    <AppDialog
       title="Importar productos"
+      open={isOpen}
       fullScreen={isXSmall}
       width={520}
       height="auto"
-      maxHeight="90vh"
       showCloseButton={!isRunning}
-      dragEnabled={false}
-      hideOnOutsideClick={false}
-      onHiding={handleClose}
-      wrapperAttr={{ class: 'form-popup' }}
-    >
-      <ToolbarItem toolbar="bottom" location="after">
+      closeOnOutsideClick={false}
+      onClose={handleClose}
+      footer={
         <div className="form-popup-buttons-container">
-          <Button
-            text="Cerrar"
-            stylingMode="outlined"
+          <button
+            type="button"
+            className="app-button app-button--secondary"
             onClick={handleClose}
             disabled={isRunning}
-          />
+          >
+            Cerrar
+          </button>
           {status === 'idle' && (
-            <Button
-              text="Importar"
-              stylingMode="outlined"
-              type="default"
+            <button
+              type="button"
+              className="app-button app-button--primary"
               disabled={!selectedFile}
               onClick={() => void handleImport()}
-            />
+            >
+              Importar
+            </button>
           )}
           {status === 'completed' && (
-            <Button
-              text="Importar otro"
-              stylingMode="outlined"
-              type="default"
+            <button
+              type="button"
+              className="app-button app-button--primary"
               onClick={() => {
                 setStatus('idle');
                 setSelectedFile(null);
                 setResult(null);
               }}
-            />
+            >
+              Importar otro
+            </button>
           )}
         </div>
-      </ToolbarItem>
-
+      }
+    >
       <div className="product-import-body">{bodyNode}</div>
-    </Popup>
+    </AppDialog>
   );
 }

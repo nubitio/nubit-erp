@@ -3,7 +3,7 @@ import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import CustomStore from 'devextreme/data/custom_store';
 import { useEffect, useMemo, useState } from 'react';
 import { buildColumns, getIdField } from './DxDataGridUtils';
-import { LoadPanel, Paging, Sorting } from 'devextreme-react/data-grid';
+import { Paging, Sorting } from 'devextreme-react/data-grid';
 import { Field } from '@core/field/Field';
 
 type DxDetailDataGridProps = {
@@ -39,7 +39,6 @@ export const DxDetailDataGrid = ({ options }: DxDetailDataGridProps) => {
         columnMinWidth={50}
         columnAutoWidth={true}
       >
-        <LoadPanel enabled />
         <Sorting mode="multiple" />
         {buildColumns(fields)}
         <Paging enabled={false} />

@@ -1,11 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { DataGrid } from 'devextreme-react';
-import { Column, type DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
-import type { RowUpdatedEvent } from 'devextreme/ui/data_grid';
-import DataSource from 'devextreme/data/data_source';
-import ArrayStore from 'devextreme/data/array_store';
 import NumberUtils from '@shared/lib/NumberUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
 
 export type PriceEditorRow = {
   id: string | number;
@@ -21,51 +15,80 @@ export interface PriceEditorGridHandle {
   getUpdatedRows: () => PriceEditorRow[];
 }
 
-export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>((_props, ref) => {
-  const gridRef = useRef<DataGridRef | null>(null);
-  const [dataSource] = useState(
-    () => new DataSource({ store: new ArrayStore({ key: 'id', data: [] }) }),
-  );
+export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceEditorGrid(
+  _props,
+  ref,
+) {
+  const [rows, setRowsState] = useState<PriceEditorRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const rowsRef = useRef<PriceEditorRow[]>([]);
 
   useImperativeHandle(ref, () => ({
-    showLoading: (message) => gridRef.current?.instance().beginCustomLoading(message ?? ''),
-    hideLoading: () => gridRef.current?.instance().endCustomLoading(),
-    setRows: (rows) => {
-      const store = dataSource.store() as ArrayStore;
-      store.clear();
-      rows.forEach((row) => store.insert(row));
-      dataSource.reload();
+    showLoading: (message) => {
+      setLoadingMessage(message ?? '');
+      setLoading(true);
     },
-    getUpdatedRows: () => {
-      const rows = gridRef.current?.instance().getDataSource().items() ?? [];
-      return rows.filter((row: PriceEditorRow) => row.updated);
+    hideLoading: () => setLoading(false),
+    setRows: (newRows) => {
+      rowsRef.current = newRows.map((r) => ({ ...r }));
+      setRowsState([...rowsRef.current]);
     },
+    getUpdatedRows: () => rowsRef.current.filter((r) => r.updated),
   }));
 
+  const updatePrice = (index: number, value: string) => {
+    const parsed = parseFloat(value);
+    if (isNaN(parsed)) return;
+    rowsRef.current = rowsRef.current.map((r, i) =>
+      i === index ? { ...r, price: parsed, updated: true } : r,
+    );
+    setRowsState([...rowsRef.current]);
+  };
+
   return (
-    <DataGrid
-      ref={gridRef}
-      dataSource={dataSource}
-      height="100%"
-      showBorders
-      showRowLines
-      onRowUpdated={(e: RowUpdatedEvent) => {
-        e.data.updated = true;
-        e.component.saveEditData();
-      }}
-    >
-      <Editing mode="cell" allowUpdating={true} />
-      <Scrolling mode="virtual" />
-      <Column dataField="id" caption="ID" visible={false} />
-      <Column dataField="name" caption="Producto" minWidth={300} allowEditing={false} />
-      <Column
-        dataField="price"
-        caption="Precio"
-        alignment="right"
-        dataType="number"
-        cellRender={(cell: GridCellContext) => NumberUtils.formatCurrency(cell.value)}
-      />
-      <Column dataField="updated" caption="" visible={false} />
-    </DataGrid>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {loading && (
+        <div style={{ padding: '8px', textAlign: 'center', color: 'var(--texteditor-label-color)' }}>
+          {loadingMessage || 'Cargando…'}
+        </div>
+      )}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', minWidth: 300 }}>
+                Producto
+              </th>
+              <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                Precio
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={row.id}>
+                <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                  {row.name}
+                </td>
+                <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', textAlign: 'right' }}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    defaultValue={Number(row.price ?? 0)}
+                    onBlur={(e) => updatePrice(i, e.target.value)}
+                    style={{ width: '100%', textAlign: 'right' }}
+                    aria-label={`Precio de ${row.name ?? 'producto'}`}
+                  />
+                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--texteditor-label-color)' }}>
+                    {NumberUtils.formatCurrency(Number(row.price ?? 0))}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 });

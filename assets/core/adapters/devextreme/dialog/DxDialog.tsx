@@ -1,14 +1,10 @@
 import './DxDialog.scss';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { Popup, ToolbarItem } from 'devextreme-react/popup';
 import { useScreenSize } from '@utils/media-query';
-import { Button } from 'devextreme-react';
 import { useEvents } from '@core/event/EventHook';
 import { DialogEventNames } from '@core/event/EventTypes';
-import LoadIndicator from 'devextreme-react/load-indicator';
-import LoadPanel from 'devextreme-react/load-panel';
-import { SharedUtils } from '@shared/lib/SharedUtils';
+import { AppDialog } from '@shared/ui/app-dialog';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
 
 export interface DxDialogOptions {
@@ -36,7 +32,6 @@ export interface DxDialogEvents {
 
 export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
   const { t } = useCoreTranslation();
-  const [dialogId] = useState(() => SharedUtils.generateId('dialog'));
   const [title, setTitle] = useState<string>(options.title ?? t('crudPage.dialogTitleAdd'));
   useEffect(() => {
     if (options.title) {
@@ -102,62 +97,52 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
   }));
 
   return (
-    <React.Fragment>
-      <Popup
-        title={title}
-        visible={visible}
-        fullScreen={isXSmall}
-        width={width}
-        height={options.height ?? 'auto'}
-        maxHeight={options.maxHeight ?? '90%'}
-        showCloseButton={true}
-        dragEnabled={false}
-        hideOnOutsideClick={false}
-        onHiding={(e) => {
-          if (isProcessing) {
-            e.cancel = true;
-            return;
-          }
-          if (options.onClose) options.onClose();
-        }}
-        wrapperAttr={{ id: dialogId, class: options.fitContent ? 'fit-content' : 'form-popup' }}
-      >
-        {(options.footerVisible ?? true) && (
-          <ToolbarItem toolbar="bottom" location="after">
-            <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
-              <Button
-                text={options.negativeText ?? t('dialog.buttonCancel')}
-                stylingMode="outlined"
-                onClick={onCancelClick}
-                disabled={isProcessing}
-              />
-              <Button
-                stylingMode="outlined"
-                type="default"
-                onClick={onSaveClick}
-                disabled={isProcessing}
-                className="dialog-save-button"
-              >
-                <LoadIndicator className="button-indicator" visible={isProcessing} />
-                <span className="dx-button-text">
-                  {options.positiveText ?? t('dialog.buttonSave')}
-                </span>
-              </Button>
-            </div>
-          </ToolbarItem>
-        )}
-        {options.children}
-        <LoadPanel
-          shadingColor="rgba(0,0,0,0.4)"
-          position={{ of: `#${dialogId}` }}
-          visible={isProcessing}
-          showIndicator={true}
-          shading={true}
-          showPane={true}
-          hideOnOutsideClick={false}
-        />
-      </Popup>
-    </React.Fragment>
+    <AppDialog
+      title={title}
+      open={visible}
+      fullScreen={isXSmall}
+      width={width}
+      height={options.height ?? 'auto'}
+      maxWidth={options.width ?? undefined}
+      onClose={() => {
+        if (isProcessing) return;
+        if (options.onClose) options.onClose();
+      }}
+      closeOnEscape={false}
+      closeOnOutsideClick={false}
+      keepMounted
+      className={options.fitContent ? 'fit-content' : 'form-popup'}
+      footer={
+        (options.footerVisible ?? true) ? (
+          <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
+            <button
+              type="button"
+              className="app-button app-button--secondary"
+              onClick={onCancelClick}
+              disabled={isProcessing}
+            >
+              {options.negativeText ?? t('dialog.buttonCancel')}
+            </button>
+            <button
+              type="button"
+              className="app-button app-button--primary dialog-save-button"
+              onClick={onSaveClick}
+              disabled={isProcessing}
+            >
+              {isProcessing && <span className="button-indicator" aria-hidden="true" />}
+              <span>{options.positiveText ?? t('dialog.buttonSave')}</span>
+            </button>
+          </div>
+        ) : undefined
+      }
+    >
+      {options.children}
+      {isProcessing && (
+        <div className="crud-dialog__loading" aria-hidden="true">
+          <span className="crud-dialog__loading-indicator" />
+        </div>
+      )}
+    </AppDialog>
   );
 });
 
