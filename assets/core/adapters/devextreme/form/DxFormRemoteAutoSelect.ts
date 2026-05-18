@@ -4,6 +4,7 @@ import type { FormRef } from 'devextreme-react/form';
 import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
 import type { FormRemoteOptions } from '@core/form/FormRemoteOptions';
+import { setDxEditorOption } from './DxFormAccessorReads';
 
 export function maybeAutoSelectSingleValue(
   field: Field,
@@ -22,7 +23,7 @@ export function maybeAutoSelectSingleValue(
         ? [single[remoteOptions.valueField]]
         : single[remoteOptions.valueField];
       field.defaultValue = value as Field['defaultValue'];
-      formRef.current?.instance()?.getEditor(field.name)?.option('value', value);
+      setDxEditorOption(formRef, field.name, 'value', value);
       return;
     }
 
@@ -44,7 +45,7 @@ export function maybeAutoSelectSingleValue(
           ? [single[remoteOptions.valueField]]
           : single[remoteOptions.valueField];
         field.defaultValue = value as Field['defaultValue'];
-        formRef.current?.instance()?.getEditor(field.name)?.option('value', value);
+        setDxEditorOption(formRef, field.name, 'value', value);
       })
       .catch((err: unknown) => {
         console.warn(`[DevExtremeForm] auto-select failed for "${field.name}":`, err);
