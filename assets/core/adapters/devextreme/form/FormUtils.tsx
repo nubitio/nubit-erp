@@ -1,5 +1,4 @@
 import { Field } from '@core/field/Field';
-import { FieldType } from '@core/field/FieldType';
 import { FormOnChangeFn } from '@core/field/FieldCallbacks';
 import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import {
@@ -21,6 +20,13 @@ import { ValidationRule } from '@core/field/ValidationRule';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { Template } from 'devextreme-react/core/template';
 import type { DataRecord } from '@core/data/DataRecord';
+import { FormEditorKind, getFormEditorKind } from '@core/form/FormEditorKind';
+import {
+  FormSimpleEditorOptions,
+  getFormSimpleEditorOptions,
+} from '@core/form/FormSimpleEditorOptions';
+import { getFormFieldPresentation } from '@core/form/FormFieldPresentation';
+import { getFormRemoteOptions } from '@core/form/FormRemoteOptions';
 
 export const buildField = (
   field: Field,
@@ -29,20 +35,20 @@ export const buildField = (
   uploadedFiles: MutableRefObject<UploadedFile[]> = { current: [] },
   formRef: MutableRefObject<FormRef | null> = { current: null },
 ) => {
-  if (field.type === FieldType.NONE) return null;
+  if (getFormEditorKind(field) === null) return null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DevExtreme editor options bag varies by widget type
   let editorOptions: Record<string, any> = {};
-  if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
+  const remoteOptions = getFormRemoteOptions(field);
+  if (remoteOptions) {
     // Create a store instance so we can query a small page to decide auto-selection
-    const iriMode = field.valueField === '_iri';
     const store = dxUtils.getDataStore(
-      field.url ?? '',
-      field.valueField,
-      field.byKeyUrl,
-      field.filters,
+      remoteOptions.url,
+      remoteOptions.valueField,
+      remoteOptions.byKeyUrl,
+      remoteOptions.filters,
       [],
-      field.loadOptions,
-      iriMode,
+      remoteOptions.loadOptions,
+      remoteOptions.iriMode,
     );
 
     editorOptions = {
@@ -55,26 +61,28 @@ export const buildField = (
         container: 'body',
         wrapperAttr: { class: 'crud-dialog-editor-overlay' },
       },
-      valueExpr: field.valueField,
-      displayExpr: field.textField,
-      searchEnabled: field.searchEnabled,
-      searchExpr: field.searchExpr,
+      valueExpr: remoteOptions.valueField,
+      displayExpr: remoteOptions.textField,
+      searchEnabled: remoteOptions.searchEnabled,
+      searchExpr: remoteOptions.searchExpr,
       wrapItemText: true,
-      selectionMode: field.multiple ? 'multiple' : 'single',
+      selectionMode: remoteOptions.multiple ? 'multiple' : 'single',
       buttons: ['clear', 'dropDown'],
     };
 
     // Auto-select logic: only when the field opts in, and no explicit defaultValue has been provided
     try {
-      if (field.autoSelectIfSingle === true && field.defaultValue === undefined) {
+      if (remoteOptions.autoSelectIfSingle && remoteOptions.defaultValue === undefined) {
         // Case: local data already present on the field (mode !== 'remote')
-        if (field.mode !== 'remote' && Array.isArray(field.data) && field.data.length === 1) {
-          const single = field.data[0];
-          const v = field.multiple ? [single[field.valueField]] : single[field.valueField];
+        if (field.mode !== 'remote' && remoteOptions.localData.length === 1) {
+          const single = remoteOptions.localData[0];
+          const v = remoteOptions.multiple
+            ? [single[remoteOptions.valueField]]
+            : single[remoteOptions.valueField];
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           field.defaultValue = v as any;
           formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
-        } else if (field.url) {
+        } else if (remoteOptions.url) {
           // For remote stores, load up to 2 items (so we can detect "exactly 1" without fetching all)
           // Respect any filters embedded in the store.
           // The CustomStore.load may return either an array or an object with .data
@@ -85,7 +93,9 @@ export const buildField = (
               const items = result?.data ?? result;
               if (Array.isArray(items) && items.length === 1) {
                 const single = items[0];
-                const v = field.multiple ? [single[field.valueField]] : single[field.valueField];
+                const v = remoteOptions.multiple
+                  ? [single[remoteOptions.valueField]]
+                  : single[remoteOptions.valueField];
                 field.defaultValue = v;
                 // If the form is already mounted, set the editor value immediately
                 formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
@@ -100,118 +110,10 @@ export const buildField = (
       console.warn(`[DevExtremeForm] auto-select setup failed for "${field.name}":`, err);
     }
   }
-  if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
-    editorOptions = {
-      dataSource: field.data,
-      valueExpr: 'value',
-      displayExpr: 'text',
-      buttons: ['dropDown'],
-    };
-  }
-  if (field.type === FieldType.FILE) {
-    if (field.url === undefined) {
-      editorOptions = {
-        accept: field.accept,
-        uploadMode: 'useForm',
-      };
-    } else {
-      editorOptions = {
-        accept: field.accept,
-        uploadUrl: field.url,
-        name: 'file',
-        onBeforeSend: () => {},
-        onUploaded: (e: any) => {
-          const response = JSON.parse(e.request.response);
-          uploadedFiles.current.push({
-            name: field.name,
-            iri: getIRI(field.url ?? '', response.id.toString()),
-          });
-        },
-      };
-    }
-    editorOptions = {
-      ...editorOptions,
-      selectButtonText: 'Seleccionar ' + field.label.toLowerCase(),
-    };
-  }
-  if (field.type === FieldType.DATE) {
-    editorOptions = {
-      type: 'date',
-      displayFormat: field.format || 'dd/MM/yyyy',
-      defaultValue: new Date(),
-      min: field.data?.[0]?.min ?? undefined,
-    };
-  }
-  if (field.type === FieldType.DATETIME) {
-    editorOptions = {
-      type: 'datetime',
-      displayFormat: field.format || 'dd/MM/yyyy HH:mm',
-      defaultValue: new Date(),
-    };
-  }
-  if (field.type === FieldType.CURRENCY) {
-    editorOptions = {
-      format: {
-        style: 'currency',
-        currency: 'PEN',
-      },
-    };
-  }
-  if (field.type === FieldType.PASSWORD) {
-    editorOptions = {
-      mode: 'password',
-      buttons: [
-        {
-          name: 'password',
-          location: 'after',
-          options: {
-            icon: 'ph ph-eye ',
-            stylingMode: 'text',
-            onClick: (e: any) => {
-              const editor = formRef.current?.instance().getEditor(field.name);
-              editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
-              e.component.option(
-                'icon',
-                editor?.option('mode') === 'text' ? 'ph ph-eye-slash' : 'ph ph-eye',
-              );
-            },
-          },
-        },
-      ],
-    };
-  }
-  if (field.type === FieldType.HTML) {
-    editorOptions = {
-      height: field.height,
-      value: field.defaultValue,
-      toolbar: {
-        items: [
-          'bold',
-          'italic',
-          'underline',
-          'strike',
-          'separator',
-          'alignLeft',
-          'alignCenter',
-          'alignRight',
-          'alignJustify',
-          'separator',
-          'orderedList',
-          'bulletList',
-        ],
-      },
-    };
-  }
-  if (field.type === FieldType.SWITCH) {
-    editorOptions = {
-      hint: field.label,
-    };
-  }
-  if (field.type === FieldType.CHECKBOX) {
-    editorOptions = {
-      text: field.label,
-    };
-  }
+  editorOptions = {
+    ...editorOptions,
+    ...getDxSimpleEditorOptions(getFormSimpleEditorOptions(field), field, formRef, uploadedFiles),
+  };
   if (!isEditable) {
     editorOptions = {
       ...editorOptions,
@@ -252,11 +154,9 @@ export const buildField = (
     inputAttr: mergedInputAttr,
   };
 
-  const shouldHideLabel = [FieldType.CHECKBOX, FieldType.SWITCH].includes(field.type);
-  const useFloatingEditorLabel =
-    !shouldHideLabel && field.type !== FieldType.FILE && field.type !== FieldType.HTML;
+  const presentation = getFormFieldPresentation(field);
 
-  if (useFloatingEditorLabel) {
+  if (presentation.useFloatingLabel) {
     editorOptions = {
       ...editorOptions,
       label: field.label,
@@ -286,8 +186,8 @@ export const buildField = (
     <SimpleItem
       key={key}
       dataField={field.name}
-      editorType={getEditorType(field)}
-      label={{ text: field.label, visible: !useFloatingEditorLabel && !shouldHideLabel }}
+      editorType={getDxEditorType(getFormEditorKind(field))}
+      label={{ text: field.label, visible: !presentation.useFloatingLabel && !presentation.hideLabel }}
       isRequired={field.visible !== false && field.required}
       editorOptions={editorOptions}
       helpText={field.helpText}
@@ -377,39 +277,116 @@ const buildValidationRules = (field: Field) => {
   });
 };
 
-const getEditorType = (field: Field): any => {
-  switch (field.type) {
-    case FieldType.TEXT:
+// DevExtreme exposes editorType as a vendor-specific literal union; keep that
+// typing local to this adapter while the app works with FormEditorKind.
+const getDxEditorType = (editorKind: FormEditorKind | null): any => {
+  switch (editorKind) {
+    case 'text':
       return 'dxTextBox';
-    case FieldType.NUMBER:
-    case FieldType.CURRENCY:
+    case 'number':
       return 'dxNumberBox';
-    case FieldType.DATE:
-    case FieldType.DATETIME:
+    case 'date':
       return 'dxDateBox';
-    case FieldType.SELECT:
-    case FieldType.ENUM:
-    case FieldType.ENTITY:
+    case 'select':
       return 'dxSelectBox';
-    case FieldType.CHECKBOX:
+    case 'checkbox':
       return 'dxCheckBox';
-    case FieldType.RADIO:
+    case 'radio':
       return 'dxRadioGroup';
-    case FieldType.TEXTAREA:
+    case 'textarea':
       return 'dxTextArea';
-    case FieldType.PASSWORD:
-      return 'dxTextBox';
-    case FieldType.FILE:
+    case 'file':
       return 'dxFileUploader';
-    case FieldType.SWITCH:
+    case 'switch':
       return 'dxSwitch';
-    case FieldType.TAGS:
+    case 'tags':
       return 'dxTagBox';
-    case FieldType.HTML:
+    case 'html':
       return 'dxHtmlEditor';
+    case null:
+      return undefined;
   }
 };
 
+const getDxSimpleEditorOptions = (
+  options: FormSimpleEditorOptions,
+  field: Field,
+  formRef: MutableRefObject<FormRef | null>,
+  uploadedFiles: MutableRefObject<UploadedFile[]>,
+): DataRecord => ({
+  ...(options.select
+    ? {
+        dataSource: options.select.dataSource,
+        valueExpr: options.select.valueExpr,
+        displayExpr: options.select.displayExpr,
+        buttons: ['dropDown'],
+      }
+    : {}),
+  ...(options.numberFormat ? { format: options.numberFormat } : {}),
+  ...(options.checkboxText ? { text: options.checkboxText } : {}),
+  ...(options.date
+    ? {
+        type: options.date.type,
+        displayFormat: options.date.displayFormat,
+        defaultValue: options.date.defaultValue,
+        min: options.date.min,
+      }
+    : {}),
+  ...(options.password
+    ? {
+        mode: 'password',
+        buttons: [
+          {
+            name: 'password',
+            location: 'after',
+            options: {
+              icon: 'ph ph-eye ',
+              stylingMode: 'text',
+              onClick: (e: any) => {
+                const editor = formRef.current?.instance().getEditor(field.name);
+                editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
+                e.component.option(
+                  'icon',
+                  editor?.option('mode') === 'text' ? 'ph ph-eye-slash' : 'ph ph-eye',
+                );
+              },
+            },
+          },
+        ],
+      }
+    : {}),
+  ...(options.file
+    ? {
+        accept: options.file.accept,
+        ...(options.file.uploadUrl === undefined
+          ? { uploadMode: 'useForm' }
+          : {
+              uploadUrl: options.file.uploadUrl,
+              name: 'file',
+              onBeforeSend: () => {},
+              onUploaded: (e: any) => {
+                const response = JSON.parse(e.request.response);
+                uploadedFiles.current.push({
+                  name: field.name,
+                  iri: getIRI(options.file?.uploadUrl ?? '', response.id.toString()),
+                });
+              },
+            }),
+        selectButtonText: options.file.selectButtonText,
+      }
+    : {}),
+  ...(options.html
+    ? {
+        height: options.html.height,
+        value: options.html.value,
+        toolbar: {
+          items: options.html.toolbarItems,
+        },
+      }
+    : {}),
+  ...(options.switchHint ? { hint: options.switchHint } : {}),
+});
+
 // Exported for testing only — not part of the public API
-export const _getEditorType = getEditorType;
+export const _getEditorType = (field: Field) => getDxEditorType(getFormEditorKind(field));
 export const _buildValidationRules = buildValidationRules;
