@@ -5,7 +5,7 @@ import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
 import type { FormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import type { UploadedFile } from '@core/form/UploadedFile';
-import { getIRI } from '@shared/lib/SharedUtils';
+import { getDxFileEditorOptions } from './DxFormFileEditorOptions';
 export { getDxEditorType } from './DxFormEditorType';
 
 export const getDxSimpleEditorOptions = (
@@ -55,26 +55,7 @@ export const getDxSimpleEditorOptions = (
         ],
       }
     : {}),
-  ...(options.file
-    ? {
-        accept: options.file.accept,
-        ...(options.file.uploadUrl === undefined
-          ? { uploadMode: 'useForm' }
-          : {
-              uploadUrl: options.file.uploadUrl,
-              name: 'file',
-              onBeforeSend: () => {},
-              onUploaded: (e: any) => {
-                const response = JSON.parse(e.request.response);
-                uploadedFiles.current.push({
-                  name: field.name,
-                  iri: getIRI(options.file?.uploadUrl ?? '', response.id.toString()),
-                });
-              },
-            }),
-        selectButtonText: options.file.selectButtonText,
-      }
-    : {}),
+  ...(options.file ? getDxFileEditorOptions(field, options.file, uploadedFiles) : {}),
   ...(options.html
     ? {
         height: options.html.height,
