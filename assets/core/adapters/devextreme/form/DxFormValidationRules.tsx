@@ -9,27 +9,10 @@ import {
 } from 'devextreme-react/form';
 
 import type { Field } from '@core/field/Field';
-import type { ValidationRule } from '@core/field/ValidationRule';
+import { getDxValidationRuleList } from './DxFormValidationRuleList';
 
 export const buildValidationRules = (field: Field) => {
-  // Skip validation rules for hidden fields to avoid blocking form submission
-  // when a field is conditionally hidden via visibleWhen or visible(false).
-  if (field.visibleOnForm === false || field.visible === false) {
-    return [];
-  }
-
-  let validationRules: ValidationRule[] = [];
-  if (field.required) {
-    validationRules.push({
-      type: 'required',
-      options: {
-        message: `${field.label} es requerido`,
-      },
-    });
-  }
-
-  validationRules = validationRules.concat(field.validators ?? []);
-  return validationRules.map((rule, index) => {
+  return getDxValidationRuleList(field).map((rule, index) => {
     switch (rule.type) {
       case 'required':
         return <RequiredRule key={index} />;
