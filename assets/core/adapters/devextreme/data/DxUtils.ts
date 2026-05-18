@@ -6,18 +6,19 @@ import { FilterDescriptor, SortDescriptor } from 'devextreme/data';
 import GridData from '@shared/data/GridData';
 import { FilterRule } from '@core/field/FilterRule';
 import { LoadOption } from '@core/field/Field';
+import type { DataRecord } from '@core/data/DataRecord';
 
 class DxUtils {
   private findPreloadedItem(
-    loadOptions: Record<string, unknown>,
+    loadOptions: DataRecord,
     idField: string,
     id: unknown,
-  ): Record<string, unknown> | null {
+  ): DataRecord | null {
     const prependData = Array.isArray(loadOptions.prependData)
-      ? (loadOptions.prependData as Array<Record<string, unknown>>)
+      ? (loadOptions.prependData as DataRecord[])
       : [];
     const appendData = Array.isArray(loadOptions.appendData)
-      ? (loadOptions.appendData as Array<Record<string, unknown>>)
+      ? (loadOptions.appendData as DataRecord[])
       : [];
     const candidates = [...prependData, ...appendData];
 
@@ -114,7 +115,7 @@ class DxUtils {
      *  - displayExpr renders the human-readable name
      *  - no "@" character is ever used as a JS property accessor
      */
-    const addIriField = (item: Record<string, unknown>): Record<string, unknown> => {
+    const addIriField = (item: DataRecord): DataRecord => {
       // Prefer the Hydra "@id" IRI when present.
       // Fallback: some endpoints (e.g. /api/categories) expose only "id" without "@id".
       // In that case, synthesize the IRI from the base url + id so that iriMode
@@ -151,7 +152,7 @@ class DxUtils {
             if (Object.prototype.hasOwnProperty.call(option, key)) {
               // LoadOptions does not expose an index signature; cast is safe because
               // LoadOption values are arbitrary query params forwarded to the server.
-              (loadOptions as Record<string, unknown>)[key] = option[key];
+              (loadOptions as DataRecord)[key] = option[key];
             }
           }
         });
@@ -162,7 +163,7 @@ class DxUtils {
         // strict parameter whitelisting and returns 404 for unknown params.
         // searchValue is only meaningful when paired with searchExpr - drop it
         // when searchExpr is absent to avoid sending a dangling param.
-        const opts = loadOptions as Record<string, unknown>;
+        const opts = loadOptions as DataRecord;
         delete opts['searchOperation'];
         if (opts['searchExpr'] === undefined) {
           delete opts['searchValue'];
@@ -204,9 +205,9 @@ class DxUtils {
         return this.fetchAll(url, loadOptions);
       },
       byKey: (key) => {
-        const id = typeof key === 'object' ? (key as Record<string, unknown>)[idField] : key;
+        const id = typeof key === 'object' ? (key as DataRecord)[idField] : key;
         if (id === undefined) return Promise.resolve(null);
-        const loadOptions: Record<string, unknown> = {};
+        const loadOptions: DataRecord = {};
         options.forEach((option) => {
           for (const key in option) {
             if (Object.prototype.hasOwnProperty.call(option, key)) {

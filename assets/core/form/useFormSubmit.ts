@@ -1,36 +1,14 @@
 import { httpClient } from '../../shared/api/HttpClient';
-import { Field } from '../field/Field';
-import { FormEventNames } from '../event/EventTypes';
-import { serializeFormFields, serializeDetailRows, UploadedFileEntry } from './serializeFormData';
+import { serializeFormFields, serializeDetailRows } from './serializeFormData';
+import type { UseFormSubmitAccessors } from './FormSubmitAccessors';
+import type { UseFormSubmitOptions } from './FormSubmitOptions';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
+import type { FormDataRecord } from './FormDataSnapshot';
 
-export type { UploadedFileEntry as UploadedFile } from './serializeFormData';
+export type { UseFormSubmitAccessors } from './FormSubmitAccessors';
+export type { UseFormSubmitOptions } from './FormSubmitOptions';
 
-type FormRecord = Record<string, unknown>;
-type DeletePayload = { row: FormRecord };
-
-export interface UseFormSubmitOptions {
-  url: string;
-  detailUrl?: string;
-  fields: Field[];
-  detailFields?: Field[];
-  detailPropertyName: string;
-  format?: 'json' | 'multipart';
-  events?: FormEventNames;
-  onSaveSuccess?: (response: unknown) => void;
-  onSaveError?: (error?: unknown) => void;
-  onDeleteSuccess?: (response: unknown) => void;
-  onDeleteError?: (error?: unknown) => void;
-  onLoadingChange?: (loading: boolean) => void;
-}
-
-export interface UseFormSubmitAccessors {
-  getDetailRows: () => FormRecord[];
-  getFieldValue: (field: string) => unknown;
-  getFormData: () => FormRecord;
-  getUploadedFiles: () => UploadedFileEntry[];
-  isEditMode: () => boolean;
-}
+type DeletePayload = { row: FormDataRecord };
 
 export type EmitFn = <T>(name: string, payload?: T) => void;
 
@@ -50,7 +28,7 @@ export const useFormSubmit = (
   const getDetailIdField = () => options.detailFields?.find((f) => f.isIdentity)?.name ?? '';
 
   /** Build multipart FormData from a plain object */
-  const buildMultipartFormData = (data: FormRecord): FormData => {
+  const buildMultipartFormData = (data: FormDataRecord): FormData => {
     const form = new FormData();
     for (const key in data) {
       const value = data[key];
@@ -62,7 +40,7 @@ export const useFormSubmit = (
   };
 
   /** Serialize main form fields for submission */
-  const serializeFields = (rawData: FormRecord): FormRecord => {
+  const serializeFields = (rawData: FormDataRecord): FormDataRecord => {
     return serializeFormFields(rawData, options.fields, {
       uploadedFiles: accessors.getUploadedFiles(),
       getFieldValue: accessors.getFieldValue,
@@ -71,7 +49,7 @@ export const useFormSubmit = (
   };
 
   /** Append serialized detail grid rows to formData */
-  const appendDetailRows = (formData: FormRecord): void => {
+  const appendDetailRows = (formData: FormDataRecord): void => {
     if (!options.detailFields) return;
 
     formData[options.detailPropertyName] = serializeDetailRows(
@@ -96,7 +74,7 @@ export const useFormSubmit = (
 
     const id = formData[getIdField()];
 
-    let payload: FormRecord | FormData = formData;
+    let payload: FormDataRecord | FormData = formData;
     if (options.format === 'multipart') {
       payload = buildMultipartFormData(formData);
     }

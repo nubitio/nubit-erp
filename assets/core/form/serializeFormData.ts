@@ -3,17 +3,12 @@ import { getIRI } from '../../shared/lib/SharedUtils';
 import { LIMA_TZ } from '../../shared/lib/DateUtils';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-
-type FormRecord = Record<string, unknown>;
-
-export interface UploadedFileEntry {
-  name: string;
-  iri: string;
-}
+import type { UploadedFile } from './UploadedFile';
+import type { FormDataRecord } from './FormDataSnapshot';
 
 export interface SerializeFieldsContext {
   /** Files uploaded during the current form session. */
-  uploadedFiles: UploadedFileEntry[];
+  uploadedFiles: UploadedFile[];
   /** Retrieves a field value imperatively (used for FILE fields in multipart mode). */
   getFieldValue?: (field: string) => unknown;
   /** Submission format; affects how FILE fields are handled. */
@@ -34,10 +29,10 @@ export interface SerializeFieldsContext {
  * This function is extracted from useFormSubmit for testability.
  */
 export function serializeFormFields(
-  rawData: FormRecord,
+  rawData: FormDataRecord,
   fields: Field[],
   ctx: SerializeFieldsContext,
-): FormRecord {
+): FormDataRecord {
   const formData = { ...rawData };
 
   // Apply uploaded file IRIs
@@ -90,7 +85,7 @@ export function serializeFormFields(
   return formData;
 }
 
-function serializeEntityField(formData: FormRecord, field: Field): void {
+function serializeEntityField(formData: FormDataRecord, field: Field): void {
   const val = formData[field.name];
   const type = typeof val;
 
@@ -101,7 +96,7 @@ function serializeEntityField(formData: FormRecord, field: Field): void {
   }
 
   if (type === 'object' && val !== null && !field.multiple) {
-    const entityValue = val as FormRecord;
+    const entityValue = val as FormDataRecord;
     const atId = entityValue['@id'];
     if (typeof atId === 'string') {
       formData[field.name] = getIRI(field.url ?? '', atId);
@@ -127,7 +122,7 @@ function serializeEntityField(formData: FormRecord, field: Field): void {
     if (Array.isArray(val)) {
       formData[field.name] = val.map((item: unknown) => {
         if (typeof item === 'object') {
-          const record = item as FormRecord;
+          const record = item as FormDataRecord;
           const atId = record['@id'];
           if (typeof atId === 'string') return getIRI(field.url ?? '', atId);
           const idValue = record['id'];
@@ -145,7 +140,7 @@ function serializeEntityField(formData: FormRecord, field: Field): void {
   }
 }
 
-function serializeFileField(formData: FormRecord, field: Field, ctx: SerializeFieldsContext): void {
+function serializeFileField(formData: FormDataRecord, field: Field, ctx: SerializeFieldsContext): void {
   if (ctx.format === 'multipart' && ctx.getFieldValue) {
     const files = ctx.getFieldValue(field.name) as File[] | FileList | null | undefined;
     if (files && files.length > 0) {
@@ -160,7 +155,7 @@ function serializeFileField(formData: FormRecord, field: Field, ctx: SerializeFi
   }
 }
 
-function serializeDateField(formData: FormRecord, field: Field): void {
+function serializeDateField(formData: FormDataRecord, field: Field): void {
   const val = formData[field.name];
   if (val === null || val === undefined) {
     delete formData[field.name];
@@ -170,7 +165,7 @@ function serializeDateField(formData: FormRecord, field: Field): void {
   formData[field.name] = DateTime.fromJSDate(date, { zone: LIMA_TZ }).toUTC().toISO();
 }
 
-function serializeNumericField(formData: FormRecord, field: Field): void {
+function serializeNumericField(formData: FormDataRecord, field: Field): void {
   // Skip numeric coercion for the identity (primary key) field.
   // UUID / string keys must reach the URL builder as-is (BUG-011).
   if (field.isIdentity) return;
@@ -188,12 +183,12 @@ function serializeNumericField(formData: FormRecord, field: Field): void {
  * Pure function — operates on an array of row records.
  */
 export function serializeDetailRows(
-  rows: FormRecord[],
+  rows: FormDataRecord[],
   detailFields: Field[],
   detailIdField: string,
   isEditMode: boolean,
-): FormRecord[] {
-  const details = JSON.parse(JSON.stringify(rows)) as FormRecord[];
+): FormDataRecord[] {
+  const details = JSON.parse(JSON.stringify(rows)) as FormDataRecord[];
 
   detailFields.forEach((field) => {
     if (field.type === FieldType.ENTITY) {
@@ -205,7 +200,7 @@ export function serializeDetailRows(
         }
 
         if (typeof currentValue === 'object') {
-          const entityValue = currentValue as FormRecord;
+          const entityValue = currentValue as FormDataRecord;
           const atId = entityValue['@id'];
           if (typeof atId === 'string') {
             detail[field.name] = getIRI(field.url ?? '', atId);

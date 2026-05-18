@@ -1,7 +1,4 @@
-export {
-  DataGridView,
-  DATA_GRID_EVENTS,
-} from '@core/adapters/devextreme/CrudViews';
+export { DxDataGrid as DataGridView, DATA_GRID_EVENTS } from '@core/adapters/devextreme/datagrid/DxDataGrid';
 export { CrudDialogView as DialogView } from '@core/dialog/CrudDialogView';
 export { FormView, FORM_EVENTS } from '@core/form/FormView';
 export type { GridHandle } from '../datagrid/GridHandle';

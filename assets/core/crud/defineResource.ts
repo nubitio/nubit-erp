@@ -1,8 +1,9 @@
 import type { ResourceConfig } from './ResourceConfig';
+import type { DataRecord } from '../data/DataRecord';
 
 const stringResourceCache = new Map<string, ResourceConfig>();
 
-function cacheKey(apiUrl: string, overrides?: Record<string, unknown>): string | null {
+function cacheKey(apiUrl: string, overrides?: DataRecord): string | null {
   if (!overrides) return apiUrl;
 
   try {
@@ -36,23 +37,23 @@ export function defineResource(apiUrl: string): ResourceConfig;
  * Pass `mercure: false` to disable real-time Mercure subscription for this resource.
  * When omitted, `mercure` is effectively `true` (opt-in by default).
  */
-export function defineResource<T extends Record<string, unknown>>(
+export function defineResource<T extends DataRecord>(
   apiUrl: string,
   overrides: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },
 ): ResourceConfig<T>;
 
 /** Overload 3 — Full config object (legacy / full control — retrocompatible). */
-export function defineResource<T extends Record<string, unknown> = Record<string, unknown>>(
+export function defineResource<T extends DataRecord = DataRecord>(
   config: ResourceConfig<T>,
 ): ResourceConfig<T>;
 
-export function defineResource<T extends Record<string, unknown> = Record<string, unknown>>(
+export function defineResource<T extends DataRecord = DataRecord>(
   configOrUrl: ResourceConfig<T> | string,
   overrides?: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },
 ): ResourceConfig<T> {
   if (typeof configOrUrl === 'string') {
     const apiUrl = configOrUrl;
-    const key = cacheKey(apiUrl, overrides as Record<string, unknown> | undefined);
+    const key = cacheKey(apiUrl, overrides as DataRecord | undefined);
     if (key !== null && stringResourceCache.has(key)) {
       return stringResourceCache.get(key)! as ResourceConfig<T>;
     }

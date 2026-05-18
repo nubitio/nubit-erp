@@ -1,4 +1,5 @@
 import type { FilterRule } from '../field/FilterRule';
+import type { DataRecord } from '../data/DataRecord';
 
 export interface GridHandle {
   showLoading: (message?: string) => void;
@@ -7,9 +8,9 @@ export interface GridHandle {
   reset: () => void;
   loadData: () => Promise<unknown>;
   getSelectedRowKey: () => string | number | undefined;
-  getSelectedRow: () => Record<string, unknown> | undefined;
+  getSelectedRow: () => DataRecord | undefined;
   getSelectedRowKeys: () => unknown[];
-  getSelectedRows: () => Record<string, unknown>[];
+  getSelectedRows: () => DataRecord[];
   getFilter: () => unknown[];
   filter: (filterRule: FilterRule | null) => void;
 }

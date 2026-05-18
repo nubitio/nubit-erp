@@ -1,9 +1,8 @@
 import type { Field } from '@core/field/Field';
 import { FieldType } from '@core/field/FieldType';
+import type { FormDataRecord } from './FormDataSnapshot';
 
-type FormRecord = Record<string, unknown>;
-
-export function validateDetailRows(detailRows: FormRecord[], detailFields: Field[]): boolean {
+export function validateDetailRows(detailRows: FormDataRecord[], detailFields: Field[]): boolean {
   return detailRows.every((row) =>
     detailFields.every((field) => {
       const value = row[field.name];

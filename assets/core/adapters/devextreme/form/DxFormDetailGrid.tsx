@@ -10,10 +10,10 @@ import DataSource from 'devextreme/data/data_source';
 import { buildColumns } from '@core/adapters/devextreme/datagrid/DxDataGridUtils';
 import { Field } from '@core/field/Field';
 import { FORM_EVENTS } from '@core/form/FormEvents';
-import { buildEmptyRow } from '@core/form/DxFormDataTransform';
+import { buildEmptyRow } from '@core/form/FormDataTransform';
+import type { FormDataRecord } from '@core/form/FormDataSnapshot';
 
-type FormRecord = Record<string, unknown>;
-type DetailGridEvent = { component: { saveEditData: () => void }; data: FormRecord };
+type DetailGridEvent = { component: { saveEditData: () => void }; data: FormDataRecord };
 
 export interface DxFormDetailGridProps {
   gridRef: MutableRefObject<DataGridRef | null>;

@@ -1,24 +1,10 @@
 import toast from '@shared/lib/SharedUtils';
-import type { Field } from '@core/field/Field';
 
 import { validateDetailRows } from './FormDetailValidation';
+import type { UseFormValidationOptions } from './FormValidationOptions';
 
-type FormRecord = Record<string, unknown>;
-
-export interface UseFormValidationAccessors {
-  getDetailRowCount: () => number;
-  getDetailRows: () => FormRecord[];
-  hasPendingDetailEdits: () => boolean;
-  validateForm: () => boolean;
-}
-
-export interface UseFormValidationOptions {
-  accessors: UseFormValidationAccessors;
-  detailFields?: Field[];
-  detailNoDataText: string;
-  requiredDetail?: boolean;
-  validationErrorText: string;
-}
+export type { UseFormValidationAccessors } from './FormValidationAccessors';
+export type { UseFormValidationOptions } from './FormValidationOptions';
 
 export function useFormValidation({
   accessors,

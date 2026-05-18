@@ -45,6 +45,7 @@ import { DataGridEventNames, ToolbarButtonItem } from '@core/event/EventTypes';
 import { Store } from 'devextreme/data';
 import { RowPreparedEvent, SelectionChangedEvent } from 'devextreme/ui/data_grid';
 import type { GridHandle } from '@core/datagrid/GridHandle';
+import type { DataRecord } from '@core/data/DataRecord';
 
 export interface DxDataGridOptions {
   id: string;
@@ -52,7 +53,7 @@ export interface DxDataGridOptions {
   url: string;
   detailUrl?: string;
   fields: Field[];
-  detailFields?: Field[] | ((parentRow: Record<string, unknown>) => Field[]);
+  detailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
   columns?: DataGridTypes.Column[];
   toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
   events?: DataGridEventNames;
@@ -232,7 +233,7 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
   }, [data]);
 
   const renderDetail = useCallback(
-    (e: { key: unknown; data: Record<string, unknown> }) => {
+    (e: { key: unknown; data: DataRecord }) => {
       const detailUrl = options.detailUrl?.replace('{id}', String(e.key));
       const fields =
         typeof options.detailFields === 'function'
@@ -280,7 +281,7 @@ export const DxDataGrid = forwardRef<GridHandle, DxDataGridOptions>((options, re
   };
 
   const getSelectedRows = () => {
-    return (gridRef.current?.instance().getSelectedRowsData() ?? []) as Record<string, unknown>[];
+    return (gridRef.current?.instance().getSelectedRowsData() ?? []) as DataRecord[];
   };
 
   const setDataSource = (dataSource: Store | null) => {

@@ -1,5 +1,6 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
+import type { DataRecord } from '@core/data/DataRecord';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 type ToastPosition = 'top left' | 'top right' | 'bottom left' | 'bottom right';
@@ -224,11 +225,11 @@ export class SharedUtils {
     return digits[10] === res % 10;
   }
 
-  static tagsFormatter(value: Array<Record<string, unknown>> | null | undefined, name: string) {
+  static tagsFormatter(value: DataRecord[] | null | undefined, name: string) {
     if (value && value.length > 0) {
       return (
         <div className="flex flex-wrap">
-          {value.map((item: Record<string, unknown>, index) => {
+          {value.map((item: DataRecord, index) => {
             const key =
               typeof item.id === 'string' || typeof item.id === 'number' ? item.id : index;
             const label =
@@ -277,7 +278,7 @@ export class SharedUtils {
     }
   }
 
-  static saleStatusFormatter(sale: Record<string, unknown> | null | undefined) {
+  static saleStatusFormatter(sale: DataRecord | null | undefined) {
     const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2 || sale?.status === 'VOIDED';
     if (isVoided) {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">ANULADO</span>;

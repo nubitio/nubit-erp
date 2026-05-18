@@ -5,8 +5,9 @@ import type { Field } from '@core/field/Field';
 import { enumField, imageField } from '@core/field/FieldBuilders';
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
+import type { DataRecord } from '@core/data/DataRecord';
 
-interface ProductRecord extends Record<string, unknown> {
+interface ProductRecord extends DataRecord {
   id: string;
   code: string | null;
   type: number;

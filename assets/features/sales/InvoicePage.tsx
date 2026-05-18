@@ -12,10 +12,11 @@ import {
   runSendInvoiceToSunatAction,
 } from '@features/invoice/lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
+import type { DataRecord } from '@core/data/DataRecord';
 
 const API_URL = Constants.API_BASE_URL + 'tax-documents';
 const fields = InvoiceFields();
-const detailFields = (parentRow: Record<string, unknown>) =>
+const detailFields = (parentRow: DataRecord) =>
   InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN');
 
 export const InvoicePage = () => {

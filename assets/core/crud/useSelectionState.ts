@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import type { DataRecord } from '../data/DataRecord';
 
 export interface SelectionState {
   selectedIds: (string | number)[];
@@ -8,12 +9,12 @@ export interface SelectionState {
 }
 
 export function useSelectionState(identityField: string): SelectionState & {
-  onSelectionChanged: (selectedRows: Record<string, unknown>[]) => void;
+  onSelectionChanged: (selectedRows: DataRecord[]) => void;
 } {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
 
   const onSelectionChanged = useCallback(
-    (selectedRows: Record<string, unknown>[]) => {
+    (selectedRows: DataRecord[]) => {
       const ids = selectedRows.map((row) => {
         const val = row[identityField];
         if (typeof val === 'string' || typeof val === 'number') return val;

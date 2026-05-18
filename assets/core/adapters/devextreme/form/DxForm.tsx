@@ -9,6 +9,7 @@ import { useFormComputedValues } from '@core/form/useFormComputedValues';
 import { useFormValidation } from '@core/form/useFormValidation';
 import { useFormFieldDataChanged } from '@core/form/useFormFieldDataChanged';
 import { useFormSectionOptions } from '@core/form/useFormSectionOptions';
+import { buildFormLayoutModel } from '@core/form/FormLayoutModel';
 import { DxFormLayoutRenderer } from './DxFormLayoutRenderer';
 import { useDxFormObservers } from './useDxFormObservers';
 import { useDxFormRuntime } from './useDxFormRuntime';
@@ -17,6 +18,7 @@ import { useDxFormSubmitAccessors } from './useDxFormSubmitAccessors';
 import { useDxFormValidationAccessors } from './useDxFormValidationAccessors';
 import { useDxFormComputedValuesAccessors } from './useDxFormComputedValuesAccessors';
 import { useDxFormSectionOptionsAccessors } from './useDxFormSectionOptionsAccessors';
+import { useDxFormFieldDataChanged } from './useDxFormFieldDataChanged';
 
 export type DxFormOptions = FormViewOptions;
 
@@ -35,6 +37,11 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   const detailNoDataText = options.requiredDetail
     ? t('form.detailRequired')
     : t('form.detailEmpty');
+  const formLayoutModel = buildFormLayoutModel(
+    options.fields,
+    options.formLayout,
+    t('form.groupOther'),
+  );
 
   const validationAccessors = useDxFormValidationAccessors({ formRef, gridRef });
   const submitAccessors = useDxFormSubmitAccessors({ formRef, gridRef, isEdit, uploadedFiles });
@@ -71,7 +78,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
   const renderFields = useDxFormFieldRenderer(options.editable, uploadedFiles, formRef);
 
-  useFormSectionOptions(options.formLayout, sectionOptionsAccessors);
+  useFormSectionOptions(formLayoutModel, sectionOptionsAccessors);
 
   useFormComputedValues({
     accessors: computedValuesAccessors,
@@ -106,7 +113,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     validationErrorText: t('form.validationError'),
   });
 
-  const fieldChangeHandler = useFormFieldDataChanged(onFieldDataChanged);
+  const handleFormDataChanged = useFormFieldDataChanged(onFieldDataChanged);
+  const fieldChangeHandler = useDxFormFieldDataChanged(handleFormDataChanged);
 
   useImperativeHandle(ref, () => ({
     ...api,
@@ -127,10 +135,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       emit={emit}
       fieldChangeHandler={fieldChangeHandler}
       fields={options.fields}
-      formLayout={options.formLayout}
+      formLayoutModel={formLayoutModel}
       formRef={formRef}
       gridRef={gridRef}
-      groupOtherText={t('form.groupOther')}
       renderFields={renderFields}
     />
   );

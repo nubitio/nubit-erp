@@ -6,6 +6,7 @@ import { supplierEvents } from '@core/event/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
+import type { DataRecord } from '@core/data/DataRecord';
 
 type FormEditorRef = {
   instance: () => {
@@ -13,7 +14,7 @@ type FormEditorRef = {
   };
 };
 
-interface SupplierRecord extends Record<string, unknown> {
+interface SupplierRecord extends DataRecord {
   id: string;
   ruc: string;
   businessName: string;

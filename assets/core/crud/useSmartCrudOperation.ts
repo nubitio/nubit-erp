@@ -3,6 +3,7 @@ import type { EventSubscription as Subscription } from '../event/EventHook';
 import type { FormEventNames } from '../event/EventTypes';
 import { useEvents } from '../event/EventHook';
 import type { SmartCrudOperation } from './fieldOperationSemantics';
+import type { FormDataRecord } from '../form/FormDataSnapshot';
 
 function areEqualValues(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) {
@@ -25,8 +26,8 @@ function areEqualValues(left: unknown, right: unknown): boolean {
 }
 
 function areEqualFormData(
-  left: Record<string, unknown> | null,
-  right: Record<string, unknown> | null,
+  left: FormDataRecord | null,
+  right: FormDataRecord | null,
 ): boolean {
   if (left === right) {
     return true;
@@ -55,15 +56,15 @@ interface RoutingSnapshot {
 
 export interface SmartCrudOperationState {
   activeOperation: SmartCrudOperation | null;
-  formData: Record<string, unknown> | null;
-  handleFormDataChange: (data: Record<string, unknown>) => void;
+  formData: FormDataRecord | null;
+  handleFormDataChange: (data: FormDataRecord) => void;
 }
 
 type CrudState = Pick<SmartCrudOperationState, 'activeOperation' | 'formData'>;
 
 type CrudAction =
   | { type: 'sync-routing'; routingState: RoutingSnapshot }
-  | { type: 'set-form-data'; data: Record<string, unknown> }
+  | { type: 'set-form-data'; data: FormDataRecord }
   | { type: 'create' }
   | { type: 'edit' }
   | { type: 'reset' };
@@ -129,7 +130,7 @@ export function useSmartCrudOperation(
   );
 
   // Stable callback — avoids re-rendering CrudPage on every setState call
-  const handleFormDataChange = useCallback((data: Record<string, unknown>) => {
+  const handleFormDataChange = useCallback((data: FormDataRecord) => {
     dispatchState({ type: 'set-form-data', data });
   }, []);
 

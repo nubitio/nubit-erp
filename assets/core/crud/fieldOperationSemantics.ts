@@ -1,4 +1,5 @@
 import type { FieldDef } from '../field/Field';
+import type { DataRecord } from '../data/DataRecord';
 
 export type SmartCrudOperation = 'create' | 'edit';
 export type SmartCrudFieldOperation = SmartCrudOperation;
@@ -61,7 +62,7 @@ const PROPERTIES: readonly SmartCrudOperationProperty[] = [
 ];
 
 type SmartCrudFieldOperationDefaults = Pick<
-  FieldDef<Record<string, unknown>>,
+  FieldDef<DataRecord>,
   'visible' | 'hidden' | 'required' | 'readonly' | 'disabled'
 >;
 
@@ -295,7 +296,7 @@ export function resolveFieldOperationSemantics(
   }, {} as SmartCrudResolvedFieldOperationSemantics);
 }
 
-export function applyFieldOperationSemantics<T extends Record<string, unknown>>(
+export function applyFieldOperationSemantics<T extends DataRecord>(
   field: FieldDef<T>,
   operation: SmartCrudFieldOperation,
   behavior: SmartCrudFieldOperationBehavior | undefined,
@@ -317,7 +318,7 @@ export function applyFieldOperationSemantics<T extends Record<string, unknown>>(
 }
 
 /** @deprecated Use `applyFieldOperationSemantics` with `target: 'form'` instead. */
-export function applyFieldOperationFormSemantics<T extends Record<string, unknown>>(
+export function applyFieldOperationFormSemantics<T extends DataRecord>(
   field: FieldDef<T>,
   operation: SmartCrudFieldOperation,
   behavior: SmartCrudFieldOperationBehavior | undefined,

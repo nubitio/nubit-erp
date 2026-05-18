@@ -1,12 +1,13 @@
 import { createScopedEventBus } from '../event/createScopedEventBus';
 import type { FormEventNames } from '../event/EventTypes';
 import type { ResourceConfig } from './ResourceConfig';
+import type { DataRecord } from '../data/DataRecord';
 
-export type ResolvedCrudResource<T extends Record<string, unknown>> = ResourceConfig<T> & {
+export type ResolvedCrudResource<T extends DataRecord> = ResourceConfig<T> & {
   events: FormEventNames;
 };
 
-export function resolveCrudResource<T extends Record<string, unknown>>(
+export function resolveCrudResource<T extends DataRecord>(
   resource: ResourceConfig<T>,
   overrides: Partial<ResourceConfig<T>> = {},
 ): ResolvedCrudResource<T> {

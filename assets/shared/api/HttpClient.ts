@@ -5,6 +5,7 @@ import { dispatch } from '../../core/event/EventHook';
 import { Constants } from '../../core/common/Constants';
 import { StorageUtils } from '../lib/StorageUtils';
 import mercureManager from '../../core/mercure/MercureManager';
+import type { DataRecord } from '../../core/data/DataRecord';
 
 function showBlockingAlert(message: string): Promise<void> {
   if (typeof window !== 'undefined') {
@@ -23,7 +24,7 @@ function showBlockingAlert(message: string): Promise<void> {
  *
  * Plain values and primitive arrays are serialised normally.
  */
-function serializeParams(params: Record<string, unknown>): string {
+function serializeParams(params: DataRecord): string {
   const parts: string[] = [];
 
   function encodeValue(val: unknown): string {
@@ -38,7 +39,7 @@ function serializeParams(params: Record<string, unknown>): string {
         recurse(item, `${prefix}[${idx}]`);
       });
     } else if (typeof obj === 'object') {
-      Object.entries(obj as Record<string, unknown>).forEach(([key, val]) => {
+      Object.entries(obj as DataRecord).forEach(([key, val]) => {
         recurse(val, `${prefix}[${key}]`);
       });
     } else {
@@ -61,7 +62,7 @@ function serializeParams(params: Record<string, unknown>): string {
 }
 
 export interface RequestConfig {
-  params?: Record<string, unknown>;
+  params?: DataRecord;
   headers?: Record<string, string>;
   signal?: AbortSignal;
   responseType?: 'json' | 'arraybuffer' | 'blob' | 'text';
@@ -111,11 +112,11 @@ class HttpClient {
     }
   }
 
-  private buildUrl(url: string, params?: Record<string, unknown>): string {
+  private buildUrl(url: string, params?: DataRecord): string {
     if (!params || Object.keys(params).length === 0) return url;
 
     // Convert skip/take pagination to page/itemsPerPage (DevExtreme convention)
-    const normalized: Record<string, unknown> = { ...params };
+    const normalized: DataRecord = { ...params };
     if ('skip' in normalized && 'take' in normalized) {
       const skip = Number(normalized.skip);
       const take = Number(normalized.take);

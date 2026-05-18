@@ -5,11 +5,12 @@ import { DateUtils } from '@shared/lib/DateUtils';
 import { defineFields } from '@core/crud/fieldContract';
 import { defineResource, SmartCrudPage } from '@core/crud';
 import { httpClient } from '@shared/api/HttpClient';
+import type { DataRecord } from '@core/data/DataRecord';
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface StockMovementRecord extends Record<string, unknown> {
+interface StockMovementRecord extends DataRecord {
   id: string;
   warehouse: { id?: string; name?: string } | null;
   product: { id?: string; code?: string | null; name?: string } | null;

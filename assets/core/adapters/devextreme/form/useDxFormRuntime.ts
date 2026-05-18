@@ -5,7 +5,7 @@ import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 
 import type { Field } from '@core/field/Field';
-import type { UploadedFile } from '@core/form/useFormSubmit';
+import type { UploadedFile } from '@core/form/UploadedFile';
 
 export function useDxFormRuntime(detailFields?: Field[]) {
   const formRef = useRef<FormRef | null>(null);

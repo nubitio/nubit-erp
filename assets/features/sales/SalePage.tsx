@@ -30,6 +30,7 @@ import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';
+import type { DataRecord } from '@core/data/DataRecord';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
@@ -52,7 +53,7 @@ export const SalePage = () => {
           await formRef.current?.saveDetailData();
           const rows = formRef.current?.getDetailData() ?? [];
           const detailTotal = rows.reduce(
-            (sum, row) => sum + Number((row as Record<string, unknown>).netAmount ?? 0),
+            (sum, row) => sum + Number(row.netAmount ?? 0),
             0,
           );
           const currentDiscountPercent = Number(
@@ -101,7 +102,7 @@ export const SalePage = () => {
     [],
   );
   const gridDetailFields = useMemo(
-    () => (parentRow: Record<string, unknown>) =>
+    () => (parentRow: DataRecord) =>
       SaleDetailFields(
         formRef.current,
         (parentRow?.currency as string) ?? 'PEN',
@@ -134,7 +135,7 @@ export const SalePage = () => {
         // Item-level discount: update the specific detail row.
         const { rowIndex } = context as { rowIndex: number };
         const rows = formRef.current?.getDetailData() ?? [];
-        const row = rows[rowIndex] as Record<string, unknown> | undefined;
+        const row = rows[rowIndex] as DataRecord | undefined;
         if (row) {
           row.discountPercent = Number((discountPercent * 100).toFixed(2));
           row.discountAmount = discountAmount;

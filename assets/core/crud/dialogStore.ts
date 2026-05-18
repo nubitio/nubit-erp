@@ -1,13 +1,15 @@
+import type { DataRecord } from '../data/DataRecord';
+
 export type DialogMode = 'add' | 'edit' | 'view';
 
 export interface DialogState {
   isOpen: boolean;
   mode: DialogMode;
-  rowData: Record<string, unknown> | null;
+  rowData: DataRecord | null;
 }
 
 export interface DialogActions {
-  openDialog: (mode: DialogMode, rowData?: Record<string, unknown> | null) => void;
+  openDialog: (mode: DialogMode, rowData?: DataRecord | null) => void;
   closeDialog: () => void;
 }
 
@@ -16,7 +18,7 @@ export type DialogSlice = DialogState & DialogActions;
 export type DialogStoreState = Record<string, DialogState>;
 
 export type DialogAction =
-  | { type: 'OPEN'; resourceId: string; mode: DialogMode; rowData: Record<string, unknown> | null }
+  | { type: 'OPEN'; resourceId: string; mode: DialogMode; rowData: DataRecord | null }
   | { type: 'CLOSE'; resourceId: string };
 
 export function initialDialogState(): DialogState {

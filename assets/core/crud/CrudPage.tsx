@@ -12,19 +12,21 @@ import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { resolveCrudResource } from './resolveCrudResource';
+import type { FormDataRecord } from '../form/FormDataSnapshot';
+import type { DataRecord } from '../data/DataRecord';
 
 type GridSelectionChange = {
   selectedRowsData?: unknown[];
 };
 
-interface CrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
+interface CrudPageProps<T extends DataRecord = DataRecord> {
   resource: ResourceConfig<T>;
   /**
    * Called whenever any form field value changes.
    * Receives a snapshot of the full current form data object.
    * Wire this to SmartCrudPage's formData state for reactive rule evaluation.
    */
-  onFormDataChange?: (data: Record<string, unknown>) => void;
+  onFormDataChange?: (data: FormDataRecord) => void;
   /**
    * When provided, open the edit dialog for this record on mount.
    * Enables URL deep-linking (e.g. /products/42 → edit record 42).
@@ -37,7 +39,7 @@ interface CrudPageProps<T extends Record<string, unknown> = Record<string, unkno
    * Defaults to false — existing behaviour unchanged when omitted.
    */
   initialIsNew?: boolean;
-  computedValues?: Record<string, unknown>;
+  computedValues?: FormDataRecord;
   initialFilters?: Record<string, string>;
   onFiltersChange?: (filters: Record<string, string>) => void;
 }
@@ -76,7 +78,7 @@ function buildRoutingFilterRules(
  * Public export — wraps CrudPageInner in its own DialogStoreProvider so that
  * existing pages do not need to add a provider themselves.
  */
-export const CrudPage = <T extends Record<string, unknown> = Record<string, unknown>>({
+export const CrudPage = <T extends DataRecord = DataRecord>({
   resource,
   onFormDataChange,
   initialRecordId,
@@ -98,7 +100,7 @@ export const CrudPage = <T extends Record<string, unknown> = Record<string, unkn
   </DialogStoreProvider>
 );
 
-const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknown>>({
+const CrudPageInner = <T extends DataRecord = DataRecord>({
   resource,
   onFormDataChange,
   initialRecordId = null,
@@ -178,7 +180,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   // Subscribe to ADD / EDIT / SUCCESS events and mirror them into the store.
   const wireEventsRef = React.useRef(() => {
     if (events.ADD) {
-      on<{ title?: string; rowData?: Record<string, unknown> } | undefined>(
+      on<{ title?: string; rowData?: DataRecord } | undefined>(
         events.ADD,
         (payload) => {
           openDialog('add', payload?.rowData ?? null);
@@ -186,7 +188,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
       );
     }
     if (events.EDIT) {
-      on<Record<string, unknown> | undefined>(events.EDIT, (rowData) => {
+      on<DataRecord | undefined>(events.EDIT, (rowData) => {
         openDialog('edit', rowData ?? null);
       });
     }
@@ -198,7 +200,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   });
   wireEventsRef.current = () => {
     if (events.ADD) {
-      on<{ title?: string; rowData?: Record<string, unknown> } | undefined>(
+      on<{ title?: string; rowData?: DataRecord } | undefined>(
         events.ADD,
         (payload) => {
           openDialog('add', payload?.rowData ?? null);
@@ -206,7 +208,7 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
       );
     }
     if (events.EDIT) {
-      on<Record<string, unknown> | undefined>(events.EDIT, (rowData) => {
+      on<DataRecord | undefined>(events.EDIT, (rowData) => {
         openDialog('edit', rowData ?? null);
       });
     }
@@ -266,9 +268,9 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   /** Bridge between the grid renderer's selection event and our selection state.
    * Also captures the selected row ID for the audit trail. */
   const handleSelectionChanged = (e: GridSelectionChange) => {
-    selectionState.onSelectionChanged((e.selectedRowsData ?? []) as Record<string, unknown>[]);
+    selectionState.onSelectionChanged((e.selectedRowsData ?? []) as DataRecord[]);
     if (hasAuditTrail) {
-      const first = (e.selectedRowsData ?? [])[0] as Record<string, unknown> | undefined;
+      const first = (e.selectedRowsData ?? [])[0] as DataRecord | undefined;
       if (first != null) {
         const id = (first['id'] ?? first['ID'] ?? null) as string | number | null;
         setSelectedRowId(id);

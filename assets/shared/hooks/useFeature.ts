@@ -1,4 +1,5 @@
 import { useEntitlements } from './useEntitlements';
+import type { DataRecord } from '@core/data/DataRecord';
 
 /**
  * Returns true when the active tenant's plan (or an active override) has the
@@ -21,7 +22,7 @@ export function useFeature(featureKey: string): boolean {
  * @example
  *   const { max } = useFeatureConfig('concurrent_sessions') as { max: number };
  */
-export function useFeatureConfig(featureKey: string): Record<string, unknown> {
+export function useFeatureConfig(featureKey: string): DataRecord {
   const { data } = useEntitlements();
   const entry = data?.features[featureKey];
   if (!entry?.enabled) return {};

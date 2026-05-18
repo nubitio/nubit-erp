@@ -4,6 +4,7 @@ import { Field, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import type { DataRecord } from '../data/DataRecord';
 
 export class BaseFieldBuilder {
   protected _field: Field;
@@ -147,7 +148,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  data(data: Array<Record<string, unknown>>): this {
+  data(data: DataRecord[]): this {
     this._field.data = data;
     return this;
   }
@@ -224,7 +225,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  buttons(value: Array<Record<string, unknown>>): this {
+  buttons(value: DataRecord[]): this {
     this._field.buttons = value;
     return this;
   }
@@ -337,7 +338,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  editorOptions(param: Record<string, unknown>): this {
+  editorOptions(param: DataRecord): this {
     this._field.editorOptions = param;
     return this;
   }
@@ -351,17 +352,17 @@ export class BaseFieldBuilder {
   // Declarative rules (SLICE-006)
   // ---------------------------------------------------------------------------
 
-  visibleWhen(fn: (formData: Record<string, unknown>) => boolean): this {
+  visibleWhen(fn: (formData: DataRecord) => boolean): this {
     this._field.visibleWhen = fn;
     return this;
   }
 
-  disabledWhen(fn: (formData: Record<string, unknown>) => boolean): this {
+  disabledWhen(fn: (formData: DataRecord) => boolean): this {
     this._field.disabledWhen = fn;
     return this;
   }
 
-  computed(fn: (formData: Record<string, unknown>) => unknown): this {
+  computed(fn: (formData: DataRecord) => unknown): this {
     this._field.computed = fn;
     return this;
   }

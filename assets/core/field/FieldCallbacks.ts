@@ -1,7 +1,8 @@
 import React from 'react';
+import type { DataRecord } from '../data/DataRecord';
 
 export interface GridCellContext<
-  TData extends Record<string, any> = Record<string, any>,
+  TData extends DataRecord = Record<string, any>,
   TValue = any,
 > {
   value?: TValue;
@@ -32,9 +33,9 @@ export type FormatterFn = (cell: GridCellContext) => React.ReactNode;
  *   .onChange(function(row, value, currentRow) { row.total = value * currentRow.qty; })
  */
 export type GridOnChangeFn = (
-  newData: Record<string, unknown>,
+  newData: DataRecord,
   value: unknown,
-  currentRowData: Record<string, unknown>,
+  currentRowData: DataRecord,
 ) => void | Promise<void>;
 
 /**

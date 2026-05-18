@@ -14,6 +14,7 @@ import { resolveCrudResource } from './resolveCrudResource';
 import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
 import { useSmartCrudFields } from './useSmartCrudFields';
+import type { DataRecord } from '../data/DataRecord';
 
 function CrudSkeleton() {
   return (
@@ -36,7 +37,7 @@ function CrudError({ message, onRetry }: { message: string; onRetry: () => void 
   );
 }
 
-interface SmartCrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
+interface SmartCrudPageProps<T extends DataRecord = DataRecord> {
   resource: ResourceConfig<T>;
   /**
    * Legacy per-field overrides applied on top of auto-inferred Hydra fields.
@@ -76,7 +77,7 @@ function formatRuntimeErrorMessage(error: Error): string {
  *
  * URL deep-linking is wired via `initialRecordId` / `initialIsNew` props on CrudPage.
  */
-export function SmartCrudPage<T extends Record<string, unknown> = Record<string, unknown>>({
+export function SmartCrudPage<T extends DataRecord = DataRecord>({
   resource,
   fieldOverrides,
 }: SmartCrudPageProps<T>) {

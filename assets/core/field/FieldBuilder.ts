@@ -4,6 +4,7 @@ import { Field, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import type { DataRecord } from '../data/DataRecord';
 
 export class FieldBuilder {
   private readonly _field: Field;
@@ -202,7 +203,7 @@ export class FieldBuilder {
     return this;
   }
 
-  data(data: Array<Record<string, unknown>>): FieldBuilder {
+  data(data: DataRecord[]): FieldBuilder {
     this._field.data = data;
     return this;
   }
@@ -284,7 +285,7 @@ export class FieldBuilder {
     return this;
   }
 
-  buttons(value: Array<Record<string, unknown>>): FieldBuilder {
+  buttons(value: DataRecord[]): FieldBuilder {
     this._field.buttons = value;
     return this;
   }
@@ -339,7 +340,7 @@ export class FieldBuilder {
     return this;
   }
 
-  editorOptions(param: Record<string, unknown>) {
+  editorOptions(param: DataRecord) {
     this._field.editorOptions = param;
     return this;
   }

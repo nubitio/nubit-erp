@@ -5,8 +5,9 @@ import { enumField } from '@core/field/FieldBuilders';
 import React from 'react';
 import { operationEvents } from '@core/event/domainEvents';
 import { operationEndpoints } from './api/catalogEndpoints';
+import type { DataRecord } from '@core/data/DataRecord';
 
-interface OperationRecord extends Record<string, unknown> {
+interface OperationRecord extends DataRecord {
   id: string;
   name: string;
   type: number;

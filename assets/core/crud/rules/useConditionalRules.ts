@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { Field } from '../../field/Field';
+import type { FormDataRecord } from '../../form/FormDataSnapshot';
 
 export interface FieldState {
   name: string;
@@ -20,7 +21,7 @@ export interface FieldState {
  */
 export function useConditionalRules(
   fields: Field[],
-  formData: Record<string, unknown> | null,
+  formData: FormDataRecord | null,
 ): FieldState[] {
   return useMemo(() => {
     return fields.map((field) => {

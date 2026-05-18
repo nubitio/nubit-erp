@@ -4,6 +4,7 @@ import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import { useSchemaContext } from './SchemaContext';
 import type { SmartCrudFieldContract, SmartCrudRecord } from '../fieldContract';
 import { resolveSmartCrudFields, type FieldOverride } from '../resolveSmartCrudFields';
+import type { DataRecord } from '../../data/DataRecord';
 
 export interface UseResourceSchemaResult {
   fields: Field[];
@@ -27,7 +28,7 @@ function normalizeUrl(url: string): string {
   return url.startsWith('/') ? url.slice(1) : url;
 }
 
-export function useResourceSchema<T extends SmartCrudRecord = Record<string, unknown>>(
+export function useResourceSchema<T extends SmartCrudRecord = DataRecord>(
   apiUrl: string,
   manualFields?: Field[],
   overrides?: FieldOverride[],

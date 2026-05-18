@@ -22,6 +22,7 @@ import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
 import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { DataRecord } from '@core/data/DataRecord';
 
 interface SaleFieldCallbacks {
   onOpenAddCustomer?: () => void;
@@ -40,7 +41,7 @@ interface SaleDetailFieldCallbacks {
 let priceList: PriceListItemDto[] = [];
 let selectedWarehouseId = '';
 
-const isStockTrackedProduct = (product: ProductDto | Record<string, unknown> | undefined) => {
+const isStockTrackedProduct = (product: ProductDto | DataRecord | undefined) => {
   if (!product) return false;
 
   const inventoryBehavior = String(product.inventoryBehavior ?? '').toUpperCase();

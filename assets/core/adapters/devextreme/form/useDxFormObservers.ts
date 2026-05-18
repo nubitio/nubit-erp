@@ -7,14 +7,14 @@ import DataSource from 'devextreme/data/data_source';
 import { FORM_ERRORS_EVENT, httpClient } from '@shared/api/HttpClient';
 import toast from '@shared/lib/SharedUtils';
 import { FORM_EVENTS } from '@core/form/FormEvents';
-import { buildEmptyRow, normalizeFormData } from '@core/form/DxFormDataTransform';
+import { buildEmptyRow, normalizeFormData } from '@core/form/FormDataTransform';
 import type { Field } from '@core/field/Field';
 import type { FormEventNames } from '@core/event/EventTypes';
-import type { UploadedFile } from '@core/form/useFormSubmit';
+import type { UploadedFile } from '@core/form/UploadedFile';
+import type { FormDataChangedHandler, FormDataRecord } from '@core/form/FormDataSnapshot';
 
-type FormRecord = Record<string, unknown>;
 type FormError = { propertyPath: string; message: string };
-type EventRowPayload = FormRecord & { row?: FormRecord };
+type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
 type PendingAddPayload = { payload: EventRowPayload | undefined };
 type OnFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 type EmitFn = <T>(name: string, payload?: T) => void;
@@ -29,13 +29,13 @@ export interface UseDxFormObserversOptions {
   fields: Field[];
   formRef: MutableRefObject<FormRef | null>;
   gridRef: MutableRefObject<DataGridRef | null>;
-  handleDelete: (payload: { row: FormRecord }) => void;
+  handleDelete: (payload: { row: FormDataRecord }) => void;
   handleSave: () => void;
   isEdit: MutableRefObject<boolean>;
   loadingText: string;
   on: OnFn;
-  onFieldDataChanged?: (formData: FormRecord) => void;
-  setDetailData: (data: FormRecord[]) => void;
+  onFieldDataChanged?: FormDataChangedHandler;
+  setDetailData: (data: FormDataRecord[]) => void;
   setError: (field: string, message: string) => void;
   uploadedFiles: MutableRefObject<UploadedFile[]>;
   validationErrorText: string;
@@ -45,7 +45,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
   const pendingAddPayload = useRef<PendingAddPayload | null>(null);
 
   const getIdField = () => options.fields.find((field) => field.isIdentity)?.name ?? '';
-  const getData = (rawData: FormRecord) => normalizeFormData(rawData, options.fields);
+  const getData = (rawData: FormDataRecord) => normalizeFormData(rawData, options.fields);
 
   const applyAddPayload = (payload: EventRowPayload | undefined) => {
     const form = options.formRef.current?.instance();
@@ -61,7 +61,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
       form.option('formData', row);
       options.onFieldDataChanged?.(row);
       if (Array.isArray(payload[options.detailPropertyName])) {
-        options.setDetailData(payload[options.detailPropertyName] as FormRecord[]);
+        options.setDetailData(payload[options.detailPropertyName] as FormDataRecord[]);
       }
     } else {
       const row = buildEmptyRow(options.fields);
@@ -110,7 +110,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
     }
 
     if (options.events?.EDIT) {
-      options.on(options.events.EDIT, (payload: { row: FormRecord }) => {
+      options.on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
         const row = getData(payload.row);
         options.formRef.current?.instance().option('formData', row);
         options.onFieldDataChanged?.(row);
@@ -127,7 +127,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
         options.setDetailData([]);
         options.emit(FORM_EVENTS.LOADING, true);
         httpClient
-          .get<FormRecord[]>(detailUrl)
+          .get<FormDataRecord[]>(detailUrl)
           .then((response) => {
             options.setDetailData(response.data);
           })
@@ -136,7 +136,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
     }
 
     if (options.events?.DELETE) {
-      options.on(options.events.DELETE, (payload: { row: FormRecord }) =>
+      options.on(options.events.DELETE, (payload: { row: FormDataRecord }) =>
         options.handleDelete(payload),
       );
     }

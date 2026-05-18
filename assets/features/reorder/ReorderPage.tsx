@@ -5,10 +5,11 @@ import { defineFields } from '@core/crud/fieldContract';
 import { Constants } from '@core/common/Constants';
 import { FieldType } from '@core/field/FieldType';
 import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { DataRecord } from '@core/data/DataRecord';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface ReorderRecord extends Record<string, unknown> {
+interface ReorderRecord extends DataRecord {
   id: string;
   product: { id?: string; name?: string; code?: string | null } | null;
   warehouse: { id?: string; name?: string } | null;

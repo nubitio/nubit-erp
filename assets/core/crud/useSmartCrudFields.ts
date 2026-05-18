@@ -8,6 +8,7 @@ import {
   type SmartCrudFieldOperationBehavior,
   type SmartCrudOperation,
 } from './fieldOperationSemantics';
+import type { FormDataRecord } from '../form/FormDataSnapshot';
 
 type SmartCrudRuntimeField = Field & {
   operation?: SmartCrudFieldOperationBehavior;
@@ -15,7 +16,7 @@ type SmartCrudRuntimeField = Field & {
 
 export interface SmartCrudFieldsResult {
   processedFields: Field[];
-  computedValues: Record<string, unknown>;
+  computedValues: FormDataRecord;
 }
 
 /**
@@ -32,7 +33,7 @@ export interface SmartCrudFieldsResult {
 export function useSmartCrudFields(
   fields: Field[],
   activeOperation: SmartCrudOperation | null,
-  formData: Record<string, unknown> | null,
+  formData: FormDataRecord | null,
   roles: string[],
 ): SmartCrudFieldsResult {
   // 1. Apply operation-aware semantics (create-only / edit-only fields, etc.)
@@ -94,7 +95,7 @@ export function useSmartCrudFields(
   // 6. Collect computed values for form synchronization
   const computedValues = useMemo(
     () =>
-      fieldStates.reduce<Record<string, unknown>>((acc, state) => {
+      fieldStates.reduce<FormDataRecord>((acc, state) => {
         if (state.computedValue !== undefined) {
           acc[state.name] = state.computedValue;
         }

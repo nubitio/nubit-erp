@@ -7,6 +7,7 @@ import type {
   OpenApiDoc,
   OpenApiProperty,
 } from './types';
+import type { DataRecord } from '../../data/DataRecord';
 
 /**
  * Converts a camelCase or PascalCase name to snake_case.
@@ -108,16 +109,16 @@ export function normalizeRange(raw: unknown): string | undefined {
   if (Array.isArray(raw)) {
     for (const item of raw) {
       if (!item || typeof item !== 'object') continue;
-      const equivalentClass = (item as Record<string, unknown>)['owl:equivalentClass'];
+      const equivalentClass = (item as DataRecord)['owl:equivalentClass'];
       if (!equivalentClass || typeof equivalentClass !== 'object') continue;
-      const allValuesFrom = (equivalentClass as Record<string, unknown>)['owl:allValuesFrom'];
+      const allValuesFrom = (equivalentClass as DataRecord)['owl:allValuesFrom'];
       if (!allValuesFrom || typeof allValuesFrom !== 'object') continue;
-      const id = (allValuesFrom as Record<string, unknown>)['@id'];
+      const id = (allValuesFrom as DataRecord)['@id'];
       if (typeof id === 'string') return id;
     }
   }
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const id = (raw as Record<string, unknown>)['@id'];
+    const id = (raw as DataRecord)['@id'];
     if (typeof id === 'string') return id;
   }
   return undefined;

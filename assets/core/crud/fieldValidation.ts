@@ -3,6 +3,7 @@ import {
   collectOperationSemanticsIssues,
   type SmartCrudFieldOperationBehavior,
 } from './fieldOperationSemantics';
+import type { DataRecord } from '../data/DataRecord';
 
 type SmartCrudRecord = object;
 
@@ -130,7 +131,7 @@ function normalizeKey(value: string): string {
   return value.trim();
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
+function isPlainObject(value: unknown): value is DataRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 

@@ -14,10 +14,11 @@ import {
   useCreditNoteRelatedDocumentObserver,
   useCreditNoteSelectionState,
 } from '@features/creditNote';
+import type { DataRecord } from '@core/data/DataRecord';
 
 const API_URL = Constants.API_BASE_URL + 'tax-documents';
 const fields = CreditNoteFields();
-const gridDetailFields = (parentRow: Record<string, unknown>) =>
+const gridDetailFields = (parentRow: DataRecord) =>
   CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN');
 
 export const CreditNotePage = () => {

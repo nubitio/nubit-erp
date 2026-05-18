@@ -1,6 +1,7 @@
-import type { FormLayout } from '@core/crud/FormLayout';
+import type { FormLayout } from './FormLayout';
 import type { FormEventNames } from '@core/event/EventTypes';
 import type { Field } from '@core/field/Field';
+import type { FormDataChangedHandler, FormDataSnapshot } from './FormDataSnapshot';
 
 export interface FormViewOptions {
   className?: string;
@@ -31,9 +32,9 @@ export interface FormViewOptions {
   /** Optional layout descriptor for tabs or collapsible sections. */
   formLayout?: FormLayout;
   /** Called whenever any form field value changes with a full form data snapshot. */
-  onFieldDataChanged?: (formData: Record<string, unknown>) => void;
+  onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
-  computedValues?: Record<string, unknown>;
+  computedValues?: FormDataSnapshot;
   /** @deprecated no longer used, sidebar is always single column. */
   sidebarColCount?: never;
 }

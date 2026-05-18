@@ -1,8 +1,10 @@
+import type { FormDataRecord } from './FormDataSnapshot';
+
 export function syncComputedValuesIntoFormData(
-  formData: Record<string, unknown>,
+  formData: FormDataRecord,
   computedFieldNames: string[],
-  computedValues: Record<string, unknown>,
-): { changed: boolean; nextFormData: Record<string, unknown> } {
+  computedValues: FormDataRecord,
+): { changed: boolean; nextFormData: FormDataRecord } {
   let changed = false;
   const nextFormData = { ...formData };
 

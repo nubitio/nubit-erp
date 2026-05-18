@@ -55,7 +55,7 @@ export type { ScopedFormEventNames } from '../event/createScopedEventBus';
 export type { BulkAction } from './BulkAction';
 export { useSelectionState } from './useSelectionState';
 export type { SelectionState } from './useSelectionState';
-export type { FormLayout, FormTab, FormSection } from './FormLayout';
+export type { FormLayout, FormTab, FormSection } from '../form/FormLayout';
 export type { ColumnPreset } from './ColumnPreset';
 export { useColumnPreset } from './useColumnPreset';
 export type { ColumnPresetState } from './useColumnPreset';

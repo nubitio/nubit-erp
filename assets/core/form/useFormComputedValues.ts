@@ -1,20 +1,10 @@
 import { useEffect } from 'react';
 
 import { syncComputedValuesIntoFormData } from './FormComputedValues';
+import type { UseFormComputedValuesOptions } from './FormComputedValuesOptions';
 
-type FormRecord = Record<string, unknown>;
-
-export interface UseFormComputedValuesAccessors {
-  getFormData: () => FormRecord | null;
-  setFormData: (formData: FormRecord) => void;
-}
-
-export interface UseFormComputedValuesOptions {
-  accessors: UseFormComputedValuesAccessors;
-  computedFieldNames: string[];
-  computedValues?: FormRecord;
-  onFieldDataChanged?: (formData: FormRecord) => void;
-}
+export type { UseFormComputedValuesAccessors } from './FormComputedValuesAccessors';
+export type { UseFormComputedValuesOptions } from './FormComputedValuesOptions';
 
 export function useFormComputedValues({
   accessors,

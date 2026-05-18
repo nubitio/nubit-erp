@@ -18,6 +18,7 @@ import {
 import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import { Button } from 'devextreme-react';
 import React from 'react';
+import type { DataRecord } from '@core/data/DataRecord';
 
 export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) => {
   return items?.map((item: ToolbarButtonItem | ToolbarButtonItem[], index) => {
@@ -195,11 +196,11 @@ const buildValidationRules = (field: Field) => {
  */
 export function buildEntityDisplayValue(
   field: Field,
-): (rowData: Record<string, unknown>) => string {
-  return (rowData: Record<string, unknown>): string => {
+): (rowData: DataRecord) => string {
+  return (rowData: DataRecord): string => {
     const val = rowData[field.name];
     if (val !== null && val !== undefined && typeof val === 'object') {
-      const obj = val as Record<string, unknown>;
+      const obj = val as DataRecord;
       const display = obj[field.textField] ?? obj['name'];
       if (display !== undefined && display !== null) {
         return String(display);
@@ -225,14 +226,14 @@ export function buildEntityDisplayValue(
  *  - Plain IRI string + _iri mode → returns as-is
  *  - Plain UUID string → returns as-is
  */
-export function buildEntityCellValue(field: Field): (rowData: Record<string, unknown>) => unknown {
-  return (rowData: Record<string, unknown>): unknown => {
+export function buildEntityCellValue(field: Field): (rowData: DataRecord) => unknown {
+  return (rowData: DataRecord): unknown => {
     const val = rowData[field.name];
     if (val === null || val === undefined) return val;
 
     // Embedded object — extract the key field
     if (typeof val === 'object') {
-      const obj = val as Record<string, unknown>;
+      const obj = val as DataRecord;
       if (field.valueField === '_iri' || field.valueField === '@id') {
         // IRI mode: prefer @id, then build from id
         const iri = obj['@id'];
@@ -273,13 +274,13 @@ export function buildEntityCellValue(field: Field): (rowData: Record<string, unk
  */
 export function buildEntityCellRender(
   field: Field,
-): (cellData: { data: Record<string, unknown>; value?: unknown }) => React.ReactNode {
+): (cellData: { data: DataRecord; value?: unknown }) => React.ReactNode {
   return ({ data: rowData, value }) => {
     const val = rowData[field.name];
     // When the API returns an embedded object (e.g. { "@id": "...", "name": "..." }),
     // read the textField directly — fast and no async Lookup needed.
     if (val !== null && val !== undefined && typeof val === 'object') {
-      const obj = val as Record<string, unknown>;
+      const obj = val as DataRecord;
       const display = obj[field.textField] ?? obj['name'] ?? obj['businessName'];
       if (display !== undefined && display !== null) return String(display);
     }
