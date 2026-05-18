@@ -8,7 +8,7 @@ import { buildTemplate } from './DxFormFieldTemplate';
 import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
 import { getDxFieldItemProps } from './DxFormFieldItemProps';
 
-export const buildField = (
+export const buildDxFormFieldItem = (
   field: Field,
   key: number | string,
   isEditable: boolean = true,
@@ -29,3 +29,5 @@ export const buildField = (
     </SimpleItem>
   );
 };
+
+export const buildField = buildDxFormFieldItem;

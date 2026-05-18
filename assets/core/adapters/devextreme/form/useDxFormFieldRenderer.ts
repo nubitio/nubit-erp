@@ -5,7 +5,7 @@ import type { Field } from '@core/field/Field';
 import type { FormFieldRenderer } from '@core/form/FormFieldRenderer';
 import type { UploadedFile } from '@core/form/UploadedFile';
 
-import { buildField } from './DxFormFieldItem';
+import { buildDxFormFieldItem } from './DxFormFieldItem';
 
 export function useDxFormFieldRenderer(
   editable: boolean | undefined,
@@ -14,7 +14,7 @@ export function useDxFormFieldRenderer(
 ): FormFieldRenderer {
   return (fields: Field[]) => {
     return fields.map((field, index) => {
-      return buildField(field, index, editable ?? true, uploadedFiles, formRef);
+      return buildDxFormFieldItem(field, index, editable ?? true, uploadedFiles, formRef);
     });
   };
 }
