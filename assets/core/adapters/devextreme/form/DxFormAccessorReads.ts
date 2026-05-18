@@ -27,6 +27,36 @@ export function getDxFieldValue(
   return formRef.current?.instance().getEditor(field)?.option('value');
 }
 
+export function setDxFieldValue(
+  formRef: MutableRefObject<FormRef | null>,
+  field: string,
+  value: unknown,
+): void {
+  const form = formRef.current?.instance();
+  // updateData writes into formData directly — critical for readonly/disabled
+  // editors whose editor option() change is not propagated back into formData
+  // by DevExtreme (e.g. discountPercent, grandTotal).
+  form?.updateData(field, value);
+  form?.getEditor(field)?.option('value', value);
+}
+
+export function setDxEditorOption(
+  formRef: MutableRefObject<FormRef | null>,
+  field: string,
+  optionName: string,
+  value: unknown,
+): void {
+  formRef.current?.instance().getEditor(field)?.option(optionName, value);
+}
+
+export function setDxEditorOptions(
+  formRef: MutableRefObject<FormRef | null>,
+  field: string,
+  options: Record<string, unknown>,
+): void {
+  formRef.current?.instance().getEditor(field)?.option(options);
+}
+
 export function getDxNullableFormData(
   formRef: MutableRefObject<FormRef | null>,
 ): FormDataRecord | null {
