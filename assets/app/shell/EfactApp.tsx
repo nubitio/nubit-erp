@@ -6,7 +6,6 @@ import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '../../utils/media-query';
 import { Content } from './Content';
 import { useThemeContext } from '../../theme/theme';
-import { configureUiAdapter } from '@app/providers/uiAdapter';
 
 import '../../styles.scss';
 import '../../theme/theme';
@@ -49,10 +48,6 @@ export const EfactApp = () => {
   // Reactive hub URL: updated by MercureManager whenever the Axios interceptor
   // discovers the `Link: <url>; rel="mercure"` header in any API response.
   const [mercureHubUrl, setMercureHubUrl] = useState<string | null>(MercureManager.getHubUrl());
-
-  useEffect(() => {
-    configureUiAdapter();
-  }, []);
 
   useEffect(() => {
     // Subscribe to hub URL changes discovered by the Axios response interceptor.

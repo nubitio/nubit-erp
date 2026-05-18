@@ -1,5 +1,5 @@
 export { DATA_GRID_EVENTS } from './DataGridEvents';
-export { DxDataGrid as DataGridView } from '@core/adapters/devextreme/datagrid/DxDataGrid';
+export { NativeDataGridView as DataGridView } from './NativeDataGridView';
 export type { GridHandle } from './GridHandle';
 export type {
   DataGridSelectionChangedEvent,

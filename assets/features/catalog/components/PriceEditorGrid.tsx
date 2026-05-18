@@ -50,17 +50,30 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {loading && (
         <div style={{ padding: '8px', textAlign: 'center', color: 'var(--texteditor-label-color)' }}>
-          {loadingMessage || 'Cargando…'}
+          {loadingMessage || 'Cargando...'}
         </div>
       )}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', minWidth: 300 }}>
+              <th
+                style={{
+                  textAlign: 'left',
+                  padding: '6px 8px',
+                  borderBottom: '1px solid var(--base-border-color)',
+                  minWidth: 300,
+                }}
+              >
                 Producto
               </th>
-              <th style={{ textAlign: 'right', padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+              <th
+                style={{
+                  textAlign: 'right',
+                  padding: '6px 8px',
+                  borderBottom: '1px solid var(--base-border-color)',
+                }}
+              >
                 Precio
               </th>
             </tr>
@@ -71,7 +84,13 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
                 <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
                   {row.name}
                 </td>
-                <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)', textAlign: 'right' }}>
+                <td
+                  style={{
+                    padding: '6px 8px',
+                    borderBottom: '1px solid var(--base-border-color)',
+                    textAlign: 'right',
+                  }}
+                >
                   <input
                     type="number"
                     step="0.01"
@@ -80,7 +99,13 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
                     style={{ width: '100%', textAlign: 'right' }}
                     aria-label={`Precio de ${row.name ?? 'producto'}`}
                   />
-                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--texteditor-label-color)' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '12px',
+                      color: 'var(--texteditor-label-color)',
+                    }}
+                  >
                     {NumberUtils.formatCurrency(Number(row.price ?? 0))}
                   </span>
                 </td>

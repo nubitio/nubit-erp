@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { isDevExtremeFluentTheme, syncDevExtremeTheme } from '@core/adapters/devextreme/theme';
 
 const themes = ['light', 'dark'] as const;
 const themeModes = ['light', 'dark', 'auto'] as const;
@@ -52,8 +51,6 @@ function setThemeToDOM(theme: Theme): Promise<void> {
 
 async function setAppTheme(theme: Theme) {
   await setThemeToDOM(theme);
-
-  syncDevExtremeTheme(themes, theme);
 }
 
 function toggleTheme(currentMode: ThemeMode): ThemeMode {
@@ -103,13 +100,9 @@ export function useThemeContext() {
     setMode((currentMode) => toggleTheme(currentMode));
   }, []);
 
-  const isFluent = useCallback(() => {
-    return isDevExtremeFluentTheme();
-  }, []);
-
   return useMemo(
-    () => ({ theme, mode, switchTheme, isLoaded, isFluent }),
-    [theme, mode, switchTheme, isLoaded, isFluent],
+    () => ({ theme, mode, switchTheme, isLoaded }),
+    [theme, mode, switchTheme, isLoaded],
   );
 }
 

@@ -1,0 +1,148 @@
+.native-datagrid {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.native-datagrid__toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: var(--toolbar-height, 44px);
+  padding: 8px 12px;
+}
+
+.native-datagrid__toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.native-datagrid__table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.native-datagrid__table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+  width: max-content;
+}
+
+.native-datagrid__table th,
+.native-datagrid__table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+.native-datagrid__table th {
+  background: var(--base-bg);
+  font-weight: var(--font-weight-semibold, 600);
+  position: sticky;
+  text-align: left;
+  top: 0;
+  z-index: 1;
+}
+
+.native-datagrid__row {
+  cursor: pointer;
+}
+
+.native-datagrid__row:nth-child(even) td {
+  background: color-mix(in srgb, var(--base-bg), var(--base-text-color) 2%);
+}
+
+.native-datagrid__row:hover td,
+.native-datagrid__row--selected td {
+  background: color-mix(in srgb, var(--accent-color), transparent 84%);
+}
+
+.native-datagrid__sort-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  padding: 0;
+  text-align: inherit;
+}
+
+.native-datagrid__filter {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.native-datagrid__filter input {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--base-text-color);
+  min-width: 120px;
+  padding: 5px 7px;
+  width: 100%;
+}
+
+.native-datagrid__select-cell,
+.native-datagrid__detail-cell {
+  text-align: center;
+  width: 40px;
+}
+
+.native-datagrid__detail-row td {
+  background: color-mix(in srgb, var(--base-bg), var(--base-text-color) 3%);
+}
+
+.native-datagrid__detail-content {
+  padding: 8px 12px;
+}
+
+.native-datagrid__empty,
+.native-datagrid__loading {
+  color: var(--texteditor-label-color, var(--base-text-color));
+  padding: 20px;
+  text-align: center;
+}
+
+.native-datagrid__pager {
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 8px 12px;
+}
+
+.native-datagrid__summary {
+  border-top: 1px solid var(--border-color);
+  color: var(--base-text-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-end;
+  padding: 8px 12px;
+}
+
+.native-datagrid__loading-overlay {
+  align-items: center;
+  background: rgb(0 0 0 / 18%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 3;
+}
+
+.native-datagrid__loading-card {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: var(--shadow-md);
+  padding: 10px 14px;
+}
