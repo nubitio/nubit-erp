@@ -7,6 +7,7 @@ import { FORM_EVENTS } from '@core/form/FormEvents';
 import type { FormOnChangeFn } from '@core/field/FieldCallbacks';
 import type { Field } from '@core/field/Field';
 import { getDxCustomButtonsOptions } from './DxFormCustomButtonsOptions';
+import { getDxEditorInputAttr, getDxRestEditorOptions } from './DxFormEditorAttributes';
 
 export function getDxCommonEditorOptions(
   field: Field,
@@ -14,15 +15,6 @@ export function getDxCommonEditorOptions(
   formRef: MutableRefObject<FormRef | null>,
   existingButtons: unknown[] = [],
 ): DataRecord {
-  const mergedInputAttr = {
-    'aria-label': field.label,
-    ...(!isEditable ? { class: 'form-editor-input' } : {}),
-    ...(field.editorOptions?.inputAttr ?? {}),
-  };
-
-  const restEditorOptions = { ...(field.editorOptions ?? {}) };
-  delete restEditorOptions.inputAttr;
-
   return {
     ...(!isEditable ? { elementAttr: { class: 'form-editor' } } : {}),
     maxLength: field.maxLength,
@@ -40,8 +32,8 @@ export function getDxCommonEditorOptions(
     itemRender: field.itemFormatter,
     itemTemplate: field.itemFormatter ? field.name : 'item',
     stylingMode: 'outlined',
-    ...restEditorOptions,
-    inputAttr: mergedInputAttr,
+    ...getDxRestEditorOptions(field),
+    inputAttr: getDxEditorInputAttr(field, isEditable),
     ...getDxCustomButtonsOptions(field, formRef, existingButtons),
   };
 }
