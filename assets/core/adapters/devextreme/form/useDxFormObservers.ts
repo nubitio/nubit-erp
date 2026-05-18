@@ -12,7 +12,7 @@ import type { Field } from '@core/field/Field';
 import type { FormEventNames } from '@core/event/EventTypes';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import type { FormDataChangedHandler, FormDataRecord } from '@core/form/FormDataSnapshot';
-import { hasDxFormInstance, setDxFormData } from './DxFormAccessorReads';
+import { hasDxFormInstance, setDxDetailLoading, setDxFormData } from './DxFormAccessorReads';
 
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
@@ -92,13 +92,7 @@ export function useDxFormObservers(options: UseDxFormObserversOptions): void {
     });
 
     options.on<boolean>(FORM_EVENTS.LOADING, (loading) => {
-      if (loading) {
-        options.gridRef.current?.instance().option('noDataText', '');
-        options.gridRef.current?.instance().beginCustomLoading(options.loadingText);
-      } else {
-        options.gridRef.current?.instance().endCustomLoading();
-        options.gridRef.current?.instance().option('noDataText', options.detailNoDataText);
-      }
+      setDxDetailLoading(options.gridRef, loading, options.loadingText, options.detailNoDataText);
     });
 
     if (options.events?.ADD) {
