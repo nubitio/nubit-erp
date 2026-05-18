@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react';
 import type { DataGridRef } from 'devextreme-react/data-grid';
 import type { FormRef } from 'devextreme-react/form';
+import type ArrayStore from 'devextreme/data/array_store';
 
 import type { FormDataRecord } from '@core/form/FormDataSnapshot';
 
@@ -14,6 +15,43 @@ export function getDxDetailRowCount(gridRef: MutableRefObject<DataGridRef | null
 
 export function hasDxPendingDetailEdits(gridRef: MutableRefObject<DataGridRef | null>): boolean {
   return gridRef.current?.instance().hasEditData() ?? false;
+}
+
+export function setDxDetailRows(
+  gridRef: MutableRefObject<DataGridRef | null>,
+  rows: FormDataRecord[],
+): void {
+  const store = gridRef.current?.instance().getDataSource().store() as ArrayStore;
+  store.clear();
+  rows.forEach((row) => {
+    store.insert(row);
+  });
+  reloadDxDetailRows(gridRef);
+}
+
+export function saveDxDetailRows(gridRef: MutableRefObject<DataGridRef | null>): Promise<void> | void {
+  return gridRef.current?.instance().saveEditData();
+}
+
+export function reloadDxDetailRows(gridRef: MutableRefObject<DataGridRef | null>): void {
+  gridRef.current?.instance().getDataSource().reload();
+}
+
+export function setDxDetailLoading(
+  gridRef: MutableRefObject<DataGridRef | null>,
+  loading: boolean,
+  loadingText: string,
+  noDataText: string,
+): void {
+  const grid = gridRef.current?.instance();
+  if (loading) {
+    grid?.option('noDataText', '');
+    grid?.beginCustomLoading(loadingText);
+    return;
+  }
+
+  grid?.endCustomLoading();
+  grid?.option('noDataText', noDataText);
 }
 
 export function getDxFormData(formRef: MutableRefObject<FormRef | null>): FormDataRecord {

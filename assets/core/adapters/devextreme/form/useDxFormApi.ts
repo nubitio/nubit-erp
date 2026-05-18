@@ -1,7 +1,6 @@
 import { MutableRefObject } from 'react';
 import { FormRef } from 'devextreme-react/form';
 import { DataGridRef } from 'devextreme-react/data-grid';
-import ArrayStore from 'devextreme/data/array_store';
 import toast from '@shared/lib/SharedUtils';
 import { Field } from '@core/field/Field';
 import { normalizeFormData } from '@core/form/FormDataTransform';
@@ -11,9 +10,12 @@ import {
   getDxDetailRows,
   getDxFieldValue,
   getDxFormData,
+  reloadDxDetailRows,
+  saveDxDetailRows,
   setDxEditorOption,
   setDxEditorOptions,
   setDxFieldValue,
+  setDxDetailRows,
   setDxFormData,
   setDxItemOption,
   validateDxForm,
@@ -64,20 +66,15 @@ export function useDxFormApi(refs: UseDxFormApiRefs, fields: Field[]): FormHandl
   };
 
   const setDetailData = (data: FormDataRecord[]) => {
-    const store = gridRef.current?.instance().getDataSource().store() as ArrayStore;
-    store.clear();
-    data.forEach((row) => {
-      store.insert(row);
-    });
-    reloadDetailData();
+    setDxDetailRows(gridRef, data);
   };
 
   const saveDetailData = () => {
-    return gridRef.current?.instance().saveEditData();
+    return saveDxDetailRows(gridRef);
   };
 
   const reloadDetailData = () => {
-    gridRef.current?.instance().getDataSource().reload();
+    reloadDxDetailRows(gridRef);
   };
 
   const setError = (field: string, message: string) => {
