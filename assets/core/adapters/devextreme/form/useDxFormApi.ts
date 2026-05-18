@@ -7,6 +7,17 @@ import { Field } from '@core/field/Field';
 import { normalizeFormData } from '@core/form/FormDataTransform';
 import type { FormHandle } from '@core/form/FormHandle';
 import type { FormDataRecord } from '@core/form/FormDataSnapshot';
+import {
+  getDxDetailRows,
+  getDxFieldValue,
+  getDxFormData,
+  setDxEditorOption,
+  setDxEditorOptions,
+  setDxFieldValue,
+  setDxFormData,
+  setDxItemOption,
+  validateDxForm,
+} from './DxFormAccessorReads';
 
 export interface UseDxFormApiRefs {
   formRef: MutableRefObject<FormRef | null>;
@@ -24,36 +35,32 @@ export function useDxFormApi(refs: UseDxFormApiRefs, fields: Field[]): FormHandl
   const { formRef, gridRef, isEdit } = refs;
 
   const getFormData = () => {
-    return formRef.current?.instance().option('formData');
+    return getDxFormData(formRef);
   };
 
   const getFieldValue = (field: string) => {
-    return formRef.current?.instance().getEditor(field)?.option('value');
+    return getDxFieldValue(formRef, field);
   };
 
   const setFieldValue = (field: string, value: unknown) => {
-    // updateData writes into formData directly — critical for readonly/disabled
-    // editors whose editor option() change is not propagated back into formData
-    // by DevExtreme (e.g. discountPercent, grandTotal).
-    formRef.current?.instance().updateData(field, value);
-    formRef.current?.instance().getEditor(field)?.option('value', value);
+    setDxFieldValue(formRef, field, value);
   };
 
   const setReadonly = (field: string, value: boolean) => {
-    formRef.current?.instance().getEditor(field)?.option('readOnly', value);
+    setDxEditorOption(formRef, field, 'readOnly', value);
   };
 
   const setDisabled = (field: string, value: boolean) => {
-    formRef.current?.instance().getEditor(field)?.option('disabled', value);
+    setDxEditorOption(formRef, field, 'disabled', value);
   };
 
   const getDetailData = () => {
-    return gridRef.current?.instance().getDataSource().items();
+    return getDxDetailRows(gridRef);
   };
 
   const setValues = (data: FormDataRecord) => {
     const row = normalizeFormData(data, fields);
-    formRef.current?.instance().option('formData', row);
+    setDxFormData(formRef, row);
   };
 
   const setDetailData = (data: FormDataRecord[]) => {
@@ -78,31 +85,30 @@ export function useDxFormApi(refs: UseDxFormApiRefs, fields: Field[]): FormHandl
       toast(message, 'error');
       return;
     }
-    const editor = formRef.current?.instance().getEditor(field);
-    editor?.option({
+    setDxEditorOptions(formRef, field, {
       isValid: false,
       validationError: { message },
     });
   };
 
   const showField = (field: string) => {
-    formRef.current?.instance().itemOption(field, 'visible', true);
+    setDxItemOption(formRef, field, 'visible', true);
   };
 
   const hideField = (field: string) => {
-    formRef.current?.instance().itemOption(field, 'visible', false);
+    setDxItemOption(formRef, field, 'visible', false);
   };
 
   const enableValidation = (field: string) => {
-    formRef.current?.instance().getEditor(field)?.option('isValid', true);
+    setDxEditorOption(formRef, field, 'isValid', true);
   };
 
   const disableValidation = (field: string) => {
-    formRef.current?.instance().getEditor(field)?.option('isValid', false);
+    setDxEditorOption(formRef, field, 'isValid', false);
   };
 
   const validate = () => {
-    return formRef.current?.instance().validate()?.isValid ?? true;
+    return validateDxForm(formRef);
   };
 
   const setIsEdit = (value: boolean) => {
