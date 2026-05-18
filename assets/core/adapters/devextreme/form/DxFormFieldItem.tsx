@@ -5,7 +5,8 @@ import type { UploadedFile } from '@core/form/UploadedFile';
 import { getFormEditorKind } from '@core/form/FormEditorKind';
 import { getDxEditorType } from './DxFormEditorType';
 import { buildValidationRules } from './DxFormValidationRules';
-import { buildTemplate, getDxFieldPresentation } from './DxFormFieldPresentation';
+import { getDxFieldPresentation } from './DxFormFieldPresentation';
+import { buildTemplate } from './DxFormFieldTemplate';
 import { getDxFieldEditorOptions } from './DxFormFieldEditorOptions';
 
 export const buildField = (
