@@ -3,7 +3,12 @@ import type { DataGridRef } from 'devextreme-react/data-grid';
 import type { FormRef } from 'devextreme-react/form';
 
 import type { UseFormValidationAccessors } from '@core/form/FormValidationAccessors';
-import { getDxDetailRows } from './DxFormAccessorReads';
+import {
+  getDxDetailRowCount,
+  getDxDetailRows,
+  hasDxPendingDetailEdits,
+  validateDxForm,
+} from './DxFormAccessorReads';
 
 export interface UseDxFormValidationAccessorsRefs {
   formRef: MutableRefObject<FormRef | null>;
@@ -15,9 +20,9 @@ export function useDxFormValidationAccessors({
   gridRef,
 }: UseDxFormValidationAccessorsRefs): UseFormValidationAccessors {
   return {
-    getDetailRowCount: () => gridRef.current?.instance().totalCount() ?? 0,
+    getDetailRowCount: () => getDxDetailRowCount(gridRef),
     getDetailRows: () => getDxDetailRows(gridRef),
-    hasPendingDetailEdits: () => gridRef.current?.instance().hasEditData() ?? false,
-    validateForm: () => formRef.current?.instance().validate()?.isValid ?? true,
+    hasPendingDetailEdits: () => hasDxPendingDetailEdits(gridRef),
+    validateForm: () => validateDxForm(formRef),
   };
 }
