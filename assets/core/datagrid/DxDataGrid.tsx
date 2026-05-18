@@ -1,7 +1,8 @@
 /** @deprecated Import DataGridView from @core/datagrid/DataGridView or @core/ui/CrudViews. */
-export { DxDataGrid, DATA_GRID_EVENTS } from '@core/adapters/devextreme/datagrid/DxDataGrid';
-/** @deprecated These are DevExtreme adapter types; prefer app-owned grid contracts. */
+export { DATA_GRID_EVENTS } from './DataGridEvents';
+export { DxDataGrid } from '@core/adapters/devextreme/datagrid/DxDataGrid';
+/** @deprecated Prefer app-owned grid contracts. */
 export type {
-  DxDataGridEvents,
-  DxDataGridOptions,
-} from '@core/adapters/devextreme/datagrid/DxDataGrid';
+  DataGridViewEvents as DxDataGridEvents,
+  DataGridViewOptions as DxDataGridOptions,
+} from './DataGridViewOptions';

@@ -9,7 +9,6 @@ import {
   FilterRow,
   HeaderFilter,
   Item,
-  ITotalItemProps,
   LoadPanel,
   MasterDetail,
   Pager,
@@ -24,7 +23,6 @@ import {
 import { Button, DataGrid } from 'devextreme-react';
 import {
   forwardRef,
-  ReactNode,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -36,76 +34,18 @@ import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import { EXPORT_FORMATS, handleDataGridExport } from './DxDataGridExport';
 import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
 import { DxDetailDataGrid } from './DxDetailDataGrid';
-import { FilterRule } from '@core/field/FilterRule';
+import type { FilterRule } from '@core/field/FilterRule';
 import { useEvents } from '@core/event/EventHook';
 import toast from '@shared/lib/SharedUtils';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
-import { Field } from '@core/field/Field';
-import { DataGridEventNames, ToolbarButtonItem } from '@core/event/EventTypes';
 import { Store } from 'devextreme/data';
-import { RowPreparedEvent, SelectionChangedEvent } from 'devextreme/ui/data_grid';
+import { SelectionChangedEvent } from 'devextreme/ui/data_grid';
 import type { GridHandle } from '@core/datagrid/GridHandle';
+import type { DataGridViewOptions } from '@core/datagrid/DataGridViewOptions';
 import type { DataRecord } from '@core/data/DataRecord';
+import { DATA_GRID_EVENTS } from '@core/datagrid/DataGridEvents';
 
-export interface DxDataGridOptions {
-  id: string;
-  title: string;
-  url: string;
-  detailUrl?: string;
-  fields: Field[];
-  detailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
-  columns?: DataGridTypes.Column[];
-  toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
-  events?: DataGridEventNames;
-  allowAdd?: boolean;
-  allowEdit?: boolean;
-  allowDelete?: boolean;
-  allowExport?: boolean;
-  addDisabled?: boolean;
-  editDisabled?: boolean;
-  deleteDisabled?: boolean;
-  summaryFields?: ITotalItemProps[];
-  filter?: FilterRule[];
-  sort?: Array<{ selector: string; desc: boolean }>;
-  mode?: 'minimal' | 'normal' | 'full';
-  paging?: boolean;
-  hasBackButton?: boolean;
-  columnsHidingEnabled?: boolean;
-  stateStoringEnabled?: boolean;
-  toolbarVisible?: boolean;
-  selectionMode?: 'single' | 'multiple';
-  onBack?: () => void;
-  onSelectionChanged?: (e: SelectionChangedEvent) => void;
-  onRowPrepared?: (e: RowPreparedEvent) => void;
-  onContentReady?: () => void;
-  onFilterChange?: (filters: Record<string, string>) => void;
-  filterRow?: boolean;
-  headerFilter?: boolean;
-  manualLoad?: boolean;
-  beforeToolbar?: () => ReactNode;
-  /**
-   * DevExtreme inline editing mode.
-   * - `'popup'` (default) — grid delegates editing to the external dialog.
-   * - `'row'` | `'cell'` | `'batch'` — DevExtreme inline editing enabled within the grid.
-   */
-  editMode?: 'popup' | 'row' | 'cell' | 'batch';
-  /**
-   * When provided as a non-null array, only columns whose `dataField` matches an entry in this
-   * list will be visible. When `null` or `undefined`, all columns are shown (existing behaviour).
-   */
-  visibleColumns?: string[] | null;
-}
-
-export interface DxDataGridEvents extends GridHandle {
-  getVisibleRows: () => DataGridTypes.Row[] | undefined;
-  getDataSource: () => Store | null;
-  setDataSource: (dataSource: Store | null) => void;
-}
-
-export const DATA_GRID_EVENTS = {
-  SELECTION_CHANGED: 'datagrid:selection.changed',
-  TOOLBAR_EVENT: 'datagrid:toolbar.event',
-};
+export type DxDataGridOptions = DataGridViewOptions;
 
 function extractFilterRulesFromExpression(
   expression: unknown,

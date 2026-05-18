@@ -19,6 +19,7 @@ import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import { Button } from 'devextreme-react';
 import React from 'react';
 import type { DataRecord } from '@core/data/DataRecord';
+import type { DataGridSummaryItem } from '@core/datagrid/DataGridViewOptions';
 
 export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) => {
   return items?.map((item: ToolbarButtonItem | ToolbarButtonItem[], index) => {
@@ -384,16 +385,16 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
   });
 };
 
-export const buildSummary = (fields: ITotalItemProps[] | undefined) => {
-  return fields?.map((field: ITotalItemProps, index) => {
+export const buildSummary = (fields: DataGridSummaryItem[] | undefined) => {
+  return fields?.map((field: DataGridSummaryItem, index) => {
     return (
       <TotalItem
         key={index}
         column={field.column}
-        summaryType={field.summaryType}
+        summaryType={field.summaryType as ITotalItemProps['summaryType']}
         displayFormat={field.displayFormat}
         valueFormat={field.valueFormat}
-        customizeText={field.customizeText}
+        customizeText={field.customizeText as ITotalItemProps['customizeText']}
       />
     );
   });
