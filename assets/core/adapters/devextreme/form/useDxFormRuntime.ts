@@ -1,12 +1,12 @@
 import { useRef } from 'react';
 import { FormRef } from 'devextreme-react/form';
 import { DataGridRef } from 'devextreme-react/data-grid';
-import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 
 import type { Field } from '@core/field/Field';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getDxFieldValue } from './DxFormAccessorReads';
+import { createDxDetailDataSource } from './DxFormDetailDataSource';
 
 export function useDxFormRuntime(detailFields?: Field[]) {
   const formRef = useRef<FormRef | null>(null);
@@ -14,12 +14,7 @@ export function useDxFormRuntime(detailFields?: Field[]) {
   const uploadedFiles = useRef<UploadedFile[]>([]);
   const isEdit = useRef<boolean>(false);
   const dataSource = useRef<DataSource>(
-    new DataSource({
-      store: new ArrayStore({
-        key: detailFields?.find((field) => field.isIdentity)?.name ?? '',
-        data: [],
-      }),
-    }),
+    createDxDetailDataSource(detailFields?.find((field) => field.isIdentity)?.name ?? ''),
   );
 
   const getDetailIdField = () => detailFields?.find((field) => field.isIdentity)?.name ?? '';
