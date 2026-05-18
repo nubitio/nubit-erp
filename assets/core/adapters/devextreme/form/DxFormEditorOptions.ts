@@ -6,6 +6,7 @@ import type { Field } from '@core/field/Field';
 import type { FormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getDxFileEditorOptions } from './DxFormFileEditorOptions';
+import { getDxPasswordEditorOptions } from './DxFormPasswordEditorOptions';
 export { getDxEditorType } from './DxFormEditorType';
 
 export const getDxSimpleEditorOptions = (
@@ -32,29 +33,7 @@ export const getDxSimpleEditorOptions = (
         min: options.date.min,
       }
     : {}),
-  ...(options.password
-    ? {
-        mode: 'password',
-        buttons: [
-          {
-            name: 'password',
-            location: 'after',
-            options: {
-              icon: 'ph ph-eye ',
-              stylingMode: 'text',
-              onClick: (e: any) => {
-                const editor = formRef.current?.instance().getEditor(field.name);
-                editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
-                e.component.option(
-                  'icon',
-                  editor?.option('mode') === 'text' ? 'ph ph-eye-slash' : 'ph ph-eye',
-                );
-              },
-            },
-          },
-        ],
-      }
-    : {}),
+  ...(options.password ? getDxPasswordEditorOptions(field, formRef) : {}),
   ...(options.file ? getDxFileEditorOptions(field, options.file, uploadedFiles) : {}),
   ...(options.html
     ? {
