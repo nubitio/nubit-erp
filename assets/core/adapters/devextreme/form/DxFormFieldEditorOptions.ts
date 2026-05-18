@@ -7,9 +7,9 @@ import { getFormRemoteOptions } from '@core/form/FormRemoteOptions';
 import { getFormSimpleEditorOptions } from '@core/form/FormSimpleEditorOptions';
 import type { UploadedFile } from '@core/form/UploadedFile';
 import { getDxCommonEditorOptions } from './DxFormCommonEditorOptions';
-import { getDxSimpleEditorOptions } from './DxFormEditorOptions';
 import { getDxFieldPresentation } from './DxFormFieldPresentation';
 import { getDxRemoteEditorOptions } from './DxFormRemoteEditorOptions';
+import { getDxSimpleEditorOptions } from './DxFormSimpleEditorOptions';
 
 export function getDxFieldEditorOptions(
   field: Field,
