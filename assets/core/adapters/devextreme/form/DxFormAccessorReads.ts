@@ -20,6 +20,13 @@ export function getDxFormData(formRef: MutableRefObject<FormRef | null>): FormDa
   return (formRef.current?.instance().option('formData') ?? {}) as FormDataRecord;
 }
 
+export function getDxFieldValue(
+  formRef: MutableRefObject<FormRef | null>,
+  field: string,
+): unknown {
+  return formRef.current?.instance().getEditor(field)?.option('value');
+}
+
 export function getDxNullableFormData(
   formRef: MutableRefObject<FormRef | null>,
 ): FormDataRecord | null {
@@ -35,4 +42,13 @@ export function setDxFormData(
 
 export function validateDxForm(formRef: MutableRefObject<FormRef | null>): boolean {
   return formRef.current?.instance().validate()?.isValid ?? true;
+}
+
+export function setDxItemOption(
+  formRef: MutableRefObject<FormRef | null>,
+  itemName: string,
+  optionName: string,
+  value: unknown,
+): void {
+  formRef.current?.instance().itemOption(itemName, optionName, value);
 }
