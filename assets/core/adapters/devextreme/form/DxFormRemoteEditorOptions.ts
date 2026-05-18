@@ -4,8 +4,8 @@ import type { FormRef } from 'devextreme-react/form';
 import type { DataRecord } from '@core/data/DataRecord';
 import type { Field } from '@core/field/Field';
 import type { FormRemoteOptions } from '@core/form/FormRemoteOptions';
-import { dxUtils } from '@core/adapters/devextreme/data/DxUtils';
 import { maybeAutoSelectSingleValue } from './DxFormRemoteAutoSelect';
+import { getDxRemoteStore } from './DxFormRemoteStore';
 
 export function getDxRemoteEditorOptions(
   field: Field,
@@ -17,15 +17,7 @@ export function getDxRemoteEditorOptions(
   }
 
   // Create a store instance so we can query a small page to decide auto-selection.
-  const store = dxUtils.getDataStore(
-    remoteOptions.url,
-    remoteOptions.valueField,
-    remoteOptions.byKeyUrl,
-    remoteOptions.filters,
-    [],
-    remoteOptions.loadOptions,
-    remoteOptions.iriMode,
-  );
+  const store = getDxRemoteStore(remoteOptions);
 
   maybeAutoSelectSingleValue(field, remoteOptions, store, formRef);
 
