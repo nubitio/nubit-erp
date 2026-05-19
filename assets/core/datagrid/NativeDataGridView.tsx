@@ -115,10 +115,169 @@ function buildToolbarButtons(items: (ToolbarButtonItem | ToolbarButtonItem[])[] 
   });
 }
 
-function buildFilterExpression(filters: Record<string, string>): unknown[] {
+type FilterOperator = { value: string; label: string };
+
+function getDefaultFilterOperator(field: Field): string {
+  if (field.selectedFilterOperation) return field.selectedFilterOperation;
+  switch (field.type) {
+    case FieldType.NUMBER:
+    case FieldType.CURRENCY:
+    case FieldType.DATE:
+    case FieldType.DATETIME:
+    case FieldType.ENUM:
+    case FieldType.SELECT:
+    case FieldType.SWITCH:
+    case FieldType.ENTITY:
+      return '=';
+    default:
+      return 'contains';
+  }
+}
+
+function getFilterOperators(field: Field): FilterOperator[] {
+  switch (field.type) {
+    case FieldType.NUMBER:
+    case FieldType.CURRENCY:
+      return [
+        { value: '=', label: '=' },
+        { value: '<>', label: '≠' },
+        { value: '>', label: '>' },
+        { value: '>=', label: '≥' },
+        { value: '<', label: '<' },
+        { value: '<=', label: '≤' },
+      ];
+    case FieldType.DATE:
+    case FieldType.DATETIME:
+      return [
+        { value: '=', label: '=' },
+        { value: '>', label: '>' },
+        { value: '>=', label: '≥' },
+        { value: '<', label: '<' },
+        { value: '<=', label: '≤' },
+      ];
+    case FieldType.ENUM:
+    case FieldType.SELECT:
+    case FieldType.SWITCH:
+    case FieldType.ENTITY:
+      return [{ value: '=', label: '=' }];
+    default:
+      return [
+        { value: 'contains', label: '~' },
+        { value: 'notcontains', label: '!~' },
+        { value: 'startswith', label: '^' },
+        { value: '=', label: '=' },
+        { value: '<>', label: '≠' },
+      ];
+  }
+}
+
+function computeDefaultOperators(fields: Field[]): Record<string, string> {
+  const defaults: Record<string, string> = {};
+  fields.forEach((field) => {
+    if (field.filterable) defaults[field.name] = getDefaultFilterOperator(field);
+  });
+  return defaults;
+}
+
+function buildFilterExpression(filters: Record<string, string>, operators: Record<string, string>): unknown[] {
   return Object.entries(filters)
     .filter(([, value]) => value.trim() !== '')
-    .map(([field, value]) => [field, 'contains', value]);
+    .map(([fieldName, value]) => [fieldName, operators[fieldName] ?? 'contains', value]);
+}
+
+function FilterCell({
+  field,
+  operator,
+  remoteOptions,
+  value,
+  onClear,
+  onInputChange,
+  onSelectChange,
+  onOperatorChange,
+}: {
+  field: Field;
+  operator: string;
+  remoteOptions: DataRecord[];
+  value: string;
+  onClear: () => void;
+  onInputChange: (value: string) => void;
+  onSelectChange: (value: string) => void;
+  onOperatorChange: (operator: string) => void;
+}) {
+  const isDropdown =
+    field.type === FieldType.ENUM ||
+    field.type === FieldType.SELECT ||
+    field.type === FieldType.SWITCH ||
+    field.type === FieldType.ENTITY;
+
+  if (isDropdown) {
+    const isEntity = field.type === FieldType.ENTITY;
+    const items = isEntity ? remoteOptions : (field.data ?? []);
+    return (
+      <select
+        className="native-datagrid__filter-select"
+        value={value}
+        aria-label={`Filtrar ${field.label}`}
+        onChange={(e) => onSelectChange(e.target.value)}
+      >
+        <option value="">Todos</option>
+        {isEntity
+          ? items.map((item) => {
+              const v = field.valueField === '_iri'
+                ? String(item['_iri'] ?? item['@id'] ?? item['id'] ?? '')
+                : String(item[field.valueField] ?? item['id'] ?? '');
+              const t = String(item[field.textField] ?? item['name'] ?? item['businessName'] ?? '');
+              return <option key={v} value={v}>{t}</option>;
+            })
+          : items.map((item) => (
+              <option key={String(item['value'] ?? '')} value={String(item['value'] ?? '')}>
+                {String(item['text'] ?? item['value'] ?? '')}
+              </option>
+            ))}
+      </select>
+    );
+  }
+
+  const operators = getFilterOperators(field);
+  const inputType =
+    field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' :
+    field.type === FieldType.DATE ? 'date' :
+    field.type === FieldType.DATETIME ? 'datetime-local' : 'text';
+
+  return (
+    <div className="native-datagrid__filter-wrap">
+      {operators.length > 1 ? (
+        <select
+          className="native-datagrid__filter-operator"
+          value={operator}
+          aria-label="Operador de filtro"
+          onChange={(e) => onOperatorChange(e.target.value)}
+        >
+          {operators.map((op) => (
+            <option key={op.value} value={op.value}>{op.label}</option>
+          ))}
+        </select>
+      ) : (
+        <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
+      )}
+      <input
+        type={inputType}
+        className="native-datagrid__filter-input"
+        value={value}
+        aria-label={`Filtrar ${field.label}`}
+        onChange={(e) => onInputChange(e.target.value)}
+      />
+      <button
+        type="button"
+        className={`native-datagrid__filter-clear${value ? ' is-active' : ''}`}
+        aria-label="Limpiar filtro"
+        tabIndex={value ? 0 : -1}
+        onClick={onClear}
+      >
+        <i className="ph ph-x" aria-hidden="true" />
+      </button>
+    </div>
+  );
 }
 
 function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryItem[]; rows: DataRecord[] }) {
@@ -162,7 +321,7 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
 
   return (
     <div className="native-datagrid__detail-content">
-      <table className="native-datagrid__table">
+      <table className="native-datagrid__detail-table">
         <thead>
           <tr>
             {fields.filter((field) => field.visible && !field.hidden).map((field) => (
@@ -197,6 +356,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [filterInputs, setFilterInputs] = useState<Record<string, string>>({});
   const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [filterOperators, setFilterOperators] = useState<Record<string, string>>(() => computeDefaultOperators(options.fields));
+  const [filterRemoteOptions, setFilterRemoteOptions] = useState<Record<string, DataRecord[]>>({});
+  const loadedFilterOptionsRef = useRef<Set<string>>(new Set());
   const [sort, setSort] = useState<SortRule[]>(options.sort ?? []);
   const [pageSize, setPageSize] = useState(options.pageSize ?? 20);
   const [confirmRow, setConfirmRow] = useState<DataRecord | null>(null);
@@ -225,7 +387,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     if (options.manualLoad) return rowsRef.current;
     setIsGridLoading(true);
     const loadOptions: RemoteLoadOptions = {
-      filter: buildFilterExpression(filters),
+      filter: buildFilterExpression(filters, filterOperators),
       sort,
     };
     if (options.paging ?? true) {
@@ -240,7 +402,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     setIsGridLoading(false);
     onContentReadyRef.current?.();
     return result.data;
-  }, [filters, options.manualLoad, options.paging, page, pageSize, sort, source]);
+  }, [filterOperators, filters, options.manualLoad, options.paging, page, pageSize, sort, source]);
 
   useEffect(() => {
     void loadRows();
@@ -249,6 +411,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   useEffect(() => {
     if (options.events?.SUCCESS) on(options.events.SUCCESS, () => void loadRows());
   }, [loadRows, on, options.events]);
+
+  useEffect(() => {
+    visibleFields
+      .filter((f) => f.filterable && f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
+      .forEach((f) => {
+        loadedFilterOptionsRef.current.add(f.name);
+        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField })
+          .load({ take: 500 })
+          .then((result) => setFilterRemoteOptions((prev) => ({ ...prev, [f.name]: result.data })))
+          .catch(() => {});
+      });
+  }, [visibleFields]);
 
   useImperativeHandle(ref, () => ({
     showLoading: (message) => {
@@ -262,6 +436,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       setSelectedKeys([]);
       setFilters({});
       setFilterInputs({});
+      setFilterOperators(computeDefaultOperators(options.fields));
       setSort([]);
       setPage(0);
       setExpandedKeys(new Set());
@@ -274,12 +449,16 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     getSelectedRow: () => rowsRef.current.find((row) => row[idField] === selectedKeys[0]),
     getSelectedRowKeys: () => selectedKeys,
     getSelectedRows: () => rowsRef.current.filter((row) => selectedKeys.includes(row[idField])),
-    getFilter: () => buildFilterExpression(filters),
+    getFilter: () => buildFilterExpression(filters, filterOperators),
     filter: (filterRule: FilterRule | null) => {
       const nextFilters = filterRule ? { [filterRule.field]: String(filterRule.value ?? '') } : {};
+      const nextOperators = filterRule
+        ? { ...filterOperators, [filterRule.field]: filterRule.operator || getDefaultFilterOperator(options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0]) }
+        : computeDefaultOperators(options.fields);
       clearTimeout(filterDebounceRef.current);
       setFilters(nextFilters);
       setFilterInputs(nextFilters);
+      setFilterOperators(nextOperators);
       setPage(0);
     },
   }));
@@ -390,14 +569,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     const sortRule = sort.find((rule) => rule.selector === field.name);
                     return (
                       <th key={field.name} title={field.label} style={{ width: field.width, minWidth: field.minWidth, textAlign: field.align }}>
-                        <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
-                          <span>{field.label}</span>
-                          {sortRule ? (
-                            <i className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`} aria-hidden="true" />
-                          ) : field.sortable ? (
-                            <i className="ph ph-caret-up-down native-datagrid__sort-hint" aria-hidden="true" />
-                          ) : null}
-                        </button>
+                        {field.sortable ? (
+                          <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
+                            <span>{field.label}</span>
+                            {sortRule ? (
+                              <i className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`} aria-hidden="true" />
+                            ) : (
+                              <i className="ph ph-caret-up-down native-datagrid__sort-hint" aria-hidden="true" />
+                            )}
+                          </button>
+                        ) : (
+                          <span className="native-datagrid__column-label">{field.label}</span>
+                        )}
                       </th>
                     );
                   })}
@@ -407,49 +590,54 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   <tr className="native-datagrid__filter-row">
                     {options.detailFields && <td />}
                     {hasCheckbox && <td className="native-datagrid__select-cell" />}
-                    {visibleFields.map((field) => (
+                    {visibleFields.map((field) => {
+                      const applyImmediate = (nextInputs: Record<string, string>) => {
+                        clearTimeout(filterDebounceRef.current);
+                        setFilterInputs(nextInputs);
+                        setFilters(nextInputs);
+                        setPage(0);
+                        options.onFilterChange?.(nextInputs);
+                      };
+                      return (
                       <td key={field.name} style={{ minWidth: field.minWidth }}>
                         {field.filterable ? (
-                          <div className="native-datagrid__filter-wrap">
-                            <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
-                            <input
-                              className="native-datagrid__filter-input"
-                              value={filterInputs[field.name] ?? ''}
-                              aria-label={`Filtrar ${field.label}`}
-                              onChange={(event) => {
-                                const nextValue = event.target.value;
-                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                                if (nextValue === '') delete nextInputs[field.name];
-                                setFilterInputs(nextInputs);
-                                clearTimeout(filterDebounceRef.current);
-                                filterDebounceRef.current = setTimeout(() => {
-                                  setFilters(nextInputs);
-                                  setPage(0);
-                                  options.onFilterChange?.(nextInputs);
-                                }, 300);
-                              }}
-                            />
-                            <button
-                              type="button"
-                              className={`native-datagrid__filter-clear${filterInputs[field.name] ? ' is-active' : ''}`}
-                              aria-label="Limpiar filtro"
-                              tabIndex={filterInputs[field.name] ? 0 : -1}
-                              onClick={() => {
-                                const nextInputs = { ...filterInputs };
-                                delete nextInputs[field.name];
-                                clearTimeout(filterDebounceRef.current);
-                                setFilterInputs(nextInputs);
+                          <FilterCell
+                            field={field}
+                            operator={filterOperators[field.name] ?? getDefaultFilterOperator(field)}
+                            remoteOptions={filterRemoteOptions[field.name] ?? []}
+                            value={filterInputs[field.name] ?? ''}
+                            onInputChange={(nextValue) => {
+                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                              if (nextValue === '') delete nextInputs[field.name];
+                              setFilterInputs(nextInputs);
+                              clearTimeout(filterDebounceRef.current);
+                              filterDebounceRef.current = setTimeout(() => {
                                 setFilters(nextInputs);
                                 setPage(0);
                                 options.onFilterChange?.(nextInputs);
-                              }}
-                            >
-                              <i className="ph ph-x" aria-hidden="true" />
-                            </button>
-                          </div>
+                              }, 300);
+                            }}
+                            onSelectChange={(nextValue) => {
+                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                              if (nextValue === '') delete nextInputs[field.name];
+                              applyImmediate(nextInputs);
+                            }}
+                            onOperatorChange={(nextOperator) => {
+                              setFilterOperators((prev) => ({ ...prev, [field.name]: nextOperator }));
+                              if (filterInputs[field.name]) {
+                                applyImmediate({ ...filterInputs });
+                              }
+                            }}
+                            onClear={() => {
+                              const nextInputs = { ...filterInputs };
+                              delete nextInputs[field.name];
+                              applyImmediate(nextInputs);
+                            }}
+                          />
                         ) : null}
                       </td>
-                    ))}
+                    );
+                    })}
                     {hasRowActions && <td />}
                   </tr>
                 )}
@@ -489,7 +677,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     return (
                       <React.Fragment key={String(key)}>
                         <tr
-                          className={`native-datagrid__row ${selectedKeys.includes(key) ? 'native-datagrid__row--selected' : ''}`}
+                          className={`native-datagrid__row ${expanded ? 'native-datagrid__row--expanded' : ''} ${selectedKeys.includes(key) ? 'native-datagrid__row--selected' : ''}`}
                           tabIndex={0}
                           onClick={() => selectRow(row)}
                           onKeyDown={(event) => {
@@ -512,7 +700,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               {detailUrl && detailFields && (
                                 <button
                                   type="button"
-                                  className="app-icon-button"
+                                  className={`native-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
                                   aria-label={expanded ? 'Contraer detalle' : 'Expandir detalle'}
                                   onClick={(event) => {
                                     event.stopPropagation();

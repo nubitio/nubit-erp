@@ -106,9 +106,7 @@ export const SalePage = () => {
       SaleDetailFields(
         formRef.current,
         (parentRow?.currency as string) ?? 'PEN',
-        itemDiscountCallbacks,
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

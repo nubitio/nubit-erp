@@ -105,7 +105,7 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
  * Only properties that are explicitly set (`!== undefined`) are applied.
  *
  * `hidden: true` sets `visible: false` so the column is hidden in the grid.
- * `order` maps to the `Field.order` property (used as DevExtreme `visibleIndex`).
+ * `order` maps to the `Field.order` property used by native grid column ordering.
  */
 function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
   if (!hints) return;
@@ -167,9 +167,7 @@ function resolveEntityTextField(
  * Mapping rules (in priority order):
  *  1. name === 'id' or name === '@id'  → always emit as a hidden identity field
  *                                         (visible: false, readonly: true, isIdentity: true)
- *                                         Required so DevExtreme's keyExpr resolves correctly
- *                                         and E1042 ("Row focusing requires the key field") is
- *                                         never thrown.
+ *                                         Required so native grids and forms always have a stable row key.
  *  2. readable: false                  → skip (already filtered upstream, but defensive)
  *  3. writeable: false (display-only)  → noneField
  *  4. range resolves to 'boolean'      → switchField
@@ -181,7 +179,7 @@ function resolveEntityTextField(
  *
  * For each field, `filterable` is `true` when the field's property name appears in
  * `schema.searchMappings` (from `hydra:search`). When `searchMappings` is empty
- * (e.g. the resource uses a catch-all filter like DevExtremeFilter that doesn't
+ * (e.g. the resource uses a catch-all data-grid filter that doesn't
  * enumerate field-level mappings), ALL fields default to `filterable: true`.
  *
  * After processing all schema fields, if no `id` field was found in the schema,
@@ -212,8 +210,8 @@ export function mapHydraSchemaToFields(
 
     // Rule 1 — identity fields: always emit as hidden, read-only, identity field.
     // Type selection: use numberField() ONLY when the schema explicitly declares an
-    // XSD integer range.  For string/absent/unknown range (including UUID primary keys),
-    // default to textField() to prevent DevExtreme coercing the key to NaN.  (BUG-011)
+    // XSD integer range. For string/absent/unknown range (including UUID primary keys),
+    // default to textField() so row keys remain stable. (BUG-011)
     if (name === 'id' || name === '@id') {
       hasIdField = true;
       const idBase = isIntegerRange(range)
@@ -322,12 +320,12 @@ export function mapHydraSchemaToFields(
   }
 
   // If the schema had no explicit id / @id property, inject a synthetic hidden
-  // identity field so DevExtreme always has a valid keyExpr to bind to.
+  // identity field so every grid/form row has a stable key to bind to.
   //
   // Use textField() — never numberField() — because UUIDs, slugs, and IRIs are
   // all strings.  A schema that genuinely uses a numeric id WILL have an explicit
   // id property with xsd:integer range, which is handled by Rule 1 above.
-  // Defaulting to string prevents DevExtreme from coercing UUID keys to NaN.
+  // Defaulting to string prevents UUID keys from being coerced to NaN.
   // (BUG-011)
   if (!hasIdField) {
     const syntheticId: Field = {

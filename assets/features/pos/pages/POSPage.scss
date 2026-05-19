@@ -12,7 +12,7 @@
   --pos-text: var(--base-text-color);           // primary body text
   --pos-text-soft: var(--text-secondary);       // subdued text
 
-  // Accent — follows the app's primary colour (DevExtreme fluent blue by default)
+  // Accent — follows the app's primary colour
   --pos-primary: var(--accent-color);
   --pos-primary-hover: color-mix(in srgb, var(--accent-color) 80%, black 20%);
   --pos-primary-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
