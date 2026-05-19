@@ -10,10 +10,10 @@
     display: inline-flex;
     align-items: center;
     cursor: pointer;
-    border: 1px solid var(--dx-color-border, rgba(0, 0, 0, 0.15));
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.15));
     border-radius: 16px;
-    background-color: var(--dx-color-bg, transparent);
-    color: var(--dx-color-text, inherit);
+    background-color: var(--surface-1, transparent);
+    color: var(--base-text-color, inherit);
     padding: 5px 14px;
     font-size: 0.8125rem; /* 13px */
     line-height: 1.4;
@@ -25,13 +25,13 @@
     font-family: inherit;
 
     &:hover {
-      background-color: var(--dx-color-main-hover, rgba(0, 0, 0, 0.06));
-      border-color: var(--dx-color-main, var(--accent-color, #0e7a50));
-      color: var(--dx-color-main, var(--accent-color, #0e7a50));
+      background-color: color-mix(in srgb, var(--accent-color, #0e7a50) 10%, transparent);
+      border-color: var(--accent-color, #0e7a50);
+      color: var(--accent-color, #0e7a50);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--dx-color-main, var(--accent-color, #0e7a50));
+      outline: 2px solid var(--accent-color, #0e7a50);
       outline-offset: 2px;
     }
 

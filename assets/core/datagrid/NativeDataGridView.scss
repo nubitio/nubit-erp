@@ -3,16 +3,27 @@
   flex-direction: column;
   min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
 .native-datagrid__toolbar {
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
+  background: var(--base-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: var(--shadow-sm, 0 8px 22px rgb(0 0 0 / 8%));
   display: flex;
   flex: 0 0 auto;
   gap: 8px;
-  min-height: var(--toolbar-height, 44px);
-  padding: 8px 12px;
+  margin-bottom: var(--content-padding, 16px);
+  min-height: 64px;
+  padding: 10px 16px;
+}
+
+.native-datagrid__toolbar .grid-header {
+  font-size: clamp(1.45rem, 1.2vw + 1rem, 2rem);
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.02em;
 }
 
 .native-datagrid__toolbar-spacer {
@@ -23,24 +34,28 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--base-bg);
 }
 
 .native-datagrid__table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 100%;
-  width: max-content;
+  min-width: min(980px, 100%);
+  width: 100%;
 }
 
 .native-datagrid__table th,
 .native-datagrid__table td {
-  border-bottom: 1px solid var(--border-color);
-  padding: 8px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  padding: 12px 14px;
   vertical-align: middle;
 }
 
 .native-datagrid__table th {
-  background: var(--base-bg);
+  background: color-mix(in srgb, var(--surface-2, var(--base-bg)) 52%, var(--surface-1, var(--base-bg)));
+  color: var(--text-primary, var(--base-text-color));
   font-weight: var(--font-weight-semibold, 600);
   position: sticky;
   text-align: left;
@@ -48,17 +63,23 @@
   z-index: 1;
 }
 
+.native-datagrid__table thead tr:first-child th {
+  padding-top: 16px;
+}
+
 .native-datagrid__row {
   cursor: pointer;
+  font-size: var(--font-size-md, 14px);
 }
 
 .native-datagrid__row:nth-child(even) td {
-  background: color-mix(in srgb, var(--base-bg), var(--base-text-color) 2%);
+  background: color-mix(in srgb, var(--surface-1, var(--base-bg)) 96%, var(--surface-2, var(--base-text-color)));
 }
 
 .native-datagrid__row:hover td,
 .native-datagrid__row--selected td {
-  background: color-mix(in srgb, var(--accent-color), transparent 84%);
+  background: color-mix(in srgb, var(--accent-color), var(--base-bg) 86%);
+  transition: background-color 120ms ease;
 }
 
 .native-datagrid__sort-button {
@@ -71,6 +92,7 @@
   gap: 6px;
   padding: 0;
   text-align: inherit;
+  width: 100%;
 }
 
 .native-datagrid__filter {
@@ -79,19 +101,30 @@
 }
 
 .native-datagrid__filter input {
-  background: var(--base-bg);
-  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--base-bg) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   border-radius: var(--radius-sm, 6px);
   color: var(--base-text-color);
   min-width: 120px;
-  padding: 5px 7px;
+  min-height: 32px;
+  padding: 5px 9px;
   width: 100%;
+}
+
+.native-datagrid__filter input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color, rgb(13 110 253 / 18%));
+  outline: 0;
 }
 
 .native-datagrid__select-cell,
 .native-datagrid__detail-cell {
   text-align: center;
-  width: 40px;
+  width: 44px;
+}
+
+.native-datagrid__select-cell input {
+  accent-color: var(--accent-color);
 }
 
 .native-datagrid__detail-row td {
@@ -111,12 +144,11 @@
 
 .native-datagrid__pager {
   align-items: center;
-  border-top: 1px solid var(--border-color);
   display: flex;
   flex: 0 0 auto;
   gap: 8px;
   justify-content: flex-end;
-  padding: 8px 12px;
+  padding: 12px 0 0;
 }
 
 .native-datagrid__summary {

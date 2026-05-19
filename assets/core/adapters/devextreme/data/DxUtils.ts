@@ -26,7 +26,7 @@ class DxUtils {
       idField,
       byKeyUrl,
       defaultFilterRules: defaultFilterRules as unknown[][],
-      defaultSortRules,
+      defaultSortRules: defaultSortRules as unknown as RemoteLoadOptions['sort'],
       options,
       iriMode,
     });

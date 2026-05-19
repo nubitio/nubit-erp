@@ -127,7 +127,9 @@ class HttpClient {
     }
 
     const qs = serializeParams(normalized);
-    return qs ? `${url}?${qs}` : url;
+    if (!qs) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}${qs}`;
   }
 
   private buildHeaders(extraHeaders?: Record<string, string>): Record<string, string> {

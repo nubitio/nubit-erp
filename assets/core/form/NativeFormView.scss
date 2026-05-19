@@ -1,0 +1,233 @@
+.native-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+  color: var(--base-text-color);
+}
+
+.native-form--with-detail {
+  min-height: min(680px, calc(100vh - 180px));
+}
+
+.native-form__sales-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(520px, 1fr);
+  gap: 24px;
+  min-height: inherit;
+}
+
+.native-form__master-panel,
+.native-form__detail-panel {
+  min-width: 0;
+}
+
+.native-form__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px 16px;
+}
+
+.native-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  grid-column: span var(--native-form-col, 12);
+}
+
+.native-form__label {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium, 500);
+  letter-spacing: 0.01em;
+}
+
+.native-form__control {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.16)) 88%, var(--base-text-color, #111));
+  border-radius: var(--radius-sm, 8px);
+  background: var(--surface-1, transparent);
+  color: var(--base-text-color, inherit);
+  padding: 9px 12px;
+  font: inherit;
+  box-sizing: border-box;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.native-form__control:focus {
+  border-color: var(--accent-color, #0e7a50);
+  outline: 2px solid var(--focus-ring-color, rgba(14, 122, 80, 0.24));
+  outline-offset: 1px;
+}
+
+.native-form__control:disabled,
+.native-form__control[readonly] {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.native-form__textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.native-form__checkbox,
+.native-form__radio-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+}
+
+.native-form__checkbox input,
+.native-form__radio-item input {
+  accent-color: var(--accent-color, #0e7a50);
+}
+
+.native-form__radio-list {
+  flex-wrap: wrap;
+}
+
+.native-form__radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.native-form__html-preview {
+  min-height: 80px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.16));
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px;
+  background: var(--surface-1, transparent);
+}
+
+.native-form__error {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--error-color, #dc2626);
+}
+
+.native-form__section,
+.native-form__tabs,
+.native-form__detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.12)) 90%, var(--base-text-color, #111));
+  border-radius: var(--radius-md, 12px);
+  padding: 0;
+  background: var(--surface-1, transparent);
+  overflow: hidden;
+}
+
+.native-form__section-title,
+.native-form__detail-title {
+  margin: 0 0 var(--space-3, 12px);
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.native-form__detail-heading {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  display: flex;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.native-form__detail-title {
+  margin: 0;
+}
+
+.native-form__tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--space-4, 16px);
+}
+
+.native-form__tab-button {
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  border-radius: var(--radius-sm, 8px);
+  background: transparent;
+  color: var(--base-text-color);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.native-form__tab-button--active {
+  border-color: var(--accent-color, #0e7a50);
+  color: var(--accent-color, #0e7a50);
+  background: color-mix(in srgb, var(--accent-color, #0e7a50) 10%, transparent);
+}
+
+.native-form__detail-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.native-form__detail-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 720px;
+}
+
+.native-form__detail-table th,
+.native-form__detail-table td {
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.native-form__detail-table th:first-child,
+.native-form__detail-table td:first-child {
+  min-width: 220px;
+}
+
+.native-form__detail-table th {
+  background: color-mix(in srgb, var(--surface-2, var(--base-bg)) 48%, var(--surface-1, transparent));
+  color: var(--text-primary, var(--base-text-color));
+  font-weight: var(--font-weight-semibold, 600);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.native-form__detail-table td .native-form__control {
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
+.native-form__detail-empty {
+  color: var(--text-secondary, #888);
+  font-size: 1.05rem;
+  height: 140px;
+  text-align: center !important;
+}
+
+.native-form__detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  margin-top: 0;
+  padding: 10px 12px;
+}
+
+.native-form__detail-actions .app-button {
+  min-width: 120px;
+}
+
+@media (max-width: 720px) {
+  .native-form__sales-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .native-form__field {
+    grid-column: span 12;
+  }
+}

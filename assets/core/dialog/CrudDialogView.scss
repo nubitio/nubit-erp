@@ -47,6 +47,15 @@
   }
 }
 
+.crud-dialog:has(.native-form) {
+  height: calc(100vh - 32px) !important;
+  overflow: hidden;
+
+  .app-dialog__body {
+    overflow: auto;
+  }
+}
+
 .crud-dialog__footer {
   .form-popup-buttons-container {
     display: flex;
