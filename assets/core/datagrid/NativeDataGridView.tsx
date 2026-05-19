@@ -563,7 +563,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             <table className="native-datagrid__table">
               <thead>
                 <tr>
-                  {options.detailFields && <th className="native-datagrid__detail-cell" />}
+                  {options.detailFields && <th className="native-datagrid__detail-cell" style={{ width: 36 }} />}
                   {hasCheckbox && <th className="native-datagrid__select-cell" />}
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
@@ -599,7 +599,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         options.onFilterChange?.(nextInputs);
                       };
                       return (
-                      <td key={field.name} style={{ minWidth: field.minWidth }}>
+                      <td key={field.name} style={{ minWidth: field.minWidth }} className={field.filterable === false ? 'native-datagrid__filter-cell--noop' : undefined}>
                         {field.filterable ? (
                           <FilterCell
                             field={field}
