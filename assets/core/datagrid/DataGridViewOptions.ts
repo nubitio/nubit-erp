@@ -38,11 +38,13 @@ export interface DataGridViewOptions {
   sort?: Array<{ selector: string; desc: boolean }>;
   mode?: 'minimal' | 'normal' | 'full';
   paging?: boolean;
+  pageSize?: number;
   hasBackButton?: boolean;
   columnsHidingEnabled?: boolean;
   stateStoringEnabled?: boolean;
   toolbarVisible?: boolean;
   selectionMode?: 'single' | 'multiple';
+  inlineActions?: boolean;
   onBack?: () => void;
   onSelectionChanged?: (event: DataGridSelectionChangedEvent) => void;
   onRowPrepared?: (event: unknown) => void;

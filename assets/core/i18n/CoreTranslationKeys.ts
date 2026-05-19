@@ -27,6 +27,7 @@ export interface CoreTranslationKeys {
   'grid.buttonEdit': string;
   'grid.buttonDelete': string;
   'grid.buttonRefresh': string;
+  'grid.rowsPerPage': string;
   'dialog.buttonCancel': string;
   'dialog.buttonSave': string;
   'dialog.confirmDelete': string;
