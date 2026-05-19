@@ -41,6 +41,11 @@
   letter-spacing: 0.01em;
 }
 
+.native-form__label--required::after {
+  content: ' *';
+  color: var(--error-color, #dc2626);
+}
+
 .native-form__control {
   width: 100%;
   min-height: 28px;
@@ -59,6 +64,15 @@
   border-color: var(--accent-color, #0e7a50);
   outline: 2px solid var(--focus-ring-color, rgba(14, 122, 80, 0.24));
   outline-offset: 1px;
+}
+
+.native-form__control.is-error {
+  border-color: var(--error-color, #dc2626);
+
+  &:focus {
+    border-color: var(--error-color, #dc2626);
+    outline-color: color-mix(in srgb, var(--error-color, #dc2626) 24%, transparent);
+  }
 }
 
 .native-form__control:disabled,
@@ -104,8 +118,16 @@
 }
 
 .native-form__error {
-  font-size: var(--font-size-xs, 12px);
+  align-items: center;
   color: var(--error-color, #dc2626);
+  display: flex;
+  font-size: var(--font-size-xs, 12px);
+  gap: 4px;
+
+  i {
+    flex: 0 0 auto;
+    font-size: 13px;
+  }
 }
 
 .native-form__section,

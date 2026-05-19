@@ -461,8 +461,9 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     const readOnly = state.readonly ?? field.readonly ?? options.editable === false;
     const disabled = state.disabled ?? field.disabled;
     const error = errors[field.name];
+    const errorClass = error ? ' is-error' : '';
     const commonProps = {
-      className: 'native-form__control',
+      className: `native-form__control${errorClass}`,
       disabled,
       id: `native-form-${field.name}`,
       name: field.name,
@@ -474,7 +475,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     if (field.contentRender && typeof field.contentRender === 'function') {
       control = field.contentRender({ data: formData, value });
     } else if (field.type === FieldType.TEXTAREA || field.type === FieldType.HTML) {
-      control = <textarea {...commonProps} className="native-form__control native-form__textarea" value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
+      control = <textarea {...commonProps} className={`native-form__control native-form__textarea${errorClass}`} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
     } else if (field.type === FieldType.CHECKBOX || field.type === FieldType.SWITCH) {
       control = (
         <label className="native-form__checkbox">
@@ -517,10 +518,10 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
     return (
       <div key={field.name} className="native-form__field" style={colSpan(field)}>
-        {field.type !== FieldType.CHECKBOX && field.type !== FieldType.SWITCH && <label className="native-form__label" htmlFor={`native-form-${field.name}`}>{field.label}</label>}
+        {field.type !== FieldType.CHECKBOX && field.type !== FieldType.SWITCH && <label className={`native-form__label${field.required ? ' native-form__label--required' : ''}`} htmlFor={`native-form-${field.name}`}>{field.label}</label>}
         {control}
         {field.helpText && <span className="native-form__label">{field.helpText}</span>}
-        {error && <span className="native-form__error">{error}</span>}
+        {error && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{error}</span>}
       </div>
     );
   };

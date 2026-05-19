@@ -119,6 +119,17 @@
   opacity: 0.85;
 }
 
+.native-datagrid__sort-hint {
+  flex: 0 0 auto;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+
+  .native-datagrid__sort-button:hover & {
+    opacity: 0.4;
+  }
+}
+
 /* ── Filter row ─────────────────────────────────────────── */
 
 .native-datagrid__filter-row td {
@@ -210,17 +221,73 @@
   padding: 8px 12px;
 }
 
-.native-datagrid__empty,
+.native-datagrid__empty {
+  align-items: center;
+  color: var(--texteditor-label-color, var(--base-text-color));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 36px 20px;
+
+  i {
+    font-size: 36px;
+    opacity: 0.3;
+  }
+
+  span {
+    font-size: var(--font-size-sm, 14px);
+    opacity: 0.55;
+  }
+}
+
 .native-datagrid__loading {
   color: var(--texteditor-label-color, var(--base-text-color));
   padding: 20px;
   text-align: center;
 }
 
+.native-datagrid__skeleton-row td {
+  padding: 7px 10px;
+}
+
+.native-datagrid__skeleton-cell {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: var(--radius-sm, 4px);
+  height: 14px;
+  width: 100%;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.native-datagrid__actions-cell {
+  text-align: center;
+  width: 64px;
+}
+
+.native-datagrid__row-actions {
+  align-items: center;
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.native-datagrid__row:hover .native-datagrid__row-actions,
+.native-datagrid__row--selected .native-datagrid__row-actions {
+  opacity: 1;
+}
+
 .native-datagrid__pager {
   align-items: center;
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
   justify-content: space-between;
   padding: 6px 2px 0;
 }
@@ -290,6 +357,79 @@
   gap: 16px;
   justify-content: flex-end;
   padding: 8px 12px;
+}
+
+.native-datagrid__pager-size {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.native-datagrid__pager-size-label {
+  color: var(--texteditor-label-color);
+  font-size: var(--font-size-xs, 12px);
+  white-space: nowrap;
+}
+
+.native-datagrid__pager-size-select {
+  background: var(--base-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--base-text-color);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs, 12px);
+  height: 24px;
+  padding: 0 4px;
+
+  &:focus {
+    border-color: var(--accent-color);
+    outline: none;
+  }
+}
+
+.native-datagrid__confirm-overlay {
+  align-items: center;
+  background: rgb(0 0 0 / 22%);
+  border-radius: var(--radius-lg, 10px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 5;
+}
+
+.native-datagrid__confirm-card {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 380px;
+  padding: 18px 20px 14px;
+  width: 90%;
+}
+
+.native-datagrid__confirm-title {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-semibold, 600);
+  margin: 0;
+}
+
+.native-datagrid__confirm-body {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm, 14px);
+  margin: 0;
+}
+
+.native-datagrid__confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
 }
 
 .native-datagrid__loading-overlay {
