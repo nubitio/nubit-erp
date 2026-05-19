@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import './AppDialog.scss';
@@ -62,10 +62,14 @@ export const AppDialog = ({
   role = 'dialog',
 }: AppDialogProps) => {
   const isVisible = visible ?? open ?? false;
+  const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const restoreFocusRef = useRef(restoreFocus);
-  restoreFocusRef.current = restoreFocus;
+
+  useEffect(() => {
+    restoreFocusRef.current = restoreFocus;
+  }, [restoreFocus]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -120,7 +124,7 @@ export const AppDialog = ({
         className={joinClassNames('app-dialog', fullScreen && 'app-dialog--fullscreen', className)}
         role={role}
         aria-modal="true"
-        aria-labelledby="app-dialog-title"
+        aria-labelledby={titleId}
         ref={dialogRef}
         onKeyDownCapture={(event) => {
           if (!closeOnEscape && event.key === 'Escape') {
@@ -135,7 +139,7 @@ export const AppDialog = ({
         }}
       >
         <div className={joinClassNames('app-dialog__header', headerClassName)}>
-          <h2 className={joinClassNames('app-dialog__title', titleClassName)} id="app-dialog-title">
+          <h2 className={joinClassNames('app-dialog__title', titleClassName)} id={titleId}>
             {title}
           </h2>
           {showCloseButton && (

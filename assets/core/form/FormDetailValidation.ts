@@ -5,6 +5,8 @@ import type { FormDataRecord } from './FormDataSnapshot';
 export function validateDetailRows(detailRows: FormDataRecord[], detailFields: Field[]): boolean {
   return detailRows.every((row) =>
     detailFields.every((field) => {
+      if (field.isIdentity || field.hidden || !field.visible) return true;
+
       const value = row[field.name];
 
       if (field.required && (value === null || value === undefined || value === '')) {
