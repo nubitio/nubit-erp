@@ -389,7 +389,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
                     return (
-                      <th key={field.name} style={{ width: field.width, minWidth: field.minWidth, textAlign: field.align }}>
+                      <th key={field.name} title={field.label} style={{ width: field.width, minWidth: field.minWidth, textAlign: field.align }}>
                         <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
                           <span>{field.label}</span>
                           {sortRule ? (

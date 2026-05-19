@@ -32,6 +32,17 @@ type FieldState = { readonly?: boolean; disabled?: boolean; hidden?: boolean; va
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
 
+function createRemoteSource(field: Field): ApiPlatformRemoteDataSource {
+  return new ApiPlatformRemoteDataSource({
+    url: field.url ?? '',
+    idField: field.valueField,
+    byKeyUrl: field.byKeyUrl,
+    defaultFilterRules: fieldFilters(field),
+    options: field.loadOptions,
+    iriMode: field.valueField === '_iri',
+  });
+}
+
 function fieldKeyValue(field: Field, item: DataRecord): unknown {
   if (field.valueField === '_iri') return item['_iri'] ?? item['@id'] ?? item['id'];
   return item[field.valueField] ?? item['value'] ?? item['id'] ?? item['@id'];
@@ -57,8 +68,132 @@ function isEmptyValue(value: unknown): boolean {
   return value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
 }
 
+function fieldSearchExpr(field: Field): string[] {
+  if (field.searchExpr && field.searchExpr.length > 0) return field.searchExpr;
+  return [field.textField].filter(Boolean);
+}
+
 function colSpan(field: Field): React.CSSProperties {
   return { '--native-form-col': String(field.col ?? 12) } as React.CSSProperties;
+}
+
+function NativeEntitySelect({
+  className,
+  disabled,
+  field,
+  id,
+  onChange,
+  options,
+  readOnly,
+  required,
+  value,
+}: {
+  className: string;
+  disabled?: boolean;
+  field: Field;
+  id?: string;
+  onChange: (value: unknown) => void;
+  options: DataRecord[];
+  readOnly?: boolean;
+  required?: boolean;
+  value: unknown;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftQuery, setDraftQuery] = useState<string | null>(null);
+  const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const normalizedValue = String(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value ?? '');
+  const items = searchedItems ?? options;
+  const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue)
+    ?? options.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue);
+  const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : '';
+  const query = draftQuery ?? selectedText;
+
+  useEffect(() => {
+    if (!field.url || !field.searchEnabled || !open) return;
+    const searchValue = query.trim();
+    const timer = setTimeout(() => {
+      setLoading(true);
+      createRemoteSource(field)
+        .load({
+          take: 50,
+          searchExpr: fieldSearchExpr(field),
+          searchValue: searchValue === '' ? undefined : searchValue,
+        })
+        .then((result) => setSearchedItems(result.data))
+        .catch(() => setSearchedItems(null))
+        .finally(() => setLoading(false));
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [field, open, options, query]);
+
+  const selectItem = (item: DataRecord) => {
+    const nextValue = fieldKeyValue(field, item);
+    onChange(nextValue ?? null);
+    setDraftQuery(fieldTextValue(field, item));
+    setOpen(false);
+  };
+
+  const clearSelection = () => {
+    onChange(null);
+    setDraftQuery('');
+    setOpen(true);
+  };
+
+  return (
+    <div className="native-form__lookup">
+      <input
+        autoComplete="off"
+        className={className}
+        disabled={disabled}
+        id={id}
+        readOnly={readOnly}
+        required={required}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        value={query}
+        onBlur={() => {
+          blurTimer.current = setTimeout(() => {
+            setOpen(false);
+            setDraftQuery(null);
+            setSearchedItems(null);
+          }, 120);
+        }}
+        onChange={(event) => {
+          setDraftQuery(event.currentTarget.value);
+          setOpen(true);
+          if (event.currentTarget.value === '') onChange(null);
+        }}
+        onFocus={() => {
+          if (blurTimer.current) clearTimeout(blurTimer.current);
+          setOpen(true);
+        }}
+      />
+      {!disabled && !readOnly && normalizedValue !== '' && (
+        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={clearSelection}>
+          <i className="ph ph-x" aria-hidden="true" />
+        </button>
+      )}
+      {open && !disabled && !readOnly && (
+        <div className="native-form__lookup-menu" role="listbox">
+          {loading && <div className="native-form__lookup-status">Buscando...</div>}
+          {!loading && items.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+          {!loading && items.map((item) => {
+            const itemValue = fieldKeyValue(field, item);
+            const itemText = fieldTextValue(field, item);
+            return (
+              <button key={String(itemValue)} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className="native-form__lookup-option" onMouseDown={(event) => event.preventDefault()} onClick={() => selectItem(item)}>
+                {itemText}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function validateField(field: Field, value: unknown, formData: FormDataRecord): string | null {
@@ -159,6 +294,18 @@ function NativeDetailGrid({
     }
     if (field.type === FieldType.ENTITY || field.type === FieldType.SELECT || field.type === FieldType.ENUM) {
       const items = field.type === FieldType.ENTITY ? (remoteOptions[field.name] ?? field.data ?? []) : (field.data ?? []);
+      if (field.type === FieldType.ENTITY) {
+        return (
+          <NativeEntitySelect
+            className="native-form__control"
+            disabled={!allowUpdating || field.disabled}
+            field={field}
+            options={items}
+            value={value}
+            onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
+          />
+        );
+      }
       return (
         <select
           className="native-form__control"
@@ -168,8 +315,8 @@ function NativeDetailGrid({
         >
           <option value="">Seleccione...</option>
           {items.map((item) => {
-            const itemValue = field.type === FieldType.ENTITY ? fieldKeyValue(field, item) : item['value'];
-            const itemText = field.type === FieldType.ENTITY ? fieldTextValue(field, item) : String(item['text'] ?? itemValue ?? '');
+            const itemValue = item['value'];
+            const itemText = String(item['text'] ?? itemValue ?? '');
             return <option key={String(itemValue)} value={String(itemValue ?? '')}>{itemText}</option>;
           })}
         </select>
@@ -230,13 +377,6 @@ function NativeDetailGrid({
           </tbody>
         </table>
       </div>
-      {allowAdding && (
-        <div className="native-form__detail-actions">
-          <button type="button" className="app-button app-button--secondary app-button--sm" onClick={addRow}>
-            Agregar detalle
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -297,14 +437,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
         setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         return;
       }
-      const source = new ApiPlatformRemoteDataSource({
-        url: field.url,
-        idField: field.valueField,
-        byKeyUrl: field.byKeyUrl,
-        defaultFilterRules: fieldFilters(field),
-        options: field.loadOptions,
-        iriMode: field.valueField === '_iri',
-      });
+      const source = createRemoteSource(field);
       source
         .load({ take: 50 })
         .then((result) => {
@@ -462,11 +595,13 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     const disabled = state.disabled ?? field.disabled;
     const error = errors[field.name];
     const errorClass = error ? ' is-error' : '';
+    const actionClass = field.onClick ? ' native-form__control--action' : '';
     const commonProps = {
-      className: `native-form__control${errorClass}`,
+      className: `native-form__control${actionClass}${errorClass}`,
       disabled,
       id: `native-form-${field.name}`,
       name: field.name,
+      onClick: field.onClick,
       readOnly,
       required: field.required,
     };
@@ -492,8 +627,23 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           })}
         </div>
       );
-    } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT || field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
-      const items = field.type === FieldType.ENTITY || field.type === FieldType.TAGS ? (remoteOptions[field.name] ?? field.data ?? []) : (field.data ?? []);
+    } else if (field.type === FieldType.ENTITY && !field.multiple) {
+      const items = remoteOptions[field.name] ?? field.data ?? [];
+      control = (
+        <NativeEntitySelect
+          className={`native-form__control${errorClass}`}
+          disabled={disabled}
+          field={field}
+          id={`native-form-${field.name}`}
+          options={items}
+          readOnly={readOnly}
+          required={field.required}
+          value={value}
+          onChange={(nextValue) => setFieldValue(field.name, nextValue)}
+        />
+      );
+    } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT || field.type === FieldType.TAGS) {
+      const items = field.type === FieldType.TAGS ? (remoteOptions[field.name] ?? field.data ?? []) : (field.data ?? []);
       control = (
         <select {...commonProps} multiple={field.multiple || field.type === FieldType.TAGS} value={field.multiple && Array.isArray(value) ? value.map(String) : String(value ?? '')} onChange={(event) => {
           const nextValue = event.currentTarget.multiple ? Array.from(event.currentTarget.selectedOptions).map((option) => option.value) : event.currentTarget.value;
@@ -501,8 +651,8 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
         }}>
           <option value="">Seleccione...</option>
           {items.map((item) => {
-            const itemValue = field.type === FieldType.ENTITY || field.type === FieldType.TAGS ? fieldKeyValue(field, item) : item['value'];
-            const itemText = field.type === FieldType.ENTITY || field.type === FieldType.TAGS ? fieldTextValue(field, item) : String(item['text'] ?? itemValue ?? '');
+            const itemValue = field.type === FieldType.TAGS ? fieldKeyValue(field, item) : item['value'];
+            const itemText = field.type === FieldType.TAGS ? fieldTextValue(field, item) : String(item['text'] ?? itemValue ?? '');
             return <option key={String(itemValue)} value={String(itemValue ?? '')}>{itemText}</option>;
           })}
         </select>

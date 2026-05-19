@@ -11,8 +11,8 @@
 
 .native-form__sales-layout {
   display: grid;
-  grid-template-columns: minmax(320px, 420px) minmax(520px, 1fr);
-  gap: 24px;
+  grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
+  gap: 16px;
   min-height: inherit;
 }
 
@@ -66,6 +66,14 @@
   outline-offset: 1px;
 }
 
+.native-form__control--action {
+  cursor: pointer;
+}
+
+.native-form__control--action[readonly] {
+  opacity: 1;
+}
+
 .native-form__control.is-error {
   border-color: var(--error-color, #dc2626);
 
@@ -79,6 +87,76 @@
 .native-form__control[readonly] {
   opacity: 0.68;
   cursor: not-allowed;
+}
+
+.native-form__lookup {
+  position: relative;
+}
+
+.native-form__lookup .native-form__control {
+  padding-right: 30px;
+}
+
+.native-form__lookup-clear {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary, #667085);
+  cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  width: 24px;
+}
+
+.native-form__lookup-clear:hover {
+  color: var(--base-text-color, #111);
+}
+
+.native-form__lookup-menu {
+  background: var(--surface-1, #fff);
+  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.16)) 88%, var(--base-text-color, #111));
+  border-radius: var(--radius-sm, 8px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+  left: 0;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 4px;
+  position: absolute;
+  right: 0;
+  z-index: 20;
+}
+
+.native-form__lookup-option,
+.native-form__lookup-status {
+  border-radius: var(--radius-sm, 6px);
+  color: var(--base-text-color, #111);
+  display: block;
+  font: inherit;
+  font-size: var(--font-size-sm, 13px);
+  padding: 7px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.native-form__lookup-option {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.native-form__lookup-option:hover,
+.native-form__lookup-option[aria-selected='true'] {
+  background: color-mix(in srgb, var(--accent-color, #0e7a50) 12%, transparent);
+}
+
+.native-form__lookup-status {
+  color: var(--text-secondary, #667085);
 }
 
 .native-form__textarea {
