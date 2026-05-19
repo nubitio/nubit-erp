@@ -23,6 +23,7 @@ export const InvoiceFields = () => {
     dateField()
       .name('issueDate')
       .label('Fecha')
+      .width(120)
       .defaultValue(undefined)
       .valueType('date')
       .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
@@ -32,15 +33,15 @@ export const InvoiceFields = () => {
     textField()
       .name('ruc')
       .label('DNI/RUC')
+      .width(130)
       .formatter((cell: GridCellContext) => cell.data?.customer?.ruc)
-      .filterable(false)
-      .sortable(false)
       .build(),
   );
   fields.push(
     entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
+      .width(200)
       .formatter((cell: GridCellContext) => cell.value?.businessName)
       .build(),
   );
@@ -51,27 +52,30 @@ export const InvoiceFields = () => {
     ])
       .name('documentType')
       .label('Tipo')
+      .width(100)
       .formatter((cell: GridCellContext) =>
         cell.data.documentType === '01' ? 'Factura' : 'Boleta',
       )
       .build(),
   );
-  fields.push(textField().name('series').label('Serie').build());
-  fields.push(textField().name('number').label('Número').build());
+  fields.push(textField().name('series').label('Serie').width(80).build());
+  fields.push(textField().name('number').label('Número').width(90).build());
   fields.push(
     currencyField()
       .name('total')
       .label('Total')
+      .width(130)
       .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
       )
       .build(),
   );
-  fields.push(noneField().name('voidCorrelation').label('Nota C.').align('center').build());
+  fields.push(noneField().name('voidCorrelation').label('Nota C.').width(90).align('center').build());
   fields.push(
     switchField()
       .name('voided')
       .label('Anulado')
+      .width(100)
       .filterable(false)
       .sortable(false)
       .formatter((cell: GridCellContext) => {
@@ -83,20 +87,22 @@ export const InvoiceFields = () => {
       .align('center')
       .build(),
   );
-  fields.push(textField().name('voidTicket').label('Ticket baja').build());
+  fields.push(textField().name('voidTicket').label('Ticket baja').width(120).build());
   fields.push(
     textField()
       .name('sunatStatus')
       .label('Envio sunat')
+      .width(140)
       .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value))
       .align('center')
       .build(),
   );
-  fields.push(textField().name('sunatMessage').label('Mensaje sunat').build());
+  fields.push(textField().name('sunatMessage').label('Mensaje sunat').width(420).build());
   fields.push(
     textField()
       .name('detraccionCodigo')
       .label('Cód. Detrac.')
+      .width(120)
       .align('center')
       .formatter((cell: GridCellContext) => {
         if (!cell.value) return '';
@@ -108,6 +114,7 @@ export const InvoiceFields = () => {
     currencyField()
       .name('detraccionMonto')
       .label('Detracción')
+      .width(120)
       .formatter((cell: GridCellContext) => {
         if (cell.value == null || cell.value === 0) return '';
         return (

@@ -34,6 +34,7 @@ export const InboundFields = () => {
     dateField()
       .name('issuedAt')
       .label('Fecha')
+      .width(130)
       .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
@@ -41,6 +42,7 @@ export const InboundFields = () => {
     entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
+      .width(200)
       .filters([
         {
           field: 'branch',
@@ -55,13 +57,15 @@ export const InboundFields = () => {
     entityField(Constants.API_BASE_URL + 'suppliers', 'id', 'businessName')
       .name('supplier')
       .label('Proveedor')
+      .width(240)
       .build(),
   );
-  fields.push(textareaField().name('note').label('Glosa').build());
+  fields.push(textareaField().name('note').label('Glosa').width(300).build());
   fields.push(
     currencyField()
       .name('grandTotal')
       .label('Total')
+      .width(140)
       .defaultValue(0)
       .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
