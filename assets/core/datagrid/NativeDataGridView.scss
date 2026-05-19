@@ -57,14 +57,18 @@
   border-collapse: separate;
   border-spacing: 0;
   min-width: min(980px, 100%);
+  table-layout: fixed;
   width: 100%;
 }
 
 .native-datagrid__table th,
 .native-datagrid__table td {
   border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  overflow: hidden;
   padding: 5px 10px;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .native-datagrid__table th {
@@ -104,9 +108,16 @@
   cursor: pointer;
   display: inline-flex;
   gap: 5px;
+  overflow: hidden;
   padding: 0;
   text-align: inherit;
   width: 100%;
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   &:hover {
     color: var(--accent-color);

@@ -188,6 +188,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
     noneField()
       .name('invoiceFullNumber')
       .label('Comprobante')
+      .visibleOnForm(false)
       .formatter((cell: GridCellContext) => {
         if (cell.value) {
           const url = `/receipt/${cell.data.id}/ticket?format=a4`;
@@ -210,6 +211,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .label('Descuento %')
       .defaultValue(0)
       .readonly(true)
+      .helpText('Click para aplicar descuento')
       .onClick((_e: any) => {
         const total = getSubTotal(form);
         const rawDiscountPercent = form?.getFieldValue('discountPercent');
@@ -236,6 +238,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
     noneField()
       .name('status')
       .label('Estado')
+      .visibleOnForm(false)
       .align('center')
       .formatter((cell: GridCellContext) => {
         return SharedUtils.saleStatusFormatter(cell.data);
@@ -269,6 +272,17 @@ export const SaleDetailFields = (
       .minWidth(300)
       .mode('remote')
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+        if (value === '' || value == null) {
+          row.product = null;
+          row.qty = '';
+          row.unitPrice = 0;
+          row.discountPercent = 0;
+          row.discountAmount = 0;
+          row.netAmount = 0;
+          this.defaultSetCellValue(row, null, currentRow);
+          return;
+        }
+
         const product = (await productService.getOne(value, true)) as ProductDto;
         let price = product.salePrice;
         if (priceList) {
