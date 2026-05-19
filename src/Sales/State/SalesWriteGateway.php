@@ -50,7 +50,8 @@ readonly class SalesWriteGateway
         $warehouseId = $sale->getAlmacen()?->getId();
         $cashRegisterId = $sale->getCajaId();
         $sellerUserId = $sale->getCreatedBy() ?? $sale->getUpdatedBy();
-        $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
+        $branch = $sale->getBranch() ?? $sale->getAlmacen()?->getBranch();
+        $branchId = $branch?->getId();
 
         if ($saleId === null) {
             throw new \RuntimeException('New schema write aborted: sale id is null.');
@@ -124,6 +125,7 @@ readonly class SalesWriteGateway
         $sale->setDiscountTotal(Money::toString($discountAmount));
         $sale->setCurrency($currencyData['currency']);
         $sale->setExchangeRate((string) $currencyData['exchange_rate']);
+        $sale->setBranch($branch);
         $sale->setSellerUserId($sellerUserId);
         $sale->setCashSessionId($cashSessionId);
         $sale->setStatus($sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED');

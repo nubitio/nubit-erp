@@ -43,7 +43,6 @@ const smallMedia = window.matchMedia('(min-width: 576px) and (max-width: 991.98p
 const mediumMedia = window.matchMedia('(min-width: 992px) and (max-width: 1199.98px)');
 const largeMedia = window.matchMedia('(min-width: 1200px)');
 
-// Debounce media-query callbacks so DevExtreme overlays have time to finish
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const notifyHandlers = () => {
   if (debounceTimer !== null) clearTimeout(debounceTimer);

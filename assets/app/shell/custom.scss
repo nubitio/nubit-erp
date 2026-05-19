@@ -92,11 +92,12 @@ $white: #fff;
   cursor: pointer;
   display: inline-flex;
   font: inherit;
+  font-size: var(--font-size-sm, 13px);
   font-weight: 500;
-  gap: 6px;
+  gap: 5px;
   justify-content: center;
-  min-height: 36px;
-  padding: 0.45rem 0.9rem;
+  min-height: 28px;
+  padding: 0.25rem 0.7rem;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
 
   &:disabled {
@@ -147,9 +148,9 @@ $white: #fff;
 }
 
 .app-button--sm {
-  font-size: 0.85em;
-  min-height: 30px;
-  padding: 0.25rem 0.65rem;
+  font-size: 0.8em;
+  min-height: 22px;
+  padding: 0.1rem 0.5rem;
 }
 
 // ── Danger variant ────────────────────────────────────────────────────────────
@@ -214,14 +215,14 @@ $white: #fff;
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  height: 36px;
+  height: 28px;
   justify-content: center;
-  min-width: 36px;
-  padding: 0 0.5rem;
+  min-width: 28px;
+  padding: 0 0.35rem;
   transition: background 150ms ease, color 150ms ease;
 
   i {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   &:hover {
