@@ -36,9 +36,20 @@
 }
 
 .side-nav-outer-toolbar__content {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  min-height: 0;
   min-width: 0;
-  overflow: auto;
+  overflow: hidden;
+
+  > div {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
 }
 
 .side-nav-outer-toolbar__scrim {

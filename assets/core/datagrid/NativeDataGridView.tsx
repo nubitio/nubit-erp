@@ -24,6 +24,16 @@ import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
 
 type SortRule = { selector: string; desc: boolean };
 
+function getPageRange(current: number, total: number): (number | null)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+  const result: (number | null)[] = [0];
+  if (current > 3) result.push(null);
+  for (let i = Math.max(1, current - 1); i <= Math.min(total - 2, current + 1); i++) result.push(i);
+  if (current < total - 4) result.push(null);
+  result.push(total - 1);
+  return result;
+}
+
 const PAGE_SIZE = 20;
 
 function getIdField(fields: Field[]): string {
@@ -358,11 +368,25 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       <th key={field.name} style={{ width: field.width, minWidth: field.minWidth, textAlign: field.align }}>
                         <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
                           <span>{field.label}</span>
-                          {sortRule && <i className={`ph ${sortRule.desc ? 'ph-arrow-down' : 'ph-arrow-up'}`} aria-hidden="true" />}
+                          {sortRule && (
+                            <i className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`} aria-hidden="true" />
+                          )}
                         </button>
-                        {(options.filterRow ?? true) && field.filterable && (
-                          <div className="native-datagrid__filter">
+                      </th>
+                    );
+                  })}
+                </tr>
+                {(options.filterRow ?? true) && (
+                  <tr className="native-datagrid__filter-row">
+                    {options.detailFields && <td />}
+                    <td className="native-datagrid__select-cell" />
+                    {visibleFields.map((field) => (
+                      <td key={field.name}>
+                        {field.filterable ? (
+                          <div className="native-datagrid__filter-wrap">
+                            <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
                             <input
+                              className="native-datagrid__filter-input"
                               value={filters[field.name] ?? ''}
                               aria-label={`Filtrar ${field.label}`}
                               onChange={(event) => {
@@ -373,12 +397,27 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                 options.onFilterChange?.(nextFilters);
                               }}
                             />
+                            <button
+                              type="button"
+                              className={`native-datagrid__filter-clear${filters[field.name] ? ' is-active' : ''}`}
+                              aria-label="Limpiar filtro"
+                              tabIndex={filters[field.name] ? 0 : -1}
+                              onClick={() => {
+                                const nextFilters = { ...filters };
+                                delete nextFilters[field.name];
+                                setFilters(nextFilters);
+                                setPage(0);
+                                options.onFilterChange?.(nextFilters);
+                              }}
+                            >
+                              <i className="ph ph-x" aria-hidden="true" />
+                            </button>
                           </div>
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
+                        ) : null}
+                      </td>
+                    ))}
+                  </tr>
+                )}
               </thead>
               <tbody>
                 {rows.length === 0 && !isGridLoading ? (
@@ -452,13 +491,38 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           <SummaryView summaryFields={options.summaryFields} rows={rows} />
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">
-              <button type="button" className="app-button app-button--secondary app-button--sm" onClick={() => setPage((value) => Math.max(0, value - 1))} disabled={page === 0}>
-                Anterior
-              </button>
-              <span>Página {page + 1} de {totalPages}</span>
-              <button type="button" className="app-button app-button--secondary app-button--sm" onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} disabled={page + 1 >= totalPages}>
-                Siguiente
-              </button>
+              <span className="native-datagrid__pager-info">
+                {totalCount > 0 ? `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} de ${totalCount}` : '0 registros'}
+              </span>
+              <div className="native-datagrid__pager-nav">
+                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage(0)} disabled={page === 0} aria-label="Primera página">
+                  <i className="ph ph-caret-double-left" aria-hidden="true" />
+                </button>
+                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Página anterior">
+                  <i className="ph ph-caret-left" aria-hidden="true" />
+                </button>
+                {getPageRange(page, totalPages).map((pageNum, i) =>
+                  pageNum === null ? (
+                    <span key={`ellipsis-${i}`} className="native-datagrid__pager-ellipsis">…</span>
+                  ) : (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      className={`native-datagrid__pager-btn${pageNum === page ? ' is-current' : ''}`}
+                      onClick={() => setPage(pageNum)}
+                      aria-current={pageNum === page ? 'page' : undefined}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  )
+                )}
+                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page + 1 >= totalPages} aria-label="Página siguiente">
+                  <i className="ph ph-caret-right" aria-hidden="true" />
+                </button>
+                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage(totalPages - 1)} disabled={page + 1 >= totalPages} aria-label="Última página">
+                  <i className="ph ph-caret-double-right" aria-hidden="true" />
+                </button>
+              </div>
             </div>
           )}
           {isGridLoading && (
