@@ -12,10 +12,11 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    font-size: var(--font-size-sm, 13px);
     min-height: 0;
     overflow-y: auto;
     padding-bottom: var(--footer-height);
-    padding-top: var(--toolbar-vertical-padding);
+    padding-top: 8px;
 
     .menu-loading,
     .menu-empty {
@@ -45,7 +46,7 @@
     cursor: pointer;
     display: flex;
     font: inherit;
-    min-height: 44px;
+    min-height: 36px;
     padding: 0;
     text-align: left;
     transition: background 150ms ease, color 150ms ease;
@@ -64,7 +65,7 @@
   }
 
   &__item--parent {
-    font-weight: bold;
+    font-weight: var(--font-weight-semibold, 600);
   }
 
   &__chevron {

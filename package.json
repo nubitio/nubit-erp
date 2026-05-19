@@ -32,12 +32,11 @@
   "scripts": {
     "dev": "vite",
     "build": "yarn build:themes && vite build",
-    "build:themes": "sass --load-path=node_modules --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=import assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass --load-path=node_modules --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=import assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map && node scripts/wrap-dx-layer.mjs",
+    "build:themes": "sass assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
     "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
     "postinstall": "yarn build:themes",
     "test:e2e": "playwright test",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:devextreme-boundary": "node scripts/check-devextreme-boundary.mjs",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
@@ -50,9 +49,6 @@
     "@tanstack/react-query": "^5.0.0",
     "@types/node": "^22.19.15",
     "@vitejs/plugin-react": "^4.5.2",
-    "devextreme": "^25.2.5",
-    "devextreme-dist": "^25.2.5",
-    "devextreme-react": "^25.2.5",
     "dexie": "^4.3.0",
     "dompurify": "^3.0.0",
     "exceljs": "^4.4.0",

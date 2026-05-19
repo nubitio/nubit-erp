@@ -6,24 +6,29 @@
   overflow: hidden;
 }
 
+.view-wrapper-datagrid-list {
+  padding-top: var(--content-padding, 16px);
+  padding-bottom: var(--content-padding, 16px);
+}
+
 .native-datagrid__toolbar {
   align-items: center;
   background: var(--base-bg);
   border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
-  border-radius: var(--radius-xl, 16px);
+  border-radius: var(--radius-lg, 10px);
   box-shadow: var(--shadow-sm, 0 8px 22px rgb(0 0 0 / 8%));
   display: flex;
   flex: 0 0 auto;
-  gap: 8px;
-  margin-bottom: var(--content-padding, 16px);
-  min-height: 64px;
-  padding: 10px 16px;
+  gap: 6px;
+  margin-bottom: 10px;
+  min-height: 48px;
+  padding: 6px 14px;
 }
 
 .native-datagrid__toolbar .grid-header {
-  font-size: clamp(1.45rem, 1.2vw + 1rem, 2rem);
+  font-size: 1.1rem;
   font-weight: var(--font-weight-semibold, 600);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .native-datagrid__toolbar-spacer {
@@ -49,7 +54,7 @@
 .native-datagrid__table th,
 .native-datagrid__table td {
   border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
-  padding: 12px 14px;
+  padding: 5px 10px;
   vertical-align: middle;
 }
 
@@ -64,12 +69,12 @@
 }
 
 .native-datagrid__table thead tr:first-child th {
-  padding-top: 16px;
+  padding-top: 8px;
 }
 
 .native-datagrid__row {
   cursor: pointer;
-  font-size: var(--font-size-md, 14px);
+  font-size: var(--font-size-sm, 13px);
 }
 
 .native-datagrid__row:nth-child(even) td {
@@ -96,7 +101,7 @@
 }
 
 .native-datagrid__filter {
-  margin-top: 6px;
+  margin-top: 2px;
   width: 100%;
 }
 
@@ -105,9 +110,9 @@
   border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   border-radius: var(--radius-sm, 6px);
   color: var(--base-text-color);
-  min-width: 120px;
-  min-height: 32px;
-  padding: 5px 9px;
+  min-width: 80px;
+  min-height: 22px;
+  padding: 2px 6px;
   width: 100%;
 }
 
@@ -120,7 +125,7 @@
 .native-datagrid__select-cell,
 .native-datagrid__detail-cell {
   text-align: center;
-  width: 44px;
+  width: 32px;
 }
 
 .native-datagrid__select-cell input {
@@ -146,9 +151,10 @@
   align-items: center;
   display: flex;
   flex: 0 0 auto;
-  gap: 8px;
+  font-size: var(--font-size-xs, 12px);
+  gap: 6px;
   justify-content: flex-end;
-  padding: 12px 0 0;
+  padding: 6px 0 0;
 }
 
 .native-datagrid__summary {

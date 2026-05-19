@@ -1,26 +1,8 @@
 .crud-dialog-root {
-  // DevExtreme editors inside the still-DevExtreme form render dropdown overlays
-  // outside the dialog subtree. Keep the CRUD dialog below those overlays until
-  // the form renderer is replaced too.
   z-index: 2500;
 }
 
-.dx-dropdowneditor-overlay {
-  z-index: 3000 !important;
-}
-
-.dx-dropdowneditor-overlay .dx-overlay-content,
-.dx-popover-wrapper .dx-overlay-content {
-  z-index: 3001 !important;
-}
-
-.crud-dialog-editor-overlay {
-  z-index: 3000 !important;
-}
-
 .crud-dialog {
-  overflow: visible;
-
   .crud-dialog__header {
     border-bottom: 1px solid var(--border-color);
   }
@@ -31,7 +13,7 @@
   }
 
   .app-dialog__body {
-    overflow: visible;
+    overflow: auto;
     position: relative;
   }
 
@@ -47,7 +29,7 @@
   }
 }
 
-.crud-dialog:has(.native-form) {
+.crud-dialog:has(.native-form--with-detail) {
   height: calc(100vh - 32px) !important;
   overflow: hidden;
 
@@ -61,7 +43,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px !important;
+    gap: 6px !important;
   }
 
   .button-indicator {

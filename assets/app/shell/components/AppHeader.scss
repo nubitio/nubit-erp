@@ -3,7 +3,7 @@
 .header-component {
   box-shadow: var(--shadow-sm);
   flex: 0 0 auto;
-  padding: 10px 0;
+  padding: 5px 0;
   position: relative;
   z-index: 1501;
 }
@@ -53,14 +53,14 @@
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  height: 36px;
+  height: 28px;
   justify-content: center;
-  min-width: 36px;
-  padding: 0 0.5rem;
+  min-width: 28px;
+  padding: 0 0.35rem;
   transition: background 150ms ease, color 150ms ease;
 
   i {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   &:hover {

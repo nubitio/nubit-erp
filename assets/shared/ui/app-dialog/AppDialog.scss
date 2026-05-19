@@ -49,9 +49,8 @@
   border-bottom: 1px solid var(--border-color);
   display: flex;
   flex: 0 0 auto;
-  min-height: 44px;
-  padding: 0.45rem 0.75rem 0.45rem 1rem;
-  // Ensure header sits above any iframe content in the body
+  min-height: 36px;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
   position: relative;
   z-index: 1;
 }
@@ -77,14 +76,14 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
 .app-dialog__footer {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
   border-top: 1px solid var(--border-color);
   position: relative;
   z-index: 1;

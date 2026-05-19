@@ -1,7 +1,7 @@
 .native-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4, 16px);
+  gap: var(--space-3, 12px);
   color: var(--base-text-color);
 }
 
@@ -24,13 +24,13 @@
 .native-form__grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 18px 16px;
+  gap: 10px 12px;
 }
 
 .native-form__field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
   grid-column: span var(--native-form-col, 12);
 }
 
@@ -43,13 +43,14 @@
 
 .native-form__control {
   width: 100%;
-  min-height: 42px;
+  min-height: 28px;
   border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.16)) 88%, var(--base-text-color, #111));
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-sm, 6px);
   background: var(--surface-1, transparent);
   color: var(--base-text-color, inherit);
-  padding: 9px 12px;
+  padding: 4px 9px;
   font: inherit;
+  font-size: var(--font-size-sm, 13px);
   box-sizing: border-box;
   transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
@@ -67,7 +68,7 @@
 }
 
 .native-form__textarea {
-  min-height: 96px;
+  min-height: 64px;
   resize: vertical;
 }
 
@@ -76,7 +77,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 28px;
 }
 
 .native-form__checkbox input,
@@ -133,8 +134,8 @@
   border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
   display: flex;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 36px;
+  padding: 0 12px;
 }
 
 .native-form__detail-title {
@@ -179,7 +180,7 @@
 .native-form__detail-table th,
 .native-form__detail-table td {
   border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
-  padding: 10px 12px;
+  padding: 5px 10px;
   text-align: left;
   vertical-align: middle;
 }
@@ -199,8 +200,8 @@
 }
 
 .native-form__detail-table td .native-form__control {
-  min-height: 36px;
-  padding: 6px 8px;
+  min-height: 24px;
+  padding: 2px 6px;
 }
 
 .native-form__detail-empty {
