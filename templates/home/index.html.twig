@@ -15,7 +15,7 @@
         {{ vite_entry_link_tags('app') }}
     {% endblock %}
 </head>
-<body class="dx-viewport">
+<body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="root"></div>
 <div id="main-content"></div>
@@ -24,19 +24,6 @@
 {% endblock %}
 <script nonce="{{ csp_nonce() }}">
     window.app_version = '{{ setting('version') }}';
-    const worker = setInterval(hideUnwantedElements, 100);
-
-    function hideUnwantedElements() {
-        const element = document.querySelectorAll('dx-license');
-        element.forEach(element => {
-            const divs = element.querySelectorAll('div');
-            if (divs.length > 1) {
-                divs[1].click();
-            }
-            clearInterval(worker);
-        });
-    }
 </script>
 </body>
 </html>
-

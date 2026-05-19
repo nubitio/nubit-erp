@@ -33,7 +33,7 @@ readonly class CashRegisterShiftsProvider implements ProviderInterface
         $itemsPerPage = isset($filters['itemsPerPage']) ? (int)$filters['itemsPerPage'] : 20;
         $page = isset($filters['page']) ? (int)$filters['page'] : 1;
 
-        // DevExtreme may send skip/take instead of page/itemsPerPage.
+        // Data-grid clients may send skip/take instead of page/itemsPerPage.
         if (isset($filters['take'])) {
             $itemsPerPage = (int)$filters['take'];
         }

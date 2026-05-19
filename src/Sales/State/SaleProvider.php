@@ -105,7 +105,7 @@ readonly class SaleProvider implements ProviderInterface
     }
 
     /**
-     * Add sort to context in DevExtreme format
+     * Add sort to context in the data-grid filter format.
      *
      * @param array<string, mixed> $context
      * @return array<string, mixed>
@@ -125,7 +125,7 @@ readonly class SaleProvider implements ProviderInterface
     }
 
     /**
-     * Add filters to context in DevExtreme format
+     * Add filters to context in the data-grid filter format.
      *
      * @param array<string, mixed> $context
      * @param array<int, mixed> $newFilters

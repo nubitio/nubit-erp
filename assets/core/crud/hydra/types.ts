@@ -34,7 +34,7 @@ export interface CrudHints {
   sortable?: boolean;
   /** When true, the column is hidden from the grid by default. */
   hidden?: boolean;
-  /** Column display order (maps to DevExtreme `visibleIndex`). */
+  /** Column display order. */
   order?: number;
   /** Column width in pixels or as a CSS string. */
   width?: number;

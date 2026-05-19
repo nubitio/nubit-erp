@@ -8,15 +8,14 @@ import type { Field } from '../../field/Field';
  * - If field.permissions.visible is set and userRoles has no intersection → filter out the field
  * - If field.permissions.editable is set and userRoles has no intersection → mark field as disabled
  *
- * Identity fields (isIdentity === true) are always kept regardless of permissions —
- * DevExtreme's DataGrid requires the keyExpr field to remain in the column list
- * at all times to avoid error E1042.
+  * Identity fields (isIdentity === true) are always kept regardless of permissions
+  * so grids and forms can resolve row keys consistently.
  */
 export function useFieldPermissions(fields: Field[], userRoles: string[]): Field[] {
   return useMemo(() => {
     return fields.reduce<Field[]>((acc, field) => {
-      // Identity fields (e.g. the hidden "id") must always be present so the
-      // DevExtreme grid can resolve keyExpr correctly.
+      // Identity fields (e.g. the hidden "id") must always be present so UI
+      // components can resolve row keys correctly.
       if (field.isIdentity) {
         acc.push(field);
         return acc;

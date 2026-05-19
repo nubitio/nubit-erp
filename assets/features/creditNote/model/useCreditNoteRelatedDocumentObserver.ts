@@ -36,12 +36,12 @@ export const useCreditNoteRelatedDocumentObserver = ({
 
       // Fetch the header document first to get the currency, then fetch lines.
       // Sequencing is critical: the columns (detailFields) must be updated via
-      // onCurrencyChange before setDetailData triggers a DevExtreme grid repaint,
-      // otherwise the rows render with stale currency formatters.
+      // onCurrencyChange before setDetailData updates the detail rows, otherwise
+      // the rows render with stale currency formatters.
       //
       // After onCurrencyChange fires, we defer setDetailData via setTimeout(0) so
       // React can flush the state update (new Field[] with correct currency formatters)
-      // before DevExtreme repaints the grid rows.
+      // before rows render.
       httpClient
         .get<any>(`${callbacksRef.current.apiUrl}/${value}`)
         .then((headerResponse) => {
@@ -52,7 +52,7 @@ export const useCreditNoteRelatedDocumentObserver = ({
         .then((linesResponse) => {
           const rows = linesResponse.data ?? [];
           // Defer by one tick so React commits the new detailFields (currency columns)
-          // before DevExtreme repaints the grid with the new row data.
+          // before rendering the new row data.
           setTimeout(() => {
             callbacksRef.current.formRef.current?.setDetailData(rows);
           }, 0);

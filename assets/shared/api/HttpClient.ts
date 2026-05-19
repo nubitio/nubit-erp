@@ -18,7 +18,7 @@ function showBlockingAlert(message: string): Promise<void> {
 /**
  * Serializes request params to bracket-notation query strings.
  *
- * Converts arrays-of-objects to the format PHP's DevExtremeFilter expects:
+ * Converts arrays-of-objects to the backend data-grid filter format:
  *   { sort: [{ selector: 'name', desc: false }] }
  *   → "sort[0][selector]=name&sort[0][desc]=false"
  *
@@ -115,7 +115,7 @@ class HttpClient {
   private buildUrl(url: string, params?: DataRecord): string {
     if (!params || Object.keys(params).length === 0) return url;
 
-    // Convert skip/take pagination to page/itemsPerPage (DevExtreme convention)
+    // Convert offset pagination to API Platform page/itemsPerPage parameters.
     const normalized: DataRecord = { ...params };
     if ('skip' in normalized && 'take' in normalized) {
       const skip = Number(normalized.skip);

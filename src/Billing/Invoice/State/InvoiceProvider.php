@@ -43,7 +43,7 @@ readonly class InvoiceProvider implements ProviderInterface
     }
 
     /**
-     * Add sort to context in DevExtreme format
+     * Add sort to context in the data-grid filter format.
      *
      * @param array<string, mixed> $context
      * @return array<string, mixed>
