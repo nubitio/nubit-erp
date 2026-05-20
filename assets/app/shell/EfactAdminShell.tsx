@@ -12,7 +12,7 @@ import { menuService } from '@features/navigation';
 import { userInformation } from '@core/common/UserInformation';
 import { useNotifications } from '@features/notifications';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
-import { UserPanel } from './components/UserPanel';
+import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
 
 interface EfactAdminShellProps {
@@ -54,7 +54,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           ),
         },
       ]}
-      renderUserMenu={() => <UserPanel menuMode="context" />}
+      renderUserMenu={({ close }) => <UserMenuSection showAvatar onAction={close} />}
       renderThemeSwitcher={() => <ThemeSwitcher />}
       footer={<span>Copyright © {new Date().getFullYear()} Nubit Labs</span>}
     >
