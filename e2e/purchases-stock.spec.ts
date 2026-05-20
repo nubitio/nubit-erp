@@ -50,7 +50,7 @@ let resolvedProductId: string | null = null;
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function waitForDxLoadPanel(page: Page) {
-  const loadPanel = page.locator('.dx-loadpanel-wrapper').first();
+  const loadPanel = page.locator('.dx-loadpanel-wrapper, .native-datagrid__loading-overlay').first();
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
     await loadPanel.waitFor({ state: 'hidden', timeout: 15000 });
@@ -91,7 +91,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
     Eliminar: /^(Eliminar|Delete)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.dx-toolbar .app-button').filter({ hasText: text }).first();
+  const btn = page.locator('.native-datagrid__toolbar .app-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -255,7 +255,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await waitForDxLoadPanel(page);
 
     await expect(
-      page.locator('.dx-toolbar').filter({ hasText: /compras/i }).first(),
+      page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
     ).toBeVisible({ timeout: 15000 });
 
     // Capturar warehouseId y productId del seed via API para poder verificar stock después.
@@ -345,79 +345,52 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     });
 
     // ── Seleccionar almacén ───────────────────────────────────────────────────
-    await test.step('Seleccionar almacén (autoSelectIfSingle o manual)', async () => {
-      // Esperar la respuesta de /api/warehouses que dispara autoSelectIfSingle
-      await page
-        .waitForResponse(
-          (resp) => resp.url().includes('/api/warehouses') && resp.status() === 200,
-          { timeout: 8000 },
-        )
-        .catch(() => {});
+    await test.step('Seleccionar almacén', async () => {
+      // NativeFormView: warehouse field has id="native-form-warehouse"
+      const almacenInput = page.locator('#native-form-warehouse').first();
+      await almacenInput.waitFor({ state: 'visible', timeout: 8000 });
 
-      await page.waitForTimeout(600);
+      const currentVal = await almacenInput.inputValue().catch(() => '');
+      if (currentVal.trim().length === 0) {
+        // Click and type to trigger the remote search (NativeEntitySelect needs a query)
+        await almacenInput.click();
+        await almacenInput.pressSequentially('A', { delay: 50 }); // trigger remote search
+        await page.waitForTimeout(600); // debounce (250ms) + API roundtrip
 
-      const almacenInput = page
-        .locator('.crud-dialog__body input[aria-label="Almacen"]')
-        .first();
-      const almacenVisible = await almacenInput.isVisible({ timeout: 2000 }).catch(() => false);
-
-      if (almacenVisible) {
-        const currentVal = await almacenInput.inputValue().catch(() => '');
-        if (currentVal.trim().length === 0) {
-          // Abrir dropdown manualmente
-          const almacenContainer = page
-            .locator('.crud-dialog__body .dx-selectbox')
-            .filter({ has: page.locator('input[aria-label="Almacen"]') })
-            .first();
-          const ddBtn = almacenContainer.locator('.dx-dropdowneditor-button').first();
-          if (await ddBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await ddBtn.click({ force: true });
-          } else {
-            await almacenInput.click({ force: true });
-          }
-
-      const dropdownOverlay = page.locator('.dx-overlay-content .dx-list').first();
-        await dropdownOverlay.waitFor({ state: 'visible', timeout: 8000 });
-        await page
-          .locator('.dx-overlay-content .dx-loadindicator')
-          .first()
-          .waitFor({ state: 'hidden', timeout: 8000 })
-          .catch(() => {});
-        const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
-        await firstOption.waitFor({ state: 'visible', timeout: 8000 });
-        await firstOption.click();
-        await page.waitForTimeout(400);
+        // Scope to the warehouse field container to avoid matching other dropdowns
+        const warehouseField = page.locator('.native-form__field').filter({ has: page.locator('#native-form-warehouse') });
+        const firstOption = warehouseField.locator('.native-form__lookup-menu button[role="option"]').first();
+        if (await firstOption.isVisible({ timeout: 8000 }).catch(() => false)) {
+          await firstOption.click();
+          await page.waitForTimeout(300);
         }
       }
     });
 
     // ── Seleccionar proveedor ─────────────────────────────────────────────────
     await test.step('Seleccionar proveedor (primer resultado disponible)', async () => {
-      // El combobox de proveedor usa role=combobox con aria-label="Proveedor"
-      const supplierCombobox = page.getByRole('combobox', { name: 'Proveedor' });
-      const supplierVisible = await supplierCombobox.isVisible({ timeout: 3000 }).catch(() => false);
+      // NativeFormView: supplier field has id="native-form-supplier"
+      const supplierInput = page.locator('#native-form-supplier').first();
+      const supplierVisible = await supplierInput.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (supplierVisible) {
-        // Abrir el dropdown haciendo click en el botón selector adyacente
-        const supplierWrapper = page.locator('input[aria-label="Proveedor"]').locator('../..');
-        const ddBtn = supplierWrapper.locator('.dx-dropdowneditor-button').first();
-        if (await ddBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await ddBtn.click({ force: true });
-        } else {
-          await supplierCombobox.click({ force: true });
+        // Scope to the supplier field container to avoid matching warehouse dropdown
+        const supplierField = page.locator('.native-form__field').filter({ has: page.locator('#native-form-supplier') });
+        const firstOption = supplierField.locator('.native-form__lookup-menu button[role="option"]').first();
+
+        // Dropdown may already be open (focus shifted from warehouse selection)
+        const alreadyOpen = await firstOption.isVisible({ timeout: 1000 }).catch(() => false);
+        if (!alreadyOpen) {
+          await supplierInput.click({ force: true });
+          await page.waitForTimeout(300);
         }
 
-        // Esperar a que aparezca el listbox del overlay activo más reciente.
-        // DevExtreme deja overlays anteriores montados durante transiciones.
-        const activeOverlay = page.locator('.dx-overlay-wrapper:visible').last();
-        await activeOverlay.locator('.dx-list').waitFor({ state: 'visible', timeout: 8000 });
-        const firstOption = activeOverlay.locator('.dx-list-item:visible').first();
         const hasOptions = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
         if (hasOptions) {
-          await firstOption.click({ force: true });
+          await firstOption.click();
           await page.waitForTimeout(300);
         } else {
-          // No hay proveedores — cerrar dropdown y continuar (campo opcional)
+          // No hay proveedores — cerrar y continuar (campo opcional)
           await page.keyboard.press('Escape');
         }
       }
@@ -425,103 +398,51 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // ── Agregar fila de detalle ───────────────────────────────────────────────
     await test.step('Agregar fila de detalle con producto seed', async () => {
-      const addRowBtn = page
-        .locator('#form-detail-grid .dx-button')
-        .filter({ hasText: 'Agregar una fila' })
-        .first();
+      // NativeFormView: "+" button with aria-label="Agregar detalle"
+      const addRowBtn = page.locator('button[aria-label="Agregar detalle"]').first();
       await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
+      await addRowBtn.click();
 
-      const insertedRow = page.locator('#form-detail-grid tr.dx-row-inserted').first();
-      for (let attempt = 0; attempt < 3; attempt += 1) {
-        await addRowBtn.click({ force: true });
-        const rowVisible = await insertedRow.isVisible({ timeout: 1500 }).catch(() => false);
-        if (rowVisible) break;
-      }
-
-      // Esperar a que cierren overlays previos
-      await page
-        .locator('.dx-overlay-content .dx-list-item')
-        .first()
-        .waitFor({ state: 'hidden', timeout: 5000 })
-        .catch(() => {});
-
+      // The new row appears immediately in the native detail table
+      const insertedRow = page.locator('.native-form__detail-table tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
-      // Columna 0 = Producto — hacer click en la celda para activar el editor
-      const productCell = insertedRow.locator('td').nth(0);
-      await productCell.click({ force: true });
-      await page.waitForTimeout(400);
-
-      // Esperar a que aparezca el input del editor inline
-      const productInput = page
-        .locator('.crud-dialog__body input[aria-label="Producto"], .crud-dialog__body input.dx-texteditor-input[aria-autocomplete]')
-        .last();
-      await productInput.waitFor({ state: 'visible', timeout: 5000 }).catch(async () => {
-        // Fallback: click en el botón dropdown si existe
-        const ddBtn = productCell.locator('.dx-dropdowneditor-button').first();
-        if (await ddBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-          await ddBtn.click({ force: true });
-        }
-      });
-
-      // Limpiar y escribir el nombre del producto para filtrar
-      await productInput.click({ clickCount: 3 });
+      // Columna 0 = Producto — NativeEntitySelect combobox
+      const productInput = insertedRow.locator('td').nth(0).locator('input[role="combobox"]').first();
+      await productInput.waitFor({ state: 'visible', timeout: 5000 });
+      await productInput.click();
       await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 50 });
 
-      // Esperar que aparezca la opción en el dropdown (role=option o dx-list-item)
+      // NativeEntitySelect dropdown
       const seedProductOption = page
-        .locator('.dx-overlay-content .dx-list-item')
+        .locator('.native-form__lookup-menu button[role="option"]')
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
       await seedProductOption.first().click();
       await page.waitForTimeout(400);
 
       // Columna 1 = Cantidad
-      await page.keyboard.press('Tab');
       const qtyCell = insertedRow.locator('td').nth(1);
-      await qtyCell.click({ force: true });
-      await page.waitForTimeout(200);
-      const qtyInput = qtyCell.locator('input.dx-texteditor-input').first();
-      if (await qtyInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await qtyInput.click({ clickCount: 3 });
-        await qtyInput.pressSequentially(String(PURCHASE_QTY), { delay: 30 });
-      }
+      const qtyInput = qtyCell.locator('input').first();
+      await qtyInput.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await qtyInput.click({ clickCount: 3 });
+      await qtyInput.fill(String(PURCHASE_QTY));
+      await page.keyboard.press('Tab');
 
       // Columna 2 = Precio unitario
-      await page.keyboard.press('Tab');
       const costCell = insertedRow.locator('td').nth(2);
-      await costCell.click({ force: true });
-      await page.waitForTimeout(200);
-      const costInput = costCell.locator('input.dx-texteditor-input').first();
-      if (await costInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await costInput.click({ clickCount: 3 });
-        await costInput.pressSequentially(PURCHASE_UNIT_COST, { delay: 30 });
-      }
-
-      // Salir del grid para que DX confirme la fila
-      await page.keyboard.press('Tab');
+      const costInput = costCell.locator('input').first();
+      await costInput.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await costInput.click({ clickCount: 3 });
+      await costInput.fill(PURCHASE_UNIT_COST);
       await page.keyboard.press('Tab');
 
-      // Hacer click fuera del grid para confirmar la fila insertada
-      const noteInput = page
-        .locator(
-          '.crud-dialog__body textarea[aria-label="Glosa"], .crud-dialog__body input[aria-label="Glosa"]',
-        )
-        .first();
-      const noteVisible = await noteInput.isVisible({ timeout: 2000 }).catch(() => false);
-      if (noteVisible) {
-        await noteInput.click();
-      } else {
-        // Fallback: click en el título del popup
-        await crudDialog(page, /nuevo|new/i).click({ force: true });
-      }
+      // Move focus out of the detail grid
+      await crudDialog(page, /nuevo|new/i).locator('.crud-dialog__body').click({ force: true });
+      await page.waitForTimeout(300);
 
-      await insertedRow.waitFor({ state: 'hidden', timeout: 10000 });
-
-      // Verificar que la fila quedó confirmada como dx-data-row con la cantidad correcta
-      const committedRow = page
-        .locator('#form-detail-grid tr.dx-data-row')
-        .first();
+      // Verify the row is present in the native detail table
+      const committedRow = page.locator('.native-form__detail-table tbody tr').first();
       await committedRow.waitFor({ state: 'visible', timeout: 8000 });
     });
 
