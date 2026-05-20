@@ -96,8 +96,7 @@ SQL,
             $sale->setNumero((string) $row['number']);
         }
 
-        // Derive IGV rate from stored tax_total; fall back to configured rate.
-        $taxRate = $this->resolveIgvRate($row['tax_total'], $row['subtotal']);
+        $taxRate = $this->resolveIgvRate();
         $sale->setIgv($taxRate);
 
         if ($row['customer_id']) {
@@ -171,26 +170,9 @@ SQL,
         return $item;
     }
 
-    /**
-     * Derive IGV rate from stored amounts only when it matches the configured
-     * tenant rate. Sales payload totals can be gross or discounted; deriving a
-     * different percentage from them produces a non-vigente IGV rate rejected by SUNAT.
-     */
-    private function resolveIgvRate(mixed $taxTotal, mixed $subtotal): string
+    private function resolveIgvRate(): string
     {
-        $tax = (float) ($taxTotal ?? 0);
-        $sub = (float) ($subtotal ?? 0);
-        $configuredRate = $this->tenantSettings->getIgv();
-
-        if ($tax > 0 && $sub > 0) {
-            $derivedRate = round($tax / $sub * 100, 2);
-
-            if (abs($derivedRate - $configuredRate) <= 0.01) {
-                return $this->formatIgvRate($derivedRate);
-            }
-        }
-
-        return $this->formatIgvRate($configuredRate);
+        return $this->formatIgvRate($this->tenantSettings->getIgv());
     }
 
     private function formatIgvRate(float $rate): string

@@ -181,6 +181,10 @@ readonly class BillCreateUseCase
         $details = [];
 
         foreach ($hydratedVoucher->voucherItems as $item) {
+            $lineIgvPercentage = $item->taxType === '10' && $hydratedVoucher->voucherTaxPercentage !== null
+                ? $hydratedVoucher->voucherTaxPercentage
+                : $item->taxPercentage;
+
             $detail = new SaleDetail()
                 ->setCodProducto($item->productCode)
                 ->setUnidad($item->productUom)
@@ -188,7 +192,7 @@ readonly class BillCreateUseCase
                 ->setDescripcion($item->productName)
                 ->setMtoValorUnitario($item->unitValue)
                 ->setMtoBaseIgv($item->taxedAmount)
-                ->setPorcentajeIgv($item->taxPercentage)
+                ->setPorcentajeIgv($lineIgvPercentage)
                 ->setIgv($item->taxAmount)
                 ->setTipAfeIgv($item->taxType)
                 ->setTotalImpuestos($item->taxAmount)
