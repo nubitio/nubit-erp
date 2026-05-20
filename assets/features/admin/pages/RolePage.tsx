@@ -1,12 +1,12 @@
 import { useRef } from 'react';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
-import { permissionEvents, roleEvents } from '@core/event/domainEvents';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
+import { permissionEvents, roleEvents } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import { RoleFields } from './RoleFields';
 import toast from '@shared/lib/SharedUtils';
 import { useRoleObservers } from '../model/useRoleObservers';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import {
   PermissionTreeView,
   type PermissionTreeHandle,

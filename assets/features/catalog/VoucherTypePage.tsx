@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@nubit/core';
-import { voucherTypeEvents } from '@core/event/domainEvents';
+import { voucherTypeEvents } from '@nubit/core';
 import { voucherTypeEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource({

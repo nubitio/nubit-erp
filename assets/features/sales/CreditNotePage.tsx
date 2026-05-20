@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Constants } from '@core/common/Constants';
-import { DataGridView, DialogView, FormView, type FormHandle, type GridHandle } from '@core/ui/CrudViews';
+import { API_BASE_URL } from '@app/constants';
+import { DataGridView, DialogView, FormView, type FormHandle, type GridHandle } from '@nubit/core';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import type { CreditNoteRow } from '@features/creditNote/lib/creditNoteActions';
 import {
   creditNoteEvents,
@@ -14,9 +14,9 @@ import {
   useCreditNoteRelatedDocumentObserver,
   useCreditNoteSelectionState,
 } from '@features/creditNote';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
-const API_URL = Constants.API_BASE_URL + 'tax-documents';
+const API_URL = API_BASE_URL + 'tax-documents';
 const fields = CreditNoteFields();
 const gridDetailFields = (parentRow: DataRecord) =>
   CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN');

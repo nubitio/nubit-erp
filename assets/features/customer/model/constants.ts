@@ -1,5 +1,5 @@
-import { Constants } from '@core/common/Constants';
-import { createCrudEvents } from '@core/event/createCrudEvents';
+import { API_BASE_URL } from '@app/constants';
+import { createCrudEvents } from '@nubit/core';
 
 export const customerEvents = createCrudEvents('customer');
-export const customerApiUrl = `${Constants.API_BASE_URL}customers`;
+export const customerApiUrl = `${API_BASE_URL}customers`;

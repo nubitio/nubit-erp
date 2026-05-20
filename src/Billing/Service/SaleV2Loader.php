@@ -172,19 +172,29 @@ SQL,
     }
 
     /**
-     * Derive IGV rate from stored amounts; fall back to configured rate.
-     * If tax_total > 0 and subtotal > 0, derive: round(tax_total/subtotal*100).
-     * Otherwise return the configured `app_option_igv` value.
+     * Derive IGV rate from stored amounts only when it matches the configured
+     * tenant rate. Sales payload totals can be gross or discounted; deriving a
+     * different percentage from them produces a non-vigente IGV rate rejected by SUNAT.
      */
     private function resolveIgvRate(mixed $taxTotal, mixed $subtotal): string
     {
         $tax = (float) ($taxTotal ?? 0);
         $sub = (float) ($subtotal ?? 0);
+        $configuredRate = $this->tenantSettings->getIgv();
 
         if ($tax > 0 && $sub > 0) {
-            return (string) (int) round($tax / $sub * 100);
+            $derivedRate = round($tax / $sub * 100, 2);
+
+            if (abs($derivedRate - $configuredRate) <= 0.01) {
+                return $this->formatIgvRate($derivedRate);
+            }
         }
 
-        return (string) $this->tenantSettings->getIgv();
+        return $this->formatIgvRate($configuredRate);
+    }
+
+    private function formatIgvRate(float $rate): string
+    {
+        return rtrim(rtrim(number_format($rate, 2, '.', ''), '0'), '.');
     }
 }

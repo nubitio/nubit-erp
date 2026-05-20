@@ -9,7 +9,7 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/core';
-import { unitOfMeasureEvents } from '@core/event/domainEvents';
+import { unitOfMeasureEvents } from '@nubit/core';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { unitOfMeasureEndpoints } from './api/catalogEndpoints';
 

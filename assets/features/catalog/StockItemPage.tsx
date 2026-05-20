@@ -7,7 +7,7 @@ import {
   type DataRecord,
   type GridCellContext,
 } from '@nubit/core';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -117,7 +117,7 @@ export const StockItemPage = () => {
   const resource = defineResource<StockItemRecord>({
     id: 'stock-item',
     title: 'Existencias',
-    apiUrl: Constants.API_BASE_URL + 'stock-items',
+    apiUrl: API_BASE_URL + 'stock-items',
     fields: [],
     fieldContract: defineFields<StockItemRecord>({
       source: 'hydra',
@@ -133,7 +133,7 @@ export const StockItemPage = () => {
             label: 'Almacén',
             valueField: '_iri',
             textField: 'name',
-            url: Constants.API_BASE_URL + 'warehouses',
+            url: API_BASE_URL + 'warehouses',
             selectedFilterOperation: '=',
             formatter: (e) => formatWarehouse(e.value),
           },
@@ -147,7 +147,7 @@ export const StockItemPage = () => {
             label: 'Producto',
             valueField: '_iri',
             textField: 'name',
-            url: Constants.API_BASE_URL + 'products',
+            url: API_BASE_URL + 'products',
             selectedFilterOperation: '=',
             formatter: (e) => formatProduct(e.value),
           },

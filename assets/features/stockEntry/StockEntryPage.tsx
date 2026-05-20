@@ -1,10 +1,11 @@
 import { CrudPage, defineResource } from '@nubit/core';
-import { Constants } from '@core/common/Constants';
-import { createCrudEvents } from '@core/event/createCrudEvents';
+import { API_BASE_URL } from '@app/constants';
+import { createCrudEvents } from '@nubit/core';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
+import { useSessionInfo } from '@app/contexts/useSessionInfo';
 
-const API_URL = Constants.API_BASE_URL + 'stock-entries';
+const API_URL = API_BASE_URL + 'stock-entries';
 
 const TITLES: Record<StockEntryMode, string> = {
   receipt:    'Entradas manuales',
@@ -25,13 +26,14 @@ interface StockEntryPageProps {
 }
 
 export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
+  const { currentBranchId } = useSessionInfo();
   const events = createCrudEvents(`stock-entry-${mode}`);
 
   const resource = defineResource({
     id:        `stock-entry-${mode}`,
     title:     TITLES[mode],
     apiUrl:    `${API_URL}?type=${TYPE_FILTER[mode]}`,
-    fields:    StockEntryFields(mode),
+    fields:    StockEntryFields(mode, currentBranchId),
     detailFields: StockEntryItemFields(mode),
     detailUrl: API_URL + '/{id}/items',
     events,

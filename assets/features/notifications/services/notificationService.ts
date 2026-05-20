@@ -1,4 +1,4 @@
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { httpClient } from '@shared/api/HttpClient';
 
 export type NotificationType =
@@ -25,19 +25,19 @@ export interface Notification {
 class NotificationService {
   getNotifications(): Promise<Notification[]> {
     return httpClient
-      .get<Notification[]>(Constants.API_BASE_URL + 'user-notifications')
+      .get<Notification[]>(API_BASE_URL + 'user-notifications')
       .then((response) => response.data);
   }
 
   markRead(id: number): Promise<void> {
     return httpClient
-      .patch<void>(Constants.API_BASE_URL + `user-notifications/${id}/read`, {})
+      .patch<void>(API_BASE_URL + `user-notifications/${id}/read`, {})
       .then(() => undefined);
   }
 
   markAllRead(): Promise<void> {
     return httpClient
-      .post<void>(Constants.API_BASE_URL + 'user-notifications/read-all')
+      .post<void>(API_BASE_URL + 'user-notifications/read-all')
       .then(() => undefined);
   }
 }

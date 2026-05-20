@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 type ToastPosition = 'top left' | 'top right' | 'bottom left' | 'bottom right';

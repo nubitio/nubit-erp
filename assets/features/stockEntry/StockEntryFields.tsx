@@ -1,6 +1,5 @@
-import { Constants } from '@core/common/Constants';
-import { userInformation } from '@core/common/UserInformation';
-import { Field } from '@core/field/Field';
+import { API_BASE_URL } from '@app/constants';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -8,9 +7,9 @@ import {
   numberField,
   textareaField,
   textField,
-} from '@core/field/FieldBuilders';
+} from '@nubit/core';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { GridCellContext } from '@nubit/core';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -42,7 +41,7 @@ const OPERATION_TYPE_MAP: Record<StockEntryMode, number> = {
 
 // ─── Header fields (common across all types) ──────────────────────────────────
 
-export const StockEntryFields = (mode: StockEntryMode): Field[] => {
+export const StockEntryFields = (mode: StockEntryMode, branchId: string | number = ''): Field[] => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -61,10 +60,10 @@ export const StockEntryFields = (mode: StockEntryMode): Field[] => {
 
   // Source warehouse
   fields.push(
-    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label(mode === 'transfer' ? 'Almacén origen' : 'Almacén')
-      .filters([{ field: 'branch', operator: '=', value: userInformation().currentBranchId }])
+      .filters([{ field: 'branch', operator: '=', value: branchId }])
       .required(true)
       .build(),
   );
@@ -72,7 +71,7 @@ export const StockEntryFields = (mode: StockEntryMode): Field[] => {
   // Target warehouse — only for TRANSFER
   if (mode === 'transfer') {
     fields.push(
-      entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
+      entityField(API_BASE_URL + 'warehouses', 'id', 'name')
         .name('targetWarehouse')
         .label('Almacén destino')
         .required(true)
@@ -83,7 +82,7 @@ export const StockEntryFields = (mode: StockEntryMode): Field[] => {
   // Operation category — for RECEIPT and ISSUE
   if (mode === 'receipt' || mode === 'issue') {
     fields.push(
-      entityField(Constants.API_BASE_URL + 'logistic-operations', 'id', 'name')
+      entityField(API_BASE_URL + 'logistic-operations', 'id', 'name')
         .name('operation')
         .label('Tipo de operación')
         .filters([{ field: 'type', operator: '=', value: OPERATION_TYPE_MAP[mode] }])
@@ -140,7 +139,7 @@ export const StockEntryItemFields = (mode: StockEntryMode): Field[] => {
   fields.push(identityField().build());
 
   fields.push(
-    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
+    entityField(API_BASE_URL + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .required(true)
@@ -178,7 +177,7 @@ export const StockEntryItemFields = (mode: StockEntryMode): Field[] => {
   }
 
   fields.push(
-    entityField(Constants.API_BASE_URL + 'unit-of-measures', 'id', 'name')
+    entityField(API_BASE_URL + 'unit-of-measures', 'id', 'name')
       .name('unit')
       .label('Unidad')
       .build(),

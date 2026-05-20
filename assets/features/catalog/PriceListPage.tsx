@@ -1,11 +1,11 @@
 import { useRef } from 'react';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import { usePriceListObservers } from './model/usePriceListObservers';
-import { priceListEvents, priceEvents } from '@core/event/domainEvents';
+import { priceListEvents, priceEvents } from '@nubit/core';
 import {
   PriceEditorGrid,
   type PriceEditorGridHandle,

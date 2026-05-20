@@ -91,8 +91,59 @@ const restrictedImportsRule = (severity, patterns, paths = baseRestrictedPaths) 
   },
 ];
 
+// eFact-specific @core/* paths that are NOT candidates for @nubit/* and should
+// eventually move to @app/* or be replaced by i18n keys / injected services.
+const efactCoreDeprecationPaths = [
+  {
+    name: '@core/common/Constants',
+    message:
+      '`Constants` is eFact-specific (hardcoded Spanish labels and API paths). ' +
+      'Migrate display strings to i18n keys and config to `@app/Settings`. ' +
+      'Do not add new usages.',
+  },
+  {
+    name: '@core/common/UserInformation',
+    message:
+      '`userInformation()` reads raw localStorage; prefer `useAuth()` from `@app/contexts/auth` ' +
+      'in React components. Only use this in non-React service code until the auth adapter is complete.',
+  },
+];
+
+// Paths that have been promoted to @nubit/* facades and should no longer be
+// imported directly from their implementation location.
+const nubitFacadePatterns = [
+  {
+    group: [
+      '@core/ui/app-dialog',
+      '@core/ui/app-dialog/*',
+      '@core/components/ConfirmDialog',
+      '**/assets/core/ui/app-dialog',
+      '**/assets/core/ui/app-dialog/**',
+      '**/assets/core/components/ConfirmDialog',
+    ],
+    message: 'Use `@nubit/ui` for UI primitives (AppDialog, ConfirmDialog).',
+  },
+  {
+    group: [
+      '**/assets/admin',
+      '**/assets/admin/*',
+      '**/assets/admin/**',
+    ],
+    message: 'Use `@nubit/admin` instead of direct paths into assets/admin/.',
+  },
+  {
+    group: [
+      '**/assets/react-admin',
+      '**/assets/react-admin/*',
+      '**/assets/react-admin/**',
+    ],
+    message: 'Use `@nubit/react-admin` instead of direct paths into assets/react-admin/.',
+  },
+];
+
 const baseRestrictedPatterns = [
   ...legacyCompatibilityPatterns,
+  ...nubitFacadePatterns,
   {
     group: ['**/assets/service/*', './service/*', '../service/*', '../../service/*'],
     message:
@@ -109,6 +160,7 @@ const baseRestrictedPatterns = [
 ];
 
 const baseRestrictedPaths = [
+  ...efactCoreDeprecationPaths,
   {
     name: '@widgets/utils/toolbar/AppToolbar',
     message: 'Use `@shared/ui/toolbar/AppToolbar` directly.',
@@ -287,6 +339,43 @@ module.exports = {
       files: ['assets/offline/hooks/useOfflineCatalog.ts'],
       rules: {
         'no-restricted-imports': restrictedImportsRule('warn', offlineBoundaryPatterns),
+      },
+    },
+    {
+      // @nubit/admin package internals: must not import @app/* or @features/*.
+      // Allowed to import @core/* and @shared/* during the internal extraction phase.
+      files: ['assets/admin/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': restrictedImportsRule('error', [
+          {
+            group: layerImportPatterns('@app', 'app'),
+            message:
+              'Layer violation: `@nubit/admin` must not depend on `@app` shell code. Inject app-specific behavior through props or slots.',
+          },
+          {
+            group: layerImportPatterns('@features', 'features'),
+            message:
+              'Layer violation: `@nubit/admin` must not depend on concrete feature code. Pass behavior through props, slots, or adapters.',
+          },
+        ]),
+      },
+    },
+    {
+      // @nubit/ui package internals: must not import @app/*, @features/*, or @core/crud/*.
+      files: ['assets/ui/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': restrictedImportsRule('error', [
+          {
+            group: layerImportPatterns('@app', 'app'),
+            message:
+              'Layer violation: `@nubit/ui` primitives must not depend on `@app` shell code.',
+          },
+          {
+            group: layerImportPatterns('@features', 'features'),
+            message:
+              'Layer violation: `@nubit/ui` primitives must not depend on concrete feature code.',
+          },
+        ]),
       },
     },
   ],

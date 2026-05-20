@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 export interface CashRegisterDashboardDto {
   id: number;
@@ -16,7 +16,7 @@ export interface CashRegisterDashboardDto {
 class CashboxService {
   getDashboard() {
     return httpClient.get<CashRegisterDashboardDto[]>(
-      Constants.API_BASE_URL + 'cash-registers/dashboard',
+      API_BASE_URL + 'cash-registers/dashboard',
     );
   }
 }

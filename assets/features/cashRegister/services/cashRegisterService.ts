@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 export interface XReportDto {
   openingBalance: string;
@@ -27,24 +27,24 @@ export interface CashRegisterClosureItem {
 const cashRegisterService = () => {
   const openCashRegister = (id: string, openingBalance: number) => {
     const amount = Number(openingBalance ?? 0);
-    return httpClient.post<any>(Constants.API_BASE_URL + `cash-registers/${id}/open`, {
+    return httpClient.post<any>(API_BASE_URL + `cash-registers/${id}/open`, {
       id: Number(id),
       openingBalance: Number(amount.toFixed(2)),
     });
   };
 
   const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
-    return httpClient.post<any>(Constants.API_BASE_URL + `cash-registers/${id}/close`, {
+    return httpClient.post<any>(API_BASE_URL + `cash-registers/${id}/close`, {
       closureItems: closureData,
     });
   };
 
   const getMovements = (id: string) => {
-    return httpClient.get<unknown>(Constants.API_BASE_URL + `cash-registers/${id}/movements`);
+    return httpClient.get<unknown>(API_BASE_URL + `cash-registers/${id}/movements`);
   };
 
   const getXReport = (shiftId: string | number) => {
-    return httpClient.get<XReportDto>(Constants.API_BASE_URL + `cash-shifts/${shiftId}/x-report`);
+    return httpClient.get<XReportDto>(API_BASE_URL + `cash-shifts/${shiftId}/x-report`);
   };
 
   return {

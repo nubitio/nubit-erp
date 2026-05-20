@@ -1,14 +1,14 @@
 import { ConsultInfoDto } from '@shared/api/consult.info.dto';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 class ConsultService {
   consultRuc(ruc: string) {
-    return httpClient.get<ConsultInfoDto>(`${Constants.API_BASE_URL}consults/ruc/${ruc}`);
+    return httpClient.get<ConsultInfoDto>(`${API_BASE_URL}consults/ruc/${ruc}`);
   }
 
   consultDni(dni: string) {
-    return httpClient.get<ConsultInfoDto>(`${Constants.API_BASE_URL}consults/dni/${dni}`);
+    return httpClient.get<ConsultInfoDto>(`${API_BASE_URL}consults/dni/${dni}`);
   }
 }
 

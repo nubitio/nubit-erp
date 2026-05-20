@@ -1,5 +1,5 @@
 
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { httpClient } from '@shared/api/HttpClient';
 import ApiResponse from '@shared/api/ApiResponse';
 
@@ -34,7 +34,7 @@ class AssistantService {
       body.attachments = attachments;
     }
 
-    return httpClient.post<AssistantResponse>(`${Constants.API_BASE_URL}assistant`, body).then((response: ApiResponse<AssistantResponse>) => {
+    return httpClient.post<AssistantResponse>(`${API_BASE_URL}assistant`, body).then((response: ApiResponse<AssistantResponse>) => {
       const message = response.data?.message;
 
       if (!message) {

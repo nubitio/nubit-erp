@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { httpClient } from '@shared/api/HttpClient';
 import type { Notification } from '../services/notificationService';
 import { notificationService } from '../services/notificationService';
@@ -27,7 +27,7 @@ export function useNotifications(): UseNotificationsResult {
     lastAbortRef.current = controller;
 
     httpClient
-      .get<Notification[]>(Constants.API_BASE_URL + 'user-notifications', { signal: controller.signal })
+      .get<Notification[]>(API_BASE_URL + 'user-notifications', { signal: controller.signal })
       .then((response) => {
         if (!mountedRef.current) return;
         setNotifications(response.data ?? []);

@@ -1,10 +1,8 @@
-import type { Field } from '../../field/Field';
+import type { Field, SmartCrudFieldContract, SmartCrudRecord, DataRecord, FieldOverride } from '@nubit/core';
+import { resolveSmartCrudFields } from '@nubit/core';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import { useSchemaContext } from './SchemaContext';
-import type { SmartCrudFieldContract, SmartCrudRecord } from '../fieldContract';
-import { resolveSmartCrudFields, type FieldOverride } from '../resolveSmartCrudFields';
-import type { DataRecord } from '../../data/DataRecord';
 
 export interface UseResourceSchemaResult {
   fields: Field[];

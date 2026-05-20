@@ -1,10 +1,10 @@
 import { httpClient } from '@shared/api/HttpClient';
 import { SettingDto } from '@shared/api/setting.dto';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 class SettingsService {
   getAll() {
-    return httpClient.get<SettingDto[]>(`${Constants.API_BASE_URL}configs`);
+    return httpClient.get<SettingDto[]>(`${API_BASE_URL}configs`);
   }
 }
 

@@ -1,14 +1,14 @@
-import { Constants } from '@core/common/Constants';
-import { Field } from '@core/field/Field';
-import { identityField, entityField, textField } from '@core/field/FieldBuilders';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import { API_BASE_URL } from '@app/constants';
+import { Field } from '@nubit/core';
+import { identityField, entityField, textField } from '@nubit/core';
+import type { GridCellContext } from '@nubit/core';
 
 export const CashRegisterFields = () => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'branches', 'id', 'name')
+    entityField(API_BASE_URL + 'branches', 'id', 'name')
       .name('branch')
       .label('Sucursal')
       .formatter((cell: GridCellContext) => cell.value?.name)

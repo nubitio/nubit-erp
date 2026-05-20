@@ -1,11 +1,11 @@
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
-import { Constants } from '@core/common/Constants';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
+import { API_BASE_URL } from '@app/constants';
 import { cashRegisterEvents } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
 
-const API_URL = Constants.API_BASE_URL + 'cash-registers';
+const API_URL = API_BASE_URL + 'cash-registers';
 const fields = CashRegisterFields();
 
 export const CashRegisterPage = () => {

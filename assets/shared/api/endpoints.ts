@@ -1,6 +1,6 @@
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
-const BASE = Constants.API_BASE_URL;
+const BASE = API_BASE_URL;
 
 /**
  * Creates a typed endpoint map for a REST resource.

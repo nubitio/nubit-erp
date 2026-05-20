@@ -8,7 +8,7 @@ import {
   type DataRecord,
   type GridCellContext,
 } from '@nubit/core';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ function CoverageCell({ data }: GridCellContext) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const API_URL = `${Constants.API_BASE_URL}stock-items?belowMin=1`;
+const API_URL = `${API_BASE_URL}stock-items?belowMin=1`;
 
 export const ReorderPage = () => {
   const navigate = useNavigate();

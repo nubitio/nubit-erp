@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { LIMA_TZ } from '../date';
+import { getCoreTimezone } from '../config/CoreConfig';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { UploadedFile } from './UploadedFile';
@@ -169,7 +169,7 @@ function serializeDateField(formData: FormDataRecord, field: Field): void {
     return;
   }
   const date = new Date(val as string | number | Date);
-  formData[field.name] = DateTime.fromJSDate(date, { zone: LIMA_TZ }).toUTC().toISO();
+  formData[field.name] = DateTime.fromJSDate(date, { zone: getCoreTimezone() }).toUTC().toISO();
 }
 
 function serializeNumericField(formData: FormDataRecord, field: Field): void {

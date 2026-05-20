@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import type { SideNavigationItem } from '@app/shell/components';
 
 class MenuService {
@@ -7,7 +7,7 @@ class MenuService {
     if (roleId === null || roleId === undefined) {
       roleId = 0;
     }
-    return httpClient.get<SideNavigationItem[]>(Constants.API_BASE_URL + `menu/${roleId}`);
+    return httpClient.get<SideNavigationItem[]>(API_BASE_URL + `menu/${roleId}`);
   }
 }
 

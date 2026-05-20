@@ -7,7 +7,7 @@ import type {
   OpenApiDoc,
   OpenApiProperty,
 } from './types';
-import type { DataRecord } from '../../data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 /**
  * Converts a camelCase or PascalCase name to snake_case.

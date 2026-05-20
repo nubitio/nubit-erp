@@ -6,9 +6,10 @@ import {
   FORM_EVENTS,
   type FormHandle,
   type GridHandle,
-} from '@core/ui/CrudViews';
+} from '@nubit/core';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
+import { useSessionInfo } from '@app/contexts/useSessionInfo';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   DiscountDialog,
@@ -28,9 +29,9 @@ import {
 } from '@features/sale';
 import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import toast from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
@@ -41,6 +42,7 @@ export const SalePage = () => {
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
+  const { currentBranchId, currentUserId } = useSessionInfo();
 
   const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
 
@@ -48,6 +50,8 @@ export const SalePage = () => {
   const fields = useMemo(
     () =>
       SaleFields(formRef.current, {
+        branchId: currentBranchId,
+        userId: currentUserId ?? undefined,
         onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
         onOpenDiscount: async ({ total, discountPercent }) => {
           await formRef.current?.saveDetailData();

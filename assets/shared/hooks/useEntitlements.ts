@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -164,7 +164,7 @@ SQL,
             $taxDocument?->getTotal() ?? $sale->getTotal()
         );
 
-        $this->applyAmountsToLines($lines, $amounts);
+        $this->applyAmountsToLines($lines, $amounts, $header->voucherTaxPercentage ?? '0');
         $header->applyAmounts($amounts);
         $header->voucherQrData = $this->buildQrData($sale, $taxDocument, $amounts);
 
@@ -327,7 +327,7 @@ SQL,
             $creditNote->getTotal()
         );
 
-        $this->applyAmountsToLines($lines, $amounts);
+        $this->applyAmountsToLines($lines, $amounts, $header->voucherTaxPercentage ?? '0');
         $header->applyAmounts($amounts);
 
         $voucherItems = array_map(
@@ -545,7 +545,7 @@ SQL,
     /**
      * @param VoucherLineDto[] $lines
      */
-    private function applyAmountsToLines(array $lines, InvoiceAmounts $amounts): void
+    private function applyAmountsToLines(array $lines, InvoiceAmounts $amounts, string $taxPercentage): void
     {
         $amountLines = $amounts->getLines();
 
@@ -553,6 +553,10 @@ SQL,
             $amountLine = $amountLines[$index] ?? null;
             if ($amountLine instanceof InvoiceLineAmounts) {
                 $line->applyAmounts($amountLine);
+            }
+
+            if (($line->taxType ?? '10') === '10') {
+                $line->taxPercentage = $taxPercentage;
             }
         }
     }

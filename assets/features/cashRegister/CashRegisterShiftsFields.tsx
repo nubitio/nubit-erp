@@ -1,12 +1,12 @@
-import { Field } from '@core/field/Field';
+import { Field } from '@nubit/core';
 import {
   identityField,
   currencyField,
   datetimeField,
   enumField,
   textareaField,
-} from '@core/field/FieldBuilders';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+} from '@nubit/core';
+import type { GridCellContext } from '@nubit/core';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashRegisterShiftsFields = () => {

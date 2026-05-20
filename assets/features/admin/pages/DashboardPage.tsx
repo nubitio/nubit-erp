@@ -3,7 +3,7 @@ import { AppToolbar } from '@shared/ui/toolbar/AppToolbar';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
-import { userInformation } from '@core/common/UserInformation';
+import { useSessionInfo } from '@app/contexts/useSessionInfo';
 import { useScreenSize } from '@utils/media-query';
 import { DashboardStatusBar } from './components/DashboardStatusBar';
 import { DashboardHero } from './components/DashboardHero';
@@ -17,7 +17,7 @@ export const DashboardPage = () => {
   const { data, loading, error, refetch } = useDashboardOverview({ lite: isMobile });
   const { cashRegisters, isLoading: cashboxLoading } = useCashRegisters();
   const metrics = useDashboardMetrics(data, cashRegisters);
-  const { currentUserName, currentBranchName } = userInformation();
+  const { currentUserName, currentBranchName } = useSessionInfo();
 
   const isPartial = !!(data.meta?.partial && !error);
 

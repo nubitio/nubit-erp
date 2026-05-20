@@ -1,11 +1,11 @@
 import './CashMovements.scss';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@core/ui/CrudViews';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
 import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEffect, useRef, useState } from 'react';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import cashMovementsFields from './components/fields/cashMovementsFields';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 type CashMovementsParams = {
@@ -14,7 +14,7 @@ type CashMovementsParams = {
 
 export const CashMovements = () => {
   const { id } = useParams<CashMovementsParams>();
-  const API_URL = Constants.API_BASE_URL + 'cash-movements';
+  const API_URL = API_BASE_URL + 'cash-movements';
   const gridRef = useRef<GridHandle>(null);
   const fields = cashMovementsFields(id);
   const [balance, setBalance] = useState<number | undefined>(undefined);
@@ -67,7 +67,7 @@ export const CashMovements = () => {
         id="cash-movements"
         title="Movimientos de caja"
         toolbar={toolbar}
-        url={Constants.API_BASE_URL + 'cash-shifts/' + id + '/movements'}
+        url={API_BASE_URL + 'cash-shifts/' + id + '/movements'}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}

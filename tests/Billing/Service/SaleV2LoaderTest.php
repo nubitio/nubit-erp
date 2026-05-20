@@ -407,10 +407,48 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $settings = $this->createStub(TenantSettingsService::class);
-        // tenantSettings not needed for this test
+        $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
         $sale   = $loader->loadAsSale('sale-igv-derive');
+
+        self::assertSame('18', $sale?->getIgv());
+    }
+
+    public function testResolveIgvRateFallsBackToSettingsWhenDerivedRateIsNotConfigured(): void
+    {
+        $row = [
+            'id' => 'sale-invalid-igv-rate',
+            'legacy_movimiento_id' => null,
+            'customer_id' => null,
+            'warehouse_id' => null,
+            'branch_id' => null,
+            'seller_user_id' => null,
+            'status' => 'COMPLETED',
+            'currency' => 'PEN',
+            'exchange_rate' => '1.000000',
+            'subtotal' => '118.00',
+            'discount_total' => '0.00',
+            'grand_total' => '118.00',
+            'tax_total' => '18.00',
+            'issued_at' => null,
+            'created_at' => null,
+            'series' => null,
+            'number' => null,
+        ];
+
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchAssociative')->willReturn($row);
+        $connection->method('fetchAllAssociative')->willReturn([]);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
+
+        $settings = $this->createStub(TenantSettingsService::class);
+        $settings->method('getIgv')->willReturn(18.0);
+
+        $loader = new SaleV2Loader($connection, $em, $settings);
+        $sale   = $loader->loadAsSale('sale-invalid-igv-rate');
 
         self::assertSame('18', $sale?->getIgv());
     }

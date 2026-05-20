@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import './POSPage.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { userInformation } from '@core/common/UserInformation';
+import { useSessionInfo } from '@app/contexts/useSessionInfo';
 import { Setting, settings } from '@app/Settings';
 import { createInvoicePrinter, InvoicePrinter } from '@features/sale';
 import { ThemeContext } from '@assets/theme/theme';
@@ -22,7 +22,7 @@ const POSPage = () => {
   const themeContext = useContext(ThemeContext);
   const resolvedTheme = themeContext?.theme ?? 'light';
 
-  const { currentBranchId, currentBranchName, currentUserName } = userInformation();
+  const { currentBranchId, currentBranchName, currentUserName } = useSessionInfo();
   const branchId = String(currentBranchId ?? '');
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
