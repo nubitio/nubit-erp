@@ -1,11 +1,16 @@
 import { Constants } from '@core/common/Constants';
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract';
-import type { Field } from '@core/field/Field';
-import { enumField, switchField } from '@core/field/FieldBuilders';
+import {
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  enumField,
+  switchField,
+  type DataRecord,
+  type Field,
+  type SmartCrudFieldPatch,
+} from '@nubit/core';
 import { cashMovementCategoryEvents } from '@features/cashRegister';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@core/data/DataRecord';
 
 interface CashMovementCategoryRecord extends DataRecord {
   id: number;

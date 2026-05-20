@@ -1,11 +1,15 @@
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract';
-import type { Field } from '@core/field/Field';
-import { enumField } from '@core/field/FieldBuilders';
+import {
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  enumField,
+  type DataRecord,
+  type Field,
+  type SmartCrudFieldPatch,
+} from '@nubit/core';
 import React from 'react';
 import { operationEvents } from '@core/event/domainEvents';
 import { operationEndpoints } from './api/catalogEndpoints';
-import type { DataRecord } from '@core/data/DataRecord';
 
 interface OperationRecord extends DataRecord {
   id: string;

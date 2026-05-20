@@ -1,7 +1,7 @@
 import './CrudDialogView.scss';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { AppDialog } from '@shared/ui/app-dialog';
+import { AppDialog } from '@core/ui/app-dialog';
 import { useEvents } from '@core/event/EventHook';
 import { DialogEventNames } from '@core/event/EventTypes';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';

@@ -4,7 +4,7 @@ import GridData from '@shared/data/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
 import { Constants } from '@core/common/Constants';
 import { ProductStockDto } from '@features/product/types/product.stock.dto';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 class ProductService {
   getAll(loadOptions: DataRecord): Promise<GridData<ProductDto>> {

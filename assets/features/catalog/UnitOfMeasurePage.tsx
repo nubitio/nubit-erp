@@ -1,11 +1,17 @@
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract';
-import type { Field } from '@core/field/Field';
-import { enumField, selectField, switchField } from '@core/field/FieldBuilders';
+import {
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  enumField,
+  selectField,
+  switchField,
+  type DataRecord,
+  type Field,
+  type SmartCrudFieldPatch,
+} from '@nubit/core';
 import { unitOfMeasureEvents } from '@core/event/domainEvents';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { unitOfMeasureEndpoints } from './api/catalogEndpoints';
-import type { DataRecord } from '@core/data/DataRecord';
 
 interface UnitOfMeasureRecord extends DataRecord {
   id: number;

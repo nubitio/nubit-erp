@@ -1,5 +1,4 @@
-import toast from '@shared/lib/SharedUtils';
-
+import { useCoreRuntime } from '@core/runtime';
 import { validateDetailRows } from './FormDetailValidation';
 import type { UseFormValidationOptions } from './FormValidationOptions';
 
@@ -13,6 +12,8 @@ export function useFormValidation({
   requiredDetail,
   validationErrorText,
 }: UseFormValidationOptions): () => boolean {
+  const { notify } = useCoreRuntime();
+
   return () => {
     const formValid = accessors.validateForm();
     let gridValid = !accessors.hasPendingDetailEdits();
@@ -31,7 +32,7 @@ export function useFormValidation({
     }
 
     if (!formValid || !gridValid || !detailRowsValid) {
-      toast(
+      notify(
         detailRequiredMissing && formValid ? detailNoDataText : validationErrorText,
         detailRequiredMissing && formValid ? 'warning' : 'error',
       );

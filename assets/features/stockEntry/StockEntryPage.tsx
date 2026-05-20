@@ -1,4 +1,4 @@
-import { CrudPage, defineResource } from '@core/crud';
+import { CrudPage, defineResource } from '@nubit/core';
 import { Constants } from '@core/common/Constants';
 import { createCrudEvents } from '@core/event/createCrudEvents';
 import type { StockEntryMode } from './StockEntryFields';

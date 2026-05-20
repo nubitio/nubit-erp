@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { GridHandle } from '@core/datagrid/GridHandle';
+import type { GridHandle } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import AppResponse from '@shared/api/AppResponse';

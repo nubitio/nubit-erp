@@ -1,11 +1,16 @@
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields, type SmartCrudFieldPatch } from '@core/crud/fieldContract';
+import {
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  enumField,
+  imageField,
+  type DataRecord,
+  type Field,
+  type SmartCrudFieldPatch,
+} from '@nubit/core';
 import { Constants } from '@core/common/Constants';
-import type { Field } from '@core/field/Field';
-import { enumField, imageField } from '@core/field/FieldBuilders';
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
-import type { DataRecord } from '@core/data/DataRecord';
 
 interface ProductRecord extends DataRecord {
   id: string;

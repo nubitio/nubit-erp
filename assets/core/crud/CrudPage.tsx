@@ -10,7 +10,7 @@ import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { DialogStoreProvider } from './DialogStoreProvider';
 import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
-import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { resolveCrudResource } from './resolveCrudResource';
 import type { FormDataRecord } from '../form/FormDataSnapshot';
 import type { DataRecord } from '../data/DataRecord';

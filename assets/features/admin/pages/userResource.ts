@@ -1,9 +1,6 @@
-import { defineResource } from '@core/crud/defineResource';
-import { defineFields } from '@core/crud/fieldContract';
-import { passwordField } from '@core/field/FieldBuilders';
+import { defineFields, defineResource, passwordField, type DataRecord } from '@nubit/core';
 import { userEvents } from '@core/event/domainEvents';
 import { userEndpoints } from '../api/adminEndpoints';
-import type { DataRecord } from '@core/data/DataRecord';
 
 interface UserRecord extends DataRecord {
   id: number;

@@ -1,6 +1,5 @@
 import type { RefObject } from 'react';
-import { CrudPage, defineResource } from '@core/crud';
-import type { FormHandle } from '@core/form/FormHandle';
+import { CrudPage, defineResource, type FormHandle } from '@nubit/core';
 import { Constants } from '@core/common/Constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 import { purchasesEvents } from '@features/purchases/model/events';

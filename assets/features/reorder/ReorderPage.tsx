@@ -1,11 +1,14 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields } from '@core/crud/fieldContract';
+import {
+  FieldType,
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  type DataRecord,
+  type GridCellContext,
+} from '@nubit/core';
 import { Constants } from '@core/common/Constants';
-import { FieldType } from '@core/field/FieldType';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
-import type { DataRecord } from '@core/data/DataRecord';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

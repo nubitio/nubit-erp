@@ -1,6 +1,5 @@
-import { httpClient } from '@shared/api/HttpClient';
-import ApiResponse from '@shared/api/ApiResponse';
-import GridData from '@shared/data/GridData';
+import { createCoreHttpClient, type CoreHttpClient } from '@core/http';
+import type { GridData } from './GridData';
 import { FilterRule } from '@core/field/FilterRule';
 import { LoadOption } from '@core/field/Field';
 import type { DataRecord } from './DataRecord';
@@ -26,7 +25,10 @@ export type RemoteDataSourceOptions = {
   defaultSortRules?: RemoteSortDescriptor[];
   options?: LoadOption[];
   iriMode?: boolean;
+  httpClient?: CoreHttpClient;
 };
+
+const defaultHttpClient = createCoreHttpClient({ baseUrl: '' });
 
 function findPreloadedItem(
   loadOptions: RemoteLoadOptions,
@@ -122,7 +124,11 @@ function getFlatIriFilter(filter: unknown): unknown[] | null {
 }
 
 export class ApiPlatformRemoteDataSource {
-  constructor(private readonly config: RemoteDataSourceOptions) {}
+  private readonly httpClient: CoreHttpClient;
+
+  constructor(private readonly config: RemoteDataSourceOptions) {
+    this.httpClient = config.httpClient ?? defaultHttpClient;
+  }
 
   makeFilterRules(filterRules: FilterRule[]): string {
     return filterRules
@@ -189,7 +195,7 @@ export class ApiPlatformRemoteDataSource {
   }
 
   private async fetchAll(loadOptions: RemoteLoadOptions): Promise<GridData<DataRecord>> {
-    const response = await httpClient.get<DataRecord[]>(this.config.url, { params: loadOptions });
+    const response = await this.httpClient.get<DataRecord[]>(this.config.url, { params: loadOptions });
     let data = response.data;
 
     if (loadOptions.appendData) {
@@ -199,7 +205,7 @@ export class ApiPlatformRemoteDataSource {
       data = [...loadOptions.prependData, ...data];
     }
 
-    const headerCount = Number(response.headers['x-total-count']);
+    const headerCount = Number(response.headers.get('x-total-count'));
     return {
       data,
       totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
@@ -217,9 +223,9 @@ export class ApiPlatformRemoteDataSource {
 
     const resolvedUrl = typeof id === 'string' && id.startsWith('/') ? id : `${url}/${id}`;
 
-    return httpClient
+    return this.httpClient
       .get<DataRecord>(resolvedUrl)
-      .then((response: ApiResponse<DataRecord>) => response.data)
+      .then((response) => response.data)
       .catch(() => findPreloadedItem(loadOptions, this.config.idField, id));
   }
 }

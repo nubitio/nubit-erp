@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import { useCoreHttpClient } from '@core/http';
 import type { AuditEntry } from './AuditTrail';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 
@@ -86,6 +86,7 @@ export function AuditTrailPanel({
   onClose,
 }: AuditTrailPanelProps): React.JSX.Element | null {
   const { t } = useCoreTranslation();
+  const httpClient = useCoreHttpClient();
   const [fetchState, setFetchState] = useState<FetchState>({ status: 'idle' });
 
   useEffect(() => {
@@ -100,9 +101,10 @@ export function AuditTrailPanel({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- transition request state before subscribing to the async HTTP response
     setFetchState({ status: 'loading' });
 
-    httpRequestData<AuditEntry[]>(businessHttpClient.get(url))
-      .then((entries) => {
-        if (!cancelled) setFetchState({ status: 'success', entries });
+    httpClient
+      .get<AuditEntry[]>(url)
+      .then((response) => {
+        if (!cancelled) setFetchState({ status: 'success', entries: response.data });
       })
       .catch(() => {
         if (!cancelled) setFetchState({ status: 'error' });
@@ -111,7 +113,7 @@ export function AuditTrailPanel({
     return () => {
       cancelled = true;
     };
-  }, [url, visible]);
+  }, [httpClient, url, visible]);
 
   if (!visible) return null;
 
