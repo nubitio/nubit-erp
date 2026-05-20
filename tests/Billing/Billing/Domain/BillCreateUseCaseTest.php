@@ -74,6 +74,7 @@ final class BillCreateUseCaseTest extends TestCase
         ?float $detractionAmount = null,
         string $operationType = '',
         ?HydratedVoucherItem $item = null,
+        float $voucherTaxPercentage = 18.0,
     ): HydratedVoucher {
         return new HydratedVoucher(
             saleId: 'sale-1',
@@ -103,7 +104,7 @@ final class BillCreateUseCaseTest extends TestCase
             voucherConsumptionSurchargePercentage: null,
             voucherTaxedAmount: 84.75,
             voucherTaxAmount: 15.25,
-            voucherTaxPercentage: 18.0,
+            voucherTaxPercentage: $voucherTaxPercentage,
             voucherTotalTaxes: 15.25,
             voucherSaleValue: 84.75,
             voucherSaleAmount: 100.00,
@@ -181,6 +182,32 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertSame('2.1', $invoice->getUblVersion());
         self::assertSame('PEN', $invoice->getTipoMoneda());
         self::assertSame(OperationType::SALE->value, $invoice->getTipoOperacion());
+    }
+
+    public function testInvoiceLinesUseHeaderIgvRateForTaxedItems(): void
+    {
+        $this->setupTaxDocument();
+        $item = new HydratedVoucherItem(
+            productCode: 'PROD-001',
+            productUom: 'NIU',
+            quantity: 1.0,
+            productName: 'Test Product',
+            unitValue: 100.0,
+            taxedAmount: 100.0,
+            taxPercentage: 16.67,
+            taxAmount: 10.5,
+            taxType: '10',
+            unitPrice: 110.5,
+        );
+        $voucher = $this->makeBaseVoucher(item: $item, voucherTaxPercentage: 10.5);
+        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
+            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
+        );
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        self::assertSame(10.5, $invoice->getDetails()[0]->getPorcentajeIgv());
     }
 
     public function testInvokeUsesFormaPagoContadoWhenPaymentMethodIsOne(): void

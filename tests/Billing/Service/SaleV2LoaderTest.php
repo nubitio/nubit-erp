@@ -377,10 +377,10 @@ final class SaleV2LoaderTest extends TestCase
         self::assertSame('18', $sale?->getIgv());
     }
 
-    public function testResolveIgvRateDerivesRateFromTaxAndSubtotal(): void
+    public function testResolveIgvRateUsesSettingsEvenWhenAmountsDeriveDifferentRoundedRate(): void
     {
         $row = [
-            'id' => 'sale-igv-derive',
+            'id' => 'sale-igv-configured',
             'legacy_movimiento_id' => null,
             'customer_id' => null,
             'warehouse_id' => null,
@@ -389,10 +389,10 @@ final class SaleV2LoaderTest extends TestCase
             'status' => 'COMPLETED',
             'currency' => 'PEN',
             'exchange_rate' => '1.000000',
-            'subtotal' => '100.00',
+            'subtotal' => '60.62',
             'discount_total' => '0.00',
-            'grand_total' => '118.00',
-            'tax_total' => '18.00',  // 18/100 * 100 = 18%
+            'grand_total' => '67.00',
+            'tax_total' => '6.38',
             'issued_at' => null,
             'created_at' => null,
             'series' => null,
@@ -407,12 +407,12 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $settings = $this->createStub(TenantSettingsService::class);
-        $settings->method('getIgv')->willReturn(18.0);
+        $settings->method('getIgv')->willReturn(10.5);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
-        $sale   = $loader->loadAsSale('sale-igv-derive');
+        $sale   = $loader->loadAsSale('sale-igv-configured');
 
-        self::assertSame('18', $sale?->getIgv());
+        self::assertSame('10.5', $sale?->getIgv());
     }
 
     public function testResolveIgvRateFallsBackToSettingsWhenDerivedRateIsNotConfigured(): void
