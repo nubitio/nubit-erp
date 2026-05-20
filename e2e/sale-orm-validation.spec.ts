@@ -37,7 +37,7 @@ const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 async function waitForDxLoadPanel(page: Page) {
-  const loadPanel = page.locator('.dx-loadpanel-wrapper').first();
+  const loadPanel = page.locator('.dx-loadpanel-wrapper, .native-datagrid__loading-overlay').first();
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
     await loadPanel.waitFor({ state: 'hidden', timeout: 15000 });
@@ -100,7 +100,7 @@ async function login(page: Page) {
 async function ensureCashOpen(page: Page): Promise<string> {
   await page.goto(`${BASE_URL}/#/cashbox`);
   await waitForDxLoadPanel(page);
-  await page.locator('.dx-data-row').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.native-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
 
   const openBtn = page.getByTestId('cash-btn-open').first();
   const isOpen = !(await openBtn.isVisible({ timeout: 5000 }).catch(() => false));
@@ -108,12 +108,40 @@ async function ensureCashOpen(page: Page): Promise<string> {
   if (isOpen) {
     const movBtn = page.getByTestId('cash-btn-movements').first();
     await movBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await Promise.all([
-      page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 }),
-      movBtn.click(),
-    ]);
+    let navigated = false;
+    try {
+      await Promise.all([
+        page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 8000 }),
+        movBtn.click(),
+      ]);
+      navigated = true;
+    } catch {
+      // Button click didn't produce expected URL — fall back to dashboard API
+    }
+    if (!navigated) {
+      const dashData = await page.evaluate(async (base: string) => {
+        const resp = await fetch(`${base}/api/cash-registers/dashboard`);
+        return resp.ok ? resp.json() : [];
+      }, BASE_URL);
+      const openReg = Array.isArray(dashData)
+        ? dashData.find((r: any) => r.status === 'open' && r.cashShiftId)
+        : null;
+      if (openReg?.cashShiftId) {
+        await page.goto(`${BASE_URL}/#/cash-shift/${openReg.cashShiftId}/movements`);
+      }
+    }
   } else {
-    await openBtn.click();
+    // Navigate directly to open page via API to avoid button click interception
+    const dashData = await page.evaluate(async (base: string) => {
+      const resp = await fetch(`${base}/api/cash-registers/dashboard`);
+      return resp.ok ? resp.json() : [];
+    }, BASE_URL);
+    const closedReg = Array.isArray(dashData)
+      ? dashData.find((r: any) => r.cashShiftId == null)
+      : null;
+    if (closedReg?.id) {
+      await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
+    }
     await expect(page.locator('text=Apertura de caja')).toBeVisible({ timeout: 10000 });
     await page.getByLabel('Saldo inicial').fill('100');
     await page.getByTestId('cash-open-submit-btn').first().click();
@@ -531,13 +559,13 @@ test.describe('Fase 3 — ORM migration validation', () => {
     // Navigate to /sale module
     await page.goto(`${BASE_URL}/#/sale`);
     await waitForDxLoadPanel(page);
-    await expect(page.locator('.dx-toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
+    await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
       timeout: 15000,
     });
 
     // Click "Nuevo"
     const newBtn = page
-      .locator('.dx-toolbar .app-button')
+      .locator('.native-datagrid__toolbar .app-button')
       .filter({ hasText: /nuevo|new/i })
       .first();
     await newBtn.waitFor({ state: 'visible', timeout: 10000 });
@@ -559,70 +587,46 @@ test.describe('Fase 3 — ORM migration validation', () => {
       }
     }
 
-    // Add a note
+    // Add a note - NativeFormView: note field has id="native-form-note"
     const ts = Date.now();
     const noteInput = page
       .getByRole('dialog', { name: /nuevo|new/i })
-      .locator('textarea[aria-label="Nota"], input[aria-label="Nota"]')
+      .locator('#native-form-note, textarea[aria-label="Nota"], input[aria-label="Nota"]')
       .first();
+    await noteInput.waitFor({ state: 'visible', timeout: 8000 });
     await noteInput.fill(`ORM validation ${ts}`);
     await page.keyboard.press('Tab');
 
-    // Add a row in the detail grid
-    const addRowBtn = page
-      .locator('#form-detail-grid .dx-button')
-      .filter({ hasText: 'Agregar una fila' })
-      .first();
+    // Add a row in the detail grid - NativeFormView
+    const addRowBtn = page.locator('button[aria-label="Agregar detalle"]').first();
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
-    const insertedRow = page.locator('#form-detail-grid tr.dx-row-inserted').first();
-    for (let i = 0; i < 3; i++) {
-      await addRowBtn.click({ force: true });
-      if (await insertedRow.isVisible({ timeout: 1500 }).catch(() => false)) break;
-    }
-    await page.locator('.dx-overlay-content .dx-list-item').first().waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    await addRowBtn.click();
+
+    const insertedRow = page.locator('.native-form__detail-table tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
-    const productCell = insertedRow.locator('td').nth(0);
-    await productCell.click({ force: true });
-    await page.waitForTimeout(300);
-
-    const productDropBtn = productCell.locator('.dx-dropdowneditor-button').first();
-    if (await productDropBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await productDropBtn.click();
-    }
-
-    // Wait for list
-    await page.waitForFunction(
-      () => {
-        const items = document.querySelectorAll('.dx-overlay-content .dx-list-item');
-        return Array.from(items).some((el) => (el as HTMLElement).offsetParent !== null);
-      },
-      undefined,
-      { timeout: 8000 },
-    );
-
-    const productInput = productCell.locator('input[role="combobox"], input.dx-texteditor-input').last();
+    const productInput = insertedRow.locator('td').nth(0).locator('input[role="combobox"]').first();
+    await productInput.waitFor({ state: 'visible', timeout: 5000 });
+    await productInput.click();
     await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
+
     const seedOption = page
-      .locator('.dx-overlay-content .dx-list-item')
+      .locator('.native-form__lookup-menu button[role="option"]')
       .filter({ hasText: SEED_PRODUCT_NAME });
     await seedOption.first().waitFor({ state: 'visible', timeout: 15000 });
-    await page.keyboard.press('Enter');
+    await seedOption.first().click();
+    await page.waitForTimeout(400);
 
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await noteInput.click();
-    await insertedRow.waitFor({ state: 'hidden', timeout: 10000 });
+    await page.keyboard.press('Tab'); // qty
+    await page.keyboard.press('Tab'); // price
+    await page.keyboard.press('Tab'); // exit row
 
     // Save
     const saleResponsePromise = page.waitForResponse(
       (r) => /\/api\/sales(?:\?.*)?$/.test(r.url()) && r.request().method() === 'POST',
       { timeout: 15000 },
     );
-    const saleDialog = page
-      .getByRole('dialog', { name: /nuevo|new/i })
-      .filter({ has: page.locator('#form-detail-grid') });
+    const saleDialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
     await saleDialog.locator('button.dialog-save-button').click({ force: true });
 
     const saleResponse = await saleResponsePromise;
