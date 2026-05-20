@@ -104,7 +104,7 @@ readonly class BillCreateUseCase
             ->setAddress($customerAddress);
 
         $bill = new Invoice()
-            ->setUblVersion('2.0')
+            ->setUblVersion('2.1')
             ->setTipoOperacion($operationType)
             ->setTipoDoc($hydratedVoucher->voucherType)
             ->setSerie($hydratedVoucher->voucherSeries)
