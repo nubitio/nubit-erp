@@ -56,7 +56,7 @@ readonly class NoteCreateUseCase
             ->setAddress($customerAddress);
 
         $note = new Note();
-        $note->setUblVersion('2.1')
+        $note->setUblVersion('2.0')
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
             ->setFechaEmision($creditNote->getIssueDate())
