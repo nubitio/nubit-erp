@@ -178,6 +178,7 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertSame('F001', $invoice->getSerie());
         self::assertSame('1', $invoice->getCorrelativo());
         self::assertSame('01', $invoice->getTipoDoc());
+        self::assertSame('2.0', $invoice->getUblVersion());
         self::assertSame('PEN', $invoice->getTipoMoneda());
         self::assertSame(OperationType::SALE->value, $invoice->getTipoOperacion());
     }

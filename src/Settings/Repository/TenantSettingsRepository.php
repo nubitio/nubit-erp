@@ -21,12 +21,15 @@ class TenantSettingsRepository extends ServiceEntityRepository
      */
     public function getOrCreate(): TenantSettings
     {
-        $settings = $this->findOneBy([]);
+        $settingsRows = $this->findBy([], ['id' => 'DESC']);
+        $settings = $settingsRows[0] ?? null;
 
         if ($settings === null) {
             $settings = new TenantSettings();
             $this->getEntityManager()->persist($settings);
             $this->getEntityManager()->flush();
+
+            return $settings;
         }
 
         return $settings;

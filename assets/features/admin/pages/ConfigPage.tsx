@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
-import { configService, type ConfigDto, isTechnical } from '@features/config';
+import {
+  ConfigKey,
+  configService,
+  type ConfigDto,
+  isTechnical,
+  tenantSettingsService,
+} from '@features/config';
 import './ConfigPage.scss';
 
 // ── Label registry ────────────────────────────────────────────────────────────
@@ -9,41 +15,97 @@ interface ConfigMeta {
   label: string;
   description?: string;
   group: 'general' | 'sales' | 'inventory' | 'feature';
-  options?: { value: string; label: string }[];  // if set → renders as <select>
+  options?: { value: string; label: string }[]; // if set → renders as <select>
 }
 
 const CONFIG_META: Record<string, ConfigMeta> = {
-  app_option_igv:                    { label: 'IGV (%)',                          description: 'Porcentaje de IGV aplicado a las ventas.',                  group: 'general' },
-  app_option_rc:                     { label: 'Recargo al Consumo (%)',           description: 'Porcentaje de recargo al consumo (RC) impreso en el comprobante.', group: 'general' },
-  app_option_print_logo:             { label: 'Imprimir logo en comprobantes',    description: 'Muestra el logo de la empresa en los comprobantes.',        group: 'general' },
-  app_option_require_cash_register:  { label: 'Requerir caja registradora',       description: 'Obliga a seleccionar una caja antes de vender.',            group: 'general' },
-  app_option_receipt_required:       { label: 'Requerir boleta/factura',          description: 'Obliga a emitir un comprobante en cada venta.',             group: 'general' },
-  print_method:                      {
+  app_option_igv: {
+    label: 'IGV (%)',
+    description: 'Porcentaje de IGV aplicado a las ventas.',
+    group: 'general',
+  },
+  app_option_rc: {
+    label: 'Recargo al Consumo (%)',
+    description: 'Porcentaje de recargo al consumo (RC) impreso en el comprobante.',
+    group: 'general',
+  },
+  app_option_print_logo: {
+    label: 'Imprimir logo en comprobantes',
+    description: 'Muestra el logo de la empresa en los comprobantes.',
+    group: 'general',
+  },
+  app_option_require_cash_register: {
+    label: 'Requerir caja registradora',
+    description: 'Obliga a seleccionar una caja antes de vender.',
+    group: 'general',
+  },
+  app_option_receipt_required: {
+    label: 'Requerir boleta/factura',
+    description: 'Obliga a emitir un comprobante en cada venta.',
+    group: 'general',
+  },
+  print_method: {
     label: 'Método de impresión',
     description: 'Cómo se envían los comprobantes a la impresora térmica.',
     group: 'general',
     options: [
-      { value: 'WEBUSB',      label: 'WebUSB (navegador, sin instalación)' },
+      { value: 'WEBUSB', label: 'WebUSB (navegador, sin instalación)' },
       { value: 'LOCAL_AGENT', label: 'Agente eFact (app local instalada)' },
     ],
   },
-  app_option_auto_invoice:           { label: 'Facturación automática',           description: 'Emite el comprobante electrónico automáticamente.',         group: 'sales' },
-  sales_default_currency:            { label: 'Moneda por defecto',              description: 'Moneda predeterminada para nuevas ventas.',                 group: 'sales' },
-  sales_default_usd_exchange_rate:   { label: 'Tipo de cambio USD por defecto',  description: 'Valor inicial del tipo de cambio USD/PEN.',                group: 'sales' },
-  inventory_negative_stock_policy:   {
+  app_option_auto_invoice: {
+    label: 'Facturación automática',
+    description: 'Emite el comprobante electrónico automáticamente.',
+    group: 'sales',
+  },
+  sales_default_currency: {
+    label: 'Moneda por defecto',
+    description: 'Moneda predeterminada para nuevas ventas.',
+    group: 'sales',
+  },
+  sales_default_usd_exchange_rate: {
+    label: 'Tipo de cambio USD por defecto',
+    description: 'Valor inicial del tipo de cambio USD/PEN.',
+    group: 'sales',
+  },
+  inventory_negative_stock_policy: {
     label: 'Política de stock negativo',
     description: 'Define qué ocurre cuando el stock llega a cero.',
     group: 'inventory',
     options: [
-      { value: 'BLOCK',          label: 'Bloquear venta (no permite stock negativo)' },
+      { value: 'BLOCK', label: 'Bloquear venta (no permite stock negativo)' },
       { value: 'ALLOW_WITH_ROLE', label: 'Permitir solo a administradores' },
-      { value: 'ALLOW_ALL',      label: 'Permitir a todos los usuarios' },
+      { value: 'ALLOW_ALL', label: 'Permitir a todos los usuarios' },
     ],
   },
 };
 
 function getMeta(key: string): ConfigMeta {
   return CONFIG_META[key] ?? { label: key, group: 'general' };
+}
+
+function syncIgvConfig(configs: ConfigDto[], igv: number): ConfigDto[] {
+  const igvValue = String(igv);
+  let found = false;
+
+  const synced = configs.map((config) => {
+    if (config.name !== ConfigKey.IGV) return config;
+
+    found = true;
+    return { ...config, value: igvValue, type: 'float' as const };
+  });
+
+  if (found) return synced;
+
+  return [
+    ...synced,
+    {
+      id: -1,
+      name: ConfigKey.IGV,
+      value: igvValue,
+      type: 'float',
+    },
+  ];
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -77,7 +139,10 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
   };
 
   const handleSave = async () => {
-    if (draft === config.value) { setEditing(false); return; }
+    if (draft === config.value) {
+      setEditing(false);
+      return;
+    }
     setSaving(true);
     try {
       await onSave(config, draft);
@@ -101,16 +166,16 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
   const displayValue = isEnum
     ? (meta.options!.find((o) => o.value === config.value)?.label ?? config.value)
     : isBool
-      ? (config.value === 'true' ? 'Sí' : 'No')
+      ? config.value === 'true'
+        ? 'Sí'
+        : 'No'
       : config.value;
 
   return (
     <div className="config-setting-row">
       <div className="config-setting-info">
         <span className="config-setting-label">{meta.label}</span>
-        {meta.description && (
-          <span className="config-setting-description">{meta.description}</span>
-        )}
+        {meta.description && <span className="config-setting-description">{meta.description}</span>}
       </div>
       <div className="config-setting-value">
         {editing ? (
@@ -124,7 +189,9 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
                 className="config-setting-input"
               >
                 {meta.options!.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             ) : isBool ? (
@@ -168,11 +235,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
         ) : (
           <div className="config-setting-display">
             <span className="config-setting-current">{displayValue}</span>
-            <button
-              type="button"
-              className="config-btn config-btn--ghost"
-              onClick={handleEdit}
-            >
+            <button type="button" className="config-btn config-btn--ghost" onClick={handleEdit}>
               Editar
             </button>
           </div>
@@ -211,8 +274,11 @@ export const ConfigPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await configService.getAll();
-      setConfigs(data);
+      const [data, tenantSettings] = await Promise.all([
+        configService.getAll(),
+        tenantSettingsService.getSettings(),
+      ]);
+      setConfigs(syncIgvConfig(data, tenantSettings.igv));
     } catch {
       toast('Error al cargar las configuraciones', 'error');
     } finally {
@@ -220,9 +286,25 @@ export const ConfigPage = () => {
     }
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
   const handleSave = async (config: ConfigDto, newValue: string) => {
+    if (config.name === ConfigKey.IGV) {
+      const igv = Number(newValue);
+
+      if (!Number.isFinite(igv)) {
+        toast('El IGV debe ser un número válido', 'error');
+        return;
+      }
+
+      const updatedSettings = await tenantSettingsService.patchSettings({ igv });
+      setConfigs((prev) => syncIgvConfig(prev, updatedSettings.igv));
+      toast('Configuración guardada', 'success');
+      return;
+    }
+
     const updated = await configService.patch(config.id, newValue);
     setConfigs((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
     toast('Configuración guardada', 'success');
@@ -231,42 +313,42 @@ export const ConfigPage = () => {
   // Partition configs — hide technical migration keys
   const visible = configs.filter((c) => !isTechnical(c.name));
 
-  const general   = visible.filter((c) => getMeta(c.name).group === 'general');
-  const sales     = visible.filter((c) => getMeta(c.name).group === 'sales');
+  const general = visible.filter((c) => getMeta(c.name).group === 'general');
+  const sales = visible.filter((c) => getMeta(c.name).group === 'sales');
   const inventory = visible.filter((c) => getMeta(c.name).group === 'inventory');
-  const other     = visible.filter((c) => !CONFIG_META[c.name]);
+  const other = visible.filter((c) => !CONFIG_META[c.name]);
 
   return (
     <div className="view-wrapper-scroll">
-    <div className="config-page">
-      <div className="config-page-header">
-        <h2 className="config-page-title">Configuraciones</h2>
-        <p className="config-page-subtitle">
-          Ajusta el comportamiento de la aplicación para tu empresa.
-        </p>
-      </div>
+      <div className="config-page">
+        <div className="config-page-header">
+          <h2 className="config-page-title">Configuraciones</h2>
+          <p className="config-page-subtitle">
+            Ajusta el comportamiento de la aplicación para tu empresa.
+          </p>
+        </div>
 
-      <div className="config-content">
-        {loading ? (
-          <div className="config-loading">
-            <i className="ph ph-circle-notch config-loading-icon" />
-            Cargando configuraciones…
-          </div>
-        ) : (
-          <>
-            <SettingGroup title="General"    configs={general}   onSave={handleSave} />
-            <SettingGroup title="Ventas"     configs={sales}     onSave={handleSave} />
-            <SettingGroup title="Inventario" configs={inventory} onSave={handleSave} />
-            {other.length > 0 && (
-              <SettingGroup title="Otras" configs={other} onSave={handleSave} />
-            )}
-            {visible.length === 0 && (
-              <p className="config-empty">No hay configuraciones disponibles.</p>
-            )}
-          </>
-        )}
+        <div className="config-content">
+          {loading ? (
+            <div className="config-loading">
+              <i className="ph ph-circle-notch config-loading-icon" />
+              Cargando configuraciones…
+            </div>
+          ) : (
+            <>
+              <SettingGroup title="General" configs={general} onSave={handleSave} />
+              <SettingGroup title="Ventas" configs={sales} onSave={handleSave} />
+              <SettingGroup title="Inventario" configs={inventory} onSave={handleSave} />
+              {other.length > 0 && (
+                <SettingGroup title="Otras" configs={other} onSave={handleSave} />
+              )}
+              {visible.length === 0 && (
+                <p className="config-empty">No hay configuraciones disponibles.</p>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 };
