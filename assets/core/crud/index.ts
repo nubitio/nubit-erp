@@ -40,6 +40,7 @@ export type {
   SmartCrudRecord,
 } from './fieldContract';
 export type { FieldOverride } from './resolveSmartCrudFields';
+export { mergeOverrides } from './resolveSmartCrudFields';
 export type {
   SmartCrudFieldOperationFlag,
   SmartCrudNormalizedFieldOperationSemantics,
