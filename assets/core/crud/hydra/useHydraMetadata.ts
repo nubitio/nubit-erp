@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { exceptionalFetch } from '@shared/api/network';
+import { useCoreHttpClient, type CoreHttpClient } from '@core/http';
 import i18n from '../../../i18n';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import type { HydraApiDoc, OpenApiDoc, ApiDoc } from './types';
@@ -8,29 +8,12 @@ const JSONLD_URL = '/api/docs.jsonld';
 const JSON_URL = '/api/docs.json';
 const isDev = import.meta.env.DEV;
 
-function documentationFetchOptions(): RequestInit {
-  const locale = i18n.language?.split('-')[0] || 'es';
-
-  return {
-    ...(isDev ? {} : { cache: 'force-cache' as const }),
-    headers: {
-      'Accept-Language': locale,
-    },
-  };
-}
-
 /**
  * Try to fetch and validate a Hydra JSON-LD doc.
  * Returns the typed HydraApiDoc on success, or throws on failure.
  */
-async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
-  const res = await exceptionalFetch(
-    url,
-    documentationFetchOptions(),
-    'api-documentation',
-  );
-  if (!res.ok) throw new Error(`Failed to load Hydra API doc: ${res.status} ${res.statusText}`);
-  const json = (await res.json()) as HydraApiDoc;
+async function fetchHydraDoc(httpClient: CoreHttpClient, url: string): Promise<HydraApiDoc> {
+  const { data: json } = await httpClient.get<HydraApiDoc>(url);
   // Validate that it looks like a Hydra ApiDocumentation
   const jsonType = json['@type'] as string;
   if (
@@ -46,14 +29,8 @@ async function fetchHydraDoc(url: string): Promise<HydraApiDoc> {
  * Try to fetch and validate an OpenAPI 3.1 doc.
  * Returns the typed OpenApiDoc on success, or throws on failure.
  */
-async function fetchOpenApiDoc(url: string): Promise<OpenApiDoc> {
-  const res = await exceptionalFetch(
-    url,
-    documentationFetchOptions(),
-    'api-documentation',
-  );
-  if (!res.ok) throw new Error(`Failed to load OpenAPI doc: ${res.status} ${res.statusText}`);
-  const json = (await res.json()) as OpenApiDoc;
+async function fetchOpenApiDoc(httpClient: CoreHttpClient, url: string): Promise<OpenApiDoc> {
+  const { data: json } = await httpClient.get<OpenApiDoc>(url);
   // Validate that it looks like an OpenAPI 3.x doc
   if (typeof json.openapi !== 'string' || !json.openapi.startsWith('3')) {
     throw new Error('useHydraMetadata: response is not a valid OpenAPI 3.x doc');
@@ -74,10 +51,10 @@ export const API_DOC_QUERY_KEY = ['api-doc-discovery'] as const;
  *   2. Fall back to /api/docs.json (OpenAPI 3.1)
  *   3. Throw an Error if both fail so React Query sets isError = true
  */
-async function fetchApiDoc(): Promise<ApiDoc> {
+async function fetchApiDoc(httpClient: CoreHttpClient): Promise<ApiDoc> {
   // 1. Try Hydra JSON-LD first
   try {
-    const doc = await fetchHydraDoc(JSONLD_URL);
+    const doc = await fetchHydraDoc(httpClient, JSONLD_URL);
     return { format: 'hydra', doc };
   } catch {
     // fall through to OpenAPI
@@ -85,7 +62,7 @@ async function fetchApiDoc(): Promise<ApiDoc> {
 
   // 2. Fall back to OpenAPI JSON
   try {
-    const doc = await fetchOpenApiDoc(JSON_URL);
+    const doc = await fetchOpenApiDoc(httpClient, JSON_URL);
     return { format: 'openapi', doc };
   } catch {
     // both failed — fall through to throw
@@ -105,10 +82,11 @@ export interface UseHydraMetadataResult {
 }
 
 export function useHydraMetadata(): UseHydraMetadataResult {
+  const httpClient = useCoreHttpClient();
   const locale = i18n.language?.split('-')[0] || 'es';
   const { data, error, isPending } = useQuery<ApiDoc, Error>({
     queryKey: [...API_DOC_QUERY_KEY, locale],
-    queryFn: fetchApiDoc,
+    queryFn: () => fetchApiDoc(httpClient),
     staleTime: isDev ? 0 : 5 * 60_000, // 0 in dev, 5 min in prod
     refetchOnWindowFocus: isDev,
     refetchOnReconnect: isDev,

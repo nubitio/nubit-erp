@@ -1,6 +1,6 @@
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { DateUtils } from '../../shared/lib/DateUtils';
+import { DateUtils } from '../date';
 import type { FormDataRecord } from './FormDataSnapshot';
 
 function trimTrailingSlash(value: string): string {

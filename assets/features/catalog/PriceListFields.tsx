@@ -1,5 +1,4 @@
-import { Field } from '@core/field/Field';
-import { identityField, textField } from '@core/field/FieldBuilders';
+import { identityField, textField, type Field } from '@nubit/core';
 
 export const PriceListFields = () => {
   const fields: Field[] = [];

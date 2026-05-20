@@ -1,12 +1,9 @@
-import { SmartCrudPage, defineResource } from '@core/crud';
-import { defineFields } from '@core/crud/fieldContract';
+import { FieldType, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
 import type { MutableRefObject } from 'react';
-import { FieldType } from '@core/field/FieldType';
 import { supplierEvents } from '@core/event/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@core/data/DataRecord';
 
 type FormEditorRef = {
   instance: () => {

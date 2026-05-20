@@ -1,11 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Constants } from '@core/common/Constants';
-import { DateUtils } from '@shared/lib/DateUtils';
-import { defineFields } from '@core/crud/fieldContract';
-import { defineResource, SmartCrudPage } from '@core/crud';
+import { DateUtils, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
-import type { DataRecord } from '@core/data/DataRecord';
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────

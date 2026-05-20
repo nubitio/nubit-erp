@@ -1,9 +1,10 @@
-import { httpClient } from '../../shared/api/HttpClient';
 import { serializeFormFields, serializeDetailRows } from './serializeFormData';
 import type { UseFormSubmitAccessors } from './FormSubmitAccessors';
 import type { UseFormSubmitOptions } from './FormSubmitOptions';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
+import { useCoreRuntime } from '../runtime';
 import type { FormDataRecord } from './FormDataSnapshot';
+import { FORM_ERRORS_EVENT } from './FormEvents';
 
 export type { UseFormSubmitAccessors } from './FormSubmitAccessors';
 export type { UseFormSubmitOptions } from './FormSubmitOptions';
@@ -23,6 +24,7 @@ export const useFormSubmit = (
   validateFn: () => boolean,
 ) => {
   const { t } = useCoreTranslation();
+  const { confirm } = useCoreRuntime();
 
   const getIdField = () => options.fields.find((f) => f.isIdentity)?.name ?? '';
   const getDetailIdField = () => options.detailFields?.find((f) => f.isIdentity)?.name ?? '';
@@ -85,8 +87,8 @@ export const useFormSubmit = (
     };
 
     const request = accessors.isEditMode()
-      ? httpClient.patch(`${options.url}/${id}`, payload)
-      : httpClient.post(options.url, payload);
+      ? options.httpClient.patch(`${options.url}/${id}`, payload)
+      : options.httpClient.post(options.url, payload);
 
     request
       .then((response) => {
@@ -94,6 +96,18 @@ export const useFormSubmit = (
         options.onSaveSuccess?.(response);
       })
       .catch((err: unknown) => {
+        if (
+          typeof err === 'object' &&
+          err !== null &&
+          'status' in err &&
+          err.status === 422 &&
+          'data' in err &&
+          typeof err.data === 'object' &&
+          err.data !== null &&
+          'violations' in err.data
+        ) {
+          emit(FORM_ERRORS_EVENT, err.data.violations);
+        }
         options.onSaveError?.(err);
       })
       .finally(finalize);
@@ -102,7 +116,7 @@ export const useFormSubmit = (
   /** Handle the DELETE event: confirm dialog → DELETE HTTP */
   const handleDelete = (payload: DeletePayload): void => {
     const { LOADING: loadingEvent, SUCCESS: successEvent } = options.events ?? {};
-    const confirmed = window.confirm(
+    const confirmed = confirm(
       `${t('dialog.confirmDeleteTitle')}\n\n${t('dialog.confirmDelete')}`,
     );
     if (!confirmed) return;
@@ -115,7 +129,7 @@ export const useFormSubmit = (
       options.onLoadingChange?.(false);
     };
 
-    httpClient
+    options.httpClient
       .delete(`${options.url}/${payload.row[getIdField()]}`)
       .then((response: unknown) => {
         if (successEvent) emit(successEvent, response);

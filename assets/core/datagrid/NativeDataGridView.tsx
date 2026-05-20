@@ -19,8 +19,9 @@ import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOpt
 import type { GridHandle } from './GridHandle';
 import type { FilterRule } from '@core/field/FilterRule';
 import type { ToolbarButtonItem } from '@core/event/EventTypes';
-import toast from '@shared/lib/SharedUtils';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
+import { useCoreRuntime } from '@core/runtime';
+import { useCoreHttpClient } from '@core/http';
 
 type SortRule = { selector: string; desc: boolean };
 
@@ -304,17 +305,18 @@ function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryI
 }
 
 function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
+  const httpClient = useCoreHttpClient();
   const [rows, setRows] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const source = new ApiPlatformRemoteDataSource({ url, idField: getIdField(fields) });
+    const source = new ApiPlatformRemoteDataSource({ url, idField: getIdField(fields), httpClient });
     setLoading(true);
     source
       .load({})
       .then((result) => setRows(result.data))
       .finally(() => setLoading(false));
-  }, [fields, url]);
+  }, [fields, httpClient, url]);
 
   if (loading) return <div className="native-datagrid__loading">Cargando...</div>;
   if (rows.length === 0) return <div className="native-datagrid__empty">Sin detalle</div>;
@@ -345,6 +347,8 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
 
 export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((options, ref) => {
   const { t } = useCoreTranslation();
+  const { notify } = useCoreRuntime();
+  const httpClient = useCoreHttpClient();
   const navigate = useNavigate();
   const [on, emit] = useEvents();
   const idField = useMemo(() => getIdField(options.fields), [options.fields]);
@@ -379,8 +383,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
         idField,
         defaultFilterRules: options.filter as unknown[][] | undefined,
         defaultSortRules: sort,
+        httpClient,
       }),
-    [idField, options.filter, options.url, sort],
+    [httpClient, idField, options.filter, options.url, sort],
   );
 
   const loadRows = useCallback(async () => {
@@ -417,12 +422,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       .filter((f) => f.filterable && f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
       .forEach((f) => {
         loadedFilterOptionsRef.current.add(f.name);
-        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField })
+        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField, httpClient })
           .load({ take: 500 })
           .then((result) => setFilterRemoteOptions((prev) => ({ ...prev, [f.name]: result.data })))
           .catch(() => {});
       });
-  }, [visibleFields]);
+  }, [httpClient, visibleFields]);
 
   useImperativeHandle(ref, () => ({
     showLoading: (message) => {
@@ -486,7 +491,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     if (row) {
       if (options.events?.EDIT) emit(options.events.EDIT, { row });
     } else {
-      toast(t('grid.selectRequired'), 'warning', 2000);
+      notify(t('grid.selectRequired'), 'warning', 2000);
     }
   };
   const onDeleteClick = () => {
@@ -494,7 +499,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     if (row) {
       setConfirmRow(row);
     } else {
-      toast(t('grid.selectRequired'), 'warning', 2000);
+      notify(t('grid.selectRequired'), 'warning', 2000);
     }
   };
 

@@ -10,15 +10,15 @@ import React, {
   useState,
 } from 'react';
 
-import { FORM_ERRORS_EVENT, httpClient } from '@shared/api/HttpClient';
-import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@core/event/EventHook';
 import { Field } from '@core/field/Field';
 import { FieldType } from '@core/field/FieldType';
 import { ApiPlatformRemoteDataSource } from '@core/data/ApiPlatformRemoteDataSource';
 import type { DataRecord } from '@core/data/DataRecord';
 import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
-import { FORM_EVENTS } from './FormEvents';
+import { useCoreRuntime } from '@core/runtime';
+import { useCoreHttpClient, type CoreHttpClient } from '@core/http';
+import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
 import { buildEmptyRow, normalizeFormData } from './FormDataTransform';
 import { buildFormLayoutModel, type FormLayoutGroup, type FormLayoutModel } from './FormLayoutModel';
 import type { FormDataRecord } from './FormDataSnapshot';
@@ -32,7 +32,7 @@ type FieldState = { readonly?: boolean; disabled?: boolean; hidden?: boolean; va
 type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
 
-function createRemoteSource(field: Field): ApiPlatformRemoteDataSource {
+function createRemoteSource(field: Field, httpClient: CoreHttpClient): ApiPlatformRemoteDataSource {
   return new ApiPlatformRemoteDataSource({
     url: field.url ?? '',
     idField: field.valueField,
@@ -40,6 +40,7 @@ function createRemoteSource(field: Field): ApiPlatformRemoteDataSource {
     defaultFilterRules: fieldFilters(field),
     options: field.loadOptions,
     iriMode: field.valueField === '_iri',
+    httpClient,
   });
 }
 
@@ -81,6 +82,7 @@ function NativeEntitySelect({
   className,
   disabled,
   field,
+  httpClient,
   id,
   onChange,
   options,
@@ -91,6 +93,7 @@ function NativeEntitySelect({
   className: string;
   disabled?: boolean;
   field: Field;
+  httpClient: CoreHttpClient;
   id?: string;
   onChange: (value: unknown) => void;
   options: DataRecord[];
@@ -115,7 +118,7 @@ function NativeEntitySelect({
     const searchValue = query.trim();
     const timer = setTimeout(() => {
       setLoading(true);
-      createRemoteSource(field)
+      createRemoteSource(field, httpClient)
         .load({
           take: 50,
           searchExpr: fieldSearchExpr(field),
@@ -127,7 +130,7 @@ function NativeEntitySelect({
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [field, open, options, query]);
+  }, [field, httpClient, open, options, query]);
 
   const selectItem = (item: DataRecord) => {
     const nextValue = fieldKeyValue(field, item);
@@ -244,6 +247,7 @@ function NativeDetailGrid({
   allowDeleting = true,
   allowUpdating = true,
   detailFields,
+  httpClient,
   onRowsChange,
   onRowsMutated,
   remoteOptions,
@@ -253,6 +257,7 @@ function NativeDetailGrid({
   allowDeleting?: boolean;
   allowUpdating?: boolean;
   detailFields: Field[];
+  httpClient: CoreHttpClient;
   onRowsChange: (rows: FormDataRecord[]) => void;
   onRowsMutated: () => void;
   remoteOptions: Record<string, DataRecord[]>;
@@ -300,6 +305,7 @@ function NativeDetailGrid({
             className="native-form__control"
             disabled={!allowUpdating || field.disabled}
             field={field}
+            httpClient={httpClient}
             options={items}
             value={value}
             onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
@@ -383,6 +389,8 @@ function NativeDetailGrid({
 
 export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, ref) => {
   const { t } = useCoreTranslation();
+  const { notify } = useCoreRuntime();
+  const httpClient = useCoreHttpClient();
   const [on, emit] = useEvents();
   const isEdit = useRef(false);
   const uploadedFiles = useRef<UploadedFile[]>([]);
@@ -437,7 +445,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
         setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         return;
       }
-      const source = createRemoteSource(field);
+      const source = createRemoteSource(field, httpClient);
       source
         .load({ take: 50 })
         .then((result) => {
@@ -450,7 +458,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         });
     });
-  }, [optionFields, setFieldValue]);
+  }, [httpClient, optionFields, setFieldValue]);
 
   useEffect(() => {
     fields.forEach((field) => {
@@ -501,6 +509,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     detailPropertyName,
     format: options.format,
     events: options.events,
+    httpClient,
     onSaveSuccess: options.onSaveSuccess,
     onSaveError: options.onSaveError,
     onDeleteSuccess: options.onDeleteSuccess,
@@ -521,7 +530,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
   useEffect(() => {
     on<FormError[]>(FORM_ERRORS_EVENT, (formErrors) => {
-      toast(t('form.validationError'), 'error');
+      notify(t('form.validationError'), 'error');
       setErrors((current) => {
         const next = { ...current };
         formErrors.forEach((error) => { next[error.propertyPath] = error.message; });
@@ -634,6 +643,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           className={`native-form__control${errorClass}`}
           disabled={disabled}
           field={field}
+          httpClient={httpClient}
           id={`native-form-${field.name}`}
           options={items}
           readOnly={readOnly}
@@ -710,6 +720,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       allowDeleting={options.allowDeleting}
       allowUpdating={options.allowUpdating}
       detailFields={options.detailFields}
+      httpClient={httpClient}
       onRowsMutated={notifyDetailRowsMutated}
       remoteOptions={remoteOptions}
       rows={detailRows}

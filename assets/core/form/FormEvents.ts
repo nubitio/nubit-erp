@@ -6,3 +6,5 @@ export const FORM_EVENTS = {
   LOADING: 'on:loading',
   LOADING_DETAIL: 'on:loading:detail',
 };
+
+export const FORM_ERRORS_EVENT = 'form-errors';

@@ -1,5 +1,5 @@
 import { Constants } from '@core/common/Constants';
-import { SmartCrudPage, defineResource } from '@core/crud';
+import { SmartCrudPage, defineResource } from '@nubit/core';
 import { voucherSeriesEvents } from '@core/event/domainEvents';
 
 const resource = defineResource({

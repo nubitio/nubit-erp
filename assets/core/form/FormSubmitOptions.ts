@@ -1,5 +1,6 @@
 import type { FormEventNames } from '../event/EventTypes';
 import type { Field } from '../field/Field';
+import type { CoreHttpClient } from '../http';
 
 export interface UseFormSubmitOptions {
   url: string;
@@ -14,4 +15,5 @@ export interface UseFormSubmitOptions {
   onDeleteSuccess?: (response: unknown) => void;
   onDeleteError?: (error?: unknown) => void;
   onLoadingChange?: (loading: boolean) => void;
+  httpClient: CoreHttpClient;
 }
