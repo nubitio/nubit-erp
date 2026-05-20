@@ -43,14 +43,16 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           label: 'Notificaciones',
           badge: unreadCount,
           renderPanel: ({ close }) => (
-            <NotificationPanel
-              visible
-              onHiding={close}
-              notifications={notifications}
-              loading={loading}
-              markRead={markRead}
-              markAllRead={markAllRead}
-            />
+            <div className="notification-popover">
+              <NotificationPanel
+                visible
+                onHiding={close}
+                notifications={notifications}
+                loading={loading}
+                markRead={markRead}
+                markAllRead={markAllRead}
+              />
+            </div>
           ),
         },
       ]}
