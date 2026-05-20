@@ -912,7 +912,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
       await seedProductOption.first().click();
-      await page.waitForTimeout(400);
+
+      // Wait for the async productService.getOne() onChange to populate unitPrice before tabbing away.
+      // Column indices: 0=product, 1=qty, 2=unitPrice
+      const priceInput = insertedRow.locator('td').nth(2).locator('input').first();
+      await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
 
       // Tab through remaining cells so onChange handlers run
       await page.keyboard.press('Tab'); // qty cell
