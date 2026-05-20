@@ -2,7 +2,7 @@
 import { AppDialog } from '@shared/ui/app-dialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 
 import './DiscountDialog.scss';
 

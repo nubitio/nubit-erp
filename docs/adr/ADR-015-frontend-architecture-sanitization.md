@@ -140,6 +140,13 @@ features o red debe justificarse explicitamente. Para llamadas de negocio, usar 
 canonico; `fetch` directo solo es valido cuando la API nativa del navegador, el service worker o un
 SDK externo lo requieran y la excepcion quede documentada.
 
+La extraccion reusable futura no debe convertir `@core` en un paquete monolitico. La direccion
+actual es separar la superficie frontend en paquetes `@nubit/*`: `@nubit/ui` para primitivas
+visuales, `@nubit/core` para runtime/HTTP/eventos/i18n, `@nubit/crud` para SmartCrud y grillas,
+`@nubit/api-platform` para Hydra/OpenAPI, y `@nubit/admin` para el shell de admin panel. El shell
+puede ser reusable, pero debe recibir menus, usuario, notificaciones, acciones de header, footer y
+auth mediante props/slots/adaptadores; no debe importar servicios o features concretas de eFact.
+
 ## References
 
 - `assets/app/` — bootstrap, shell, providers y routing global existentes
@@ -147,4 +154,5 @@ SDK externo lo requieran y la excepcion quede documentada.
 - `assets/shared/api/HttpClient.ts` — cliente HTTP canonico actual
 - `assets/offline/` — subsistema transversal offline
 - `assets/core/README.md` — rol de `@core` como libreria interna reusable
+- `docs/architecture/frontend-nubit-extraction-plan.md` — plan de extraccion `@nubit/*`
 - ADR-014 — decision relacionada sobre evolucion de infraestructura reusable del frontend

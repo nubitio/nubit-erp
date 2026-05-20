@@ -1,7 +1,7 @@
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { createEndpoints } from '@shared/api/endpoints';
 
-const BASE = Constants.API_BASE_URL;
+const BASE = API_BASE_URL;
 
 export const companyEndpoints = {
   ...createEndpoints('companies'),

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import type { PaymentMethodOption, WarehouseOption } from './types';
 import { extractCollection, isCashPaymentMethod } from './posHelpers';
 import { useOfflineCatalog } from '@offline/hooks/useOfflineCatalog';
@@ -25,7 +25,7 @@ export function usePosPaymentMethods() {
     queryFn: () =>
       httpRequestData<any>(
         businessHttpClient.get<any>(
-          `${Constants.API_BASE_URL}payment-methods?itemsPerPage=100&page=1`,
+          `${API_BASE_URL}payment-methods?itemsPerPage=100&page=1`,
         ),
       ).then((responseData) => mapPaymentMethods(responseData)),
     staleTime: 5 * 60 * 1000,
@@ -48,7 +48,7 @@ export function usePosWarehouses(currentBranchId: string) {
     queryKey: ['pos-warehouses', currentBranchId],
     queryFn: () =>
       httpRequestData<any>(
-        businessHttpClient.get<any>(`${Constants.API_BASE_URL}warehouses?itemsPerPage=100&page=1`),
+        businessHttpClient.get<any>(`${API_BASE_URL}warehouses?itemsPerPage=100&page=1`),
       ).then((responseData) => {
         const list = mapWarehouses(responseData);
         const filteredByBranch =

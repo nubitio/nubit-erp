@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import type { CartItem, PosItem } from './types';
 import { IGV_RATE, nowUtcIso, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
@@ -238,12 +238,12 @@ export const usePosCheckout = ({
     try {
       const salePayload = {
         issuedAt: nowUtcIso(),
-        warehouse: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
+        warehouse: getIRI(`${API_BASE_URL}warehouses`, selectedWarehouseId),
         customer: selectedCustomerId
-          ? getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId))
+          ? getIRI(`${API_BASE_URL}customers`, String(selectedCustomerId))
           : null,
         paymentMethod: getIRI(
-          `${Constants.API_BASE_URL}payment-methods`,
+          `${API_BASE_URL}payment-methods`,
           String(selectedPaymentMethodId),
         ),
         payments: [
@@ -261,7 +261,7 @@ export const usePosCheckout = ({
         exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
         grandTotal: total.toFixed(2),
         writeItems: cart.map((item) => ({
-          product: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
+          product: getIRI(`${API_BASE_URL}products`, String(item.id)),
           qty: Number(item.quantity),
           unitPrice: toNumber(item.salePrice).toFixed(2),
           discountAmount: '0.00',
@@ -273,7 +273,7 @@ export const usePosCheckout = ({
         tenantId,
         storeId,
         warehouseId: selectedWarehouseId,
-        endpointUrl: `${Constants.API_BASE_URL}sales`,
+        endpointUrl: `${API_BASE_URL}sales`,
         requestBody: salePayload,
         items: cart.map((item) => ({
           productId: item.id,

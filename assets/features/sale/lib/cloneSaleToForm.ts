@@ -1,4 +1,4 @@
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
 
 type EmitFn = (eventName: string, payload?: any) => void;
@@ -19,9 +19,9 @@ export const cloneSaleToForm = ({
   emit(loadingEventName, true);
 
   void Promise.all([
-    httpRequestData<any>(businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`)),
+    httpRequestData<any>(businessHttpClient.get<any>(`${API_BASE_URL}sales/${saleId}`)),
     httpRequestData<any>(
-      businessHttpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/items`),
+      businessHttpClient.get<any>(`${API_BASE_URL}sales/${saleId}/items`),
     ),
   ])
     .then(([sale, items]) => {

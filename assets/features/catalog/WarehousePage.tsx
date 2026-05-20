@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@nubit/core';
-import { warehouseEvents } from '@core/event/domainEvents';
+import { warehouseEvents } from '@nubit/core';
 import { warehouseEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource({

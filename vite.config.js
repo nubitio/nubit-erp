@@ -18,8 +18,12 @@ import react from '@vitejs/plugin-react';
 const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost';
 
 const frontendAliases = {
-  // Internal library facade. Prefer this for app/features consumption.
+  // Nubit package facades — prefer these over direct @core/* / @app/shell imports.
+  '@nubit/react-admin': fileURLToPath(new URL('./assets/react-admin/public.ts', import.meta.url)),
   '@nubit/core': fileURLToPath(new URL('./assets/core/public.ts', import.meta.url)),
+  '@nubit/ui': fileURLToPath(new URL('./assets/ui/public.ts', import.meta.url)),
+  '@nubit/admin': fileURLToPath(new URL('./assets/admin/public.ts', import.meta.url)),
+  '@nubit/api-platform': fileURLToPath(new URL('./assets/api-platform/public.ts', import.meta.url)),
 
   // Canonical frontend layer aliases (ADR-015)
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),

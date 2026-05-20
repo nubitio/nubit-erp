@@ -12,7 +12,7 @@ import '../../theme/theme';
 import './custom.scss';
 import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
-import { MercureManager } from '@core/mercure';
+import { MercureManager } from '@nubit/core';
 import { AppProviders } from '../AppProviders';
 
 const AppLoading = () => (

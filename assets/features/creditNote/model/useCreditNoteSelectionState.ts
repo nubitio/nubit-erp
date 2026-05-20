@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DataGridSelectionChangedEvent } from '@core/datagrid/DataGridViewOptions';
+import type { DataGridSelectionChangedEvent } from '@nubit/core';
 
 export const useCreditNoteSelectionState = () => {
   const [editDisabled, setEditDisabled] = useState(true);

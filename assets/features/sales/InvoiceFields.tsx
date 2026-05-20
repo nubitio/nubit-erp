@@ -1,5 +1,5 @@
-import { Constants } from '@core/common/Constants';
-import { Field } from '@core/field/Field';
+import { API_BASE_URL } from '@app/constants';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -10,10 +10,10 @@ import {
   textField,
   noneField,
   switchField,
-} from '@core/field/FieldBuilders';
+} from '@nubit/core';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { GridCellContext } from '@nubit/core';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -38,7 +38,7 @@ export const InvoiceFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .width(200)

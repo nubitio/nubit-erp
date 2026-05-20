@@ -1,14 +1,14 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
-import { DataGridView, type GridHandle } from '@core/ui/CrudViews';
-import { Constants } from '@core/common/Constants';
+import { DataGridView, type GridHandle } from '@nubit/core';
+import { API_BASE_URL } from '@app/constants';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { useEvents } from '@core/event/EventHook';
+import { useEvents } from '@nubit/core';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 export const CashRegisterDashboard = () => {
-  const url = Constants.API_BASE_URL + 'cash-registers/dashboard';
+  const url = API_BASE_URL + 'cash-registers/dashboard';
   const navigate = useNavigate();
   const gridRef = useRef<GridHandle | null>(null);
   const [gridError, setGridError] = useState<string | null>(null);

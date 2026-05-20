@@ -1,4 +1,4 @@
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import {
   SmartCrudPage,
   defineFields,
@@ -63,7 +63,7 @@ const booleanSwitchPatch = (name: 'system' | 'active', label: string) =>
 const resource = defineResource<CashMovementCategoryRecord>({
   id: 'cash-movement-categories',
   title: 'Categorías de caja',
-  apiUrl: Constants.API_BASE_URL + 'cash-movement-categories',
+  apiUrl: API_BASE_URL + 'cash-movement-categories',
   fields: [],
   events: cashMovementCategoryEvents,
   fieldContract: defineFields<CashMovementCategoryRecord>({

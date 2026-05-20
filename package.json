@@ -22,6 +22,7 @@
     "sass": "^1.97.3",
     "sass-loader": "^16.0.7",
     "ts-loader": "^9.5.4",
+    "tsdown": "^0.22.0",
     "typescript": "^5.9.3",
     "vite": "^6.4.1",
     "vite-plugin-pwa": "^1.2.0",
@@ -32,6 +33,7 @@
   "scripts": {
     "dev": "vite",
     "build": "yarn build:themes && vite build",
+    "build:packages": "tsdown",
     "build:themes": "sass assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
     "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
     "postinstall": "yarn build:themes",

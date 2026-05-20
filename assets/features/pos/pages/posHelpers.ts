@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { LIMA_TZ } from '@shared/lib/DateUtils';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import type { PaymentMethodOption, PosItem } from './types';
 
 export const IGV_RATE = 0.18;
@@ -123,7 +123,7 @@ export const buildCustomersUrl = (query: string, page: number) => {
     params.set('searchValue', trimmed);
   }
 
-  return `${Constants.API_BASE_URL}customers?${params.toString()}`;
+  return `${API_BASE_URL}customers?${params.toString()}`;
 };
 
 export const parseBooleanSetting = (value: unknown, fallback: boolean): boolean => {

@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import { StorageUtils } from '../../../shared/lib/StorageUtils';
 
 class BranchService {
@@ -7,7 +7,7 @@ class BranchService {
   private static readonly SELECTED_BRANCH_NAME = 'selectedBranchName';
 
   getAll() {
-    return httpClient.get<any>(`${Constants.API_BASE_URL}branches`);
+    return httpClient.get<any>(`${API_BASE_URL}branches`);
   }
 
   /**

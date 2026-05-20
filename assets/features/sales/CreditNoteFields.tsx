@@ -1,5 +1,5 @@
-import { Constants } from '@core/common/Constants';
-import { Field } from '@core/field/Field';
+import { API_BASE_URL } from '@app/constants';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -10,10 +10,10 @@ import {
   selectField,
   textareaField,
   textField,
-} from '@core/field/FieldBuilders';
+} from '@nubit/core';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { GridCellContext } from '@nubit/core';
 
 const reasonCodes: { value: string; text: string }[] = [
   {
@@ -63,7 +63,7 @@ export const CreditNoteFields = () => {
 
   fields.push(identityField().label('ID').build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'tax-documents', 'id', 'fullNumber')
+    entityField(API_BASE_URL + 'tax-documents', 'id', 'fullNumber')
       .name('relatedTaxDocument')
       .label('Comprobante')
       .visible(false)
@@ -97,7 +97,7 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .formatter((cell: GridCellContext) => cell.value?.businessName)

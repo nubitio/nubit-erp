@@ -1,28 +1,28 @@
 import { businessHttpClient } from '@shared/api/network';
 import AuthResponse from '@shared/api/AuthResponse';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 
 class AuthService {
   login(username: string, password: string) {
-    return businessHttpClient.post<AuthResponse>(Constants.API_BASE_URL + 'auth/login', {
+    return businessHttpClient.post<AuthResponse>(API_BASE_URL + 'auth/login', {
       username,
       password,
     });
   }
 
   selectBranch(branchId: string) {
-    return businessHttpClient.post<AuthResponse>(Constants.API_BASE_URL + 'auth/select-branch', {
+    return businessHttpClient.post<AuthResponse>(API_BASE_URL + 'auth/select-branch', {
       branchId,
     });
   }
 
   logout() {
-    return businessHttpClient.post(Constants.API_BASE_URL + 'auth/logout');
+    return businessHttpClient.post(API_BASE_URL + 'auth/logout');
   }
 
   changePassword(currentPassword: string, newPassword: string) {
     return businessHttpClient.post<{ message: string }>(
-      Constants.API_BASE_URL + 'auth/change-password',
+      API_BASE_URL + 'auth/change-password',
       { currentPassword, newPassword },
     );
   }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { FORM_EVENTS } from '@core/ui/CrudViews';
-import type { FormHandle } from '@core/form/FormHandle';
+import { FORM_EVENTS } from '@nubit/core';
+import type { FormHandle } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

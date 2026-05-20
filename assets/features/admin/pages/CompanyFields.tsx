@@ -1,5 +1,5 @@
 import { type RefObject } from 'react';
-import { Field } from '@core/field/Field';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -7,12 +7,12 @@ import {
   enumField,
   textField,
   textareaField,
-} from '@core/field/FieldBuilders';
-import type { FormHandle } from '@core/form/FormHandle';
+} from '@nubit/core';
+import type { FormHandle } from '@nubit/core';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import { Constants } from '@core/common/Constants';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import { API_BASE_URL } from '@app/constants';
+import type { GridCellContext } from '@nubit/core';
 
 export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
@@ -77,7 +77,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(textField().name('tradeName').label('Nombre comercial').build());
   fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
   fields.push(
-    entityField(`${Constants.API_BASE_URL}ubigeos`, 'code', 'name')
+    entityField(`${API_BASE_URL}ubigeos`, 'code', 'name')
       .name('ubigeo')
       .label('Ubigeo (INEI)')
       .searchExpr(['code', 'department', 'province', 'district'])
@@ -104,7 +104,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(textField().name('bankCci').label('CCI').build());
   fields.push(textField().name('detraccionAccount').label('Cuenta de detracciones').build());
   fields.push(
-    imageField(Constants.API_BASE_URL)
+    imageField(API_BASE_URL)
       .name('logo')
       .label('Logo')
       .formatter((e: GridCellContext) => {

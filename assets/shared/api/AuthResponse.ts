@@ -1,4 +1,4 @@
-import type { DataRecord } from '@core/data/DataRecord';
+import type { DataRecord } from '@nubit/core';
 
 export default interface AuthResponse {
   token?: string;

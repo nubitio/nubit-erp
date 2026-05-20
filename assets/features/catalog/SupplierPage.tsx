@@ -1,6 +1,6 @@
 import { FieldType, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
 import type { MutableRefObject } from 'react';
-import { supplierEvents } from '@core/event/domainEvents';
+import { supplierEvents } from '@nubit/core';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';

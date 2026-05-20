@@ -1,6 +1,6 @@
-import { Constants } from '@core/common/Constants';
-import type { FormHandle } from '@core/form/FormHandle';
-import { Field } from '@core/field/Field';
+import { API_BASE_URL } from '@app/constants';
+import type { FormHandle } from '@nubit/core';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -11,8 +11,7 @@ import {
   selectField,
   textareaField,
   noneField,
-} from '@core/field/FieldBuilders';
-import { userInformation } from '@core/common/UserInformation';
+} from '@nubit/core';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
@@ -21,10 +20,12 @@ import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
-import type { DataRecord } from '@core/data/DataRecord';
+import type { GridCellContext } from '@nubit/core';
+import type { DataRecord } from '@nubit/core';
 
 interface SaleFieldCallbacks {
+  branchId?: string | number;
+  userId?: string | number;
   onOpenAddCustomer?: () => void;
   onOpenDiscount?: (payload: { total: number; discountPercent: number }) => void | Promise<void>;
 }
@@ -78,14 +79,14 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
       .filters([
         {
           field: 'branch',
           operator: '=',
-          value: userInformation().currentBranchId,
+          value: callbacks?.branchId ?? '',
         },
       ])
       .autoSelectIfSingle(true)
@@ -97,7 +98,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .mode('remote')
@@ -125,7 +126,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'price-lists', 'id', 'name')
+    entityField(API_BASE_URL + 'price-lists', 'id', 'name')
       .name('price_list')
       .label('Tarifa')
       .valueType('number')
@@ -150,7 +151,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'payment-methods', 'id', 'name')
+    entityField(API_BASE_URL + 'payment-methods', 'id', 'name')
       .name('paymentMethod')
       .label('Método de pago')
       .valueType('number')
@@ -248,7 +249,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     numberField()
       .name('sellerUserId')
-      .defaultValue(userInformation().currentUserId)
+      .defaultValue(callbacks?.userId)
       .visible(false)
       .hidden(true)
       .build(),
@@ -266,7 +267,7 @@ export const SaleDetailFields = (
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
+    entityField(API_BASE_URL + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(300)

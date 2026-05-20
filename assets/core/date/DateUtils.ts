@@ -1,8 +1,12 @@
+import { getCoreTimezone, getCoreLocale } from '../config/CoreConfig';
+
+// Retained for backward-compat: code that imports LIMA_TZ directly still works.
+// New code should use getCoreTimezone() from CoreConfig.
 export const LIMA_TZ = 'America/Lima';
 
-function limaDateParts(date: Date): { year: number; month: number; day: number } {
+function coreDateParts(date: Date): { year: number; month: number; day: number } {
   const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: LIMA_TZ,
+    timeZone: getCoreTimezone(),
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -15,7 +19,7 @@ function limaDateParts(date: Date): { year: number; month: number; day: number }
 
 export class DateUtils {
   static dateFormatter(date: Date): string {
-    const { year, month, day } = limaDateParts(date);
+    const { year, month, day } = coreDateParts(date);
     return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
   }
 
@@ -35,8 +39,8 @@ export class DateUtils {
 
   static format(dateString: string, formatOptions?: Intl.DateTimeFormatOptions): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-PE', {
-      timeZone: LIMA_TZ,
+    return date.toLocaleDateString(getCoreLocale(), {
+      timeZone: getCoreTimezone(),
       ...(formatOptions ?? { day: 'numeric', month: 'short', year: 'numeric' }),
     });
   }

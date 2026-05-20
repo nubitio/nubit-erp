@@ -8,7 +8,7 @@ import {
   type SmartCrudFieldPatch,
 } from '@nubit/core';
 import React from 'react';
-import { operationEvents } from '@core/event/domainEvents';
+import { operationEvents } from '@nubit/core';
 import { operationEndpoints } from './api/catalogEndpoints';
 
 interface OperationRecord extends DataRecord {

@@ -1,11 +1,11 @@
 import { type RefObject } from 'react';
-import { Constants } from '@core/common/Constants';
-import type { FormHandle } from '@core/form/FormHandle';
-import { Field } from '@core/field/Field';
-import { entityField, textField, textareaField } from '@core/field/FieldBuilders';
+import { API_BASE_URL } from '@app/constants';
+import type { FormHandle } from '@nubit/core';
+import { Field } from '@nubit/core';
+import { entityField, textField, textareaField } from '@nubit/core';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { GridCellContext } from '@nubit/core';
 import toast from '@shared/lib/SharedUtils';
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
@@ -115,7 +115,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'price-lists', 'id', 'name')
+    entityField(API_BASE_URL + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')
       .formatter((cell: GridCellContext) => cell.value?.name)

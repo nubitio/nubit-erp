@@ -1,6 +1,5 @@
-import { Constants } from '@core/common/Constants';
-import { userInformation } from '@core/common/UserInformation';
-import { Field } from '@core/field/Field';
+import { API_BASE_URL } from '@app/constants';
+import { Field } from '@nubit/core';
 import {
   identityField,
   entityField,
@@ -9,14 +8,14 @@ import {
   numberField,
   textareaField,
   textField,
-} from '@core/field/FieldBuilders';
+} from '@nubit/core';
 import { productService } from '@features/product';
 import { ProductDto } from '@features/product/types/product.dto';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@core/field/FieldCallbacks';
+import type { GridCellContext } from '@nubit/core';
 
-export const InboundFields = () => {
+export const InboundFields = (branchId: string | number = '') => {
   const fields: Field[] = [];
 
   fields.push(identityField().label('ID').build());
@@ -24,7 +23,7 @@ export const InboundFields = () => {
     textField()
       .name('branch')
       .label('Sucursal')
-      .defaultValue('/api/branches/' + userInformation().currentBranchId)
+      .defaultValue('/api/branches/' + branchId)
       .hidden(true)
       .visible(false)
       .visibleOnForm(false)
@@ -39,7 +38,7 @@ export const InboundFields = () => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
       .width(200)
@@ -47,14 +46,14 @@ export const InboundFields = () => {
         {
           field: 'branch',
           operator: '=',
-          value: userInformation().currentBranchId,
+          value: branchId,
         },
       ])
       .required(true)
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'suppliers', 'id', 'businessName')
+    entityField(API_BASE_URL + 'suppliers', 'id', 'businessName')
       .name('supplier')
       .label('Proveedor')
       .width(240)
@@ -82,7 +81,7 @@ export const InboundDetailFields = () => {
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
+    entityField(API_BASE_URL + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(200)

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCoreHttpClient, type CoreHttpClient } from '@core/http';
-import i18n from '../../../i18n';
+import { useCoreHttpClient, type CoreHttpClient } from '@nubit/core';
+import { useCoreConfig } from '../../config/CoreConfig';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
 import type { HydraApiDoc, OpenApiDoc, ApiDoc } from './types';
 
@@ -83,7 +83,7 @@ export interface UseHydraMetadataResult {
 
 export function useHydraMetadata(): UseHydraMetadataResult {
   const httpClient = useCoreHttpClient();
-  const locale = i18n.language?.split('-')[0] || 'es';
+  const { locale } = useCoreConfig();
   const { data, error, isPending } = useQuery<ApiDoc, Error>({
     queryKey: [...API_DOC_QUERY_KEY, locale],
     queryFn: () => fetchApiDoc(httpClient),

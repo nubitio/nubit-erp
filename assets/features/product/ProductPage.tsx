@@ -8,7 +8,7 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/core';
-import { Constants } from '@core/common/Constants';
+import { API_BASE_URL } from '@app/constants';
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
 
@@ -175,7 +175,7 @@ const lotTrackingStrategyPatch = toPatch(
 );
 
 const photoPatch = toPatch(
-  imageField(Constants.API_BASE_URL)
+  imageField(API_BASE_URL)
     .name('photo')
     .label('Imagen')
     .width(120)
@@ -192,7 +192,7 @@ const photoPatch = toPatch(
 const productResource = defineResource<ProductRecord>({
   id: 'product',
   title: 'Productos',
-  apiUrl: Constants.API_BASE_URL + 'products',
+  apiUrl: API_BASE_URL + 'products',
   fields: [],
   fieldContract: defineFields<ProductRecord>({
     source: 'hydra',
