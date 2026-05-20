@@ -8,6 +8,7 @@ export {
   defineResource,
   initCoreI18n,
   resolveSmartCrudFields,
+  mergeOverrides,
   useCoreTranslation,
   useCrudPage,
   usePermissions,
@@ -93,10 +94,10 @@ export {
   useCoreConfig,
 } from './config/CoreConfig';
 export type { CoreConfig, CoreConfigProviderProps } from './config/CoreConfig';
-export { ConfirmDialog } from './components';
-export type { ConfirmDialogProps } from './components';
-export { AppDialog } from './ui/app-dialog';
-export type { AppDialogProps } from './ui/app-dialog';
+export { ConfirmDialog } from '@nubit/ui';
+export type { ConfirmDialogProps } from '@nubit/ui';
+export { AppDialog } from '@nubit/ui';
+export type { AppDialogProps } from '@nubit/ui';
 export { DataGridView, DATA_GRID_EVENTS } from './datagrid/DataGridView';
 export { DialogView } from './dialog/DialogView';
 export { FormView, FORM_EVENTS } from './form/FormView';

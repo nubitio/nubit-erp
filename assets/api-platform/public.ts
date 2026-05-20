@@ -15,32 +15,35 @@ export type {
 export {
   parseHydraDoc,
   parseOpenApiDoc,
-} from '@core/crud/hydra/openApiParser';
+} from './openApiParser';
 
 export {
   mapHydraSchemaToFields,
   resolveRangeTag,
-} from '@core/crud/hydra/HydraToFieldMapper';
+} from './HydraToFieldMapper';
 
 export {
   useHydraMetadata,
-} from '@core/crud/hydra/useHydraMetadata';
+  API_DOC_QUERY_KEY,
+} from './useHydraMetadata';
 
 export {
   useResourceSchema,
-} from '@core/crud/hydra/useResourceSchema';
+} from './useResourceSchema';
+
+export type { FieldOverride } from './useResourceSchema';
 
 export {
   SchemaProvider,
   useSchemaContext,
-} from '@core/crud/hydra/SchemaContext';
+} from './SchemaContext';
 
 export type {
   UseSchemaContextResult,
-} from '@core/crud/hydra/SchemaContext';
+} from './SchemaContext';
 
 export type {
   HydraApiDoc,
   OpenApiDoc,
   ApiDoc,
-} from '@core/crud/hydra/types';
+} from './types';
