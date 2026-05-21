@@ -1,18 +1,19 @@
 import { n as __reExport, t as __exportAll } from "./chunk-BBjsoOtd.mjs";
 import React, { createContext, forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
-import "../core/datagrid/NativeDataGridView.scss";
+import "./datagrid/NativeDataGridView.scss";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import { API_DOC_QUERY_KEY, ApiPlatformRemoteDataSource, useResourceSchema } from "@nubit/api-platform";
+import { DateUtils, dispatch, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useEvents, useMercureSubscription } from "@nubit/core";
 import { useTranslation } from "react-i18next";
-import "../core/form/NativeFormView.scss";
+import "./form/NativeFormView.scss";
 import { createPortal } from "react-dom";
 import { DateTime } from "luxon";
-import "../core/dialog/CrudDialogView.scss";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import "./dialog/CrudDialogView.scss";
 import { AppDialog, AppDialog as AppDialog$1, ConfirmDialog, ConfirmDialog as ConfirmDialog$1 } from "@nubit/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { API_DOC_QUERY_KEY, useResourceSchema } from "@nubit/api-platform";
 import i18next from "i18next";
-//#region assets/core/crud/defineResource.ts
+//#region assets/crud/crud/defineResource.ts
 const stringResourceCache = /* @__PURE__ */ new Map();
 function cacheKey(apiUrl, overrides) {
 	if (!overrides) return apiUrl;
@@ -50,7 +51,7 @@ function defineResource(configOrUrl, overrides) {
 	return configOrUrl;
 }
 //#endregion
-//#region assets/core/crud/usePermissions.ts
+//#region assets/crud/crud/usePermissions.ts
 /** Resolve a single permission entry: callable → call it, boolean → use it, undefined → fallback. */
 function resolve(value, fallback) {
 	if (value === void 0) return fallback;
@@ -105,7 +106,7 @@ function usePermissions(resource, supportedOperations = []) {
 	}, [resource.id, opsKey]);
 }
 //#endregion
-//#region assets/core/crud/useSelectionState.ts
+//#region assets/crud/crud/useSelectionState.ts
 function useSelectionState(identityField) {
 	const [selectedIds, setSelectedIds] = useState([]);
 	const onSelectionChanged = useCallback((selectedRows) => {
@@ -127,7 +128,7 @@ function useSelectionState(identityField) {
 	};
 }
 //#endregion
-//#region assets/core/crud/useColumnPreset.ts
+//#region assets/crud/crud/useColumnPreset.ts
 function readFromStorage(resourceId) {
 	try {
 		return localStorage.getItem(`column-preset:${resourceId}`);
@@ -208,7 +209,7 @@ function createScopedEventBus(resourceId) {
 	};
 }
 //#endregion
-//#region assets/core/crud/resolveCrudResource.ts
+//#region assets/crud/crud/resolveCrudResource.ts
 function resolveCrudResource(resource, overrides = {}) {
 	const events = resource.events ?? createScopedEventBus(resource.id);
 	return {
@@ -218,7 +219,7 @@ function resolveCrudResource(resource, overrides = {}) {
 	};
 }
 //#endregion
-//#region assets/core/crud/useCrudPage.ts
+//#region assets/crud/crud/useCrudPage.ts
 function useCrudPage(resource) {
 	const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
 	const events = resolvedResource.events;
@@ -240,273 +241,13 @@ function useCrudPage(resource) {
 	};
 }
 //#endregion
-//#region assets/core/datagrid/DataGridEvents.ts
+//#region assets/crud/datagrid/DataGridEvents.ts
 const DATA_GRID_EVENTS = {
 	SELECTION_CHANGED: "datagrid:selection.changed",
 	TOOLBAR_EVENT: "datagrid:toolbar.event"
 };
 //#endregion
-//#region assets/core/http/CoreHttpClient.ts
-function joinUrl(baseUrl, url) {
-	if (/^https?:\/\//.test(url) || url.startsWith("/")) return url;
-	return `${baseUrl.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;
-}
-function serializeParams(params) {
-	const parts = [];
-	function append(prefix, value) {
-		if (value === null || value === void 0) return;
-		if (Array.isArray(value)) {
-			value.forEach((item, index) => append(`${prefix}[${index}]`, item));
-			return;
-		}
-		if (typeof value === "object") {
-			Object.entries(value).forEach(([key, nestedValue]) => {
-				append(`${prefix}[${key}]`, nestedValue);
-			});
-			return;
-		}
-		parts.push(`${encodeURIComponent(prefix)}=${encodeURIComponent(String(value))}`);
-	}
-	Object.entries(params).forEach(([key, value]) => append(key, value));
-	return parts.join("&");
-}
-function withParams(url, params) {
-	if (!params || Object.keys(params).length === 0) return url;
-	const query = serializeParams(params);
-	if (!query) return url;
-	return `${url}${url.includes("?") ? "&" : "?"}${query}`;
-}
-function createHttpError(message, status, data) {
-	return Object.assign(new Error(message), {
-		status,
-		data
-	});
-}
-async function readResponseBody(response, responseType) {
-	if (response.status === 204) return;
-	if (responseType === "arraybuffer") return await response.arrayBuffer();
-	if (responseType === "blob") return await response.blob();
-	if (responseType === "text") return await response.text();
-	return await response.json();
-}
-var CoreHttpClient = class {
-	config;
-	refreshPromise = null;
-	constructor(config = {}) {
-		this.config = config;
-	}
-	headers(extraHeaders) {
-		const browserLocale = typeof navigator !== "undefined" ? navigator.language?.split("-")[0] : void 0;
-		return {
-			"Accept-Language": this.config.locale ?? browserLocale ?? "es",
-			...extraHeaders
-		};
-	}
-	async refreshSession() {
-		const refreshPath = this.config.refreshPath ?? "auth/refresh";
-		const refreshUrl = joinUrl(this.config.baseUrl ?? "/api/", refreshPath);
-		this.refreshPromise ??= globalThis.fetch(refreshUrl, {
-			method: "POST",
-			credentials: this.config.credentials ?? "include"
-		}).then(async (response) => {
-			if (!response.ok) throw createHttpError("Session refresh failed", response.status, await this.safeErrorData(response));
-		}).finally(() => {
-			this.refreshPromise = null;
-		});
-		return this.refreshPromise;
-	}
-	async safeErrorData(response) {
-		try {
-			return await response.json();
-		} catch {
-			return {};
-		}
-	}
-	async request(method, url, body, config, retryOnUnauthorized = true) {
-		const requestUrl = withParams(joinUrl(this.config.baseUrl ?? "/api/", url), config?.params);
-		const headers = this.headers(config?.headers);
-		if (body !== void 0 && body !== null && !(body instanceof FormData)) headers["Content-Type"] = headers["Content-Type"] ?? "application/json";
-		const response = await globalThis.fetch(requestUrl, {
-			method,
-			headers,
-			credentials: this.config.credentials ?? "include",
-			signal: config?.signal,
-			body: body === void 0 || body === null ? void 0 : body instanceof FormData ? body : JSON.stringify(body)
-		});
-		if (response.ok) return {
-			response,
-			data: await readResponseBody(response, config?.responseType),
-			headers: response.headers,
-			status: response.status
-		};
-		const errorData = await this.safeErrorData(response);
-		const error = createHttpError(errorData.detail ?? errorData.message ?? "HTTP request failed", response.status, errorData);
-		const loginPath = this.config.loginPath ?? "auth/login";
-		const refreshPath = this.config.refreshPath ?? "auth/refresh";
-		const isAuthEndpoint = url.includes(loginPath) || url.includes(refreshPath);
-		if (response.status === 401 && retryOnUnauthorized && !isAuthEndpoint) try {
-			await this.refreshSession();
-			return this.request(method, url, body, config, false);
-		} catch (refreshError) {
-			const unauthorizedError = refreshError instanceof Error ? Object.assign(refreshError, { status: 401 }) : error;
-			this.config.onUnauthorized?.(unauthorizedError);
-			throw unauthorizedError;
-		}
-		if (response.status === 401) this.config.onUnauthorized?.(error);
-		else this.config.onError?.(error);
-		throw error;
-	}
-	get(url, config) {
-		return this.request("GET", url, void 0, config);
-	}
-	post(url, data, config) {
-		return this.request("POST", url, data, config);
-	}
-	put(url, data, config) {
-		return this.request("PUT", url, data, config);
-	}
-	patch(url, data, config) {
-		return this.request("PATCH", url, data, {
-			...config,
-			headers: {
-				...config?.headers,
-				"Content-Type": "application/merge-patch+json"
-			}
-		});
-	}
-	delete(url, config) {
-		return this.request("DELETE", url, void 0, config);
-	}
-};
-function createCoreHttpClient(config) {
-	return new CoreHttpClient(config);
-}
-//#endregion
-//#region assets/core/http/CoreHttpContext.tsx
-const CoreHttpContext = createContext(createCoreHttpClient());
-function useCoreHttpClient() {
-	return useContext(CoreHttpContext);
-}
-//#endregion
-//#region assets/core/data/ApiPlatformRemoteDataSource.ts
-const defaultHttpClient = createCoreHttpClient({ baseUrl: "" });
-function findPreloadedItem(loadOptions, idField, id) {
-	const prependData = Array.isArray(loadOptions.prependData) ? loadOptions.prependData : [];
-	const appendData = Array.isArray(loadOptions.appendData) ? loadOptions.appendData : [];
-	return [...prependData, ...appendData].find((item) => item[idField] === id || item["@id"] === id) ?? null;
-}
-function addIriField(url, item) {
-	const itemId = item["id"] ?? item["code"] ?? item["uuid"] ?? item["slug"];
-	const iri = typeof item["@id"] === "string" ? item["@id"] : typeof itemId === "string" || typeof itemId === "number" ? `${url}/${itemId}` : void 0;
-	return {
-		...item,
-		_iri: iri
-	};
-}
-function normalizeFilterRules(filterRules, defaultFilterRules) {
-	const filters = [];
-	defaultFilterRules.forEach((rule) => filters.push(rule));
-	if (filterRules.length === 3 && typeof filterRules[0] !== "object") filters.push([
-		filterRules[0],
-		filterRules[1],
-		filterRules[2]
-	]);
-	else filterRules.forEach((rule) => {
-		filters.push(Array.isArray(rule) ? rule : [rule]);
-	});
-	return filters;
-}
-function applyLoadOptionDefaults(loadOptions, options) {
-	const nextOptions = { ...loadOptions };
-	options.forEach((option) => {
-		for (const key in option) if (Object.prototype.hasOwnProperty.call(option, key)) nextOptions[key] = option[key];
-	});
-	return nextOptions;
-}
-function normalizeSortRules(sortRules, defaultSortRules, idField) {
-	const [firstSort] = sortRules;
-	const firstSelector = typeof firstSort === "string" ? firstSort : firstSort?.selector;
-	if (sortRules.length === 1 && firstSelector === idField && defaultSortRules.length === 0) return [];
-	if (sortRules.length === 1 && firstSelector === idField) return [...defaultSortRules];
-	return sortRules;
-}
-function stripAdapterOnlyParams(loadOptions) {
-	const nextOptions = { ...loadOptions };
-	delete nextOptions.searchOperation;
-	if (nextOptions.searchExpr === void 0) delete nextOptions.searchValue;
-	return nextOptions;
-}
-function getFlatIriFilter(filter) {
-	if (!Array.isArray(filter)) return null;
-	return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
-}
-var ApiPlatformRemoteDataSource = class {
-	config;
-	httpClient;
-	constructor(config) {
-		this.config = config;
-		this.httpClient = config.httpClient ?? defaultHttpClient;
-	}
-	makeFilterRules(filterRules) {
-		return filterRules.map((filter) => `filter[]=["${filter.field}","${filter.operator}","${filter.value}"]`).join("&");
-	}
-	prepareLoadOptions(loadOptions) {
-		const withDefaults = applyLoadOptionDefaults(loadOptions, this.config.options ?? []);
-		const normalizedFilters = normalizeFilterRules(withDefaults.filter ?? [], this.config.defaultFilterRules ?? []);
-		return stripAdapterOnlyParams({
-			...withDefaults,
-			filter: normalizedFilters,
-			sort: normalizeSortRules(withDefaults.sort ?? [], this.config.defaultSortRules ?? [], this.config.idField)
-		});
-	}
-	async load(loadOptions) {
-		const preparedOptions = this.prepareLoadOptions(loadOptions);
-		if (this.config.iriMode) {
-			const flatFilter = getFlatIriFilter(preparedOptions.filter);
-			if (Array.isArray(flatFilter) && flatFilter.length === 3 && flatFilter[0] === "_iri" && flatFilter[1] === "=" && typeof flatFilter[2] === "string") {
-				const item = await this.byKey(flatFilter[2]);
-				return {
-					data: item ? [addIriField(this.config.url, item)] : [],
-					totalCount: item ? 1 : 0,
-					summary: null
-				};
-			}
-			const result = await this.fetchAll(preparedOptions);
-			return {
-				...result,
-				data: result.data.map((item) => addIriField(this.config.url, item))
-			};
-		}
-		return this.fetchAll(preparedOptions);
-	}
-	async byKey(key) {
-		const id = typeof key === "object" && key !== null ? key[this.config.idField] : key;
-		if (id === void 0) return null;
-		const loadOptions = applyLoadOptionDefaults({}, this.config.options ?? []);
-		const item = await this.fetchById(this.config.byKeyUrl ?? this.config.url, id, loadOptions);
-		return this.config.iriMode && item ? addIriField(this.config.url, item) : item;
-	}
-	async fetchAll(loadOptions) {
-		const response = await this.httpClient.get(this.config.url, { params: loadOptions });
-		let data = response.data;
-		if (loadOptions.appendData) data = [...data, ...loadOptions.appendData];
-		if (loadOptions.prependData) data = [...loadOptions.prependData, ...data];
-		const headerCount = Number(response.headers.get("x-total-count"));
-		return {
-			data,
-			totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
-			summary: null
-		};
-	}
-	async fetchById(url, id, loadOptions) {
-		const preloadedItem = findPreloadedItem(loadOptions, this.config.idField, id);
-		if (preloadedItem) return preloadedItem;
-		const resolvedUrl = typeof id === "string" && id.startsWith("/") ? id : `${url}/${id}`;
-		return this.httpClient.get(resolvedUrl).then((response) => response.data).catch(() => findPreloadedItem(loadOptions, this.config.idField, id));
-	}
-};
-//#endregion
-//#region assets/core/field/FieldType.ts
+//#region assets/crud/field/FieldType.ts
 let FieldType = /* @__PURE__ */ function(FieldType) {
 	FieldType["NONE"] = "none";
 	FieldType["TEXT"] = "text";
@@ -528,70 +269,13 @@ let FieldType = /* @__PURE__ */ function(FieldType) {
 	return FieldType;
 }({});
 //#endregion
-//#region assets/core/event/EventHook.ts
-const listeners = /* @__PURE__ */ new Map();
-function subscribe(name, handler) {
-	if (!listeners.has(name)) listeners.set(name, /* @__PURE__ */ new Set());
-	const set = listeners.get(name);
-	set.add(handler);
-	const subscription = {
-		unsubscribe: () => {
-			set.delete(handler);
-		},
-		add: (teardown) => {
-			const outer = subscription.unsubscribe;
-			subscription.unsubscribe = () => {
-				outer();
-				teardown();
-			};
-			return subscription;
-		}
-	};
-	return subscription;
-}
-const useEvents = () => {
-	const subsRef = useRef([]);
-	useEffect(() => {
-		return () => {
-			subsRef.current.forEach((sub) => sub.unsubscribe());
-			subsRef.current = [];
-		};
-	}, []);
-	const on = (name, handler) => {
-		const sub = subscribe(name, handler);
-		subsRef.current.push(sub);
-		return sub;
-	};
-	const emit = (name, payload) => {
-		dispatch(name, payload);
-	};
-	return [on, emit];
-};
-const dispatch = (name, payload) => {
-	listeners.get(name)?.forEach((handler) => {
-		try {
-			handler(payload);
-		} catch {}
-	});
-};
-//#endregion
 //#region assets/core/i18n/useCoreTranslation.ts
 function useCoreTranslation() {
 	const { t } = useTranslation("core");
 	return { t: (key, options) => t(key, options) };
 }
-const CoreRuntimeContext = createContext({
-	notify: () => void 0,
-	confirm: (message) => {
-		if (typeof window === "undefined") return false;
-		return window.confirm(message);
-	}
-});
-function useCoreRuntime() {
-	return useContext(CoreRuntimeContext);
-}
 //#endregion
-//#region assets/core/form/FormEvents.ts
+//#region assets/crud/form/FormEvents.ts
 const FORM_EVENTS = {
 	FIELD_CHANGED: "on:field:changed",
 	ROW_ADDED: "on:row:added",
@@ -602,90 +286,7 @@ const FORM_EVENTS = {
 };
 const FORM_ERRORS_EVENT = "form-errors";
 //#endregion
-//#region assets/core/config/CoreConfig.tsx
-const _coreConfig = {
-	locale: "es",
-	timezone: "UTC"
-};
-function getCoreLocale() {
-	return _coreConfig.locale;
-}
-function getCoreTimezone() {
-	return _coreConfig.timezone;
-}
-React.createContext(_coreConfig);
-//#endregion
-//#region assets/core/date/DateUtils.ts
-function coreDateParts(date) {
-	const parts = new Intl.DateTimeFormat("en-CA", {
-		timeZone: getCoreTimezone(),
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit"
-	}).formatToParts(date);
-	const get = (type) => parseInt(parts.find((part) => part.type === type).value, 10);
-	return {
-		year: get("year"),
-		month: get("month"),
-		day: get("day")
-	};
-}
-var DateUtils = class {
-	static dateFormatter(date) {
-		const { year, month, day } = coreDateParts(date);
-		return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
-	}
-	static dateParser(dateString) {
-		if (!dateString) return /* @__PURE__ */ new Date();
-		const dateParts = dateString.split("-");
-		const year = parseInt(dateParts[0], 10);
-		const month = parseInt(dateParts[1], 10);
-		const day = parseInt(dateParts[2], 10);
-		if (!Number.isNaN(year) && !Number.isNaN(month) && !Number.isNaN(day)) return new Date(year, month - 1, day);
-		return /* @__PURE__ */ new Date();
-	}
-	static format(dateString, formatOptions) {
-		return new Date(dateString).toLocaleDateString(getCoreLocale(), {
-			timeZone: getCoreTimezone(),
-			...formatOptions ?? {
-				day: "numeric",
-				month: "short",
-				year: "numeric"
-			}
-		});
-	}
-	static addDays(fieldValue, days) {
-		const date = new Date(fieldValue);
-		date.setDate(date.getDate() + days);
-		return date;
-	}
-	static addMonths(fieldValue, months) {
-		const date = new Date(fieldValue);
-		date.setMonth(date.getMonth() + months);
-		return date;
-	}
-	static addYears(fieldValue, years) {
-		const date = new Date(fieldValue);
-		date.setFullYear(date.getFullYear() + years);
-		return date;
-	}
-	static dayDiff(startDate, endDate) {
-		const dateStart = new Date(startDate);
-		const dateEnd = new Date(endDate);
-		const timeDiff = Math.abs(dateEnd.getTime() - dateStart.getTime());
-		return Math.ceil(timeDiff / (1e3 * 3600 * 24));
-	}
-	static monthDiff(startDate, endDate) {
-		const dateStart = new Date(startDate);
-		const dateEnd = new Date(endDate);
-		let months = (dateEnd.getFullYear() - dateStart.getFullYear()) * 12;
-		months -= dateStart.getMonth();
-		months += dateEnd.getMonth();
-		return months <= 0 ? 0 : months;
-	}
-};
-//#endregion
-//#region assets/core/form/FormDataTransform.ts
+//#region assets/crud/form/FormDataTransform.ts
 function trimTrailingSlash(value) {
 	return value.replace(/\/+$/, "");
 }
@@ -776,7 +377,7 @@ function normalizeEntityField(row, field) {
 	if (row[field.name] === null || row[field.name] === void 0) row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
 }
 //#endregion
-//#region assets/core/form/FormLayoutModel.ts
+//#region assets/crud/form/FormLayoutModel.ts
 function buildFormLayoutModel(fields, formLayout, overflowLabel) {
 	const pickFields = (names) => fields.filter((field) => names.includes(field.name));
 	const remainingFields = (assignedNames) => fields.filter((field) => !assignedNames.includes(field.name));
@@ -817,7 +418,7 @@ function buildFormLayoutModel(fields, formLayout, overflowLabel) {
 	};
 }
 //#endregion
-//#region assets/core/form/serializeFormData.ts
+//#region assets/crud/form/serializeFormData.ts
 function getIRI(url, value) {
 	if (value.startsWith("/")) return value;
 	return `${url}/${value}`;
@@ -963,7 +564,7 @@ function serializeDetailRows(rows, detailFields, detailIdField, isEditMode) {
 	return details;
 }
 //#endregion
-//#region assets/core/form/useFormSubmit.ts
+//#region assets/crud/form/useFormSubmit.ts
 /**
 * Returns helpers for form serialization and HTTP submit/delete operations.
 * Delegates pure serialization to `serializeFormFields` / `serializeDetailRows`.
@@ -1043,7 +644,7 @@ const useFormSubmit = (options, accessors, emit, validateFn) => {
 	};
 };
 //#endregion
-//#region assets/core/form/FormDetailValidation.ts
+//#region assets/crud/form/FormDetailValidation.ts
 function validateDetailRows(detailRows, detailFields) {
 	return detailRows.every((row) => detailFields.every((field) => {
 		if (field.isIdentity || field.hidden || !field.visible) return true;
@@ -1063,7 +664,7 @@ function validateDetailRows(detailRows, detailFields) {
 	}));
 }
 //#endregion
-//#region assets/core/form/useFormValidation.ts
+//#region assets/crud/form/useFormValidation.ts
 function useFormValidation({ accessors, detailFields, detailNoDataText, requiredDetail, validationErrorText }) {
 	const { notify } = useCoreRuntime();
 	return () => {
@@ -1081,7 +682,7 @@ function useFormValidation({ accessors, detailFields, detailNoDataText, required
 	};
 }
 //#endregion
-//#region assets/core/form/NativeFormView.tsx
+//#region assets/crud/form/NativeFormView.tsx
 function createRemoteSource(field, httpClient) {
 	return new ApiPlatformRemoteDataSource({
 		url: field.url ?? "",
@@ -1210,6 +811,14 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		const target = event.currentTarget;
 		if (target.scrollHeight - target.scrollTop <= target.clientHeight + 20) loadMore();
 	};
+	useEffect(() => {
+		if (!open || !containerRef.current) return;
+		const observer = new IntersectionObserver(([entry]) => {
+			if (!entry.isIntersecting) setOpen(false);
+		}, { threshold: 0 });
+		observer.observe(containerRef.current);
+		return () => observer.disconnect();
+	}, [open]);
 	useLayoutEffect(() => {
 		if (!open) return;
 		const updatePosition = () => {
@@ -1361,6 +970,168 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		]
 	});
 }
+function NativeEnumSelect({ className, disabled, field, id, onChange, readOnly, required, value }) {
+	const [open, setOpen] = useState(false);
+	const [draftQuery, setDraftQuery] = useState(null);
+	const containerRef = useRef(null);
+	const blurTimer = useRef(void 0);
+	const [menuStyle, setMenuStyle] = useState({
+		position: "fixed",
+		visibility: "hidden",
+		margin: 0
+	});
+	const allItems = field.data ?? [];
+	const normalizedValue = String(value ?? "");
+	const selectedItem = allItems.find((item) => String(item["value"] ?? "") === normalizedValue);
+	const selectedText = selectedItem ? String(selectedItem["text"] ?? selectedItem["value"] ?? "") : "";
+	const query = draftQuery ?? selectedText;
+	const visibleItems = draftQuery != null && draftQuery !== "" ? allItems.filter((item) => String(item["text"] ?? item["value"] ?? "").toLowerCase().includes(draftQuery.toLowerCase())) : allItems;
+	useEffect(() => {
+		if (!open || !containerRef.current) return;
+		const observer = new IntersectionObserver(([entry]) => {
+			if (!entry.isIntersecting) setOpen(false);
+		}, { threshold: 0 });
+		observer.observe(containerRef.current);
+		return () => observer.disconnect();
+	}, [open]);
+	useLayoutEffect(() => {
+		if (!open) return;
+		const updatePosition = () => {
+			if (!containerRef.current) return;
+			const rect = containerRef.current.getBoundingClientRect();
+			if (!(rect.top < window.innerHeight && rect.bottom > 0)) {
+				setOpen(false);
+				return;
+			}
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const spaceAbove = rect.top;
+			if (spaceBelow < 250 && spaceAbove > spaceBelow) setMenuStyle({
+				position: "fixed",
+				left: `${rect.left}px`,
+				width: `${rect.width}px`,
+				bottom: `${window.innerHeight - rect.top + 4}px`,
+				top: "auto",
+				margin: 0,
+				zIndex: 9999,
+				visibility: "visible"
+			});
+			else setMenuStyle({
+				position: "fixed",
+				left: `${rect.left}px`,
+				width: `${rect.width}px`,
+				top: `${rect.bottom + 4}px`,
+				bottom: "auto",
+				margin: 0,
+				zIndex: 9999,
+				visibility: "visible"
+			});
+		};
+		updatePosition();
+		window.addEventListener("resize", updatePosition);
+		window.addEventListener("scroll", updatePosition, {
+			capture: true,
+			passive: true
+		});
+		return () => {
+			window.removeEventListener("resize", updatePosition);
+			window.removeEventListener("scroll", updatePosition, { capture: true });
+		};
+	}, [open]);
+	const selectItem = (item) => {
+		onChange(item["value"] ?? null);
+		setDraftQuery(String(item["text"] ?? item["value"] ?? ""));
+		setOpen(false);
+	};
+	const clearSelection = () => {
+		onChange(null);
+		setDraftQuery("");
+		setOpen(true);
+	};
+	return /* @__PURE__ */ jsxs("div", {
+		ref: containerRef,
+		className: `native-form__lookup${normalizedValue !== "" ? " has-value" : ""}`,
+		children: [
+			/* @__PURE__ */ jsx("input", {
+				autoComplete: "off",
+				className,
+				disabled,
+				id,
+				readOnly,
+				required,
+				role: "combobox",
+				"aria-autocomplete": "list",
+				"aria-expanded": open,
+				value: query,
+				onBlur: () => {
+					blurTimer.current = setTimeout(() => {
+						setOpen(false);
+						setDraftQuery(null);
+					}, 120);
+				},
+				onChange: (event) => {
+					setDraftQuery(event.currentTarget.value);
+					setOpen(true);
+					if (event.currentTarget.value === "") onChange(null);
+				},
+				onFocus: () => {
+					if (blurTimer.current) clearTimeout(blurTimer.current);
+					setOpen(true);
+				}
+			}),
+			!disabled && !readOnly && normalizedValue !== "" && /* @__PURE__ */ jsx("button", {
+				type: "button",
+				className: "native-form__lookup-clear",
+				"aria-label": `Limpiar ${field.label}`,
+				onMouseDown: (event) => event.preventDefault(),
+				onClick: clearSelection,
+				children: /* @__PURE__ */ jsx("i", {
+					className: "ph ph-x",
+					"aria-hidden": "true"
+				})
+			}),
+			!disabled && !readOnly && /* @__PURE__ */ jsx("button", {
+				type: "button",
+				className: "native-form__lookup-toggle",
+				"aria-label": `Abrir ${field.label}`,
+				onMouseDown: (event) => event.preventDefault(),
+				onClick: () => {
+					if (blurTimer.current) clearTimeout(blurTimer.current);
+					setOpen((prev) => !prev);
+				},
+				children: /* @__PURE__ */ jsx("i", {
+					className: "ph ph-caret-down",
+					"aria-hidden": "true",
+					style: {
+						transition: "transform 180ms cubic-bezier(0.4, 0, 0.2, 1)",
+						transform: open ? "rotate(180deg)" : "rotate(0deg)"
+					}
+				})
+			}),
+			open && !disabled && !readOnly && createPortal(/* @__PURE__ */ jsxs("div", {
+				className: "native-form__lookup-menu",
+				role: "listbox",
+				style: menuStyle,
+				onMouseDown: (event) => event.preventDefault(),
+				children: [visibleItems.length === 0 && /* @__PURE__ */ jsx("div", {
+					className: "native-form__lookup-status",
+					children: "Sin resultados"
+				}), visibleItems.map((item) => {
+					const itemValue = String(item["value"] ?? "");
+					const itemText = String(item["text"] ?? item["value"] ?? "");
+					return /* @__PURE__ */ jsx("button", {
+						type: "button",
+						role: "option",
+						"aria-selected": itemValue === normalizedValue,
+						className: "native-form__lookup-option",
+						onMouseDown: (event) => event.preventDefault(),
+						onClick: () => selectItem(item),
+						children: itemText
+					}, itemValue);
+				})]
+			}), document.body)
+		]
+	});
+}
 function validateField(field, value, formData) {
 	if (field.required && isEmptyValue(value)) return `${field.label} es requerido`;
 	for (const rule of field.validators ?? []) {
@@ -1425,35 +1196,22 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 			rowIndex,
 			columnIndex: 0
 		});
-		if (field.type === "entity" || field.type === "select" || field.type === "enum") {
-			const items = field.type === "entity" ? remoteOptions[field.name] ?? field.data ?? [] : field.data ?? [];
-			if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
-				className: "native-form__control",
-				disabled: !allowUpdating || field.disabled,
-				field,
-				httpClient,
-				options: items,
-				value,
-				onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
-			});
-			return /* @__PURE__ */ jsxs("select", {
-				className: "native-form__control",
-				value: String(value && typeof value === "object" ? fieldKeyValue(field, value) : value ?? ""),
-				disabled: !allowUpdating || field.disabled,
-				onChange: (event) => void updateCell(rowIndex, field, event.currentTarget.value === "" ? null : event.currentTarget.value),
-				children: [/* @__PURE__ */ jsx("option", {
-					value: "",
-					children: "Seleccione..."
-				}), items.map((item) => {
-					const itemValue = item["value"];
-					const itemText = String(item["text"] ?? itemValue ?? "");
-					return /* @__PURE__ */ jsx("option", {
-						value: String(itemValue ?? ""),
-						children: itemText
-					}, String(itemValue));
-				})]
-			});
-		}
+		if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
+			className: "native-form__control",
+			disabled: !allowUpdating || field.disabled,
+			field,
+			httpClient,
+			options: remoteOptions[field.name] ?? field.data ?? [],
+			value,
+			onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
+		});
+		if (field.type === "select" || field.type === "enum") return /* @__PURE__ */ jsx(NativeEnumSelect, {
+			className: "native-form__control",
+			disabled: !allowUpdating || field.disabled,
+			field,
+			value,
+			onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
+		});
 		return /* @__PURE__ */ jsx("input", {
 			className: "native-form__control",
 			value: inputValue(value),
@@ -1829,27 +1587,34 @@ const NativeFormView = forwardRef((options, ref) => {
 				value,
 				onChange: (nextValue) => setFieldValue(field.name, nextValue)
 			});
-		} else if (field.type === "enum" || field.type === "select" || field.type === "tags") {
-			const items = field.type === "tags" ? remoteOptions[field.name] ?? field.data ?? [] : field.data ?? [];
-			control = /* @__PURE__ */ jsxs("select", {
+		} else if (field.type === "enum" || field.type === "select") control = /* @__PURE__ */ jsx(NativeEnumSelect, {
+			className: `native-form__control${errorClass}`,
+			disabled,
+			field,
+			id: `native-form-${field.name}`,
+			readOnly,
+			required: field.required,
+			value,
+			onChange: (nextValue) => setFieldValue(field.name, nextValue)
+		});
+		else if (field.type === "tags") {
+			const items = remoteOptions[field.name] ?? field.data ?? [];
+			control = /* @__PURE__ */ jsx("select", {
 				...commonProps,
-				multiple: field.multiple || field.type === "tags",
-				value: field.multiple && Array.isArray(value) ? value.map(String) : String(value ?? ""),
+				multiple: true,
+				value: Array.isArray(value) ? value.map(String) : [],
 				onChange: (event) => {
-					const nextValue = event.currentTarget.multiple ? Array.from(event.currentTarget.selectedOptions).map((option) => option.value) : event.currentTarget.value;
-					setFieldValue(field.name, nextValue === "" ? null : nextValue);
+					const nextValue = Array.from(event.currentTarget.selectedOptions).map((option) => option.value);
+					setFieldValue(field.name, nextValue);
 				},
-				children: [/* @__PURE__ */ jsx("option", {
-					value: "",
-					children: "Seleccione..."
-				}), items.map((item) => {
-					const itemValue = field.type === "tags" ? fieldKeyValue(field, item) : item["value"];
-					const itemText = field.type === "tags" ? fieldTextValue(field, item) : String(item["text"] ?? itemValue ?? "");
+				children: items.map((item) => {
+					const itemValue = fieldKeyValue(field, item);
+					const itemText = fieldTextValue(field, item);
 					return /* @__PURE__ */ jsx("option", {
 						value: String(itemValue ?? ""),
 						children: itemText
 					}, String(itemValue));
-				})]
+				})
 			});
 		} else if (field.type === "file") control = /* @__PURE__ */ jsx("input", {
 			...commonProps,
@@ -1951,7 +1716,7 @@ const NativeFormView = forwardRef((options, ref) => {
 });
 NativeFormView.displayName = "NativeFormView";
 //#endregion
-//#region assets/core/datagrid/NativeDataGridView.tsx
+//#region assets/crud/datagrid/NativeDataGridView.tsx
 function getPageRange(current, total) {
 	if (total <= 7) return Array.from({ length: total }, (_, i) => i);
 	const result = [0];
@@ -2861,7 +2626,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 });
 NativeDataGridView.displayName = "NativeDataGridView";
 //#endregion
-//#region assets/core/dialog/CrudDialogView.tsx
+//#region assets/crud/dialog/CrudDialogView.tsx
 const getIsXSmall = () => typeof window !== "undefined" && window.matchMedia("(max-width: 575.98px)").matches;
 function useIsXSmall() {
 	const [isXSmall, setIsXSmall] = useState(getIsXSmall);
@@ -2968,7 +2733,7 @@ const CrudDialogView = forwardRef((options, ref) => {
 });
 CrudDialogView.displayName = "CrudDialogView";
 //#endregion
-//#region assets/core/crud/AuditTrailPanel.tsx
+//#region assets/crud/crud/AuditTrailPanel.tsx
 const ACTION_COLORS = {
 	create: "#2e7d32",
 	update: "#1565c0",
@@ -3154,7 +2919,7 @@ function AuditTrailPanel({ url, renderEntry, visible, onClose }) {
 	});
 }
 //#endregion
-//#region assets/core/crud/dialogStore.ts
+//#region assets/crud/crud/dialogStore.ts
 function initialDialogState() {
 	return {
 		isOpen: false,
@@ -3186,7 +2951,7 @@ function dialogReducer(state, action) {
 	}
 }
 //#endregion
-//#region assets/core/crud/DialogStoreProvider.tsx
+//#region assets/crud/crud/DialogStoreProvider.tsx
 const DialogStoreContext = createContext(null);
 function DialogStoreProvider({ children }) {
 	const [state, dispatch] = useReducer(dialogReducer, {});
@@ -3202,7 +2967,7 @@ function useDialogStoreContext() {
 	return useContext(DialogStoreContext);
 }
 //#endregion
-//#region assets/core/crud/useCrudDialogStore.ts
+//#region assets/crud/crud/useCrudDialogStore.ts
 function useCrudDialogStore(resourceId) {
 	const { state, dispatch } = useDialogStoreContext();
 	const dialogState = state[resourceId] ?? initialDialogState();
@@ -3227,7 +2992,7 @@ function useCrudDialogStore(resourceId) {
 	};
 }
 //#endregion
-//#region assets/core/crud/CrudPage.tsx
+//#region assets/crud/crud/CrudPage.tsx
 function inferFilterOperator(field) {
 	if (field.selectedFilterOperation) return field.selectedFilterOperation;
 	return field.valueType === "string" ? "contains" : "=";
@@ -3513,7 +3278,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 	});
 };
 //#endregion
-//#region assets/core/crud/routing/useRouting.ts
+//#region assets/crud/crud/routing/useRouting.ts
 /**
 * Reads URL params and exposes helpers for SmartCrudPage to:
 * - Open the edit dialog for the record whose id is in the URL
@@ -3556,7 +3321,7 @@ function useRouting(routing) {
 	};
 }
 //#endregion
-//#region assets/core/crud/devHint.ts
+//#region assets/crud/crud/devHint.ts
 /**
 * Returns true when running on a local development hostname.
 * Works regardless of Vite build mode (`import.meta.env.DEV`).
@@ -3590,222 +3355,7 @@ function logDevHint(resourceUrl, fields, operations = []) {
 	console.info(`[SmartCRUD] Auto-inferred fields for "${resourceUrl}". To customise, use:\n\ndefineResource('${resourceUrl}', {\n` + operationsLine + `  fields: [\n${fieldLines}\n  ]\n})`);
 }
 //#endregion
-//#region assets/core/mercure/MercureManager.ts
-var MercureManager = class {
-	hubUrl = null;
-	topics = /* @__PURE__ */ new Map();
-	hubUrlListeners = /* @__PURE__ */ new Set();
-	/**
-	* Update the hub URL (called by the Axios interceptor when the `Link` header is discovered,
-	* or by MercureProvider). Notifies all registered listeners.
-	*
-	* Idempotent: if the URL is already set to the same value, listeners are NOT re-notified.
-	*/
-	setHubUrl(url) {
-		if (this.hubUrl === url) return;
-		this.disconnectAll();
-		this.hubUrl = url;
-		this.hubUrlListeners.forEach((cb) => cb(url));
-	}
-	getHubUrl() {
-		return this.hubUrl;
-	}
-	/**
-	* Register a callback that fires whenever the hub URL changes.
-	*
-	* Returns an unsubscribe function — call it in a `useEffect` cleanup to avoid memory leaks.
-	*
-	* @example
-	* ```tsx
-	* useEffect(() => {
-	*   return MercureManager.onHubUrlChange(setHubUrl);
-	* }, []);
-	* ```
-	*/
-	onHubUrlChange(callback) {
-		this.hubUrlListeners.add(callback);
-		return () => {
-			this.hubUrlListeners.delete(callback);
-		};
-	}
-	/**
-	* Subscribe to a Mercure topic.
-	*
-	* @param topic    Full topic URI or URI Template, e.g. `https://host/api/products/{id}`.
-	* @param callback Called with the parsed JSON payload on each SSE message.
-	*
-	* If `hubUrl` is null (hub not configured), this is a no-op (graceful degradation).
-	* If an EventSource for this topic already exists, it is reused (ref-counting).
-	*/
-	subscribe(topic, callback) {
-		if (this.hubUrl === null) return;
-		const existing = this.topics.get(topic);
-		if (existing) {
-			const listener = (e) => {
-				try {
-					callback(JSON.parse(e.data));
-				} catch {
-					callback(e.data);
-				}
-			};
-			existing.eventSource.addEventListener("message", listener);
-			existing.listeners.set(callback, listener);
-			existing.count += 1;
-			return;
-		}
-		const url = new URL(this.hubUrl);
-		url.searchParams.append("topic", topic);
-		const eventSource = new EventSource(url.toString(), { withCredentials: true });
-		const listener = (e) => {
-			try {
-				callback(JSON.parse(e.data));
-			} catch {
-				callback(e.data);
-			}
-		};
-		eventSource.addEventListener("message", listener);
-		const listeners = /* @__PURE__ */ new Map();
-		listeners.set(callback, listener);
-		this.topics.set(topic, {
-			eventSource,
-			count: 1,
-			listeners
-		});
-	}
-	/**
-	* Unsubscribe a specific callback from a topic.
-	*
-	* Decrements the ref count. When count reaches 0, the EventSource is closed
-	* and removed from the internal map.
-	*/
-	unsubscribe(topic, callback) {
-		const entry = this.topics.get(topic);
-		if (!entry) return;
-		const listener = entry.listeners.get(callback);
-		if (listener) {
-			entry.eventSource.removeEventListener("message", listener);
-			entry.listeners.delete(callback);
-		}
-		entry.count -= 1;
-		if (entry.count <= 0) {
-			entry.eventSource.close();
-			this.topics.delete(topic);
-		}
-	}
-	/**
-	* Close all active EventSource connections and clear the topic map.
-	*
-	* Called internally when the hub URL changes so stale connections
-	* bound to the previous hub are not leaked.
-	*/
-	disconnectAll() {
-		this.topics.forEach((entry) => {
-			entry.eventSource.close();
-		});
-		this.topics.clear();
-	}
-};
-/** Singleton instance — shared across the entire application. */
-const mercureManager = new MercureManager();
-//#endregion
-//#region assets/core/mercure/MercureProvider.tsx
-/**
-* MercureProvider — React context provider for the Mercure hub URL.
-*
-* Wraps the application (or a subtree) and makes the hub URL available to all
-* descendant hooks via `useMercureHub()`.
-*
-* Also keeps `MercureManager` in sync with the hub URL whenever it changes.
-*
-* ## Usage
-*
-* ```tsx
-* // In EfactApp.tsx (or your app root):
-* <MercureProvider hubUrl={discoveredHubUrl}>
-*   <App />
-* </MercureProvider>
-* ```
-*
-* The `hubUrl` prop is typically discovered from the `Link` header of API responses
-* via an Axios response interceptor (see AC-4 in SLICE-014).
-*/
-/** The hub URL, or null if Mercure is not configured / not yet discovered. */
-const MercureContext = createContext(null);
-//#endregion
-//#region assets/core/mercure/useMercureHub.ts
-/**
-* useMercureHub — Hook that returns the Mercure hub URL from context.
-*
-* Returns `null` if:
-* - The component is rendered outside a `<MercureProvider>` (default context value).
-* - The hub URL has not been discovered yet (header `Link` not received).
-* - Mercure is not configured in the backend.
-*
-* This hook does NOT perform any fetch or side effect — it only reads from context.
-* Hub discovery is handled by the Axios response interceptor registered in EfactApp.tsx.
-*
-* ## Usage
-*
-* ```tsx
-* const hubUrl = useMercureHub();
-* // hubUrl is string | null
-* ```
-*/
-/**
-* Returns the Mercure hub URL from the nearest `<MercureProvider>`,
-* or `null` if the hub is not available.
-*/
-function useMercureHub() {
-	return useContext(MercureContext);
-}
-//#endregion
-//#region assets/core/mercure/useMercureSubscription.ts
-/**
-* useMercureSubscription — Hook that subscribes to a Mercure topic and calls
-* a callback whenever an SSE message is received for that topic.
-*
-* ## Behaviour
-* - If `hubUrl` is null (Mercure not configured) or `enabled` is false → no-op.
-* - Subscribes to the wildcard topic `<origin>/<apiUrl>/{id}` (URI Template RFC 6570),
-*   which captures any item-level event (create / update / delete) for the collection.
-* - Cleanup: unsubscribes on unmount or when dependencies change (no memory leaks).
-*
-* ## Usage
-*
-* ```tsx
-* useMercureSubscription(
-*   resource.apiUrl,
-*   () => { gridRef.current?.instance().refresh(); },
-*   resource.mercure !== false,
-* );
-* ```
-*
-* @param apiUrl   The resource API URL (e.g. `'api/products'` or `'/api/products'`).
-*                 Used to build the wildcard topic URI.
-* @param onUpdate Callback invoked on every SSE message for the topic.
-* @param enabled  When false, the subscription is skipped entirely. Defaults to true.
-*/
-function useMercureSubscription(apiUrl, onUpdate, enabled = true) {
-	const hubUrl = useMercureHub();
-	useEffect(() => {
-		if (!hubUrl || !enabled || !apiUrl) return;
-		const normalizedPath = apiUrl.replace(/^\//, "");
-		const topic = `${window.location.origin}/${normalizedPath}/{id}`;
-		const handler = (_data) => {
-			onUpdate();
-		};
-		mercureManager.subscribe(topic, handler);
-		return () => {
-			mercureManager.unsubscribe(topic, handler);
-		};
-	}, [
-		hubUrl,
-		enabled,
-		apiUrl
-	]);
-}
-//#endregion
-//#region assets/core/crud/SmartCrudRolesContext.tsx
+//#region assets/crud/crud/SmartCrudRolesContext.tsx
 const SmartCrudRolesContext = createContext([]);
 function SmartCrudRolesProvider({ children, roles }) {
 	const value = useMemo(() => roles ?? [], [roles]);
@@ -3818,7 +3368,7 @@ function useSmartCrudRoles() {
 	return useContext(SmartCrudRolesContext);
 }
 //#endregion
-//#region assets/core/crud/useSmartCrudOperation.ts
+//#region assets/crud/crud/useSmartCrudOperation.ts
 function areEqualValues(left, right) {
 	if (Object.is(left, right)) return true;
 	if (left instanceof Date && right instanceof Date) return left.getTime() === right.getTime();
@@ -3931,7 +3481,7 @@ function useSmartCrudOperation(events, routingState) {
 	};
 }
 //#endregion
-//#region assets/core/crud/rules/useFieldPermissions.ts
+//#region assets/crud/crud/rules/useFieldPermissions.ts
 /**
 * Filters and marks fields based on user roles.
 * IMPORTANT: This is UI-only. Backend is the real authorization source.
@@ -3968,7 +3518,7 @@ function useFieldPermissions(fields, userRoles) {
 	}, [fields, userRoles]);
 }
 //#endregion
-//#region assets/core/crud/rules/useConditionalRules.ts
+//#region assets/crud/crud/rules/useConditionalRules.ts
 /**
 * Given the current Field definitions and live form data,
 * returns the reactive state (visible/disabled/computedValue) for each field.
@@ -4002,7 +3552,7 @@ function useConditionalRules(fields, formData) {
 	}, [fields, formData]);
 }
 //#endregion
-//#region assets/core/crud/rules/useDependsOn.ts
+//#region assets/crud/crud/rules/useDependsOn.ts
 /**
 * Compares two primitive-or-reference values.
 * Uses strict equality for primitives (covers the vast majority of form values).
@@ -4054,7 +3604,7 @@ function useDependsOn(fields, formData) {
 	}, [JSON.stringify(currentEntries?.map((e) => e.values) ?? null), queryClient]);
 }
 //#endregion
-//#region assets/core/crud/fieldOperationSemantics.ts
+//#region assets/crud/crud/fieldOperationSemantics.ts
 var SmartCrudFieldOperationSemanticsError = class extends Error {
 	issues;
 	constructor(message, issues = []) {
@@ -4203,7 +3753,7 @@ function applyFieldOperationSemantics(field, operation, behavior, owner = `Field
 	};
 }
 //#endregion
-//#region assets/core/crud/useSmartCrudFields.ts
+//#region assets/crud/crud/useSmartCrudFields.ts
 /**
 * Runs the full SmartCrud field processing pipeline:
 *   1. Operation semantics — adjusts visibility/required/readonly per create/edit
@@ -4245,7 +3795,7 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 	};
 }
 //#endregion
-//#region assets/core/crud/SmartCrudPage.tsx
+//#region assets/crud/crud/SmartCrudPage.tsx
 function CrudSkeleton() {
 	return /* @__PURE__ */ jsxs("div", {
 		className: "p-6 space-y-4 animate-pulse",
@@ -4357,7 +3907,7 @@ function SmartCrudPage({ resource, fieldOverrides }) {
 	});
 }
 //#endregion
-//#region assets/core/crud/fieldValidation.ts
+//#region assets/crud/crud/fieldValidation.ts
 var SmartCrudFieldContractError = class extends Error {
 	issues;
 	constructor(message, issues = []) {
@@ -4578,13 +4128,13 @@ function validateResolvedFieldNames(fields, owner) {
 	validateUniqueFieldNames(fields, owner);
 }
 //#endregion
-//#region assets/core/crud/fieldContract.ts
+//#region assets/crud/crud/fieldContract.ts
 function defineFields(contract) {
 	return validateFieldContract(contract);
 }
 const defineFieldContract = defineFields;
 //#endregion
-//#region assets/core/crud/resolveSmartCrudFields.ts
+//#region assets/crud/crud/resolveSmartCrudFields.ts
 function cloneField(field) {
 	return { ...field };
 }
@@ -4729,7 +4279,7 @@ function initCoreI18n() {
 	i18next.addResourceBundle("en", "core", coreTranslationsEn, true, false);
 }
 //#endregion
-//#region assets/core/crud/hydra/index.ts
+//#region assets/crud/crud/hydra/index.ts
 var hydra_exports = /* @__PURE__ */ __exportAll({});
 import * as import__nubit_api_platform from "@nubit/api-platform";
 __reExport(hydra_exports, import__nubit_api_platform);
@@ -4768,7 +4318,7 @@ __reExport(/* @__PURE__ */ __exportAll({
 	validateResolvedFieldNames: () => validateResolvedFieldNames
 }), hydra_exports);
 //#endregion
-//#region assets/core/field/BaseFieldBuilder.ts
+//#region assets/crud/field/BaseFieldBuilder.ts
 var BaseFieldBuilder = class {
 	_field;
 	constructor(type) {
@@ -5066,7 +4616,7 @@ var BaseFieldBuilder = class {
 	}
 };
 //#endregion
-//#region assets/core/field/FieldBuilders.ts
+//#region assets/crud/field/FieldBuilders.ts
 /**
 * Factory for the standard hidden identity field (type NONE, name 'id').
 *
@@ -5378,7 +4928,7 @@ function passwordField() {
 	return new PasswordFieldBuilder();
 }
 //#endregion
-//#region assets/core/field/FieldBuilder.ts
+//#region assets/crud/field/FieldBuilder.ts
 var FieldBuilder = class {
 	_field;
 	constructor() {

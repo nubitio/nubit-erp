@@ -1,0 +1,21 @@
+import { createScopedEventBus } from '../../core/event/createScopedEventBus';
+import type { FormEventNames } from '../../core/event/EventTypes';
+import type { ResourceConfig } from './ResourceConfig';
+import type { DataRecord } from '@nubit/core';
+
+export type ResolvedCrudResource<T extends DataRecord> = ResourceConfig<T> & {
+  events: FormEventNames;
+};
+
+export function resolveCrudResource<T extends DataRecord>(
+  resource: ResourceConfig<T>,
+  overrides: Partial<ResourceConfig<T>> = {},
+): ResolvedCrudResource<T> {
+  const events = resource.events ?? createScopedEventBus(resource.id);
+
+  return {
+    ...resource,
+    ...overrides,
+    events,
+  } as ResolvedCrudResource<T>;
+}
