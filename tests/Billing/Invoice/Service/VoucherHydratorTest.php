@@ -127,7 +127,19 @@ final class VoucherHydratorTest extends TestCase
 
     public function testHydrateParsesVoucherDate(): void
     {
-        $voucher = $this->makeVoucher(['voucher_date' => '2025-06-20']);
+        // voucher_date is stored in UTC; midnight UTC converts to 2025-06-19 19:00 Lima (UTC-5)
+        $voucher = $this->makeVoucher(['voucher_date' => '2025-06-20 00:00:00']);
+
+        $result = $this->sut->hydrate($voucher);
+
+        self::assertSame('2025-06-19', $result->voucherDate->format('Y-m-d'));
+        self::assertSame('America/Lima', $result->voucherDate->getTimezone()->getName());
+    }
+
+    public function testHydrateParsesVoucherDateAfternoonUtc(): void
+    {
+        // 2025-06-20 15:00 UTC = 2025-06-20 10:00 Lima — same calendar date
+        $voucher = $this->makeVoucher(['voucher_date' => '2025-06-20 15:00:00']);
 
         $result = $this->sut->hydrate($voucher);
 
