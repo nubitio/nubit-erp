@@ -55,7 +55,23 @@ SELECT
     s.issued_at,
     s.created_at,
     s.series,
-    s.number
+    s.number,
+    (
+        SELECT pm.id
+        FROM sale_payments sp
+        JOIN payment_method pm ON pm.id = sp.payment_method_id
+        WHERE sp.sale_id = s.id
+        ORDER BY sp.created_at ASC
+        LIMIT 1
+    ) AS payment_method_id,
+    (
+        SELECT pm.name
+        FROM sale_payments sp
+        JOIN payment_method pm ON pm.id = sp.payment_method_id
+        WHERE sp.sale_id = s.id
+        ORDER BY sp.created_at ASC
+        LIMIT 1
+    ) AS payment_method_name
 FROM sales s
 WHERE s.id = :id
    OR s.legacy_movimiento_id = :id
@@ -116,6 +132,17 @@ SQL,
 
         if ($row['seller_user_id']) {
             $sale->setCreatedBy((int) $row['seller_user_id']);
+        }
+
+        if (!empty($row['payment_method_id'])) {
+            $paymentMethod = $this->entityManager->getReference(
+                \App\Catalog\Entity\PaymentMethod::class,
+                (int) $row['payment_method_id']
+            );
+            if ($paymentMethod instanceof \App\Catalog\Entity\PaymentMethod) {
+                $paymentMethod->setName((string) $row['payment_method_name']);
+                $sale->setPaymentMethod($paymentMethod);
+            }
         }
 
         // Load line items from sale_items table
