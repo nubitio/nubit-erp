@@ -70,7 +70,7 @@ class VoucherHydrator implements VoucherHydratorInterface
             voucherSeries: strval($voucher->voucher_series),
             voucherNumber: strval($voucher->voucher_number),
             voucherPaymentMethod: intval($voucher->voucher_payment_method),
-            voucherDate: new DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC')),
+            voucherDate: (new DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC')))->setTimezone(new \DateTimeZone('America/Lima')),
             voucherCurrency: strval($voucher->voucher_currency),
             voucherExchangeRate: $toNullableFloat($voucher->voucher_exchange_rate),
             voucherDiscountAmount: $globalDiscountAmount,

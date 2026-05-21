@@ -59,7 +59,10 @@ readonly class NoteCreateUseCase
         $note->setUblVersion('2.1')
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
-            ->setFechaEmision($creditNote->getIssueDate())
+            ->setFechaEmision(
+                \DateTimeImmutable::createFromInterface($creditNote->getIssueDate())
+                    ->setTimezone(new \DateTimeZone('America/Lima'))
+            )
             ->setCodMotivo($creditNote->getReasonCode())
             ->setDesMotivo($creditNote->getReasonDescription())
             ->setTipoDoc($creditNote->getDocumentType())

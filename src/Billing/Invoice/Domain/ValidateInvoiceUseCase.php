@@ -62,7 +62,11 @@ readonly class ValidateInvoiceUseCase
             ->setCodComp(strval($voucher->voucher_type))
             ->setNumeroSerie(strval($voucher->voucher_series))
             ->setNumero(strval($voucher->voucher_number))
-            ->setFechaEmision(date('d/m/Y', strtotime(strval($voucher->voucher_date))))
+            ->setFechaEmision(
+                (new \DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC')))
+                    ->setTimezone(new \DateTimeZone('America/Lima'))
+                    ->format('d/m/Y')
+            )
             ->setMonto(strval($voucher->voucher_sale_amount));
 
         $response = $apiInstance->consultarCpe(strval($customerId), $cpeFilter);
