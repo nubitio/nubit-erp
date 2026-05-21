@@ -35,6 +35,19 @@ export const runVoidSaleAction = async (saleId: string, deps: VoidSaleDeps) => {
     });
 };
 
+export const runReplaceRejectedAction = (saleId: string, deps: ActionDeps) => {
+  deps.showLoading('Generando comprobante de reemplazo...');
+  saleService
+    .replaceRejected(saleId)
+    .then((response) => {
+      deps.notify(response.data.message, response.data.success ? 'success' : 'error');
+      deps.refreshGrid();
+    })
+    .finally(() => {
+      deps.hideLoading();
+    });
+};
+
 export const runMakeInvoiceAction = (saleId: string, deps: MakeInvoiceDeps) => {
   deps.showLoading('Generando comprobante...');
   saleService

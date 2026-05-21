@@ -122,11 +122,12 @@ readonly class SaleVoidUseCase
         try {
             $sunatResponse = $this->sunatVoidService->void($documentType, $saleId, $reason);
 
-            // Search tax_document by sale_id (V2 — v2_authoritative mode).
-            $taxDocument = $this->taxDocumentRepository->findOneBy([
-                'saleRecord' => $saleId,
-                'documentType' => $documentType,
-            ]);
+            // Find the accepted document that was just voided (latest accepted wins;
+            // may be a replacement if the original was rejected).
+            $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType(
+                $saleId,
+                $documentType,
+            );
             if ($taxDocument === null) {
                 throw new ServiceException(ErrorMessages::TAX_DOCUMENT_NOT_FOUND);
             }

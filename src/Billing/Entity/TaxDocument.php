@@ -37,6 +37,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(provider: TaxDocumentProvider::class),
+        new GetCollection(
+            uriTemplate: '/sales/{saleId}/tax-documents',
+            uriVariables: [
+                'saleId' => new Link(fromClass: \App\Sales\Entity\SaleRecord::class, toProperty: 'saleRecord'),
+            ],
+            provider: TaxDocumentProvider::class,
+            normalizationContext: ['groups' => ['invoice:read']],
+        ),
         new Post(processor: TaxDocumentProcessor::class),
         new Get(
             uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],

@@ -10,6 +10,7 @@ use App\Billing\Controller\PrintESCPOSController;
 use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Service\InvoiceCreationServiceInterface;
+use App\Billing\Service\ReplaceRejectedDocumentService;
 use App\Billing\Service\SaleV2Loader;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\SaleInvoicingPortInterface;
@@ -30,6 +31,7 @@ final readonly class SaleInvoicingAdapter implements SaleInvoicingPortInterface
         private SaleV2Loader $saleV2Loader,
         private DetractionCalculatorInterface $detractionCalculator,
         private PrintESCPOSController $printESCPOSController,
+        private ReplaceRejectedDocumentService $replaceRejectedDocumentService,
     ) {
     }
 
@@ -91,6 +93,15 @@ final readonly class SaleInvoicingAdapter implements SaleInvoicingPortInterface
     public function voidSale(string $saleId, string $reason, int $userId, bool $restoreStock = false): ApiResponse
     {
         return $this->saleVoidUseCase->__invoke($saleId, $reason, $userId, $restoreStock);
+    }
+
+    public function replaceRejectedDocument(string $saleId): JsonResponse
+    {
+        $result = $this->replaceRejectedDocumentService->replaceForSaleId($saleId, 'today');
+
+        return $result['success']
+            ? ApiResponse::success($result['message'], ['newId' => $result['newId']])
+            : ApiResponse::error($result['message']);
     }
 
     private function loadSale(string $saleId): ?SaleRecord

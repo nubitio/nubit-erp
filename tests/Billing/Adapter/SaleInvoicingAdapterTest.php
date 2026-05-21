@@ -13,6 +13,7 @@ use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Service\SaleV2Loader;
 use App\Sales\State\DetractionCalculatorInterface;
 use App\Billing\Service\InvoiceCreationServiceInterface;
+use App\Billing\Service\ReplaceRejectedDocumentService;
 use App\Sales\Entity\SaleRecord;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -107,6 +108,7 @@ final class SaleInvoicingAdapterTest extends TestCase
             $saleV2Loader,
             $this->createMock(DetractionCalculatorInterface::class),
             $this->createMock(PrintESCPOSController::class),
+            $this->createMock(ReplaceRejectedDocumentService::class),
         );
     }
 }

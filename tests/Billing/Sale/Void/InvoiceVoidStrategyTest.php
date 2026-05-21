@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Sale\Void;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Filesystem\FileManager;
 use App\Billing\Sunat\Domain\VoidedCreateUseCase;
 use App\Billing\Sunat\Model\Response\SummaryResponse;
@@ -97,10 +96,10 @@ final class InvoiceVoidStrategyTest extends TestCase
     // void() — document not found
     // ──────────────────────────────────────────────────────────────────────────
 
-    public function testVoidThrowsServiceExceptionWhenTaxDocumentNotFound(): void
+    public function testVoidThrowsSaleExceptionWhenTaxDocumentNotFound(): void
     {
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn(null);
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturn(null);
 
         $sut = new InvoiceVoidStrategy(
             $repo,
@@ -108,51 +107,9 @@ final class InvoiceVoidStrategyTest extends TestCase
             $this->makeFileManager(),
         );
 
-        $this->expectException(ServiceException::class);
+        $this->expectException(SaleException::class);
 
         $sut->void('sale-missing', 'Error de prueba');
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // void() — document not issued (sunat_status !== '0')
-    // ──────────────────────────────────────────────────────────────────────────
-
-    public function testVoidThrowsSaleExceptionWhenDocumentNotIssued(): void
-    {
-        $taxDocument = $this->createStub(TaxDocument::class);
-        $taxDocument->method('getSunatStatus')->willReturn('1'); // not '0'
-
-        $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn($taxDocument);
-
-        $sut = new InvoiceVoidStrategy(
-            $repo,
-            $this->createMock(VoidedCreateUseCase::class),
-            $this->makeFileManager(),
-        );
-
-        $this->expectException(SaleException::class);
-
-        $sut->void('sale-001', 'Anular');
-    }
-
-    public function testVoidThrowsSaleExceptionWhenSunatStatusIsNull(): void
-    {
-        $taxDocument = $this->createStub(TaxDocument::class);
-        $taxDocument->method('getSunatStatus')->willReturn(null);
-
-        $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn($taxDocument);
-
-        $sut = new InvoiceVoidStrategy(
-            $repo,
-            $this->createMock(VoidedCreateUseCase::class),
-            $this->makeFileManager(),
-        );
-
-        $this->expectException(SaleException::class);
-
-        $sut->void('sale-001', 'Anular');
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -162,11 +119,10 @@ final class InvoiceVoidStrategyTest extends TestCase
     public function testVoidReturnsSunatVoidResponseOnSuccess(): void
     {
         $taxDocument = $this->createStub(TaxDocument::class);
-        $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('42');
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn($taxDocument);
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse(
             name: 'RA-20250101-00001',
@@ -196,11 +152,10 @@ final class InvoiceVoidStrategyTest extends TestCase
     public function testVoidDoesNotWriteFileOnFailure(): void
     {
         $taxDocument = $this->createStub(TaxDocument::class);
-        $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('99');
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn($taxDocument);
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse(success: false, ticket: '');
 
@@ -222,11 +177,10 @@ final class InvoiceVoidStrategyTest extends TestCase
     public function testVoidCallsUseCaseWithTaxDocumentIdAndReason(): void
     {
         $taxDocument = $this->createStub(TaxDocument::class);
-        $taxDocument->method('getSunatStatus')->willReturn('0');
         $taxDocument->method('getId')->willReturn('77');
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')->willReturn($taxDocument);
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $summaryResponse = $this->makeSummaryResponse();
 
@@ -245,12 +199,14 @@ final class InvoiceVoidStrategyTest extends TestCase
 
     public function testVoidQueriesRepoWithFacturaDocType(): void
     {
-        $capturedCriteria = null;
+        $capturedSaleId = null;
+        $capturedDocType = null;
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findOneBy')
-            ->willReturnCallback(static function (array $criteria) use (&$capturedCriteria): null {
-                $capturedCriteria = $criteria;
+        $repo->method('findLatestAcceptedBySaleAndType')
+            ->willReturnCallback(static function (string $saleId, string $docType) use (&$capturedSaleId, &$capturedDocType): null {
+                $capturedSaleId = $saleId;
+                $capturedDocType = $docType;
                 return null;
             });
 
@@ -262,12 +218,11 @@ final class InvoiceVoidStrategyTest extends TestCase
 
         try {
             $sut->void('sale-004', 'Anular');
-        } catch (ServiceException) {
+        } catch (SaleException) {
             // expected
         }
 
-        self::assertIsArray($capturedCriteria);
-        self::assertSame(DocType::FACTURA->value, $capturedCriteria['documentType'] ?? null);
-        self::assertSame('sale-004', $capturedCriteria['saleRecord'] ?? null);
+        self::assertSame('sale-004', $capturedSaleId);
+        self::assertSame(DocType::FACTURA->value, $capturedDocType);
     }
 }

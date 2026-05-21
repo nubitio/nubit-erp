@@ -14,8 +14,12 @@ type CreateSaleToolbarParams = {
   onVoid: (saleId: string) => void;
   onMakeInvoice: (saleId: string) => void;
   onClone: (saleId: string) => void;
+  onReplaceRejected: (saleId: string) => void;
+  onViewDocuments: (saleId: string) => void;
   printEnabled: boolean;
   cloneEnabled: boolean;
+  replaceEnabled: boolean;
+  documentsEnabled: boolean;
 };
 
 const requireSelectedSale = (
@@ -38,8 +42,12 @@ export const createSaleToolbar = ({
   onVoid,
   onMakeInvoice,
   onClone,
+  onReplaceRejected,
+  onViewDocuments,
   printEnabled,
   cloneEnabled,
+  replaceEnabled,
+  documentsEnabled,
 }: CreateSaleToolbarParams): ToolbarAction[] => [
   {
     text: 'Vista previa',
@@ -67,5 +75,17 @@ export const createSaleToolbar = ({
     type: 'info',
     onClick: () => requireSelectedSale(getSelectedSaleId, onClone),
     disabled: !cloneEnabled,
+  },
+  {
+    text: 'Reemitir',
+    type: 'warning',
+    onClick: () => requireSelectedSale(getSelectedSaleId, onReplaceRejected),
+    disabled: !replaceEnabled,
+  },
+  {
+    text: 'Comprobantes',
+    type: 'secondary',
+    onClick: () => requireSelectedSale(getSelectedSaleId, onViewDocuments),
+    disabled: !documentsEnabled,
   },
 ];

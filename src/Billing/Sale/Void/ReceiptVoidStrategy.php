@@ -40,16 +40,12 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
             'reason' => $reason,
         ]);
 
-        $taxDocument = $this->taxDocumentRepository->findOneBy([
-            'saleRecord' => $saleId,
-            'documentType' => DocType::BOLETA->value,
-        ]);
+        $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType(
+            $saleId,
+            DocType::BOLETA->value,
+        );
 
         if ($taxDocument === null) {
-            throw new ServiceException('Comprobante no encontrado');
-        }
-
-        if (($taxDocument->getSunatStatus() ?? null) !== '0') {
             throw SaleException::notIssued();
         }
 

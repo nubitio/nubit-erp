@@ -14,6 +14,8 @@ type UseSalePageObserversParams = {
   customerSuccessEvent: string;
   setPrintEnabled: (value: boolean) => void;
   setCloneEnabled: (value: boolean) => void;
+  setReplaceEnabled: (value: boolean) => void;
+  setDocumentsEnabled: (value: boolean) => void;
   setGridError?: (value: string | null) => void;
   onDiscountApply: (payload: DiscountDialogApplyPayload) => void;
   onDetailRowsChanged: () => void;
@@ -28,6 +30,8 @@ export const useSalePageObservers = ({
   customerSuccessEvent,
   setPrintEnabled,
   setCloneEnabled,
+  setReplaceEnabled,
+  setDocumentsEnabled,
   setGridError,
   onDiscountApply,
   onDetailRowsChanged,
@@ -39,6 +43,8 @@ export const useSalePageObservers = ({
     customerSuccessEvent,
     setPrintEnabled,
     setCloneEnabled,
+    setReplaceEnabled,
+    setDocumentsEnabled,
     setGridError,
     onDiscountApply,
     onDetailRowsChanged,
@@ -53,6 +59,8 @@ export const useSalePageObservers = ({
     customerSuccessEvent,
     setPrintEnabled,
     setCloneEnabled,
+    setReplaceEnabled,
+    setDocumentsEnabled,
     setGridError,
     onDiscountApply,
     onDetailRowsChanged,
@@ -74,6 +82,17 @@ export const useSalePageObservers = ({
       const hasSingleSelection = e.length === 1;
       callbacksRef.current.setPrintEnabled(hasSingleSelection);
       callbacksRef.current.setCloneEnabled(hasSingleSelection);
+      callbacksRef.current.setDocumentsEnabled(hasSingleSelection);
+      if (hasSingleSelection) {
+        const row = e[0];
+        const rawStatus = row?.sunatStatus ?? row?.invoiceSunatStatus;
+        const statusNum = rawStatus !== undefined && rawStatus !== null && rawStatus !== ''
+          ? Number(rawStatus)
+          : -1;
+        callbacksRef.current.setReplaceEnabled(!Number.isNaN(statusNum) && statusNum >= 2000 && statusNum < 4000);
+      } else {
+        callbacksRef.current.setReplaceEnabled(false);
+      }
     });
 
     on(callbacksRef.current.customerSuccessEvent, (payload) => {
