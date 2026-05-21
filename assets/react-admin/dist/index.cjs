@@ -1,5 +1,6 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 let _nubit_core = require("@nubit/core");
+let _nubit_crud = require("@nubit/crud");
 let _nubit_api_platform = require("@nubit/api-platform");
 let _nubit_ui = require("@nubit/ui");
 let _nubit_admin = require("@nubit/admin");
@@ -33,6 +34,18 @@ Object.defineProperty(exports, "AppDialog", {
 		return _nubit_ui.AppDialog;
 	}
 });
+Object.defineProperty(exports, "AppToolbar", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.AppToolbar;
+	}
+});
+Object.defineProperty(exports, "Card", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.Card;
+	}
+});
 Object.defineProperty(exports, "ConfirmDialog", {
 	enumerable: true,
 	get: function() {
@@ -54,19 +67,19 @@ Object.defineProperty(exports, "CoreProvider", {
 Object.defineProperty(exports, "CrudPage", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.CrudPage;
+		return _nubit_crud.CrudPage;
 	}
 });
 Object.defineProperty(exports, "DATA_GRID_EVENTS", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.DATA_GRID_EVENTS;
+		return _nubit_crud.DATA_GRID_EVENTS;
 	}
 });
 Object.defineProperty(exports, "DataGridView", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.DataGridView;
+		return _nubit_crud.DataGridView;
 	}
 });
 Object.defineProperty(exports, "DateUtils", {
@@ -78,25 +91,25 @@ Object.defineProperty(exports, "DateUtils", {
 Object.defineProperty(exports, "DialogView", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.DialogView;
+		return _nubit_crud.DialogView;
 	}
 });
 Object.defineProperty(exports, "FORM_EVENTS", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.FORM_EVENTS;
+		return _nubit_crud.FORM_EVENTS;
 	}
 });
 Object.defineProperty(exports, "FieldBuilder", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.FieldBuilder;
+		return _nubit_crud.FieldBuilder;
 	}
 });
 Object.defineProperty(exports, "FormView", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.FormView;
+		return _nubit_crud.FormView;
 	}
 });
 Object.defineProperty(exports, "LIMA_TZ", {
@@ -120,19 +133,37 @@ Object.defineProperty(exports, "SchemaProvider", {
 Object.defineProperty(exports, "SmartCrudPage", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.SmartCrudPage;
+		return _nubit_crud.SmartCrudPage;
 	}
 });
 Object.defineProperty(exports, "SmartCrudRolesProvider", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.SmartCrudRolesProvider;
+		return _nubit_crud.SmartCrudRolesProvider;
+	}
+});
+Object.defineProperty(exports, "ThemeContext", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.ThemeContext;
+	}
+});
+Object.defineProperty(exports, "ThemeProvider", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.ThemeProvider;
+	}
+});
+Object.defineProperty(exports, "ThemeSwitcher", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.ThemeSwitcher;
 	}
 });
 Object.defineProperty(exports, "checkboxField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.checkboxField;
+		return _nubit_crud.checkboxField;
 	}
 });
 Object.defineProperty(exports, "configureCoreDate", {
@@ -150,43 +181,43 @@ Object.defineProperty(exports, "createCoreHttpClient", {
 Object.defineProperty(exports, "createCrudEvents", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.createCrudEvents;
+		return _nubit_crud.createCrudEvents;
 	}
 });
 Object.defineProperty(exports, "currencyField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.currencyField;
+		return _nubit_crud.currencyField;
 	}
 });
 Object.defineProperty(exports, "dateField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.dateField;
+		return _nubit_crud.dateField;
 	}
 });
 Object.defineProperty(exports, "datetimeField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.datetimeField;
+		return _nubit_crud.datetimeField;
 	}
 });
 Object.defineProperty(exports, "defineFieldContract", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.defineFieldContract;
+		return _nubit_crud.defineFieldContract;
 	}
 });
 Object.defineProperty(exports, "defineFields", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.defineFields;
+		return _nubit_crud.defineFields;
 	}
 });
 Object.defineProperty(exports, "defineResource", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.defineResource;
+		return _nubit_crud.defineResource;
 	}
 });
 Object.defineProperty(exports, "dispatch", {
@@ -198,13 +229,13 @@ Object.defineProperty(exports, "dispatch", {
 Object.defineProperty(exports, "entityField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.entityField;
+		return _nubit_crud.entityField;
 	}
 });
 Object.defineProperty(exports, "enumField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.enumField;
+		return _nubit_crud.enumField;
 	}
 });
 Object.defineProperty(exports, "getCoreLocale", {
@@ -222,19 +253,19 @@ Object.defineProperty(exports, "getCoreTimezone", {
 Object.defineProperty(exports, "identityField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.identityField;
+		return _nubit_crud.identityField;
 	}
 });
 Object.defineProperty(exports, "imageField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.imageField;
+		return _nubit_crud.imageField;
 	}
 });
 Object.defineProperty(exports, "initCoreI18n", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.initCoreI18n;
+		return _nubit_crud.initCoreI18n;
 	}
 });
 Object.defineProperty(exports, "mapHydraSchemaToFields", {
@@ -246,13 +277,13 @@ Object.defineProperty(exports, "mapHydraSchemaToFields", {
 Object.defineProperty(exports, "noneField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.noneField;
+		return _nubit_crud.noneField;
 	}
 });
 Object.defineProperty(exports, "numberField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.numberField;
+		return _nubit_crud.numberField;
 	}
 });
 Object.defineProperty(exports, "parseHydraDoc", {
@@ -270,7 +301,7 @@ Object.defineProperty(exports, "parseOpenApiDoc", {
 Object.defineProperty(exports, "passwordField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.passwordField;
+		return _nubit_crud.passwordField;
 	}
 });
 Object.defineProperty(exports, "resolveRangeTag", {
@@ -282,31 +313,31 @@ Object.defineProperty(exports, "resolveRangeTag", {
 Object.defineProperty(exports, "resolveSmartCrudFields", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.resolveSmartCrudFields;
+		return _nubit_crud.resolveSmartCrudFields;
 	}
 });
 Object.defineProperty(exports, "selectField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.selectField;
+		return _nubit_crud.selectField;
 	}
 });
 Object.defineProperty(exports, "switchField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.switchField;
+		return _nubit_crud.switchField;
 	}
 });
 Object.defineProperty(exports, "textField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.textField;
+		return _nubit_crud.textField;
 	}
 });
 Object.defineProperty(exports, "textareaField", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.textareaField;
+		return _nubit_crud.textareaField;
 	}
 });
 Object.defineProperty(exports, "useCoreConfig", {
@@ -324,13 +355,13 @@ Object.defineProperty(exports, "useCoreHttpClient", {
 Object.defineProperty(exports, "useCoreTranslation", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.useCoreTranslation;
+		return _nubit_crud.useCoreTranslation;
 	}
 });
 Object.defineProperty(exports, "useCrudPage", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.useCrudPage;
+		return _nubit_crud.useCrudPage;
 	}
 });
 Object.defineProperty(exports, "useEvents", {
@@ -360,7 +391,7 @@ Object.defineProperty(exports, "useMercureSubscription", {
 Object.defineProperty(exports, "usePermissions", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.usePermissions;
+		return _nubit_crud.usePermissions;
 	}
 });
 Object.defineProperty(exports, "useResourceSchema", {
@@ -390,12 +421,18 @@ Object.defineProperty(exports, "useScreenSizeClass", {
 Object.defineProperty(exports, "useSelectionState", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.useSelectionState;
+		return _nubit_crud.useSelectionState;
 	}
 });
 Object.defineProperty(exports, "useSmartCrudRoles", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.useSmartCrudRoles;
+		return _nubit_crud.useSmartCrudRoles;
+	}
+});
+Object.defineProperty(exports, "useTheme", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.useTheme;
 	}
 });

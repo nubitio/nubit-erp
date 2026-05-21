@@ -25,6 +25,15 @@ final readonly class SalesAnalyticsRepository
 
     public function getSummary(\DateTimeImmutable $from, \DateTimeImmutable $to): SalesSummaryDto
     {
+        // $from/$to are Lima calendar dates; expand to UTC-equivalent boundaries so
+        // sales between 19:00–23:59 Lima time (00:00–04:59 UTC next day) are included.
+        $lima = new \DateTimeZone('America/Lima');
+        $utc = new \DateTimeZone('UTC');
+        $fromUtc = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $from->format('Y-m-d') . ' 00:00:00', $lima)
+            ->setTimezone($utc);
+        $toUtc = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $to->format('Y-m-d') . ' 23:59:59', $lima)
+            ->setTimezone($utc);
+
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
 SELECT
@@ -36,8 +45,8 @@ WHERE s.issued_at BETWEEN :from AND :to
   AND s.deleted_at IS NULL
 SQL,
             [
-                'from' => $from->format('Y-m-d H:i:s'),
-                'to' => $to->format('Y-m-d H:i:s'),
+                'from' => $fromUtc->format('Y-m-d H:i:s'),
+                'to' => $toUtc->format('Y-m-d H:i:s'),
             ]
         );
 

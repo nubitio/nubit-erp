@@ -95,9 +95,14 @@
 
 .native-form__lookup .native-form__control {
   padding-right: 30px;
+  transition: padding-right 120ms ease;
 }
 
-.native-form__lookup-clear {
+.native-form__lookup.has-value .native-form__control {
+  padding-right: 52px;
+}
+
+.native-form__lookup-toggle {
   align-items: center;
   background: transparent;
   border: 0;
@@ -111,6 +116,32 @@
   right: 4px;
   top: 2px;
   width: 24px;
+  transition: color 120ms ease;
+
+  &:hover {
+    color: var(--base-text-color, #111);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.native-form__lookup-clear {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary, #667085);
+  cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 28px;
+  top: 2px;
+  width: 24px;
+  transition: color 120ms ease;
 }
 
 .native-form__lookup-clear:hover {
@@ -130,6 +161,21 @@
   position: absolute;
   right: 0;
   z-index: 20;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--base-text-color, #111) 16%, transparent);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--base-text-color, #111) 28%, transparent);
+  }
 }
 
 .native-form__lookup-option,
@@ -148,11 +194,22 @@
   background: transparent;
   border: 0;
   cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
 }
 
-.native-form__lookup-option:hover,
+.native-form__lookup-option:hover {
+  background: color-mix(in srgb, var(--base-text-color, #111) 8%, transparent);
+}
+
 .native-form__lookup-option[aria-selected='true'] {
-  background: color-mix(in srgb, var(--accent-color, #0e7a50) 12%, transparent);
+  background: var(--accent-color, #0e7a50);
+  color: #fff;
+  font-weight: 500;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color, #0e7a50) 88%, #000);
+    color: #fff;
+  }
 }
 
 .native-form__lookup-status {

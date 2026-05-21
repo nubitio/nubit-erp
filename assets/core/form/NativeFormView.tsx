@@ -4,11 +4,13 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useEvents } from '../event/EventHook';
 import { Field } from '../field/Field';
@@ -60,7 +62,7 @@ function fieldFilters(field: Field): unknown[][] | undefined {
 }
 
 function inputValue(value: unknown): string | number | readonly string[] | undefined {
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (value instanceof Date) return value.toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
   if (typeof value === 'string' || typeof value === 'number') return value;
   return value == null ? '' : String(value);
 }
@@ -78,7 +80,7 @@ function colSpan(field: Field): React.CSSProperties {
   return { '--native-form-col': String(field.col ?? 12) } as React.CSSProperties;
 }
 
-function NativeEntitySelect({
+export function NativeEntitySelect({
   className,
   disabled,
   field,
@@ -105,6 +107,15 @@ function NativeEntitySelect({
   const [draftQuery, setDraftQuery] = useState<string | null>(null);
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({
+    position: 'fixed',
+    visibility: 'hidden',
+    margin: 0,
+  });
+
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const normalizedValue = String(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value ?? '');
   const items = searchedItems ?? options;
@@ -118,19 +129,125 @@ function NativeEntitySelect({
     const searchValue = query.trim();
     const timer = setTimeout(() => {
       setLoading(true);
+      setHasMore(true);
       createRemoteSource(field, httpClient)
         .load({
           take: 50,
+          skip: 0,
           searchExpr: fieldSearchExpr(field),
           searchValue: searchValue === '' ? undefined : searchValue,
         })
-        .then((result) => setSearchedItems(result.data))
-        .catch(() => setSearchedItems(null))
+        .then((result) => {
+          setSearchedItems(result.data);
+          const canLoadMore = result.data.length === 50 && (result.totalCount === undefined || result.data.length < result.totalCount);
+          setHasMore(canLoadMore);
+        })
+        .catch(() => {
+          setSearchedItems(null);
+          setHasMore(false);
+        })
         .finally(() => setLoading(false));
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [field, httpClient, open, options, query]);
+  }, [field, httpClient, open, query]);
+
+  const loadMore = useCallback(() => {
+    if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    const searchValue = query.trim();
+    const currentCount = searchedItems ? searchedItems.length : 0;
+
+    createRemoteSource(field, httpClient)
+      .load({
+        take: 50,
+        skip: currentCount,
+        searchExpr: fieldSearchExpr(field),
+        searchValue: searchValue === '' ? undefined : searchValue,
+      })
+      .then((result) => {
+        setSearchedItems((prev) => {
+          const prevItems = prev ?? [];
+          const nextItems = [...prevItems, ...result.data];
+          const seen = new Set();
+          return nextItems.filter((item) => {
+            const key = fieldKeyValue(field, item);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        });
+        const nextTotalLoaded = currentCount + result.data.length;
+        const canLoadMore = result.data.length === 50 && (result.totalCount === undefined || nextTotalLoaded < result.totalCount);
+        setHasMore(canLoadMore);
+      })
+      .catch(() => {
+        setHasMore(false);
+      })
+      .finally(() => {
+        setLoadingMore(false);
+      });
+  }, [field, httpClient, loading, loadingMore, hasMore, query, searchedItems]);
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 20) {
+      loadMore();
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const isInputVisible = rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
+      if (!isInputVisible) {
+        setOpen(false);
+        return;
+      }
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const threshold = 250;
+
+      if (spaceBelow < threshold && spaceAbove > spaceBelow) {
+        setMenuStyle({
+          position: 'fixed',
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          bottom: `${window.innerHeight - rect.top + 4}px`,
+          top: 'auto',
+          margin: 0,
+          zIndex: 9999,
+          visibility: 'visible',
+        });
+      } else {
+        setMenuStyle({
+          position: 'fixed',
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          top: `${rect.bottom + 4}px`,
+          bottom: 'auto',
+          margin: 0,
+          zIndex: 9999,
+          visibility: 'visible',
+        });
+      }
+    };
+
+    updatePosition();
+
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+    };
+  }, [open]);
 
   const selectItem = (item: DataRecord) => {
     const nextValue = fieldKeyValue(field, item);
@@ -146,7 +263,7 @@ function NativeEntitySelect({
   };
 
   return (
-    <div className="native-form__lookup">
+    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
       <input
         autoComplete="off"
         className={className}
@@ -176,24 +293,67 @@ function NativeEntitySelect({
         }}
       />
       {!disabled && !readOnly && normalizedValue !== '' && (
-        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={clearSelection}>
+        <button
+          type="button"
+          className="native-form__lookup-clear"
+          aria-label={`Limpiar ${field.label}`}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={clearSelection}
+        >
           <i className="ph ph-x" aria-hidden="true" />
         </button>
       )}
-      {open && !disabled && !readOnly && (
-        <div className="native-form__lookup-menu" role="listbox">
-          {loading && <div className="native-form__lookup-status">Buscando...</div>}
+      {!disabled && !readOnly && (
+        <button
+          type="button"
+          className="native-form__lookup-toggle"
+          aria-label={`Abrir ${field.label}`}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            if (blurTimer.current) clearTimeout(blurTimer.current);
+            setOpen((prev) => !prev);
+          }}
+        >
+          <i
+            className="ph ph-caret-down"
+            aria-hidden="true"
+            style={{
+              transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)',
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
+        </button>
+      )}
+      {open && !disabled && !readOnly && createPortal(
+        <div
+          className="native-form__lookup-menu"
+          role="listbox"
+          style={menuStyle}
+          onScroll={handleScroll}
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          {loading && items.length === 0 && <div className="native-form__lookup-status">Buscando...</div>}
           {!loading && items.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
           {!loading && items.map((item) => {
             const itemValue = fieldKeyValue(field, item);
             const itemText = fieldTextValue(field, item);
             return (
-              <button key={String(itemValue)} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className="native-form__lookup-option" onMouseDown={(event) => event.preventDefault()} onClick={() => selectItem(item)}>
+              <button
+                key={String(itemValue)}
+                type="button"
+                role="option"
+                aria-selected={String(itemValue ?? '') === normalizedValue}
+                className="native-form__lookup-option"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => selectItem(item)}
+              >
                 {itemText}
               </button>
             );
           })}
-        </div>
+          {loadingMore && <div className="native-form__lookup-status">Cargando más...</div>}
+        </div>,
+        document.body
       )}
     </div>
   );
