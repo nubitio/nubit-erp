@@ -233,6 +233,7 @@
                     <td class="right">
                         {% if voucher.voucher_payment_method == 2 %}<strong>CRÉDITO</strong>{% else %}
                             <strong>CONTADO</strong>{% endif %}
+                        {% if voucher.voucher_payment_method_name %} · {{ voucher.voucher_payment_method_name }}{% endif %}
                     </td>
                 </tr>
             </table>
