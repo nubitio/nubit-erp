@@ -359,6 +359,132 @@ export function NativeEntitySelect({
   );
 }
 
+function NativeEnumSelect({
+  className,
+  disabled,
+  field,
+  id,
+  onChange,
+  readOnly,
+  required,
+  value,
+}: {
+  className: string;
+  disabled?: boolean;
+  field: Field;
+  id?: string;
+  onChange: (value: unknown) => void;
+  readOnly?: boolean;
+  required?: boolean;
+  value: unknown;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftQuery, setDraftQuery] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
+
+  const allItems: DataRecord[] = field.data ?? [];
+  const normalizedValue = String(value ?? '');
+  const selectedItem = allItems.find((item) => String(item['value'] ?? '') === normalizedValue);
+  const selectedText = selectedItem ? String(selectedItem['text'] ?? selectedItem['value'] ?? '') : '';
+  const query = draftQuery ?? selectedText;
+
+  const visibleItems = draftQuery != null && draftQuery !== ''
+    ? allItems.filter((item) => String(item['text'] ?? item['value'] ?? '').toLowerCase().includes(draftQuery.toLowerCase()))
+    : allItems;
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      if (!isVisible) { setOpen(false); return; }
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, bottom: `${window.innerHeight - rect.top + 4}px`, top: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
+      } else {
+        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, top: `${rect.bottom + 4}px`, bottom: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
+      }
+    };
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+    };
+  }, [open]);
+
+  const selectItem = (item: DataRecord) => {
+    onChange(item['value'] ?? null);
+    setDraftQuery(String(item['text'] ?? item['value'] ?? ''));
+    setOpen(false);
+  };
+
+  const clearSelection = () => {
+    onChange(null);
+    setDraftQuery('');
+    setOpen(true);
+  };
+
+  return (
+    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
+      <input
+        autoComplete="off"
+        className={className}
+        disabled={disabled}
+        id={id}
+        readOnly={readOnly}
+        required={required}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        value={query}
+        onBlur={() => {
+          blurTimer.current = setTimeout(() => { setOpen(false); setDraftQuery(null); }, 120);
+        }}
+        onChange={(event) => {
+          setDraftQuery(event.currentTarget.value);
+          setOpen(true);
+          if (event.currentTarget.value === '') onChange(null);
+        }}
+        onFocus={() => {
+          if (blurTimer.current) clearTimeout(blurTimer.current);
+          setOpen(true);
+        }}
+      />
+      {!disabled && !readOnly && normalizedValue !== '' && (
+        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={clearSelection}>
+          <i className="ph ph-x" aria-hidden="true" />
+        </button>
+      )}
+      {!disabled && !readOnly && (
+        <button type="button" className="native-form__lookup-toggle" aria-label={`Abrir ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { if (blurTimer.current) clearTimeout(blurTimer.current); setOpen((prev) => !prev); }}>
+          <i className="ph ph-caret-down" aria-hidden="true" style={{ transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+        </button>
+      )}
+      {open && !disabled && !readOnly && createPortal(
+        <div className="native-form__lookup-menu" role="listbox" style={menuStyle} onMouseDown={(event) => event.preventDefault()}>
+          {visibleItems.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+          {visibleItems.map((item) => {
+            const itemValue = String(item['value'] ?? '');
+            const itemText = String(item['text'] ?? item['value'] ?? '');
+            return (
+              <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(event) => event.preventDefault()} onClick={() => selectItem(item)}>
+                {itemText}
+              </button>
+            );
+          })}
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
 function validateField(field: Field, value: unknown, formData: FormDataRecord): string | null {
   if (field.required && isEmptyValue(value)) return `${field.label} es requerido`;
 
@@ -457,35 +583,28 @@ function NativeDetailGrid({
     if (field.formatter && field.type === FieldType.NONE) {
       return field.formatter({ value, data: row, rowIndex, columnIndex: 0 });
     }
-    if (field.type === FieldType.ENTITY || field.type === FieldType.SELECT || field.type === FieldType.ENUM) {
-      const items = field.type === FieldType.ENTITY ? (remoteOptions[field.name] ?? field.data ?? []) : (field.data ?? []);
-      if (field.type === FieldType.ENTITY) {
-        return (
-          <NativeEntitySelect
-            className="native-form__control"
-            disabled={!allowUpdating || field.disabled}
-            field={field}
-            httpClient={httpClient}
-            options={items}
-            value={value}
-            onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
-          />
-        );
-      }
+    if (field.type === FieldType.ENTITY) {
       return (
-        <select
+        <NativeEntitySelect
           className="native-form__control"
-          value={String(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value ?? '')}
           disabled={!allowUpdating || field.disabled}
-          onChange={(event) => void updateCell(rowIndex, field, event.currentTarget.value === '' ? null : event.currentTarget.value)}
-        >
-          <option value="">Seleccione...</option>
-          {items.map((item) => {
-            const itemValue = item['value'];
-            const itemText = String(item['text'] ?? itemValue ?? '');
-            return <option key={String(itemValue)} value={String(itemValue ?? '')}>{itemText}</option>;
-          })}
-        </select>
+          field={field}
+          httpClient={httpClient}
+          options={remoteOptions[field.name] ?? field.data ?? []}
+          value={value}
+          onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
+        />
+      );
+    }
+    if (field.type === FieldType.SELECT || field.type === FieldType.ENUM) {
+      return (
+        <NativeEnumSelect
+          className="native-form__control"
+          disabled={!allowUpdating || field.disabled}
+          field={field}
+          value={value}
+          onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
+        />
       );
     }
     return (
@@ -812,17 +931,29 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           onChange={(nextValue) => setFieldValue(field.name, nextValue)}
         />
       );
-    } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT || field.type === FieldType.TAGS) {
-      const items = field.type === FieldType.TAGS ? (remoteOptions[field.name] ?? field.data ?? []) : (field.data ?? []);
+    } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
       control = (
-        <select {...commonProps} multiple={field.multiple || field.type === FieldType.TAGS} value={field.multiple && Array.isArray(value) ? value.map(String) : String(value ?? '')} onChange={(event) => {
-          const nextValue = event.currentTarget.multiple ? Array.from(event.currentTarget.selectedOptions).map((option) => option.value) : event.currentTarget.value;
-          setFieldValue(field.name, nextValue === '' ? null : nextValue);
+        <NativeEnumSelect
+          className={`native-form__control${errorClass}`}
+          disabled={disabled}
+          field={field}
+          id={`native-form-${field.name}`}
+          readOnly={readOnly}
+          required={field.required}
+          value={value}
+          onChange={(nextValue) => setFieldValue(field.name, nextValue)}
+        />
+      );
+    } else if (field.type === FieldType.TAGS) {
+      const items = remoteOptions[field.name] ?? field.data ?? [];
+      control = (
+        <select {...commonProps} multiple value={Array.isArray(value) ? value.map(String) : []} onChange={(event) => {
+          const nextValue = Array.from(event.currentTarget.selectedOptions).map((option) => option.value);
+          setFieldValue(field.name, nextValue);
         }}>
-          <option value="">Seleccione...</option>
           {items.map((item) => {
-            const itemValue = field.type === FieldType.TAGS ? fieldKeyValue(field, item) : item['value'];
-            const itemText = field.type === FieldType.TAGS ? fieldTextValue(field, item) : String(item['text'] ?? itemValue ?? '');
+            const itemValue = fieldKeyValue(field, item);
+            const itemText = fieldTextValue(field, item);
             return <option key={String(itemValue)} value={String(itemValue ?? '')}>{itemText}</option>;
           })}
         </select>
