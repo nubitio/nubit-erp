@@ -444,6 +444,14 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             return;
         }
 
+        $this->purgeSalesByIds($saleIds);
+    }
+
+    /**
+     * @param list<string> $saleIds
+     */
+    private function purgeSalesByIds(array $saleIds): void
+    {
         $this->connection->executeStatement(
             'DELETE FROM cash_movements WHERE sale_id IN (?)',
             [$saleIds],
@@ -504,6 +512,25 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function purgeE2eCashSessions(CashRegister $cashRegister): void
     {
+        // Delete any sales still linked to these sessions before removing the sessions.
+        // The FK fk_sales_session_branch (sales.cash_session_id → cash_sessions.id) has no
+        // CASCADE, so we must clean up referencing rows first.
+        $sessionIds = $this->connection->fetchFirstColumn(
+            'SELECT id FROM cash_sessions WHERE cash_register_id = :register_id',
+            ['register_id' => $cashRegister->getId()],
+        );
+
+        if ($sessionIds !== []) {
+            $orphanSaleIds = $this->connection->fetchFirstColumn(
+                'SELECT id FROM sales WHERE cash_session_id IN (?)',
+                [$sessionIds],
+                [ArrayParameterType::STRING]
+            );
+            if ($orphanSaleIds !== []) {
+                $this->purgeSalesByIds($orphanSaleIds);
+            }
+        }
+
         // cash_movements rows are deleted automatically via ON DELETE CASCADE on cash_session_id.
         $this->connection->executeStatement(
             'DELETE FROM cash_sessions WHERE cash_register_id = :register_id',

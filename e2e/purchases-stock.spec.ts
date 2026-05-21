@@ -352,17 +352,28 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       const currentVal = await almacenInput.inputValue().catch(() => '');
       if (currentVal.trim().length === 0) {
-        // Click and type to trigger the remote search (NativeEntitySelect needs a query)
-        await almacenInput.click();
-        await almacenInput.pressSequentially('A', { delay: 50 }); // trigger remote search
-        await page.waitForTimeout(600); // debounce (250ms) + API roundtrip
+        // NOTE: NativeEntitySelect portals its dropdown menu to document.body, so
+        // scoping the option locator to the field container does NOT work. Use page-level.
+        const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
 
-        // Scope to the warehouse field container to avoid matching other dropdowns
-        const warehouseField = page.locator('.native-form__field').filter({ has: page.locator('#native-form-warehouse') });
-        const firstOption = warehouseField.locator('.native-form__lookup-menu button[role="option"]').first();
-        if (await firstOption.isVisible({ timeout: 8000 }).catch(() => false)) {
-          await firstOption.click();
-          await page.waitForTimeout(300);
+        // Click to open, then type to trigger filtered search. Try a specific term
+        // first (seed warehouse name substring), then empty (load-all) as fallback.
+        for (const searchTerm of ['CI E2E', 'Almacen', '']) {
+          await almacenInput.click({ clickCount: 3 });
+          await almacenInput.fill('');
+          if (searchTerm) {
+            await almacenInput.pressSequentially(searchTerm, { delay: 40 });
+          } else {
+            // Empty string: just focus to open without a search filter
+            await almacenInput.click();
+          }
+          await page.waitForTimeout(700); // debounce (250ms) + API roundtrip
+
+          if (await firstOption.isVisible({ timeout: 5000 }).catch(() => false)) {
+            await firstOption.click();
+            await page.waitForTimeout(300);
+            break;
+          }
         }
       }
     });
@@ -374,16 +385,12 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       const supplierVisible = await supplierInput.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (supplierVisible) {
-        // Scope to the supplier field container to avoid matching warehouse dropdown
-        const supplierField = page.locator('.native-form__field').filter({ has: page.locator('#native-form-supplier') });
-        const firstOption = supplierField.locator('.native-form__lookup-menu button[role="option"]').first();
+        // NOTE: NativeEntitySelect portals the dropdown to document.body — use page-level locator.
+        const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
 
-        // Dropdown may already be open (focus shifted from warehouse selection)
-        const alreadyOpen = await firstOption.isVisible({ timeout: 1000 }).catch(() => false);
-        if (!alreadyOpen) {
-          await supplierInput.click({ force: true });
-          await page.waitForTimeout(300);
-        }
+        // Open the dropdown (click to focus, which triggers search)
+        await supplierInput.click({ force: true });
+        await page.waitForTimeout(500);
 
         const hasOptions = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
         if (hasOptions) {
