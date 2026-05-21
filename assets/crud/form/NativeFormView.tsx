@@ -561,6 +561,7 @@ function NativeDetailGrid({
   remoteOptions: Record<string, DataRecord[]>;
   rows: FormDataRecord[];
 }) {
+  const { t } = useCoreTranslation();
   const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
 
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
@@ -652,7 +653,7 @@ function NativeDetailGrid({
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">No items added</td>
+                <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">{t('form.detailEmpty')}</td>
               </tr>
             )}
             {rows.map((row, rowIndex) => (

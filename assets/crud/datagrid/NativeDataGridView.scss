@@ -15,21 +15,21 @@
   flex: 1 1 auto;
 }
 
-.view-wrapper-datagrid-list {
+.view-wrapper.view-wrapper-datagrid-list {
   padding-top: var(--content-padding, 16px);
   padding-bottom: var(--content-padding, 16px);
 }
 
 .native-datagrid__toolbar {
   align-items: center;
-  background: var(--base-bg);
+  background: var(--card-background, var(--base-bg));
   border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
   border-radius: var(--radius-lg, 10px);
   box-shadow: var(--shadow-sm, 0 8px 22px rgb(0 0 0 / 8%));
   display: flex;
   flex: 0 0 auto;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: var(--toolbar-margin-bottom, 10px);
   min-height: 48px;
   padding: 6px 14px;
 }
@@ -50,7 +50,7 @@
   overflow: auto;
   border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
   border-radius: var(--radius-lg, 12px);
-  background: var(--base-bg);
+  background: var(--card-background, var(--base-bg));
 }
 
 .native-datagrid__table {

@@ -2,6 +2,21 @@
 @use 'sass:math';
 @use 'sass:color';
 
+.view-wrapper-scroll.dashboard-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-left: clamp(12px, 1.6vw, 20px);
+  padding-right: clamp(12px, 1.6vw, 20px);
+
+  .view-wrapper-dashboard {
+    flex: 0 0 auto;
+    min-height: auto;
+    overflow: visible;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 // ─── Loading overlay ─────────────────────────────────────────────────────────
 .dashboard-loading-overlay {
   position: fixed;
