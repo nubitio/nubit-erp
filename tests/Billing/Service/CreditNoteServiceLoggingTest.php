@@ -16,6 +16,8 @@ use App\Billing\Repository\TaxDocumentEventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\BillResult;
+use Greenter\Model\Response\CdrResponse;
+use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -36,6 +38,7 @@ final class CreditNoteServiceLoggingTest extends TestCase
     private NoteConsultUseCase&Stub $noteConsultUseCase;
     private CompanyContext&Stub $companyContext;
     private LoggerInterface&MockObject $logger;
+    private EntityManagerInterface&Stub $entityManager;
 
     protected function setUp(): void
     {
@@ -46,8 +49,8 @@ final class CreditNoteServiceLoggingTest extends TestCase
         $this->logger = $this->createMock(LoggerInterface::class);
 
         // Wire up EntityManager stub so flush() doesn't blow up
-        $em = $this->createStub(EntityManagerInterface::class);
-        $this->doctrine->method('getManager')->willReturn($em);
+        $this->entityManager = $this->createStub(EntityManagerInterface::class);
+        $this->doctrine->method('getManager')->willReturn($this->entityManager);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -149,6 +152,29 @@ final class CreditNoteServiceLoggingTest extends TestCase
         $this->expectExceptionMessage('SUNAT consult timeout');
 
         $this->makeService()->sendToSunat($creditNote);
+    }
+
+    public function testConsultCdrUsesRejectedCdrResponseWhenNoErrorIsPresent(): void
+    {
+        $creditNote = $this->createMock(TaxDocument::class);
+        $creditNote->method('getId')->willReturn('note-1');
+
+        $cdrResponse = (new CdrResponse())
+            ->setCode('3462')
+            ->setDescription('La tasa del IGV debe corresponder con una tasa vigente.');
+        $consultResult = (new StatusCdrResult())
+            ->setSuccess(true)
+            ->setCdrResponse($cdrResponse);
+
+        $this->noteConsultUseCase->method('__invoke')->willReturn($consultResult);
+
+        $creditNote->expects(self::once())->method('setSunatStatus')->with('3462');
+        $creditNote->expects(self::once())->method('setSunatMessage')->with(
+            'La tasa del IGV debe corresponder con una tasa vigente.'
+        );
+        $creditNote->expects(self::once())->method('setUpdatedAt');
+
+        self::assertSame($consultResult, $this->makeService()->consultCdr($creditNote));
     }
 
     /**

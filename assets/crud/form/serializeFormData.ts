@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { getCoreTimezone } from '@nubit/core';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
@@ -169,7 +168,9 @@ function serializeDateField(formData: FormDataRecord, field: Field): void {
     return;
   }
   const date = new Date(val as string | number | Date);
-  formData[field.name] = DateTime.fromJSDate(date, { zone: getCoreTimezone() }).toUTC().toISO();
+  formData[field.name] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: getCoreTimezone(),
+  }).format(date);
 }
 
 function serializeNumericField(formData: FormDataRecord, field: Field): void {

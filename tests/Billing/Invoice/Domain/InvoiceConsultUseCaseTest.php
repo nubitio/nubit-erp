@@ -171,7 +171,7 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $this->useCase->__invoke('td-1');
     }
 
-    public function testInvokeSuccessNotAcceptedSetsNullWhenNoError(): void
+    public function testInvokeSuccessNotAcceptedUsesCdrResponseWhenNoError(): void
     {
         /** @var TaxDocument&MockObject $taxDocument */
         $taxDocument = $this->makeTaxDocument();
@@ -183,12 +183,12 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $consultResult = (new StatusCdrResult())
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse);
-        // No error set → getError() returns null → code/message = null
+        // SUNAT/adapter can return rejected CDR data without populating getError().
 
         $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
 
-        $taxDocument->expects(self::once())->method('setSunatStatus')->with(null);
-        $taxDocument->expects(self::once())->method('setSunatMessage')->with(null);
+        $taxDocument->expects(self::once())->method('setSunatStatus')->with('2800');
+        $taxDocument->expects(self::once())->method('setSunatMessage')->with('Rechazado');
 
         $this->useCase->__invoke('td-1');
     }
