@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@app/constants';
 import { SmartCrudPage, defineResource } from '@nubit/core';
-import { voucherSeriesEvents } from '@nubit/core';
+import { voucherSeriesEvents } from '@app/domainEvents';
 
 const resource = defineResource({
   id: 'voucherSeries',

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { DataGridView, DialogView, FormView, type FormHandle } from '@nubit/core';
-import { companyEvents } from '@nubit/core';
+import { companyEvents } from '@app/domainEvents';
 import { CompanyFields } from './CompanyFields';
 import { companyEndpoints } from '../api/companyEndpoints';
 import { useCompanyObservers } from '../model/useCompanyObservers';

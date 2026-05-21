@@ -42,6 +42,11 @@ export default defineConfig({
   resolve: {
     alias: frontendAliases,
   },
+  test: {
+    environment: 'happy-dom',
+    include: ['assets/**/*.test.ts', 'assets/**/*.test.tsx'],
+    alias: frontendAliases,
+  },
   server: {
     host: '0.0.0.0',
     allowedHosts: true,

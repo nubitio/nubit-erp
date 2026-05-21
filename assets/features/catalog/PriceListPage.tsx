@@ -5,7 +5,7 @@ import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@nubit/core';
 import { usePriceListObservers } from './model/usePriceListObservers';
-import { priceListEvents, priceEvents } from '@nubit/core';
+import { priceListEvents, priceEvents } from '@app/domainEvents';
 import {
   PriceEditorGrid,
   type PriceEditorGridHandle,

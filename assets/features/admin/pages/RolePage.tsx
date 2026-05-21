@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
-import { permissionEvents, roleEvents } from '@nubit/core';
+import { permissionEvents, roleEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import { RoleFields } from './RoleFields';

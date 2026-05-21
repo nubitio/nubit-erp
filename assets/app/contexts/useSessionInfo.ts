@@ -1,4 +1,4 @@
-import { userInformation } from '@nubit/core';
+import { userInformation } from '@app/userInformation';
 
 /**
  * Returns branch and user info from the active eFact session.
