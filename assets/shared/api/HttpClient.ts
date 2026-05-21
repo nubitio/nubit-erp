@@ -168,13 +168,7 @@ class HttpClient {
     const isAuthLogin = url.includes('auth/login');
     const isAuthRefresh = url.endsWith('auth/refresh');
 
-    let response: Response;
-    try {
-      response = await fetch(fullUrl, init);
-    } catch (err) {
-      // Network error (offline, CORS, abort)
-      throw err;
-    }
+    const response = await globalThis.fetch(fullUrl, init);
 
     // Discover Mercure hub from Link header on any successful response
     try {
@@ -253,7 +247,7 @@ class HttpClient {
   private handleUnauthorizedError<T>(retry: () => Promise<T>): Promise<T> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
-      this.refreshPromise = fetch(`${Constants.API_BASE_URL}auth/refresh`, {
+      this.refreshPromise = globalThis.fetch(`${Constants.API_BASE_URL}auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       })
