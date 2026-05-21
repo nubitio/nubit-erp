@@ -145,16 +145,10 @@ class SaleReportController extends AbstractController
     }
 
     /**
-     * Build query parameters with date boundaries converted from Lima (America/Lima, UTC-5) to UTC.
+     * Build both literal business-date params and UTC instant boundaries.
      *
-     * The user supplies plain Y-m-d strings that represent Lima calendar dates.
-     * We parse them as Lima midnight / end-of-day and convert to UTC so that
-     * BETWEEN :date_from AND :date_to correctly covers the full Lima calendar day
-     * stored in UTC DATETIME columns.
-     *
-     * Example: user passes "2026-01-15"
-     *   Lima 2026-01-15 00:00:00 → UTC 2026-01-15 05:00:00  (date_from)
-     *   Lima 2026-01-15 23:59:59 → UTC 2026-01-16 04:59:59  (date_to)
+     * Business reports filter DATE columns with :date_from/:date_to. Timestamp-only
+     * queries may use :instant_from/:instant_to.
      *
      * @return array<string, string>
      */
@@ -170,8 +164,10 @@ class SaleReportController extends AbstractController
 
         return [
             'local_id' => $localId,
-            'date_from' => $from->format('Y-m-d H:i:s'),
-            'date_to' => $to->format('Y-m-d H:i:s'),
+            'date_from' => $this->parseLimaDateBoundary($dateFrom ?: null, 0, 0, 0)->format('Y-m-d'),
+            'date_to' => $this->parseLimaDateBoundary($dateTo ?: null, 23, 59, 59)->format('Y-m-d'),
+            'instant_from' => $from->format('Y-m-d H:i:s'),
+            'instant_to' => $to->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -229,7 +225,7 @@ from sales s
     left join categoria c on c.categoria_id = p.categoria_id
 where
     s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-    and s.issued_at between :date_from and :date_to
+    and s.issued_date between :date_from and :date_to
     and s.branch_id = :local_id
     {$receiptFilter}
 group by product_code, product_name, category
@@ -243,7 +239,7 @@ SQL;
 
         return <<<SQL
 select
-    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
+    s.issued_date as sale_date,
     TIME(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_time,
     concat(coalesce(i.series, s.series, '-'), '-', coalesce(i.number, s.number, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
@@ -265,7 +261,7 @@ from sales s
     left join sale_payments sp on sp.sale_id = s.id
     left join payment_method pm on pm.id = sp.payment_method_id
 where
-    s.issued_at between :date_from and :date_to
+    s.issued_date between :date_from and :date_to
     and s.branch_id = :local_id
     {$receiptFilter}
 group by
@@ -289,7 +285,7 @@ SQL;
     {
         return <<<SQL
 select distinct
-    date(i.issue_date) as issue_date,
+    i.issue_date as issue_date,
     coalesce(vt.descripcion, 'Documento') as voucher_type,
     concat(i.series, '-', i.number) as document,
     coalesce(c.ruc, '-') as customer_ruc,
@@ -324,7 +320,7 @@ SQL;
 
         return <<<SQL
 select
-    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
+    s.issued_date as sale_date,
     concat(coalesce(i.series, s.series, '-'), '-', coalesce(i.number, s.number, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
@@ -340,7 +336,7 @@ from sales s
     left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
 where
     s.status = 'VOIDED'
-    and s.issued_at between :date_from and :date_to
+    and s.issued_date between :date_from and :date_to
     and s.branch_id = :local_id
     {$receiptFilter}
 order by s.issued_at desc
@@ -376,7 +372,7 @@ SQL;
 
         return <<<SQL
 select
-    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
+    s.issued_date as sale_date,
     coalesce(pm.name, 'Sin método') as payment_method,
     count(distinct s.id) as transactions,
     sum(sp.amount) as total
@@ -385,7 +381,7 @@ from sales s
     left join payment_method pm on pm.id = sp.payment_method_id
 where
     s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-    and s.issued_at between :date_from and :date_to
+    and s.issued_date between :date_from and :date_to
     and s.branch_id = :local_id
     {$receiptFilter}
 group by sale_date, payment_method
@@ -399,7 +395,7 @@ SQL;
 
         return <<<SQL
 select
-    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
+    s.issued_date as sale_date,
     count(*) as sales,
     sum(s.subtotal) as subtotal,
     sum(s.tax_total) as tax,
@@ -407,7 +403,7 @@ select
 from sales s
 where
     s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-    and s.issued_at between :date_from and :date_to
+    and s.issued_date between :date_from and :date_to
     and s.branch_id = :local_id
     {$receiptFilter}
 group by sale_date

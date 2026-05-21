@@ -28,7 +28,7 @@ function getIRI(url: string, value: string): string {
  * - Applies uploaded file IRIs
  * - Evaluates computed fields
  * - Resolves ENTITY fields to Hydra IRIs
- * - Formats DATE fields as UTC ISO-8601 (from Lima timezone)
+ * - Formats DATE fields as YYYY-MM-DD business dates, with no timezone conversion
  * - Coerces numeric fields
  * - Strips NONE/FILE fields as appropriate
  *
@@ -163,14 +163,21 @@ function serializeFileField(formData: FormDataRecord, field: Field, ctx: Seriali
 
 function serializeDateField(formData: FormDataRecord, field: Field): void {
   const val = formData[field.name];
-  if (val === null || val === undefined) {
+  if (val === null || val === undefined || val === '') {
     delete formData[field.name];
     return;
   }
-  const date = new Date(val as string | number | Date);
-  formData[field.name] = new Intl.DateTimeFormat('en-CA', {
-    timeZone: getCoreTimezone(),
-  }).format(date);
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    formData[field.name] = val;
+    return;
+  }
+  if (val instanceof Date) {
+    formData[field.name] = new Intl.DateTimeFormat('en-CA', {
+      timeZone: getCoreTimezone(),
+    }).format(val);
+    return;
+  }
+  formData[field.name] = String(val).slice(0, 10);
 }
 
 function serializeNumericField(formData: FormDataRecord, field: Field): void {

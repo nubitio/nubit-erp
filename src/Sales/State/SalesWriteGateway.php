@@ -98,11 +98,10 @@ readonly class SalesWriteGateway
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtMutable = \DateTime::createFromImmutable($issuedAt);
         $limaZone = new \DateTimeZone('America/Lima');
-        // Clients send issued_at as a Lima date-only string (YYYY-MM-DD → midnight UTC).
-        // When time is midnight UTC and the sale has an explicit date, the UTC date is
-        // already the correct Lima business date — no tz conversion needed.
-        // For real timestamps (legacy Android, clock fallback) convert to Lima.
-        if ($sale->getFecha() !== null && $issuedAt->format('H:i:s') === '00:00:00') {
+        if ($sale->getIssuedDate() !== null) {
+            $issuedDate = $sale->getIssuedDate();
+        } elseif ($sale->getFecha() !== null && $issuedAt->format('H:i:s') === '00:00:00') {
+            // Legacy clients sent date-only values through issued_at; preserve the literal UTC date.
             $issuedDate = new \DateTimeImmutable($issuedAt->format('Y-m-d'), $limaZone);
         } else {
             $issuedDate = $issuedAt->setTimezone($limaZone)->setTime(0, 0, 0);
@@ -293,11 +292,9 @@ readonly class SalesWriteGateway
         // Post-commit: update daily summary (non-voided sales only).
         if ($sale->getEstado() !== 0) {
             try {
-                $limaIssuedAt = \DateTimeImmutable::createFromInterface($issuedAt)
-                    ->setTimezone(new \DateTimeZone('America/Lima'));
                 $this->upsertDailySummaries(
                     (string) $branchId,
-                    $limaIssuedAt,
+                    $issuedDate,
                 );
             } catch (\Throwable) {
                 // Intentionally swallowed: summary is best-effort.

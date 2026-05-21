@@ -94,6 +94,10 @@ export function nowUtcIso(): string {
   return DateTime.now().toUTC().toISO() as string;
 }
 
+export function todayLimaDate(): string {
+  return DateTime.now().setZone(LIMA_TZ).toISODate() as string;
+}
+
 /**
  * Converts a JS Date to a UTC ISO-8601 string (with Z suffix),
  * interpreting the Date as representing a moment in America/Lima.

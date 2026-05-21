@@ -70,7 +70,8 @@ class VoucherHydrator implements VoucherHydratorInterface
             voucherSeries: strval($voucher->voucher_series),
             voucherNumber: strval($voucher->voucher_number),
             voucherPaymentMethod: intval($voucher->voucher_payment_method),
-            voucherDate: new DateTimeImmutable(strval($voucher->voucher_date)),
+            voucherDate: DateTimeImmutable::createFromFormat('!Y-m-d', substr(strval($voucher->voucher_date), 0, 10))
+                ?: new DateTimeImmutable(strval($voucher->voucher_date)),
             voucherCurrency: strval($voucher->voucher_currency),
             voucherExchangeRate: $toNullableFloat($voucher->voucher_exchange_rate),
             voucherDiscountAmount: $globalDiscountAmount,

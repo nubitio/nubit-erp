@@ -71,7 +71,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   );
   fields.push(
     dateField()
-      .name('issuedAt')
+      .name('issuedDate')
       .label('Fecha')
       .required(true)
       .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))

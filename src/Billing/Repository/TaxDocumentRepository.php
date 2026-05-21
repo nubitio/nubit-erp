@@ -458,9 +458,7 @@ SQL,
                 if ($dt === null) {
                     return null;
                 }
-                $utcZone = new \DateTimeZone('UTC');
-                $utcDate = \DateTimeImmutable::createFromInterface($dt)->setTimezone($utcZone);
-                return $utcDate->format('Y-m-d H:i:s');
+                return \DateTimeImmutable::createFromInterface($dt)->format('Y-m-d');
             })($taxDocument?->getIssueDate() ?? $sale->getFecha()),
             voucherCurrency: $taxDocument?->getCurrency() ?? $salesCurrencyData['currency'] ?? 'PEN',
             voucherExchangeRate: $taxDocument?->getExchangeRate() ?? $salesCurrencyData['exchange_rate'],
@@ -683,7 +681,7 @@ SQL,
             $taxDocument->getNumber(),
             $amounts->getTax(),
             $amounts->getTotal(),
-            $taxDocument->getIssueDate()->format('Y-m-d H:i:s'),
+            $taxDocument->getIssueDate()->format('Y-m-d'),
             '0',
             '0',
             $taxDocument->getDigest() ?? '',
@@ -711,8 +709,10 @@ SQL,
         string $date,
         string $total,
     ): ?array {
-        $dateStart = new \DateTimeImmutable($date . ' 00:00:00')->format('Y-m-d H:i:s');
-        $dateEnd = new \DateTimeImmutable($date . ' 23:59:59')->format('Y-m-d H:i:s');
+        $issueDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        if (!$issueDate instanceof \DateTimeImmutable) {
+            return null;
+        }
         $normalizedNumber = ltrim($number, '0');
         $normalizedNumber = $normalizedNumber === '' ? '0' : $normalizedNumber;
         $rows = $this->createQueryBuilder('td')
@@ -721,13 +721,12 @@ SQL,
             ->where('e.ruc = :companyRuc')
             ->andWhere('td.documentType = :voucherType')
             ->andWhere('td.series = :series')
-            ->andWhere('td.issueDate BETWEEN :dateStart AND :dateEnd')
+            ->andWhere('td.issueDate = :issueDate')
             ->andWhere('td.total = :total')
             ->setParameter('companyRuc', $companyRuc)
             ->setParameter('voucherType', $voucherType)
             ->setParameter('series', strtoupper($series))
-            ->setParameter('dateStart', new \DateTimeImmutable($dateStart))
-            ->setParameter('dateEnd', new \DateTimeImmutable($dateEnd))
+            ->setParameter('issueDate', $issueDate)
             ->setParameter('total', number_format((float)$total, 2, '.', ''))
             ->getQuery()
             ->getResult();

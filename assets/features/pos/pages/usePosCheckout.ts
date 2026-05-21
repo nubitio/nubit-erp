@@ -3,7 +3,7 @@ import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { API_BASE_URL } from '@app/constants';
 import type { CartItem, PosItem } from './types';
-import { IGV_RATE, nowUtcIso, toNumber } from './posHelpers';
+import { IGV_RATE, nowUtcIso, todayLimaDate, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
@@ -238,6 +238,7 @@ export const usePosCheckout = ({
     try {
       const salePayload = {
         issuedAt: nowUtcIso(),
+        issuedDate: todayLimaDate(),
         warehouse: getIRI(`${API_BASE_URL}warehouses`, selectedWarehouseId),
         customer: selectedCustomerId
           ? getIRI(`${API_BASE_URL}customers`, String(selectedCustomerId))
