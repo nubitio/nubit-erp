@@ -1,7 +1,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 let _nubit_core = require("@nubit/core");
-let _nubit_ui = require("@nubit/ui");
 let _nubit_api_platform = require("@nubit/api-platform");
+let _nubit_ui = require("@nubit/ui");
 let _nubit_admin = require("@nubit/admin");
 Object.defineProperty(exports, "AdminHeader", {
 	enumerable: true,
@@ -24,7 +24,7 @@ Object.defineProperty(exports, "AdminSidebarMenu", {
 Object.defineProperty(exports, "ApiPlatformRemoteDataSource", {
 	enumerable: true,
 	get: function() {
-		return _nubit_core.ApiPlatformRemoteDataSource;
+		return _nubit_api_platform.ApiPlatformRemoteDataSource;
 	}
 });
 Object.defineProperty(exports, "AppDialog", {

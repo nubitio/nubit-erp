@@ -99,14 +99,16 @@ export type { EventSubscription } from '@nubit/core';
 export { DateUtils, LIMA_TZ, getCoreLocale, getCoreTimezone } from '@nubit/core';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-export { ApiPlatformRemoteDataSource } from '@nubit/core';
 export type { DataRecord } from '@nubit/core';
+
+// ── API Platform Data Source ──────────────────────────────────────────────────
+export { ApiPlatformRemoteDataSource } from '@nubit/api-platform';
 export type {
   RemoteDataSourceOptions,
   RemoteFilterDescriptor,
   RemoteLoadOptions,
   RemoteSortDescriptor,
-} from '@nubit/core';
+} from '@nubit/api-platform';
 
 // ── Mercure (real-time) ───────────────────────────────────────────────────────
 export { MercureProvider, useMercureHub, useMercureSubscription } from '@nubit/core';

@@ -25,6 +25,7 @@ let react = require("react");
 react = __toESM(react, 1);
 let react_router_dom = require("react-router-dom");
 let react_jsx_runtime = require("react/jsx-runtime");
+require("./admin.scss");
 //#region assets/admin/AdminHeader.tsx
 const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => {
 	const [openPanelId, setOpenPanelId] = (0, react.useState)(null);

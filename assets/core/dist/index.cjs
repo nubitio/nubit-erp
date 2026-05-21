@@ -6,6 +6,15 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __exportAll = (all, no_symbols) => {
+	let target = {};
+	for (var name in all) __defProp(target, name, {
+		get: all[name],
+		enumerable: true
+	});
+	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
+	return target;
+};
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
@@ -16,6 +25,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
+var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "default"), secondTarget && __copyProps(secondTarget, mod, "default"));
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
@@ -28,12 +38,11 @@ let react_router_dom = require("react-router-dom");
 let react_jsx_runtime = require("react/jsx-runtime");
 let react_i18next = require("react-i18next");
 require("./dialog/CrudDialogView.scss");
-let react_dom = require("react-dom");
-require("./ui/app-dialog/AppDialog.scss");
+let _nubit_ui = require("@nubit/ui");
 require("./form/NativeFormView.scss");
 let luxon = require("luxon");
 let _tanstack_react_query = require("@tanstack/react-query");
-let _nubit_core = require("@nubit/core");
+let _nubit_api_platform = require("@nubit/api-platform");
 let i18next = require("i18next");
 i18next = __toESM(i18next, 1);
 //#region assets/core/crud/defineResource.ts
@@ -1544,107 +1553,6 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 });
 NativeDataGridView.displayName = "NativeDataGridView";
 //#endregion
-//#region assets/core/ui/app-dialog/AppDialog.tsx
-const formatSize = (value) => {
-	if (value === void 0) return void 0;
-	return typeof value === "number" ? `${value}px` : value;
-};
-const joinClassNames = (...values) => values.filter(Boolean).join(" ");
-const AppDialog = ({ visible, open, title, onClose, children, footer, width, maxWidth, height, fullScreen = false, showCloseButton = true, closeOnOutsideClick = true, closeOnEscape = true, restoreFocus = true, keepMounted = false, rootClassName, className, headerClassName, titleClassName, bodyClassName, footerClassName, role = "dialog" }) => {
-	const isVisible = visible ?? open ?? false;
-	const titleId = (0, react.useId)();
-	const dialogRef = (0, react.useRef)(null);
-	const lastFocusedElementRef = (0, react.useRef)(null);
-	const restoreFocusRef = (0, react.useRef)(restoreFocus);
-	(0, react.useEffect)(() => {
-		restoreFocusRef.current = restoreFocus;
-	}, [restoreFocus]);
-	(0, react.useEffect)(() => {
-		if (!isVisible) return;
-		lastFocusedElementRef.current = document.activeElement;
-		window.setTimeout(() => {
-			(dialogRef.current?.querySelector("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex=\"-1\"])"))?.focus();
-		});
-		return () => {
-			if (restoreFocusRef.current) lastFocusedElementRef.current?.focus?.();
-		};
-	}, [isVisible]);
-	(0, react.useEffect)(() => {
-		if (!isVisible || !closeOnEscape) return;
-		const handleKeyDown = (event) => {
-			if (event.key === "Escape") {
-				event.preventDefault();
-				onClose();
-			}
-		};
-		document.addEventListener("keydown", handleKeyDown);
-		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [
-		closeOnEscape,
-		onClose,
-		isVisible
-	]);
-	if (!isVisible && !keepMounted) return null;
-	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: joinClassNames("app-dialog-root", rootClassName),
-		"aria-hidden": !isVisible,
-		style: {
-			pointerEvents: isVisible ? void 0 : "none",
-			visibility: isVisible ? void 0 : "hidden"
-		},
-		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			className: "app-dialog__scrim",
-			type: "button",
-			"aria-label": "Cerrar diálogo",
-			onClick: closeOnOutsideClick ? onClose : void 0
-		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: joinClassNames("app-dialog", fullScreen && "app-dialog--fullscreen", className),
-			role,
-			"aria-modal": "true",
-			"aria-labelledby": titleId,
-			ref: dialogRef,
-			onKeyDownCapture: (event) => {
-				if (!closeOnEscape && event.key === "Escape") {
-					event.preventDefault();
-					event.stopPropagation();
-				}
-			},
-			style: {
-				width: formatSize(width),
-				maxWidth: formatSize(maxWidth),
-				height: formatSize(height)
-			},
-			children: [
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: joinClassNames("app-dialog__header", headerClassName),
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-						className: joinClassNames("app-dialog__title", titleClassName),
-						id: titleId,
-						children: title
-					}), showCloseButton && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-						className: "app-icon-button app-dialog__close",
-						type: "button",
-						"aria-label": "Cerrar",
-						onClick: onClose,
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-							className: "ph ph-x",
-							"aria-hidden": "true"
-						})
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: joinClassNames("app-dialog__body", bodyClassName),
-					children
-				}),
-				footer && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: joinClassNames("app-dialog__footer", footerClassName),
-					children: footer
-				})
-			]
-		})]
-	}), document.body);
-};
-//#endregion
 //#region assets/utils/media-query.tsx
 const useScreenSize = () => {
 	const [screenSize, setScreenSize] = (0, react.useState)(getScreenSize());
@@ -1743,7 +1651,7 @@ const CrudDialogView = (0, react.forwardRef)((options, ref) => {
 		open,
 		close
 	}));
-	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(AppDialog, {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_nubit_ui.AppDialog, {
 		title,
 		open: visible,
 		fullScreen: isXSmall,
@@ -3304,38 +3212,6 @@ function useCrudDialogStore(resourceId) {
 	};
 }
 //#endregion
-//#region assets/core/components/ConfirmDialog.tsx
-function ConfirmDialog({ open, title, message, onConfirm, onCancel, confirmLabel, cancelLabel, variant = "warning" }) {
-	const { t } = (0, react_i18next.useTranslation)();
-	const resolvedConfirmLabel = confirmLabel ?? t("common.confirm");
-	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AppDialog, {
-		open,
-		title,
-		onClose: onCancel,
-		maxWidth: 420,
-		role: "alertdialog",
-		footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			type: "button",
-			className: "app-button app-button--secondary",
-			onClick: onCancel,
-			autoFocus: true,
-			children: cancelLabel ?? t("common.cancel")
-		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			type: "button",
-			className: variant === "danger" ? "app-button app-button--danger" : "app-button app-button--primary",
-			onClick: onConfirm,
-			children: resolvedConfirmLabel
-		})] }),
-		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-			style: {
-				margin: "0.5rem 0 1rem",
-				lineHeight: 1.5
-			},
-			children: message
-		})
-	});
-}
-//#endregion
 //#region assets/core/crud/CrudPage.tsx
 function inferFilterOperator(field) {
 	if (field.selectedFilterOperation) return field.selectedFilterOperation;
@@ -3600,7 +3476,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				visible: auditOpen,
 				onClose: () => setAuditOpen(false)
 			}),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ConfirmDialog, {
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.ConfirmDialog, {
 				open: confirmState.open,
 				title: "Confirmar acción",
 				message: confirmState.action?.confirmMessage ?? "",
@@ -3621,1085 +3497,6 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		]
 	});
 };
-//#endregion
-//#region assets/core/crud/hydra/openApiParser.ts
-/**
-* Converts a camelCase or PascalCase name to dash-case.
-* Mirrors API Platform's DashPathSegmentNameGenerator behaviour.
-* Examples:
-*   "Category"              → "category"
-*   "SunatCatalog"          → "sunat-catalog"
-*   "CashMovementCategory"  → "cash-movement-category"
-*   "cashMovementCategory"  → "cash-movement-category"
-*/
-function toDashCase(name) {
-	return name.replace(/([A-Z])/g, "-$1").toLowerCase().replace(/^-/, "");
-}
-/**
-* Pluralizes an English word (snake_case or lowercase) with common rules.
-*
-* - Words ending in a consonant + 'y'  → replace 'y' with 'ies'
-*     category  → categories, company → companies
-* - Words ending in s/x/z/ch/sh       → append 'es'
-*     branch    → branches, box → boxes
-* - Everything else                   → append 's'
-*     warehouse → warehouses, product → products
-*/
-function pluralize(word) {
-	if (word.endsWith("y") && ![
-		"ay",
-		"ey",
-		"iy",
-		"oy",
-		"uy"
-	].some((v) => word.endsWith(v))) return word.slice(0, -1) + "ies";
-	if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z") || word.endsWith("ch") || word.endsWith("sh")) return word + "es";
-	return word + "s";
-}
-/** Entrypoint property names that are already in plural form (dash-case). */
-const ALREADY_PLURAL = new Set([
-	"purchases",
-	"sales",
-	"invoices",
-	"transfers",
-	"movements",
-	"shifts",
-	"outbounds",
-	"cash-movements",
-	"cash-registers",
-	"cash-shifts"
-]);
-/**
-* Derives the API URL from an Entrypoint property ID.
-* "#Entrypoint/branch"               -> "/api/branches"
-* "#Entrypoint/cashMovementCategory" -> "/api/cash-movement-categories"
-*/
-function deriveApiUrl(entrypointPropertyId) {
-	const dashed = toDashCase(entrypointPropertyId.split("/").pop() ?? "");
-	return `/api/${ALREADY_PLURAL.has(dashed) ? dashed : pluralize(dashed)}`;
-}
-/**
-* Safely extracts a string range from whatever `property.range` actually is.
-*
-* Real API Platform responses can return:
-*   - a plain string: "xmls:string", "#Company"
-*   - an IRI object: { "@id": "http://www.w3.org/2001/XMLSchema#string" }
-*   - null or undefined
-*   - a Hydra collection range array where the resource class lives under
-*     `owl:equivalentClass.owl:allValuesFrom.@id`
-*/
-function normalizeRange(raw) {
-	if (typeof raw === "string") return raw;
-	if (Array.isArray(raw)) for (const item of raw) {
-		if (!item || typeof item !== "object") continue;
-		const equivalentClass = item["owl:equivalentClass"];
-		if (!equivalentClass || typeof equivalentClass !== "object") continue;
-		const allValuesFrom = equivalentClass["owl:allValuesFrom"];
-		if (!allValuesFrom || typeof allValuesFrom !== "object") continue;
-		const id = allValuesFrom["@id"];
-		if (typeof id === "string") return id;
-	}
-	if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-		const id = raw["@id"];
-		if (typeof id === "string") return id;
-	}
-}
-/**
-* Convert an OpenAPI property descriptor to a short-form xmls: range string.
-*/
-function mapOpenApiTypeToRange(prop) {
-	if (prop.format === "date-time") return "xmls:dateTime";
-	switch (prop.type) {
-		case "integer": return "xmls:integer";
-		case "number": return "xmls:decimal";
-		case "boolean": return "xmls:boolean";
-		case "string": return "xmls:string";
-		default: return;
-	}
-}
-/**
-* Extracts the technical property name from a HydraSupportedProperty.
-*
-* The technical name (used in API JSON payloads) is found in sp.property['@id'],
-* which looks like "#Branch/businessName" or "#Category/name".
-* We extract the part after the last '/'.
-*
-* Fallback chain: @id suffix → property.label → title → ''
-*/
-function technicalName(sp) {
-	const fromId = sp.property?.["@id"]?.split("/").pop();
-	if (fromId && fromId !== "") return fromId;
-	return sp.property?.label ?? sp.title ?? "";
-}
-/**
-* Extract `hydra:search` mappings from a HydraClass.
-* Returns an empty array if the class has no `hydra:search` block,
-* or if any mapping entry is missing the required `hydra:property` field.
-* Never throws.
-*/
-function extractSearchMappings(cls) {
-	const searchBlock = cls["hydra:search"];
-	if (!searchBlock) return [];
-	const mappings = searchBlock["hydra:mapping"] ?? [];
-	const result = [];
-	for (const mapping of mappings) {
-		const property = mapping["hydra:property"];
-		const variable = mapping["hydra:variable"];
-		if (!property || !variable) continue;
-		result.push({
-			property,
-			variable,
-			required: mapping["hydra:required"] ?? false
-		});
-	}
-	return result;
-}
-/**
-* Extract the HTTP method names from `supportedOperation` on a HydraClass.
-* Returns an uppercase string array, e.g. ['GET', 'POST', 'PATCH', 'DELETE'].
-* Returns an empty array when the class has no `supportedOperation` block.
-*
-* Wire format (confirmed from /api/docs.jsonld): compact key `supportedOperation`
-* (no `hydra:` prefix). API Platform compact context strips the namespace prefix.
-*
-* Accepts both `hydra:method` and `method` field names inside each operation entry
-* to be safe across different API Platform serialisation variants.
-*/
-function extractSupportedOperations(cls) {
-	const operations = cls["supportedOperation"];
-	if (!operations || operations.length === 0) return [];
-	return operations.map((op) => (op["hydra:method"] ?? op["method"] ?? "").toUpperCase()).filter(Boolean);
-}
-function extractEntrypointCollectionOperations(doc) {
-	const entrypoint = doc["supportedClass"].find((c) => c["@id"] === "#Entrypoint");
-	if (!entrypoint) return {};
-	const collectionOperations = {};
-	for (const sp of entrypoint.supportedProperty ?? []) {
-		const rawRange = sp.property?.range;
-		const range = normalizeRange(rawRange);
-		if (!range) continue;
-		const className = range.replace("#", "");
-		collectionOperations[className] = (sp.property?.supportedOperation ?? []).map((op) => (op["hydra:method"] ?? op["method"] ?? "").toUpperCase()).filter(Boolean);
-	}
-	return collectionOperations;
-}
-/**
-* Parse a raw `/api/docs.jsonld` Hydra JSON-LD response into a typed
-* Record<className, HydraResourceSchema>.
-*
-* @throws Error if doc is not a valid Hydra ApiDocumentation.
-*/
-function parseHydraDoc(doc) {
-	const result = {};
-	const collectionOperationsMap = extractEntrypointCollectionOperations(doc);
-	const urlMap = {};
-	const entrypoint = doc["supportedClass"].find((c) => c["@id"] === "#Entrypoint");
-	if (entrypoint) for (const sp of entrypoint.supportedProperty ?? []) {
-		const rawRange = sp.property?.range;
-		const range = normalizeRange(rawRange);
-		const propId = sp.property?.["@id"];
-		if (range && propId) {
-			const className = range.replace("#", "");
-			urlMap[className] = deriveApiUrl(propId);
-		}
-	}
-	for (const cls of doc["supportedClass"]) {
-		if (cls["@id"] === "#Entrypoint") continue;
-		const className = cls["@id"].replace("#", "");
-		const fields = [];
-		for (const sp of cls.supportedProperty ?? []) {
-			const readable = sp.readable !== false;
-			const writeable = sp.writeable !== false;
-			if (!readable) continue;
-			fields.push({
-				name: technicalName(sp),
-				range: normalizeRange(sp.property?.range),
-				propertyType: sp.property?.["@type"] ?? "rdf:Property",
-				required: sp.required ?? false,
-				readable,
-				writeable,
-				"hydra:title": sp["title"] ?? sp["hydra:title"] ?? void 0,
-				crudHints: sp["x-crud"]
-			});
-		}
-		result[className] = {
-			className,
-			apiUrl: urlMap[className] ?? `/api/${pluralize(toDashCase(className))}`,
-			fields,
-			searchMappings: extractSearchMappings(cls),
-			supportedOperations: Array.from(new Set([...collectionOperationsMap[className] ?? [], ...extractSupportedOperations(cls)]))
-		};
-	}
-	return result;
-}
-/**
-* Parse a raw `/api/docs.json` OpenAPI 3.1 response into the same
-* Record<className, HydraResourceSchema> output shape so that
-* `useResourceSchema` can consume it transparently.
-*/
-function parseOpenApiDoc(doc) {
-	const result = {};
-	for (const [className, schema] of Object.entries(doc.components?.schemas ?? {})) {
-		const fields = [];
-		const required = new Set(schema.required ?? []);
-		for (const [fieldName, prop] of Object.entries(schema.properties ?? {})) {
-			const readable = !prop.writeOnly;
-			const writeable = !prop.readOnly;
-			if (!readable) continue;
-			fields.push({
-				name: fieldName,
-				range: mapOpenApiTypeToRange(prop),
-				propertyType: "rdf:Property",
-				required: required.has(fieldName),
-				readable,
-				writeable
-			});
-		}
-		result[className] = {
-			className,
-			apiUrl: `/api/${pluralize(toDashCase(className))}`,
-			fields
-		};
-	}
-	return result;
-}
-//#endregion
-//#region assets/core/crud/hydra/HydraToFieldMapper.ts
-/**
-* Returns true when the given `range` string declares an XSD integer type.
-* Supports both short-form `xmls:` prefixes and full XSD IRIs.
-*
-* Used to decide whether the `id` field should be a `numberField()` (integer
-* primary key) or a `textField()` (UUID / string primary key — safe default).
-*/
-function isIntegerRange(range) {
-	if (!range) return false;
-	if (range.startsWith("http://www.w3.org/2001/XMLSchema#")) {
-		const local = range.split("#").pop() ?? "";
-		return local === "integer" || local === "int" || local === "long";
-	}
-	return range === "xmls:integer" || range === "xmls:int" || range === "xmls:long" || range === "xsd:integer" || range === "xsd:int" || range === "xsd:long";
-}
-/**
-* Convert a camelCase or snake_case field name to a human-readable label.
-* Examples:
-*   "firstName"   → "First Name"
-*   "createdAt"   → "Created At"
-*   "x_resource"  → "X Resource"
-*/
-function toLabel(name) {
-	return name.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
-}
-function resolveRangeTag(range, propertyType) {
-	if (!range) return "text";
-	if (range.startsWith("http://www.w3.org/2001/XMLSchema#")) {
-		const local = range.split("#").pop() ?? "";
-		if (local === "boolean") return "boolean";
-		if (local === "dateTime") return "dateTime";
-		if (local === "integer") return "integer";
-		if (local === "decimal" || local === "float" || local === "double") return "decimal";
-		if (local === "string") return "text";
-		return "text";
-	}
-	if (range === "xmls:boolean") return "boolean";
-	if (range === "xmls:dateTime") return "dateTime";
-	if (range === "xmls:integer") return "integer";
-	if (range === "xmls:decimal") return "decimal";
-	if (range === "xmls:string") return "text";
-	if (range.startsWith("#")) return "entity";
-	if (range.startsWith("http")) return "entity";
-	if (propertyType === "Link") return "entity";
-	return "text";
-}
-/**
-* Apply `x-crud` backend hints on top of an already-built Field.
-*
-* Hints override inferred values; inference is the fallback when hints are absent.
-* Only properties that are explicitly set (`!== undefined`) are applied.
-*
-* `hidden: true` sets `visible: false` so the column is hidden in the grid.
-* `order` maps to the `Field.order` property used by native grid column ordering.
-*/
-function applyCrudHints(field, hints) {
-	if (!hints) return;
-	if (hints.filterable !== void 0) field.filterable = hints.filterable;
-	if (hints.sortable !== void 0) field.sortable = hints.sortable;
-	if (hints.hidden !== void 0 && hints.hidden) field.visible = false;
-	if (hints.order !== void 0) field.order = hints.order;
-	if (hints.width !== void 0) field.width = hints.width;
-}
-function resolveEntityValueField(relatedSchema) {
-	if (!relatedSchema) return "_iri";
-	const fieldNames = new Set(relatedSchema.fields.map((field) => field.name));
-	if (fieldNames.has("id") || fieldNames.has("@id")) return "_iri";
-	return "_iri";
-}
-function isStringLikeField(field) {
-	return field.range === void 0 || field.range === "xmls:string" || field.range === "xsd:string";
-}
-function resolveEntityTextField(relatedSchema, valueField) {
-	if (!relatedSchema) return "name";
-	for (const fieldName of [
-		"name",
-		"businessName",
-		"description",
-		"fullNumber",
-		"title",
-		"series"
-	]) {
-		const match = relatedSchema.fields.find((field) => field.name === fieldName && isStringLikeField(field));
-		if (match) return match.name;
-	}
-	const firstStringField = relatedSchema.fields.find((field) => field.name !== valueField && isStringLikeField(field));
-	if (firstStringField) return firstStringField.name;
-	return valueField;
-}
-/**
-* Map a single HydraResourceSchema to an array of Field objects using the
-* existing field builder utilities.
-*
-* Mapping rules (in priority order):
-*  1. name === 'id' or name === '@id'  → always emit as a hidden identity field
-*                                         (visible: false, readonly: true, isIdentity: true)
-*                                         Required so native grids and forms always have a stable row key.
-*  2. readable: false                  → skip (already filtered upstream, but defensive)
-*  3. writeable: false (display-only)  → noneField
-*  4. range resolves to 'boolean'      → switchField
-*  5. range resolves to 'dateTime'     → datetimeField
-*  6. range resolves to 'integer'      → numberField with precision(0)
-*  7. range resolves to 'decimal'      → numberField
-*  8. range resolves to 'entity' OR propertyType === 'Link' → entityField
-*  9. range resolves to 'text' OR fallback  → textField
-*
-* For each field, `filterable` is `true` when the field's property name appears in
-* `schema.searchMappings` (from `hydra:search`). When `searchMappings` is empty
-* (e.g. the resource uses a catch-all data-grid filter that doesn't
-* enumerate field-level mappings), ALL fields default to `filterable: true`.
-*
-* After processing all schema fields, if no `id` field was found in the schema,
-* a synthetic hidden identity field is injected so the grid always has a key.
-*
-* @param schema - The Hydra resource schema to map.
-* @param urlLookup - Optional lookup function to resolve the API URL for a related
-*   entity class. When provided, Rule 8 uses this before falling back to the
-*   automatic pluralization heuristic. Example: `(cls) => resourceMap[cls]?.apiUrl`
-*
-* @pure — no React, no hooks, no side effects.
-*/
-function mapHydraSchemaToFields(schema, urlLookup, schemaLookup) {
-	const fields = [];
-	const filterableProperties = new Set((schema.searchMappings ?? []).map((m) => m.property));
-	let hasIdField = false;
-	for (const fieldSchema of schema.fields) {
-		const { name, range, propertyType, required, readable, writeable } = fieldSchema;
-		if (name === "id" || name === "@id") {
-			hasIdField = true;
-			const idField = {
-				...isIntegerRange(range) ? (0, _nubit_core.numberField)().name("id").label("Id").required(false).precision(0).build() : (0, _nubit_core.textField)().name("id").label("Id").required(false).build(),
-				isIdentity: true,
-				visible: false,
-				readonly: true,
-				filterable: false,
-				sortable: false,
-				hideable: false,
-				visibleOnForm: false
-			};
-			fields.push(idField);
-			continue;
-		}
-		if (!readable) continue;
-		const hydraTitle = fieldSchema["hydra:title"];
-		const label = hydraTitle && hydraTitle.trim() !== "" ? hydraTitle : toLabel(name);
-		const filterable = filterableProperties.size === 0 ? true : filterableProperties.has(name);
-		if (!writeable) {
-			const field = {
-				...(0, _nubit_core.noneField)().name(name).label(label).required(required).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		const tag = resolveRangeTag(range, propertyType);
-		if (tag === "boolean") {
-			const field = {
-				...(0, _nubit_core.switchField)().name(name).label(label).required(required).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		if (tag === "dateTime") {
-			const field = {
-				...(0, _nubit_core.datetimeField)().name(name).label(label).required(required).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		if (tag === "integer") {
-			const field = {
-				...(0, _nubit_core.numberField)().name(name).label(label).required(required).precision(0).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		if (tag === "decimal") {
-			const field = {
-				...(0, _nubit_core.numberField)().name(name).label(label).required(required).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		if (tag === "entity" || propertyType === "Link") {
-			const resourceClass = range ? range.replace("#", "") : "";
-			const relatedSchema = resourceClass ? schemaLookup?.(resourceClass) : void 0;
-			const url = resourceClass ? urlLookup?.(resourceClass) ?? `/api/${pluralize(toDashCase(resourceClass))}` : "";
-			const valueField = resolveEntityValueField(relatedSchema);
-			const field = {
-				...(0, _nubit_core.entityField)(url, valueField, resolveEntityTextField(relatedSchema, valueField)).name(name).label(label).required(required).build(),
-				filterable
-			};
-			applyCrudHints(field, fieldSchema.crudHints);
-			fields.push(field);
-			continue;
-		}
-		const field = {
-			...(0, _nubit_core.textField)().name(name).label(label).required(required).build(),
-			filterable
-		};
-		applyCrudHints(field, fieldSchema.crudHints);
-		fields.push(field);
-	}
-	if (!hasIdField) {
-		const syntheticId = {
-			...(0, _nubit_core.textField)().name("id").label("Id").required(false).build(),
-			isIdentity: true,
-			visible: false,
-			readonly: true,
-			filterable: false,
-			sortable: false,
-			hideable: false,
-			visibleOnForm: false
-		};
-		fields.unshift(syntheticId);
-	}
-	return fields;
-}
-//#endregion
-//#region assets/core/crud/hydra/useHydraMetadata.ts
-const JSONLD_URL = "/api/docs.jsonld";
-const JSON_URL = "/api/docs.json";
-const isDev = {}.env.DEV;
-/**
-* Try to fetch and validate a Hydra JSON-LD doc.
-* Returns the typed HydraApiDoc on success, or throws on failure.
-*/
-async function fetchHydraDoc(httpClient, url) {
-	const { data: json } = await httpClient.get(url);
-	const jsonType = json["@type"];
-	if (jsonType !== "ApiDocumentation" && jsonType !== "hydra:ApiDocumentation" || !Array.isArray(json["supportedClass"])) throw new Error("useHydraMetadata: response is not a valid Hydra ApiDocumentation");
-	return json;
-}
-/**
-* Try to fetch and validate an OpenAPI 3.1 doc.
-* Returns the typed OpenApiDoc on success, or throws on failure.
-*/
-async function fetchOpenApiDoc(httpClient, url) {
-	const { data: json } = await httpClient.get(url);
-	if (typeof json.openapi !== "string" || !json.openapi.startsWith("3")) throw new Error("useHydraMetadata: response is not a valid OpenAPI 3.x doc");
-	return json;
-}
-/**
-* Stable query key used by useHydraMetadata.
-* Export this so that consumers (e.g. SmartCrudPage retry button) can
-* invalidate exactly the right query without coupling to an internal string.
-*/
-const API_DOC_QUERY_KEY = ["api-doc-discovery"];
-/**
-* Waterfall discovery:
-*   1. Try /api/docs.jsonld (prefer Hydra — richer type info)
-*   2. Fall back to /api/docs.json (OpenAPI 3.1)
-*   3. Throw an Error if both fail so React Query sets isError = true
-*/
-async function fetchApiDoc(httpClient) {
-	try {
-		return {
-			format: "hydra",
-			doc: await fetchHydraDoc(httpClient, JSONLD_URL)
-		};
-	} catch {}
-	try {
-		return {
-			format: "openapi",
-			doc: await fetchOpenApiDoc(httpClient, JSON_URL)
-		};
-	} catch {}
-	throw new Error(`Failed to load API documentation from ${JSONLD_URL} and ${JSON_URL}. Make sure the API server is running.`);
-}
-function useHydraMetadata() {
-	const httpClient = (0, _nubit_core.useCoreHttpClient)();
-	const { locale } = useCoreConfig();
-	const { data, error, isPending } = (0, _tanstack_react_query.useQuery)({
-		queryKey: [...API_DOC_QUERY_KEY, locale],
-		queryFn: () => fetchApiDoc(httpClient),
-		staleTime: isDev ? 0 : 5 * 6e4,
-		refetchOnWindowFocus: isDev,
-		refetchOnReconnect: isDev
-	});
-	return {
-		data,
-		isLoading: isPending,
-		error: error ?? void 0
-	};
-}
-//#endregion
-//#region assets/core/crud/hydra/SchemaContext.tsx
-/**
-* SchemaContext — shared parsed schema, no per-page re-fetch.
-*
-* Provides a single shared `useHydraMetadata()` call at the provider level
-* so that multiple `SmartCrudPage` instances mounted simultaneously share
-* one `/api/docs.jsonld` request instead of each issuing their own.
-*
-* ## Usage
-*
-* ```tsx
-* // In your app root (optional — SmartCrudPage still works without it):
-* <SchemaProvider>
-*   <App />
-* </SchemaProvider>
-* ```
-*
-* ## Fallback behaviour
-* If `useSchemaContext()` is called outside a `<SchemaProvider>`, it falls
-* back to calling `useHydraMetadata()` directly, keeping backward compat.
-*/
-/** Sentinel value used to detect "outside a provider" */
-const OUTSIDE_PROVIDER = Symbol("OUTSIDE_PROVIDER");
-const SchemaContext = (0, react.createContext)(OUTSIDE_PROVIDER);
-/**
-* Returns the shared schema context if inside a `<SchemaProvider>`,
-* otherwise falls back to calling `useHydraMetadata()` directly.
-*
-* This makes `SmartCrudPage` work standalone without requiring a provider.
-*/
-function useSchemaContext() {
-	const ctx = (0, react.useContext)(SchemaContext);
-	const fallback = useHydraMetadata();
-	if (ctx === OUTSIDE_PROVIDER) return {
-		data: fallback.data,
-		isLoading: fallback.isLoading,
-		isError: fallback.error !== void 0,
-		error: fallback.error
-	};
-	return {
-		data: ctx.data,
-		isLoading: ctx.isLoading,
-		isError: ctx.error !== void 0,
-		error: ctx.error
-	};
-}
-//#endregion
-//#region assets/core/crud/fieldOperationSemantics.ts
-var SmartCrudFieldOperationSemanticsError = class extends Error {
-	issues;
-	constructor(message, issues = []) {
-		super(message);
-		this.name = "SmartCrudFieldOperationSemanticsError";
-		this.issues = issues;
-	}
-};
-const OPERATIONS = ["create", "edit"];
-const PROPERTIES = [
-	"visible",
-	"required",
-	"readonly",
-	"disabled"
-];
-function normalizeOnly(only) {
-	if (!only) return;
-	return Array.isArray(only) ? only : [only];
-}
-function createEmptySemantics() {
-	return {
-		create: {},
-		edit: {}
-	};
-}
-function applyProperty(target, issues, owner, operation, property, value, source) {
-	const current = target[operation][property];
-	if (current !== void 0 && current !== value) {
-		issues.push(`${owner} defines conflicting ${operation}.${property} semantics (${String(current)} vs ${String(value)} from ${source}).`);
-		return;
-	}
-	target[operation][property] = value;
-}
-function applyFlagInput(target, issues, owner, property, input) {
-	if (input === void 0) return;
-	if (typeof input === "boolean") {
-		OPERATIONS.forEach((operation) => {
-			applyProperty(target, issues, owner, operation, property, input, property);
-		});
-		return;
-	}
-	OPERATIONS.forEach((operation) => {
-		const value = input[operation];
-		if (value === void 0) return;
-		applyProperty(target, issues, owner, operation, property, value, `${property}.${operation}`);
-	});
-}
-function applyStateInput(target, issues, owner, operation, state) {
-	if (!state) return;
-	PROPERTIES.forEach((property) => {
-		const value = state[property];
-		if (value === void 0) return;
-		applyProperty(target, issues, owner, operation, property, value, `${operation}.${property}`);
-	});
-}
-function validateResolvedSemantics(owner, semantics) {
-	const issues = [];
-	OPERATIONS.forEach((operation) => {
-		const state = semantics[operation];
-		if (state.visible === false && state.required === true) issues.push(`${owner} cannot be required when ${operation}.visible is false.`);
-	});
-	return issues;
-}
-function normalizeFieldOperationSemantics(behavior, owner = "Field operation semantics") {
-	const semantics = createEmptySemantics();
-	if (!behavior) return semantics;
-	const issues = [];
-	const allowedOperations = normalizeOnly(behavior.only);
-	if (allowedOperations) {
-		const allowedOperationSet = new Set(allowedOperations);
-		OPERATIONS.forEach((operation) => {
-			applyProperty(semantics, issues, owner, operation, "visible", allowedOperationSet.has(operation), "only");
-		});
-	}
-	applyFlagInput(semantics, issues, owner, "visible", behavior.visible);
-	applyFlagInput(semantics, issues, owner, "required", behavior.required);
-	applyFlagInput(semantics, issues, owner, "readonly", behavior.readonly);
-	applyFlagInput(semantics, issues, owner, "disabled", behavior.disabled);
-	applyStateInput(semantics, issues, owner, "create", behavior.create);
-	applyStateInput(semantics, issues, owner, "edit", behavior.edit);
-	issues.push(...validateResolvedSemantics(owner, semantics));
-	if (issues.length > 0) throw new SmartCrudFieldOperationSemanticsError("Invalid SmartCrud field operation semantics.", issues);
-	return semantics;
-}
-/**
-* Validates field operation semantics and returns any issues found,
-* without throwing. Uses the same validation logic as
-* `normalizeFieldOperationSemantics` but collects issues instead of
-* throwing `SmartCrudFieldOperationSemanticsError`.
-*/
-function collectOperationSemanticsIssues(owner, behavior) {
-	if (!behavior) return [];
-	const semantics = createEmptySemantics();
-	const issues = [];
-	const allowedOperations = normalizeOnly(behavior.only);
-	if (allowedOperations) {
-		const allowedOperationSet = new Set(allowedOperations);
-		OPERATIONS.forEach((operation) => {
-			applyProperty(semantics, issues, owner, operation, "visible", allowedOperationSet.has(operation), "only");
-		});
-	}
-	applyFlagInput(semantics, issues, owner, "visible", behavior.visible);
-	applyFlagInput(semantics, issues, owner, "required", behavior.required);
-	applyFlagInput(semantics, issues, owner, "readonly", behavior.readonly);
-	applyFlagInput(semantics, issues, owner, "disabled", behavior.disabled);
-	applyStateInput(semantics, issues, owner, "create", behavior.create);
-	applyStateInput(semantics, issues, owner, "edit", behavior.edit);
-	issues.push(...validateResolvedSemantics(owner, semantics));
-	return issues;
-}
-function resolveBaseVisibility(field) {
-	if (field.visible !== void 0) return field.visible;
-	if (field.hidden !== void 0) return !field.hidden;
-	return true;
-}
-function resolveBaseState(field) {
-	return {
-		visible: resolveBaseVisibility(field),
-		required: field.required ?? false,
-		readonly: field.readonly ?? false,
-		disabled: field.disabled ?? false
-	};
-}
-function resolveFieldOperationSemantics(field, behavior, owner = "Field operation semantics") {
-	const normalized = normalizeFieldOperationSemantics(behavior, owner);
-	return OPERATIONS.reduce((resolved, operation) => {
-		const baseState = resolveBaseState(field);
-		resolved[operation] = {
-			visible: normalized[operation].visible ?? baseState.visible,
-			required: normalized[operation].required ?? baseState.required,
-			readonly: normalized[operation].readonly ?? baseState.readonly,
-			disabled: normalized[operation].disabled ?? baseState.disabled
-		};
-		return resolved;
-	}, {});
-}
-function applyFieldOperationSemantics(field, operation, behavior, owner = `Field '${field.name}'`, target = "grid") {
-	const resolved = resolveFieldOperationSemantics(field, behavior, owner)[operation];
-	return {
-		...field,
-		...target === "form" ? { visibleOnForm: resolved.visible } : { visible: resolved.visible },
-		hidden: !resolved.visible,
-		required: resolved.required,
-		readonly: resolved.readonly,
-		disabled: resolved.disabled
-	};
-}
-//#endregion
-//#region assets/core/crud/fieldValidation.ts
-var SmartCrudFieldContractError = class extends Error {
-	issues;
-	constructor(message, issues = []) {
-		super(message);
-		this.name = "SmartCrudFieldContractError";
-		this.issues = issues;
-	}
-};
-const CONTRACT_KEYS = ["source", "strategy"];
-const HYDRA_CONTRACT_KEYS = [...CONTRACT_KEYS, "directives"];
-const MANUAL_CONTRACT_KEYS = [...CONTRACT_KEYS, "fields"];
-const OVERRIDE_DIRECTIVE_KEYS = [
-	"kind",
-	"key",
-	"patch"
-];
-const REMOVE_DIRECTIVE_KEYS = ["kind", "key"];
-const SYNTHETIC_DIRECTIVE_KEYS = ["kind", "field"];
-const OPERATION_BEHAVIOR_KEYS = [
-	"only",
-	"visible",
-	"required",
-	"readonly",
-	"disabled",
-	"create",
-	"edit"
-];
-const OPERATION_STATE_KEYS = [
-	"visible",
-	"required",
-	"readonly",
-	"disabled"
-];
-const MANUAL_FIELD_KEYS = [...[
-	"isIdentity",
-	"type",
-	"col",
-	"name",
-	"label",
-	"width",
-	"height",
-	"minWidth",
-	"minHeight",
-	"align",
-	"sortable",
-	"filterable",
-	"hideable",
-	"validators",
-	"mode",
-	"url",
-	"loadOptions",
-	"filters",
-	"byKeyUrl",
-	"textField",
-	"valueField",
-	"valueType",
-	"format",
-	"selectedFilterOperation",
-	"filterValue",
-	"data",
-	"formatter",
-	"itemFormatter",
-	"visible",
-	"defaultValue",
-	"autoSelectIfSingle",
-	"onChange",
-	"onSelect",
-	"onClick",
-	"onKeyPress",
-	"readonly",
-	"disabled",
-	"hidden",
-	"required",
-	"precision",
-	"accept",
-	"buttons",
-	"hidingPriority",
-	"searchEnabled",
-	"searchExpr",
-	"fixed",
-	"fixedPosition",
-	"helpText",
-	"contentRender",
-	"visibleOnForm",
-	"maxLength",
-	"multiple",
-	"editorOptions",
-	"sendAsString",
-	"order",
-	"visibleWhen",
-	"disabledWhen",
-	"computed",
-	"dependsOn",
-	"permissions"
-], "operation"];
-const FIELD_PATCH_KEYS = MANUAL_FIELD_KEYS.filter((key) => key !== "name");
-function normalizeKey(value) {
-	return value.trim();
-}
-function isPlainObject(value) {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function formatAllowedKeys(keys) {
-	return keys.join(", ");
-}
-function collectUnknownKeyIssues(owner, value, allowedKeys) {
-	if (!isPlainObject(value)) return [`${owner} must be an object.`];
-	return Object.keys(value).filter((key) => !allowedKeys.includes(key)).sort((left, right) => left.localeCompare(right)).map((key) => `${owner} contains unknown key '${key}'. Allowed keys: ${formatAllowedKeys(allowedKeys)}.`);
-}
-function collectOperationBehaviorIssues(owner, behavior) {
-	if (behavior === void 0) return [];
-	const issues = collectUnknownKeyIssues(`${owner} operation`, behavior, OPERATION_BEHAVIOR_KEYS);
-	if (isPlainObject(behavior)) {
-		if (behavior.create !== void 0) issues.push(...collectUnknownKeyIssues(`${owner} operation.create`, behavior.create, OPERATION_STATE_KEYS));
-		if (behavior.edit !== void 0) issues.push(...collectUnknownKeyIssues(`${owner} operation.edit`, behavior.edit, OPERATION_STATE_KEYS));
-	}
-	issues.push(...collectOperationSemanticsIssues(owner, behavior));
-	return issues;
-}
-function collectHydraFieldDirectiveIssues(directive, index) {
-	const owner = `Directive #${index + 1}`;
-	if (directive.kind === "override") return [
-		...collectUnknownKeyIssues(owner, directive, OVERRIDE_DIRECTIVE_KEYS),
-		...collectUnknownKeyIssues(`Override '${normalizeKey(String(directive.key ?? ""))}' patch`, directive.patch, FIELD_PATCH_KEYS),
-		...collectOperationBehaviorIssues(`Override '${normalizeKey(String(directive.key ?? ""))}'`, directive.patch.operation)
-	];
-	if (directive.kind === "remove") return collectUnknownKeyIssues(owner, directive, REMOVE_DIRECTIVE_KEYS);
-	const fieldName = normalizeKey(directive.field?.name ?? "");
-	return [
-		...collectUnknownKeyIssues(owner, directive, SYNTHETIC_DIRECTIVE_KEYS),
-		...collectUnknownKeyIssues(`Synthetic field '${fieldName || `#${index + 1}`}'`, directive.field, MANUAL_FIELD_KEYS),
-		...collectOperationBehaviorIssues(`Synthetic field '${fieldName || `#${index + 1}`}'`, directive.field.operation)
-	];
-}
-function collectManualFieldIssues(field, index) {
-	const fieldName = normalizeKey(field.name ?? "");
-	return [...collectUnknownKeyIssues(`Manual field #${index + 1}`, field, MANUAL_FIELD_KEYS), ...collectOperationBehaviorIssues(`Manual field '${fieldName || `#${index + 1}`}'`, field.operation)];
-}
-function validateFieldContract(contract) {
-	const issues = [];
-	if (contract.source === "hydra") {
-		issues.push(...collectUnknownKeyIssues("Hydra contract", contract, HYDRA_CONTRACT_KEYS));
-		if (contract.strategy !== "augment") issues.push("Hydra contracts must use strategy 'augment'.");
-		const targetedKeys = /* @__PURE__ */ new Map();
-		const syntheticNames = /* @__PURE__ */ new Set();
-		contract.directives.forEach((directive, index) => {
-			issues.push(...collectHydraFieldDirectiveIssues(directive, index));
-			if (directive.kind === "override" || directive.kind === "remove") {
-				const key = normalizeKey(directive.key);
-				if (!key) {
-					issues.push(`Directive #${index + 1} must reference a non-empty field key.`);
-					return;
-				}
-				const previous = targetedKeys.get(key);
-				if (previous) issues.push(`Field '${key}' is targeted more than once in hydra directives (${previous} + ${directive.kind}).`);
-				else targetedKeys.set(key, directive.kind);
-				return;
-			}
-			const fieldName = normalizeKey(directive.field.name);
-			if (!fieldName) {
-				issues.push(`Directive #${index + 1} must define a non-empty synthetic field name.`);
-				return;
-			}
-			if (syntheticNames.has(fieldName)) issues.push(`Synthetic field '${fieldName}' is declared more than once.`);
-			else syntheticNames.add(fieldName);
-		});
-	}
-	if (contract.source === "manual") {
-		issues.push(...collectUnknownKeyIssues("Manual contract", contract, MANUAL_CONTRACT_KEYS));
-		if (contract.strategy !== "replace") issues.push("Manual contracts must use strategy 'replace'.");
-		const names = /* @__PURE__ */ new Set();
-		contract.fields.forEach((field, index) => {
-			issues.push(...collectManualFieldIssues(field, index));
-			const fieldName = normalizeKey(field.name);
-			if (!fieldName) {
-				issues.push(`Manual field #${index + 1} must define a non-empty name.`);
-				return;
-			}
-			if (names.has(fieldName)) issues.push(`Manual field '${fieldName}' is declared more than once.`);
-			else names.add(fieldName);
-		});
-	}
-	if (issues.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud field contract.", issues);
-	return contract;
-}
-function validateUniqueFieldNames(fields, owner) {
-	const seen = /* @__PURE__ */ new Set();
-	const duplicates = [];
-	fields.forEach((field, index) => {
-		const name = field.name.trim();
-		if (!name) {
-			duplicates.push(`${owner} field #${index + 1} must define a non-empty name.`);
-			return;
-		}
-		if (seen.has(name)) {
-			duplicates.push(`${owner} field '${name}' is declared more than once.`);
-			return;
-		}
-		seen.add(name);
-	});
-	if (duplicates.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud field resolution input.", duplicates);
-}
-function validateHydraFieldResolutionInput(baselineFields, contract) {
-	validateUniqueFieldNames(baselineFields, "Hydra baseline");
-	const baselineByName = new Map(baselineFields.map((field) => [field.name, field]));
-	const issues = [];
-	contract.directives.forEach((directive) => {
-		if (directive.kind === "override" || directive.kind === "remove") {
-			if (!baselineByName.has(directive.key)) issues.push(`${directive.kind === "override" ? "Override" : "Remove"} targets unknown Hydra field '${directive.key}'.`);
-			return;
-		}
-		const syntheticName = normalizeKey(directive.field.name);
-		if (baselineByName.has(syntheticName)) issues.push(`Synthetic field '${syntheticName}' collides with an inferred Hydra field. Use 'override' instead.`);
-	});
-	if (issues.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud hydra field resolution.", issues);
-}
-function validateResolvedFieldNames(fields, owner) {
-	validateUniqueFieldNames(fields, owner);
-}
-//#endregion
-//#region assets/core/crud/resolveSmartCrudFields.ts
-function cloneField(field) {
-	return { ...field };
-}
-function applyFieldPatch(field, patch) {
-	return {
-		...field,
-		...patch
-	};
-}
-function toResolvedManualField(field) {
-	return cloneField(field);
-}
-function resolveHydraFields(baselineFields, contract) {
-	validateHydraFieldResolutionInput(baselineFields, contract);
-	const overrides = /* @__PURE__ */ new Map();
-	const removals = /* @__PURE__ */ new Set();
-	const prepend = [];
-	const append = [];
-	contract.directives.forEach((directive) => {
-		if (directive.kind === "override") {
-			overrides.set(directive.key, directive.patch);
-			return;
-		}
-		if (directive.kind === "remove") {
-			removals.add(directive.key);
-			return;
-		}
-		const syntheticField = toResolvedManualField(directive.field);
-		if (directive.kind === "prepend") {
-			prepend.push(syntheticField);
-			return;
-		}
-		append.push(syntheticField);
-	});
-	const resolvedBaseline = baselineFields.flatMap((field) => {
-		if (removals.has(field.name)) return [];
-		const patch = overrides.get(field.name);
-		return [patch ? applyFieldPatch(field, patch) : cloneField(field)];
-	});
-	const resolved = [
-		...prepend,
-		...resolvedBaseline,
-		...append
-	];
-	validateResolvedFieldNames(resolved, "Resolved SmartCrud");
-	return resolved;
-}
-function mergeOverrides(inferred, overrides) {
-	return inferred.map((field) => {
-		const override = overrides.find((entry) => entry.key === field.name);
-		if (!override) return cloneField(field);
-		const { key, ...overrideProps } = override;
-		return {
-			...field,
-			...overrideProps
-		};
-	});
-}
-function resolveSmartCrudFields(options) {
-	const { baselineFields = [], contract, legacyOverrides = [] } = options;
-	if (!contract) return legacyOverrides.length > 0 ? mergeOverrides([...baselineFields], legacyOverrides) : [...baselineFields].map(cloneField);
-	validateFieldContract(contract);
-	if (contract.source === "manual") return contract.fields.map((field) => toResolvedManualField(field));
-	return resolveHydraFields(baselineFields, contract);
-}
-//#endregion
-//#region assets/core/crud/hydra/useResourceSchema.ts
-/**
-* Normalizes an API URL by stripping any leading slash so that
-* 'api/categories' and '/api/categories' are treated as equal.
-*/
-function normalizeUrl(url) {
-	return url.startsWith("/") ? url.slice(1) : url;
-}
-function useResourceSchema(apiUrl, manualFields, overrides, fieldContract) {
-	const { data, isLoading, error } = useSchemaContext();
-	const resolveWithRuntimeErrors = (resolver, supportedOperations = []) => {
-		try {
-			return {
-				fields: resolver(),
-				isLoading: false,
-				error: void 0,
-				supportedOperations
-			};
-		} catch (runtimeError) {
-			return {
-				fields: [],
-				isLoading: false,
-				error: runtimeError instanceof Error ? runtimeError : new Error(String(runtimeError)),
-				supportedOperations
-			};
-		}
-	};
-	if (fieldContract?.source === "manual") return resolveWithRuntimeErrors(() => (0, _nubit_core.resolveSmartCrudFields)({ contract: fieldContract }));
-	if (manualFields && manualFields.length > 0) return {
-		fields: manualFields,
-		isLoading: false,
-		error: void 0,
-		supportedOperations: []
-	};
-	if (!data) return {
-		fields: [],
-		isLoading,
-		error,
-		supportedOperations: []
-	};
-	const resourceMap = data.format === "hydra" ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
-	const normalizedInput = normalizeUrl(apiUrl);
-	const resourceSchema = Object.values(resourceMap).find((r) => normalizeUrl(r.apiUrl) === normalizedInput);
-	if (!resourceSchema) return {
-		fields: [],
-		isLoading: false,
-		error: /* @__PURE__ */ new Error(`No schema found for ${apiUrl} in API doc`),
-		supportedOperations: []
-	};
-	const inferred = mapHydraSchemaToFields(resourceSchema, (className) => resourceMap[className]?.apiUrl, (className) => resourceMap[className]);
-	return resolveWithRuntimeErrors(() => (0, _nubit_core.resolveSmartCrudFields)({
-		baselineFields: inferred,
-		contract: fieldContract,
-		legacyOverrides: fieldContract ? void 0 : overrides
-	}), resourceSchema.supportedOperations ?? []);
-}
 //#endregion
 //#region assets/core/crud/routing/useRouting.ts
 /**
@@ -5255,6 +4052,155 @@ function useDependsOn(fields, formData) {
 	}, [JSON.stringify(currentEntries?.map((e) => e.values) ?? null), queryClient]);
 }
 //#endregion
+//#region assets/core/crud/fieldOperationSemantics.ts
+var SmartCrudFieldOperationSemanticsError = class extends Error {
+	issues;
+	constructor(message, issues = []) {
+		super(message);
+		this.name = "SmartCrudFieldOperationSemanticsError";
+		this.issues = issues;
+	}
+};
+const OPERATIONS = ["create", "edit"];
+const PROPERTIES = [
+	"visible",
+	"required",
+	"readonly",
+	"disabled"
+];
+function normalizeOnly(only) {
+	if (!only) return;
+	return Array.isArray(only) ? only : [only];
+}
+function createEmptySemantics() {
+	return {
+		create: {},
+		edit: {}
+	};
+}
+function applyProperty(target, issues, owner, operation, property, value, source) {
+	const current = target[operation][property];
+	if (current !== void 0 && current !== value) {
+		issues.push(`${owner} defines conflicting ${operation}.${property} semantics (${String(current)} vs ${String(value)} from ${source}).`);
+		return;
+	}
+	target[operation][property] = value;
+}
+function applyFlagInput(target, issues, owner, property, input) {
+	if (input === void 0) return;
+	if (typeof input === "boolean") {
+		OPERATIONS.forEach((operation) => {
+			applyProperty(target, issues, owner, operation, property, input, property);
+		});
+		return;
+	}
+	OPERATIONS.forEach((operation) => {
+		const value = input[operation];
+		if (value === void 0) return;
+		applyProperty(target, issues, owner, operation, property, value, `${property}.${operation}`);
+	});
+}
+function applyStateInput(target, issues, owner, operation, state) {
+	if (!state) return;
+	PROPERTIES.forEach((property) => {
+		const value = state[property];
+		if (value === void 0) return;
+		applyProperty(target, issues, owner, operation, property, value, `${operation}.${property}`);
+	});
+}
+function validateResolvedSemantics(owner, semantics) {
+	const issues = [];
+	OPERATIONS.forEach((operation) => {
+		const state = semantics[operation];
+		if (state.visible === false && state.required === true) issues.push(`${owner} cannot be required when ${operation}.visible is false.`);
+	});
+	return issues;
+}
+function normalizeFieldOperationSemantics(behavior, owner = "Field operation semantics") {
+	const semantics = createEmptySemantics();
+	if (!behavior) return semantics;
+	const issues = [];
+	const allowedOperations = normalizeOnly(behavior.only);
+	if (allowedOperations) {
+		const allowedOperationSet = new Set(allowedOperations);
+		OPERATIONS.forEach((operation) => {
+			applyProperty(semantics, issues, owner, operation, "visible", allowedOperationSet.has(operation), "only");
+		});
+	}
+	applyFlagInput(semantics, issues, owner, "visible", behavior.visible);
+	applyFlagInput(semantics, issues, owner, "required", behavior.required);
+	applyFlagInput(semantics, issues, owner, "readonly", behavior.readonly);
+	applyFlagInput(semantics, issues, owner, "disabled", behavior.disabled);
+	applyStateInput(semantics, issues, owner, "create", behavior.create);
+	applyStateInput(semantics, issues, owner, "edit", behavior.edit);
+	issues.push(...validateResolvedSemantics(owner, semantics));
+	if (issues.length > 0) throw new SmartCrudFieldOperationSemanticsError("Invalid SmartCrud field operation semantics.", issues);
+	return semantics;
+}
+/**
+* Validates field operation semantics and returns any issues found,
+* without throwing. Uses the same validation logic as
+* `normalizeFieldOperationSemantics` but collects issues instead of
+* throwing `SmartCrudFieldOperationSemanticsError`.
+*/
+function collectOperationSemanticsIssues(owner, behavior) {
+	if (!behavior) return [];
+	const semantics = createEmptySemantics();
+	const issues = [];
+	const allowedOperations = normalizeOnly(behavior.only);
+	if (allowedOperations) {
+		const allowedOperationSet = new Set(allowedOperations);
+		OPERATIONS.forEach((operation) => {
+			applyProperty(semantics, issues, owner, operation, "visible", allowedOperationSet.has(operation), "only");
+		});
+	}
+	applyFlagInput(semantics, issues, owner, "visible", behavior.visible);
+	applyFlagInput(semantics, issues, owner, "required", behavior.required);
+	applyFlagInput(semantics, issues, owner, "readonly", behavior.readonly);
+	applyFlagInput(semantics, issues, owner, "disabled", behavior.disabled);
+	applyStateInput(semantics, issues, owner, "create", behavior.create);
+	applyStateInput(semantics, issues, owner, "edit", behavior.edit);
+	issues.push(...validateResolvedSemantics(owner, semantics));
+	return issues;
+}
+function resolveBaseVisibility(field) {
+	if (field.visible !== void 0) return field.visible;
+	if (field.hidden !== void 0) return !field.hidden;
+	return true;
+}
+function resolveBaseState(field) {
+	return {
+		visible: resolveBaseVisibility(field),
+		required: field.required ?? false,
+		readonly: field.readonly ?? false,
+		disabled: field.disabled ?? false
+	};
+}
+function resolveFieldOperationSemantics(field, behavior, owner = "Field operation semantics") {
+	const normalized = normalizeFieldOperationSemantics(behavior, owner);
+	return OPERATIONS.reduce((resolved, operation) => {
+		const baseState = resolveBaseState(field);
+		resolved[operation] = {
+			visible: normalized[operation].visible ?? baseState.visible,
+			required: normalized[operation].required ?? baseState.required,
+			readonly: normalized[operation].readonly ?? baseState.readonly,
+			disabled: normalized[operation].disabled ?? baseState.disabled
+		};
+		return resolved;
+	}, {});
+}
+function applyFieldOperationSemantics(field, operation, behavior, owner = `Field '${field.name}'`, target = "grid") {
+	const resolved = resolveFieldOperationSemantics(field, behavior, owner)[operation];
+	return {
+		...field,
+		...target === "form" ? { visibleOnForm: resolved.visible } : { visible: resolved.visible },
+		hidden: !resolved.visible,
+		required: resolved.required,
+		readonly: resolved.readonly,
+		disabled: resolved.disabled
+	};
+}
+//#endregion
 //#region assets/core/crud/useSmartCrudFields.ts
 /**
 * Runs the full SmartCrud field processing pipeline:
@@ -5355,7 +4301,7 @@ function SmartCrudPage({ resource, fieldOverrides }) {
 	const resolvedBaseResource = (0, react.useMemo)(() => resolveCrudResource(resource), [resource]);
 	const events = resolvedBaseResource.events;
 	const hasManualFields = !resource.fieldContract && Array.isArray(resource.fields) && resource.fields.length > 0;
-	const { fields, isLoading, error, supportedOperations } = useResourceSchema(resolvedBaseResource.apiUrl, hasManualFields ? resource.fields : void 0, hasManualFields ? void 0 : fieldOverrides, resource.fieldContract);
+	const { fields, isLoading, error, supportedOperations } = (0, _nubit_api_platform.useResourceSchema)(resolvedBaseResource.apiUrl, hasManualFields ? resource.fields : void 0, hasManualFields ? void 0 : fieldOverrides, resource.fieldContract);
 	const hintFiredRef = (0, react.useRef)(false);
 	(0, react.useEffect)(() => {
 		if (!resource.fieldContract && !hasManualFields && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
@@ -5396,7 +4342,7 @@ function SmartCrudPage({ resource, fieldOverrides }) {
 	if (!hasManualFields && isLoading) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudSkeleton, {});
 	if (!hasManualFields && error) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudError, {
 		message: formatRuntimeErrorMessage(error),
-		onRetry: () => queryClient.invalidateQueries({ queryKey: API_DOC_QUERY_KEY })
+		onRetry: () => queryClient.invalidateQueries({ queryKey: _nubit_api_platform.API_DOC_QUERY_KEY })
 	});
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudPage, {
 		resource: resolvedResource,
@@ -5409,11 +4355,299 @@ function SmartCrudPage({ resource, fieldOverrides }) {
 	});
 }
 //#endregion
+//#region assets/core/crud/fieldValidation.ts
+var SmartCrudFieldContractError = class extends Error {
+	issues;
+	constructor(message, issues = []) {
+		super(message);
+		this.name = "SmartCrudFieldContractError";
+		this.issues = issues;
+	}
+};
+const CONTRACT_KEYS = ["source", "strategy"];
+const HYDRA_CONTRACT_KEYS = [...CONTRACT_KEYS, "directives"];
+const MANUAL_CONTRACT_KEYS = [...CONTRACT_KEYS, "fields"];
+const OVERRIDE_DIRECTIVE_KEYS = [
+	"kind",
+	"key",
+	"patch"
+];
+const REMOVE_DIRECTIVE_KEYS = ["kind", "key"];
+const SYNTHETIC_DIRECTIVE_KEYS = ["kind", "field"];
+const OPERATION_BEHAVIOR_KEYS = [
+	"only",
+	"visible",
+	"required",
+	"readonly",
+	"disabled",
+	"create",
+	"edit"
+];
+const OPERATION_STATE_KEYS = [
+	"visible",
+	"required",
+	"readonly",
+	"disabled"
+];
+const MANUAL_FIELD_KEYS = [...[
+	"isIdentity",
+	"type",
+	"col",
+	"name",
+	"label",
+	"width",
+	"height",
+	"minWidth",
+	"minHeight",
+	"align",
+	"sortable",
+	"filterable",
+	"hideable",
+	"validators",
+	"mode",
+	"url",
+	"loadOptions",
+	"filters",
+	"byKeyUrl",
+	"textField",
+	"valueField",
+	"valueType",
+	"format",
+	"selectedFilterOperation",
+	"filterValue",
+	"data",
+	"formatter",
+	"itemFormatter",
+	"visible",
+	"defaultValue",
+	"autoSelectIfSingle",
+	"onChange",
+	"onSelect",
+	"onClick",
+	"onKeyPress",
+	"readonly",
+	"disabled",
+	"hidden",
+	"required",
+	"precision",
+	"accept",
+	"buttons",
+	"hidingPriority",
+	"searchEnabled",
+	"searchExpr",
+	"fixed",
+	"fixedPosition",
+	"helpText",
+	"contentRender",
+	"visibleOnForm",
+	"maxLength",
+	"multiple",
+	"editorOptions",
+	"sendAsString",
+	"order",
+	"visibleWhen",
+	"disabledWhen",
+	"computed",
+	"dependsOn",
+	"permissions"
+], "operation"];
+const FIELD_PATCH_KEYS = MANUAL_FIELD_KEYS.filter((key) => key !== "name");
+function normalizeKey(value) {
+	return value.trim();
+}
+function isPlainObject(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function formatAllowedKeys(keys) {
+	return keys.join(", ");
+}
+function collectUnknownKeyIssues(owner, value, allowedKeys) {
+	if (!isPlainObject(value)) return [`${owner} must be an object.`];
+	return Object.keys(value).filter((key) => !allowedKeys.includes(key)).sort((left, right) => left.localeCompare(right)).map((key) => `${owner} contains unknown key '${key}'. Allowed keys: ${formatAllowedKeys(allowedKeys)}.`);
+}
+function collectOperationBehaviorIssues(owner, behavior) {
+	if (behavior === void 0) return [];
+	const issues = collectUnknownKeyIssues(`${owner} operation`, behavior, OPERATION_BEHAVIOR_KEYS);
+	if (isPlainObject(behavior)) {
+		if (behavior.create !== void 0) issues.push(...collectUnknownKeyIssues(`${owner} operation.create`, behavior.create, OPERATION_STATE_KEYS));
+		if (behavior.edit !== void 0) issues.push(...collectUnknownKeyIssues(`${owner} operation.edit`, behavior.edit, OPERATION_STATE_KEYS));
+	}
+	issues.push(...collectOperationSemanticsIssues(owner, behavior));
+	return issues;
+}
+function collectHydraFieldDirectiveIssues(directive, index) {
+	const owner = `Directive #${index + 1}`;
+	if (directive.kind === "override") return [
+		...collectUnknownKeyIssues(owner, directive, OVERRIDE_DIRECTIVE_KEYS),
+		...collectUnknownKeyIssues(`Override '${normalizeKey(String(directive.key ?? ""))}' patch`, directive.patch, FIELD_PATCH_KEYS),
+		...collectOperationBehaviorIssues(`Override '${normalizeKey(String(directive.key ?? ""))}'`, directive.patch.operation)
+	];
+	if (directive.kind === "remove") return collectUnknownKeyIssues(owner, directive, REMOVE_DIRECTIVE_KEYS);
+	const fieldName = normalizeKey(directive.field?.name ?? "");
+	return [
+		...collectUnknownKeyIssues(owner, directive, SYNTHETIC_DIRECTIVE_KEYS),
+		...collectUnknownKeyIssues(`Synthetic field '${fieldName || `#${index + 1}`}'`, directive.field, MANUAL_FIELD_KEYS),
+		...collectOperationBehaviorIssues(`Synthetic field '${fieldName || `#${index + 1}`}'`, directive.field.operation)
+	];
+}
+function collectManualFieldIssues(field, index) {
+	const fieldName = normalizeKey(field.name ?? "");
+	return [...collectUnknownKeyIssues(`Manual field #${index + 1}`, field, MANUAL_FIELD_KEYS), ...collectOperationBehaviorIssues(`Manual field '${fieldName || `#${index + 1}`}'`, field.operation)];
+}
+function validateFieldContract(contract) {
+	const issues = [];
+	if (contract.source === "hydra") {
+		issues.push(...collectUnknownKeyIssues("Hydra contract", contract, HYDRA_CONTRACT_KEYS));
+		if (contract.strategy !== "augment") issues.push("Hydra contracts must use strategy 'augment'.");
+		const targetedKeys = /* @__PURE__ */ new Map();
+		const syntheticNames = /* @__PURE__ */ new Set();
+		contract.directives.forEach((directive, index) => {
+			issues.push(...collectHydraFieldDirectiveIssues(directive, index));
+			if (directive.kind === "override" || directive.kind === "remove") {
+				const key = normalizeKey(directive.key);
+				if (!key) {
+					issues.push(`Directive #${index + 1} must reference a non-empty field key.`);
+					return;
+				}
+				const previous = targetedKeys.get(key);
+				if (previous) issues.push(`Field '${key}' is targeted more than once in hydra directives (${previous} + ${directive.kind}).`);
+				else targetedKeys.set(key, directive.kind);
+				return;
+			}
+			const fieldName = normalizeKey(directive.field.name);
+			if (!fieldName) {
+				issues.push(`Directive #${index + 1} must define a non-empty synthetic field name.`);
+				return;
+			}
+			if (syntheticNames.has(fieldName)) issues.push(`Synthetic field '${fieldName}' is declared more than once.`);
+			else syntheticNames.add(fieldName);
+		});
+	}
+	if (contract.source === "manual") {
+		issues.push(...collectUnknownKeyIssues("Manual contract", contract, MANUAL_CONTRACT_KEYS));
+		if (contract.strategy !== "replace") issues.push("Manual contracts must use strategy 'replace'.");
+		const names = /* @__PURE__ */ new Set();
+		contract.fields.forEach((field, index) => {
+			issues.push(...collectManualFieldIssues(field, index));
+			const fieldName = normalizeKey(field.name);
+			if (!fieldName) {
+				issues.push(`Manual field #${index + 1} must define a non-empty name.`);
+				return;
+			}
+			if (names.has(fieldName)) issues.push(`Manual field '${fieldName}' is declared more than once.`);
+			else names.add(fieldName);
+		});
+	}
+	if (issues.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud field contract.", issues);
+	return contract;
+}
+function validateUniqueFieldNames(fields, owner) {
+	const seen = /* @__PURE__ */ new Set();
+	const duplicates = [];
+	fields.forEach((field, index) => {
+		const name = field.name.trim();
+		if (!name) {
+			duplicates.push(`${owner} field #${index + 1} must define a non-empty name.`);
+			return;
+		}
+		if (seen.has(name)) {
+			duplicates.push(`${owner} field '${name}' is declared more than once.`);
+			return;
+		}
+		seen.add(name);
+	});
+	if (duplicates.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud field resolution input.", duplicates);
+}
+function validateHydraFieldResolutionInput(baselineFields, contract) {
+	validateUniqueFieldNames(baselineFields, "Hydra baseline");
+	const baselineByName = new Map(baselineFields.map((field) => [field.name, field]));
+	const issues = [];
+	contract.directives.forEach((directive) => {
+		if (directive.kind === "override" || directive.kind === "remove") {
+			if (!baselineByName.has(directive.key)) issues.push(`${directive.kind === "override" ? "Override" : "Remove"} targets unknown Hydra field '${directive.key}'.`);
+			return;
+		}
+		const syntheticName = normalizeKey(directive.field.name);
+		if (baselineByName.has(syntheticName)) issues.push(`Synthetic field '${syntheticName}' collides with an inferred Hydra field. Use 'override' instead.`);
+	});
+	if (issues.length > 0) throw new SmartCrudFieldContractError("Invalid SmartCrud hydra field resolution.", issues);
+}
+function validateResolvedFieldNames(fields, owner) {
+	validateUniqueFieldNames(fields, owner);
+}
+//#endregion
 //#region assets/core/crud/fieldContract.ts
 function defineFields(contract) {
 	return validateFieldContract(contract);
 }
 const defineFieldContract = defineFields;
+//#endregion
+//#region assets/core/crud/resolveSmartCrudFields.ts
+function cloneField(field) {
+	return { ...field };
+}
+function applyFieldPatch(field, patch) {
+	return {
+		...field,
+		...patch
+	};
+}
+function toResolvedManualField(field) {
+	return cloneField(field);
+}
+function resolveHydraFields(baselineFields, contract) {
+	validateHydraFieldResolutionInput(baselineFields, contract);
+	const overrides = /* @__PURE__ */ new Map();
+	const removals = /* @__PURE__ */ new Set();
+	const prepend = [];
+	const append = [];
+	contract.directives.forEach((directive) => {
+		if (directive.kind === "override") {
+			overrides.set(directive.key, directive.patch);
+			return;
+		}
+		if (directive.kind === "remove") {
+			removals.add(directive.key);
+			return;
+		}
+		const syntheticField = toResolvedManualField(directive.field);
+		if (directive.kind === "prepend") {
+			prepend.push(syntheticField);
+			return;
+		}
+		append.push(syntheticField);
+	});
+	const resolvedBaseline = baselineFields.flatMap((field) => {
+		if (removals.has(field.name)) return [];
+		const patch = overrides.get(field.name);
+		return [patch ? applyFieldPatch(field, patch) : cloneField(field)];
+	});
+	const resolved = [
+		...prepend,
+		...resolvedBaseline,
+		...append
+	];
+	validateResolvedFieldNames(resolved, "Resolved SmartCrud");
+	return resolved;
+}
+function mergeOverrides(inferred, overrides) {
+	return inferred.map((field) => {
+		const override = overrides.find((entry) => entry.key === field.name);
+		if (!override) return cloneField(field);
+		const { key, ...overrideProps } = override;
+		return {
+			...field,
+			...overrideProps
+		};
+	});
+}
+function resolveSmartCrudFields(options) {
+	const { baselineFields = [], contract, legacyOverrides = [] } = options;
+	if (!contract) return legacyOverrides.length > 0 ? mergeOverrides([...baselineFields], legacyOverrides) : [...baselineFields].map(cloneField);
+	validateFieldContract(contract);
+	if (contract.source === "manual") return contract.fields.map((field) => toResolvedManualField(field));
+	return resolveHydraFields(baselineFields, contract);
+}
 //#endregion
 //#region assets/core/i18n/coreTranslations.ts
 const coreTranslationsEs = {
@@ -5492,6 +4726,89 @@ function initCoreI18n() {
 	i18next.default.addResourceBundle("es", "core", coreTranslationsEs, true, false);
 	i18next.default.addResourceBundle("en", "core", coreTranslationsEn, true, false);
 }
+//#endregion
+//#region assets/core/crud/hydra/index.ts
+var hydra_exports = /* @__PURE__ */ __exportAll({});
+__reExport(hydra_exports, require("@nubit/api-platform"));
+__reExport(/* @__PURE__ */ __exportAll({
+	AuditTrailPanel: () => AuditTrailPanel,
+	CrudPage: () => CrudPage,
+	DialogStoreProvider: () => DialogStoreProvider,
+	SmartCrudFieldContractError: () => SmartCrudFieldContractError,
+	SmartCrudFieldOperationSemanticsError: () => SmartCrudFieldOperationSemanticsError,
+	SmartCrudPage: () => SmartCrudPage,
+	SmartCrudRolesProvider: () => SmartCrudRolesProvider,
+	applyFieldOperationSemantics: () => applyFieldOperationSemantics,
+	collectOperationSemanticsIssues: () => collectOperationSemanticsIssues,
+	createScopedEventBus: () => createScopedEventBus,
+	defineFieldContract: () => defineFieldContract,
+	defineFields: () => defineFields,
+	defineResource: () => defineResource,
+	initCoreI18n: () => initCoreI18n,
+	mergeOverrides: () => mergeOverrides,
+	normalizeFieldOperationSemantics: () => normalizeFieldOperationSemantics,
+	resolveFieldOperationSemantics: () => resolveFieldOperationSemantics,
+	resolveSmartCrudFields: () => resolveSmartCrudFields,
+	useColumnPreset: () => useColumnPreset,
+	useConditionalRules: () => useConditionalRules,
+	useCoreTranslation: () => useCoreTranslation,
+	useCrudDialogStore: () => useCrudDialogStore,
+	useCrudPage: () => useCrudPage,
+	useDependsOn: () => useDependsOn,
+	useFieldPermissions: () => useFieldPermissions,
+	usePermissions: () => usePermissions,
+	useRouting: () => useRouting,
+	useSelectionState: () => useSelectionState,
+	useSmartCrudRoles: () => useSmartCrudRoles,
+	validateFieldContract: () => validateFieldContract,
+	validateHydraFieldResolutionInput: () => validateHydraFieldResolutionInput,
+	validateResolvedFieldNames: () => validateResolvedFieldNames
+}), hydra_exports);
+//#endregion
+//#region assets/core/common/Constants.ts
+const Constants = {
+	BASE_URL: "/",
+	API_BASE_URL: "/api/",
+	TEXT_ADD: "Nuevo",
+	TEXT_EDIT: "Editar",
+	TEXT_DELETE: "Eliminar",
+	TEXT_EXPORT: "Exportar",
+	TEXT_SAVE: "Guardar",
+	TEXT_CANCEL: "Cerrar",
+	TEXT_CONFIRM: "¿Está seguro que desea eliminar este registro?",
+	TEXT_LOADING: "Procesando, por favor espere...",
+	ICON_ADD: "fas fa-plus fa-1x text-primary",
+	ICON_EDIT: "fas fa-pen fa-1x text-warning",
+	ICON_DELETE: "fas fa-trash fa-1x text-danger",
+	ICON_XLS: "fas fa-file-excel fa-1x text-success",
+	ICON_PDF: "fas fa-file-pdf fa-1x text-danger",
+	ICON_SEARCH: "fas fa-search fa-1x text-info",
+	ICON_INVOICE: "fas fa-file-invoice fa-1x text-info",
+	ICON_CLEAR: "fas fa-times fa-1x text-danger",
+	MAX_ROW_COUNT: 2147483647
+};
+//#endregion
+//#region assets/core/common/UserInformation.ts
+function getStoredItem(key) {
+	if (typeof localStorage === "undefined") return null;
+	const item = localStorage.getItem(key);
+	if (!item) return null;
+	try {
+		return JSON.parse(item);
+	} catch {
+		return null;
+	}
+}
+const userInformation = () => {
+	const user = getStoredItem("user") ?? void 0;
+	return {
+		currentUserId: user?.userId,
+		currentUserName: user?.username ?? "",
+		currentUserRoleId: user?.role,
+		currentBranchId: getStoredItem("selectedBranchId") ?? "",
+		currentBranchName: getStoredItem("selectedBranchName") ?? ""
+	};
+};
 //#endregion
 //#region assets/core/field/BaseFieldBuilder.ts
 var BaseFieldBuilder = class {
@@ -6422,8 +5739,19 @@ function CoreProvider({ children, http, httpClient, runtime }) {
 }
 //#endregion
 exports.ApiPlatformRemoteDataSource = ApiPlatformRemoteDataSource;
-exports.AppDialog = AppDialog;
-exports.ConfirmDialog = ConfirmDialog;
+Object.defineProperty(exports, "AppDialog", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.AppDialog;
+	}
+});
+Object.defineProperty(exports, "ConfirmDialog", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.ConfirmDialog;
+	}
+});
+exports.Constants = Constants;
 exports.CoreConfigProvider = CoreConfigProvider;
 exports.CoreHttpClient = CoreHttpClient;
 exports.CoreHttpProvider = CoreHttpProvider;
@@ -6466,6 +5794,7 @@ exports.identityField = identityField;
 exports.imageField = imageField;
 exports.inboundEvents = inboundEvents;
 exports.initCoreI18n = initCoreI18n;
+exports.mergeOverrides = mergeOverrides;
 exports.noneField = noneField;
 exports.numberField = numberField;
 exports.operationEvents = operationEvents;
@@ -6495,6 +5824,7 @@ exports.usePermissions = usePermissions;
 exports.useSelectionState = useSelectionState;
 exports.useSmartCrudRoles = useSmartCrudRoles;
 exports.userEvents = userEvents;
+exports.userInformation = userInformation;
 exports.voucherSeriesEvents = voucherSeriesEvents;
 exports.voucherTypeEvents = voucherTypeEvents;
 exports.warehouseEvents = warehouseEvents;

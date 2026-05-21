@@ -19,7 +19,7 @@ Current public surface includes:
 - `SmartCrudPage`, `CrudPage`, `defineResource`, `defineFields`
 - field builders and field types
 - form/grid handles and common data contracts
-- base UI primitives: `AppDialog`, `ConfirmDialog`
+- compatibility re-exports for base UI primitives from `@nubit/ui`: `AppDialog`, `ConfirmDialog`
 
 Planned package split:
 

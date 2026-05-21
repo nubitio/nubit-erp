@@ -6,7 +6,7 @@ import type { HydraApiDoc, OpenApiDoc, ApiDoc } from './types';
 
 const JSONLD_URL = '/api/docs.jsonld';
 const JSON_URL = '/api/docs.json';
-const isDev = import.meta.env.DEV;
+const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
 
 /**
  * Try to fetch and validate a Hydra JSON-LD doc.

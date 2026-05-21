@@ -186,6 +186,22 @@ export default defineConfig({
       input: {
         app: './assets/app.tsx',
       },
+      output: {
+        manualChunks(id) {
+          // Keep the in-repo Nubit facades together while CRUD/API Platform are
+          // still being split. This avoids circular execution-order warnings
+          // between facade re-exports and implementation modules.
+          if (
+            id.includes('/assets/core/') ||
+            id.includes('/assets/ui/') ||
+            id.includes('/assets/admin/') ||
+            id.includes('/assets/api-platform/') ||
+            id.includes('/assets/react-admin/')
+          ) {
+            return 'nubit';
+          }
+        },
+      },
     },
   },
 });

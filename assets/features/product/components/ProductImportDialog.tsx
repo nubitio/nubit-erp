@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useScreenSize } from '@utils/media-query';
 import { MercureManager, useMercureHub } from '@nubit/core';
+import { AppDialog } from '@nubit/ui';
 import { businessHttpClient } from '@shared/api/network';
-import { AppDialog } from '@shared/ui/app-dialog/AppDialog';
 
 import './ProductImportDialog.scss';
 

@@ -1,5 +1,7 @@
 import React$1, { ReactNode, RefObject } from "react";
-import { FieldOverride as FieldOverride$1 } from "@nubit/core";
+import { FieldOverride as FieldOverride$1 } from "@nubit/api-platform";
+import { AppDialog, AppDialogProps, ConfirmDialog, ConfirmDialogProps } from "@nubit/ui";
+//#endregion
 //#region assets/core/field/FieldType.d.ts
 declare enum FieldType {
   NONE = "none",
@@ -371,6 +373,73 @@ interface SmartCrudFieldOperationBehavior {
   create?: SmartCrudFieldOperationState;
   edit?: SmartCrudFieldOperationState;
 }
+interface SmartCrudResolvedFieldOperationState {
+  visible: boolean;
+  required: boolean;
+  readonly: boolean;
+  disabled: boolean;
+}
+type SmartCrudResolvedFieldOperationSemantics = Record<SmartCrudFieldOperation, SmartCrudResolvedFieldOperationState>;
+type SmartCrudNormalizedFieldOperationSemantics = Record<SmartCrudFieldOperation, SmartCrudFieldOperationState>;
+declare class SmartCrudFieldOperationSemanticsError extends Error {
+  readonly issues: string[];
+  constructor(message: string, issues?: string[]);
+}
+type SmartCrudFieldOperationDefaults = Pick<FieldDef<DataRecord>, 'visible' | 'hidden' | 'required' | 'readonly' | 'disabled'>;
+declare function normalizeFieldOperationSemantics(behavior: SmartCrudFieldOperationBehavior | undefined, owner?: string): SmartCrudNormalizedFieldOperationSemantics;
+/**
+ * Validates field operation semantics and returns any issues found,
+ * without throwing. Uses the same validation logic as
+ * `normalizeFieldOperationSemantics` but collects issues instead of
+ * throwing `SmartCrudFieldOperationSemanticsError`.
+ */
+declare function collectOperationSemanticsIssues(owner: string, behavior: SmartCrudFieldOperationBehavior | undefined): string[];
+declare function resolveFieldOperationSemantics(field: Partial<SmartCrudFieldOperationDefaults>, behavior: SmartCrudFieldOperationBehavior | undefined, owner?: string): SmartCrudResolvedFieldOperationSemantics;
+declare function applyFieldOperationSemantics<T extends DataRecord>(field: FieldDef<T>, operation: SmartCrudFieldOperation, behavior: SmartCrudFieldOperationBehavior | undefined, owner?: string, target?: 'grid' | 'form'): FieldDef<T>;
+//#endregion
+//#region assets/core/crud/fieldValidation.d.ts
+type SmartCrudRecord$1 = object;
+type SmartCrudHydraDirectiveLike<T extends SmartCrudRecord$1> = {
+  kind: 'override';
+  key: Extract<keyof T, string>;
+  patch: SmartCrudFieldPatchLike;
+} | {
+  kind: 'remove';
+  key: Extract<keyof T, string>;
+} | {
+  kind: 'prepend';
+  field: SmartCrudManualFieldLike;
+} | {
+  kind: 'append';
+  field: SmartCrudManualFieldLike;
+};
+type SmartCrudFieldContractLike<T extends SmartCrudRecord$1> = {
+  source: 'hydra';
+  strategy: 'augment';
+  directives: readonly SmartCrudHydraDirectiveLike<T>[];
+} | {
+  source: 'manual';
+  strategy: 'replace';
+  fields: readonly SmartCrudManualFieldLike[];
+};
+declare class SmartCrudFieldContractError extends Error {
+  readonly issues: string[];
+  constructor(message: string, issues?: string[]);
+}
+declare const FIELD_KEYS: readonly ["isIdentity", "type", "col", "name", "label", "width", "height", "minWidth", "minHeight", "align", "sortable", "filterable", "hideable", "validators", "mode", "url", "loadOptions", "filters", "byKeyUrl", "textField", "valueField", "valueType", "format", "selectedFilterOperation", "filterValue", "data", "formatter", "itemFormatter", "visible", "defaultValue", "autoSelectIfSingle", "onChange", "onSelect", "onClick", "onKeyPress", "readonly", "disabled", "hidden", "required", "precision", "accept", "buttons", "hidingPriority", "searchEnabled", "searchExpr", "fixed", "fixedPosition", "helpText", "contentRender", "visibleOnForm", "maxLength", "multiple", "editorOptions", "sendAsString", "order", "visibleWhen", "disabledWhen", "computed", "dependsOn", "permissions"];
+type SmartCrudFieldShape = Partial<Record<(typeof FIELD_KEYS)[number], unknown>>;
+type SmartCrudFieldPatchLike = SmartCrudFieldShape & {
+  operation?: SmartCrudFieldOperationBehavior;
+};
+type SmartCrudManualFieldLike = SmartCrudFieldShape & {
+  name: string;
+  operation?: SmartCrudFieldOperationBehavior;
+};
+declare function validateFieldContract<T extends SmartCrudRecord$1>(contract: SmartCrudFieldContractLike<T>): SmartCrudFieldContractLike<T>;
+declare function validateHydraFieldResolutionInput<T extends SmartCrudRecord$1>(baselineFields: readonly Field[], contract: Extract<SmartCrudFieldContractLike<T>, {
+  source: 'hydra';
+}>): void;
+declare function validateResolvedFieldNames(fields: readonly Field[], owner: string): void;
 //#endregion
 //#region assets/core/crud/fieldContract.d.ts
 type SmartCrudRecord = object;
@@ -616,6 +685,7 @@ interface ColumnPresetState {
   setPreset: (key: string | null) => void;
   visibleColumns: string[] | null;
 }
+declare function useColumnPreset(resource: ResourceConfig): ColumnPresetState;
 //#endregion
 //#region assets/core/crud/resolveCrudResource.d.ts
 type ResolvedCrudResource<T extends DataRecord> = ResourceConfig<T> & {
@@ -674,17 +744,6 @@ declare const CrudPage: <T extends DataRecord = DataRecord>({
   onFiltersChange
 }: CrudPageProps<T>) => import("react/jsx-runtime").JSX.Element;
 //#endregion
-//#region assets/core/crud/resolveSmartCrudFields.d.ts
-type FieldOverride = Partial<Field> & {
-  key: string;
-};
-interface ResolveSmartCrudFieldsOptions<T extends SmartCrudRecord> {
-  baselineFields?: readonly Field[];
-  contract?: SmartCrudFieldContract<T>;
-  legacyOverrides?: readonly FieldOverride[];
-}
-declare function resolveSmartCrudFields<T extends SmartCrudRecord>(options: ResolveSmartCrudFieldsOptions<T>): Field[];
-//#endregion
 //#region assets/core/crud/SmartCrudPage.d.ts
 interface SmartCrudPageProps<T extends DataRecord = DataRecord> {
   resource: ResourceConfig<T>;
@@ -732,6 +791,18 @@ declare function SmartCrudRolesProvider({
 }>): import("react/jsx-runtime").JSX.Element;
 declare function useSmartCrudRoles(): string[];
 //#endregion
+//#region assets/core/crud/resolveSmartCrudFields.d.ts
+type FieldOverride = Partial<Field> & {
+  key: string;
+};
+interface ResolveSmartCrudFieldsOptions<T extends SmartCrudRecord> {
+  baselineFields?: readonly Field[];
+  contract?: SmartCrudFieldContract<T>;
+  legacyOverrides?: readonly FieldOverride[];
+}
+declare function mergeOverrides(inferred: Field[], overrides: readonly FieldOverride[]): Field[];
+declare function resolveSmartCrudFields<T extends SmartCrudRecord>(options: ResolveSmartCrudFieldsOptions<T>): Field[];
+//#endregion
 //#region assets/core/event/createScopedEventBus.d.ts
 /**
  * A `FormEventNames` object whose event strings are namespaced with a
@@ -755,6 +826,20 @@ type ScopedFormEventNames = FormEventNames & {
  * @returns A `ScopedFormEventNames` object with a stable `_scopeId` tag.
  */
 declare function createScopedEventBus(resourceId: string): ScopedFormEventNames;
+//#endregion
+//#region assets/core/crud/AuditTrailPanel.d.ts
+interface AuditTrailPanelProps {
+  url: string | null;
+  renderEntry?: (entry: AuditEntry) => ReactNode;
+  visible: boolean;
+  onClose: () => void;
+}
+declare function AuditTrailPanel({
+  url,
+  renderEntry,
+  visible,
+  onClose
+}: AuditTrailPanelProps): React$1.JSX.Element | null;
 //#endregion
 //#region assets/core/i18n/CoreTranslationKeys.d.ts
 interface CoreTranslationKeys {
@@ -800,6 +885,133 @@ declare function useCoreTranslation(): {
 //#endregion
 //#region assets/core/i18n/initCoreI18n.d.ts
 declare function initCoreI18n(): void;
+//#endregion
+//#region assets/core/crud/dialogStore.d.ts
+type DialogMode = 'add' | 'edit' | 'view';
+interface DialogState {
+  isOpen: boolean;
+  mode: DialogMode;
+  rowData: DataRecord | null;
+}
+interface DialogActions {
+  openDialog: (mode: DialogMode, rowData?: DataRecord | null) => void;
+  closeDialog: () => void;
+}
+type DialogSlice = DialogState & DialogActions;
+//#endregion
+//#region assets/core/crud/DialogStoreProvider.d.ts
+declare function DialogStoreProvider({
+  children
+}: {
+  children: ReactNode;
+}): React$1.JSX.Element;
+//#endregion
+//#region assets/core/crud/useCrudDialogStore.d.ts
+declare function useCrudDialogStore(resourceId: string): DialogSlice;
+import * as import__nubit_api_platform from "@nubit/api-platform";
+//#endregion
+//#region assets/core/crud/rules/useConditionalRules.d.ts
+interface FieldState {
+  name: string;
+  visible: boolean;
+  disabled: boolean;
+  computedValue?: unknown;
+}
+/**
+ * Given the current Field definitions and live form data,
+ * returns the reactive state (visible/disabled/computedValue) for each field.
+ *
+ * Pure computation — re-runs whenever formData changes.
+ *
+ * When `formData` is `null`, SmartCrud has not hydrated the form snapshot yet
+ * (typically while opening an edit dialog), so rules are skipped and defaults
+ * are returned. Empty objects `{}` are treated as valid create-form state.
+ */
+declare function useConditionalRules(fields: Field[], formData: FormDataRecord | null): FieldState[];
+//#endregion
+//#region assets/core/crud/rules/useFieldPermissions.d.ts
+/**
+ * Filters and marks fields based on user roles.
+ * IMPORTANT: This is UI-only. Backend is the real authorization source.
+ *
+ * - If field.permissions.visible is set and userRoles has no intersection → filter out the field
+ * - If field.permissions.editable is set and userRoles has no intersection → mark field as disabled
+ *
+  * Identity fields (isIdentity === true) are always kept regardless of permissions
+  * so grids and forms can resolve row keys consistently.
+ */
+declare function useFieldPermissions(fields: Field[], userRoles: string[]): Field[];
+//#endregion
+//#region assets/core/crud/rules/useDependsOn.d.ts
+/**
+ * For each field that declares `dependsOn`, invalidate its entity query
+ * (keyed by the field's `url`) whenever one of the watched form values changes.
+ *
+ * Only fires when a dependency value actually changes (compared per-value).
+ * Skips the initial mount run to prevent spurious refetches when a dialog opens
+ * with already-cached data (BUG-009).
+ *
+ * Also skips evaluation while `formData` is `null`, which SmartCrudPage uses
+ * for edit dialogs that have not hydrated their initial snapshot yet.
+ */
+declare function useDependsOn(fields: Field[], formData: FormDataRecord | null): void;
+//#endregion
+//#region assets/core/crud/routing/useRouting.d.ts
+interface RoutingState {
+  /** id of record to open on mount, or null */
+  initialRecordId: string | null;
+  /** true when URL signals a new-record dialog */
+  initialIsNew: boolean;
+  /** current filter values read from URL query params */
+  initialFilters: Record<string, string>;
+  /** call this when filters change to sync them to URL */
+  syncFilters: (filters: Record<string, string>) => void;
+}
+/**
+ * Reads URL params and exposes helpers for SmartCrudPage to:
+ * - Open the edit dialog for the record whose id is in the URL
+ * - Open the add dialog when the URL contains the sentinel value "new"
+ * - Sync grid filters to/from URL query params
+ *
+ * If `routing` is undefined, returns neutral defaults so the feature
+ * is completely opt-in (no side-effects when routing is not configured).
+ */
+declare function useRouting(routing: ResourceRouting | undefined): RoutingState;
+declare namespace index_d_exports {
+  export { AuditEntry, AuditTrailConfig, AuditTrailPanel, AuditTrailPanelProps, BulkAction, ColumnPreset, ColumnPresetState, CrudPage, DialogActions, DialogMode, DialogSlice, DialogState, DialogStoreProvider, FieldDef, FieldOverride, FieldState, FieldsFactory, FormLayout, FormSection, FormTab, ResolvedPermissions, ResourceConfig, ResourcePermissions, ResourceRouting, RoutingState, ScopedFormEventNames, SelectionState, SmartCrudFieldContract, SmartCrudFieldContractError, SmartCrudFieldOperation, SmartCrudFieldOperationBehavior, SmartCrudFieldOperationFlag, SmartCrudFieldOperationSemanticsError, SmartCrudFieldOperationState, SmartCrudFieldPatch, SmartCrudFieldResolutionStrategy, SmartCrudFieldSourceMode, SmartCrudHydraFieldContract, SmartCrudHydraFieldDirective, SmartCrudManualField, SmartCrudManualFieldContract, SmartCrudModelFieldKey, SmartCrudNormalizedFieldOperationSemantics, SmartCrudOperation, SmartCrudPage, SmartCrudRecord, SmartCrudResolvedFieldOperationSemantics, SmartCrudResolvedFieldOperationState, SmartCrudRolesProvider, applyFieldOperationSemantics, collectOperationSemanticsIssues, createScopedEventBus, defineFieldContract, defineFields, defineResource, initCoreI18n, mergeOverrides, normalizeFieldOperationSemantics, resolveFieldOperationSemantics, resolveSmartCrudFields, useColumnPreset, useConditionalRules, useCoreTranslation, useCrudDialogStore, useCrudPage, useDependsOn, useFieldPermissions, usePermissions, useRouting, useSelectionState, useSmartCrudRoles, validateFieldContract, validateHydraFieldResolutionInput, validateResolvedFieldNames };
+}
+//#endregion
+//#region assets/core/common/Constants.d.ts
+declare const Constants: {
+  readonly BASE_URL: "/";
+  readonly API_BASE_URL: "/api/";
+  readonly TEXT_ADD: "Nuevo";
+  readonly TEXT_EDIT: "Editar";
+  readonly TEXT_DELETE: "Eliminar";
+  readonly TEXT_EXPORT: "Exportar";
+  readonly TEXT_SAVE: "Guardar";
+  readonly TEXT_CANCEL: "Cerrar";
+  readonly TEXT_CONFIRM: "¿Está seguro que desea eliminar este registro?";
+  readonly TEXT_LOADING: "Procesando, por favor espere...";
+  readonly ICON_ADD: "fas fa-plus fa-1x text-primary";
+  readonly ICON_EDIT: "fas fa-pen fa-1x text-warning";
+  readonly ICON_DELETE: "fas fa-trash fa-1x text-danger";
+  readonly ICON_XLS: "fas fa-file-excel fa-1x text-success";
+  readonly ICON_PDF: "fas fa-file-pdf fa-1x text-danger";
+  readonly ICON_SEARCH: "fas fa-search fa-1x text-info";
+  readonly ICON_INVOICE: "fas fa-file-invoice fa-1x text-info";
+  readonly ICON_CLEAR: "fas fa-times fa-1x text-danger";
+  readonly MAX_ROW_COUNT: 2147483647;
+};
+//#endregion
+//#region assets/core/common/UserInformation.d.ts
+declare const userInformation: () => {
+  currentUserId: string | number | undefined;
+  currentUserName: string;
+  currentUserRoleId: number | undefined;
+  currentBranchId: string;
+  currentBranchName: string;
+};
 //#endregion
 //#region assets/core/field/BaseFieldBuilder.d.ts
 declare class BaseFieldBuilder {
@@ -1310,78 +1522,6 @@ declare const CoreConfigProvider: ({
 }: CoreConfigProviderProps) => import("react/jsx-runtime").JSX.Element;
 declare function useCoreConfig(): CoreConfig;
 //#endregion
-//#region assets/core/components/ConfirmDialog.d.ts
-interface ConfirmDialogProps {
-  open: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  variant?: 'danger' | 'warning' | 'info';
-}
-declare function ConfirmDialog({
-  open,
-  title,
-  message,
-  onConfirm,
-  onCancel,
-  confirmLabel,
-  cancelLabel,
-  variant
-}: ConfirmDialogProps): import("react/jsx-runtime").JSX.Element;
-//#endregion
-//#region assets/core/ui/app-dialog/AppDialog.d.ts
-interface AppDialogProps {
-  visible?: boolean;
-  open?: boolean;
-  title: string;
-  onClose: () => void;
-  children: React$1.ReactNode;
-  footer?: React$1.ReactNode;
-  width?: number | string;
-  maxWidth?: number | string;
-  height?: number | string;
-  fullScreen?: boolean;
-  showCloseButton?: boolean;
-  closeOnOutsideClick?: boolean;
-  closeOnEscape?: boolean;
-  restoreFocus?: boolean;
-  keepMounted?: boolean;
-  rootClassName?: string;
-  className?: string;
-  headerClassName?: string;
-  titleClassName?: string;
-  bodyClassName?: string;
-  footerClassName?: string;
-  role?: string;
-}
-declare const AppDialog: ({
-  visible,
-  open,
-  title,
-  onClose,
-  children,
-  footer,
-  width,
-  maxWidth,
-  height,
-  fullScreen,
-  showCloseButton,
-  closeOnOutsideClick,
-  closeOnEscape,
-  restoreFocus,
-  keepMounted,
-  rootClassName,
-  className,
-  headerClassName,
-  titleClassName,
-  bodyClassName,
-  footerClassName,
-  role
-}: AppDialogProps) => React$1.ReactPortal | null;
-//#endregion
 //#region assets/core/datagrid/DataGridEvents.d.ts
 declare const DATA_GRID_EVENTS: {
   SELECTION_CHANGED: string;
@@ -1885,4 +2025,4 @@ declare class MercureManager {
 /** Singleton instance — shared across the entire application. */
 declare const mercureManager: MercureManager;
 //#endregion
-export { ApiPlatformRemoteDataSource, AppDialog, type AppDialogProps, type AuditEntry, type AuditTrailConfig, type BulkAction, type ColumnPreset, ConfirmDialog, type ConfirmDialogProps, type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, DateUtils, CrudDialogView as DialogView, type EnumOption, type EventSubscription, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, type ItemFormatterFn, LIMA_TZ, type LoadOption, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, type OnChangeFn, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, type ResolvedPermissions, type ResourceConfig, type ResourcePermissions, type ResourceRouting, type SelectionState, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldOperationBehavior, type SmartCrudFieldOperationFlag, type SmartCrudFieldOperationState, type SmartCrudFieldPatch, type SmartCrudFieldResolutionStrategy, type SmartCrudFieldSourceMode, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudModelFieldKey, type SmartCrudOperation, SmartCrudPage, type SmartCrudRecord, SmartCrudRolesProvider, type ValidationRule, branchEvents, categoryEvents, checkboxField, companyEvents, configureCoreDate, createCoreHttpClient, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, dispatch, entityField, enumField, getCoreLocale, getCoreTimezone, identityField, imageField, inboundEvents, initCoreI18n, noneField, numberField, operationEvents, passwordField, paymentMethodEvents, permissionEvents, priceEvents, priceListEvents, resolveSmartCrudFields, roleEvents, selectField, sunatCatalogEvents, supplierEvents, switchField, textField, textareaField, unitOfMeasureEvents, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useCrudPage, useEvents, useMercureHub, useMercureSubscription, usePermissions, useSelectionState, useSmartCrudRoles, userEvents, voucherSeriesEvents, voucherTypeEvents, warehouseEvents };
+export { ApiPlatformRemoteDataSource, AppDialog, type AppDialogProps, type AuditEntry, type AuditTrailConfig, type BulkAction, type ColumnPreset, ConfirmDialog, type ConfirmDialogProps, Constants, type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, DateUtils, CrudDialogView as DialogView, type EnumOption, type EventSubscription, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, type ItemFormatterFn, LIMA_TZ, type LoadOption, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, type OnChangeFn, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, type ResolvedPermissions, type ResourceConfig, type ResourcePermissions, type ResourceRouting, type SelectionState, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldOperationBehavior, type SmartCrudFieldOperationFlag, type SmartCrudFieldOperationState, type SmartCrudFieldPatch, type SmartCrudFieldResolutionStrategy, type SmartCrudFieldSourceMode, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudModelFieldKey, type SmartCrudOperation, SmartCrudPage, type SmartCrudRecord, SmartCrudRolesProvider, type ValidationRule, branchEvents, categoryEvents, checkboxField, companyEvents, configureCoreDate, createCoreHttpClient, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, dispatch, entityField, enumField, getCoreLocale, getCoreTimezone, identityField, imageField, inboundEvents, initCoreI18n, mergeOverrides, noneField, numberField, operationEvents, passwordField, paymentMethodEvents, permissionEvents, priceEvents, priceListEvents, resolveSmartCrudFields, roleEvents, selectField, sunatCatalogEvents, supplierEvents, switchField, textField, textareaField, unitOfMeasureEvents, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useCrudPage, useEvents, useMercureHub, useMercureSubscription, usePermissions, useSelectionState, useSmartCrudRoles, userEvents, userInformation, voucherSeriesEvents, voucherTypeEvents, warehouseEvents };

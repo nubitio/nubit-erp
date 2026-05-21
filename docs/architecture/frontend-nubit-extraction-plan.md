@@ -12,11 +12,12 @@ The frontend already contains the beginning of the package boundary:
 
 - `assets/core/package.json` declares `@nubit/core`.
 - `assets/core/public.ts` is the intended public facade.
-- `tsconfig.json` and `vite.config.js` map `@nubit/core` to `assets/core/public.ts`.
+- `assets/ui`, `assets/admin`, `assets/api-platform`, and `assets/react-admin` declare the first focused `@nubit/*` package facades.
+- `tsconfig.json` and `vite.config.js` map the active `@nubit/*` facades to their `public.ts` entrypoints.
 - `docs/adr/ADR-015-frontend-architecture-sanitization.md` defines the current frontend layers: `@app`, `@features`, `@shared`, `@core`, and `@offline`.
 - `assets/core/README.md` already tells consumers to prefer the public facade over implementation imports.
 
-The boundary is still internal and incomplete. Many features still import implementation modules through `@core/*`, and the current shell/UI code is split between `assets/app`, `assets/shared`, `assets/layouts`, `assets/theme`, and `assets/core`.
+The boundary is still internal and incomplete. Some app/offline code still imports implementation modules through `@core/*`, and reusable shell/theme/shared components are still being sorted into focused packages.
 
 ## Package Model
 
@@ -24,7 +25,7 @@ Use separate packages rather than one oversized `core` package. This keeps the b
 
 | Package | Responsibility | Depends On | Initial Source Areas |
 | --- | --- | --- | --- |
-| `@nubit/ui` | Visual primitives, theme tokens, base styles, dialogs, buttons, cards, alerts, toasts, badges, popovers, toolbars, loading/error/empty states. | React, React DOM | `assets/core/ui`, `assets/core/components`, reusable parts of `assets/shared/ui`, `assets/shared/components`, `assets/theme` |
+| `@nubit/ui` | Visual primitives, theme tokens, base styles, dialogs, buttons, cards, alerts, toasts, badges, popovers, toolbars, loading/error/empty states. | React, React DOM | `assets/ui`, reusable parts of `assets/shared/ui`, `assets/shared/components`, `assets/theme` |
 | `@nubit/core` | Runtime services and app-agnostic infrastructure: HTTP client, runtime provider, event bus, i18n registration, date/locale helpers, base data contracts. | `@nubit/ui` only where needed | `assets/core/http`, `assets/core/runtime`, `assets/core/event`, `assets/core/i18n`, `assets/core/data`, configurable parts of `assets/core/date` |
 | `@nubit/forms` | Field DSL, form engine, validation, computed values, submit handling, form layouts. Can remain inside `@nubit/crud` until it needs independent consumption. | `@nubit/ui`, `@nubit/core` | `assets/core/field`, `assets/core/form` |
 | `@nubit/crud` | SmartCrud, CrudPage, data grid, resource config, permissions, presets, audit panel, routing hooks. | `@nubit/ui`, `@nubit/core`, `@nubit/forms`, React Query, React Router | `assets/core/crud`, `assets/core/datagrid`, `assets/core/dialog` |
@@ -66,8 +67,7 @@ Start here because it lowers coupling for every other package.
 
 Candidates:
 
-- `AppDialog` from `assets/core/ui/app-dialog`.
-- `ConfirmDialog` from `assets/core/components`.
+- `AppDialog` and `ConfirmDialog` now live in `assets/ui` and are exported by `@nubit/ui`.
 - `Card` from `assets/shared/components/Card` or `assets/shared/ui` after removing `@app/types` coupling.
 - `AppToolbar` from `assets/shared/ui/toolbar` after making labels/actions configurable.
 - Base button/icon-button/badge styles from the current SCSS system.
