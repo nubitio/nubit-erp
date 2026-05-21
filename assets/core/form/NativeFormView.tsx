@@ -10,14 +10,14 @@ import React, {
   useState,
 } from 'react';
 
-import { useEvents } from '@core/event/EventHook';
-import { Field } from '@core/field/Field';
-import { FieldType } from '@core/field/FieldType';
-import { ApiPlatformRemoteDataSource } from '@core/data/ApiPlatformRemoteDataSource';
-import type { DataRecord } from '@core/data/DataRecord';
-import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
-import { useCoreRuntime } from '@core/runtime';
-import { useCoreHttpClient, type CoreHttpClient } from '@core/http';
+import { useEvents } from '../event/EventHook';
+import { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
+import { ApiPlatformRemoteDataSource } from '../data/ApiPlatformRemoteDataSource';
+import type { DataRecord } from '../data/DataRecord';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
+import { useCoreRuntime } from '../runtime';
+import { useCoreHttpClient, type CoreHttpClient } from '../http';
 import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
 import { buildEmptyRow, normalizeFormData } from './FormDataTransform';
 import { buildFormLayoutModel, type FormLayoutGroup, type FormLayoutModel } from './FormLayoutModel';

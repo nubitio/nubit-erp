@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useCoreHttpClient } from '@core/http';
+import { useCoreHttpClient } from '../http';
 import type { AuditEntry } from './AuditTrail';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 

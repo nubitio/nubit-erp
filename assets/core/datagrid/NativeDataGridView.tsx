@@ -9,19 +9,19 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiPlatformRemoteDataSource, type RemoteLoadOptions } from '@core/data/ApiPlatformRemoteDataSource';
-import type { DataRecord } from '@core/data/DataRecord';
-import type { Field } from '@core/field/Field';
-import { FieldType } from '@core/field/FieldType';
-import { useEvents } from '@core/event/EventHook';
+import { ApiPlatformRemoteDataSource, type RemoteLoadOptions } from '../data/ApiPlatformRemoteDataSource';
+import type { DataRecord } from '../data/DataRecord';
+import type { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
+import { useEvents } from '../event/EventHook';
 import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
-import type { FilterRule } from '@core/field/FilterRule';
-import type { ToolbarButtonItem } from '@core/event/EventTypes';
-import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
-import { useCoreRuntime } from '@core/runtime';
-import { useCoreHttpClient } from '@core/http';
+import type { FilterRule } from '../field/FilterRule';
+import type { ToolbarButtonItem } from '../event/EventTypes';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
+import { useCoreRuntime } from '../runtime';
+import { useCoreHttpClient } from '../http';
 
 type SortRule = { selector: string; desc: boolean };
 

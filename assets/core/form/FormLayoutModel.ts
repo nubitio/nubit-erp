@@ -1,5 +1,5 @@
 import type { FormLayout } from './FormLayout';
-import type { Field } from '@core/field/Field';
+import type { Field } from '../field/Field';
 
 export interface FormLayoutGroup {
   label: string;

@@ -9,7 +9,7 @@ import type { FieldOverride } from './hydra/useResourceSchema';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
 import { dispatch } from '../event/EventHook';
-import { useMercureSubscription } from '@core/mercure';
+import { useMercureSubscription } from '../mercure';
 import { resolveCrudResource } from './resolveCrudResource';
 import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';

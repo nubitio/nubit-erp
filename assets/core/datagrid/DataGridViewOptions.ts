@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import type { DataGridEventNames, ToolbarButtonItem } from '@core/event/EventTypes';
-import type { DataRecord } from '@core/data/DataRecord';
-import type { Field } from '@core/field/Field';
-import type { FilterRule } from '@core/field/FilterRule';
+import type { DataGridEventNames, ToolbarButtonItem } from '../event/EventTypes';
+import type { DataRecord } from '../data/DataRecord';
+import type { Field } from '../field/Field';
+import type { FilterRule } from '../field/FilterRule';
 import type { GridHandle } from './GridHandle';
 
 export interface DataGridSelectionChangedEvent {
