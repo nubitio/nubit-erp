@@ -28,6 +28,7 @@ class Voucher
         public ?string $voucher_series = null,
         public ?string $voucher_number = null,
         public ?int $voucher_payment_method = null,
+        public ?string $voucher_payment_method_name = null,
         public ?string $voucher_date = null,
         public ?string $voucher_currency = null,
         public ?string $voucher_exchange_rate = null,

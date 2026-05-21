@@ -387,6 +387,7 @@ SQL,
             voucherSeries: $voucherSeries,
             voucherNumber: $voucherNumber,
             voucherPaymentMethod: $taxDocument?->getPaymentMethod() ?? $sale->getFormaPago(),
+            voucherPaymentMethodName: $sale->getPaymentMethod()?->getName(),
             voucherDate: (static function (?\DateTimeInterface $dt): ?string {
                 if ($dt === null) {
                     return null;
