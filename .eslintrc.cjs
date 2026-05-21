@@ -114,6 +114,15 @@ const efactCoreDeprecationPaths = [
 const nubitFacadePatterns = [
   {
     group: [
+      '@core',
+      '@core/*',
+      '@core/**',
+    ],
+    message:
+      'Use `@nubit/core` for public core APIs. Inside assets/core, use relative imports instead of the app-level @core alias.',
+  },
+  {
+    group: [
       '@core/ui/app-dialog',
       '@core/ui/app-dialog/*',
       '@core/components/ConfirmDialog',
