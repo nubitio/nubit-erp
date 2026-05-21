@@ -161,13 +161,9 @@ class PrintESCPOSController extends AbstractController
         $printer->text($this->lr('Fecha:', $date->format('d/m/Y'), $width));
         $printer->text($this->lr('Moneda:', $voucher->voucher_currency ?: 'PEN', $width));
 
-        if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
-            $paymentCondition = ((int)$voucher->voucher_payment_method === 2) ? 'CREDITO' : 'CONTADO';
-            $printer->text($this->lr('Pago:', $paymentCondition, $width));
-        }
-        if (!empty($voucher->voucher_payment_method_name)) {
-            $printer->text($this->lr('Método:', $voucher->voucher_payment_method_name, $width));
-        }
+        $paymentLabel = $voucher->voucher_payment_method_name
+            ?? (((int)$voucher->voucher_payment_method === 2) ? 'CREDITO' : 'CONTADO');
+        $printer->text($this->lr('Pago:', $paymentLabel, $width));
 
         $printer->text($hrDashed);
 
