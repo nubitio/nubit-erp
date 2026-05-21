@@ -4,13 +4,13 @@
 // Requires: <CoreConfigProvider locale="es" timezone="America/Lima"> from @nubit/core
 // in the app provider tree so that useHydraMetadata picks up the correct locale.
 
-export { ApiPlatformRemoteDataSource } from '@nubit/core';
+export { ApiPlatformRemoteDataSource } from './ApiPlatformRemoteDataSource';
 export type {
   RemoteDataSourceOptions,
   RemoteFilterDescriptor,
   RemoteLoadOptions,
   RemoteSortDescriptor,
-} from '@nubit/core';
+} from './ApiPlatformRemoteDataSource';
 
 export {
   parseHydraDoc,

@@ -1,5 +1,5 @@
 import { defineFields, defineResource, passwordField, type DataRecord } from '@nubit/core';
-import { userEvents } from '@nubit/core';
+import { userEvents } from '@app/domainEvents';
 import { userEndpoints } from '../api/adminEndpoints';
 
 interface UserRecord extends DataRecord {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@nubit/core';
+import { API_BASE_URL } from '@app/constants';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { getCachedProducts, getLastProductsSyncAt, persistProducts } from '@offline/catalog';
 import type { Category, PosItem } from '@features/pos/pages/types';
@@ -38,7 +38,7 @@ export const useOfflineCatalog = () => {
       setLoadError(null);
       let cancelled = false;
       const controller = new AbortController();
-      httpClient.get<any>(`${Constants.API_BASE_URL}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
+      httpClient.get<any>(`${API_BASE_URL}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
           if (cancelled) return;
           const rawProducts = extractCollection<any>(response.data);
           const normalizedProducts = rawProducts.map(normalizeProduct);

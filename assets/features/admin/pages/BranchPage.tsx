@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@nubit/core';
-import { branchEvents } from '@nubit/core';
+import { branchEvents } from '@app/domainEvents';
 import { branchEndpoints } from '../api/adminEndpoints';
 
 const resource = defineResource({

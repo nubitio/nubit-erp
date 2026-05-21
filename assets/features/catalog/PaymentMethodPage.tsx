@@ -1,5 +1,5 @@
 import { SmartCrudPage, defineResource } from '@nubit/core';
-import { paymentMethodEvents } from '@nubit/core';
+import { paymentMethodEvents } from '@app/domainEvents';
 import { paymentMethodEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource({
