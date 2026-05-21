@@ -4,6 +4,7 @@ import {
   ConfigKey,
   configService,
   type ConfigDto,
+  type SunatStateDto,
   isTechnical,
   tenantSettingsService,
 } from '@features/config';
@@ -265,6 +266,168 @@ const SettingGroup = ({ title, configs, onSave }: SettingGroupProps) => {
   );
 };
 
+// ── SUNAT section ─────────────────────────────────────────────────────────────
+
+const SunatSection = () => {
+  const [state, setState] = useState<SunatStateDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
+  const [editingThreshold, setEditingThreshold] = useState(false);
+  const [thresholdDraft, setThresholdDraft] = useState('');
+  const [savingThreshold, setSavingThreshold] = useState(false);
+  const thresholdRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    tenantSettingsService.getSunatState()
+      .then(setState)
+      .catch(() => toast('Error al cargar el estado SUNAT', 'error'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleToggle = async () => {
+    if (!state) return;
+    setToggling(true);
+    try {
+      const updated = await tenantSettingsService.patchSunatState({ sendEnabled: !state.sendEnabled });
+      setState(updated);
+      toast(updated.sendEnabled ? 'Envío a SUNAT activado' : 'Envío a SUNAT pausado', 'success');
+    } catch {
+      toast('Error al cambiar el estado SUNAT', 'error');
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const handleEditThreshold = () => {
+    if (!state) return;
+    setThresholdDraft(String(state.rejectionThreshold));
+    setEditingThreshold(true);
+    setTimeout(() => thresholdRef.current?.focus(), 50);
+  };
+
+  const handleSaveThreshold = async () => {
+    const value = parseInt(thresholdDraft, 10);
+    if (!Number.isFinite(value) || value < 1) {
+      toast('El umbral debe ser un número mayor a 0', 'error');
+      return;
+    }
+    setSavingThreshold(true);
+    try {
+      const updated = await tenantSettingsService.patchSunatState({ rejectionThreshold: value });
+      setState(updated);
+      setEditingThreshold(false);
+      toast('Umbral actualizado', 'success');
+    } catch {
+      toast('Error al guardar el umbral', 'error');
+    } finally {
+      setSavingThreshold(false);
+    }
+  };
+
+  if (loading) return null;
+  if (!state) return null;
+
+  const streakColor = state.rejectionStreak === 0
+    ? 'var(--color-text-muted)'
+    : state.rejectionStreak >= state.rejectionThreshold
+      ? 'var(--color-danger, #e53e3e)'
+      : 'var(--color-warning, #d97706)';
+
+  return (
+    <section className="config-group">
+      <h3 className="config-group-title">SUNAT</h3>
+
+      {/* Send toggle */}
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Envío automático a SUNAT</span>
+          <span className="config-toggle-description">
+            {state.sendEnabled
+              ? 'Los comprobantes se envían automáticamente a SUNAT.'
+              : 'El envío está pausado. Actívalo cuando el problema esté resuelto.'}
+          </span>
+        </div>
+        <button
+          type="button"
+          className={`config-toggle-switch${state.sendEnabled ? ' config-toggle-switch--on' : ''}`}
+          onClick={() => void handleToggle()}
+          disabled={toggling}
+          aria-label="Activar/pausar envío a SUNAT"
+        >
+          <span className="config-toggle-thumb" />
+        </button>
+      </div>
+
+      {/* Rejection streak (read-only) */}
+      <div className="config-setting-row">
+        <div className="config-setting-info">
+          <span className="config-setting-label">Rechazos consecutivos</span>
+          <span className="config-setting-description">
+            El envío se pausa automáticamente al alcanzar el umbral.
+          </span>
+        </div>
+        <div className="config-setting-value">
+          <span className="config-setting-current" style={{ color: streakColor, fontWeight: 600 }}>
+            {state.rejectionStreak} / {state.rejectionThreshold}
+          </span>
+        </div>
+      </div>
+
+      {/* Rejection threshold (editable) */}
+      <div className="config-setting-row">
+        <div className="config-setting-info">
+          <span className="config-setting-label">Umbral de pausa automática</span>
+          <span className="config-setting-description">
+            Número de rechazos consecutivos antes de pausar el envío.
+          </span>
+        </div>
+        <div className="config-setting-value">
+          {editingThreshold ? (
+            <div className="config-setting-edit">
+              <input
+                ref={thresholdRef}
+                type="number"
+                min={1}
+                value={thresholdDraft}
+                onChange={(e) => setThresholdDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleSaveThreshold();
+                  if (e.key === 'Escape') setEditingThreshold(false);
+                }}
+                className="config-setting-input"
+                style={{ width: 80 }}
+              />
+              <button
+                type="button"
+                className="config-btn config-btn--primary"
+                onClick={() => void handleSaveThreshold()}
+                disabled={savingThreshold}
+              >
+                {savingThreshold ? '...' : 'Guardar'}
+              </button>
+              <button
+                type="button"
+                className="config-btn config-btn--ghost"
+                onClick={() => setEditingThreshold(false)}
+                disabled={savingThreshold}
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="config-setting-display">
+              <span className="config-setting-current">{state.rejectionThreshold}</span>
+              <button type="button" className="config-btn config-btn--ghost" onClick={handleEditThreshold}>
+                Editar
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export const ConfigPage = () => {
@@ -345,6 +508,7 @@ export const ConfigPage = () => {
               {visible.length === 0 && (
                 <p className="config-empty">No hay configuraciones disponibles.</p>
               )}
+              <SunatSection />
             </>
           )}
         </div>
