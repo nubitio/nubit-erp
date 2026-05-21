@@ -166,13 +166,12 @@ export class SharedUtils {
       return value.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
     }
     const dateStr = value.trim();
+    // ISO datetime with time component — convert UTC→Lima before extracting the date
     if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
-      const ymd = dateStr.slice(0, 10);
-      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-      if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+      return new Date(dateStr).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
     }
 
-    // YYYY-MM-DD (date-only)
+    // YYYY-MM-DD (date-only, no timezone info — treat as local Lima date as-is)
     let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
     if (m) return `${m[3]}/${m[2]}/${m[1]}`;
 
