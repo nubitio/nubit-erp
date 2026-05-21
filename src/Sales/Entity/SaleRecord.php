@@ -181,7 +181,7 @@ class SaleRecord
     #[ApiProperty(description: 'sale_record.issued_at.label')]
     private ?DateTimeInterface $issuedAt = null;
 
-    #[Groups(['sale_record:read'])]
+    #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'issued_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     #[ApiProperty(description: 'sale_record.issued_date.label')]
     private ?\DateTimeImmutable $issuedDate = null;

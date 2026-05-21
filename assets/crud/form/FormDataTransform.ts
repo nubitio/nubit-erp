@@ -1,6 +1,5 @@
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { DateUtils } from '@nubit/core';
 import type { FormDataRecord } from './FormDataSnapshot';
 
 function trimTrailingSlash(value: string): string {
@@ -72,7 +71,7 @@ export function buildEmptyRow(fields: Field[]): FormDataRecord {
  *
  * - FILE fields are stripped (uploaded separately)
  * - PASSWORD fields are blanked
- * - DATE fields are parsed into JS Date objects
+ * - DATE fields remain YYYY-MM-DD strings
  * - ENTITY fields are normalized to their scalar key for select-style editors
  */
 export function normalizeFormData(data: FormDataRecord, fields: Field[]): FormDataRecord {
@@ -86,11 +85,10 @@ export function normalizeFormData(data: FormDataRecord, fields: Field[]): FormDa
     }
     if (field.type === FieldType.DATE) {
       const rawValue = row[field.name];
-      const type = typeof rawValue;
-      if (type === 'string') {
-        row[field.name] = DateUtils.dateParser(rawValue as string);
-      } else if (type === 'object') {
-        row[field.name] = new Date(rawValue as string | number | Date);
+      if (typeof rawValue === 'string') {
+        row[field.name] = rawValue.slice(0, 10);
+      } else if (rawValue instanceof Date) {
+        row[field.name] = rawValue.toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
       } else {
         row[field.name] = null;
       }

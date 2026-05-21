@@ -48,22 +48,26 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             ];
         }
 
-        $saleDate = $sale->getFecha();
-        if (!$saleDate) {
+        $issueDate = $sale->getIssuedDate();
+        if (!$issueDate) {
+            $saleDate = $sale->getFecha();
+            if ($saleDate) {
+                $saleDateUtc = \DateTimeImmutable::createFromInterface($saleDate)->setTimezone(new DateTimeZone('UTC'));
+                $issueDate = $saleDateUtc->format('H:i:s') === '00:00:00'
+                    ? $saleDateUtc
+                    : $saleDateUtc->setTimezone(new DateTimeZone('America/Lima'));
+            }
+        }
+
+        if (!$issueDate) {
             return [
                 'success' => false,
                 'message' => ErrorMessages::SALE_HAS_NO_VALID_DATE,
             ];
         }
 
-        $saleDateUtc = \DateTimeImmutable::createFromInterface($saleDate)->setTimezone(new DateTimeZone('UTC'));
-        $nowUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-        // Lima business date: when issued_at is midnight UTC (date-only string from client),
-        // the UTC date is already the correct Lima date. Otherwise convert from UTC.
-        $issueDateLima = $saleDateUtc->format('H:i:s') === '00:00:00'
-            ? $saleDateUtc
-            : $saleDateUtc->setTimezone(new DateTimeZone('America/Lima'));
-        if ($saleDateUtc < $nowUtc->modify('-3 days')) {
+        $todayLima = new DateTimeImmutable('today', new DateTimeZone('America/Lima'));
+        if ($issueDate->format('Y-m-d') < $todayLima->modify('-3 days')->format('Y-m-d')) {
             return [
                 'success' => false,
                 'message' => ErrorMessages::SALE_DATE_EXCEEDS_LIMIT,
@@ -179,7 +183,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 'tax_document_id' => $taxDocumentId,
                 'movimiento_id' => $saleId,
                 'sale_id' => $resolvedV2SaleId,
-                'issue_date' => $issueDateLima->format('Y-m-d'),
+                'issue_date' => $issueDate->format('Y-m-d'),
                 'document_type' => $voucherType,
                 'series' => $series,
                 'number' => strval($nextNumber),
