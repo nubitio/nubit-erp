@@ -58,6 +58,11 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
         $saleDateUtc = \DateTimeImmutable::createFromInterface($saleDate)->setTimezone(new DateTimeZone('UTC'));
         $nowUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        // Lima business date: when issued_at is midnight UTC (date-only string from client),
+        // the UTC date is already the correct Lima date. Otherwise convert from UTC.
+        $issueDateLima = $saleDateUtc->format('H:i:s') === '00:00:00'
+            ? $saleDateUtc
+            : $saleDateUtc->setTimezone(new DateTimeZone('America/Lima'));
         if ($saleDateUtc < $nowUtc->modify('-3 days')) {
             return [
                 'success' => false,
@@ -174,7 +179,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 'tax_document_id' => $taxDocumentId,
                 'movimiento_id' => $saleId,
                 'sale_id' => $resolvedV2SaleId,
-                'issue_date' => $saleDateUtc->format('Y-m-d H:i:s'),
+                'issue_date' => $issueDateLima->format('Y-m-d'),
                 'document_type' => $voucherType,
                 'series' => $series,
                 'number' => strval($nextNumber),

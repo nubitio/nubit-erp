@@ -182,6 +182,11 @@ class SaleRecord
     private ?DateTimeInterface $issuedAt = null;
 
     #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'issued_date', type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[ApiProperty(description: 'sale_record.issued_date.label')]
+    private ?\DateTimeImmutable $issuedDate = null;
+
+    #[Groups(['sale_record:read'])]
     #[ORM\Column(
         name: 'created_at',
         type: Types::DATETIME_MUTABLE,
@@ -627,6 +632,18 @@ class SaleRecord
     public function setIssuedAt(?DateTimeInterface $issuedAt): static
     {
         $this->issuedAt = $issuedAt;
+
+        return $this;
+    }
+
+    public function getIssuedDate(): ?\DateTimeImmutable
+    {
+        return $this->issuedDate;
+    }
+
+    public function setIssuedDate(?\DateTimeImmutable $issuedDate): static
+    {
+        $this->issuedDate = $issuedDate;
 
         return $this;
     }

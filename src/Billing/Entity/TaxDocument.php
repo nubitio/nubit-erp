@@ -125,10 +125,10 @@ class TaxDocument
     #[ApiProperty(description: 'tax_document.document_type.label')]
     private string $documentType;
 
-    #[ORM\Column(name: 'issue_date', type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(name: 'issue_date', type: Types::DATE_IMMUTABLE)]
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ApiProperty(description: 'tax_document.issue_date.label')]
-    private DateTimeInterface $issueDate;
+    private \DateTimeImmutable $issueDate;
 
     #[ORM\Column(name: 'series', type: Types::STRING, length: 10)]
     #[Groups(['invoice:read', 'creditnote:read'])]
@@ -358,12 +358,12 @@ class TaxDocument
         return $this;
     }
 
-    public function getIssueDate(): DateTimeInterface
+    public function getIssueDate(): \DateTimeImmutable
     {
         return $this->issueDate;
     }
 
-    public function setIssueDate(DateTimeInterface $issueDate): self
+    public function setIssueDate(\DateTimeImmutable $issueDate): self
     {
         $this->issueDate = $issueDate;
 

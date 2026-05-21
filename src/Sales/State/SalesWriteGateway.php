@@ -97,6 +97,16 @@ readonly class SalesWriteGateway
         $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtMutable = \DateTime::createFromImmutable($issuedAt);
+        $limaZone = new \DateTimeZone('America/Lima');
+        // Clients send issued_at as a Lima date-only string (YYYY-MM-DD → midnight UTC).
+        // When time is midnight UTC and the sale has an explicit date, the UTC date is
+        // already the correct Lima business date — no tz conversion needed.
+        // For real timestamps (legacy Android, clock fallback) convert to Lima.
+        if ($sale->getFecha() !== null && $issuedAt->format('H:i:s') === '00:00:00') {
+            $issuedDate = new \DateTimeImmutable($issuedAt->format('Y-m-d'), $limaZone);
+        } else {
+            $issuedDate = $issuedAt->setTimezone($limaZone)->setTime(0, 0, 0);
+        }
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
         $saleOffline = $this->buildOfflineMeta('sale:' . $saleId, $issuedAt, 1);
         $createdAt = $sale->getDateCreated() ?? new \DateTimeImmutable();
@@ -117,6 +127,7 @@ readonly class SalesWriteGateway
             $sale->setVersionNo($sale->getVersionNo() + 1);
         }
         $sale->setLastModifiedAt($issuedAtMutable);
+        $sale->setIssuedDate($issuedDate);
 
         // Propagate computed totals so ORM flush writes them
         $sale->setPaidTotal(Money::toString($paidTotal));
@@ -321,9 +332,9 @@ SELECT
     COALESCE(SUM(grand_total - tax_total), 0) AS net_sales,
     0                                         AS refunds_total
 FROM sales
-WHERE DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')) = :saleDate
-  AND branch_id                                             = :branchId
-  AND status                                               != 'VOIDED'
+WHERE issued_date = :saleDate
+  AND branch_id  = :branchId
+  AND status    != 'VOIDED'
 ON DUPLICATE KEY UPDATE
     sales_count    = VALUES(sales_count),
     gross_sales    = VALUES(gross_sales),

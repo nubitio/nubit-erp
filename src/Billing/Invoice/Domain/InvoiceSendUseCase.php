@@ -89,6 +89,9 @@ readonly class InvoiceSendUseCase
                             );
                             $taxDocument->setCdrPath(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip');
                             $recoveredByConsult = true;
+                        } elseif ($consultResponse->isSuccess() && $consultResponse->getCdrResponse() !== null) {
+                            $sunatStatus = $consultResponse->getCdrResponse()->getCode();
+                            $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
                         } else {
                             $sunatStatus = 'pendiente';
                             $sunatMessage = $errorMessage;

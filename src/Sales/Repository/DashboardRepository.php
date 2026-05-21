@@ -313,8 +313,8 @@ readonly class DashboardRepository
                     AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
                     AND s.branch_id = :branchId
                 LEFT JOIN tipo_comprobante vt ON i.document_type = vt.codigo
-            WHERE i.issue_date >= :monthStartUtc
-              AND i.issue_date < :monthEndUtc
+            WHERE i.issue_date >= :monthStartDate
+              AND i.issue_date < :monthEndDate
               AND i.document_type IN ('01', '03')
             GROUP BY vt.codigo, vt.descripcion
             ORDER BY total DESC
@@ -634,9 +634,12 @@ readonly class DashboardRepository
                 'last30days' => $today->modify('-30 days')->format('Y-m-d'),
                 'last7days' => $lastWeekStart->format('Y-m-d'),
                 'monthsBackDate' => $today->modify('-11 months')->format('Y-m-d'),
-                // UTC equivalents for sargable range filters on issued_at/issue_date
+                // UTC equivalents for sargable range filters on issued_at (DATETIME)
                 'monthStartUtc' => $monthStart->setTimezone($utc)->format('Y-m-d H:i:s'),
                 'monthEndUtc' => $monthEnd->setTimezone($utc)->format('Y-m-d H:i:s'),
+                // Lima DATE equivalents for issue_date (DATE column, no tz conversion needed)
+                'monthStartDate' => $monthStart->format('Y-m-d'),
+                'monthEndDate' => $monthEnd->format('Y-m-d'),
                 'last30daysUtc' => $today->modify('-30 days')->setTimezone($utc)->format('Y-m-d H:i:s'),
                 'weekStartUtc' => $lastWeekStart->setTimezone($utc)->format('Y-m-d H:i:s'),
                 'todayStartUtc' => $todayStart->setTimezone($utc)->format('Y-m-d H:i:s'),

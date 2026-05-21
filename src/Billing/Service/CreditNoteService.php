@@ -123,8 +123,10 @@ readonly class CreditNoteService
                 $sunatStatus = $consultResponse->getCdrResponse()->getCode();
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
             } else {
-                $sunatStatus = $consultResponse->getError()?->getCode();
-                $sunatMessage = $consultResponse->getError()?->getMessage();
+                $sunatStatus = $consultResponse->getCdrResponse()?->getCode()
+                    ?? $consultResponse->getError()?->getCode();
+                $sunatMessage = $consultResponse->getCdrResponse()?->getDescription()
+                    ?? $consultResponse->getError()?->getMessage();
             }
 
             $cdrZip = $consultResponse->getCdrZip();

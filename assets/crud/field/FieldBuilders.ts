@@ -126,7 +126,9 @@ export function imageField(apiBaseUrl: string): ImageFieldBuilder {
 class DateFieldBuilder extends BaseFieldBuilder {
   constructor() {
     super(FieldType.DATE);
-    this._field.defaultValue = new Date();
+    this._field.defaultValue = new Date(
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date()),
+    );
   }
 }
 

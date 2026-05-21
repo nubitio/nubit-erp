@@ -52,7 +52,7 @@ INNER JOIN sales s ON (
 )
 WHERE td.document_type IN ('01', '03')
   AND s.status = 'VOIDED'
-  AND DATE(CONVERT_TZ(td.issue_date, 'UTC', 'America/Lima')) = :date_value
+  AND td.issue_date = :date_value
 SQL,
             [
                 'date_value' => $date,

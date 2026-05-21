@@ -58,7 +58,7 @@ class SendDailySummaryCommand extends PerTenantCommand
             $salesCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*)
                  FROM sales s
-                 WHERE DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) = ?",
+                 WHERE s.issued_date = ?",
                 [$today]
             );
 
@@ -71,20 +71,20 @@ class SendDailySummaryCommand extends PerTenantCommand
             $invoicesSentCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?",
+                   AND issue_date = ?",
                 [$today]
             );
             $invoicesAcceptedCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
+                   AND issue_date = ?
                    AND sunat_status = '0'",
                 [$today]
             );
             $invoicesRejectedCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
+                   AND issue_date = ?
                    AND sunat_status REGEXP '^[0-9]+$'
                    AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999",
                 [$today]
@@ -92,14 +92,14 @@ class SendDailySummaryCommand extends PerTenantCommand
             $invoicesPendingCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
+                   AND issue_date = ?
                    AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')",
                 [$today]
             );
             $invoicesTechnicalErrorCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
+                   AND issue_date = ?
                    AND sunat_status IS NOT NULL
                    AND sunat_status <> ''
                    AND sunat_status <> 'pendiente'
@@ -119,7 +119,7 @@ class SendDailySummaryCommand extends PerTenantCommand
                  )
                  WHERE t.document_type IN ('01', '03')
                    AND s.status = 'VOIDED'
-                   AND DATE(CONVERT_TZ(t.issue_date, 'UTC', 'America/Lima')) = ?",
+                   AND t.issue_date = ?",
                 [$today]
             );
             $invoicesErrorCount = $invoicesRejectedCount + $invoicesTechnicalErrorCount;

@@ -25,7 +25,7 @@ final class ReceiptShowUseCaseTest extends TestCase
         $doc->setNumber($number);
         $doc->setTotal((string) $total);
         $doc->setCurrency('PEN');
-        $doc->setIssueDate(new \DateTime('2026-04-30'));
+        $doc->setIssueDate(new \DateTimeImmutable('2026-04-30'));
         return $doc;
     }
 

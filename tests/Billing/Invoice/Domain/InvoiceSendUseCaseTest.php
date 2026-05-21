@@ -243,6 +243,34 @@ final class InvoiceSendUseCaseTest extends TestCase
         $this->useCase->__invoke('td-1');
     }
 
+    public function testInvokeRetryableErrorConsultRejectedCdrUpdatesRejectedStatus(): void
+    {
+        /** @var TaxDocument&MockObject $taxDocument */
+        $taxDocument = $this->makeTaxDocument();
+        $this->entityManager->method('find')->willReturn($taxDocument);
+
+        $errorResponse = $this->makeErrorResponse('DOC-NAME', '1032', 'ya esta informado');
+        $this->billSendUseCase->method('__invoke')->willReturn($errorResponse);
+
+        $this->sunatSendControlService->method('isSunatRejection')->willReturn(false);
+
+        $cdrResponse = (new CdrResponse())
+            ->setCode('3462')
+            ->setDescription('La tasa del IGV debe corresponder con una tasa vigente.');
+        $consultResult = (new StatusCdrResult())
+            ->setSuccess(true)
+            ->setCdrResponse($cdrResponse);
+
+        $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
+
+        $taxDocument->expects(self::once())->method('setSunatStatus')->with('3462');
+        $taxDocument->expects(self::once())->method('setSunatMessage')->with(
+            'La tasa del IGV debe corresponder con una tasa vigente.'
+        );
+
+        $this->useCase->__invoke('td-1');
+    }
+
     public function testInvokeRetryableErrorConsultThrowsSetsPendiente(): void
     {
         /** @var TaxDocument&MockObject $taxDocument */
