@@ -39,6 +39,30 @@ async function completeBranchSelectionIfVisible(page: Page) {
   await expect(branchDialog).toBeHidden({ timeout: 15_000 });
 }
 
+test.describe('Login — flujos de autenticación', () => {
+  test('rechaza credenciales inválidas y permanece en el formulario de login', async ({ page }) => {
+    await page.goto(`${BASE_URL}/#/login`);
+    await expect(page.locator('form.login-form')).toBeVisible({ timeout: 15000 });
+
+    await fillDxInput(page, 'Usuario', 'usuario.invalido@e2e.test');
+    await fillDxInput(page, 'Contraseña', 'contrasena_incorrecta_xyz_123');
+
+    const loginResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes('/api/auth/login') && resp.request().method() === 'POST',
+      { timeout: 15000 },
+    );
+
+    await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
+
+    const loginResponse = await loginResponsePromise;
+    expect([400, 401]).toContain(loginResponse.status());
+
+    // El formulario debe seguir visible — no redirige al app
+    await expect(page.locator('form.login-form')).toBeVisible({ timeout: 5000 });
+    expect(page.url()).not.toMatch(/\/#\/(dashboard|pos|sale|cashbox)/);
+  });
+});
+
 test.describe('Post-login shell entry regression', () => {
   test('mounts the authenticated shell at the redirected hash route without refresh', async ({
     page,

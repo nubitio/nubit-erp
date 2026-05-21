@@ -468,50 +468,21 @@ test.describe('Happy Path — flujo completo de venta', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // PASO 2 — Crear producto
+  // PASO 2 — Verificar producto seed
   // ───────────────────────────────────────────────────────────────────────────
-  test('02 - Crear producto nuevo', async () => {
-    await test.step('Navegar a /#/product', async () => {
-      await gotoProtectedRoute(page, 'product');
-      await waitForDxLoadPanel(page);
-      // El grid de productos tiene id="product" en su wrapper DxDataGrid
-      await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
-    });
+  test('02 - Verificar producto seed', async () => {
+    await gotoProtectedRoute(page, 'product');
+    await waitForDxLoadPanel(page);
+    await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
 
-    await test.step('Filtrar y verificar el producto seed del entorno E2E', async () => {
-      await waitForDxLoadPanel(page);
-      await filterGridByName(page, SEED_PRODUCT_NAME);
-      await waitForDxLoadPanel(page);
+    await filterGridByName(page, SEED_PRODUCT_NAME);
+    await waitForDxLoadPanel(page);
 
-      await expect(page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME })).toBeVisible(
-        {
-          timeout: 15000,
-        },
-      );
+    const productRow = page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
+    await productRow.waitFor({ state: 'visible', timeout: 15000 });
+    await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
 
-      posProductName = SEED_PRODUCT_NAME;
-    });
-  });
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // PASO 3 — Editar producto
-  // ───────────────────────────────────────────────────────────────────────────
-  test('03 - Editar precio del producto', async () => {
-    await test.step('Seleccionar el producto seed en el grid', async () => {
-      await gotoProtectedRoute(page, 'product');
-      await filterGridByName(page, SEED_PRODUCT_NAME);
-      await waitForDxLoadPanel(page);
-
-      const productRow = page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
-      await productRow.waitFor({ state: 'visible', timeout: 10000 });
-      await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
-    });
-
-    await test.step('Verificar precio estable del producto seed', async () => {
-      const productRow = page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
-      await expect(productRow).toBeVisible({ timeout: 15000 });
-      await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
-    });
+    posProductName = SEED_PRODUCT_NAME;
   });
 
   // ───────────────────────────────────────────────────────────────────────────
