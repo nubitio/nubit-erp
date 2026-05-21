@@ -850,6 +850,10 @@ interface CoreTranslationKeys {
   'crudPage.dialogTitleAdd': string;
   'crudPage.dialogTitleEdit': string;
   'crudPage.dialogTitleView': string;
+  'crudPage.schemaErrorTitle': string;
+  'crudPage.schemaErrorMessage': string;
+  'crudPage.schemaErrorDetails': string;
+  'crudPage.schemaErrorRetry': string;
   'auditTrail.title': string;
   'auditTrail.closeButton': string;
   'auditTrail.selectRecord': string;

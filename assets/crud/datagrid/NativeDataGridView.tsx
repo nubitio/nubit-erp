@@ -417,7 +417,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   }, [loadRows]);
 
   useEffect(() => {
-    if (options.events?.SUCCESS) on(options.events.SUCCESS, () => void loadRows());
+    if (!options.events?.SUCCESS) return;
+    const sub = on(options.events.SUCCESS, () => void loadRows());
+    return () => sub.unsubscribe();
   }, [loadRows, on, options.events]);
 
   useEffect(() => {

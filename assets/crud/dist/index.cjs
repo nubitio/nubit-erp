@@ -1195,6 +1195,7 @@ function validateField(field, value, formData) {
 	return null;
 }
 function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdating = true, detailFields, httpClient, onRowsChange, onRowsMutated, remoteOptions, rows }) {
+	const { t } = useCoreTranslation();
 	const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
 	const updateCell = async (rowIndex, field, value) => {
 		let nextRow = {
@@ -1279,7 +1280,7 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleFields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: field.label }, field.name)), allowDeleting && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {})] }) }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tbody", { children: [rows.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 					colSpan: visibleFields.length + (allowDeleting ? 1 : 0),
 					className: "native-form__detail-empty",
-					children: "No items added"
+					children: t("form.detailEmpty")
 				}) }), rows.map((row, rowIndex) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleFields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: renderDetailControl(row, rowIndex, field) }, field.name)), allowDeleting && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 					type: "button",
 					className: "app-icon-button",
@@ -3837,22 +3838,34 @@ function CrudSkeleton() {
 	});
 }
 function CrudError({ message, onRetry }) {
+	const { t } = useCoreTranslation();
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: "p-6 text-red-600 space-y-2",
+		className: "p-6 space-y-3 text-sm text-secondary",
+		role: "alert",
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "font-semibold",
-				children: "Failed to load resource schema"
+				className: "m-0 text-base font-semibold text-primary",
+				children: t("crudPage.schemaErrorTitle")
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "text-sm",
-				children: message
+				className: "m-0 max-w-2xl",
+				children: t("crudPage.schemaErrorMessage")
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", {
+				className: "max-w-2xl text-xs",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("summary", {
+					className: "cursor-pointer text-secondary",
+					children: t("crudPage.schemaErrorDetails")
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
+					className: "mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap",
+					children: message
+				})]
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 				onClick: onRetry,
-				className: "text-blue-600 underline text-sm",
+				className: "app-button app-button--secondary app-button--sm",
 				type: "button",
-				children: "Retry"
+				children: t("crudPage.schemaErrorRetry")
 			})
 		]
 	});
@@ -4244,6 +4257,10 @@ const coreTranslationsEs = {
 	"crudPage.dialogTitleAdd": "Nuevo",
 	"crudPage.dialogTitleEdit": "Editar",
 	"crudPage.dialogTitleView": "Ver",
+	"crudPage.schemaErrorTitle": "No se pudo cargar esta vista",
+	"crudPage.schemaErrorMessage": "La configuración del recurso no está disponible. Intenta nuevamente o contacta a soporte si el problema continúa.",
+	"crudPage.schemaErrorDetails": "Detalle técnico",
+	"crudPage.schemaErrorRetry": "Reintentar",
 	"auditTrail.title": "Historial de cambios",
 	"auditTrail.closeButton": "Cerrar historial de cambios",
 	"auditTrail.selectRecord": "Seleccione un registro...",
@@ -4279,6 +4296,10 @@ const coreTranslationsEn = {
 	"crudPage.dialogTitleAdd": "New",
 	"crudPage.dialogTitleEdit": "Edit",
 	"crudPage.dialogTitleView": "View",
+	"crudPage.schemaErrorTitle": "This view could not be loaded",
+	"crudPage.schemaErrorMessage": "The resource configuration is not available. Try again or contact support if the problem continues.",
+	"crudPage.schemaErrorDetails": "Technical details",
+	"crudPage.schemaErrorRetry": "Retry",
 	"auditTrail.title": "Change history",
 	"auditTrail.closeButton": "Close change history",
 	"auditTrail.selectRecord": "Select a record...",

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -20,19 +20,23 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
   const { i18n } = useTranslation();
   const locale = i18n.language?.split('-')[0] || 'es';
 
+  const httpConfig = useMemo(() => ({
+    baseUrl: API_BASE_URL,
+    refreshPath: 'auth/refresh',
+    loginPath: 'auth/login',
+  }), []);
+
+  const runtimeConfig = useMemo(() => ({
+    notify: toast,
+    confirm: (message: string) => window.confirm(message),
+  }), []);
+
   return (
     <ThemeProvider storageKey="app-theme" themePrefix="app-theme-" basePath="/themes/">
       <Router>
         <CoreProvider
-          http={{
-            baseUrl: API_BASE_URL,
-            refreshPath: 'auth/refresh',
-            loginPath: 'auth/login',
-          }}
-          runtime={{
-            notify: toast,
-            confirm: (message) => window.confirm(message),
-          }}
+          http={httpConfig}
+          runtime={runtimeConfig}
         >
           <CoreConfigProvider locale={locale} timezone="America/Lima">
             <AuthProvider>

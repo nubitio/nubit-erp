@@ -115,6 +115,27 @@ function stripAdapterOnlyParams(loadOptions: RemoteLoadOptions): RemoteLoadOptio
   return nextOptions;
 }
 
+function convertPaginationParams(loadOptions: RemoteLoadOptions): RemoteLoadOptions {
+  const nextOptions: RemoteLoadOptions = { ...loadOptions };
+
+  const take = typeof nextOptions.take === 'number' ? nextOptions.take : undefined;
+  const skip = typeof nextOptions.skip === 'number' ? nextOptions.skip : undefined;
+
+  if (take !== undefined) {
+    nextOptions.itemsPerPage = take;
+    delete nextOptions.take;
+  }
+
+  if (take !== undefined && skip !== undefined) {
+    nextOptions.page = Math.floor(skip / take) + 1;
+    delete nextOptions.skip;
+  } else if (skip !== undefined) {
+    delete nextOptions.skip;
+  }
+
+  return nextOptions;
+}
+
 function getFlatIriFilter(filter: unknown): unknown[] | null {
   if (!Array.isArray(filter)) return null;
   return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
@@ -140,7 +161,7 @@ export class ApiPlatformRemoteDataSource {
       this.config.defaultFilterRules ?? [],
     );
 
-    return stripAdapterOnlyParams({
+    return convertPaginationParams(stripAdapterOnlyParams({
       ...withDefaults,
       filter: normalizedFilters,
       sort: normalizeSortRules(
@@ -148,7 +169,7 @@ export class ApiPlatformRemoteDataSource {
         this.config.defaultSortRules ?? [],
         this.config.idField,
       ),
-    });
+    }));
   }
 
   async load(loadOptions: RemoteLoadOptions): Promise<GridData<DataRecord>> {

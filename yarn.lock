@@ -2296,6 +2296,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/rollup-linux-arm64-gnu@npm:^4.60.4":
+  version: 4.60.4
+  resolution: "@rollup/rollup-linux-arm64-gnu@npm:4.60.4"
+  checksum: 10c0/081096d917806d5a498e63c98b1297933a688d880d0b44a64b5eaf24c1ef15f2501a6b3f9ea3ca261bcbe6ff2c85826e3271d1176b29e87df488a95bd7324606
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-linux-arm64-musl@npm:4.60.3":
   version: 4.60.3
   resolution: "@rollup/rollup-linux-arm64-musl@npm:4.60.3"
@@ -4390,6 +4398,7 @@ __metadata:
     "@fontsource/syne": "npm:^5.2.7"
     "@phosphor-icons/web": "npm:^2.1.2"
     "@playwright/test": "npm:^1.58.2"
+    "@rollup/rollup-linux-arm64-gnu": "npm:^4.60.4"
     "@tailwindcss/postcss": "npm:^4.2.1"
     "@tanstack/react-query": "npm:^5.0.0"
     "@tanstack/react-query-devtools": "npm:^5.0.0"

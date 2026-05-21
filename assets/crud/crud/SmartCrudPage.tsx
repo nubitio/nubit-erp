@@ -14,6 +14,7 @@ import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
 import { useSmartCrudFields } from './useSmartCrudFields';
 import type { DataRecord } from '@nubit/core';
+import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 
 function CrudSkeleton() {
   return (
@@ -25,12 +26,18 @@ function CrudSkeleton() {
 }
 
 function CrudError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useCoreTranslation();
+
   return (
-    <div className="p-6 text-red-600 space-y-2">
-      <p className="font-semibold">Failed to load resource schema</p>
-      <p className="text-sm">{message}</p>
-      <button onClick={onRetry} className="text-blue-600 underline text-sm" type="button">
-        Retry
+    <div className="p-6 space-y-3 text-sm text-secondary" role="alert">
+      <p className="m-0 text-base font-semibold text-primary">{t('crudPage.schemaErrorTitle')}</p>
+      <p className="m-0 max-w-2xl">{t('crudPage.schemaErrorMessage')}</p>
+      <details className="max-w-2xl text-xs">
+        <summary className="cursor-pointer text-secondary">{t('crudPage.schemaErrorDetails')}</summary>
+        <pre className="mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap">{message}</pre>
+      </details>
+      <button onClick={onRetry} className="app-button app-button--secondary app-button--sm" type="button">
+        {t('crudPage.schemaErrorRetry')}
       </button>
     </div>
   );

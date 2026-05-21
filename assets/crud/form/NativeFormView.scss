@@ -331,20 +331,24 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 720px;
+  min-width: 820px;
+  table-layout: fixed;
 }
 
 .native-form__detail-table th,
 .native-form__detail-table td {
   border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  overflow: hidden;
   padding: 5px 10px;
   text-align: left;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .native-form__detail-table th:first-child,
 .native-form__detail-table td:first-child {
-  min-width: 220px;
+  width: 300px;
 }
 
 .native-form__detail-table th {
@@ -359,6 +363,10 @@
 .native-form__detail-table td .native-form__control {
   min-height: 24px;
   padding: 2px 6px;
+}
+
+.native-form__detail-table .app-icon-button {
+  min-width: 28px;
 }
 
 .native-form__detail-empty {

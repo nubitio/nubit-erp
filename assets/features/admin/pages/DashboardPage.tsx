@@ -22,7 +22,7 @@ export const DashboardPage = () => {
   const isPartial = !!(data.meta?.partial && !error);
 
   return (
-    <div className="view-wrapper-scroll">
+    <div className="view-wrapper-scroll dashboard-page">
       <AppToolbar title="Dashboard" onRefresh={refetch}>
         {error && <div className="dashboard-error">{error}</div>}
         {isPartial && (
