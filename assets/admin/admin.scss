@@ -52,6 +52,10 @@
     min-height: 0;
     overflow: hidden;
   }
+
+  > .view-wrapper-scroll {
+    overflow-y: auto;
+  }
 }
 
 .side-nav-outer-toolbar__scrim {
