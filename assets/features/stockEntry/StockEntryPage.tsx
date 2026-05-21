@@ -1,6 +1,6 @@
-import { CrudPage, defineResource } from '@nubit/core';
+import { CrudPage, defineResource } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
-import { createCrudEvents } from '@nubit/core';
+import { createCrudEvents } from '@nubit/crud';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';

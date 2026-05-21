@@ -1,6 +1,6 @@
 // eFact domain CRUD event namespaces.
 // These are eFact-specific and must not live in @nubit/core.
-import { createCrudEvents } from '@nubit/core';
+import { createCrudEvents } from '@nubit/crud';
 
 export const branchEvents        = createCrudEvents('branch');
 export const categoryEvents      = createCrudEvents('category');

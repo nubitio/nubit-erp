@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DATA_GRID_EVENTS, FORM_EVENTS } from '@nubit/core';
+import { DATA_GRID_EVENTS, FORM_EVENTS } from '@nubit/crud';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 import { DiscountDialogApplyPayload } from '@shared/ui/discount-dialog/DiscountDialog';
 

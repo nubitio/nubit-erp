@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { DataGridView, type GridHandle } from '@nubit/core';
+import { DataGridView, type GridHandle } from '@nubit/crud';
 import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
 import { API_BASE_URL } from '@app/constants';
 import { createCashRegisterShiftsToolbar } from '@features/cashRegister';

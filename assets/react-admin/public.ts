@@ -38,7 +38,7 @@ export {
   initCoreI18n,
   useCoreTranslation,
   resolveSmartCrudFields,
-} from '@nubit/core';
+} from '@nubit/crud';
 export type {
   ResourceConfig,
   ResourcePermissions,
@@ -54,7 +54,7 @@ export type {
   SmartCrudRecord,
   AuditEntry,
   AuditTrailConfig,
-} from '@nubit/core';
+} from '@nubit/crud';
 
 // ── Field DSL ─────────────────────────────────────────────────────────────────
 export {
@@ -74,25 +74,26 @@ export {
   identityField,
   noneField,
   FieldBuilder,
-} from '@nubit/core';
-export type { Field, FieldDef, LoadOption, EnumOption } from '@nubit/core';
+} from '@nubit/crud';
+export type { Field, FieldDef, LoadOption, EnumOption } from '@nubit/crud';
 export type {
   FormatterFn,
   GridCellContext,
   GridOnChangeFn,
   FormOnChangeFn,
   OnChangeFn,
-} from '@nubit/core';
+} from '@nubit/crud';
 
 // ── Form & grid handles ───────────────────────────────────────────────────────
-export type { FormHandle } from '@nubit/core';
-export type { GridHandle } from '@nubit/core';
-export { FormView, FORM_EVENTS } from '@nubit/core';
-export { DataGridView, DATA_GRID_EVENTS } from '@nubit/core';
-export { DialogView } from '@nubit/core';
+export type { FormHandle } from '@nubit/crud';
+export type { GridHandle } from '@nubit/crud';
+export { FormView, FORM_EVENTS } from '@nubit/crud';
+export { DataGridView, DATA_GRID_EVENTS } from '@nubit/crud';
+export { DialogView } from '@nubit/crud';
 
 // ── Event bus ─────────────────────────────────────────────────────────────────
-export { dispatch, useEvents, createCrudEvents } from '@nubit/core';
+export { dispatch, useEvents } from '@nubit/core';
+export { createCrudEvents } from '@nubit/crud';
 export type { EventSubscription } from '@nubit/core';
 
 // ── Locale / date ─────────────────────────────────────────────────────────────
@@ -115,8 +116,8 @@ export { MercureProvider, useMercureHub, useMercureSubscription } from '@nubit/c
 export type { MercureProviderProps } from '@nubit/core';
 
 // ── UI primitives ─────────────────────────────────────────────────────────────
-export { AppDialog, ConfirmDialog } from '@nubit/ui';
-export type { AppDialogProps, ConfirmDialogProps } from '@nubit/ui';
+export { AppDialog, ConfirmDialog, AppToolbar, Card, ThemeProvider, ThemeContext, useTheme, ThemeSwitcher } from '@nubit/ui';
+export type { AppDialogProps, ConfirmDialogProps, AppToolbarProps, CardProps, ThemeProviderProps, ThemeContextValue, Theme, ThemeMode, ThemeSwitcherProps } from '@nubit/ui';
 
 // ── API Platform / Hydra adapter ──────────────────────────────────────────────
 export {

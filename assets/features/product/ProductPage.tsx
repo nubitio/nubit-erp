@@ -7,7 +7,7 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';

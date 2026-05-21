@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { FORM_EVENTS, type FormHandle } from '@nubit/core';
+import { FORM_EVENTS, type FormHandle } from '@nubit/crud';
 import { loadMovementItemsOnEdit } from '../lib/loadMovementItemsOnEdit';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;

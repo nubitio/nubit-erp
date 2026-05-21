@@ -78,6 +78,21 @@ describe('normalizeRange', () => {
       'http://www.w3.org/2001/XMLSchema#integer',
     );
   });
+
+  it('extracts @id from owl:equivalentClass array ranges', () => {
+    const arrayRange = [
+      {
+        'owl:equivalentClass': {
+          'owl:allValuesFrom': { '@id': '#Category' },
+        },
+      },
+    ];
+    expect(normalizeRange(arrayRange)).toBe('#Category');
+  });
+
+  it('returns undefined for array range without matching structure', () => {
+    expect(normalizeRange([{ unrelated: true }])).toBeUndefined();
+  });
 });
 
 // ── parseHydraDoc ─────────────────────────────────────────────────────────────
@@ -91,9 +106,12 @@ describe('parseHydraDoc', () => {
       {
         '@id': '#Entrypoint',
         '@type': 'hydra:Class',
+        title: 'Entrypoint',
         supportedProperty: [
           {
-            property: { '@id': '#Entrypoint/product', range: '#Product' },
+            '@type': 'SupportedProperty',
+            title: 'product',
+            property: { '@id': '#Entrypoint/product', '@type': 'Link', label: 'product', range: '#Product' },
             readable: true,
             writeable: false,
             required: false,
@@ -104,39 +122,46 @@ describe('parseHydraDoc', () => {
       {
         '@id': '#Product',
         '@type': 'hydra:Class',
+        title: 'Product',
         supportedProperty: [
           {
+            '@type': 'SupportedProperty',
+            title: 'Nombre',
             property: {
               '@id': '#Product/name',
               '@type': 'rdf:Property',
+              label: 'name',
               range: 'xmls:string',
             },
             readable: true,
             writeable: true,
             required: true,
-            label: 'Nombre',
           },
           {
+            '@type': 'SupportedProperty',
+            title: 'Precio',
             property: {
               '@id': '#Product/price',
               '@type': 'rdf:Property',
+              label: 'price',
               range: 'xmls:decimal',
             },
             readable: true,
             writeable: true,
             required: false,
-            label: 'Precio',
           },
           {
+            '@type': 'SupportedProperty',
+            title: 'Código interno',
             property: {
               '@id': '#Product/internalCode',
               '@type': 'rdf:Property',
+              label: 'internalCode',
               range: 'xmls:string',
             },
             readable: false,
             writeable: true,
             required: false,
-            label: 'Código interno',
           },
         ],
         supportedOperation: [],
@@ -176,6 +201,12 @@ describe('parseHydraDoc', () => {
     expect(priceField?.required).toBe(false);
   });
 
+  it('stores the translated title from the SupportedProperty wrapper', () => {
+    const result = parseHydraDoc(minimalDoc);
+    const nameField = result['Product'].fields.find((f) => f.name === 'name');
+    expect(nameField?.['hydra:title']).toBe('Nombre');
+  });
+
   it('returns empty object for a doc with no non-entrypoint classes', () => {
     const emptyDoc: HydraApiDoc = {
       '@context': '/api/contexts/Entrypoint',
@@ -185,6 +216,7 @@ describe('parseHydraDoc', () => {
         {
           '@id': '#Entrypoint',
           '@type': 'hydra:Class',
+          title: 'Entrypoint',
           supportedProperty: [],
           supportedOperation: [],
         },
@@ -192,5 +224,88 @@ describe('parseHydraDoc', () => {
     };
     const result = parseHydraDoc(emptyDoc);
     expect(Object.keys(result)).toHaveLength(0);
+  });
+
+  it('extracts supportedOperations from the class', () => {
+    const doc: HydraApiDoc = {
+      '@context': '/api/contexts/Entrypoint',
+      '@id': '/api',
+      '@type': 'hydra:ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Entrypoint',
+          '@type': 'hydra:Class',
+          title: 'Entrypoint',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              title: 'category',
+              property: { '@id': '#Entrypoint/category', '@type': 'Link', label: 'category', range: '#Category' },
+              readable: true,
+              writeable: false,
+              required: false,
+            },
+          ],
+          supportedOperation: [],
+        },
+        {
+          '@id': '#Category',
+          '@type': 'hydra:Class',
+          title: 'Category',
+          supportedProperty: [],
+          supportedOperation: [
+            { 'hydra:method': 'GET' },
+            { 'hydra:method': 'POST' },
+            { 'hydra:method': 'DELETE' },
+          ],
+        },
+      ],
+    };
+    const result = parseHydraDoc(doc);
+    expect(result['Category'].supportedOperations).toContain('GET');
+    expect(result['Category'].supportedOperations).toContain('POST');
+    expect(result['Category'].supportedOperations).toContain('DELETE');
+  });
+
+  it('extracts hydra:search mappings from a class', () => {
+    const doc: HydraApiDoc = {
+      '@context': '/api/contexts/Entrypoint',
+      '@id': '/api',
+      '@type': 'hydra:ApiDocumentation',
+      supportedClass: [
+        {
+          '@id': '#Entrypoint',
+          '@type': 'hydra:Class',
+          title: 'Entrypoint',
+          supportedProperty: [
+            {
+              '@type': 'SupportedProperty',
+              title: 'item',
+              property: { '@id': '#Entrypoint/item', '@type': 'Link', label: 'item', range: '#Item' },
+              readable: true,
+              writeable: false,
+              required: false,
+            },
+          ],
+          supportedOperation: [],
+        },
+        {
+          '@id': '#Item',
+          '@type': 'hydra:Class',
+          title: 'Item',
+          supportedProperty: [],
+          'hydra:search': {
+            'hydra:mapping': [
+              { 'hydra:property': 'name', 'hydra:variable': 'name', 'hydra:required': false },
+              { 'hydra:property': 'status', 'hydra:variable': 'status', 'hydra:required': false },
+            ],
+          },
+        },
+      ],
+    };
+    const result = parseHydraDoc(doc);
+    expect(result['Item'].searchMappings).toHaveLength(2);
+    expect(result['Item'].searchMappings?.[0].property).toBe('name');
+    expect(result['Item'].searchMappings?.[1].variable).toBe('status');
   });
 });

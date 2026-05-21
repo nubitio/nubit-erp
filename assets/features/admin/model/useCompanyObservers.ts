@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { FORM_EVENTS, useEvents, type FormHandle } from '@nubit/core';
+import { FORM_EVENTS, type FormHandle } from '@nubit/crud';
+import { useEvents } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { companyEndpoints } from '../api/companyEndpoints';
 

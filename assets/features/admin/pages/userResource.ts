@@ -1,4 +1,4 @@
-import { defineFields, defineResource, passwordField, type DataRecord } from '@nubit/core';
+import { defineFields, defineResource, passwordField, type DataRecord } from '@nubit/crud';
 import { userEvents } from '@app/domainEvents';
 import { userEndpoints } from '../api/adminEndpoints';
 

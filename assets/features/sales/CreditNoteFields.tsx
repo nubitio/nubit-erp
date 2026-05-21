@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@app/constants';
-import { Field } from '@nubit/core';
+import { Field } from '@nubit/crud';
 import {
   identityField,
   entityField,
@@ -10,10 +10,10 @@ import {
   selectField,
   textareaField,
   textField,
-} from '@nubit/core';
+} from '@nubit/crud';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubit/core';
+import type { GridCellContext } from '@nubit/crud';
 
 const reasonCodes: { value: string; text: string }[] = [
   {

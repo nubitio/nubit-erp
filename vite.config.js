@@ -20,6 +20,7 @@ const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost
 const frontendAliases = {
   // Nubit package facades — prefer these over direct @core/* / @app/shell imports.
   '@nubit/react-admin': fileURLToPath(new URL('./assets/react-admin/public.ts', import.meta.url)),
+  '@nubit/crud': fileURLToPath(new URL('./assets/crud/public.ts', import.meta.url)),
   '@nubit/core': fileURLToPath(new URL('./assets/core/public.ts', import.meta.url)),
   '@nubit/ui': fileURLToPath(new URL('./assets/ui/public.ts', import.meta.url)),
   '@nubit/admin': fileURLToPath(new URL('./assets/admin/public.ts', import.meta.url)),
@@ -198,6 +199,7 @@ export default defineConfig({
           // between facade re-exports and implementation modules.
           if (
             id.includes('/assets/core/') ||
+            id.includes('/assets/crud/') ||
             id.includes('/assets/ui/') ||
             id.includes('/assets/admin/') ||
             id.includes('/assets/api-platform/') ||

@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineResource } from '@nubit/core';
+import { SmartCrudPage, defineResource } from '@nubit/crud';
 import { warehouseEvents } from '@app/domainEvents';
 import { warehouseEndpoints } from './api/catalogEndpoints';
 

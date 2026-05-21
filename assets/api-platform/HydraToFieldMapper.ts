@@ -1,4 +1,4 @@
-import type { Field } from '@nubit/core';
+import type { Field } from '@nubit/crud';
 import type { HydraFieldSchema, HydraResourceSchema, CrudHints } from './types';
 import {
   textField,
@@ -7,7 +7,7 @@ import {
   entityField,
   noneField,
   datetimeField,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { pluralize, toDashCase } from './openApiParser';
 
 /**

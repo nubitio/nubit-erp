@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@app/constants';
-import { Field } from '@nubit/core';
+import { Field } from '@nubit/crud';
 import {
   identityField,
   entityField,
@@ -7,9 +7,9 @@ import {
   numberField,
   textareaField,
   textField,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubit/core';
+import type { GridCellContext } from '@nubit/crud';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 

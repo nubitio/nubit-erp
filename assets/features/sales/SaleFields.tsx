@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@app/constants';
-import type { FormHandle } from '@nubit/core';
-import { Field } from '@nubit/core';
+import type { FormHandle } from '@nubit/crud';
+import { Field } from '@nubit/crud';
 import {
   identityField,
   entityField,
@@ -11,7 +11,7 @@ import {
   selectField,
   textareaField,
   noneField,
-} from '@nubit/core';
+} from '@nubit/crud';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { businessHttpClient, httpRequestData } from '@shared/api/network';
@@ -20,8 +20,8 @@ import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
-import type { GridCellContext } from '@nubit/core';
-import type { DataRecord } from '@nubit/core';
+import type { GridCellContext } from '@nubit/crud';
+import type { DataRecord } from '@nubit/crud';
 
 interface SaleFieldCallbacks {
   branchId?: string | number;

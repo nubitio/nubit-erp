@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
 import { customerApiUrl, customerEvents } from './model/constants';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';

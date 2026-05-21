@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsdown';
 
-const NUBIT_PACKAGES = ['@nubit/core', '@nubit/ui', '@nubit/admin', '@nubit/api-platform'];
+const NUBIT_PACKAGES = ['@nubit/core', '@nubit/crud', '@nubit/ui', '@nubit/admin', '@nubit/api-platform'];
 
 // IDs that must never be bundled regardless of tsconfig path aliases.
 const ALWAYS_EXTERNAL = (id: string) =>
@@ -21,11 +21,19 @@ const sharedConfig = {
 
 export default [
   // ── @nubit/core ──────────────────────────────────────────────────────────────
-  // Runtime/CRUD facade. Cross-package @nubit/* imports stay external.
+  // Runtime primitives only: HTTP, Mercure, config, events, base data types.
   defineConfig({
     ...sharedConfig,
     entry: { index: 'assets/core/public.ts' },
     outDir: 'assets/core/dist',
+  }),
+
+  // ── @nubit/crud ──────────────────────────────────────────────────────────────
+  // CRUD engine, field DSL, form/grid views. Depends on @nubit/core + @nubit/ui.
+  defineConfig({
+    ...sharedConfig,
+    entry: { index: 'assets/crud/public.ts' },
+    outDir: 'assets/crud/dist',
   }),
 
   // ── @nubit/admin ─────────────────────────────────────────────────────────────

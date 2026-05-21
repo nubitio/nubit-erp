@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
-import { CrudPage, defineResource, type FormHandle } from '@nubit/core';
+import { CrudPage, defineResource, type FormHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 import { purchasesEvents } from '@features/purchases/model/events';

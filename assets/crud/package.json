@@ -1,0 +1,31 @@
+{
+  "name": "@nubit/crud",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "source": "./public.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "dependencies": {
+    "@nubit/core": "^0.1.0",
+    "@nubit/ui": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "i18next": "^23.0.0",
+    "luxon": "^3.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^14.0.0",
+    "react-router-dom": "^6.0.0"
+  }
+}

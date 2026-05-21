@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '@app/constants';
-import { DateUtils, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
+import { DateUtils } from '@nubit/core';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
 import { httpClient } from '@shared/api/HttpClient';
 
 

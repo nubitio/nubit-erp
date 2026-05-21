@@ -119,6 +119,7 @@ export interface HydraIriTemplateMapping {
 }
 
 export interface HydraApiDoc {
+  '@context'?: string;
   '@id': string;
   '@type': 'ApiDocumentation' | 'hydra:ApiDocumentation';
   supportedClass: HydraClass[];

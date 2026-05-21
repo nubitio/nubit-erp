@@ -2,7 +2,7 @@ import React from 'react';
 
 import { AppDialog } from '@nubit/ui';
 import './SalePrintPreviewPopup.scss';
-import { useScreenSize } from '@utils/media-query';
+import { useScreenSize } from '@nubit/admin';
 
 interface SalePrintPreviewPopupProps {
   saleId: any;
