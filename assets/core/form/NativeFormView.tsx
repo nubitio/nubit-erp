@@ -197,6 +197,13 @@ export function NativeEntitySelect({
     }
   };
 
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [open]);
+
   useLayoutEffect(() => {
     if (!open) return;
 
@@ -393,6 +400,13 @@ function NativeEnumSelect({
   const visibleItems = draftQuery != null && draftQuery !== ''
     ? allItems.filter((item) => String(item['text'] ?? item['value'] ?? '').toLowerCase().includes(draftQuery.toLowerCase()))
     : allItems;
+
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open) return;
