@@ -10,15 +10,18 @@ test.describe('E2E - Auth and Invoice Workflows', () => {
       data: {},
     });
 
-    expect([400, 401, 500]).toContain(response.status());
+    // 500 is NOT acceptable — a server error here is a bug, not expected behavior
+    expect([400, 401]).toContain(response.status());
   });
 
   test('invoice endpoints reject unauthenticated requests', async ({ request }) => {
     const createResponse = await request.post(`${baseUrl}/api/sales/non-existing/invoice`, {});
     const listResponse = await request.get(`${baseUrl}/api/invoices/non-existing/voucher`);
 
-    expect([400, 401, 500]).toContain(createResponse.status());
-    expect([400, 401, 500]).toContain(listResponse.status());
+    // Auth must be checked before routing: 401/403 expected. 404 acceptable if resource
+    // lookup runs after auth. 400 acceptable for malformed resource IDs. 500 is a bug.
+    expect([400, 401, 403, 404]).toContain(createResponse.status());
+    expect([400, 401, 403, 404]).toContain(listResponse.status());
   });
 
   test('authenticated invoice creation and listing workflow', async ({ request }) => {
@@ -45,11 +48,18 @@ test.describe('E2E - Auth and Invoice Workflows', () => {
       headers: { ...authHeaders, 'Content-Type': 'application/json' },
       data: {},
     });
-    expect([200, 400]).toContain(createInvoice.status());
+    // 200/201 = invoice created; 400 = already invoiced or sale in wrong state (idempotent endpoint).
+    // Both are defined business outcomes — neither should be a 5xx.
+    expect([200, 201, 400]).toContain(createInvoice.status());
+    if (createInvoice.ok()) {
+      const invoiceBody = await createInvoice.json();
+      expect(invoiceBody).toBeTruthy();
+    }
 
     const listInvoice = await request.get(`${baseUrl}/api/invoices/${saleId}/voucher`, {
       headers: authHeaders,
     });
+    // 200 = voucher found; 404 = no invoice exists yet for this sale
     expect([200, 404]).toContain(listInvoice.status());
   });
 });
