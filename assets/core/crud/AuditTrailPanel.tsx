@@ -20,7 +20,7 @@ const ACTION_COLORS: Record<AuditEntry['action'], string> = {
 function DefaultEntryRenderer({ entry }: { entry: AuditEntry }): React.JSX.Element {
   const { t } = useCoreTranslation();
   const date = new Date(entry.timestamp);
-  const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString();
+  const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString('es-PE', { timeZone: 'America/Lima' });
 
   const actionLabels: Record<AuditEntry['action'], string> = {
     create: t('auditTrail.action.create'),

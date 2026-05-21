@@ -22,6 +22,7 @@ import type { ToolbarButtonItem } from '../event/EventTypes';
 import { useCoreTranslation } from '../i18n/useCoreTranslation';
 import { useCoreRuntime } from '../runtime';
 import { useCoreHttpClient } from '../http';
+import { NativeEntitySelect } from '../form/NativeFormView';
 
 type SortRule = { selector: string; desc: boolean };
 
@@ -50,7 +51,7 @@ function getVisibleFields(options: DataGridViewOptions): Field[] {
 
 function getPrimitiveDisplay(value: unknown): string {
   if (value === null || value === undefined) return '';
-  if (value instanceof Date) return value.toLocaleDateString();
+  if (value instanceof Date) return value.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
   if (typeof value === 'boolean') return value ? 'Si' : 'No';
   if (typeof value === 'object') return '';
   return String(value);
@@ -205,15 +206,27 @@ function FilterCell({
   onSelectChange: (value: string) => void;
   onOperatorChange: (operator: string) => void;
 }) {
+  if (field.type === FieldType.ENTITY) {
+    const httpClient = useCoreHttpClient();
+    return (
+      <NativeEntitySelect
+        className="native-datagrid__filter-select"
+        field={field}
+        httpClient={httpClient}
+        options={remoteOptions}
+        value={value}
+        onChange={(nextVal) => onSelectChange(nextVal ? String(nextVal) : '')}
+      />
+    );
+  }
+
   const isDropdown =
     field.type === FieldType.ENUM ||
     field.type === FieldType.SELECT ||
-    field.type === FieldType.SWITCH ||
-    field.type === FieldType.ENTITY;
+    field.type === FieldType.SWITCH;
 
   if (isDropdown) {
-    const isEntity = field.type === FieldType.ENTITY;
-    const items = isEntity ? remoteOptions : (field.data ?? []);
+    const items = field.data ?? [];
     return (
       <select
         className="native-datagrid__filter-select"
@@ -222,19 +235,11 @@ function FilterCell({
         onChange={(e) => onSelectChange(e.target.value)}
       >
         <option value="">Todos</option>
-        {isEntity
-          ? items.map((item) => {
-              const v = field.valueField === '_iri'
-                ? String(item['_iri'] ?? item['@id'] ?? item['id'] ?? '')
-                : String(item[field.valueField] ?? item['id'] ?? '');
-              const t = String(item[field.textField] ?? item['name'] ?? item['businessName'] ?? '');
-              return <option key={v} value={v}>{t}</option>;
-            })
-          : items.map((item) => (
-              <option key={String(item['value'] ?? '')} value={String(item['value'] ?? '')}>
-                {String(item['text'] ?? item['value'] ?? '')}
-              </option>
-            ))}
+        {items.map((item) => (
+          <option key={String(item['value'] ?? '')} value={String(item['value'] ?? '')}>
+            {String(item['text'] ?? item['value'] ?? '')}
+          </option>
+        ))}
       </select>
     );
   }

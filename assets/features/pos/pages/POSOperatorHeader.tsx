@@ -103,9 +103,10 @@ export function POSOperatorHeader({
           <span>{cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
           {cajaAbierta && cajaOpenedAt && (
             <span className="pos-caja-badge__time">
-              {new Date(cajaOpenedAt).toLocaleTimeString('es', {
+              {new Date(cajaOpenedAt).toLocaleTimeString('es-PE', {
                 hour: '2-digit',
                 minute: '2-digit',
+                timeZone: 'America/Lima',
               })}
             </span>
           )}

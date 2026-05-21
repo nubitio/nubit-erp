@@ -1,6 +1,44 @@
-import { ApiPlatformRemoteDataSource, DataRecord, Field, FieldOverride, RemoteDataSourceOptions, RemoteFilterDescriptor, RemoteLoadOptions, RemoteSortDescriptor, SmartCrudFieldContract, SmartCrudRecord } from "@nubit/core";
+import { CoreHttpClient, GridData } from "@nubit/core";
+import { DataRecord, Field, FieldOverride, FilterRule, LoadOption, SmartCrudFieldContract, SmartCrudRecord } from "@nubit/crud";
 import { ReactNode } from "react";
 
+//#region assets/api-platform/ApiPlatformRemoteDataSource.d.ts
+type RemoteFilterDescriptor = unknown[];
+type RemoteSortDescriptor = {
+  selector?: string;
+  desc?: boolean;
+} | string;
+type RemoteLoadOptions = DataRecord & {
+  filter?: RemoteFilterDescriptor;
+  sort?: RemoteSortDescriptor[];
+  appendData?: DataRecord[];
+  prependData?: DataRecord[];
+  searchExpr?: unknown;
+  searchValue?: unknown;
+  searchOperation?: unknown;
+};
+type RemoteDataSourceOptions = {
+  url: string;
+  idField: string;
+  byKeyUrl?: string | null;
+  defaultFilterRules?: RemoteFilterDescriptor[];
+  defaultSortRules?: RemoteSortDescriptor[];
+  options?: LoadOption[];
+  iriMode?: boolean;
+  httpClient?: CoreHttpClient;
+};
+declare class ApiPlatformRemoteDataSource {
+  private readonly config;
+  private readonly httpClient;
+  constructor(config: RemoteDataSourceOptions);
+  makeFilterRules(filterRules: FilterRule[]): string;
+  prepareLoadOptions(loadOptions: RemoteLoadOptions): RemoteLoadOptions;
+  load(loadOptions: RemoteLoadOptions): Promise<GridData<DataRecord>>;
+  byKey(key: unknown): Promise<DataRecord | null>;
+  private fetchAll;
+  private fetchById;
+}
+//#endregion
 //#region assets/api-platform/types.d.ts
 /**
  * TypeScript types that model a Hydra JSON-LD API documentation response.
@@ -111,6 +149,7 @@ interface HydraIriTemplateMapping {
   'hydra:required'?: boolean;
 }
 interface HydraApiDoc {
+  '@context'?: string;
   '@id': string;
   '@type': 'ApiDocumentation' | 'hydra:ApiDocumentation';
   supportedClass: HydraClass[];

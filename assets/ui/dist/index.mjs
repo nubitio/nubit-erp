@@ -1,8 +1,10 @@
-import { useEffect, useId, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "./AppDialog.scss";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { useTranslation } from "react-i18next";
+import "./AppToolbar.scss";
+import "./Card.scss";
 //#region assets/ui/AppDialog.tsx
 const formatSize = (value) => {
 	if (value === void 0) return void 0;
@@ -136,4 +138,192 @@ function ConfirmDialog({ open, title, message, onConfirm, onCancel, confirmLabel
 	});
 }
 //#endregion
-export { AppDialog, ConfirmDialog };
+//#region assets/ui/AppToolbar.tsx
+const AppToolbar = ({ title, additionalToolbarContent, showRefreshButton = true, onRefresh, icon, refreshLabel = "Refresh", children }) => {
+	return /* @__PURE__ */ jsxs("div", {
+		className: "view-wrapper view-wrapper-dashboard",
+		children: [/* @__PURE__ */ jsxs("div", {
+			className: "app-toolbar theme-dependent",
+			children: [
+				/* @__PURE__ */ jsxs("div", {
+					className: "app-toolbar__start",
+					children: [icon && /* @__PURE__ */ jsx("i", {
+						className: icon,
+						"aria-hidden": "true"
+					}), /* @__PURE__ */ jsx("span", {
+						className: "toolbar-header",
+						children: title
+					})]
+				}),
+				/* @__PURE__ */ jsx("div", {
+					className: "app-toolbar__center",
+					children: additionalToolbarContent
+				}),
+				/* @__PURE__ */ jsx("div", {
+					className: "app-toolbar__end",
+					children: showRefreshButton && /* @__PURE__ */ jsx("button", {
+						type: "button",
+						className: "app-icon-button",
+						title: refreshLabel,
+						"aria-label": refreshLabel,
+						onClick: onRefresh,
+						children: /* @__PURE__ */ jsx("i", {
+							className: "ph ph-arrow-clockwise",
+							"aria-hidden": "true"
+						})
+					})
+				})
+			]
+		}), children]
+	});
+};
+//#endregion
+//#region assets/ui/Card.tsx
+const Card = ({ title, description, children }) => {
+	return /* @__PURE__ */ jsx("div", {
+		className: "app-card",
+		children: /* @__PURE__ */ jsxs("div", {
+			className: "app-card__content content",
+			children: [/* @__PURE__ */ jsxs("div", {
+				className: "header",
+				children: [/* @__PURE__ */ jsx("div", {
+					className: "title",
+					children: title
+				}), /* @__PURE__ */ jsx("div", {
+					className: "description",
+					children: description
+				})]
+			}), children]
+		})
+	});
+};
+//#endregion
+//#region assets/ui/theme/ThemeProvider.tsx
+const ThemeContext = React.createContext(null);
+function useTheme() {
+	const ctx = useContext(ThemeContext);
+	if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");
+	return ctx;
+}
+const themeModes = [
+	"light",
+	"dark",
+	"auto"
+];
+function getNextThemeMode(mode) {
+	return themeModes[(themeModes.indexOf(mode) + 1) % themeModes.length];
+}
+function resolveTheme(mode) {
+	if (mode !== "auto") return mode;
+	return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function setThemeToDOM(href) {
+	return new Promise((resolve) => {
+		const id = "theme-link";
+		let link = document.getElementById(id);
+		if (link) {
+			if (link.href.endsWith(href)) {
+				resolve();
+				return;
+			}
+			link.href = href;
+		} else {
+			link = document.createElement("link");
+			link.id = id;
+			link.rel = "stylesheet";
+			link.href = href;
+			document.head.appendChild(link);
+		}
+		link.onload = () => resolve();
+	});
+}
+const ThemeProvider = ({ storageKey = "app-theme", themePrefix = "app-theme-", basePath = "/themes/", children }) => {
+	const getPersistedMode = () => {
+		const persisted = window.localStorage.getItem(storageKey);
+		return persisted && themeModes.includes(persisted) ? persisted : "auto";
+	};
+	const [mode, setMode] = useState(getPersistedMode);
+	const [isLoaded, setIsLoaded] = useState(false);
+	const theme = useMemo(() => resolveTheme(mode), [mode]);
+	useEffect(() => {
+		setThemeToDOM(`${basePath}${themePrefix}${theme}.css`).then(() => setIsLoaded(true));
+	}, [
+		theme,
+		basePath,
+		themePrefix
+	]);
+	useEffect(() => {
+		if (!isLoaded) return;
+		const meta = document.querySelector("meta[name=\"theme-color\"]");
+		if (meta) {
+			const baseBg = getComputedStyle(document.body).getPropertyValue("--base-bg").trim();
+			meta.setAttribute("content", baseBg || (theme === "dark" ? "#000000" : "#ffffff"));
+		}
+	}, [theme, isLoaded]);
+	useEffect(() => {
+		const mq = window.matchMedia("(prefers-color-scheme: dark)");
+		const apply = () => {
+			if (mode === "auto") setThemeToDOM(`${basePath}${themePrefix}${resolveTheme("auto")}.css`);
+		};
+		mq.addEventListener("change", apply);
+		return () => mq.removeEventListener("change", apply);
+	}, [
+		mode,
+		basePath,
+		themePrefix
+	]);
+	const switchTheme = useCallback(() => {
+		setMode((prev) => {
+			const next = getNextThemeMode(prev);
+			window.localStorage.setItem(storageKey, next);
+			return next;
+		});
+	}, [storageKey]);
+	const value = useMemo(() => ({
+		theme,
+		mode,
+		switchTheme,
+		isLoaded
+	}), [
+		theme,
+		mode,
+		switchTheme,
+		isLoaded
+	]);
+	return /* @__PURE__ */ jsx(ThemeContext.Provider, {
+		value,
+		children
+	});
+};
+//#endregion
+//#region assets/ui/theme/ThemeSwitcher.tsx
+const iconByMode = {
+	light: "ph ph-sun",
+	dark: "ph ph-moon",
+	auto: "ph ph-desktop"
+};
+const labelByMode = {
+	light: "Theme: Light",
+	dark: "Theme: Dark",
+	auto: "Theme: System"
+};
+const ThemeSwitcher = ({ labelByMode: overrides } = {}) => {
+	const { mode, switchTheme } = useTheme();
+	const label = {
+		...labelByMode,
+		...overrides
+	}[mode];
+	return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx("button", {
+		className: "app-icon-button theme-button",
+		type: "button",
+		"aria-label": label,
+		title: label,
+		onClick: switchTheme,
+		children: /* @__PURE__ */ jsx("i", {
+			className: iconByMode[mode],
+			"aria-hidden": "true"
+		})
+	}) });
+};
+//#endregion
+export { AppDialog, AppToolbar, Card, ConfirmDialog, ThemeContext, ThemeProvider, ThemeSwitcher, useTheme };

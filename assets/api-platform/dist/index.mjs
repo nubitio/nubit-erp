@@ -1,7 +1,126 @@
-import { ApiPlatformRemoteDataSource, datetimeField, entityField, noneField, numberField, resolveSmartCrudFields, switchField, textField, useCoreConfig, useCoreHttpClient } from "@nubit/core";
+import { createCoreHttpClient, useCoreConfig, useCoreHttpClient } from "@nubit/core";
+import { datetimeField, entityField, noneField, numberField, resolveSmartCrudFields, switchField, textField } from "@nubit/crud";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { jsx } from "react/jsx-runtime";
+//#region assets/api-platform/ApiPlatformRemoteDataSource.ts
+const defaultHttpClient = createCoreHttpClient({ baseUrl: "" });
+function findPreloadedItem(loadOptions, idField, id) {
+	const prependData = Array.isArray(loadOptions.prependData) ? loadOptions.prependData : [];
+	const appendData = Array.isArray(loadOptions.appendData) ? loadOptions.appendData : [];
+	return [...prependData, ...appendData].find((item) => item[idField] === id || item["@id"] === id) ?? null;
+}
+function addIriField(url, item) {
+	const itemId = item["id"] ?? item["code"] ?? item["uuid"] ?? item["slug"];
+	const iri = typeof item["@id"] === "string" ? item["@id"] : typeof itemId === "string" || typeof itemId === "number" ? `${url}/${itemId}` : void 0;
+	return {
+		...item,
+		_iri: iri
+	};
+}
+function normalizeFilterRules(filterRules, defaultFilterRules) {
+	const filters = [];
+	defaultFilterRules.forEach((rule) => filters.push(rule));
+	if (filterRules.length === 3 && typeof filterRules[0] !== "object") filters.push([
+		filterRules[0],
+		filterRules[1],
+		filterRules[2]
+	]);
+	else filterRules.forEach((rule) => {
+		filters.push(Array.isArray(rule) ? rule : [rule]);
+	});
+	return filters;
+}
+function applyLoadOptionDefaults(loadOptions, options) {
+	const nextOptions = { ...loadOptions };
+	options.forEach((option) => {
+		for (const key in option) if (Object.prototype.hasOwnProperty.call(option, key)) nextOptions[key] = option[key];
+	});
+	return nextOptions;
+}
+function normalizeSortRules(sortRules, defaultSortRules, idField) {
+	const [firstSort] = sortRules;
+	const firstSelector = typeof firstSort === "string" ? firstSort : firstSort?.selector;
+	if (sortRules.length === 1 && firstSelector === idField && defaultSortRules.length === 0) return [];
+	if (sortRules.length === 1 && firstSelector === idField) return [...defaultSortRules];
+	return sortRules;
+}
+function stripAdapterOnlyParams(loadOptions) {
+	const nextOptions = { ...loadOptions };
+	delete nextOptions.searchOperation;
+	if (nextOptions.searchExpr === void 0) delete nextOptions.searchValue;
+	return nextOptions;
+}
+function getFlatIriFilter(filter) {
+	if (!Array.isArray(filter)) return null;
+	return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
+}
+var ApiPlatformRemoteDataSource = class {
+	config;
+	httpClient;
+	constructor(config) {
+		this.config = config;
+		this.httpClient = config.httpClient ?? defaultHttpClient;
+	}
+	makeFilterRules(filterRules) {
+		return filterRules.map((filter) => `filter[]=["${filter.field}","${filter.operator}","${filter.value}"]`).join("&");
+	}
+	prepareLoadOptions(loadOptions) {
+		const withDefaults = applyLoadOptionDefaults(loadOptions, this.config.options ?? []);
+		const normalizedFilters = normalizeFilterRules(withDefaults.filter ?? [], this.config.defaultFilterRules ?? []);
+		return stripAdapterOnlyParams({
+			...withDefaults,
+			filter: normalizedFilters,
+			sort: normalizeSortRules(withDefaults.sort ?? [], this.config.defaultSortRules ?? [], this.config.idField)
+		});
+	}
+	async load(loadOptions) {
+		const preparedOptions = this.prepareLoadOptions(loadOptions);
+		if (this.config.iriMode) {
+			const flatFilter = getFlatIriFilter(preparedOptions.filter);
+			if (Array.isArray(flatFilter) && flatFilter.length === 3 && flatFilter[0] === "_iri" && flatFilter[1] === "=" && typeof flatFilter[2] === "string") {
+				const item = await this.byKey(flatFilter[2]);
+				return {
+					data: item ? [addIriField(this.config.url, item)] : [],
+					totalCount: item ? 1 : 0,
+					summary: null
+				};
+			}
+			const result = await this.fetchAll(preparedOptions);
+			return {
+				...result,
+				data: result.data.map((item) => addIriField(this.config.url, item))
+			};
+		}
+		return this.fetchAll(preparedOptions);
+	}
+	async byKey(key) {
+		const id = typeof key === "object" && key !== null ? key[this.config.idField] : key;
+		if (id === void 0) return null;
+		const loadOptions = applyLoadOptionDefaults({}, this.config.options ?? []);
+		const item = await this.fetchById(this.config.byKeyUrl ?? this.config.url, id, loadOptions);
+		return this.config.iriMode && item ? addIriField(this.config.url, item) : item;
+	}
+	async fetchAll(loadOptions) {
+		const response = await this.httpClient.get(this.config.url, { params: loadOptions });
+		let data = response.data;
+		if (loadOptions.appendData) data = [...data, ...loadOptions.appendData];
+		if (loadOptions.prependData) data = [...loadOptions.prependData, ...data];
+		const headerCount = Number(response.headers.get("x-total-count"));
+		return {
+			data,
+			totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
+			summary: null
+		};
+	}
+	async fetchById(url, id, loadOptions) {
+		const preloadedItem = findPreloadedItem(loadOptions, this.config.idField, id);
+		if (preloadedItem) return preloadedItem;
+		const resolvedUrl = typeof id === "string" && id.startsWith("/") ? id : `${url}/${id}`;
+		return this.httpClient.get(resolvedUrl).then((response) => response.data).catch(() => findPreloadedItem(loadOptions, this.config.idField, id));
+	}
+};
+//#endregion
 //#region assets/api-platform/openApiParser.ts
 /**
 * Converts a camelCase or PascalCase name to dash-case.

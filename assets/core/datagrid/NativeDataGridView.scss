@@ -169,6 +169,22 @@
   background: color-mix(in srgb, var(--surface-2, var(--base-bg)) 28%, var(--surface-1, var(--base-bg)));
   border-bottom: 2px solid var(--border-color);
   padding: 4px 6px;
+  overflow: visible;
+}
+
+.native-datagrid__filter-row {
+  .native-form__lookup {
+    width: 100%;
+
+    .native-datagrid__filter-select {
+      padding-right: 30px;
+      transition: padding-right 120ms ease;
+    }
+
+    &.has-value .native-datagrid__filter-select {
+      padding-right: 52px;
+    }
+  }
 }
 
 
