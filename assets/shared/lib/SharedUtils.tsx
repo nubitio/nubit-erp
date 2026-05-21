@@ -166,9 +166,14 @@ export class SharedUtils {
       return value.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
     }
     const dateStr = value.trim();
-    // ISO datetime with time component — convert UTC→Lima before extracting the date
+
+    // ISO datetime string (e.g. "2026-05-20T00:00:00+00:00"): these fields are
+    // conceptually date-only, stored as midnight UTC. A UTC→Lima conversion would
+    // shift midnight back to the previous day. Extract the date portion directly
+    // from the string instead.
     if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
-      return new Date(dateStr).toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
+      if (m) return `${m[3]}/${m[2]}/${m[1]}`;
     }
 
     // YYYY-MM-DD (date-only, no timezone info — treat as local Lima date as-is)
