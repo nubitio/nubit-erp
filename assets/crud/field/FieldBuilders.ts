@@ -126,8 +126,12 @@ export function imageField(apiBaseUrl: string): ImageFieldBuilder {
 class DateFieldBuilder extends BaseFieldBuilder {
   constructor() {
     super(FieldType.DATE);
+    // Append T12:00:00Z so the Date sits at noon UTC — safely within any Lima calendar
+    // day. A bare YYYY-MM-DD string is parsed as UTC midnight, which lima-converts back
+    // to the previous day (UTC−5), causing an off-by-one on the default date.
     this._field.defaultValue = new Date(
-      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date()),
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date()) +
+        'T12:00:00Z',
     );
   }
 }
