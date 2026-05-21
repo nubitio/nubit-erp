@@ -1,4 +1,4 @@
-import { FieldType, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/core';
+import { FieldType, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
 import type { MutableRefObject } from 'react';
 import { supplierEvents } from '@app/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';

@@ -1,4 +1,4 @@
-import { identityField, textField, type Field } from '@nubit/core';
+import { identityField, textField, type Field } from '@nubit/crud';
 
 export const RoleFields = () => {
   const fields: Field[] = [];

@@ -8,7 +8,7 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { unitOfMeasureEvents } from '@app/domainEvents';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { unitOfMeasureEndpoints } from './api/catalogEndpoints';

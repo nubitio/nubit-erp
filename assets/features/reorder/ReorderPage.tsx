@@ -7,7 +7,7 @@ import {
   defineResource,
   type DataRecord,
   type GridCellContext,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

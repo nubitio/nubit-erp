@@ -8,7 +8,7 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { cashMovementCategoryEvents } from '@features/cashRegister';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 

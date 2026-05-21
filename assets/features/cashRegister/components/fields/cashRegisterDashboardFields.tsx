@@ -1,6 +1,6 @@
 import { Field } from '../../../../core/field/Field';
 import { identityField, currencyField, textField } from '../../../../core/field/FieldBuilders';
-import type { GridCellContext } from '@nubit/core';
+import type { GridCellContext } from '@nubit/crud';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {

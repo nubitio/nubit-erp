@@ -6,7 +6,7 @@ import { branchService } from '@features/branch';
 import { resolveBranchSelectionRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import toast from '@shared/lib/SharedUtils';
-import { useScreenSize } from '@utils/media-query';
+import { useScreenSize } from '@nubit/admin';
 
 import { AppDialog } from './AppDialog';
 

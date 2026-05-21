@@ -6,7 +6,7 @@ import {
   FORM_EVENTS,
   type FormHandle,
   type GridHandle,
-} from '@nubit/core';
+} from '@nubit/crud';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
@@ -31,7 +31,7 @@ import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '@nubit/core';
 import toast from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@nubit/core';
+import type { DataRecord } from '@nubit/crud';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();

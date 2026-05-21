@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { API_BASE_URL } from '@app/constants';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
 import { invoiceEvents } from '@features/invoice/model/events';
@@ -12,7 +12,7 @@ import {
   runSendInvoiceToSunatAction,
 } from '@features/invoice/lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@nubit/core';
+import type { DataRecord } from '@nubit/crud';
 
 const API_URL = API_BASE_URL + 'tax-documents';
 const fields = InvoiceFields();

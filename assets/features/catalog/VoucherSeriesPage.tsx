@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@app/constants';
-import { SmartCrudPage, defineResource } from '@nubit/core';
+import { SmartCrudPage, defineResource } from '@nubit/crud';
 import { voucherSeriesEvents } from '@app/domainEvents';
 
 const resource = defineResource({

@@ -6,7 +6,7 @@ import {
   enumField,
   textareaField,
 } from '../../../../core/field/FieldBuilders';
-import type { GridCellContext } from '@nubit/core';
+import type { GridCellContext } from '@nubit/crud';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { Constants } from '../../../../core/common/Constants';
 

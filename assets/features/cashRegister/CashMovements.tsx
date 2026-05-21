@@ -1,5 +1,5 @@
 import './CashMovements.scss';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
 import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '@app/constants';

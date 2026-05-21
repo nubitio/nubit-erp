@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useScreenSize } from '@utils/media-query';
+import { useScreenSize } from '@nubit/admin';
 import { MercureManager, useMercureHub } from '@nubit/core';
 import { AppDialog } from '@nubit/ui';
 import { businessHttpClient } from '@shared/api/network';

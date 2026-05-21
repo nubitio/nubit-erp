@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/core';
+import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { cashRegisterEvents } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';

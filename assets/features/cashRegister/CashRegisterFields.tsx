@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@app/constants';
-import { Field } from '@nubit/core';
-import { identityField, entityField, textField } from '@nubit/core';
-import type { GridCellContext } from '@nubit/core';
+import { Field } from '@nubit/crud';
+import { identityField, entityField, textField } from '@nubit/crud';
+import type { GridCellContext } from '@nubit/crud';
 
 export const CashRegisterFields = () => {
   const fields: Field[] = [];

@@ -1,6 +1,6 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
-import { DataGridView, type GridHandle } from '@nubit/core';
+import { DataGridView, type GridHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';

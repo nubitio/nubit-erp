@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 
 import { authService } from '@features/auth';
 import toast from '@shared/lib/SharedUtils';
-import { useScreenSize } from '@utils/media-query';
+import { useScreenSize } from '@nubit/admin';
 
 import { AppDialog } from './AppDialog';
 

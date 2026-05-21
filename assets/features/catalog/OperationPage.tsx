@@ -6,7 +6,7 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/core';
+} from '@nubit/crud';
 import React from 'react';
 import { operationEvents } from '@app/domainEvents';
 import { operationEndpoints } from './api/catalogEndpoints';

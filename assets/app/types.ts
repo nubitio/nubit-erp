@@ -1,24 +1,5 @@
 import React from 'react';
 
-export interface AppHeaderProps {
-  menuToggleEnabled: boolean;
-  title?: string;
-  toggleMenu: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  className?: string;
-}
-
-export interface SideNavigationMenuProps {
-  selectedItemChanged: (e: SideNavigationSelectEvent) => void;
-  openMenu: (e: React.PointerEvent) => void;
-  compactMode: boolean;
-}
-
-export interface SideNavigationSelectEvent {
-  path?: string;
-  selected: boolean;
-  event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>;
-}
-
 export interface UserPanelProps {
   menuMode: 'context' | 'list';
 }
@@ -48,14 +29,5 @@ export type AuthContextType = {
   signOut: () => void;
   loading: boolean;
 };
-
-export interface SideNavToolbarProps {
-  title: string;
-}
-
-export interface SingleCardProps {
-  title?: string;
-  description?: string;
-}
 
 export type Handle = () => void;

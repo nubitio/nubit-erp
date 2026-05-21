@@ -1,11 +1,5 @@
-import {
-  createCoreHttpClient,
-  type CoreHttpClient,
-  type GridData,
-  type FilterRule,
-  type LoadOption,
-  type DataRecord,
-} from '@nubit/core';
+import { createCoreHttpClient, type CoreHttpClient, type GridData } from '@nubit/core';
+import { type FilterRule, type LoadOption, type DataRecord } from '@nubit/crud';
 
 export type RemoteFilterDescriptor = unknown[];
 export type RemoteSortDescriptor = { selector?: string; desc?: boolean } | string;

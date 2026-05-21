@@ -28,7 +28,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
     const roleId = userInformation().currentUserRoleId ?? 0;
     menuService
       .getMenuByRoleId(roleId)
-      .then((response) => setMenuItems(response.data as AdminMenuItem[]))
+      .then((response) => setMenuItems(response.data))
       .catch(() => setMenuItems([]));
   }, []);
 

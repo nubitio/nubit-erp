@@ -16,7 +16,8 @@
   },
   "files": ["dist"],
   "dependencies": {
-    "@nubit/core": "^0.1.0"
+    "@nubit/core": "^0.1.0",
+    "@nubit/crud": "^0.1.0"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",

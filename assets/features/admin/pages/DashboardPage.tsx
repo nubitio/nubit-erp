@@ -4,7 +4,7 @@ import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
-import { useScreenSize } from '@utils/media-query';
+import { useScreenSize } from '@nubit/admin';
 import { DashboardStatusBar } from './components/DashboardStatusBar';
 import { DashboardHero } from './components/DashboardHero';
 import { DashboardOperations } from './components/DashboardOperations';
