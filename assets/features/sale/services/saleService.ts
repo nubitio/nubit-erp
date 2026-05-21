@@ -36,6 +36,10 @@ class SaleService {
   makeNote(noteId: string) {
     return businessHttpClient.post<any>(`${API_BASE_URL}sales/${noteId}/credit-note`);
   }
+
+  replaceRejected(saleId: string) {
+    return businessHttpClient.post<AppResponse>(`${API_BASE_URL}sales/${saleId}/replace-rejected`);
+  }
 }
 
 export const saleService = new SaleService();

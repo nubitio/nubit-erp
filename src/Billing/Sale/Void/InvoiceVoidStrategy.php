@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Sale\Void;
 
-use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Billing\Sunat\Domain\VoidedCreateUseCase;
@@ -33,16 +32,12 @@ final readonly class InvoiceVoidStrategy implements VoidStrategyInterface
      */
     public function void(string $saleId, string $reason): SunatVoidResponse
     {
-        $taxDocument = $this->taxDocumentRepository->findOneBy([
-            'saleRecord' => $saleId,
-            'documentType' => DocType::FACTURA->value,
-        ]);
+        $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType(
+            $saleId,
+            DocType::FACTURA->value,
+        );
 
         if ($taxDocument === null) {
-            throw new ServiceException('Comprobante no encontrado');
-        }
-
-        if (($taxDocument->getSunatStatus() ?? null) !== '0') {
             throw SaleException::notIssued();
         }
 

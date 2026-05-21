@@ -443,7 +443,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::FACTURA->value);
-        $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
+        $taxDocumentRepository->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
@@ -491,7 +491,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::BOLETA->value);
-        $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
+        $taxDocumentRepository->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
@@ -537,7 +537,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::FACTURA->value);
-        $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
+        $taxDocumentRepository->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
         $saleV2Loader->method('loadAsSale')->willReturn($sale);

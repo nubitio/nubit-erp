@@ -22,6 +22,7 @@ import {
   createInvoicePrinter,
   createSaleToolbar,
   runMakeInvoiceAction,
+  runReplaceRejectedAction,
   runVoidSaleAction,
   saleEvents,
   useSalePrintPreview,
@@ -29,6 +30,7 @@ import {
 } from '@features/sale';
 import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
+import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';
 import { useEvents } from '@nubit/core';
 import toast from '@shared/lib/SharedUtils';
 import type { DataRecord } from '@nubit/crud';
@@ -42,6 +44,9 @@ export const SalePage = () => {
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
+  const [replaceEnabled, setReplaceEnabled] = useState<boolean>(false);
+  const [documentsEnabled, setDocumentsEnabled] = useState<boolean>(false);
+  const [documentsDialogSaleId, setDocumentsDialogSaleId] = useState<string | null>(null);
   const { currentBranchId, currentUserId } = useSessionInfo();
 
   const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
@@ -130,6 +135,8 @@ export const SalePage = () => {
     customerSuccessEvent: CustomerPage.EVENTS.SUCCESS,
     setPrintEnabled,
     setCloneEnabled,
+    setReplaceEnabled,
+    setDocumentsEnabled,
     onDiscountApply: (payload: DiscountDialogApplyPayload) => {
       const { discountPercent, discountAmount, context } = payload;
 
@@ -188,6 +195,15 @@ export const SalePage = () => {
     });
   };
 
+  const replaceRejected = (saleId: string) => {
+    runReplaceRejectedAction(saleId, {
+      showLoading: (message) => gridRef.current?.showLoading(message),
+      hideLoading: () => gridRef.current?.hideLoading(),
+      refreshGrid: () => gridRef.current?.refresh(),
+      notify: (message, type) => toast(message, type),
+    });
+  };
+
   const print = (saleId: string) => {
     invoicePrinterRef.current.printSaleInvoice(saleId).catch((err: unknown) => {
       const message = err instanceof Error ? err.message : 'No se pudo imprimir el comprobante.';
@@ -211,8 +227,12 @@ export const SalePage = () => {
         addEventName: saleEvents.ADD,
         loadingEventName: FORM_EVENTS.LOADING,
       }),
+    onReplaceRejected: replaceRejected,
+    onViewDocuments: (saleId) => setDocumentsDialogSaleId(saleId),
     printEnabled,
     cloneEnabled,
+    replaceEnabled,
+    documentsEnabled,
   });
 
   return (
@@ -255,6 +275,11 @@ export const SalePage = () => {
         visible={salePrintPreview.isPreviewVisible}
         onPositive={salePrintPreview.confirmPreview}
         onNegative={salePrintPreview.closePreview}
+      />
+      <SaleTaxDocumentsDialog
+        saleId={documentsDialogSaleId}
+        visible={documentsDialogSaleId !== null}
+        onClose={() => setDocumentsDialogSaleId(null)}
       />
     </div>
   );

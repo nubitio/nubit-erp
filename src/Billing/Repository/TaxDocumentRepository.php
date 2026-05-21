@@ -81,19 +81,39 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function hasCreditNoteForSale(string $saleId): bool
     {
-        $legacySaleId = $this->resolveLegacySaleIdForVoucher($saleId);
+        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
         $count = $this->getEntityManager()->getConnection()->fetchOne(
             <<<'SQL'
 SELECT COUNT(*)
 FROM tax_document td
-WHERE td.movimiento_id = :sale_id
+WHERE (td.movimiento_id = :sale_id OR td.sale_id = :sale_id)
   AND td.document_type = :doc_type
 SQL,
             [
-                'sale_id' => $legacySaleId,
+                'sale_id' => $resolvedId,
                 'doc_type' => '07',
             ]
         );
+
+        if ((int) ($count !== false ? $count : 0) > 0) {
+            return true;
+        }
+
+        // Fallback: also check the original V2 id if resolveLegacySaleIdForVoucher returned a legacy id.
+        if ($resolvedId !== $saleId) {
+            $count = $this->getEntityManager()->getConnection()->fetchOne(
+                <<<'SQL'
+SELECT COUNT(*)
+FROM tax_document td
+WHERE (td.movimiento_id = :sale_id OR td.sale_id = :sale_id)
+  AND td.document_type = :doc_type
+SQL,
+                [
+                    'sale_id' => $saleId,
+                    'doc_type' => '07',
+                ]
+            );
+        }
 
         return (int) ($count !== false ? $count : 0) > 0;
     }
@@ -237,6 +257,52 @@ SQL,
         }
 
         return is_string($type) && $type !== '' ? $type : null;
+    }
+
+    /**
+     * Returns the latest SUNAT-accepted (sunat_status = '0') tax_document for the
+     * given sale and document type. Used by the void flow to ensure we void the
+     * replacement document when both an original (rejected) and a replacement
+     * (accepted) exist for the same sale.
+     */
+    public function findLatestAcceptedBySaleAndType(string $saleId, string $documentType): ?TaxDocument
+    {
+        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
+
+        $taxDocId = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<'SQL'
+SELECT tax_document_id
+FROM tax_document
+WHERE (movimiento_id = :id OR sale_id = :id)
+  AND document_type = :doc_type
+  AND sunat_status = '0'
+ORDER BY created_at DESC
+LIMIT 1
+SQL,
+            ['id' => $resolvedId, 'doc_type' => $documentType]
+        );
+
+        // Fallback: try the original V2 id if the resolved (legacy) id found nothing.
+        if ((!is_string($taxDocId) || $taxDocId === '') && $resolvedId !== $saleId) {
+            $taxDocId = $this->getEntityManager()->getConnection()->fetchOne(
+                <<<'SQL'
+SELECT tax_document_id
+FROM tax_document
+WHERE (movimiento_id = :id OR sale_id = :id)
+  AND document_type = :doc_type
+  AND sunat_status = '0'
+ORDER BY created_at DESC
+LIMIT 1
+SQL,
+                ['id' => $saleId, 'doc_type' => $documentType]
+            );
+        }
+
+        if (!is_string($taxDocId) || $taxDocId === '') {
+            return null;
+        }
+
+        return $this->find($taxDocId);
     }
 
     private function findActiveTaxDocumentBySaleId(string $saleId): ?TaxDocument

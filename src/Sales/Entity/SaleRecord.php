@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
+use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
 use App\Efact\Doctrine\Filter\DevExtremeFilter;
 use Nubit\Platform\Exception\ServiceException;
@@ -62,6 +63,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: PrintSaleInvoice::class,
             read: false,
             name: 'sale_print_invoice',
+        ),
+        new Post(
+            uriTemplate: '/sales/{id}/replace-rejected',
+            controller: ReplaceRejectedSaleDocument::class,
+            read: false,
+            deserialize: false,
+            name: 'sale_replace_rejected',
         ),
     ],
     normalizationContext: ['groups' => ['sale_record:read']],

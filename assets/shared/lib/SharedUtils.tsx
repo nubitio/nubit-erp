@@ -263,7 +263,8 @@ export class SharedUtils {
   }
 
   static billStatusFormatter(value: string | number | null | undefined) {
-    const code = value === null || value === undefined || value === '' ? -1 : Number(value);
+    const raw = value === null || value === undefined || value === '' ? -1 : Number(value);
+    const code = Number.isNaN(raw) ? -1 : raw;
     if (code === -1) {
       return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
     } else if (code === 0) {
