@@ -8,16 +8,32 @@ The target is not a generic component dump. The target is a batteries-included s
 
 ## Current State
 
-The frontend already contains the beginning of the package boundary:
+Status as of the latest audit: the extraction is no longer at the initial facade stage. eFact now dogfoods multiple in-repo `@nubit/*` facades, package manifests exist, and package builds have started. The remaining work is mostly about physical separation, publishability, and contract hardening.
 
 - `assets/core/package.json` declares `@nubit/core`.
-- `assets/core/public.ts` is the intended public facade.
-- `assets/ui`, `assets/admin`, `assets/api-platform`, and `assets/react-admin` declare the first focused `@nubit/*` package facades.
+- `assets/ui`, `assets/crud`, `assets/admin`, `assets/api-platform`, and `assets/react-admin` declare focused `@nubit/*` package facades.
+- `assets/core/public.ts`, `assets/ui/public.ts`, `assets/crud/public.ts`, `assets/admin/public.ts`, `assets/api-platform/public.ts`, and `assets/react-admin/public.ts` are the active public entrypoints.
 - `tsconfig.json` and `vite.config.js` map the active `@nubit/*` facades to their `public.ts` entrypoints.
+- `tsdown.config.ts` builds the in-repo packages to `dist/` with ESM, CJS, and declaration outputs.
 - `docs/adr/ADR-015-frontend-architecture-sanitization.md` defines the current frontend layers: `@app`, `@features`, `@shared`, `@core`, and `@offline`.
 - `assets/core/README.md` already tells consumers to prefer the public facade over implementation imports.
+- Application and feature code already imports broadly from `@nubit/core`, `@nubit/crud`, `@nubit/ui`, `@nubit/admin`, and `@nubit/api-platform`.
+- No direct `@core/*` imports were found in `assets/**/*.ts(x)` during the audit.
+- Package-local tests exist for promoted surfaces such as UI dialogs/theme, admin shell/header, core HTTP, API Platform parsing, and remote data sources.
 
-The boundary is still internal and incomplete. Some app/offline code still imports implementation modules through `@core/*`, and reusable shell/theme/shared components are still being sorted into focused packages.
+The boundary is still internal and incomplete, but CRUD implementation has been physically moved under `assets/crud`, the old `assets/core/*` CRUD/form/field/datagrid/dialog shims have been removed, and the remaining legacy `assets/core/ui/CrudViews.ts` and `assets/core/data/ApiPlatformRemoteDataSource.ts` compatibility files have been removed. Publishability is not complete because package manifests remain `private: true` and package-level CRUD coverage still needs to be expanded.
+
+## Phase Status
+
+| Phase | Status | Notes |
+| --- | --- | --- |
+| Phase 1: Stabilize Internal Facades | Mostly complete | Public facades exist and app code has moved away from `@core/*`; lint rules restrict implementation imports, although some rules remain warnings outside package internals. |
+| Phase 2: Extract `@nubit/ui` Internally | Mostly complete | `AppDialog`, `ConfirmDialog`, `Card`, `AppToolbar`, theme provider, and `ThemeSwitcher` live behind `@nubit/ui`; tests exist. |
+| Phase 3: Harden `@nubit/core` | In progress | Runtime/config/HTTP/event/Mercure/date APIs exist. Locale/timezone are configurable, but compatibility exports such as `LIMA_TZ` remain. |
+| Phase 4: Split CRUD and API Platform Concerns | Mostly complete | `@nubit/api-platform` has its own implementation; `@nubit/crud` now owns field, form, datagrid, dialog, and CRUD implementation under `assets/crud`. Old `assets/core/*` shims for these areas have been removed. |
+| Phase 5: Extract Admin Shell | Mostly complete | `@nubit/admin` exists, has tests, and eFact consumes `AdminShell` through app-owned adapters. |
+| Phase 6: Optional Offline Package | Not started | Offline remains deferred until generic runtime and eFact/POS sync rules are separated. |
+| Phase 7: Publishable Workspace Packages | Started | `tsdown` build exists and `dist/` outputs are generated. Packages are still private and not dogfooded as real workspace dependencies. |
 
 ## Package Model
 
@@ -110,6 +126,13 @@ Split rule:
 - CRUD owns resource/page/form/grid behavior.
 - API Platform owns schema discovery, IRI behavior, and metadata-to-field inference.
 
+Current gap:
+
+- `@nubit/api-platform` is physically separated under `assets/api-platform`.
+- `@nubit/crud` owns field, form, datagrid, dialog, and CRUD implementation under `assets/crud`.
+- Old compatibility shims under `assets/core/crud`, `assets/core/field`, `assets/core/form`, `assets/core/datagrid`, and `assets/core/dialog` have been removed after migrating remaining consumers to `@nubit/crud`.
+- Legacy compatibility files `assets/core/ui/CrudViews.ts` and `assets/core/data/ApiPlatformRemoteDataSource.ts` have been removed; CRUD now imports the API Platform remote data source from `@nubit/api-platform`.
+
 ### `@nubit/admin`
 
 Candidates:
@@ -155,12 +178,16 @@ Target shell shape:
 
 ### Phase 1: Stabilize Internal Facades
 
+Status: mostly complete.
+
 - Treat `assets/core/public.ts` as the only supported internal library contract.
 - Move simple feature imports from `@core/*` to `@nubit/core`.
 - Add or tighten lint rules so feature code stops importing `@core/*` directly once migrated.
 - Keep implementation files in place until the public contract is stable.
 
 ### Phase 2: Extract `@nubit/ui` Internally
+
+Status: mostly complete.
 
 - Create a package boundary for UI primitives, still inside this repo.
 - Move `AppDialog`, `ConfirmDialog`, card, toolbar, button/icon-button/badge styles, and basic states.
@@ -169,46 +196,89 @@ Target shell shape:
 
 ### Phase 3: Harden `@nubit/core`
 
+Status: in progress.
+
 - Make locale/timezone/runtime/i18n explicit provider options.
 - Keep `CoreHttpClient` as the canonical generic HTTP client.
 - Deprecate or adapt `assets/shared/api/HttpClient.ts` into app-owned eFact integration code.
 - Add tests for URL joining, param serialization, refresh retry, error parsing, and provider behavior.
 
+Remaining cleanup:
+
+- Decide whether `LIMA_TZ` remains as documented compatibility or moves to an eFact-owned adapter before publication.
+- Audit `@nubit/core` exports for app-specific defaults, labels, routes, and API paths.
+- Convert broad lint warnings that protect public package boundaries into errors once migration exceptions are removed.
+
 ### Phase 4: Split CRUD and API Platform Concerns
+
+Status: mostly complete.
 
 - Move form/grid/CRUD contracts behind package facades.
 - Move Hydra/OpenAPI behavior behind `@nubit/api-platform`.
 - Make Mercure integration optional and provider-driven.
 - Add mapper/parser tests and minimal React tests for `SmartCrudPage` loading/error states.
 
+Remaining cleanup:
+
+- Add package-level tests around `SmartCrudPage`, `CrudPage`, form/grid loading/error states, and permission behavior.
+
 ### Phase 5: Extract Admin Shell
+
+Status: mostly complete.
 
 - Introduce `@nubit/admin` facade.
 - Refactor shell components to receive menu/user/header/footer/notification/assistant behavior through slots or adapters.
 - Keep eFact-specific `EfactApp`, auth provider, branch picker, and route selection in `assets/app`.
 - Make eFact consume `@nubit/admin` internally before publishing.
 
+Remaining cleanup:
+
+- Keep eFact-specific shell composition in `assets/app/shell` and prevent new imports from `@nubit/admin` internals.
+- Add coverage for sidebar menu selection and header slot behavior if those APIs are intended to be stable.
+
 ### Phase 6: Optional Offline Package
+
+Status: not started.
 
 - Inventory `assets/offline` for generic runtime vs POS/eFact sync rules.
 - Extract only after adapters and domain payloads are isolated.
 
 ### Phase 7: Publishable Workspace Packages
 
+Status: started.
+
 - Add package build tooling (`tsup`, Vite library mode, or equivalent) only after internal facades are stable.
 - Emit `.d.ts` and ESM builds.
 - Mark React, React DOM, React Query, React Router, i18next, and Dexie as peer dependencies where appropriate.
 - Dogfood through workspace/path dependencies before external publication.
 
+Remaining cleanup:
+
+- Decide whether generated `dist/` files are committed artifacts or CI/release artifacts only.
+- Add actual workspace/path dependency dogfooding if packages should behave like publishable packages before release.
+- Flip package manifests from `private: true` only after dependency boundaries, CSS entrypoints, peer dependencies, and tests are stable.
+- Include `@nubit/crud` in the `@nubit/react-admin` package dependencies before publishing; it is currently re-exported by the umbrella facade and must be an explicit dependency.
+
+## Next Extraction Slices
+
+1. Add package tests for CRUD rendering, loading/error states, permissions, and form/grid event behavior.
+2. Tighten `no-restricted-imports` from warnings to errors for migrated public facade rules.
+3. Audit package manifests and peer dependencies, especially CSS/style entrypoints.
+4. Decide the release policy for generated `dist/` outputs.
+
 ## Readiness Checklist
 
-- [ ] No package candidate imports from `@app/*`, `@features/*`, eFact services, or concrete business routes.
-- [ ] Public imports go through `@nubit/*` facades.
-- [ ] UI components have no data-fetching or auth assumptions.
-- [ ] Shell components receive app-specific behavior through props, slots, or adapters.
-- [ ] Locale, timezone, theme paths, storage keys, API base URL, auth refresh paths, and footer branding are configurable.
-- [ ] Package-local tests exist for the promoted surface.
-- [ ] eFact consumes the package boundary before publication.
+- [x] eFact consumes the package boundary internally before publication.
+- [x] Public application imports broadly go through `@nubit/*` facades.
+- [x] No direct `@core/*` imports were found in `assets/**/*.ts(x)` during the audit.
+- [x] `@nubit/ui` primitives avoid auth, feature, and app-shell dependencies.
+- [x] Admin shell components receive app-specific behavior through props, slots, or adapters.
+- [x] Package-local tests exist for several promoted surfaces.
+- [x] CRUD implementation is physically owned by `assets/crud` rather than re-exported from `assets/core/*`.
+- [ ] No package candidate imports from `@app/*`, `@features/*`, eFact services, or concrete business routes after the final physical move.
+- [ ] Locale, timezone, theme paths, storage keys, API base URL, auth refresh paths, and footer branding are all configurable and documented.
+- [ ] Package manifests are complete for publication, including explicit dependencies, peer dependencies, CSS entrypoints, and `private` policy.
+- [ ] Lint rules enforce package boundaries as errors for migrated areas.
 
 ## Known Risks
 
@@ -217,6 +287,8 @@ Target shell shape:
 - Theme styles can leak global class assumptions. Mitigate with documented CSS variables, stable class naming, and explicit style entrypoints.
 - SmartCrud can become too API Platform-specific. Mitigate by keeping API Platform behavior in its own adapter package.
 - Lack of unit tests around the current core can make extraction risky. Mitigate by adding package-local tests before moving files physically.
+- Facade-only extraction can hide real package coupling. Mitigate by moving implementation ownership into each package before treating the packages as publishable.
+- Committed `dist/` files can drift from source. Mitigate by deciding whether they are release artifacts or checked-in build outputs and enforcing that policy in CI.
 
 ## Related Documents
 

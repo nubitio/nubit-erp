@@ -1,9 +1,9 @@
 import React$1, { ReactNode, RefObject } from "react";
-import { AppDialog, AppDialogProps, ConfirmDialog, ConfirmDialogProps } from "@nubit/ui";
 import { FieldOverride as FieldOverride$1 } from "@nubit/api-platform";
-import { DataRecord, GridData } from "@nubit/core";
+import { DataRecord, DataRecord as DataRecord$1, GridData } from "@nubit/core";
+import { AppDialog, AppDialogProps, ConfirmDialog, ConfirmDialogProps } from "@nubit/ui";
 
-//#region assets/core/field/FieldType.d.ts
+//#region assets/crud/field/FieldType.d.ts
 declare enum FieldType {
   NONE = "none",
   TEXT = "text",
@@ -24,14 +24,14 @@ declare enum FieldType {
   HTML = "html"
 }
 //#endregion
-//#region assets/core/field/FilterRule.d.ts
+//#region assets/crud/field/FilterRule.d.ts
 interface FilterRule {
   field: string;
   operator: string;
   value: string | number | boolean;
 }
 //#endregion
-//#region assets/core/field/ValidationRule.d.ts
+//#region assets/crud/field/ValidationRule.d.ts
 type RequiredRule = {
   type: 'required';
   options: {
@@ -97,10 +97,7 @@ type AsyncRule = {
 };
 type ValidationRule = RequiredRule | EmailRule | NumericRule | PatternRule | StringLengthRule | RangeRule | CompareRule | CustomRule | AsyncRule;
 //#endregion
-//#region assets/core/data/DataRecord.d.ts
-type DataRecord$1 = Record<string, unknown>;
-//#endregion
-//#region assets/core/field/FieldCallbacks.d.ts
+//#region assets/crud/field/FieldCallbacks.d.ts
 interface GridCellContext<TData extends DataRecord$1 = Record<string, any>, TValue = any> {
   value?: TValue;
   data: TData;
@@ -146,7 +143,7 @@ type OnChangeFn = GridOnChangeFn | FormOnChangeFn;
  */
 type ItemFormatterFn = (item: unknown) => React$1.ReactNode;
 //#endregion
-//#region assets/core/field/Field.d.ts
+//#region assets/crud/field/Field.d.ts
 type LoadOption = Record<string, any>;
 interface Field {
   isIdentity: boolean;
@@ -276,12 +273,12 @@ interface ToolbarButtonItem {
   visible?: boolean;
 }
 //#endregion
-//#region assets/core/form/FormDataSnapshot.d.ts
+//#region assets/crud/form/FormDataSnapshot.d.ts
 type FormDataRecord = DataRecord$1;
 type FormDataSnapshot = FormDataRecord;
 type FormDataChangedHandler = (formData: FormDataSnapshot) => void;
 //#endregion
-//#region assets/core/form/FormHandle.d.ts
+//#region assets/crud/form/FormHandle.d.ts
 interface FormHandle {
   getFormData: () => FormDataRecord | undefined;
   getFieldValue: (name: string) => unknown;
@@ -302,7 +299,7 @@ interface FormHandle {
   setIsEdit: (value: boolean) => void;
 }
 //#endregion
-//#region assets/core/form/FormLayout.d.ts
+//#region assets/crud/form/FormLayout.d.ts
 interface FormTab {
   label: string;
   fields: string[];
@@ -322,7 +319,7 @@ type FormLayout = {
   sections: FormSection[];
 };
 //#endregion
-//#region assets/core/crud/BulkAction.d.ts
+//#region assets/crud/crud/BulkAction.d.ts
 interface BulkAction {
   key: string;
   label: string;
@@ -331,14 +328,14 @@ interface BulkAction {
   onAction: (selectedIds: (string | number)[]) => void | Promise<void>;
 }
 //#endregion
-//#region assets/core/crud/ColumnPreset.d.ts
+//#region assets/crud/crud/ColumnPreset.d.ts
 interface ColumnPreset {
   key: string;
   label: string;
   columns: string[];
 }
 //#endregion
-//#region assets/core/crud/AuditTrail.d.ts
+//#region assets/crud/crud/AuditTrail.d.ts
 interface AuditEntry {
   id: string | number;
   timestamp: string;
@@ -355,7 +352,7 @@ interface AuditTrailConfig {
   renderEntry?: (entry: AuditEntry) => ReactNode;
 }
 //#endregion
-//#region assets/core/crud/fieldOperationSemantics.d.ts
+//#region assets/crud/crud/fieldOperationSemantics.d.ts
 type SmartCrudOperation = 'create' | 'edit';
 type SmartCrudFieldOperation = SmartCrudOperation;
 type SmartCrudFieldOperationFlag = boolean | Partial<Record<SmartCrudFieldOperation, boolean>>;
@@ -398,7 +395,7 @@ declare function collectOperationSemanticsIssues(owner: string, behavior: SmartC
 declare function resolveFieldOperationSemantics(field: Partial<SmartCrudFieldOperationDefaults>, behavior: SmartCrudFieldOperationBehavior | undefined, owner?: string): SmartCrudResolvedFieldOperationSemantics;
 declare function applyFieldOperationSemantics<T extends DataRecord$1>(field: FieldDef<T>, operation: SmartCrudFieldOperation, behavior: SmartCrudFieldOperationBehavior | undefined, owner?: string, target?: 'grid' | 'form'): FieldDef<T>;
 //#endregion
-//#region assets/core/crud/fieldValidation.d.ts
+//#region assets/crud/crud/fieldValidation.d.ts
 type SmartCrudRecord$1 = object;
 type SmartCrudHydraDirectiveLike<T extends SmartCrudRecord$1> = {
   kind: 'override';
@@ -442,7 +439,7 @@ declare function validateHydraFieldResolutionInput<T extends SmartCrudRecord$1>(
 }>): void;
 declare function validateResolvedFieldNames(fields: readonly Field[], owner: string): void;
 //#endregion
-//#region assets/core/crud/fieldContract.d.ts
+//#region assets/crud/crud/fieldContract.d.ts
 type SmartCrudRecord = object;
 type SmartCrudModelFieldKey<T extends SmartCrudRecord> = Extract<keyof T, string>;
 type SmartCrudFieldRecord<T extends SmartCrudRecord> = T & DataRecord$1;
@@ -498,7 +495,7 @@ declare function defineFields<T extends SmartCrudRecord>(contract: SmartCrudHydr
 declare function defineFields<T extends SmartCrudRecord>(contract: SmartCrudManualFieldContract<T>): SmartCrudManualFieldContract<T>;
 declare const defineFieldContract: typeof defineFields;
 //#endregion
-//#region assets/core/crud/ResourceConfig.d.ts
+//#region assets/crud/crud/ResourceConfig.d.ts
 /**
  * Generic factory that receives a form ref and returns typed field definitions.
  * Defaults to `DataRecord` for backward compatibility.
@@ -627,7 +624,7 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
   _supportedOperations?: string[];
 }
 //#endregion
-//#region assets/core/crud/defineResource.d.ts
+//#region assets/crud/crud/defineResource.d.ts
 /**
  * Overload 1 — Zero config: derive id from URL.
  * `mercure` defaults to `true` (opt-in) when not specified.
@@ -644,7 +641,7 @@ declare function defineResource<T extends DataRecord$1>(apiUrl: string, override
 /** Overload 3 — Full config object (legacy / full control — retrocompatible). */
 declare function defineResource<T extends DataRecord$1 = DataRecord$1>(config: ResourceConfig<T>): ResourceConfig<T>;
 //#endregion
-//#region assets/core/crud/usePermissions.d.ts
+//#region assets/crud/crud/usePermissions.d.ts
 /** Fully-resolved, all-required permissions (guaranteed booleans). */
 interface ResolvedPermissions {
   canAdd: boolean;
@@ -669,7 +666,7 @@ interface ResolvedPermissions {
  */
 declare function usePermissions(resource: ResourceConfig, supportedOperations?: string[]): ResolvedPermissions;
 //#endregion
-//#region assets/core/crud/useSelectionState.d.ts
+//#region assets/crud/crud/useSelectionState.d.ts
 interface SelectionState {
   selectedIds: (string | number)[];
   selectedCount: number;
@@ -680,7 +677,7 @@ declare function useSelectionState(identityField: string): SelectionState & {
   onSelectionChanged: (selectedRows: DataRecord$1[]) => void;
 };
 //#endregion
-//#region assets/core/crud/useColumnPreset.d.ts
+//#region assets/crud/crud/useColumnPreset.d.ts
 interface ColumnPresetState {
   activePreset: string | null;
   setPreset: (key: string | null) => void;
@@ -688,12 +685,12 @@ interface ColumnPresetState {
 }
 declare function useColumnPreset(resource: ResourceConfig): ColumnPresetState;
 //#endregion
-//#region assets/core/crud/resolveCrudResource.d.ts
+//#region assets/crud/crud/resolveCrudResource.d.ts
 type ResolvedCrudResource<T extends DataRecord$1> = ResourceConfig<T> & {
   events: FormEventNames;
 };
 //#endregion
-//#region assets/core/crud/useCrudPage.d.ts
+//#region assets/crud/crud/useCrudPage.d.ts
 declare function useCrudPage<T extends DataRecord$1 = DataRecord$1>(resource: ResourceConfig<T>): {
   events: FormEventNames;
   resource: ResolvedCrudResource<T>;
@@ -706,7 +703,7 @@ declare function useCrudPage<T extends DataRecord$1 = DataRecord$1>(resource: Re
   presetState: ColumnPresetState;
 };
 //#endregion
-//#region assets/core/crud/CrudPage.d.ts
+//#region assets/crud/crud/CrudPage.d.ts
 interface CrudPageProps<T extends DataRecord$1 = DataRecord$1> {
   resource: ResourceConfig<T>;
   /**
@@ -745,7 +742,7 @@ declare const CrudPage: <T extends DataRecord$1 = DataRecord$1>({
   onFiltersChange
 }: CrudPageProps<T>) => import("react/jsx-runtime").JSX.Element;
 //#endregion
-//#region assets/core/crud/SmartCrudPage.d.ts
+//#region assets/crud/crud/SmartCrudPage.d.ts
 interface SmartCrudPageProps<T extends DataRecord$1 = DataRecord$1> {
   resource: ResourceConfig<T>;
   /**
@@ -783,7 +780,7 @@ declare function SmartCrudPage<T extends DataRecord$1 = DataRecord$1>({
   fieldOverrides
 }: SmartCrudPageProps<T>): import("react/jsx-runtime").JSX.Element;
 //#endregion
-//#region assets/core/crud/SmartCrudRolesContext.d.ts
+//#region assets/crud/crud/SmartCrudRolesContext.d.ts
 declare function SmartCrudRolesProvider({
   children,
   roles
@@ -792,7 +789,7 @@ declare function SmartCrudRolesProvider({
 }>): import("react/jsx-runtime").JSX.Element;
 declare function useSmartCrudRoles(): string[];
 //#endregion
-//#region assets/core/crud/resolveSmartCrudFields.d.ts
+//#region assets/crud/crud/resolveSmartCrudFields.d.ts
 type FieldOverride = Partial<Field> & {
   key: string;
 };
@@ -828,7 +825,7 @@ type ScopedFormEventNames = FormEventNames & {
  */
 declare function createScopedEventBus(resourceId: string): ScopedFormEventNames;
 //#endregion
-//#region assets/core/crud/AuditTrailPanel.d.ts
+//#region assets/crud/crud/AuditTrailPanel.d.ts
 interface AuditTrailPanelProps {
   url: string | null;
   renderEntry?: (entry: AuditEntry) => ReactNode;
@@ -879,15 +876,18 @@ interface CoreTranslationKeys {
   'dialog.confirmDeleteTitle': string;
 }
 //#endregion
+//#region assets/core/data/DataRecord.d.ts
+type DataRecord$2 = Record<string, unknown>;
+//#endregion
 //#region assets/core/i18n/useCoreTranslation.d.ts
 declare function useCoreTranslation(): {
-  t: (key: keyof CoreTranslationKeys, options?: DataRecord$1) => string;
+  t: (key: keyof CoreTranslationKeys, options?: DataRecord$2) => string;
 };
 //#endregion
 //#region assets/core/i18n/initCoreI18n.d.ts
 declare function initCoreI18n(): void;
 //#endregion
-//#region assets/core/crud/dialogStore.d.ts
+//#region assets/crud/crud/dialogStore.d.ts
 type DialogMode = 'add' | 'edit' | 'view';
 interface DialogState {
   isOpen: boolean;
@@ -900,18 +900,18 @@ interface DialogActions {
 }
 type DialogSlice = DialogState & DialogActions;
 //#endregion
-//#region assets/core/crud/DialogStoreProvider.d.ts
+//#region assets/crud/crud/DialogStoreProvider.d.ts
 declare function DialogStoreProvider({
   children
 }: {
   children: ReactNode;
 }): React$1.JSX.Element;
 //#endregion
-//#region assets/core/crud/useCrudDialogStore.d.ts
+//#region assets/crud/crud/useCrudDialogStore.d.ts
 declare function useCrudDialogStore(resourceId: string): DialogSlice;
 import * as import__nubit_api_platform from "@nubit/api-platform";
 //#endregion
-//#region assets/core/crud/rules/useConditionalRules.d.ts
+//#region assets/crud/crud/rules/useConditionalRules.d.ts
 interface FieldState {
   name: string;
   visible: boolean;
@@ -930,7 +930,7 @@ interface FieldState {
  */
 declare function useConditionalRules(fields: Field[], formData: FormDataRecord | null): FieldState[];
 //#endregion
-//#region assets/core/crud/rules/useFieldPermissions.d.ts
+//#region assets/crud/crud/rules/useFieldPermissions.d.ts
 /**
  * Filters and marks fields based on user roles.
  * IMPORTANT: This is UI-only. Backend is the real authorization source.
@@ -943,7 +943,7 @@ declare function useConditionalRules(fields: Field[], formData: FormDataRecord |
  */
 declare function useFieldPermissions(fields: Field[], userRoles: string[]): Field[];
 //#endregion
-//#region assets/core/crud/rules/useDependsOn.d.ts
+//#region assets/crud/crud/rules/useDependsOn.d.ts
 /**
  * For each field that declares `dependsOn`, invalidate its entity query
  * (keyed by the field's `url`) whenever one of the watched form values changes.
@@ -957,7 +957,7 @@ declare function useFieldPermissions(fields: Field[], userRoles: string[]): Fiel
  */
 declare function useDependsOn(fields: Field[], formData: FormDataRecord | null): void;
 //#endregion
-//#region assets/core/crud/routing/useRouting.d.ts
+//#region assets/crud/crud/routing/useRouting.d.ts
 interface RoutingState {
   /** id of record to open on mount, or null */
   initialRecordId: string | null;
@@ -982,7 +982,7 @@ declare namespace index_d_exports {
   export { AuditEntry, AuditTrailConfig, AuditTrailPanel, AuditTrailPanelProps, BulkAction, ColumnPreset, ColumnPresetState, CrudPage, DialogActions, DialogMode, DialogSlice, DialogState, DialogStoreProvider, FieldDef, FieldOverride, FieldState, FieldsFactory, FormLayout, FormSection, FormTab, ResolvedPermissions, ResourceConfig, ResourcePermissions, ResourceRouting, RoutingState, ScopedFormEventNames, SelectionState, SmartCrudFieldContract, SmartCrudFieldContractError, SmartCrudFieldOperation, SmartCrudFieldOperationBehavior, SmartCrudFieldOperationFlag, SmartCrudFieldOperationSemanticsError, SmartCrudFieldOperationState, SmartCrudFieldPatch, SmartCrudFieldResolutionStrategy, SmartCrudFieldSourceMode, SmartCrudHydraFieldContract, SmartCrudHydraFieldDirective, SmartCrudManualField, SmartCrudManualFieldContract, SmartCrudModelFieldKey, SmartCrudNormalizedFieldOperationSemantics, SmartCrudOperation, SmartCrudPage, SmartCrudRecord, SmartCrudResolvedFieldOperationSemantics, SmartCrudResolvedFieldOperationState, SmartCrudRolesProvider, applyFieldOperationSemantics, collectOperationSemanticsIssues, createScopedEventBus, defineFieldContract, defineFields, defineResource, initCoreI18n, mergeOverrides, normalizeFieldOperationSemantics, resolveFieldOperationSemantics, resolveSmartCrudFields, useColumnPreset, useConditionalRules, useCoreTranslation, useCrudDialogStore, useCrudPage, useDependsOn, useFieldPermissions, usePermissions, useRouting, useSelectionState, useSmartCrudRoles, validateFieldContract, validateHydraFieldResolutionInput, validateResolvedFieldNames };
 }
 //#endregion
-//#region assets/core/field/BaseFieldBuilder.d.ts
+//#region assets/crud/field/BaseFieldBuilder.d.ts
 declare class BaseFieldBuilder {
   protected _field: Field;
   constructor(type: FieldType);
@@ -1050,7 +1050,7 @@ declare class BaseFieldBuilder {
   build(): Field;
 }
 //#endregion
-//#region assets/core/field/FieldBuilders.d.ts
+//#region assets/crud/field/FieldBuilders.d.ts
 /**
  * Factory for the standard hidden identity field (type NONE, name 'id').
  *
@@ -1291,7 +1291,7 @@ declare class PasswordFieldBuilder extends BaseFieldBuilder {
 }
 declare function passwordField(): PasswordFieldBuilder;
 //#endregion
-//#region assets/core/field/FieldBuilder.d.ts
+//#region assets/crud/field/FieldBuilder.d.ts
 declare class FieldBuilder {
   private readonly _field;
   constructor();
@@ -1352,13 +1352,13 @@ declare class FieldBuilder {
   build(): Field;
 }
 //#endregion
-//#region assets/core/datagrid/DataGridEvents.d.ts
+//#region assets/crud/datagrid/DataGridEvents.d.ts
 declare const DATA_GRID_EVENTS: {
   SELECTION_CHANGED: string;
   TOOLBAR_EVENT: string;
 };
 //#endregion
-//#region assets/core/datagrid/GridHandle.d.ts
+//#region assets/crud/datagrid/GridHandle.d.ts
 interface GridHandle {
   showLoading: (message?: string) => void;
   hideLoading: () => void;
@@ -1373,7 +1373,7 @@ interface GridHandle {
   filter: (filterRule: FilterRule | null) => void;
 }
 //#endregion
-//#region assets/core/datagrid/DataGridViewOptions.d.ts
+//#region assets/crud/datagrid/DataGridViewOptions.d.ts
 interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord$1[];
 }
@@ -1428,10 +1428,10 @@ interface DataGridViewOptions {
   visibleColumns?: string[] | null;
 }
 //#endregion
-//#region assets/core/datagrid/NativeDataGridView.d.ts
+//#region assets/crud/datagrid/NativeDataGridView.d.ts
 declare const NativeDataGridView: React$1.ForwardRefExoticComponent<DataGridViewOptions & React$1.RefAttributes<GridHandle>>;
 //#endregion
-//#region assets/core/dialog/CrudDialogView.d.ts
+//#region assets/crud/dialog/CrudDialogView.d.ts
 interface CrudDialogViewOptions {
   title?: string;
   width?: number;
@@ -1453,7 +1453,7 @@ interface CrudDialogViewEvents {
 }
 declare const CrudDialogView: React$1.ForwardRefExoticComponent<CrudDialogViewOptions & React$1.RefAttributes<CrudDialogViewEvents>>;
 //#endregion
-//#region assets/core/form/FormViewOptions.d.ts
+//#region assets/crud/form/FormViewOptions.d.ts
 interface FormViewOptions {
   className?: string;
   url: string;
@@ -1490,10 +1490,10 @@ interface FormViewOptions {
   sidebarColCount?: never;
 }
 //#endregion
-//#region assets/core/form/NativeFormView.d.ts
+//#region assets/crud/form/NativeFormView.d.ts
 declare const NativeFormView: React$1.ForwardRefExoticComponent<FormViewOptions & React$1.RefAttributes<FormHandle>>;
 //#endregion
-//#region assets/core/form/FormEvents.d.ts
+//#region assets/crud/form/FormEvents.d.ts
 declare const FORM_EVENTS: {
   FIELD_CHANGED: string;
   ROW_ADDED: string;
