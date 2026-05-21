@@ -21,7 +21,7 @@ const sharedConfig = {
 
 export default [
   // ── @nubit/core ──────────────────────────────────────────────────────────────
-  // Self-contained: all imports are relative within assets/core/.
+  // Runtime/CRUD facade. Cross-package @nubit/* imports stay external.
   defineConfig({
     ...sharedConfig,
     entry: { index: 'assets/core/public.ts' },
@@ -37,7 +37,7 @@ export default [
   }),
 
   // ── @nubit/ui ─────────────────────────────────────────────────────────────────
-  // Pure re-export facade — AppDialog and ConfirmDialog come from @nubit/core.
+  // Visual primitives: AppDialog, ConfirmDialog, and related styles.
   defineConfig({
     ...sharedConfig,
     entry: { index: 'assets/ui/public.ts' },

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AppDialog } from '@shared/ui/app-dialog';
+import { AppDialog } from '@nubit/ui';
 import './SalePrintPreviewPopup.scss';
 import { useScreenSize } from '@utils/media-query';
 

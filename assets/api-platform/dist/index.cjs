@@ -24,10 +24,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 let _nubit_core = require("@nubit/core");
 let _tanstack_react_query = require("@tanstack/react-query");
 let react = require("react");
-let react$1 = __toESM(react, 1);
 react = __toESM(react);
 let react_jsx_runtime = require("react/jsx-runtime");
-//#region assets/core/crud/hydra/openApiParser.ts
+//#region assets/api-platform/openApiParser.ts
 /**
 * Converts a camelCase or PascalCase name to dash-case.
 * Mirrors API Platform's DashPathSegmentNameGenerator behaviour.
@@ -269,7 +268,7 @@ function parseOpenApiDoc(doc) {
 	return result;
 }
 //#endregion
-//#region assets/core/crud/hydra/HydraToFieldMapper.ts
+//#region assets/api-platform/HydraToFieldMapper.ts
 /**
 * Returns true when the given `range` string declares an XSD integer type.
 * Supports both short-form `xmls:` prefixes and full XSD IRIs.
@@ -497,18 +496,11 @@ function mapHydraSchemaToFields(schema, urlLookup, schemaLookup) {
 	}
 	return fields;
 }
-const CoreConfigContext = react.default.createContext({
-	locale: "es",
-	timezone: "UTC"
-});
-function useCoreConfig() {
-	return react.default.useContext(CoreConfigContext);
-}
 //#endregion
-//#region assets/core/crud/hydra/useHydraMetadata.ts
+//#region assets/api-platform/useHydraMetadata.ts
 const JSONLD_URL = "/api/docs.jsonld";
 const JSON_URL = "/api/docs.json";
-const isDev = {}.env.DEV;
+const isDev = typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 /**
 * Try to fetch and validate a Hydra JSON-LD doc.
 * Returns the typed HydraApiDoc on success, or throws on failure.
@@ -557,7 +549,7 @@ async function fetchApiDoc(httpClient) {
 }
 function useHydraMetadata() {
 	const httpClient = (0, _nubit_core.useCoreHttpClient)();
-	const { locale } = useCoreConfig();
+	const { locale } = (0, _nubit_core.useCoreConfig)();
 	const { data, error, isPending } = (0, _tanstack_react_query.useQuery)({
 		queryKey: [...API_DOC_QUERY_KEY, locale],
 		queryFn: () => fetchApiDoc(httpClient),
@@ -572,7 +564,7 @@ function useHydraMetadata() {
 	};
 }
 //#endregion
-//#region assets/core/crud/hydra/SchemaContext.tsx
+//#region assets/api-platform/SchemaContext.tsx
 /**
 * SchemaContext — shared parsed schema, no per-page re-fetch.
 *
@@ -595,7 +587,7 @@ function useHydraMetadata() {
 */
 /** Sentinel value used to detect "outside a provider" */
 const OUTSIDE_PROVIDER = Symbol("OUTSIDE_PROVIDER");
-const SchemaContext = (0, react$1.createContext)(OUTSIDE_PROVIDER);
+const SchemaContext = (0, react.createContext)(OUTSIDE_PROVIDER);
 /**
 * Wrap your app (or a subtree) with `SchemaProvider` to share a single
 * `/api/docs.jsonld` fetch across all `SmartCrudPage` instances.
@@ -614,7 +606,7 @@ function SchemaProvider({ children }) {
 * This makes `SmartCrudPage` work standalone without requiring a provider.
 */
 function useSchemaContext() {
-	const ctx = (0, react$1.useContext)(SchemaContext);
+	const ctx = (0, react.useContext)(SchemaContext);
 	const fallback = useHydraMetadata();
 	if (ctx === OUTSIDE_PROVIDER) return {
 		data: fallback.data,
@@ -630,74 +622,7 @@ function useSchemaContext() {
 	};
 }
 //#endregion
-//#region assets/core/crud/fieldValidation.ts
-const CONTRACT_KEYS = ["source", "strategy"];
-[...CONTRACT_KEYS];
-[...CONTRACT_KEYS];
-[...[
-	"isIdentity",
-	"type",
-	"col",
-	"name",
-	"label",
-	"width",
-	"height",
-	"minWidth",
-	"minHeight",
-	"align",
-	"sortable",
-	"filterable",
-	"hideable",
-	"validators",
-	"mode",
-	"url",
-	"loadOptions",
-	"filters",
-	"byKeyUrl",
-	"textField",
-	"valueField",
-	"valueType",
-	"format",
-	"selectedFilterOperation",
-	"filterValue",
-	"data",
-	"formatter",
-	"itemFormatter",
-	"visible",
-	"defaultValue",
-	"autoSelectIfSingle",
-	"onChange",
-	"onSelect",
-	"onClick",
-	"onKeyPress",
-	"readonly",
-	"disabled",
-	"hidden",
-	"required",
-	"precision",
-	"accept",
-	"buttons",
-	"hidingPriority",
-	"searchEnabled",
-	"searchExpr",
-	"fixed",
-	"fixedPosition",
-	"helpText",
-	"contentRender",
-	"visibleOnForm",
-	"maxLength",
-	"multiple",
-	"editorOptions",
-	"sendAsString",
-	"order",
-	"visibleWhen",
-	"disabledWhen",
-	"computed",
-	"dependsOn",
-	"permissions"
-], "operation"].filter((key) => key !== "name");
-//#endregion
-//#region assets/core/crud/hydra/useResourceSchema.ts
+//#region assets/api-platform/useResourceSchema.ts
 /**
 * Normalizes an API URL by stripping any leading slash so that
 * 'api/categories' and '/api/categories' are treated as equal.
@@ -754,6 +679,7 @@ function useResourceSchema(apiUrl, manualFields, overrides, fieldContract) {
 	}), resourceSchema.supportedOperations ?? []);
 }
 //#endregion
+exports.API_DOC_QUERY_KEY = API_DOC_QUERY_KEY;
 Object.defineProperty(exports, "ApiPlatformRemoteDataSource", {
 	enumerable: true,
 	get: function() {

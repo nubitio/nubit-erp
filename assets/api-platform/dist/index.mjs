@@ -1,8 +1,8 @@
-import { ApiPlatformRemoteDataSource, datetimeField, entityField, noneField, numberField, resolveSmartCrudFields, switchField, textField, useCoreHttpClient } from "@nubit/core";
+import { ApiPlatformRemoteDataSource, datetimeField, entityField, noneField, numberField, resolveSmartCrudFields, switchField, textField, useCoreConfig, useCoreHttpClient } from "@nubit/core";
 import { useQuery } from "@tanstack/react-query";
-import React, { createContext, useContext } from "react";
+import { createContext, useContext } from "react";
 import { jsx } from "react/jsx-runtime";
-//#region assets/core/crud/hydra/openApiParser.ts
+//#region assets/api-platform/openApiParser.ts
 /**
 * Converts a camelCase or PascalCase name to dash-case.
 * Mirrors API Platform's DashPathSegmentNameGenerator behaviour.
@@ -244,7 +244,7 @@ function parseOpenApiDoc(doc) {
 	return result;
 }
 //#endregion
-//#region assets/core/crud/hydra/HydraToFieldMapper.ts
+//#region assets/api-platform/HydraToFieldMapper.ts
 /**
 * Returns true when the given `range` string declares an XSD integer type.
 * Supports both short-form `xmls:` prefixes and full XSD IRIs.
@@ -472,18 +472,11 @@ function mapHydraSchemaToFields(schema, urlLookup, schemaLookup) {
 	}
 	return fields;
 }
-const CoreConfigContext = React.createContext({
-	locale: "es",
-	timezone: "UTC"
-});
-function useCoreConfig() {
-	return React.useContext(CoreConfigContext);
-}
 //#endregion
-//#region assets/core/crud/hydra/useHydraMetadata.ts
+//#region assets/api-platform/useHydraMetadata.ts
 const JSONLD_URL = "/api/docs.jsonld";
 const JSON_URL = "/api/docs.json";
-const isDev = import.meta.env.DEV;
+const isDev = typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
 /**
 * Try to fetch and validate a Hydra JSON-LD doc.
 * Returns the typed HydraApiDoc on success, or throws on failure.
@@ -547,7 +540,7 @@ function useHydraMetadata() {
 	};
 }
 //#endregion
-//#region assets/core/crud/hydra/SchemaContext.tsx
+//#region assets/api-platform/SchemaContext.tsx
 /**
 * SchemaContext — shared parsed schema, no per-page re-fetch.
 *
@@ -605,74 +598,7 @@ function useSchemaContext() {
 	};
 }
 //#endregion
-//#region assets/core/crud/fieldValidation.ts
-const CONTRACT_KEYS = ["source", "strategy"];
-[...CONTRACT_KEYS];
-[...CONTRACT_KEYS];
-[...[
-	"isIdentity",
-	"type",
-	"col",
-	"name",
-	"label",
-	"width",
-	"height",
-	"minWidth",
-	"minHeight",
-	"align",
-	"sortable",
-	"filterable",
-	"hideable",
-	"validators",
-	"mode",
-	"url",
-	"loadOptions",
-	"filters",
-	"byKeyUrl",
-	"textField",
-	"valueField",
-	"valueType",
-	"format",
-	"selectedFilterOperation",
-	"filterValue",
-	"data",
-	"formatter",
-	"itemFormatter",
-	"visible",
-	"defaultValue",
-	"autoSelectIfSingle",
-	"onChange",
-	"onSelect",
-	"onClick",
-	"onKeyPress",
-	"readonly",
-	"disabled",
-	"hidden",
-	"required",
-	"precision",
-	"accept",
-	"buttons",
-	"hidingPriority",
-	"searchEnabled",
-	"searchExpr",
-	"fixed",
-	"fixedPosition",
-	"helpText",
-	"contentRender",
-	"visibleOnForm",
-	"maxLength",
-	"multiple",
-	"editorOptions",
-	"sendAsString",
-	"order",
-	"visibleWhen",
-	"disabledWhen",
-	"computed",
-	"dependsOn",
-	"permissions"
-], "operation"].filter((key) => key !== "name");
-//#endregion
-//#region assets/core/crud/hydra/useResourceSchema.ts
+//#region assets/api-platform/useResourceSchema.ts
 /**
 * Normalizes an API URL by stripping any leading slash so that
 * 'api/categories' and '/api/categories' are treated as equal.
@@ -729,4 +655,4 @@ function useResourceSchema(apiUrl, manualFields, overrides, fieldContract) {
 	}), resourceSchema.supportedOperations ?? []);
 }
 //#endregion
-export { ApiPlatformRemoteDataSource, SchemaProvider, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };
+export { API_DOC_QUERY_KEY, ApiPlatformRemoteDataSource, SchemaProvider, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };

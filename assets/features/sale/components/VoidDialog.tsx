@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { AppDialog } from '@shared/ui/app-dialog';
+import { AppDialog } from '@nubit/ui';
 import { useScreenSize } from '@utils/media-query';
 import './VoidDialog.scss';
 

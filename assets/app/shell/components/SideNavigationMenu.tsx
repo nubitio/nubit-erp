@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { SideNavigationMenuProps } from '@app/types';
-import { userInformation } from '@core/common/UserInformation';
+import { userInformation } from '@nubit/core';
 import { menuService } from '@features/navigation';
 import { useScreenSize } from '@utils/media-query';
 

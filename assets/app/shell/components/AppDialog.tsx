@@ -1,2 +1,2 @@
-export { AppDialog } from '@shared/ui/app-dialog';
-export type { AppDialogProps } from '@shared/ui/app-dialog';
+export { AppDialog } from '@nubit/ui';
+export type { AppDialogProps } from '@nubit/ui';

@@ -8,8 +8,8 @@
  */
 import React, { useEffect, useState } from 'react';
 import { AdminShell, type AdminMenuItem } from '@nubit/admin';
+import { userInformation } from '@nubit/core';
 import { menuService } from '@features/navigation';
-import { userInformation } from '@core/common/UserInformation';
 import { useNotifications } from '@features/notifications';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { UserMenuSection } from './components/UserMenuSection';

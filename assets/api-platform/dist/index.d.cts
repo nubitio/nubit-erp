@@ -1,7 +1,7 @@
 import { ApiPlatformRemoteDataSource, DataRecord, Field, FieldOverride, RemoteDataSourceOptions, RemoteFilterDescriptor, RemoteLoadOptions, RemoteSortDescriptor, SmartCrudFieldContract, SmartCrudRecord } from "@nubit/core";
 import { ReactNode } from "react";
 
-//#region assets/core/crud/hydra/types.d.ts
+//#region assets/api-platform/types.d.ts
 /**
  * TypeScript types that model a Hydra JSON-LD API documentation response.
  *
@@ -190,7 +190,7 @@ type ApiDoc = {
   doc: OpenApiDoc;
 };
 //#endregion
-//#region assets/core/crud/hydra/openApiParser.d.ts
+//#region assets/api-platform/openApiParser.d.ts
 /**
  * Parse a raw `/api/docs.jsonld` Hydra JSON-LD response into a typed
  * Record<className, HydraResourceSchema>.
@@ -205,7 +205,7 @@ declare function parseHydraDoc(doc: HydraApiDoc): Record<string, HydraResourceSc
  */
 declare function parseOpenApiDoc(doc: OpenApiDoc): Record<string, HydraResourceSchema>;
 //#endregion
-//#region assets/core/crud/hydra/HydraToFieldMapper.d.ts
+//#region assets/api-platform/HydraToFieldMapper.d.ts
 /**
  * Determine the FieldType bucket for a given `range` string.
  *
@@ -253,7 +253,13 @@ declare function resolveRangeTag(range: string | undefined, propertyType: string
  */
 declare function mapHydraSchemaToFields(schema: HydraResourceSchema, urlLookup?: (className: string) => string | undefined, schemaLookup?: (className: string) => HydraResourceSchema | undefined): Field[];
 //#endregion
-//#region assets/core/crud/hydra/useHydraMetadata.d.ts
+//#region assets/api-platform/useHydraMetadata.d.ts
+/**
+ * Stable query key used by useHydraMetadata.
+ * Export this so that consumers (e.g. SmartCrudPage retry button) can
+ * invalidate exactly the right query without coupling to an internal string.
+ */
+declare const API_DOC_QUERY_KEY: readonly ["api-doc-discovery"];
 interface UseHydraMetadataResult {
   data: ApiDoc | undefined;
   isLoading: boolean;
@@ -261,7 +267,7 @@ interface UseHydraMetadataResult {
 }
 declare function useHydraMetadata(): UseHydraMetadataResult;
 //#endregion
-//#region assets/core/crud/hydra/useResourceSchema.d.ts
+//#region assets/api-platform/useResourceSchema.d.ts
 interface UseResourceSchemaResult {
   fields: Field[];
   isLoading: boolean;
@@ -277,7 +283,7 @@ interface UseResourceSchemaResult {
 }
 declare function useResourceSchema<T extends SmartCrudRecord = DataRecord>(apiUrl: string, manualFields?: Field[], overrides?: FieldOverride[], fieldContract?: SmartCrudFieldContract<T>): UseResourceSchemaResult;
 //#endregion
-//#region assets/core/crud/hydra/SchemaContext.d.ts
+//#region assets/api-platform/SchemaContext.d.ts
 interface SchemaProviderProps {
   children: ReactNode;
 }
@@ -303,4 +309,4 @@ interface UseSchemaContextResult {
  */
 declare function useSchemaContext(): UseSchemaContextResult;
 //#endregion
-export { type ApiDoc, ApiPlatformRemoteDataSource, type HydraApiDoc, type OpenApiDoc, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, SchemaProvider, type UseSchemaContextResult, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };
+export { API_DOC_QUERY_KEY, type ApiDoc, ApiPlatformRemoteDataSource, type FieldOverride, type HydraApiDoc, type OpenApiDoc, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, SchemaProvider, type UseSchemaContextResult, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };

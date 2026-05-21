@@ -1,5 +1,4 @@
-// eslint-disable-next-line no-restricted-imports
-import { AppDialog } from '@shared/ui/app-dialog';
+import { AppDialog } from '@nubit/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@nubit/core';

@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { appRoutes } from './app-routes';
 import { EfactAdminShell } from './EfactAdminShell';
-import { userInformation } from '@core/common/UserInformation';
+import { userInformation } from '@nubit/core';
 import { SchemaProvider } from '@nubit/api-platform';
 import { RouteErrorBoundary } from '@shared/components/RouteErrorBoundary';
 

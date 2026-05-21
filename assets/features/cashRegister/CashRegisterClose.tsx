@@ -4,7 +4,7 @@ import { API_BASE_URL } from '@app/constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 import cashRegisterService from './services/cashRegisterService';
-import { ConfirmDialog } from '@shared/components/ConfirmDialog';
+import { ConfirmDialog } from '@nubit/ui';
 import {
   CashClosureGrid,
   type CashClosureGridHandle,

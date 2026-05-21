@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsx, jsxs } from "react/jsx-runtime";
+import "./admin.scss";
 //#region assets/admin/AdminHeader.tsx
 const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => {
 	const [openPanelId, setOpenPanelId] = useState(null);
