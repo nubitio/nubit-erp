@@ -231,6 +231,20 @@ class SalesWriteGatewayTest extends TestCase
         $gateway->write($sale, 1);
     }
 
+    public function testWriteBackfillsIssuedAtWhenOnlyIssuedDateIsProvided(): void
+    {
+        $sale = $this->buildMinimalSale();
+        $sale->setFecha(null);
+        $sale->setDateCreated(new \DateTimeImmutable('2026-05-20 14:30:00', new \DateTimeZone('UTC')));
+        $sale->setIssuedDate(new \DateTimeImmutable('2026-05-20'));
+        $this->stubCurrencyResolver();
+
+        $this->gateway->write($sale, 1);
+
+        self::assertSame('2026-05-20', $sale->getIssuedDate()?->format('Y-m-d'));
+        self::assertSame('2026-05-20 14:30:00', $sale->getIssuedAt()?->format('Y-m-d H:i:s'));
+    }
+
     public function testWriteInsertsDiscountRecordWhenDescuentoIsGreaterThanZero(): void
     {
         $sale = $this->buildMinimalSale('90.00');

@@ -114,6 +114,7 @@ readonly class SalesWriteGateway
         );
 
         // ── Populate offline/sync fields on SaleRecord ────────────────────────
+        $sale->setIssuedAt($issuedAtMutable);
         $sale->setSyncStatus('SYNCED');
         $sale->setLocalUuid($saleOffline['local_uuid']);
         $sale->setIdempotencyKey($saleOffline['idempotency_key']);
