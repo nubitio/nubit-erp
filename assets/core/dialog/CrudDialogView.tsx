@@ -1,11 +1,28 @@
 import './CrudDialogView.scss';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { AppDialog } from '@core/ui/app-dialog';
-import { useEvents } from '@core/event/EventHook';
-import { DialogEventNames } from '@core/event/EventTypes';
-import { useCoreTranslation } from '@core/i18n/useCoreTranslation';
-import { useScreenSize } from '@utils/media-query';
+import { AppDialog } from '../ui/app-dialog';
+import { useEvents } from '../event/EventHook';
+import { DialogEventNames } from '../event/EventTypes';
+import { useCoreTranslation } from '../i18n/useCoreTranslation';
+
+const getIsXSmall = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 575.98px)').matches;
+
+function useIsXSmall() {
+  const [isXSmall, setIsXSmall] = useState(getIsXSmall);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(max-width: 575.98px)');
+    const onChange = () => setIsXSmall(media.matches);
+    media.addEventListener('change', onChange);
+    onChange();
+
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
+  return isXSmall;
+}
 
 export interface CrudDialogViewOptions {
   title?: string;
@@ -36,7 +53,7 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
     const [internalVisible, setInternalVisible] = useState<boolean>(options.visible ?? false);
     const visible = isControlled ? (options.isOpen ?? false) : internalVisible;
     const [isProcessing, setIsProcessing] = useState<boolean>(false);
-    const { isXSmall } = useScreenSize();
+    const isXSmall = useIsXSmall();
     const [on, emit] = useEvents();
     const width = options.width ?? 480;
 

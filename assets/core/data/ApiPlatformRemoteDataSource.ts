@@ -1,7 +1,7 @@
-import { createCoreHttpClient, type CoreHttpClient } from '@core/http';
+import { createCoreHttpClient, type CoreHttpClient } from '../http';
 import type { GridData } from './GridData';
-import { FilterRule } from '@core/field/FilterRule';
-import { LoadOption } from '@core/field/Field';
+import { FilterRule } from '../field/FilterRule';
+import { LoadOption } from '../field/Field';
 import type { DataRecord } from './DataRecord';
 
 export type RemoteFilterDescriptor = unknown[];

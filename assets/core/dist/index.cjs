@@ -570,7 +570,7 @@ let FieldType = /* @__PURE__ */ function(FieldType) {
 //#endregion
 //#region assets/core/event/EventHook.ts
 const listeners = /* @__PURE__ */ new Map();
-function subscribe$1(name, handler) {
+function subscribe(name, handler) {
 	if (!listeners.has(name)) listeners.set(name, /* @__PURE__ */ new Set());
 	const set = listeners.get(name);
 	set.add(handler);
@@ -598,7 +598,7 @@ const useEvents = () => {
 		};
 	}, []);
 	const on = (name, handler) => {
-		const sub = subscribe$1(name, handler);
+		const sub = subscribe(name, handler);
 		subsRef.current.push(sub);
 		return sub;
 	};
@@ -1553,56 +1553,20 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 });
 NativeDataGridView.displayName = "NativeDataGridView";
 //#endregion
-//#region assets/utils/media-query.tsx
-const useScreenSize = () => {
-	const [screenSize, setScreenSize] = (0, react.useState)(getScreenSize());
-	const onSizeChanged = (0, react.useCallback)(() => {
-		setScreenSize(getScreenSize());
-	}, []);
-	(0, react.useEffect)(() => {
-		subscribe(onSizeChanged);
-		return () => {
-			unsubscribe(onSizeChanged);
-		};
-	}, [onSizeChanged]);
-	return screenSize;
-};
-let handlers = [];
-const xSmallMedia = window.matchMedia("(max-width: 575.98px)");
-const smallMedia = window.matchMedia("(min-width: 576px) and (max-width: 991.98px)");
-const mediumMedia = window.matchMedia("(min-width: 992px) and (max-width: 1199.98px)");
-const largeMedia = window.matchMedia("(min-width: 1200px)");
-let debounceTimer = null;
-const notifyHandlers = () => {
-	if (debounceTimer !== null) clearTimeout(debounceTimer);
-	debounceTimer = setTimeout(() => {
-		handlers.forEach((handler) => handler());
-	}, 50);
-};
-[
-	xSmallMedia,
-	smallMedia,
-	mediumMedia,
-	largeMedia
-].forEach((media) => {
-	media.addEventListener("change", (e) => {
-		if (e.matches) notifyHandlers();
-	});
-});
-const subscribe = (handler) => handlers.push(handler);
-const unsubscribe = (handler) => {
-	handlers = handlers.filter((item) => item !== handler);
-};
-function getScreenSize() {
-	return {
-		isXSmall: xSmallMedia.matches,
-		isSmall: smallMedia.matches,
-		isMedium: mediumMedia.matches,
-		isLarge: largeMedia.matches
-	};
-}
-//#endregion
 //#region assets/core/dialog/CrudDialogView.tsx
+const getIsXSmall = () => typeof window !== "undefined" && window.matchMedia("(max-width: 575.98px)").matches;
+function useIsXSmall() {
+	const [isXSmall, setIsXSmall] = (0, react.useState)(getIsXSmall);
+	(0, react.useEffect)(() => {
+		if (typeof window === "undefined") return;
+		const media = window.matchMedia("(max-width: 575.98px)");
+		const onChange = () => setIsXSmall(media.matches);
+		media.addEventListener("change", onChange);
+		onChange();
+		return () => media.removeEventListener("change", onChange);
+	}, []);
+	return isXSmall;
+}
 const CrudDialogView = (0, react.forwardRef)((options, ref) => {
 	const { t } = useCoreTranslation();
 	const [title, setTitle] = (0, react.useState)(options.title ?? t("crudPage.dialogTitleAdd"));
@@ -1610,7 +1574,7 @@ const CrudDialogView = (0, react.forwardRef)((options, ref) => {
 	const [internalVisible, setInternalVisible] = (0, react.useState)(options.visible ?? false);
 	const visible = isControlled ? options.isOpen ?? false : internalVisible;
 	const [isProcessing, setIsProcessing] = (0, react.useState)(false);
-	const { isXSmall } = useScreenSize();
+	const isXSmall = useIsXSmall();
 	const [on, emit] = useEvents();
 	const width = options.width ?? 480;
 	(0, react.useEffect)(() => {

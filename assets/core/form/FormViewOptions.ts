@@ -1,6 +1,6 @@
 import type { FormLayout } from './FormLayout';
-import type { FormEventNames } from '@core/event/EventTypes';
-import type { Field } from '@core/field/Field';
+import type { FormEventNames } from '../event/EventTypes';
+import type { Field } from '../field/Field';
 import type { FormDataChangedHandler, FormDataSnapshot } from './FormDataSnapshot';
 
 export interface FormViewOptions {

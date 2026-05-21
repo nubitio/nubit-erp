@@ -1,4 +1,4 @@
-import { useCoreRuntime } from '@core/runtime';
+import { useCoreRuntime } from '../runtime';
 import { validateDetailRows } from './FormDetailValidation';
 import type { UseFormValidationOptions } from './FormValidationOptions';
 

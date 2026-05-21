@@ -1,5 +1,5 @@
-import type { Field } from '@core/field/Field';
-import { FieldType } from '@core/field/FieldType';
+import type { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
 
 export interface FormFieldPresentation {
   hideLabel: boolean;

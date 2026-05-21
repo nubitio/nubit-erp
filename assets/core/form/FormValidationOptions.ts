@@ -1,4 +1,4 @@
-import type { Field } from '@core/field/Field';
+import type { Field } from '../field/Field';
 
 import type { UseFormValidationAccessors } from './FormValidationAccessors';
 
