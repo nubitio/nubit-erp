@@ -1,6 +1,6 @@
 import React from 'react';
 import { FieldType } from './FieldType';
-import { Field, LoadOption } from './Field';
+import { Field, FieldButton, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
@@ -19,13 +19,11 @@ export class FieldBuilder {
       width: undefined,
       height: null,
       minWidth: undefined,
-      minHeight: undefined,
       align: 'left',
       sortable: true,
       filterable: true,
       hideable: true,
       validators: [],
-      mode: 'local',
       url: undefined,
       loadOptions: [],
       filters: [],
@@ -45,7 +43,6 @@ export class FieldBuilder {
       onChange: undefined,
       onSelect: undefined,
       onClick: undefined,
-      onKeyPress: undefined,
       readonly: false,
       disabled: false,
       hidden: false,
@@ -53,17 +50,13 @@ export class FieldBuilder {
       precision: 0,
       accept: null,
       buttons: [],
-      hidingPriority: undefined,
       searchEnabled: true,
       searchExpr: null,
-      fixed: false,
-      fixedPosition: undefined,
       helpText: undefined,
       contentRender: null,
       visibleOnForm: true,
       maxLength: undefined,
       multiple: false,
-      editorOptions: undefined,
       sendAsString: false,
     };
   }
@@ -108,11 +101,6 @@ export class FieldBuilder {
     return this;
   }
 
-  minHeight(minHeight: number): FieldBuilder {
-    this._field.minHeight = minHeight;
-    return this;
-  }
-
   align(align: 'left' | 'center' | 'right'): FieldBuilder {
     this._field.align = align;
     return this;
@@ -135,11 +123,6 @@ export class FieldBuilder {
 
   validators(validators: ValidationRule[]): FieldBuilder {
     this._field.validators = validators;
-    return this;
-  }
-
-  mode(mode: 'remote' | 'local' | 'none'): FieldBuilder {
-    this._field.mode = mode;
     return this;
   }
 
@@ -285,13 +268,8 @@ export class FieldBuilder {
     return this;
   }
 
-  buttons(value: DataRecord[]): FieldBuilder {
+  buttons(value: FieldButton[]): FieldBuilder {
     this._field.buttons = value;
-    return this;
-  }
-
-  hidingPriority(value: number): FieldBuilder {
-    this._field.hidingPriority = value;
     return this;
   }
 
@@ -302,16 +280,6 @@ export class FieldBuilder {
 
   searchExpr(value: string[]): FieldBuilder {
     this._field.searchExpr = value;
-    return this;
-  }
-
-  fixed(value: boolean): FieldBuilder {
-    this._field.fixed = value;
-    return this;
-  }
-
-  fixedPosition(value: 'left' | 'right'): FieldBuilder {
-    this._field.fixedPosition = value;
     return this;
   }
 
@@ -330,18 +298,8 @@ export class FieldBuilder {
     return this;
   }
 
-  onKeyPress(param: (e: KeyboardEvent) => void) {
-    this._field.onKeyPress = param;
-    return this;
-  }
-
   multiple(value: boolean): FieldBuilder {
     this._field.multiple = value;
-    return this;
-  }
-
-  editorOptions(param: DataRecord) {
-    this._field.editorOptions = param;
     return this;
   }
 

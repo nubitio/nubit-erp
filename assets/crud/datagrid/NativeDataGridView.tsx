@@ -40,12 +40,6 @@ function getIdField(fields: Field[]): string {
   return fields.find((field) => field.isIdentity)?.name ?? 'id';
 }
 
-function getVisibleFields(options: DataGridViewOptions): Field[] {
-  return options.fields
-    .filter((field) => field.visible && !field.hidden)
-    .filter((field) => options.visibleColumns == null || options.visibleColumns.includes(field.name))
-    .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
-}
 
 function getPrimitiveDisplay(value: unknown): string {
   if (value === null || value === undefined) return '';
@@ -204,8 +198,9 @@ function FilterCell({
   onSelectChange: (value: string) => void;
   onOperatorChange: (operator: string) => void;
 }) {
+  const httpClient = useCoreHttpClient();
+
   if (field.type === FieldType.ENTITY) {
-    const httpClient = useCoreHttpClient();
     return (
       <NativeEntitySelect
         className="native-datagrid__filter-select"
@@ -355,7 +350,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const navigate = useNavigate();
   const [on, emit] = useEvents();
   const idField = useMemo(() => getIdField(options.fields), [options.fields]);
-  const visibleFields = useMemo(() => getVisibleFields(options), [options]);
+  const visibleFields = useMemo(
+    () => options.fields
+      .filter((field) => field.visible && !field.hidden)
+      .filter((field) => options.visibleColumns == null || options.visibleColumns.includes(field.name))
+      .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)),
+    [options.fields, options.visibleColumns],
+  );
   const [rows, setRows] = useState<DataRecord[]>([]);
   const rowsRef = useRef<DataRecord[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -374,10 +375,15 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [isGridLoading, setIsGridLoading] = useState(!options.manualLoad);
   const [loadingMessage, setLoadingMessage] = useState('');
   const onContentReadyRef = useRef(options.onContentReady);
+  const onRowPreparedRef = useRef(options.onRowPrepared);
 
   useEffect(() => {
     onContentReadyRef.current = options.onContentReady;
   }, [options.onContentReady]);
+
+  useEffect(() => {
+    onRowPreparedRef.current = options.onRowPrepared;
+  }, [options.onRowPrepared]);
 
   const source = useMemo(
     () =>
@@ -417,6 +423,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   }, [loadRows]);
 
   useEffect(() => {
+    rows.forEach((row, rowIndex) => onRowPreparedRef.current?.({ data: row, rowIndex }));
+  }, [rows]);
+
+  useEffect(() => {
     if (!options.events?.SUCCESS) return;
     const sub = on(options.events.SUCCESS, () => void loadRows());
     return () => sub.unsubscribe();
@@ -434,13 +444,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       });
   }, [httpClient, visibleFields]);
 
+  // Snapshot of mutable state read by the imperative handle. Updated after every render
+  // so handle methods always see current values without the handle itself being rebuilt.
+  const handleStateRef = useRef({ selectedKeys, filters, filterOperators, loadRows, idField });
+  handleStateRef.current = { selectedKeys, filters, filterOperators, loadRows, idField }; // eslint-disable-line react-hooks/refs
+
   useImperativeHandle(ref, () => ({
     showLoading: (message) => {
       setLoadingMessage(message ?? t('grid.loading'));
       setIsGridLoading(true);
     },
     hideLoading: () => setIsGridLoading(false),
-    refresh: () => void loadRows(),
+    refresh: () => void handleStateRef.current.loadRows(),
     reset: () => {
       clearTimeout(filterDebounceRef.current);
       setSelectedKeys([]);
@@ -453,17 +468,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     },
     loadData: () => Promise.resolve(rowsRef.current),
     getSelectedRowKey: () => {
-      const key = selectedKeys[0];
+      const key = handleStateRef.current.selectedKeys[0];
       return typeof key === 'string' || typeof key === 'number' ? key : undefined;
     },
-    getSelectedRow: () => rowsRef.current.find((row) => row[idField] === selectedKeys[0]),
-    getSelectedRowKeys: () => selectedKeys,
-    getSelectedRows: () => rowsRef.current.filter((row) => selectedKeys.includes(row[idField])),
-    getFilter: () => buildFilterExpression(filters, filterOperators),
+    getSelectedRow: () => rowsRef.current.find((row) => row[handleStateRef.current.idField] === handleStateRef.current.selectedKeys[0]),
+    getSelectedRowKeys: () => handleStateRef.current.selectedKeys,
+    getSelectedRows: () => rowsRef.current.filter((row) => handleStateRef.current.selectedKeys.includes(row[handleStateRef.current.idField])),
+    getFilter: () => buildFilterExpression(handleStateRef.current.filters, handleStateRef.current.filterOperators),
     filter: (filterRule: FilterRule | null) => {
+      const { filterOperators: currentOps } = handleStateRef.current;
       const nextFilters = filterRule ? { [filterRule.field]: String(filterRule.value ?? '') } : {};
       const nextOperators = filterRule
-        ? { ...filterOperators, [filterRule.field]: filterRule.operator || getDefaultFilterOperator(options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0]) }
+        ? { ...currentOps, [filterRule.field]: filterRule.operator || getDefaultFilterOperator(options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0]) }
         : computeDefaultOperators(options.fields);
       clearTimeout(filterDebounceRef.current);
       setFilters(nextFilters);
@@ -471,7 +487,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       setFilterOperators(nextOperators);
       setPage(0);
     },
-  }));
+  }), [options.fields, t]);
 
   const selectedRows = rows.filter((row) => selectedKeys.includes(row[idField]));
 
@@ -682,7 +698,6 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         : options.detailFields;
                     const detailUrl = options.detailUrl?.replace('{id}', String(key));
                     const expanded = expandedKeys.has(key);
-                    options.onRowPrepared?.({ data: row, rowIndex });
 
                     return (
                       <React.Fragment key={String(key)}>

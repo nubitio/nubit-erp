@@ -3,7 +3,7 @@ import { DataGridView } from '../datagrid/DataGridView';
 import { DialogView } from '../dialog/DialogView';
 import { FormView, FORM_EVENTS } from '../form/FormView';
 import { useCrudPage } from './useCrudPage';
-import { dispatch, useEvents } from '@nubit/core';
+import { dispatch, useEvents, type EventSubscription } from '@nubit/core';
 import type { ResourceConfig } from './ResourceConfig';
 import type { BulkAction } from './BulkAction';
 import type { Field } from '../field/Field';
@@ -180,49 +180,14 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const [on] = useEvents();
 
   // Subscribe to ADD / EDIT / SUCCESS events and mirror them into the store.
-  const wireEventsRef = React.useRef(() => {
-    if (events.ADD) {
-      on<{ title?: string; rowData?: DataRecord } | undefined>(
-        events.ADD,
-        (payload) => {
-          openDialog('add', payload?.rowData ?? null);
-        },
-      );
-    }
-    if (events.EDIT) {
-      on<DataRecord | undefined>(events.EDIT, (rowData) => {
-        openDialog('edit', rowData ?? null);
-      });
-    }
-    if (events.SUCCESS) {
-      on(events.SUCCESS, () => {
-        closeDialog();
-      });
-    }
-  });
-  wireEventsRef.current = () => {
-    if (events.ADD) {
-      on<{ title?: string; rowData?: DataRecord } | undefined>(
-        events.ADD,
-        (payload) => {
-          openDialog('add', payload?.rowData ?? null);
-        },
-      );
-    }
-    if (events.EDIT) {
-      on<DataRecord | undefined>(events.EDIT, (rowData) => {
-        openDialog('edit', rowData ?? null);
-      });
-    }
-    if (events.SUCCESS) {
-      on(events.SUCCESS, () => {
-        closeDialog();
-      });
-    }
-  };
-
+  // openDialog/closeDialog are Zustand actions (stable); events are static resource config strings.
   React.useEffect(() => {
-    wireEventsRef.current();
+    const subs = [
+      events.ADD && on<{ title?: string; rowData?: DataRecord } | undefined>(events.ADD, (payload) => openDialog('add', payload?.rowData ?? null)),
+      events.EDIT && on<DataRecord | undefined>(events.EDIT, (rowData) => openDialog('edit', rowData ?? null)),
+      events.SUCCESS && on(events.SUCCESS, () => closeDialog()),
+    ].filter(Boolean) as EventSubscription[];
+    return () => subs.forEach((sub) => sub.unsubscribe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -250,11 +215,13 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
 
   React.useEffect(() => {
     if (!onDetailRowsChangedRef.current) return;
-
     const handler = () => onDetailRowsChangedRef.current?.(formRef);
-    on(FORM_EVENTS.ROW_ADDED, handler);
-    on(FORM_EVENTS.ROW_UPDATED, handler);
-    on(FORM_EVENTS.ROW_REMOVED, handler);
+    const subs = [
+      on(FORM_EVENTS.ROW_ADDED, handler),
+      on(FORM_EVENTS.ROW_UPDATED, handler),
+      on(FORM_EVENTS.ROW_REMOVED, handler),
+    ];
+    return () => subs.forEach((sub) => sub.unsubscribe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
