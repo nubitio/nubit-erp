@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_movement:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     operations: [
         new GetCollection(),
         new Get(provider: CashMovementItemProvider::class),

@@ -36,8 +36,8 @@ const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-async function waitForDxLoadPanel(page: Page) {
-  const loadPanel = page.locator('.dx-loadpanel-wrapper, .native-datagrid__loading-overlay').first();
+async function waitForGridLoad(page: Page) {
+  const loadPanel = page.locator('.native-datagrid__loading-overlay').first();
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
     await loadPanel.waitFor({ state: 'hidden', timeout: 15000 });
@@ -99,7 +99,7 @@ async function login(page: Page) {
  */
 async function ensureCashOpen(page: Page): Promise<string> {
   await page.goto(`${BASE_URL}/#/cashbox`);
-  await waitForDxLoadPanel(page);
+  await waitForGridLoad(page);
   await page.locator('.native-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
 
   const openBtn = page.getByTestId('cash-btn-open').first();
@@ -558,7 +558,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
   test('08 - Venta creada desde módulo /sale tiene sync_status SYNCED', async () => {
     // Navigate to /sale module
     await page.goto(`${BASE_URL}/#/sale`);
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
     await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
       timeout: 15000,
     });
@@ -579,10 +579,10 @@ test.describe('Fase 3 — ORM migration validation', () => {
       const val = await almacenInput.inputValue().catch(() => '');
       if (val.trim() === '') {
         await almacenInput.click();
-        await page.keyboard.press('ArrowDown');
-        const firstOpt = page.locator('.dx-overlay-content .dx-list-item').first();
+        await page.waitForTimeout(300);
+        const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
         await firstOpt.waitFor({ state: 'visible', timeout: 8000 });
-        await page.keyboard.press('Enter');
+        await firstOpt.click();
         await page.waitForTimeout(300);
       }
     }

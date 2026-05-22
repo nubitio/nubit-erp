@@ -6,7 +6,7 @@ namespace App\Settings\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Settings\Repository\UbigeoRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
 #[ApiResource(
     shortName: 'Ubigeo',
     normalizationContext: ['groups' => ['ubigeo:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class Ubigeo

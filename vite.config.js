@@ -80,7 +80,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['build/**/*.{js,css,woff,woff2,png,ico,svg}'],
-        // DevExtreme/vendor chunks can exceed Workbox default precache limit (2 MiB).
+        // Some vendor chunks can exceed Workbox's default precache limit (2 MiB).
         // Keep them precacheable to avoid failing CI image builds.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         // Explicitly disable navigateFallback: the app shell is served by
@@ -180,8 +180,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // DevExtreme SCSS still uses legacy color functions (lighten, desaturate, etc.)
-        // that Sass 1.80+ deprecated. Silence until DevExtreme updates their SCSS.
+        // Legacy SCSS (Bootstrap-derived styles, @import, color functions) triggers
+        // Sass 1.80+ deprecation warnings. Silence them to keep build output clean.
         silenceDeprecations: ['global-builtin', 'color-functions', 'import'],
         loadPaths: [fileURLToPath(new URL('./assets', import.meta.url))],
       },

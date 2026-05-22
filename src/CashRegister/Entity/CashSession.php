@@ -9,7 +9,7 @@ use App\Organization\Entity\Branch;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Repository\CashSessionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'cash_sessions')]
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_session:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class CashSession

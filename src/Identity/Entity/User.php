@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\Role;
 use App\Identity\Repository\UserRepository;
 use App\Identity\State\UserSoftDeleteProcessor;
@@ -44,7 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         'groups' => ['user:create', 'user:update'],
     ],
     filters: [
-        DevExtremeFilter::class,
+        DataGridFilter::class,
     ],
     mercure: true,
 )]

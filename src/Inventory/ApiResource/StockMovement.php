@@ -7,7 +7,7 @@ namespace App\Inventory\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Inventory\State\StockMovementProvider;
 
 /**
@@ -29,7 +29,7 @@ use App\Inventory\State\StockMovementProvider;
         ),
     ],
     normalizationContext: ['groups' => ['stock_movement:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     security: "is_granted('ROLE_ADMIN')",
     mercure: false,
 )]

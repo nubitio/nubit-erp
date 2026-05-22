@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Http\ApiResponse;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\CashRegister\Repository\CashRegisterRepository;
@@ -73,7 +73,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Delete(uriTemplate: '/cash-registers/{id}'),
     ],
     normalizationContext: ['groups' => ['cash_register:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class CashRegister

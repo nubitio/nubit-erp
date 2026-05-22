@@ -71,7 +71,7 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 
 ### Frontend Web
 
-- React 19, TypeScript strict, Vite 6, DevExtreme 25.2, TailwindCSS 4.
+- React 19, TypeScript strict, Vite 6, TailwindCSS 4.
 - PWA con Workbox, Dexie/IndexedDB para modo offline y outbox.
 - React Query para cache de servidor, Axios para HTTP y Mercure SSE para realtime.
 - Modulos actuales: venta, facturacion, compras, inventario/movimientos, transferencias, clientes, caja, configuracion, admin, asistente AI y notificaciones.
