@@ -20,11 +20,8 @@ export const CashRegisterClose = () => {
   const { id } = useParams<CashClosureParams>();
   const gridRef = useRef<CashClosureGridHandle | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const navigate = useNavigate();
-
-  const onClose = () => {
-    setShowCloseConfirm(true);
-  };
 
   const closeCashRegister = () => {
     const closureData = gridRef.current?.getRows();
@@ -33,54 +30,56 @@ export const CashRegisterClose = () => {
       toast('Error al cerrar la caja', 'error');
       return;
     }
-    const data = closureData.map((item: any) => {
-      return {
-        cashShift: API_BASE_URL + 'cash-shifts/' + id,
-        paymentMethod: API_BASE_URL + 'payment-methods/' + item.paymentMethodId,
-        expectedAmount: Number(item.expectedAmount),
-        countedAmount: item.countedAmount,
-        difference: differences.find((diff) => diff.paymentMethodId === item.paymentMethodId)
-          ?.difference,
-        note: item.note,
-      };
-    });
 
-    const requiredFields = data.filter((item: any) => {
-      return item.countedAmount === undefined || item.difference === undefined;
-    });
+    const data = closureData.map((item) => ({
+      cashShift: API_BASE_URL + 'cash-shifts/' + id,
+      paymentMethod: API_BASE_URL + 'payment-methods/' + item.paymentMethodId,
+      expectedAmount: Number(item.expectedAmount),
+      countedAmount: item.countedAmount,
+      difference: differences.find((diff) => diff.paymentMethodId === item.paymentMethodId)
+        ?.difference,
+      note: item.note,
+    }));
 
-    if (requiredFields.length > 0) {
+    const incomplete = data.some(
+      (item) => item.countedAmount === undefined || item.difference === undefined,
+    );
+    if (incomplete) {
       toast('Por favor, complete los campos requeridos', 'error');
       return;
     }
 
+    setIsClosing(true);
     cashRegisterService()
       .closeCashRegister(id, data)
-      .then((response) => {
-        void response;
+      .then(() => {
         toast('Caja cerrada correctamente', 'success');
         navigate('/cashbox');
-      });
+      })
+      .catch(() => toast('No se pudo cerrar la caja', 'error'))
+      .finally(() => setIsClosing(false));
   };
 
   useEffect(() => {
+    gridRef.current?.showLoading('Cargando datos...');
     httpClient
-      .get<any>(API_BASE_URL + 'cash-shifts/' + id + '/summary')
+      .get<CashClosureRow[]>(API_BASE_URL + 'cash-shifts/' + id + '/summary')
       .then((response) => {
-        gridRef.current?.showLoading('Cargando datos...');
-        gridRef.current?.setRows(response.data as CashClosureRow[]);
+        gridRef.current?.setRows(response.data);
+      })
+      .catch(() => toast('No se pudo cargar el resumen de la caja', 'error'))
+      .finally(() => {
         gridRef.current?.hideLoading();
       });
   }, [id]);
 
   return (
-    <div className="view datagrid-list">
-      <div className={'view-wrapper view-wrapper-datagrid-list list-page'}>
-        <CashClosureGrid
-          ref={gridRef}
-          onCloseRequest={onClose}
-        />
-      </div>
+    <div className="cash-close-page">
+      <CashClosureGrid
+        ref={gridRef}
+        closing={isClosing}
+        onCloseRequest={() => setShowCloseConfirm(true)}
+      />
       <ConfirmDialog
         open={showCloseConfirm}
         title="Cerrar caja"

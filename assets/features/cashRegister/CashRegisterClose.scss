@@ -1,51 +1,156 @@
-@use 'variables' as *;
-@use 'sass:math';
+.cash-close-page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 
-.view.datagrid-list {
+.cash-close {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
-  display: contents;
+  max-width: 920px;
+  margin: 0 auto;
+}
 
-  .view-wrapper-datagrid-list {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    flex-direction: row;
+.cash-close__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-    .grid {
-      height: 100%;
+.cash-close__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.01em;
+  color: var(--base-text-color);
+}
 
-      .name-template {
-        .position {
-          font-size: 12px;
-          color: var(--texteditor-label-color);
-        }
-      }
+.cash-close__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--texteditor-label-color, #6b7280);
+}
 
-      .grid-header {
-        @include header();
-      }
+.cash-close__panel {
+  background: var(--surface-1, var(--base-bg, #fff));
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm, 0 8px 22px rgb(0 0 0 / 8%));
+  overflow: hidden;
+}
 
-      // Row tinting for non-zero cash differences
-      .row-diff-negative td {
-        background-color: rgba(220, 53, 69, 0.12) !important;
-      }
+.cash-close__state {
+  padding: 48px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texteditor-label-color, #6b7280);
+}
 
-      .row-diff-positive td {
-        background-color: rgba(25, 135, 84, 0.12) !important;
-      }
-    }
+.cash-close__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
 
-    .cell-info {
-      position: relative;
+.cash-close__table th,
+.cash-close__table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+}
 
-      .status {
-        font-size: 13px;
-        position: absolute;
-        margin-top: 10px;
-        margin-left: 11px;
-      }
-    }
-  }
+.cash-close__table thead th {
+  background: color-mix(in srgb, var(--accent-color) 4%, var(--surface-1, var(--base-bg, #fff)));
+  font-size: 11px;
+  font-weight: var(--font-weight-medium, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texteditor-label-color, #6b7280);
+  white-space: nowrap;
+}
+
+.cash-close__table tbody td {
+  font-size: 14px;
+  color: var(--base-text-color);
+}
+
+.cash-close__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cash-close__method {
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.cash-close__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-close__input {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--base-text-color);
+  background: var(--base-bg, #fff);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, var(--base-text-color));
+  border-radius: var(--radius-sm, 6px);
+  box-sizing: border-box;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.cash-close__input--num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-close__input:focus {
+  outline: none;
+  border-color: var(--accent-color, #0e7a50);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color, #0e7a50) 18%, transparent);
+}
+
+.cash-close__hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  text-align: right;
+  color: var(--texteditor-label-color, #9ca3af);
+}
+
+.cash-close__diff {
+  font-weight: var(--font-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-close__diff--positive {
+  color: #15803d;
+}
+
+.cash-close__diff--negative {
+  color: #dc2626;
+}
+
+.cash-close__diff--empty {
+  font-weight: 400;
+  color: var(--texteditor-label-color, #9ca3af);
+}
+
+.cash-close__table tfoot td {
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--accent-color) 4%, var(--surface-1, var(--base-bg, #fff)));
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  font-size: 14px;
+}
+
+.cash-close__total-label,
+.cash-close__total-value {
+  font-weight: var(--font-weight-semibold, 600);
 }
