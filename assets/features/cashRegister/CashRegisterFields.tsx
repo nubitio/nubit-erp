@@ -15,7 +15,7 @@ export const CashRegisterFields = () => {
       .required(true)
       .build(),
   );
-  fields.push(textField().width('100%').name('name').label('Nombre').required(true).build());
+  fields.push(textField().name('name').label('Nombre').required(true).build());
 
   return fields;
 };

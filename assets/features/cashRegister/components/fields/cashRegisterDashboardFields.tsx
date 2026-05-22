@@ -5,7 +5,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
-  fields.push(textField().width('100%').name('name').label('Caja').build());
+  fields.push(textField().name('name').label('Caja').build());
   fields.push(
     textField()
       .name('status')
