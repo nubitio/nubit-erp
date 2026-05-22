@@ -6,7 +6,7 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\SunatCatalogRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'sunat_catalog')]
 #[ORM\UniqueConstraint(name: 'uniq_sunat_catalog_code', columns: ['catalog', 'code'])]
 #[ApiResource(
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class SunatCatalog

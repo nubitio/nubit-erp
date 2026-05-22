@@ -6,14 +6,14 @@ namespace App\Settings\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Settings\Repository\ConfigRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
 #[ORM\Table(name: 'config')]
 #[ApiResource(
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class Config

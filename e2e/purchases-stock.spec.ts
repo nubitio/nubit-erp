@@ -12,14 +12,7 @@
  *  6. Guardar → verificar POST /api/purchases responde 2xx
  *  7. Verificar que el stock del producto en el almacén incrementó
  *
- * Stack: React 19 + HashRouter (/#/ruta) + DevExtreme v25
- *
- * ── Selectores DevExtreme ────────────────────────────────────────────────────
- * Mismas estrategias que happy-path.spec.ts:
- *   A) aria-label — cuando el campo lo define explícitamente en inputAttr
- *   B) getByRole / getByText — para botones y diálogos DX
- *   C) .dx-texteditor-input + nth / .dx-datagrid-filter-row — sin aria
- *   D) CSS class de DX + texto — último recurso
+ * Stack: React 19 + HashRouter (/#/ruta)
  *
  * ── Variables de entorno ────────────────────────────────────────────────────
  *   E2E_BASE_URL   (default: http://localhost:8080)
@@ -49,8 +42,8 @@ let resolvedProductId: string | null = null;
 // Helpers (copiados / adaptados de happy-path.spec.ts)
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function waitForDxLoadPanel(page: Page) {
-  const loadPanel = page.locator('.dx-loadpanel-wrapper, .native-datagrid__loading-overlay').first();
+async function waitForGridLoad(page: Page) {
+  const loadPanel = page.locator('.native-datagrid__loading-overlay').first();
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
     await loadPanel.waitFor({ state: 'hidden', timeout: 15000 });
@@ -252,7 +245,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('02 - Navegar a Compras y capturar stock inicial del producto seed', async () => {
     await gotoProtectedRoute(page, 'purchases');
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
 
     await expect(
       page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
@@ -322,7 +315,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   test('03 - Crear compra con producto seed y verificar stock incrementado', async () => {
     // Asegurar que estamos en la página de compras
     await gotoProtectedRoute(page, 'purchases');
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
 
     // ── Capturar stock ANTES ──────────────────────────────────────────────────
     const stockBefore = await page.evaluate(
@@ -512,7 +505,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         crudDialog(page, /nuevo|new/i),
       ).toBeHidden({ timeout: 15000 });
 
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
     });
 
     // ── Verificar stock incrementado ──────────────────────────────────────────

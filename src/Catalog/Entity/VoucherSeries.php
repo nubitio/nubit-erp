@@ -6,7 +6,7 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Entity\VoucherType;
 use App\Organization\Entity\Branch;
@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     shortName: 'VoucherSerie',
     normalizationContext: ['groups' => ['voucher_series:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class VoucherSeries

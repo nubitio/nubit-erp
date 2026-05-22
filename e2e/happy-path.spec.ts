@@ -15,15 +15,7 @@
  *  9. Editar movimiento de caja
  * 10. Cerrar sesión de caja
  *
- * Stack: React 18 + HashRouter (/#/ruta) + DevExtreme v25
- *
- * ── Selectores DevExtreme ────────────────────────────────────────────────────
- * DevExtreme NO renderiza <input> directos en sus componentes compuestos.
- * Las estrategias usadas (en orden de preferencia):
- *   A) aria-label — cuando el campo lo define explícitamente en inputAttr
- *   B) getByRole / getByText — para botones y diálogos nativas de DX
- *   C) .dx-texteditor-input + nth / .dx-datagrid-filter-row — cuando no hay aria
- *   D) CSS class de DX + texto de placeholder — como último recurso
+ * Stack: React 19 + HashRouter (/#/ruta)
  *
  * ── Selectores ──────────────────────────────────────────────────────────────
  * Todos los selectores frágiles han sido migrados a data-testid locators (T001-5).
@@ -68,12 +60,11 @@ let posProductName = productName; // product to use in POS test (may fall back t
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Espera a que DevExtreme termine de cargar datos (LoadPanel oculto).
- * Complementa waitForLoadState para grids DX que hacen fetch adicional.
+ * Espera a que el datagrid termine de cargar datos (overlay oculto).
+ * Complementa waitForLoadState para grids que hacen fetch adicional.
  */
-async function waitForDxLoadPanel(page: Page) {
-  // Soporta tanto el DX LoadPanel como el overlay del native grid.
-  const loadPanel = page.locator('.dx-loadpanel-wrapper, .native-datagrid__loading-overlay').first();
+async function waitForGridLoad(page: Page) {
+  const loadPanel = page.locator('.native-datagrid__loading-overlay').first();
   // Sólo esperamos si llega a aparecer; si nunca aparece, continuamos de inmediato.
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
@@ -293,7 +284,7 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
     // Wait for the React SPA to boot and render the cashbox grid
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   }
-  await waitForDxLoadPanel(page);
+  await waitForGridLoad(page);
   // Give the DX grid extra time to render rows after the load panel disappears
   await page.waitForTimeout(1000);
 
@@ -472,11 +463,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('02 - Verificar producto seed', async () => {
     await gotoProtectedRoute(page, 'product');
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
     await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
 
     await filterGridByName(page, SEED_PRODUCT_NAME);
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
 
     const productRow = page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
     await productRow.waitFor({ state: 'visible', timeout: 15000 });
@@ -491,7 +482,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   test('04 - Abrir sesión de caja', async () => {
     // Navigate to cashbox dashboard
     await gotoProtectedRoute(page, 'cashbox');
-    await waitForDxLoadPanel(page);
+    await waitForGridLoad(page);
     // Check that the native-datagrid toolbar with "Cajas" title is visible
     await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
       timeout: 15000,
@@ -576,7 +567,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   test('05 - Crear cliente nuevo', async () => {
     await test.step('Navegar a /#/customer', async () => {
       await gotoProtectedRoute(page, 'customer');
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       // Check native-datagrid toolbar for "Customers" / "Clientes" title
       await expect(
         page
@@ -594,7 +585,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await rucFilterInput.click({ clickCount: 3 });
         await rucFilterInput.fill(SEED_CUSTOMER_DNI);
         await page.waitForTimeout(500);
-        await waitForDxLoadPanel(page);
+        await waitForGridLoad(page);
       } catch {
         // fallback: try any text filter input
         const inputs = page.locator('.native-datagrid__filter-row input[type="text"]');
@@ -603,7 +594,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
           await inputs.nth(0).click({ clickCount: 3 });
           await inputs.nth(0).fill(SEED_CUSTOMER_DNI);
           await page.waitForTimeout(500);
-          await waitForDxLoadPanel(page);
+          await waitForGridLoad(page);
         }
       }
 
@@ -793,7 +784,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Navegar a /#/sale', async () => {
       await gotoProtectedRoute(page, 'sale');
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
         timeout: 15000,
       });
@@ -825,12 +816,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
           const optVisible = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
           if (optVisible) {
             await firstOption.click();
-          } else {
-            // DX overlay fallback
-            const dxOption = page.locator('.dx-overlay-content .dx-list-item').first();
-            if (await dxOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-              await page.keyboard.press('Enter');
-            }
           }
           await page.waitForTimeout(300);
         }
@@ -921,7 +906,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const saleDialog = page.getByRole('dialog', { name: /Nuevo|New/i }).last();
 
       // Watch for a toast that would indicate silent validation failure
-      const toastLocator = page.locator('.dx-toast-message, [class*="toast"]').first();
+      const toastLocator = page.locator('[class*="toast"]').first();
       const toastPromise = toastLocator
         .waitFor({ state: 'visible', timeout: 3000 })
         .then(() => toastLocator.textContent())
@@ -956,7 +941,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       ).toBeHidden({
         timeout: 15000,
       });
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
 
       const persistedSale = await page.evaluate(
         async ({ baseUrl, saleId }) => {
@@ -1005,7 +990,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await page.goto(`${BASE_URL}/#/cash-shift/${openedCashShiftId}/movements`);
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       // Check native-datagrid toolbar for movements title
       await expect(
         page.locator('.native-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
@@ -1013,16 +998,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Abrir formulario de nuevo movimiento', async () => {
-      // Dismiss any stale DX alert/confirm dialogs that may be lingering from auth refresh
-      const staleDialog = page.locator('.dx-dialog .dx-button, .dx-toast-content');
-      try {
-        await staleDialog.first().waitFor({ state: 'visible', timeout: 1500 });
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(300);
-      } catch {
-        /* no stale dialog */
-      }
-
       await clickGridToolbarButton(page, 'Nuevo');
       // DxDialog opens in ADD mode with title 'Nuevo' (DxDialog.tsx line 65: payload?.title ?? 'Nuevo')
       // The title prop "Movimiento de caja" in CashMovements.tsx is the initial state only.
@@ -1076,7 +1051,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await clickDialogButton(page, 'Guardar');
 
       await expect(crudDialog(page, /nuevo|new/i)).toBeHidden({ timeout: 15000 });
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
 
       // Verificar que el movimiento aparece en el grid
       await expect(
@@ -1138,7 +1113,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       await clickDialogButton(page, 'Guardar');
       await expect(crudDialog(page, /editar|edit/i)).toBeHidden({ timeout: 15000 });
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
     });
 
     await test.step('Verificar que el monto actualizado aparece en el grid', async () => {
@@ -1161,7 +1136,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       }
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-register/${openedCashShiftId}/close`);
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       // CashRegisterClose toolbar has a grid-header div with "Cierre de caja"
       await expect(
         page.locator('.grid-header').filter({ hasText: 'Cierre de caja' }).first(),
@@ -1169,12 +1144,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Ingresar montos contados en el grid editable', async () => {
-      // CashClosureGrid es un componente nativo (tabla HTML estándar, no DevExtreme).
+      // CashClosureGrid es un componente nativo (tabla HTML estándar).
       // Las columnas son: Forma de pago(0), Monto esperado(1), Monto contado(2), Diferencia(3), Nota(4)
       // La celda de "Monto contado" tiene class="col-counted-amount" con un input[type="number"] siempre visible.
 
       // Esperamos a que se carguen los datos del summary
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
 
       // Columnas: Forma de pago(0), Monto esperado(1), Monto contado(2), Diferencia(3), Nota(4)
       const firstDataRow = page.locator('table tbody tr').first();
@@ -1246,14 +1221,14 @@ test.describe('Happy Path — flujo completo de venta', () => {
           { timeout: 20000 },
         )
         .catch(() => {});
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       // Check native-datagrid toolbar for cashbox dashboard
       await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
         timeout: 15000,
       });
 
       // Verificación best-effort del estado final en dashboard.
-      await waitForDxLoadPanel(page);
+      await waitForGridLoad(page);
       await expect(
         page
           .locator('.native-datagrid__row')

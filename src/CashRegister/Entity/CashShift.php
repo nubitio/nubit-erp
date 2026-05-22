@@ -15,7 +15,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashShiftRepository;
 use App\CashRegister\Dto\CashShiftXReportDto;
@@ -59,7 +59,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: CashShiftXReportProvider::class,
         ),
     ],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class CashShift

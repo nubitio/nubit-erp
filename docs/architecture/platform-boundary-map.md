@@ -57,7 +57,7 @@ Este documento no mueve código. Define el mapa de frontera para orientar refact
 | `Core/Doctrine/DBAL/TenantConnection.php` | **Transitional compatibility** | No publicar en paquete core; extraer contrato/política. | Bloqueador: embebe política efact de dbname/user desde tenant connection y fallback YAML. |
 | `Core/Doctrine/Filter/BranchFilter.php` | **Efact app adapter / domain-specific** | Mover fuera de Core o parametrizar por contrato. | Branch es concepto app/tenant, no plataforma universal. |
 | `Core/Doctrine/Filter/SoftDeleteFilter.php` | **Efact app adapter / domain-specific** | Eliminar referencias concretas o mover a app. | Bloqueador: conoce `Media`, `Purchase`, `User`. |
-| `Core/Doctrine/Filter/DevExtremeFilter.php` | **Efact app adapter / domain-specific** | Mover a módulo UI/app o parametrizar virtual fields. | Bloqueador: conoce `TaxDocument`, `SalePayment` y campos virtuales de ventas. |
+| `Core/Doctrine/Filter/DataGridFilter.php` | **Efact app adapter / domain-specific** | Mover a módulo UI/app o parametrizar virtual fields. | Bloqueador: conoce `TaxDocument`, `SalePayment` y campos virtuales de ventas. |
 | `Core/Migrations/ControlPlaneMigrationFactory.php`, `TenantMigrationFactory.php` | **Symfony adapter** / transitional | Mantener como integración Doctrine Migrations hasta definir bridge. | No deben conocer servicios concretos fuera de puertos. |
 | `Core/Security/CspNonceService.php` | **Platform core** / Symfony adapter | Mantener si es servicio genérico. | Listener asociado es Symfony adapter. |
 | `Identity/Auth/*` | **Efact app adapter / domain-specific** | Mantener fuera de Platform; Core auth legacy ya fue removido. | Depende de `User`, `Branch`, `RefreshToken`, `AuthResponseDto`, `RefreshTokenRepository`; pertenece a Identity/app auth. |
@@ -135,7 +135,7 @@ Si un subárbol nuevo se promueve a Platform, debe añadirse a `scripts/architec
 `TASK-020` mueve la política Doctrine específica de la aplicación fuera de `src/Core` hacia `src/Efact/Doctrine`:
 
 - `App\Efact\Doctrine\Filter\SoftDeleteFilter`: conserva el filtrado por `deleted_at` para `Purchase`, `User` y `Media`.
-- `App\Efact\Doctrine\Filter\DevExtremeFilter`: conserva los campos virtuales de ventas/documentos (`fullNumber`, `invoiceFullNumber`, `paymentMethod`) y referencias a entidades efact.
+- `App\Efact\Doctrine\Filter\DataGridFilter`: conserva los campos virtuales de ventas/documentos (`fullNumber`, `invoiceFullNumber`, `paymentMethod`) y referencias a entidades efact.
 - `App\Efact\Doctrine\Filter\BranchFilter`: conserva la semántica app-specific de asociación `branch`/`branch_id`.
 - `App\Efact\Doctrine\DBAL\TenantConnection`: conserva la política tenant actual (`dbname` y `user` desde `tenant.connection`, fallback YAML `config/tenants.yaml`).
 
@@ -287,7 +287,7 @@ No incluir:
 1. `Core/EventListener/QuotaEnforcementListener.php` ya no usa entidades efact directamente; el acoplamiento restante del mapeo `Branch`, `Customer`, `Product`, `TaxDocument`, `User` vive en `ControlPlane/Billing/Quota/EfactEntityQuotaResourceResolver` como app adapter.
 2. Auth app-owned ya vive en `Identity/Auth/*` y depende de `User`, `Branch`, `RefreshToken`, `AuthResponseDto`, `RefreshTokenRepository`; debe permanecer fuera del paquete Platform.
 3. `Core/Util/Constants.php` es una fachada BC hacia `Efact/Config/EfactConstants.php`; los consumidores restantes en `Core/Service` deben migrarse cuando esos servicios salgan de Core o se inviertan detrás de puertos.
-4. `Core/Doctrine/Filter/SoftDeleteFilter.php` referencia `Media`, `Purchase`, `User`; `DevExtremeFilter.php` referencia `TaxDocument`, `SalePayment` y campos virtuales de ventas. Deben moverse a app o parametrizarse.
+4. `Core/Doctrine/Filter/SoftDeleteFilter.php` referencia `Media`, `Purchase`, `User`; `DataGridFilter.php` referencia `TaxDocument`, `SalePayment` y campos virtuales de ventas. Deben moverse a app o parametrizarse.
 5. `Core/Doctrine/DBAL/TenantConnection.php` embebe política efact de conexión de tenant (`dbname`/`user`) y fallback YAML. Debe separarse en contrato + estrategia app.
 6. `SettingsService`, `DashboardService`, `CompanyContext`, `LogoProvider` y exporters están mezclados en Core pero no son necesariamente Platform. Clasificar y mover antes de extracción Composer.
 7. `Identity/Security/SecurityService.php` y `Identity/Security/Security.php` conocen DTOs/entidades de auth de efact; deben permanecer como app auth/session, no Platform.

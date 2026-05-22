@@ -6,7 +6,7 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'local')]
 #[ApiResource(
     normalizationContext: ['groups' => ['branch:read']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class Branch

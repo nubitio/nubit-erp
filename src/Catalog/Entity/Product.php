@@ -17,7 +17,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
@@ -50,7 +50,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     normalizationContext: ['groups' => ['product:read']],
     denormalizationContext: ['groups' => ['product:write']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 #[AppAssert\UniqueEntity(fields: ['code'], message: 'Ya existe un producto con el mismo código.')]

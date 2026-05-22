@@ -19,7 +19,7 @@ use App\Billing\Controller\Api\ConsultInvoice;
 use App\Billing\Controller\Api\SendInvoiceEmail;
 use App\Billing\Controller\Api\SendTaxDocument;
 use App\Billing\Controller\Api\ValidateInvoice;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Billing\Receipt\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\State\TaxDocumentProcessor;
@@ -86,7 +86,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
     denormalizationContext: ['groups' => ['invoice:write', 'creditnote:write']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class TaxDocument

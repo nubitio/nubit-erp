@@ -116,7 +116,7 @@ The eFact platform consists of three interconnected products:
 |-------|-----------|
 | Language | TypeScript (strict) |
 | Framework | React 19 |
-| UI components | DevExtreme 25.1 (grids, forms, charts) |
+| UI components | Native React components (in-repo Nubit CRUD engine: grids, forms) |
 | Styling | TailwindCSS 4 |
 | Build | Vite 6 + `vite-plugin-symfony` |
 | PWA | `vite-plugin-pwa` (Workbox service worker) |

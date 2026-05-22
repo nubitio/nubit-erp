@@ -10,7 +10,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 
-class DevExtremeFilter extends AbstractFilter
+class DataGridFilter extends AbstractFilter
 {
     /**
      * @inheritdoc

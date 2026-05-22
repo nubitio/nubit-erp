@@ -19,7 +19,7 @@ use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Http\ApiResponse;
 use App\Sales\Dto\VoidSaleDto;
@@ -74,7 +74,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['sale_record:read']],
     denormalizationContext: ['groups' => ['sale_record:write']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     provider: SaleV2Provider::class,
     processor: SaleProcessor::class,
     mercure: true,

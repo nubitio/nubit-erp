@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Enum\StockEntryType;
 use App\Inventory\Repository\StockEntryRepository;
@@ -49,7 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     normalizationContext:   ['groups' => ['stock_entry:read']],
     denormalizationContext: ['groups' => ['stock_entry:write']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     security: "is_granted('ROLE_ADMIN')",
     mercure: true,
 )]

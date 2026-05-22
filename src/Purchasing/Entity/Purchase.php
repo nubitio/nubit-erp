@@ -16,7 +16,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Purchasing\Repository\PurchaseRepository;
 use App\Purchasing\State\PurchaseProcessor;
 use App\Purchasing\State\PurchaseProvider;
@@ -46,7 +46,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext:   ['groups' => ['purchase:read']],
     denormalizationContext: ['groups' => ['purchase:write']],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     provider:  PurchaseProvider::class,
     processor: PurchaseProcessor::class,
     mercure: true,

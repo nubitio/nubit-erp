@@ -49,7 +49,7 @@ This is **not yet Composer-extraction complete**. The remaining work is package-
 - `src/ControlPlane/Billing/Quota/EfactEntityQuotaResourceResolver.php`
 - `src/Efact/Config/EfactConstants.php`
 - `src/Efact/Doctrine/DBAL/TenantConnection.php`
-- `src/Efact/Doctrine/Filter/{BranchFilter,DevExtremeFilter,SoftDeleteFilter}.php`
+- `src/Efact/Doctrine/Filter/{BranchFilter,DataGridFilter,SoftDeleteFilter}.php`
 - App-owned auth is excluded from Platform and now lives under `src/Identity/Auth/*`, `src/Identity/Security/*`, and `src/Identity/EventListener/AppSecretBootListener.php`; former Core auth/session paths have been removed from production code.
 
 ### Backward-compatibility shims

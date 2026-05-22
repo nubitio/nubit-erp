@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Efact\Http\ApiResponse;
-use App\Efact\Doctrine\Filter\DevExtremeFilter;
+use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Dto\PriceListDto;
 use App\Inventory\Dto\PricesDto;
 use App\Inventory\Repository\PriceListRepository;
@@ -49,7 +49,7 @@ use Doctrine\ORM\Mapping as ORM;
             processor: PriceListProcessor::class,
         ),
     ],
-    filters: [DevExtremeFilter::class],
+    filters: [DataGridFilter::class],
     mercure: true,
 )]
 class PriceList
