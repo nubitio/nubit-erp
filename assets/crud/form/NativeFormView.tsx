@@ -104,6 +104,7 @@ export function NativeEntitySelect({
   const [open, setOpen] = useState(false);
   const [draftQuery, setDraftQuery] = useState<string | null>(null);
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
+  const [selectedItemCache, setSelectedItemCache] = useState<DataRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -117,8 +118,17 @@ export function NativeEntitySelect({
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const normalizedValue = String(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value ?? '');
   const items = searchedItems ?? options;
+  const objectValue = value && typeof value === 'object' ? value as DataRecord : null;
+  const cachedSelectedItem = selectedItemCache && String(fieldKeyValue(field, selectedItemCache) ?? '') === normalizedValue
+    ? selectedItemCache
+    : undefined;
+  const objectSelectedItem = objectValue && String(fieldKeyValue(field, objectValue) ?? '') === normalizedValue
+    ? objectValue
+    : undefined;
   const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue)
-    ?? options.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue);
+    ?? options.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue)
+    ?? cachedSelectedItem
+    ?? objectSelectedItem;
   const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : '';
   const query = draftQuery ?? selectedText;
 
@@ -256,12 +266,14 @@ export function NativeEntitySelect({
 
   const selectItem = (item: DataRecord) => {
     const nextValue = fieldKeyValue(field, item);
+    setSelectedItemCache(item);
     onChange(nextValue ?? null);
     setDraftQuery(fieldTextValue(field, item));
     setOpen(false);
   };
 
   const clearSelection = () => {
+    setSelectedItemCache(null);
     onChange(null);
     setDraftQuery('');
     setOpen(true);
