@@ -1,6 +1,6 @@
 import React from 'react';
 import { FieldType } from './FieldType';
-import { Field, LoadOption } from './Field';
+import { Field, FieldButton, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
@@ -19,13 +19,11 @@ export class BaseFieldBuilder {
       width: undefined,
       height: null,
       minWidth: undefined,
-      minHeight: undefined,
       align: 'left',
       sortable: true,
       filterable: true,
       hideable: true,
       validators: [],
-      mode: 'local',
       url: undefined,
       loadOptions: [],
       filters: [],
@@ -44,7 +42,6 @@ export class BaseFieldBuilder {
       onChange: undefined,
       onSelect: undefined,
       onClick: undefined,
-      onKeyPress: undefined,
       readonly: false,
       disabled: false,
       hidden: false,
@@ -52,11 +49,8 @@ export class BaseFieldBuilder {
       precision: 0,
       accept: null,
       buttons: [],
-      hidingPriority: undefined,
       searchEnabled: true,
       searchExpr: null,
-      fixed: false,
-      fixedPosition: undefined,
       helpText: undefined,
       contentRender: null,
       visibleOnForm: true,
@@ -64,7 +58,6 @@ export class BaseFieldBuilder {
       multiple: false,
       autoSelectIfSingle: false,
       sendAsString: false,
-      editorOptions: undefined,
     };
   }
 
@@ -103,11 +96,6 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  minHeight(minHeight: number): this {
-    this._field.minHeight = minHeight;
-    return this;
-  }
-
   align(align: 'left' | 'center' | 'right'): this {
     this._field.align = align;
     return this;
@@ -130,11 +118,6 @@ export class BaseFieldBuilder {
 
   validators(validators: ValidationRule[]): this {
     this._field.validators = validators;
-    return this;
-  }
-
-  mode(mode: 'remote' | 'local' | 'none'): this {
-    this._field.mode = mode;
     return this;
   }
 
@@ -225,13 +208,8 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  buttons(value: DataRecord[]): this {
+  buttons(value: FieldButton[]): this {
     this._field.buttons = value;
-    return this;
-  }
-
-  hidingPriority(value: number): this {
-    this._field.hidingPriority = value;
     return this;
   }
 
@@ -242,16 +220,6 @@ export class BaseFieldBuilder {
 
   searchExpr(value: string[]): this {
     this._field.searchExpr = value;
-    return this;
-  }
-
-  fixed(value: boolean): this {
-    this._field.fixed = value;
-    return this;
-  }
-
-  fixedPosition(value: 'left' | 'right'): this {
-    this._field.fixedPosition = value;
     return this;
   }
 
@@ -267,11 +235,6 @@ export class BaseFieldBuilder {
 
   visibleOnForm(value: boolean) {
     this._field.visibleOnForm = value;
-    return this;
-  }
-
-  onKeyPress(param: (e: KeyboardEvent) => void) {
-    this._field.onKeyPress = param;
     return this;
   }
 
@@ -335,11 +298,6 @@ export class BaseFieldBuilder {
 
   multiple(value: boolean): this {
     this._field.multiple = value;
-    return this;
-  }
-
-  editorOptions(param: DataRecord): this {
-    this._field.editorOptions = param;
     return this;
   }
 

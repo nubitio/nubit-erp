@@ -38,7 +38,6 @@ export function identityField(): IdentityFieldBuilder {
  *   new EntityFieldBuilder('customers', 'id', 'businessName')
  *     .label('Cliente')
  *     .name('customer')
- *     .mode('remote')
  *     .formatter(cell => cell.value?.businessName)
  *     .build()
  */

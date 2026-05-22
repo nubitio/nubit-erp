@@ -101,7 +101,6 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
     entityField(API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .mode('remote')
       .defaultValue(1)
       .required(true)
       .formatter((cell: GridCellContext) => cell.value?.businessName)
@@ -271,7 +270,6 @@ export const SaleDetailFields = (
       .name('product')
       .label('Producto')
       .minWidth(300)
-      .mode('remote')
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '' || value == null) {
           row.product = null;
@@ -371,7 +369,6 @@ export const SaleDetailFields = (
       .valueType('number')
       .precision(2)
       .defaultValue(0)
-      .editorOptions({ min: 0, max: 100, step: 0.01 })
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
         const percent = Math.min(100, Math.max(0, Number(value)));

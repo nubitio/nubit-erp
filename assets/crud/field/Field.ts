@@ -7,6 +7,16 @@ import type { DataRecord } from '@nubit/core';
 
 export type LoadOption = Record<string, any>;
 
+export interface FieldButton {
+  name?: string;
+  location?: string;
+  options?: {
+    icon?: string;
+    stylingMode?: string;
+    onClick?: (event: unknown, form: { getFieldValue: (name: string) => unknown; setFieldValue: (name: string, value: unknown) => void }) => void;
+  };
+}
+
 export interface Field {
   isIdentity: boolean;
   type: FieldType;
@@ -16,13 +26,11 @@ export interface Field {
   width: string | number | undefined;
   height: number | null;
   minWidth: number | undefined;
-  minHeight: number | undefined;
   align: 'left' | 'center' | 'right' | undefined;
   sortable: boolean;
   filterable: boolean;
   hideable: boolean;
   validators: ValidationRule[];
-  mode: 'remote' | 'local' | 'none';
   url: string | undefined;
   loadOptions: LoadOption[];
   filters: FilterRule[];
@@ -56,25 +64,20 @@ export interface Field {
   onChange: OnChangeFn | undefined;
   onSelect: ((e: unknown) => void) | undefined;
   onClick: ((e: unknown) => void) | undefined;
-  onKeyPress: ((e: KeyboardEvent) => void) | undefined;
   readonly: boolean;
   disabled: boolean;
   hidden: boolean;
   required: boolean;
   precision: number;
   accept: string | null | undefined;
-  buttons: DataRecord[];
-  hidingPriority: number | undefined;
+  buttons: FieldButton[];
   searchEnabled: boolean;
   searchExpr: string[] | null;
-  fixed: boolean;
-  fixedPosition: 'left' | 'right' | undefined;
   helpText: string | undefined;
   contentRender: string | ((...args: unknown[]) => React.ReactNode) | null | undefined;
   visibleOnForm: boolean;
   maxLength: number | undefined;
   multiple: boolean;
-  editorOptions: DataRecord | undefined;
   sendAsString: boolean;
   /** Column display order hint set via `x-crud.order` from Hydra metadata. */
   order?: number;

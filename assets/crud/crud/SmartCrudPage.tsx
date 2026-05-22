@@ -120,7 +120,6 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
       hintFiredRef.current = true;
       logDevHint(resource.apiUrl, fields, supportedOperations);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resource.fieldContract,
     hasManualFields,

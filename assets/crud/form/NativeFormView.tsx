@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useImperativeHandle,
   useMemo,
@@ -13,7 +14,7 @@ import React, {
 import { createPortal } from 'react-dom';
 
 import { useCoreHttpClient, useCoreRuntime, useEvents, type CoreHttpClient } from '@nubit/core';
-import { Field } from '../field/Field';
+import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import { ApiPlatformRemoteDataSource } from '@nubit/api-platform';
 import type { DataRecord } from '@nubit/core';
@@ -80,16 +81,6 @@ function colSpan(field: Field): React.CSSProperties {
 
 type FieldButtonFormApi = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
-interface FieldButton {
-  name?: string;
-  location?: string;
-  options?: {
-    icon?: string;
-    stylingMode?: string;
-    onClick?: (event: unknown, form: FieldButtonFormApi) => void;
-  };
-}
-
 const FIELD_BUTTON_ICONS: Record<string, string> = {
   search: 'ph ph-magnifying-glass',
   add: 'ph ph-plus',
@@ -102,6 +93,127 @@ function resolveButtonIcon(icon?: string): string {
   if (icon.startsWith('ph-')) return `ph ${icon}`;
   return FIELD_BUTTON_ICONS[icon] ?? 'ph ph-magnifying-glass';
 }
+
+// ─── Shared lookup dropdown primitive ────────────────────────────────────────
+
+function useLookupDropdown() {
+  const [open, setOpen] = useState(false);
+  const [draftQuery, setDraftQuery] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
+
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [open]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.top >= window.innerHeight || rect.bottom <= 0 || rect.left >= window.innerWidth || rect.right <= 0) { setOpen(false); return; }
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, bottom: `${window.innerHeight - rect.top + 4}px`, top: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
+      } else {
+        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, top: `${rect.bottom + 4}px`, bottom: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
+      }
+    };
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+    };
+  }, [open]);
+
+  return { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle };
+}
+
+function LookupDropdown({
+  children,
+  className,
+  containerRef,
+  disabled,
+  id,
+  label,
+  menuStyle,
+  normalizedValue,
+  onClear,
+  onQueryChange,
+  onScroll,
+  open,
+  query,
+  readOnly,
+  required,
+  setDraftQuery,
+  setOpen,
+}: {
+  children: React.ReactNode;
+  className: string;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  disabled?: boolean;
+  id?: string;
+  label: string;
+  menuStyle: React.CSSProperties;
+  normalizedValue: string;
+  onClear: () => void;
+  onQueryChange: (value: string) => void;
+  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
+  open: boolean;
+  query: string;
+  readOnly?: boolean;
+  required?: boolean;
+  setDraftQuery: (q: string | null) => void;
+  setOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+}) {
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  return (
+    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
+      <input
+        autoComplete="off"
+        className={className}
+        disabled={disabled}
+        id={id}
+        readOnly={readOnly}
+        required={required}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        value={query}
+        onBlur={() => {
+          blurTimer.current = setTimeout(() => { setOpen(false); setDraftQuery(null); }, 120);
+        }}
+        onChange={(event) => onQueryChange(event.currentTarget.value)}
+        onFocus={() => { clearTimeout(blurTimer.current); setOpen(true); }}
+      />
+      {!disabled && !readOnly && normalizedValue !== '' && (
+        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={onClear}>
+          <i className="ph ph-x" aria-hidden="true" />
+        </button>
+      )}
+      {!disabled && !readOnly && (
+        <button type="button" className="native-form__lookup-toggle" aria-label={`Abrir ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { clearTimeout(blurTimer.current); setOpen((prev) => !prev); }}>
+          <i className="ph ph-caret-down" aria-hidden="true" style={{ transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+        </button>
+      )}
+      {open && !disabled && !readOnly && createPortal(
+        <div className="native-form__lookup-menu" role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
+          {children}
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+// ─── NativeEntitySelect ───────────────────────────────────────────────────────
 
 export function NativeEntitySelect({
   className,
@@ -126,34 +238,21 @@ export function NativeEntitySelect({
   required?: boolean;
   value: unknown;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draftQuery, setDraftQuery] = useState<string | null>(null);
+  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
   const [selectedItemCache, setSelectedItemCache] = useState<DataRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({
-    position: 'fixed',
-    visibility: 'hidden',
-    margin: 0,
-  });
 
-  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const normalizedValue = String(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value ?? '');
   const items = searchedItems ?? options;
   const objectValue = value && typeof value === 'object' ? value as DataRecord : null;
-  const cachedSelectedItem = selectedItemCache && String(fieldKeyValue(field, selectedItemCache) ?? '') === normalizedValue
-    ? selectedItemCache
-    : undefined;
-  const objectSelectedItem = objectValue && String(fieldKeyValue(field, objectValue) ?? '') === normalizedValue
-    ? objectValue
-    : undefined;
+  const cachedSelectedItem = selectedItemCache && String(fieldKeyValue(field, selectedItemCache) ?? '') === normalizedValue ? selectedItemCache : undefined;
+  const objectSelectedItem = objectValue && String(fieldKeyValue(field, objectValue) ?? '') === normalizedValue ? objectValue : undefined;
   const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue)
     ?? options.find((item) => String(fieldKeyValue(field, item) ?? '') === normalizedValue)
-    ?? cachedSelectedItem
-    ?? objectSelectedItem;
+    ?? cachedSelectedItem ?? objectSelectedItem;
   const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : '';
   const query = draftQuery ?? selectedText;
 
@@ -164,240 +263,80 @@ export function NativeEntitySelect({
       setLoading(true);
       setHasMore(true);
       createRemoteSource(field, httpClient)
-        .load({
-          take: 50,
-          skip: 0,
-          searchExpr: fieldSearchExpr(field),
-          searchValue: searchValue === '' ? undefined : searchValue,
-        })
+        .load({ take: 50, skip: 0, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
         .then((result) => {
           setSearchedItems(result.data);
-          const canLoadMore = result.data.length === 50 && (result.totalCount === undefined || result.data.length < result.totalCount);
-          setHasMore(canLoadMore);
+          setHasMore(result.data.length === 50 && (result.totalCount === undefined || result.data.length < result.totalCount));
         })
-        .catch(() => {
-          setSearchedItems(null);
-          setHasMore(false);
-        })
+        .catch(() => { setSearchedItems(null); setHasMore(false); })
         .finally(() => setLoading(false));
     }, 250);
-
     return () => clearTimeout(timer);
   }, [field, httpClient, open, query]);
 
   const loadMore = useCallback(() => {
     if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
-
     setLoadingMore(true);
     const searchValue = query.trim();
     const currentCount = searchedItems ? searchedItems.length : 0;
-
     createRemoteSource(field, httpClient)
-      .load({
-        take: 50,
-        skip: currentCount,
-        searchExpr: fieldSearchExpr(field),
-        searchValue: searchValue === '' ? undefined : searchValue,
-      })
+      .load({ take: 50, skip: currentCount, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
       .then((result) => {
         setSearchedItems((prev) => {
-          const prevItems = prev ?? [];
-          const nextItems = [...prevItems, ...result.data];
+          const nextItems = [...(prev ?? []), ...result.data];
           const seen = new Set();
-          return nextItems.filter((item) => {
-            const key = fieldKeyValue(field, item);
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          });
+          return nextItems.filter((item) => { const k = fieldKeyValue(field, item); if (seen.has(k)) return false; seen.add(k); return true; });
         });
-        const nextTotalLoaded = currentCount + result.data.length;
-        const canLoadMore = result.data.length === 50 && (result.totalCount === undefined || nextTotalLoaded < result.totalCount);
-        setHasMore(canLoadMore);
+        const nextTotal = currentCount + result.data.length;
+        setHasMore(result.data.length === 50 && (result.totalCount === undefined || nextTotal < result.totalCount));
       })
-      .catch(() => {
-        setHasMore(false);
-      })
-      .finally(() => {
-        setLoadingMore(false);
-      });
+      .catch(() => setHasMore(false))
+      .finally(() => setLoadingMore(false));
   }, [field, httpClient, loading, loadingMore, hasMore, query, searchedItems]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const target = event.currentTarget;
-    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 20) {
-      loadMore();
-    }
+    const t = event.currentTarget;
+    if (t.scrollHeight - t.scrollTop <= t.clientHeight + 20) loadMore();
   };
 
-  useEffect(() => {
-    if (!open || !containerRef.current) return;
-    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [open]);
-
-  useLayoutEffect(() => {
-    if (!open) return;
-
-    const updatePosition = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const isInputVisible = rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
-      if (!isInputVisible) {
-        setOpen(false);
-        return;
-      }
-
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const threshold = 250;
-
-      if (spaceBelow < threshold && spaceAbove > spaceBelow) {
-        setMenuStyle({
-          position: 'fixed',
-          left: `${rect.left}px`,
-          width: `${rect.width}px`,
-          bottom: `${window.innerHeight - rect.top + 4}px`,
-          top: 'auto',
-          margin: 0,
-          zIndex: 9999,
-          visibility: 'visible',
-        });
-      } else {
-        setMenuStyle({
-          position: 'fixed',
-          left: `${rect.left}px`,
-          width: `${rect.width}px`,
-          top: `${rect.bottom + 4}px`,
-          bottom: 'auto',
-          margin: 0,
-          zIndex: 9999,
-          visibility: 'visible',
-        });
-      }
-    };
-
-    updatePosition();
-
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
-
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, { capture: true });
-    };
-  }, [open]);
-
   const selectItem = (item: DataRecord) => {
-    const nextValue = fieldKeyValue(field, item);
     setSelectedItemCache(item);
-    onChange(nextValue ?? null, item);
+    onChange(fieldKeyValue(field, item) ?? null, item);
     setDraftQuery(fieldTextValue(field, item));
     setOpen(false);
   };
 
-  const clearSelection = () => {
-    setSelectedItemCache(null);
-    onChange(null, null);
-    setDraftQuery('');
-    setOpen(true);
-  };
-
   return (
-    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
-      <input
-        autoComplete="off"
-        className={className}
-        disabled={disabled}
-        id={id}
-        readOnly={readOnly}
-        required={required}
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={open}
-        value={query}
-        onBlur={() => {
-          blurTimer.current = setTimeout(() => {
-            setOpen(false);
-            setDraftQuery(null);
-            setSearchedItems(null);
-          }, 120);
-        }}
-        onChange={(event) => {
-          setDraftQuery(event.currentTarget.value);
-          setOpen(true);
-          if (event.currentTarget.value === '') onChange(null, null);
-        }}
-        onFocus={() => {
-          if (blurTimer.current) clearTimeout(blurTimer.current);
-          setOpen(true);
-        }}
-      />
-      {!disabled && !readOnly && normalizedValue !== '' && (
-        <button
-          type="button"
-          className="native-form__lookup-clear"
-          aria-label={`Limpiar ${field.label}`}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={clearSelection}
-        >
-          <i className="ph ph-x" aria-hidden="true" />
-        </button>
-      )}
-      {!disabled && !readOnly && (
-        <button
-          type="button"
-          className="native-form__lookup-toggle"
-          aria-label={`Abrir ${field.label}`}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => {
-            if (blurTimer.current) clearTimeout(blurTimer.current);
-            setOpen((prev) => !prev);
-          }}
-        >
-          <i
-            className="ph ph-caret-down"
-            aria-hidden="true"
-            style={{
-              transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-            }}
-          />
-        </button>
-      )}
-      {open && !disabled && !readOnly && createPortal(
-        <div
-          className="native-form__lookup-menu"
-          role="listbox"
-          style={menuStyle}
-          onScroll={handleScroll}
-          onMouseDown={(event) => event.preventDefault()}
-        >
-          {loading && items.length === 0 && <div className="native-form__lookup-status">Buscando...</div>}
-          {!loading && items.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
-          {!loading && items.map((item) => {
-            const itemValue = fieldKeyValue(field, item);
-            const itemText = fieldTextValue(field, item);
-            return (
-              <button
-                key={String(itemValue)}
-                type="button"
-                role="option"
-                aria-selected={String(itemValue ?? '') === normalizedValue}
-                className="native-form__lookup-option"
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => selectItem(item)}
-              >
-                {itemText}
-              </button>
-            );
-          })}
-          {loadingMore && <div className="native-form__lookup-status">Cargando más...</div>}
-        </div>,
-        document.body
-      )}
-    </div>
+    <LookupDropdown
+      className={className}
+      containerRef={containerRef}
+      disabled={disabled}
+      id={id}
+      label={field.label}
+      menuStyle={menuStyle}
+      normalizedValue={normalizedValue}
+      onClear={() => { setSelectedItemCache(null); onChange(null, null); setDraftQuery(''); setOpen(true); }}
+      onQueryChange={(v) => { setDraftQuery(v); setOpen(true); if (v === '') onChange(null, null); }}
+      onScroll={handleScroll}
+      open={open}
+      query={query}
+      readOnly={readOnly}
+      required={required}
+      setDraftQuery={setDraftQuery}
+      setOpen={setOpen}
+    >
+      {loading && items.length === 0 && <div className="native-form__lookup-status">Buscando...</div>}
+      {!loading && items.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+      {!loading && items.map((item) => {
+        const itemValue = fieldKeyValue(field, item);
+        return (
+          <button key={String(itemValue)} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
+            {fieldTextValue(field, item)}
+          </button>
+        );
+      })}
+      {loadingMore && <div className="native-form__lookup-status">Cargando más...</div>}
+    </LookupDropdown>
   );
 }
 
@@ -420,117 +359,45 @@ function NativeEnumSelect({
   required?: boolean;
   value: unknown;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draftQuery, setDraftQuery] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
+  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
 
   const allItems: DataRecord[] = field.data ?? [];
   const normalizedValue = String(value ?? '');
   const selectedItem = allItems.find((item) => String(item['value'] ?? '') === normalizedValue);
   const selectedText = selectedItem ? String(selectedItem['text'] ?? selectedItem['value'] ?? '') : '';
   const query = draftQuery ?? selectedText;
-
   const visibleItems = draftQuery != null && draftQuery !== ''
     ? allItems.filter((item) => String(item['text'] ?? item['value'] ?? '').toLowerCase().includes(draftQuery.toLowerCase()))
     : allItems;
 
-  useEffect(() => {
-    if (!open || !containerRef.current) return;
-    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [open]);
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    const updatePosition = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-      if (!isVisible) { setOpen(false); return; }
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      if (spaceBelow < 250 && spaceAbove > spaceBelow) {
-        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, bottom: `${window.innerHeight - rect.top + 4}px`, top: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
-      } else {
-        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, top: `${rect.bottom + 4}px`, bottom: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
-      }
-    };
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, { capture: true });
-    };
-  }, [open]);
-
-  const selectItem = (item: DataRecord) => {
-    onChange(item['value'] ?? null);
-    setDraftQuery(String(item['text'] ?? item['value'] ?? ''));
-    setOpen(false);
-  };
-
-  const clearSelection = () => {
-    onChange(null);
-    setDraftQuery('');
-    setOpen(true);
-  };
-
   return (
-    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
-      <input
-        autoComplete="off"
-        className={className}
-        disabled={disabled}
-        id={id}
-        readOnly={readOnly}
-        required={required}
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={open}
-        value={query}
-        onBlur={() => {
-          blurTimer.current = setTimeout(() => { setOpen(false); setDraftQuery(null); }, 120);
-        }}
-        onChange={(event) => {
-          setDraftQuery(event.currentTarget.value);
-          setOpen(true);
-          if (event.currentTarget.value === '') onChange(null);
-        }}
-        onFocus={() => {
-          if (blurTimer.current) clearTimeout(blurTimer.current);
-          setOpen(true);
-        }}
-      />
-      {!disabled && !readOnly && normalizedValue !== '' && (
-        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={clearSelection}>
-          <i className="ph ph-x" aria-hidden="true" />
-        </button>
-      )}
-      {!disabled && !readOnly && (
-        <button type="button" className="native-form__lookup-toggle" aria-label={`Abrir ${field.label}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { if (blurTimer.current) clearTimeout(blurTimer.current); setOpen((prev) => !prev); }}>
-          <i className="ph ph-caret-down" aria-hidden="true" style={{ transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-        </button>
-      )}
-      {open && !disabled && !readOnly && createPortal(
-        <div className="native-form__lookup-menu" role="listbox" style={menuStyle} onMouseDown={(event) => event.preventDefault()}>
-          {visibleItems.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
-          {visibleItems.map((item) => {
-            const itemValue = String(item['value'] ?? '');
-            const itemText = String(item['text'] ?? item['value'] ?? '');
-            return (
-              <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(event) => event.preventDefault()} onClick={() => selectItem(item)}>
-                {itemText}
-              </button>
-            );
-          })}
-        </div>,
-        document.body,
-      )}
-    </div>
+    <LookupDropdown
+      className={className}
+      containerRef={containerRef}
+      disabled={disabled}
+      id={id}
+      label={field.label}
+      menuStyle={menuStyle}
+      normalizedValue={normalizedValue}
+      onClear={() => { onChange(null); setDraftQuery(''); setOpen(true); }}
+      onQueryChange={(v) => { setDraftQuery(v); setOpen(true); if (v === '') onChange(null); }}
+      open={open}
+      query={query}
+      readOnly={readOnly}
+      required={required}
+      setDraftQuery={setDraftQuery}
+      setOpen={setOpen}
+    >
+      {visibleItems.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+      {visibleItems.map((item) => {
+        const itemValue = String(item['value'] ?? '');
+        return (
+          <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange(item['value'] ?? null); setDraftQuery(String(item['text'] ?? item['value'] ?? '')); setOpen(false); }}>
+            {String(item['text'] ?? item['value'] ?? '')}
+          </button>
+        );
+      })}
+    </LookupDropdown>
   );
 }
 
@@ -600,6 +467,16 @@ function NativeDetailGrid({
 }) {
   const { t } = useCoreTranslation();
   const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
+  const rowKeysRef = useRef<string[]>(rows.map(() => crypto.randomUUID()));
+
+  // Re-generate keys when the parent resets rows to a different-length array
+  // (e.g. switching between edit records). addRow/removeRow keep rowKeysRef
+  // in sync before their onRowsChange fires, so this guard only triggers on a
+  // true external reset. Reading/writing the ref here is intentional.
+  // eslint-disable-next-line react-hooks/refs
+  if (rowKeysRef.current.length !== rows.length) {
+    rowKeysRef.current = rows.map(() => crypto.randomUUID()); // eslint-disable-line react-hooks/refs
+  }
 
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
     let nextRow = { ...rows[rowIndex], [field.name]: value };
@@ -619,11 +496,13 @@ function NativeDetailGrid({
   };
 
   const addRow = () => {
+    rowKeysRef.current.push(crypto.randomUUID());
     onRowsChange([...rows, buildEmptyRow(detailFields)]);
     onRowsMutated();
   };
 
   const removeRow = (rowIndex: number) => {
+    rowKeysRef.current.splice(rowIndex, 1);
     onRowsChange(rows.filter((_, index) => index !== rowIndex));
     onRowsMutated();
   };
@@ -693,8 +572,11 @@ function NativeDetailGrid({
                 <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">{t('form.detailEmpty')}</td>
               </tr>
             )}
-            {rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+            {/* eslint-disable react-hooks/refs -- rowKeysRef is updated synchronously by addRow/removeRow before onRowsChange fires, so it is always in sync with rows here */}
+            {rows.map((row, rowIndex) => {
+              const rowKey = rowKeysRef.current[rowIndex]; // eslint-disable-line react-hooks/refs
+              return (
+              <tr key={rowKey}>
                 {visibleFields.map((field) => (
                   <td key={field.name}>
                     {renderDetailControl(row, rowIndex, field)}
@@ -708,7 +590,8 @@ function NativeDetailGrid({
                   </td>
                 )}
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -721,6 +604,8 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const { notify } = useCoreRuntime();
   const httpClient = useCoreHttpClient();
   const [on, emit] = useEvents();
+  const instanceId = useId();
+  const scopedFormErrorsEvent = `${FORM_ERRORS_EVENT}:${instanceId}`;
   const isEdit = useRef(false);
   const uploadedFiles = useRef<UploadedFile[]>([]);
   const [formData, setFormData] = useState<FormDataRecord>(() => buildEmptyRow(options.fields));
@@ -838,6 +723,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     detailPropertyName,
     format: options.format,
     events: options.events,
+    formErrorsEvent: scopedFormErrorsEvent,
     httpClient,
     onSaveSuccess: options.onSaveSuccess,
     onSaveError: options.onSaveError,
@@ -845,6 +731,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     onDeleteError: options.onDeleteError,
     onLoadingChange: options.onLoadingChange,
   }, submitAccessors, emit, validate);
+
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
+  const handleDeleteRef = useRef(handleDelete);
+  handleDeleteRef.current = handleDelete;
 
   const applyAddPayload = useCallback((payload: EventRowPayload | undefined) => {
     uploadedFiles.current = [];
@@ -858,18 +749,20 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   }, [detailPropertyName, options.fields, setNextDetailRows, setNextFormData]);
 
   useEffect(() => {
-    on<FormError[]>(FORM_ERRORS_EVENT, (formErrors) => {
-      notify(t('form.validationError'), 'error');
-      setErrors((current) => {
-        const next = { ...current };
-        formErrors.forEach((error) => { next[error.propertyPath] = error.message; });
-        return next;
-      });
-    });
+    const subs = [
+      on<FormError[]>(scopedFormErrorsEvent, (formErrors) => {
+        notify(t('form.validationError'), 'error');
+        setErrors((current) => {
+          const next = { ...current };
+          formErrors.forEach((error) => { next[error.propertyPath] = error.message; });
+          return next;
+        });
+      }),
+    ];
 
-    if (options.events?.ADD) on(options.events.ADD, (payload: EventRowPayload | undefined) => applyAddPayload(payload));
+    if (options.events?.ADD) subs.push(on(options.events.ADD, (payload: EventRowPayload | undefined) => applyAddPayload(payload)));
     if (options.events?.EDIT) {
-      on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
+      subs.push(on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
         const row = normalizeFormData(payload.row, options.fields);
         uploadedFiles.current = [];
         setNextFormData(row);
@@ -885,12 +778,16 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           .get<FormDataRecord[]>(detailUrl)
           .then((response) => setNextDetailRows(response.data))
           .finally(() => emit(FORM_EVENTS.LOADING, false));
-      });
+      }));
     }
-    if (options.events?.DELETE) on(options.events.DELETE, (payload: { row: FormDataRecord }) => handleDelete(payload));
-    if (options.events?.SAVE) on(options.events.SAVE, () => handleSave());
+    if (options.events?.DELETE) subs.push(on(options.events.DELETE, (payload: { row: FormDataRecord }) => handleDeleteRef.current(payload)));
+    if (options.events?.SAVE) subs.push(on(options.events.SAVE, () => handleSaveRef.current()));
+
+    return () => subs.forEach((sub) => sub.unsubscribe());
+    // scopedFormErrorsEvent is stable (from useId); all other values here are either stable
+    // or accessed through refs, so a single mount subscription is correct.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [scopedFormErrorsEvent]);
 
   useEffect(() => {
     if (computedFieldNames.length === 0 || !options.computedValues) return;
@@ -1018,7 +915,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     } else {
       const type = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : field.type === FieldType.DATE ? 'date' : field.type === FieldType.DATETIME ? 'datetime-local' : field.type === FieldType.PASSWORD ? 'password' : 'text';
       const inputControl = <input {...commonProps} type={type} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
-      const fieldButtons = (Array.isArray(field.buttons) ? field.buttons : []) as FieldButton[];
+      const fieldButtons = Array.isArray(field.buttons) ? field.buttons : [];
       if (fieldButtons.length > 0) {
         const buttonFormApi: FieldButtonFormApi = {
           getFieldValue: (name) => formDataRef.current[name],

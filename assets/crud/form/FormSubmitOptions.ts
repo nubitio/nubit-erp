@@ -10,6 +10,7 @@ export interface UseFormSubmitOptions {
   detailPropertyName: string;
   format?: 'json' | 'multipart';
   events?: FormEventNames;
+  formErrorsEvent?: string;
   onSaveSuccess?: (response: unknown) => void;
   onSaveError?: (error?: unknown) => void;
   onDeleteSuccess?: (response: unknown) => void;

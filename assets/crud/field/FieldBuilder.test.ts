@@ -57,19 +57,17 @@ describe('FieldBuilder', () => {
     expect(field.defaultValue).toBe('active');
   });
 
-  it('sets url and mode for remote entity field', () => {
+  it('sets url, textField, valueField for entity field', () => {
     const field = new FieldBuilder()
       .name('product')
       .label('Producto')
       .type(FieldType.ENTITY)
       .url('/api/products')
-      .mode('remote')
       .textField('name')
       .valueField('id')
       .build();
 
     expect(field.url).toBe('/api/products');
-    expect(field.mode).toBe('remote');
     expect(field.textField).toBe('name');
     expect(field.valueField).toBe('id');
   });

@@ -225,10 +225,7 @@ class HttpClient {
     }
 
     if (status === HttpCode.UNPROCESSABLE_ENTITY) {
-      const violations = errorData?.violations;
-      if (violations) {
-        dispatch(FORM_ERRORS_EVENT, violations);
-      } else {
+      if (!errorData?.violations) {
         this.handleError(status, message);
       }
       throw Object.assign(new Error(message ?? HttpClient.DEFAULT_MESSAGES.error), {
@@ -352,6 +349,5 @@ class HttpClient {
   }
 }
 
-export const FORM_ERRORS_EVENT = 'form-errors';
 export const HTTP_ERROR_EVENT = 'http-error';
 export const httpClient = new HttpClient('');

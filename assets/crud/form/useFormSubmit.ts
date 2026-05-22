@@ -106,7 +106,7 @@ export const useFormSubmit = (
           err.data !== null &&
           'violations' in err.data
         ) {
-          emit(FORM_ERRORS_EVENT, err.data.violations);
+          emit(options.formErrorsEvent ?? FORM_ERRORS_EVENT, err.data.violations);
         }
         options.onSaveError?.(err);
       })
