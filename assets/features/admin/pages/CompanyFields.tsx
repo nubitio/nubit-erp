@@ -8,7 +8,7 @@ import {
   textField,
   textareaField,
 } from '@nubit/crud';
-import type { FormHandle } from '@nubit/crud';
+import type { FormHandle, DataRecord } from '@nubit/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { API_BASE_URL } from '@app/constants';
@@ -81,6 +81,13 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
       .name('ubigeo')
       .label('Ubigeo (INEI)')
       .searchExpr(['code', 'department', 'province', 'district'])
+      .onSelect((event) => {
+        const item = (event as { itemData?: DataRecord }).itemData;
+        formRef.current?.setFieldValue('ubigeoCode', item?.code ?? '');
+        formRef.current?.setFieldValue('department', item?.department ?? '');
+        formRef.current?.setFieldValue('province', item?.province ?? '');
+        formRef.current?.setFieldValue('district', item?.district ?? '');
+      })
       .visible(false)
       .build(),
   );

@@ -120,7 +120,7 @@ export function NativeEntitySelect({
   field: Field;
   httpClient: CoreHttpClient;
   id?: string;
-  onChange: (value: unknown) => void;
+  onChange: (value: unknown, item?: DataRecord | null) => void;
   options: DataRecord[];
   readOnly?: boolean;
   required?: boolean;
@@ -292,14 +292,14 @@ export function NativeEntitySelect({
   const selectItem = (item: DataRecord) => {
     const nextValue = fieldKeyValue(field, item);
     setSelectedItemCache(item);
-    onChange(nextValue ?? null);
+    onChange(nextValue ?? null, item);
     setDraftQuery(fieldTextValue(field, item));
     setOpen(false);
   };
 
   const clearSelection = () => {
     setSelectedItemCache(null);
-    onChange(null);
+    onChange(null, null);
     setDraftQuery('');
     setOpen(true);
   };
@@ -327,7 +327,7 @@ export function NativeEntitySelect({
         onChange={(event) => {
           setDraftQuery(event.currentTarget.value);
           setOpen(true);
-          if (event.currentTarget.value === '') onChange(null);
+          if (event.currentTarget.value === '') onChange(null, null);
         }}
         onFocus={() => {
           if (blurTimer.current) clearTimeout(blurTimer.current);
@@ -978,7 +978,10 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           readOnly={readOnly}
           required={field.required}
           value={value}
-          onChange={(nextValue) => setFieldValue(field.name, nextValue)}
+          onChange={(nextValue, item) => {
+            setFieldValue(field.name, nextValue);
+            field.onSelect?.({ value: nextValue, itemData: item ?? undefined });
+          }}
         />
       );
     } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
