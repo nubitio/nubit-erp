@@ -78,6 +78,31 @@ function colSpan(field: Field): React.CSSProperties {
   return { '--native-form-col': String(field.col ?? 12) } as React.CSSProperties;
 }
 
+type FieldButtonFormApi = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
+
+interface FieldButton {
+  name?: string;
+  location?: string;
+  options?: {
+    icon?: string;
+    stylingMode?: string;
+    onClick?: (event: unknown, form: FieldButtonFormApi) => void;
+  };
+}
+
+const FIELD_BUTTON_ICONS: Record<string, string> = {
+  search: 'ph ph-magnifying-glass',
+  add: 'ph ph-plus',
+  clear: 'ph ph-x',
+};
+
+function resolveButtonIcon(icon?: string): string {
+  if (!icon) return 'ph ph-magnifying-glass';
+  if (icon.startsWith('ph ')) return icon;
+  if (icon.startsWith('ph-')) return `ph ${icon}`;
+  return FIELD_BUTTON_ICONS[icon] ?? 'ph ph-magnifying-glass';
+}
+
 export function NativeEntitySelect({
   className,
   disabled,
@@ -989,7 +1014,40 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       }} />;
     } else {
       const type = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : field.type === FieldType.DATE ? 'date' : field.type === FieldType.DATETIME ? 'datetime-local' : field.type === FieldType.PASSWORD ? 'password' : 'text';
-      control = <input {...commonProps} type={type} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
+      const inputControl = <input {...commonProps} type={type} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
+      const fieldButtons = (Array.isArray(field.buttons) ? field.buttons : []) as FieldButton[];
+      if (fieldButtons.length > 0) {
+        const buttonFormApi: FieldButtonFormApi = {
+          getFieldValue: (name) => formDataRef.current[name],
+          setFieldValue,
+        };
+        control = (
+          <div className="native-form__input-group">
+            {inputControl}
+            <div className="native-form__input-actions">
+              {fieldButtons.map((button, index) => {
+                const buttonOptions = button.options ?? {};
+                const buttonLabel = button.name === 'search' ? 'Buscar' : String(button.name ?? 'Acción');
+                return (
+                  <button
+                    key={String(button.name ?? index)}
+                    type="button"
+                    className="native-form__input-button"
+                    disabled={disabled || readOnly}
+                    aria-label={buttonLabel}
+                    title={buttonLabel}
+                    onClick={(event) => buttonOptions.onClick?.(event, buttonFormApi)}
+                  >
+                    <i className={resolveButtonIcon(buttonOptions.icon)} aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      } else {
+        control = inputControl;
+      }
     }
 
     return (

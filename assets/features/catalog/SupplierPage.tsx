@@ -1,15 +1,15 @@
-import { FieldType, SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
-import type { MutableRefObject } from 'react';
+import {
+  FieldType,
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  type DataRecord,
+  type FormHandle,
+} from '@nubit/crud';
 import { supplierEvents } from '@app/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-
-type FormEditorRef = {
-  instance: () => {
-    getEditor: (name: string) => { option: (name: string, value?: unknown) => unknown } | undefined;
-  };
-};
 
 interface SupplierRecord extends DataRecord {
   id: string;
@@ -19,13 +19,7 @@ interface SupplierRecord extends DataRecord {
   phone: string;
 }
 
-interface ButtonContext {
-  formRef: MutableRefObject<FormEditorRef | null>;
-}
-
-function setField(formRef: MutableRefObject<FormEditorRef | null>, name: string, value: unknown) {
-  formRef.current?.instance().getEditor(name)?.option('value', value);
-}
+type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
 const resource = defineResource<SupplierRecord>({
   id: 'supplier',
@@ -69,24 +63,25 @@ const resource = defineResource<SupplierRecord>({
               options: {
                 icon: 'search',
                 stylingMode: 'text',
-                onClick: (_e: unknown, ctx: ButtonContext) => {
-                  const formRef = ctx?.formRef;
-                  const rawDoc = formRef?.current?.instance().getEditor('ruc')?.option('value');
-                  const doc = String(rawDoc ?? '').trim();
+                onClick: (_event: unknown, form: FieldButtonForm) => {
+                  const doc = String(form.getFieldValue('ruc') ?? '').trim();
 
-                  if (!formRef?.current || doc.length !== 11 || !SharedUtils.validateRUC(doc)) {
+                  if (doc.length !== 11 || !SharedUtils.validateRUC(doc)) {
                     toast('Ingresa un RUC válido de 11 dígitos', 'warning');
                     return;
                   }
 
-                  consultService.consultRuc(doc).then((response) => {
+                  consultService
+                    .consultRuc(doc)
+                    .then((response) => {
                       if (!response.data.active) {
                         toast('El RUC ingresado no se encuentra activo', 'error');
                         return;
                       }
-                      setField(formRef, 'businessName', response.data.name);
-                      setField(formRef, 'fiscalAddress', response.data.address);
-                    }).catch(() => toast('No se pudo consultar el RUC', 'error'));
+                      form.setFieldValue('businessName', response.data.name);
+                      form.setFieldValue('fiscalAddress', response.data.address);
+                    })
+                    .catch(() => toast('No se pudo consultar el RUC', 'error'));
                 },
               },
             },

@@ -1,16 +1,15 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
+import {
+  SmartCrudPage,
+  defineFields,
+  defineResource,
+  type DataRecord,
+  type FormHandle,
+} from '@nubit/crud';
 import { customerApiUrl, customerEvents } from './model/constants';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import toast from '@shared/lib/SharedUtils';
-import type { MutableRefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-
-type FormEditorRef = {
-  instance: () => {
-    getEditor: (name: string) => { option: (name: string, value?: unknown) => unknown } | undefined;
-  };
-};
 
 interface CustomerRecord extends DataRecord {
   id: string;
@@ -22,13 +21,7 @@ interface CustomerRecord extends DataRecord {
   priceList: unknown;
 }
 
-interface ButtonContext {
-  formRef: MutableRefObject<FormEditorRef | null>;
-}
-
-function setField(formRef: MutableRefObject<FormEditorRef | null>, name: string, value: unknown) {
-  formRef.current?.instance().getEditor(name)?.option('value', value);
-}
+type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
 const customerResource = defineResource<CustomerRecord>({
   id: 'customer',
@@ -79,29 +72,29 @@ const customerResource = defineResource<CustomerRecord>({
               options: {
                 icon: 'search',
                 stylingMode: 'text',
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onClick: (_e: unknown, ctx: ButtonContext) => {
-                  const formRef = ctx?.formRef;
-                  const rawDoc = formRef?.current?.instance().getEditor('ruc')?.option('value');
-                  const doc = String(rawDoc ?? '').trim();
-
-                  if (!formRef?.current || doc.length < 8) {
-                    return;
-                  }
+                onClick: (_event: unknown, form: FieldButtonForm) => {
+                  const doc = String(form.getFieldValue('ruc') ?? '').trim();
+                  if (doc.length < 8) return;
 
                   if (doc.length === 8) {
-                    consultService.consultDni(doc).then((response) => {
-                      setField(formRef, 'businessName', response.data.name);
-                    });
+                    consultService
+                      .consultDni(doc)
+                      .then((response) => {
+                        form.setFieldValue('businessName', response.data.name);
+                      })
+                      .catch(() => toast('No se pudo consultar el DNI', 'error'));
                   } else if (doc.length === 11) {
-                    consultService.consultRuc(doc).then((response) => {
-                      if (!response.data.active) {
-                        toast('El RUC ingresado no se encuentra activo', 'error');
-                        return;
-                      }
-                      setField(formRef, 'businessName', response.data.name);
-                      setField(formRef, 'fiscalAddress', response.data.address);
-                    });
+                    consultService
+                      .consultRuc(doc)
+                      .then((response) => {
+                        if (!response.data.active) {
+                          toast('El RUC ingresado no se encuentra activo', 'error');
+                          return;
+                        }
+                        form.setFieldValue('businessName', response.data.name);
+                        form.setFieldValue('fiscalAddress', response.data.address);
+                      })
+                      .catch(() => toast('No se pudo consultar el RUC', 'error'));
                   }
                 },
               },
