@@ -63,8 +63,15 @@ readonly class UbigeoImportService
                     continue;
                 }
 
+                // Skip blank rows (e.g. a trailing ",,," line): an empty code
+                // would be inserted as a PK and break IRI generation downstream.
+                $code = trim((string)$row[0]);
+                if ($code === '') {
+                    continue;
+                }
+
                 $batch[] = [
-                    'code' => trim((string)$row[0]),
+                    'code' => $code,
                     'department' => trim((string)$row[1]),
                     'province' => trim((string)$row[2]),
                     'district' => trim((string)$row[3]),
