@@ -89,6 +89,51 @@
   cursor: not-allowed;
 }
 
+.native-form__input-group {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.native-form__input-group .native-form__control {
+  padding-right: 34px;
+}
+
+.native-form__input-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.native-form__input-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary, #667085);
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  transition: color 120ms ease;
+}
+
+.native-form__input-button:hover:not(:disabled) {
+  color: var(--accent-color, #0e7a50);
+}
+
+.native-form__input-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .native-form__lookup {
   position: relative;
 }

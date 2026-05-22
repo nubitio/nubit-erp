@@ -60,21 +60,27 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (e: any) => {
-              const doc: string = e.component.option('value');
+            onClick: () => {
+              const doc = String(formRef.current?.getFieldValue('ruc') ?? '').trim();
               if (doc.length === 8) {
-                consultService.consultDni(doc).then((response) => {
-                  formRef.current?.setFieldValue('businessName', response.data.name);
-                });
+                consultService
+                  .consultDni(doc)
+                  .then((response) => {
+                    formRef.current?.setFieldValue('businessName', response.data.name);
+                  })
+                  .catch(() => toast('No se pudo consultar el DNI', 'error'));
               } else if (doc.length === 11) {
-                consultService.consultRuc(doc).then((response) => {
-                  if (!response.data.active) {
-                    toast('El RUC ingresado no se encuentra activo', 'error');
-                    return;
-                  }
-                  formRef.current?.setFieldValue('businessName', response.data.name);
-                  formRef.current?.setFieldValue('fiscalAddress', response.data.address);
-                });
+                consultService
+                  .consultRuc(doc)
+                  .then((response) => {
+                    if (!response.data.active) {
+                      toast('El RUC ingresado no se encuentra activo', 'error');
+                      return;
+                    }
+                    formRef.current?.setFieldValue('businessName', response.data.name);
+                    formRef.current?.setFieldValue('fiscalAddress', response.data.address);
+                  })
+                  .catch(() => toast('No se pudo consultar el RUC', 'error'));
               }
             },
           },
