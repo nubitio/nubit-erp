@@ -103,6 +103,8 @@ const FIELD_KEYS = [
   'visibleWhen',
   'disabledWhen',
   'computed',
+  'requiredWhen',
+  'clearWhenHidden',
   'dependsOn',
   'permissions',
 ] as const;

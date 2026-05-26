@@ -122,6 +122,21 @@ describe('FieldBuilder', () => {
       expect(field.readonly).toBe(false);
     });
 
+    it('requiredWhen stores the predicate', () => {
+      const fn = (data: Record<string, unknown>) => data['status'] === 'rejected';
+      const field = new FieldBuilder().name('reason').label('Motivo').requiredWhen(fn).build();
+
+      expect(field.requiredWhen).toBe(fn);
+      expect(field.requiredWhen?.({ status: 'draft' })).toBe(false);
+      expect(field.requiredWhen?.({ status: 'rejected' })).toBe(true);
+    });
+
+    it('clearWhenHidden enables hidden field clearing by default', () => {
+      const field = new FieldBuilder().name('reason').label('Motivo').clearWhenHidden().build();
+
+      expect(field.clearWhenHidden).toBe(true);
+    });
+
     it('dependsOn stores the dependency list', () => {
       const field = new FieldBuilder()
         .name('product')

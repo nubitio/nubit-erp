@@ -95,6 +95,12 @@ export interface Field {
   /** Derived value — field is rendered as read-only with this computed value */
   computed?: (formData: DataRecord) => unknown;
 
+  /** Returns true when the field should be required for the current form data */
+  requiredWhen?: (formData: DataRecord) => boolean;
+
+  /** Clears the field value when `visibleWhen` hides it. */
+  clearWhenHidden?: boolean;
+
   /** When listed fields change, reload this field's options (entityField / enumField) */
   dependsOn?: string[];
 

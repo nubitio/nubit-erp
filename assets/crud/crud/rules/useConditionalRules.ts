@@ -6,12 +6,42 @@ export interface FieldState {
   name: string;
   visible: boolean;
   disabled: boolean;
+  required: boolean;
   computedValue?: unknown;
+}
+
+export function evaluateConditionalRuleState(
+  field: Field,
+  formData: FormDataRecord | null,
+): FieldState {
+  const baseVisible = field.visibleOnForm;
+  const baseRequired = field.required;
+
+  if (formData == null) {
+    return {
+      name: field.name,
+      visible: baseVisible,
+      disabled: false,
+      required: baseRequired,
+      computedValue: undefined,
+    };
+  }
+
+  const visible = field.visibleWhen ? baseVisible && field.visibleWhen(formData) : baseVisible;
+  const disabled = field.disabledWhen ? field.disabledWhen(formData) : false;
+  const required = field.requiredWhen ? baseRequired || field.requiredWhen(formData) : baseRequired;
+
+  if (!visible && field.clearWhenHidden) {
+    return { name: field.name, visible, disabled, required, computedValue: null };
+  }
+
+  const computedValue = field.computed ? field.computed(formData) : undefined;
+  return { name: field.name, visible, disabled, required, computedValue };
 }
 
 /**
  * Given the current Field definitions and live form data,
- * returns the reactive state (visible/disabled/computedValue) for each field.
+ * returns the reactive state (visible/disabled/required/computedValue) for each field.
  *
  * Pure computation — re-runs whenever formData changes.
  *
@@ -24,21 +54,6 @@ export function useConditionalRules(
   formData: FormDataRecord | null,
 ): FieldState[] {
   return useMemo(() => {
-    return fields.map((field) => {
-      const baseVisible = field.visibleOnForm;
-      if (formData == null) {
-        return {
-          name: field.name,
-          visible: baseVisible,
-          disabled: false,
-          computedValue: undefined,
-        };
-      }
-
-      const visible = field.visibleWhen ? baseVisible && field.visibleWhen(formData) : baseVisible;
-      const disabled = field.disabledWhen ? field.disabledWhen(formData) : false;
-      const computedValue = field.computed ? field.computed(formData) : undefined;
-      return { name: field.name, visible, disabled, computedValue };
-    });
+    return fields.map((field) => evaluateConditionalRuleState(field, formData));
   }, [fields, formData]);
 }

@@ -23,7 +23,7 @@ export interface SmartCrudFieldsResult {
  * Runs the full SmartCrud field processing pipeline:
  *   1. Operation semantics — adjusts visibility/required/readonly per create/edit
  *   2. RBAC — filters or disables fields based on user roles
- *   3. Conditional rules — evaluates visibleWhen / disabledWhen / computed
+ *   3. Conditional rules — evaluates visibleWhen / disabledWhen / requiredWhen / computed
  *   4. Dependency invalidation — refetches dependent field options on change
  *   5. Field state merge — applies conditional state back to field definitions
  *
@@ -57,7 +57,7 @@ export function useSmartCrudFields(
   // 2. RBAC field filtering
   const permissionFilteredFields = useFieldPermissions(operationAwareFields, roles);
 
-  // 3. Conditional rules (visibleWhen / disabledWhen / computed)
+  // 3. Conditional rules (visibleWhen / disabledWhen / requiredWhen / computed)
   const fieldStates = useConditionalRules(permissionFilteredFields, formData);
 
   // 4. Dependency invalidation (side effect)
@@ -82,6 +82,8 @@ export function useSmartCrudFields(
       if (state.disabled) {
         updated.disabled = true;
       }
+
+      updated.required = state.required;
 
       if (state.computedValue !== undefined) {
         updated.readonly = true;

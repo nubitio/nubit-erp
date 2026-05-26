@@ -329,6 +329,16 @@ export class FieldBuilder {
     return this;
   }
 
+  requiredWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
+    this._field.requiredWhen = fn;
+    return this;
+  }
+
+  clearWhenHidden(value = true): FieldBuilder {
+    this._field.clearWhenHidden = value;
+    return this;
+  }
+
   dependsOn(fields: string[]): FieldBuilder {
     this._field.dependsOn = fields;
     return this;
