@@ -14,6 +14,7 @@ import type { DataRecord } from '@nubit/core';
 
 export function useCrudPage<T extends DataRecord = DataRecord>(
   resource: ResourceConfig<T>,
+  externalFormRef?: React.RefObject<FormHandle | null>,
 ): {
   events: FormEventNames;
   resource: ResolvedCrudResource<T>;
@@ -27,7 +28,8 @@ export function useCrudPage<T extends DataRecord = DataRecord>(
 } {
   const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
   const events = resolvedResource.events;
-  const formRef = useRef<FormHandle | null>(null);
+  const _internalFormRef = useRef<FormHandle | null>(null);
+  const formRef = externalFormRef ?? _internalFormRef;
   const fields = useMemo(() => {
     if (typeof resolvedResource.fields === 'function') {
       // eslint-disable-next-line react-hooks/refs -- fields factories intentionally receive the live form ref contract

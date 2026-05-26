@@ -1,9 +1,9 @@
+import { useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { DataGridView, type GridHandle } from '@nubit/crud';
-import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
 import { API_BASE_URL } from '@app/constants';
 import { createCashRegisterShiftsToolbar } from '@features/cashRegister';
-import { useMemo, useRef } from 'react';
+import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
 
 type CashRegisterShiftParams = {
   id: string;
@@ -30,14 +30,11 @@ export const CashRegisterShiftsPage = () => {
         id="cash-register-shifts"
         title="Historial de turnos"
         url={API_URL}
-        allowAdd={false}
-        allowEdit={false}
-        allowDelete={false}
         selectionMode="single"
         fields={fields}
         events={{}}
         toolbar={toolbar}
-        hasBackButton={true}
+        hasBackButton
       />
     </div>
   );

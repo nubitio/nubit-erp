@@ -39,13 +39,8 @@ function fromOperations(
  * Resolves RBAC permissions for a resource with the following precedence
  * (highest → lowest):
  *   1. `resource.permissions.canX` — callable or boolean override
- *   2. `resource.allowX`           — legacy boolean alias
- *   3. inferred from `supportedOperations` (hydra:supportedOperation methods)
- *   4. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
- *
- * The `supportedOperations` parameter comes from `useResourceSchema` and is
- * only consulted when neither a `resource.permissions.canX` nor a
- * `resource.allowX` value was explicitly provided by the caller.
+ *   2. inferred from `supportedOperations` (hydra:supportedOperation methods)
+ *   3. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
  *
  * Memoized on `resource.id` — stable reference across re-renders.
  */
@@ -62,37 +57,21 @@ export function usePermissions(
     const p = resource.permissions;
     const inferred = fromOperations(supportedOperations);
 
-    // For canAdd/canEdit/canDelete we use a 4-level waterfall:
-    //   1. explicit permissions.canX callable/boolean
-    //   2. explicit allowX boolean
-    //   3. inferred from Hydra supportedOperations
-    //   4. platform default (true)
-    //
-    // We only reach level 3 when both level 1 (p?.canX) and level 2 (resource.allowX)
-    // are undefined — i.e. the user has not manually configured the permission.
     function resolveWithInferred(
       permValue: boolean | (() => boolean) | undefined,
-      allowValue: boolean | undefined,
       inferredValue: boolean | undefined,
       platformDefault: boolean,
     ): boolean {
-      // Level 1: explicit permissions override
       if (permValue !== undefined) return resolve(permValue, platformDefault);
-      // Level 2: legacy allowX boolean
-      if (allowValue !== undefined) return allowValue;
-      // Level 3: inferred from Hydra operations
       if (inferredValue !== undefined) return inferredValue;
-      // Level 4: platform default
       return platformDefault;
     }
 
     return {
-      canAdd: resolveWithInferred(p?.canAdd, resource.allowAdd, inferred?.canAdd, true),
-      canEdit: resolveWithInferred(p?.canEdit, resource.allowEdit, inferred?.canEdit, true),
-      canDelete: resolveWithInferred(p?.canDelete, resource.allowDelete, inferred?.canDelete, true),
-      // canExport and canBulkDelete have no Hydra-inferred counterpart; use the
-      // existing 2-level resolution (explicit override → platform default).
-      canExport: resolve(p?.canExport, resource.allowExport ?? false),
+      canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
+      canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
+      canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
+      canExport: resolve(p?.canExport, false),
       canBulkDelete: resolve(p?.canBulkDelete, false),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

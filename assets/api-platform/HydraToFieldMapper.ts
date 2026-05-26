@@ -78,7 +78,14 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
     return 'text';
   }
 
-  // Short-form xmls: prefix
+  // Short-form xsd: prefix (standard XML Schema namespace, used by Hydra/JSON-LD)
+  if (range === 'xsd:boolean') return 'boolean';
+  if (range === 'xsd:dateTime' || range === 'xsd:date') return 'dateTime';
+  if (range === 'xsd:integer' || range === 'xsd:int' || range === 'xsd:long') return 'integer';
+  if (range === 'xsd:decimal' || range === 'xsd:float' || range === 'xsd:double') return 'decimal';
+  if (range === 'xsd:string') return 'text';
+
+  // Short-form xmls: prefix (internal convention used by openApiParser for OpenAPI JSON docs)
   if (range === 'xmls:boolean') return 'boolean';
   if (range === 'xmls:dateTime') return 'dateTime';
   if (range === 'xmls:integer') return 'integer';

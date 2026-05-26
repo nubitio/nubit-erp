@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
-import { CrudPage, defineResource, type FormHandle } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type FormHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 import { purchasesEvents } from '@features/purchases/model/events';
@@ -27,7 +27,7 @@ export const PurchasesPage = () => {
     },
   }), [currentBranchId]);
 
-  return <CrudPage resource={resource} />;
+  return <SmartCrudPage resource={resource} />;
 };
 
 // Route alias: /inbound redirects to the same page as /purchases.

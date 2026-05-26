@@ -1,50 +1,46 @@
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type DataRecord } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { cashRegisterEvents } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
 
-const API_URL = API_BASE_URL + 'cash-registers';
-const fields = CashRegisterFields();
+const baseResource = defineResource({
+  id: 'cash-register',
+  title: 'Cajas',
+  apiUrl: `${API_BASE_URL}cash-registers`,
+  fields: CashRegisterFields(),
+  events: cashRegisterEvents,
+  permissions: { canAdd: true, canEdit: true, canDelete: true },
+});
 
 export const CashRegisterPage = () => {
   const navigate = useNavigate();
-  const gridRef = useRef<GridHandle>(null);
+  const selectedRowRef = useRef<DataRecord | null>(null);
 
-  const toolbar = useMemo(
-    () => [
-      {
-        text: 'Ver turnos',
-        type: 'info',
-        onClick: () => {
-          const row = gridRef.current?.getSelectedRow();
-          if (!row) return;
-          navigate(`/cash-register/${row.id}/shifts`);
+  const resource = useMemo(
+    () => ({
+      ...baseResource,
+      toolbar: [
+        {
+          text: 'Ver turnos',
+          type: 'info',
+          onClick: () => {
+            if (!selectedRowRef.current) return;
+            navigate(`/cash-register/${selectedRowRef.current.id}/shifts`);
+          },
         },
-      },
-    ],
+      ],
+    }),
     [navigate],
   );
 
   return (
-    <div id="wrapper">
-      <DataGridView
-        ref={gridRef}
-        id="cash-register"
-        title="Cajas"
-        url={API_URL}
-        allowAdd
-        allowEdit
-        allowDelete
-        selectionMode="single"
-        fields={fields}
-        events={cashRegisterEvents}
-        toolbar={toolbar}
-      />
-      <DialogView events={cashRegisterEvents}>
-        <FormView url={API_URL} fields={fields} events={cashRegisterEvents} />
-      </DialogView>
-    </div>
+    <SmartCrudPage
+      resource={resource}
+      onSelectionChanged={(rows) => {
+        selectedRowRef.current = rows[0] ?? null;
+      }}
+    />
   );
 };

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import toast from '@shared/lib/SharedUtils';
-import { getIRI } from '@shared/lib/SharedUtils';
+import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { API_BASE_URL } from '@app/constants';
 import type { CartItem, PosItem } from './types';
 import { IGV_RATE, nowUtcIso, todayLimaDate, toNumber } from './posHelpers';

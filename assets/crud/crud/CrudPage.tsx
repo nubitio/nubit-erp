@@ -15,7 +15,9 @@ import type { DialogMode } from './dialogStore';
 import { ConfirmDialog } from '@nubit/ui';
 import { resolveCrudResource } from './resolveCrudResource';
 import type { FormDataRecord } from '../form/FormDataSnapshot';
+import type { FormHandle } from '../form/FormHandle';
 import type { DataRecord } from '@nubit/core';
+import type { GridHandle } from '../datagrid/GridHandle';
 
 type GridSelectionChange = {
   selectedRowsData?: unknown[];
@@ -44,6 +46,24 @@ interface CrudPageProps<T extends DataRecord = DataRecord> {
   computedValues?: FormDataRecord;
   initialFilters?: Record<string, string>;
   onFiltersChange?: (filters: Record<string, string>) => void;
+  /**
+   * Optional external form ref. When provided, CrudPage uses it instead of
+   * creating an internal one — allows the parent to call setFieldValue /
+   * getFieldValue on the active dialog form (e.g. for field observers).
+   */
+  formRef?: React.RefObject<FormHandle | null>;
+  /**
+   * Called whenever grid row selection changes, after internal selection state
+   * is updated. Receives the full selected row objects.
+   */
+  onSelectionChanged?: (rows: DataRecord[]) => void;
+  /** Disables the edit action on every grid row (passed through to DataGridView). */
+  editDisabled?: boolean;
+  /** Disables the delete action on every grid row (passed through to DataGridView). */
+  deleteDisabled?: boolean;
+  /** External ref forwarded to the DataGridView — allows the parent to call
+   *  showLoading / hideLoading / refresh / getSelectedRow imperatively. */
+  gridRef?: React.RefObject<GridHandle | null>;
 }
 
 function inferFilterOperator(field: Field): NonNullable<Field['selectedFilterOperation']> {
@@ -88,6 +108,11 @@ export const CrudPage = <T extends DataRecord = DataRecord>({
   computedValues,
   initialFilters,
   onFiltersChange,
+  formRef,
+  onSelectionChanged,
+  editDisabled,
+  deleteDisabled,
+  gridRef,
 }: CrudPageProps<T>) => (
   <DialogStoreProvider>
     <CrudPageInner
@@ -98,6 +123,11 @@ export const CrudPage = <T extends DataRecord = DataRecord>({
       computedValues={computedValues}
       initialFilters={initialFilters}
       onFiltersChange={onFiltersChange}
+      formRef={formRef}
+      onSelectionChanged={onSelectionChanged}
+      editDisabled={editDisabled}
+      deleteDisabled={deleteDisabled}
+      gridRef={gridRef}
     />
   </DialogStoreProvider>
 );
@@ -110,6 +140,11 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   computedValues = {},
   initialFilters = {},
   onFiltersChange,
+  formRef: externalFormRef,
+  onSelectionChanged: externalOnSelectionChanged,
+  editDisabled,
+  deleteDisabled,
+  gridRef: externalGridRef,
 }: CrudPageProps<T>) => {
   const { t } = useCoreTranslation();
   const resolvedInputResource = useMemo(() => resolveCrudResource(resource), [resource]);
@@ -121,7 +156,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     permissions,
     selectionState,
     presetState,
-  } = useCrudPage(resolvedInputResource);
+  } = useCrudPage(resolvedInputResource, externalFormRef);
   const datagridFields = useMemo(
     () => fields.filter((field) => field.isIdentity || field.visible !== false),
     [fields],
@@ -237,9 +272,11 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   /** Bridge between the grid renderer's selection event and our selection state.
    * Also captures the selected row ID for the audit trail. */
   const handleSelectionChanged = (e: GridSelectionChange) => {
-    selectionState.onSelectionChanged((e.selectedRowsData ?? []) as DataRecord[]);
+    const rows = (e.selectedRowsData ?? []) as DataRecord[];
+    selectionState.onSelectionChanged(rows);
+    externalOnSelectionChanged?.(rows);
     if (hasAuditTrail) {
-      const first = (e.selectedRowsData ?? [])[0] as DataRecord | undefined;
+      const first = rows[0];
       if (first != null) {
         const id = (first['id'] ?? first['ID'] ?? null) as string | number | null;
         setSelectedRowId(id);
@@ -336,6 +373,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         </div>
       )}
       <DataGridView
+        ref={externalGridRef}
         id={resolvedResource.id}
         title={resolvedResource.title}
         url={resolvedResource.apiUrl}
@@ -345,6 +383,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         allowEdit={permissions.canEdit}
         allowDelete={permissions.canDelete}
         allowExport={permissions.canExport}
+        editDisabled={editDisabled}
+        deleteDisabled={deleteDisabled}
         sort={resolvedResource.sort}
         filter={routeAwareFilters}
         paging={resolvedResource.paging}
@@ -358,7 +398,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
         detailUrl={resolvedResource.detailUrl}
-        detailFields={resolvedResource.detailFields}
+        detailFields={resolvedResource.gridDetailFields ?? resolvedResource.detailFields}
         onFilterChange={onFiltersChange}
       />
       {!isInlineEditMode && (
@@ -378,6 +418,10 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             detailFields={resolvedResource.detailFields}
             detailUrl={resolvedResource.detailUrl}
             detailPropertyName={resolvedResource.detailPropertyName}
+            allowAdding={resolvedResource.detailAllowAdding}
+            allowDeleting={resolvedResource.detailAllowDeleting}
+            allowUpdating={resolvedResource.detailAllowUpdating}
+            requiredDetail={resolvedResource.detailRequired}
             format={resolvedResource.format}
             onSaveSuccess={
               resolvedResource.onSaveSuccess

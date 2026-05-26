@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
+import { useMemo, useRef } from 'react';
+import { SmartCrudPage, DialogView, defineResource, type DataRecord } from '@nubit/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
@@ -11,57 +11,53 @@ import {
   type PriceEditorGridHandle,
 } from './components/PriceEditorGrid';
 
-const API_URL = priceListEndpoints.list();
-const fields = PriceListFields();
+const baseResource = defineResource({
+  id: 'price-list',
+  title: 'Tarifas',
+  apiUrl: priceListEndpoints.list(),
+  fields: PriceListFields(),
+  events: priceListEvents,
+  permissions: { canAdd: true, canEdit: true, canDelete: true },
+});
 
 export const PriceListPage = () => {
   const [on, emit] = useEvents();
-  const gridRef = useRef<GridHandle | null>(null);
+  const selectedRowRef = useRef<DataRecord | null>(null);
   const pricesRef = useRef<PriceEditorGridHandle | null>(null);
 
-  const toolbar = [
-    {
-      text: 'Precios',
-      type: 'info',
-      onClick: () => {
-        const selectedRow = gridRef.current?.getSelectedRow();
-        if (!selectedRow) {
-          toast('Debe seleccionar una tarifa', 'warning');
-          return;
-        }
-        emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name });
-      },
-    },
-  ];
+  const resource = useMemo(
+    () => ({
+      ...baseResource,
+      toolbar: [
+        {
+          text: 'Precios',
+          type: 'info',
+          onClick: () => {
+            if (!selectedRowRef.current) {
+              toast('Debe seleccionar una tarifa', 'warning');
+              return;
+            }
+            emit(priceEvents.ADD, { title: 'Precios de ' + selectedRowRef.current.name });
+          },
+        },
+      ],
+    }),
+    [emit],
+  );
 
-  usePriceListObservers({
-    on,
-    emit,
-    pricesEvent: priceEvents,
-    gridRef,
-    pricesRef,
-  });
+  usePriceListObservers({ on, emit, pricesEvent: priceEvents, selectedRowRef, pricesRef });
 
   return (
-    <div id="wrapper">
-      <DataGridView
-        id="price-list"
-        ref={gridRef}
-        title="Tarifas"
-        toolbar={toolbar}
-        url={API_URL}
-        allowAdd
-        allowEdit
-        allowDelete
-        fields={fields}
-        events={priceListEvents}
+    <>
+      <SmartCrudPage
+        resource={resource}
+        onSelectionChanged={(rows) => {
+          selectedRowRef.current = rows[0] ?? null;
+        }}
       />
-      <DialogView events={priceListEvents}>
-        <FormView url={API_URL} fields={fields} events={priceListEvents} />
-      </DialogView>
       <DialogView events={priceEvents}>
         <PriceEditorGrid ref={pricesRef} />
       </DialogView>
-    </div>
+    </>
   );
 };

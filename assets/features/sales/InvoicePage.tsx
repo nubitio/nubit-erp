@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { API_BASE_URL } from '@app/constants';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubit/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
 import { invoiceEvents } from '@features/invoice/model/events';
@@ -12,19 +12,32 @@ import {
   runSendInvoiceToSunatAction,
 } from '@features/invoice/lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
-import type { DataRecord } from '@nubit/crud';
 
 const API_URL = API_BASE_URL + 'tax-documents';
 const fields = InvoiceFields();
-const detailFields = (parentRow: DataRecord) =>
-  InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN');
+
+const baseResource = defineResource({
+  id: 'invoice',
+  title: 'Comprobantes',
+  apiUrl: API_URL + '?type=invoice',
+  fields,
+  gridDetailFields: (parentRow: DataRecord) =>
+    InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
+  detailUrl: API_URL + '/{id}/lines',
+  events: invoiceEvents,
+  sort: [{ selector: 'createdAt', desc: true }],
+  dialogWidth: 900,
+  dialogHeight: 720,
+  permissions: { canAdd: true, canEdit: true, canDelete: true },
+});
 
 export const InvoicePage = () => {
-  const gridRef = useRef<GridHandle>(null);
+  const gridRef = useRef<GridHandle | null>(null);
+  const selectedRowRef = useRef<DataRecord | null>(null);
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => gridRef.current?.getSelectedRow() as InvoiceRow | undefined,
+      getSelectedRow: () => selectedRowRef.current as InvoiceRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),
@@ -34,55 +47,43 @@ export const InvoicePage = () => {
     [],
   );
 
-  const toolbar = useMemo(
-    () => [
-      {
-        text: 'Enviar a SUNAT',
-        type: 'info',
-        onClick: () => runSendInvoiceToSunatAction(actionDeps),
-      },
-      {
-        text: 'Enviar por correo',
-        type: 'success',
-        onClick: () => runSendInvoiceEmailAction(actionDeps),
-      },
-      { text: 'Ver', type: 'primary', onClick: () => runOpenInvoiceReceiptAction(actionDeps) },
-      {
-        text: 'Consulta CDR',
-        type: 'warning',
-        onClick: () => runConsultInvoiceCdrAction(actionDeps),
-      },
-      {
-        text: 'Consulta CPE',
-        type: 'success',
-        onClick: () => runConsultInvoiceCpeAction(actionDeps),
-      },
-    ],
+  const resource = useMemo(
+    () => ({
+      ...baseResource,
+      toolbar: [
+        {
+          text: 'Enviar a SUNAT',
+          type: 'info',
+          onClick: () => runSendInvoiceToSunatAction(actionDeps),
+        },
+        {
+          text: 'Enviar por correo',
+          type: 'success',
+          onClick: () => runSendInvoiceEmailAction(actionDeps),
+        },
+        { text: 'Ver', type: 'primary', onClick: () => runOpenInvoiceReceiptAction(actionDeps) },
+        {
+          text: 'Consulta CDR',
+          type: 'warning',
+          onClick: () => runConsultInvoiceCdrAction(actionDeps),
+        },
+        {
+          text: 'Consulta CPE',
+          type: 'success',
+          onClick: () => runConsultInvoiceCpeAction(actionDeps),
+        },
+      ],
+    }),
     [actionDeps],
   );
 
   return (
-    <div id="wrapper" className="invoice-page">
-      <DataGridView
-        id="invoice"
-        ref={gridRef}
-        title="Comprobantes"
-        toolbar={toolbar}
-        url={API_URL + '?type=invoice'}
-        fields={fields}
-        detailUrl={API_URL + '/{id}/lines'}
-        detailFields={detailFields}
-        events={invoiceEvents}
-        sort={[{ selector: 'createdAt', desc: true }]}
-      />
-      <DialogView title="Comprobante" width={900} maxHeight={720} events={invoiceEvents}>
-        <FormView
-          className="plain-styled-form entity-form"
-          url={API_URL}
-          fields={fields}
-          events={invoiceEvents}
-        />
-      </DialogView>
-    </div>
+    <SmartCrudPage
+      resource={resource}
+      gridRef={gridRef}
+      onSelectionChanged={(rows) => {
+        selectedRowRef.current = rows[0] ?? null;
+      }}
+    />
   );
 };

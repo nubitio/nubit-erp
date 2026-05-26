@@ -64,33 +64,32 @@ export function useSmartCrudFields(
   useDependsOn(permissionFilteredFields, formData);
 
   // 5. Merge conditional state back into field definitions
-  const processedFields = useMemo(
-    () =>
-      permissionFilteredFields.map((field) => {
-        if (field.isIdentity) return field;
+  const processedFields = useMemo(() => {
+    const stateByName = new Map(fieldStates.map((s) => [s.name, s]));
+    return permissionFilteredFields.map((field) => {
+      if (field.isIdentity) return field;
 
-        const state = fieldStates.find((s) => s.name === field.name);
-        if (!state) return field;
+      const state = stateByName.get(field.name);
+      if (!state) return field;
 
-        const updated: Field = { ...field };
+      const updated: Field = { ...field };
 
-        // Conditional visibility affects the dialog form only — grid column
-        // visibility stays controlled by the static field definition.
-        updated.visibleOnForm = state.visible;
-        updated.hidden = !state.visible;
+      // Conditional visibility affects the dialog form only — grid column
+      // visibility stays controlled by the static field definition.
+      updated.visibleOnForm = state.visible;
+      updated.hidden = !state.visible;
 
-        if (state.disabled) {
-          updated.disabled = true;
-        }
+      if (state.disabled) {
+        updated.disabled = true;
+      }
 
-        if (state.computedValue !== undefined) {
-          updated.readonly = true;
-        }
+      if (state.computedValue !== undefined) {
+        updated.readonly = true;
+      }
 
-        return updated;
-      }),
-    [permissionFilteredFields, fieldStates],
-  );
+      return updated;
+    });
+  }, [permissionFilteredFields, fieldStates]);
 
   // 6. Collect computed values for form synchronization
   const computedValues = useMemo(

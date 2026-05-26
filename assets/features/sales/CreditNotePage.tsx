@@ -1,6 +1,12 @@
 import { useMemo, useRef, useState } from 'react';
 import { API_BASE_URL } from '@app/constants';
-import { DataGridView, DialogView, FormView, type FormHandle, type GridHandle } from '@nubit/crud';
+import {
+  SmartCrudPage,
+  defineResource,
+  type DataRecord,
+  type FormHandle,
+  type GridHandle,
+} from '@nubit/crud';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@nubit/core';
@@ -14,17 +20,15 @@ import {
   useCreditNoteRelatedDocumentObserver,
   useCreditNoteSelectionState,
 } from '@features/creditNote';
-import type { DataRecord } from '@nubit/crud';
 
 const API_URL = API_BASE_URL + 'tax-documents';
 const fields = CreditNoteFields();
-const gridDetailFields = (parentRow: DataRecord) =>
-  CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN');
 
 export const CreditNotePage = () => {
   const [on] = useEvents();
-  const gridRef = useRef<GridHandle>(null);
-  const formRef = useRef<FormHandle>(null);
+  const gridRef = useRef<GridHandle | null>(null);
+  const formRef = useRef<FormHandle | null>(null);
+  const selectedRowRef = useRef<DataRecord | null>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
   const [formDetailFields, setFormDetailFields] = useState(() => CreditNoteDetailFields());
 
@@ -37,7 +41,7 @@ export const CreditNotePage = () => {
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => gridRef.current?.getSelectedRow() as CreditNoteRow | undefined,
+      getSelectedRow: () => selectedRowRef.current as CreditNoteRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),
@@ -47,67 +51,64 @@ export const CreditNotePage = () => {
     [],
   );
 
-  const toolbar = useMemo(
-    () => [
-      {
-        text: 'Enviar a SUNAT',
-        type: 'info',
-        onClick: () => runSendCreditNoteToSunatAction(actionDeps),
-      },
-      {
-        text: 'Enviar por correo',
-        type: 'success',
-        onClick: () => toast('Funcionalidad no implementada', 'warning'),
-      },
-      { text: 'Ver', type: 'primary', onClick: () => runOpenCreditNoteReceiptAction(actionDeps) },
-      {
-        text: 'Consulta CDR',
-        type: 'warning',
-        onClick: () => runConsultCreditNoteCdrAction(actionDeps),
-      },
-      {
-        text: 'Consulta CPE',
-        type: 'success',
-        onClick: () => runConsultCreditNoteCpeAction(actionDeps),
-      },
-    ],
-    [actionDeps],
+  const resource = useMemo(
+    () =>
+      defineResource({
+        id: 'creditNote',
+        title: 'Notas de crédito',
+        apiUrl: API_URL + '?type=note',
+        fields,
+        gridDetailFields: (parentRow: DataRecord) =>
+          CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN'),
+        detailFields: formDetailFields,
+        detailUrl: API_URL + '/{id}/lines',
+        detailPropertyName: 'lines',
+        detailAllowAdding: false,
+        detailAllowDeleting: true,
+        detailAllowUpdating: true,
+        detailRequired: true,
+        events: creditNoteEvents,
+        dialogWidth: 1200,
+        dialogHeight: 720,
+        permissions: { canAdd: true, canEdit: true, canDelete: true },
+        toolbar: [
+          {
+            text: 'Enviar a SUNAT',
+            type: 'info',
+            onClick: () => runSendCreditNoteToSunatAction(actionDeps),
+          },
+          {
+            text: 'Enviar por correo',
+            type: 'success',
+            onClick: () => toast('Funcionalidad no implementada', 'warning'),
+          },
+          { text: 'Ver', type: 'primary', onClick: () => runOpenCreditNoteReceiptAction(actionDeps) },
+          {
+            text: 'Consulta CDR',
+            type: 'warning',
+            onClick: () => runConsultCreditNoteCdrAction(actionDeps),
+          },
+          {
+            text: 'Consulta CPE',
+            type: 'success',
+            onClick: () => runConsultCreditNoteCpeAction(actionDeps),
+          },
+        ],
+      }),
+    [actionDeps, formDetailFields],
   );
 
   return (
-    <div id="wrapper">
-      <DataGridView
-        id="creditNote"
-        ref={gridRef}
-        title="Notas de crédito"
-        toolbar={toolbar}
-        url={API_URL + '?type=note'}
-        detailUrl={API_URL + '/{id}/lines'}
-        detailFields={gridDetailFields}
-        allowAdd
-        allowEdit
-        allowDelete
-        editDisabled={editDisabled}
-        deleteDisabled={deleteDisabled}
-        fields={fields}
-        events={creditNoteEvents}
-        onSelectionChanged={handleSelectionChanged}
-      />
-      <DialogView width={1200} height={720} events={creditNoteEvents}>
-        <FormView
-          ref={formRef}
-          url={API_URL}
-          fields={fields}
-          detailUrl={API_URL + '/{id}/lines'}
-          detailFields={formDetailFields}
-          detailPropertyName="lines"
-          allowAdding={false}
-          allowDeleting
-          allowUpdating
-          requiredDetail
-          events={creditNoteEvents}
-        />
-      </DialogView>
-    </div>
+    <SmartCrudPage
+      resource={resource}
+      formRef={formRef}
+      gridRef={gridRef}
+      editDisabled={editDisabled}
+      deleteDisabled={deleteDisabled}
+      onSelectionChanged={(rows) => {
+        selectedRowRef.current = rows[0] ?? null;
+        handleSelectionChanged(rows);
+      }}
+    />
   );
 };

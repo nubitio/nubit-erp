@@ -4,9 +4,8 @@ import type { FormHandle } from '@nubit/crud';
 import { Field } from '@nubit/crud';
 import { entityField, textField, textareaField } from '@nubit/crud';
 import { consultService } from '@features/consult';
-import { SharedUtils } from '@shared/lib/SharedUtils';
+import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubit/crud';
-import toast from '@shared/lib/SharedUtils';
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];

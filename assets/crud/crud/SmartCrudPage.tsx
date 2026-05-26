@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, type RefObject } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { CrudPage } from './CrudPage';
 import { useResourceSchema } from './hydra/useResourceSchema';
@@ -14,6 +14,8 @@ import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
 import { useSmartCrudFields } from './useSmartCrudFields';
 import type { DataRecord } from '@nubit/core';
+import type { FormHandle } from '../form/FormHandle';
+import type { GridHandle } from '../datagrid/GridHandle';
 import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 
 function CrudSkeleton() {
@@ -53,6 +55,17 @@ interface SmartCrudPageProps<T extends DataRecord = DataRecord> {
    * Has no effect when `resource.fields` is a non-empty manual array.
    */
   fieldOverrides?: FieldOverride[];
+  /** External form ref forwarded to CrudPage — lets the parent call setFieldValue / getFieldValue. */
+  formRef?: RefObject<FormHandle | null>;
+  /** Called whenever grid row selection changes. Receives the full selected row objects. */
+  onSelectionChanged?: (rows: DataRecord[]) => void;
+  /** Disables the edit action on every grid row. */
+  editDisabled?: boolean;
+  /** Disables the delete action on every grid row. */
+  deleteDisabled?: boolean;
+  /** External ref forwarded to the DataGridView — allows the parent to call
+   *  showLoading / hideLoading / refresh / getSelectedRow imperatively. */
+  gridRef?: RefObject<GridHandle | null>;
 }
 
 type RoutingFilters = Record<string, string>;
@@ -86,13 +99,19 @@ function formatRuntimeErrorMessage(error: Error): string {
 export function SmartCrudPage<T extends DataRecord = DataRecord>({
   resource,
   fieldOverrides,
+  formRef,
+  onSelectionChanged,
+  editDisabled,
+  deleteDisabled,
+  gridRef,
 }: SmartCrudPageProps<T>) {
   const queryClient = useQueryClient();
 
   const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
   const events = resolvedBaseResource.events;
 
-  // Determine whether the consumer supplied manual fields.
+  // Determine whether the consumer supplied manual fields or a factory function.
+  const isFieldsFactory = !resource.fieldContract && typeof resource.fields === 'function';
   const hasManualFields =
     !resource.fieldContract &&
     Array.isArray(resource.fields) &&
@@ -112,6 +131,7 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     if (
       !resource.fieldContract &&
       !hasManualFields &&
+      !isFieldsFactory &&
       !isLoading &&
       !error &&
       fields.length > 0 &&
@@ -123,6 +143,7 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   }, [
     resource.fieldContract,
     hasManualFields,
+    isFieldsFactory,
     isLoading,
     error,
     fields,
@@ -171,14 +192,17 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     () =>
       ({
         ...resolvedBaseResource,
-        ...(hasManualFields ? {} : { fields }),
+        // For factory functions, preserve the factory as-is; otherwise set Hydra/manual fields.
+        ...(!hasManualFields && !isFieldsFactory ? { fields } : {}),
         apiUrl: normalizedApiUrl,
-        fields: processedFields,
+        // Apply the declarative rules pipeline only for non-factory fields.
+        ...(!isFieldsFactory ? { fields: processedFields } : {}),
         _supportedOperations: supportedOperations,
       }) as ResourceConfig<T>,
     [
       fields,
       hasManualFields,
+      isFieldsFactory,
       normalizedApiUrl,
       processedFields,
       resolvedBaseResource,
@@ -188,11 +212,11 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
 
   // --- Render ---
 
-  if (!hasManualFields && isLoading) {
+  if (!hasManualFields && !isFieldsFactory && isLoading) {
     return <CrudSkeleton />;
   }
 
-  if (!hasManualFields && error) {
+  if (!hasManualFields && !isFieldsFactory && error) {
     return (
       <CrudError
         message={formatRuntimeErrorMessage(error)}
@@ -210,6 +234,11 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
       initialIsNew={routingState.initialIsNew}
       initialFilters={routingState.initialFilters}
       onFiltersChange={routingState.syncFilters as (filters: RoutingFilters) => void}
+      formRef={formRef}
+      onSelectionChanged={onSelectionChanged}
+      editDisabled={editDisabled}
+      deleteDisabled={deleteDisabled}
+      gridRef={gridRef}
     />
   );
 }

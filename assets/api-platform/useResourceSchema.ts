@@ -19,11 +19,12 @@ export interface UseResourceSchemaResult {
 }
 
 /**
- * Normalizes an API URL by stripping any leading slash so that
- * 'api/categories' and '/api/categories' are treated as equal.
+ * Normalizes an API URL by stripping any leading slash and query string so that
+ * 'api/categories', '/api/categories', and '/api/categories?foo=bar' are treated as equal.
  */
 function normalizeUrl(url: string): string {
-  return url.startsWith('/') ? url.slice(1) : url;
+  const base = url.split('?')[0];
+  return base.startsWith('/') ? base.slice(1) : base;
 }
 
 export function useResourceSchema<T extends SmartCrudRecord = DataRecord>(

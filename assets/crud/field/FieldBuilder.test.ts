@@ -91,4 +91,91 @@ describe('FieldBuilder', () => {
     const field = new FieldBuilder().name('id').label('ID').isIdentity(true).build();
     expect(field.isIdentity).toBe(true);
   });
+
+  describe('declarative rules', () => {
+    it('visibleWhen stores the predicate and returns false when predicate returns false', () => {
+      const fn = (data: Record<string, unknown>) => data['active'] === true;
+      const field = new FieldBuilder().name('detail').label('Detalle').visibleWhen(fn).build();
+
+      expect(field.visibleWhen).toBe(fn);
+      expect(field.visibleWhen?.({ active: false })).toBe(false);
+      expect(field.visibleWhen?.({ active: true })).toBe(true);
+    });
+
+    it('disabledWhen stores the predicate', () => {
+      const fn = (data: Record<string, unknown>) => data['status'] === 'closed';
+      const field = new FieldBuilder().name('amount').label('Monto').disabledWhen(fn).build();
+
+      expect(field.disabledWhen).toBe(fn);
+      expect(field.disabledWhen?.({ status: 'open' })).toBe(false);
+      expect(field.disabledWhen?.({ status: 'closed' })).toBe(true);
+    });
+
+    it('computed stores the derivation function and field has no readonly flag by default', () => {
+      const fn = (data: Record<string, unknown>) =>
+        (data['qty'] as number) * (data['price'] as number);
+      const field = new FieldBuilder().name('total').label('Total').computed(fn).build();
+
+      expect(field.computed).toBe(fn);
+      expect(field.computed?.({ qty: 3, price: 10 })).toBe(30);
+      // readonly is applied at runtime by the rules pipeline, not by the builder
+      expect(field.readonly).toBe(false);
+    });
+
+    it('dependsOn stores the dependency list', () => {
+      const field = new FieldBuilder()
+        .name('product')
+        .label('Producto')
+        .dependsOn(['warehouse', 'category'])
+        .build();
+
+      expect(field.dependsOn).toEqual(['warehouse', 'category']);
+    });
+
+    it('permissions stores visible and editable role lists', () => {
+      const field = new FieldBuilder()
+        .name('cost')
+        .label('Costo')
+        .permissions({ visible: ['admin', 'accountant'], editable: ['admin'] })
+        .build();
+
+      expect(field.permissions?.visible).toEqual(['admin', 'accountant']);
+      expect(field.permissions?.editable).toEqual(['admin']);
+    });
+
+    it('permissions with only visible roles omits editable', () => {
+      const field = new FieldBuilder()
+        .name('sku')
+        .label('SKU')
+        .permissions({ visible: ['admin'] })
+        .build();
+
+      expect(field.permissions?.visible).toEqual(['admin']);
+      expect(field.permissions?.editable).toBeUndefined();
+    });
+
+    it('declarative rules do not affect unrelated field properties', () => {
+      const field = new FieldBuilder()
+        .name('note')
+        .label('Nota')
+        .required(true)
+        .col(6)
+        .visibleWhen(() => true)
+        .disabledWhen(() => false)
+        .build();
+
+      expect(field.required).toBe(true);
+      expect(field.col).toBe(6);
+      expect(field.name).toBe('note');
+    });
+
+    it('build() returns a snapshot — mutating the returned field does not affect a second build', () => {
+      const builder = new FieldBuilder().name('x').label('X').visibleWhen(() => true);
+      const first = builder.build();
+      const second = builder.build();
+
+      (first as unknown as Record<string, unknown>)['visibleWhen'] = undefined;
+      expect(second.visibleWhen).toBeDefined();
+    });
+  });
 });

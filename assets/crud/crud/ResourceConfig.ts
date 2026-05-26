@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
+import type { DataRecord } from '@nubit/core';
 import type { FormEventNames, ToolbarButtonItem } from '../../core/event/EventTypes';
 import type { FormHandle } from '../form/FormHandle';
 import type { FormLayout } from '../form/FormLayout';
@@ -8,8 +9,6 @@ import type { BulkAction } from './BulkAction';
 import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
 import type { SmartCrudFieldContract } from './fieldContract';
-import type { DataRecord } from '@nubit/core';
-
 /**
  * Generic factory that receives a form ref and returns typed field definitions.
  * Defaults to `DataRecord` for backward compatibility.
@@ -65,9 +64,21 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   /** Optional: inject a pre-existing event bus (e.g. a module-level singleton).
    *  When omitted, `useCrudPage` creates fresh events via `createCrudEvents(id)`. */
   events?: FormEventNames;
+  /** Fields rendered in the dialog form's detail grid. Must be a plain array (FormView constraint). */
   detailFields?: Field[];
+  /** Fields rendered in the main grid's expandable detail rows. Supports a factory function
+   *  `(parentRow) => Field[]`. Falls back to `detailFields` when absent. */
+  gridDetailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
   detailUrl?: string;
   detailPropertyName?: string;
+  /** Allow adding rows to the form detail grid (default: true). */
+  detailAllowAdding?: boolean;
+  /** Allow deleting rows from the form detail grid (default: true). */
+  detailAllowDeleting?: boolean;
+  /** Allow updating rows in the form detail grid (default: true). */
+  detailAllowUpdating?: boolean;
+  /** Require at least one detail row before the form can be saved (default: false). */
+  detailRequired?: boolean;
   sort?: Array<{ selector: string; desc: boolean }>;
   filter?: FilterRule[];
   mode?: 'normal' | 'minimal';
@@ -75,16 +86,7 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   /** Enables adapter-provided header filter dropdowns. Disabled by default; filter row remains the default. */
   headerFilter?: boolean;
   stateStoring?: boolean;
-  /** @deprecated Use `permissions.canAdd` instead. */
-  allowAdd?: boolean;
-  /** @deprecated Use `permissions.canEdit` instead. */
-  allowEdit?: boolean;
-  /** @deprecated Use `permissions.canDelete` instead. */
-  allowDelete?: boolean;
-  /** @deprecated Use `permissions.canExport` instead. */
-  allowExport?: boolean;
-  /** Fine-grained RBAC permission overrides. Each entry takes precedence over the
-   *  corresponding `allowX` boolean alias. May be static or a callable that is
+  /** Fine-grained RBAC permission overrides. May be static or a callable that is
    *  evaluated at render time. */
   permissions?: ResourcePermissions;
   dialogWidth?: number;

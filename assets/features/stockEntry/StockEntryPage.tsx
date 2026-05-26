@@ -1,4 +1,4 @@
-import { CrudPage, defineResource } from '@nubit/crud';
+import { SmartCrudPage, defineResource } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { createCrudEvents } from '@nubit/crud';
 import type { StockEntryMode } from './StockEntryFields';
@@ -45,7 +45,7 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
     },
   });
 
-  return <CrudPage resource={resource} />;
+  return <SmartCrudPage resource={resource} />;
 };
 
 // ── Type-specific page exports (one component per route) ──────────────────────

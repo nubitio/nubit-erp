@@ -2,13 +2,14 @@ import {
   SmartCrudPage,
   defineFields,
   defineResource,
+  FieldType,
   type DataRecord,
   type FormHandle,
 } from '@nubit/crud';
+import { API_BASE_URL } from '@app/constants';
 import { customerApiUrl, customerEvents } from './model/constants';
 import { consultService } from '@features/consult';
-import { SharedUtils } from '@shared/lib/SharedUtils';
-import toast from '@shared/lib/SharedUtils';
+import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
 
 interface CustomerRecord extends DataRecord {
@@ -100,6 +101,17 @@ const customerResource = defineResource<CustomerRecord>({
               },
             },
           ],
+        },
+      },
+      {
+        kind: 'override',
+        key: 'priceList',
+        patch: {
+          type: FieldType.ENTITY,
+          url: API_BASE_URL + 'price-lists',
+          valueField: '_iri',
+          textField: 'name',
+          label: 'Tarifa',
         },
       },
     ],

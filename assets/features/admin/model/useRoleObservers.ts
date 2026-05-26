@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { GridHandle } from '@nubit/crud';
+import type { DataRecord } from '@nubit/crud';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
 import AppResponse from '@shared/api/AppResponse';
@@ -15,7 +15,7 @@ type UseRoleObserversParams = {
     SAVE: string;
     SUCCESS: string;
   };
-  gridRef: React.RefObject<GridHandle | null>;
+  selectedRowRef: React.RefObject<DataRecord | null>;
   treeRef: React.RefObject<PermissionTreeHandle | null>;
 };
 
@@ -23,24 +23,24 @@ export const useRoleObservers = ({
   on,
   emit,
   permissionEvents,
-  gridRef,
+  selectedRowRef,
   treeRef,
 }: UseRoleObserversParams) => {
-  const callbacksRef = useRef({ on, emit, permissionEvents, gridRef, treeRef });
+  const callbacksRef = useRef({ on, emit, permissionEvents, selectedRowRef, treeRef });
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix
-  callbacksRef.current = { on, emit, permissionEvents, gridRef, treeRef };
+  callbacksRef.current = { on, emit, permissionEvents, selectedRowRef, treeRef };
 
   useEffect(() => {
     const {
       on: onEvent,
       emit: emitEvent,
       permissionEvents: ev,
-      gridRef: grid,
+      selectedRowRef: rowRef,
       treeRef: tree,
     } = callbacksRef.current;
 
     onEvent(ev.SAVE, () => {
-      const row = grid.current?.getSelectedRow();
+      const row = rowRef.current;
       if (!row) return;
       const permissions = tree.current?.getSelectedPermissionIds() ?? [];
       httpClient

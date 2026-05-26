@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '@app/constants';
 import { DateUtils } from '@nubit/core';
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
+import { SmartCrudPage, defineResource, textField, datetimeField, type Field, type DataRecord } from '@nubit/crud';
 import { httpClient } from '@shared/api/HttpClient';
 
 
@@ -63,68 +63,22 @@ const formatDate = (value: unknown): string => {
   }
 };
 
-// ─── Field contract factory ────────────────────────────────────────────────
+// ─── Field factory ────────────────────────────────────────────────────────────
 
-const buildFieldContract = (showProductColumns: boolean, showBalance: boolean) =>
-  defineFields<StockMovementRecord>({
-    source: 'hydra',
-    strategy: 'augment',
-    directives: [
-      { kind: 'override', key: 'id',          patch: { visible: false, visibleOnForm: false } },
-      { kind: 'override', key: 'movementType', patch: { visible: false, visibleOnForm: false } },
-      { kind: 'override', key: 'sourceType',   patch: { visible: false, visibleOnForm: false } },
-      {
-        kind: 'override', key: 'occurredAt',
-        patch: { order: 0, width: 150, label: 'Fecha', formatter: (e) => formatDate(e.value) },
-      },
-      {
-        kind: 'override', key: 'warehouse',
-        patch: {
-          order: 1, width: 160, label: 'Almacén',
-          visible: showProductColumns, visibleOnForm: false,
-          formatter: (e) => formatWarehouse(e.value),
-        },
-      },
-      {
-        kind: 'override', key: 'product',
-        patch: {
-          order: 2, width: 220, label: 'Producto',
-          visible: showProductColumns, visibleOnForm: false,
-          formatter: (e) => formatProduct(e.value),
-        },
-      },
-      {
-        kind: 'override', key: 'movementTypeLabel',
-        patch: { order: 3, width: 160, label: 'Tipo' },
-      },
-      {
-        kind: 'override', key: 'sourceId',
-        patch: { order: 4, width: 180, label: 'Referencia' },
-      },
-      {
-        kind: 'override', key: 'qtyIn',
-        patch: { order: 5, width: 100, label: 'Entrada', align: 'right', formatter: (e) => formatQty(e.value) },
-      },
-      {
-        kind: 'override', key: 'qtyOut',
-        patch: { order: 6, width: 100, label: 'Salida', align: 'right', formatter: (e) => formatQty(e.value) },
-      },
-      {
-        kind: 'override', key: 'runningBalance',
-        patch: {
-          order: 7, width: 110, label: 'Saldo',
-          align: 'right',
-          visible: showBalance,
-          visibleOnForm: false,
-          formatter: (e) => formatQty(e.value),
-        },
-      },
-      {
-        kind: 'override', key: 'note',
-        patch: { order: 8, width: 220, label: 'Nota' },
-      },
-    ],
-  });
+const buildFields = (showProductColumns: boolean, showBalance: boolean): Field[] => [
+  { ...textField().name('id').label('ID').build(),           visible: false, visibleOnForm: false, isIdentity: true, readonly: true },
+  { ...textField().name('movementType').label('Tipo mov.').build(), visible: false, visibleOnForm: false },
+  { ...textField().name('sourceType').label('Fuente').build(),      visible: false, visibleOnForm: false },
+  { ...datetimeField().name('occurredAt').label('Fecha').build(),   order: 0, width: 150, formatter: (e) => formatDate(e.value) },
+  { ...textField().name('warehouse').label('Almacén').build(),  order: 1, width: 160, visible: showProductColumns, visibleOnForm: false, formatter: (e) => formatWarehouse(e.value) },
+  { ...textField().name('product').label('Producto').build(),   order: 2, width: 220, visible: showProductColumns, visibleOnForm: false, formatter: (e) => formatProduct(e.value) },
+  { ...textField().name('movementTypeLabel').label('Tipo').build(),       order: 3, width: 160 },
+  { ...textField().name('sourceId').label('Referencia').build(),          order: 4, width: 180 },
+  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', formatter: (e) => formatQty(e.value) },
+  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', formatter: (e) => formatQty(e.value) },
+  { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', visible: showBalance, visibleOnForm: false, formatter: (e) => formatQty(e.value) },
+  { ...textField().name('note').label('Nota').build(), order: 8, width: 220 },
+];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -142,7 +96,8 @@ const buildUrl = (
   if (productId)   params.set('product',   productId);
   if (fromDate)    params.set('from',       DateUtils.dateFormatter(fromDate));
   if (toDate)      params.set('to',         DateUtils.dateFormatter(toDate));
-  return `${BASE_URL}?${params.toString()}`;
+  const qs = params.toString();
+  return qs ? `${BASE_URL}?${qs}` : BASE_URL;
 };
 
 export const KardexPage = () => {
@@ -204,23 +159,17 @@ export const KardexPage = () => {
   const showProductColumns = activeProductId === null;
   const showBalance        = activeProductId !== null;
 
-  const fieldContract = useMemo(
-    () => buildFieldContract(showProductColumns, showBalance),
-    [showProductColumns, showBalance],
-  );
-
   const resource = useMemo(
     () =>
       defineResource<StockMovementRecord>({
         id: `kardex-${activeUrl}`,          // key change forces grid remount on filter
         title: 'Kardex — Movimientos de stock',
         apiUrl: activeUrl,
-        fields: [],
-        fieldContract,
+        fields: buildFields(showProductColumns, showBalance),
         sort: [{ selector: 'occurredAt', desc: true }],
         permissions: { canAdd: false, canEdit: false, canDelete: false },
       }),
-    [activeUrl, fieldContract],
+    [activeUrl, showProductColumns, showBalance],
   );
 
   const applySearch = useCallback(() => {

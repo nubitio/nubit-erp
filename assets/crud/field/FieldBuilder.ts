@@ -6,6 +6,7 @@ import { ValidationRule } from './ValidationRule';
 import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 import type { DataRecord } from '@nubit/core';
 
+
 export class FieldBuilder {
   private readonly _field: Field;
 
@@ -310,6 +311,31 @@ export class FieldBuilder {
 
   maxLength(value: number): FieldBuilder {
     this._field.maxLength = value;
+    return this;
+  }
+
+  visibleWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
+    this._field.visibleWhen = fn;
+    return this;
+  }
+
+  disabledWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
+    this._field.disabledWhen = fn;
+    return this;
+  }
+
+  computed(fn: (formData: DataRecord) => unknown): FieldBuilder {
+    this._field.computed = fn;
+    return this;
+  }
+
+  dependsOn(fields: string[]): FieldBuilder {
+    this._field.dependsOn = fields;
+    return this;
+  }
+
+  permissions(value: NonNullable<Field['permissions']>): FieldBuilder {
+    this._field.permissions = value;
     return this;
   }
 

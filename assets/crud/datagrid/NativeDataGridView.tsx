@@ -49,11 +49,35 @@ function getPrimitiveDisplay(value: unknown): string {
   return String(value);
 }
 
-function getEntityDisplayValue(field: Field, value: unknown): string {
+function getDateDisplay(value: unknown): string {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(String(value));
+  if (isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+}
+
+function getDateTimeDisplay(value: unknown): string {
+  if (!value) return '';
+  const d = value instanceof Date ? value : new Date(String(value));
+  if (isNaN(d.getTime())) return String(value);
+  return d.toLocaleString('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' });
+}
+
+function getEntityDisplayValue(field: Field, value: unknown, entityOptions?: DataRecord[]): string {
   if (value && typeof value === 'object') {
     const record = value as DataRecord;
     const display = record[field.textField] ?? record['name'] ?? record['businessName'];
     return getPrimitiveDisplay(display);
+  }
+  // IRI string: look up display text from pre-loaded entity options
+  if (value && typeof value === 'string' && entityOptions) {
+    const match = entityOptions.find(
+      (item) => item[field.valueField] === value || item['@id'] === value || item['_iri'] === value,
+    );
+    if (match) {
+      const display = match[field.textField] ?? match['name'] ?? match['businessName'];
+      if (display != null) return getPrimitiveDisplay(display);
+    }
   }
   return getPrimitiveDisplay(value);
 }
@@ -66,23 +90,27 @@ function getEnumDisplayValue(field: Field, value: unknown): string {
   return getPrimitiveDisplay(match?.['text'] ?? match?.[field.textField] ?? value);
 }
 
-function getCellText(field: Field, row: DataRecord): string {
+function getCellText(field: Field, row: DataRecord, entityOptions?: DataRecord[]): string {
   if (field.formatter) return '';
   const value = row[field.name];
-  if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value);
+  if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value, entityOptions);
   if (field.type === FieldType.ENUM || field.type === FieldType.SWITCH) return getEnumDisplayValue(field, value);
+  if (field.type === FieldType.DATE) return getDateDisplay(value);
+  if (field.type === FieldType.DATETIME) return getDateTimeDisplay(value);
   return getPrimitiveDisplay(value);
 }
 
-function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex: number) {
+function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex: number, entityOptions?: DataRecord[]) {
   const value = row[field.name];
   if (field.formatter) {
     return field.formatter({ value, data: row, rowIndex, columnIndex });
   }
-  if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value);
+  if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value, entityOptions);
   if (field.type === FieldType.ENUM || field.type === FieldType.SWITCH) {
     return getEnumDisplayValue(field, value);
   }
+  if (field.type === FieldType.DATE) return getDateDisplay(value);
+  if (field.type === FieldType.DATETIME) return getDateTimeDisplay(value);
   return getPrimitiveDisplay(value);
 }
 
@@ -434,10 +462,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
   useEffect(() => {
     visibleFields
-      .filter((f) => f.filterable && f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
+      .filter((f) => f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
       .forEach((f) => {
         loadedFilterOptionsRef.current.add(f.name);
-        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField, httpClient })
+        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField, httpClient, iriMode: true })
           .load({ take: 500 })
           .then((result) => setFilterRemoteOptions((prev) => ({ ...prev, [f.name]: result.data })))
           .catch(() => {});
@@ -753,8 +781,8 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             </td>
                           )}
                           {visibleFields.map((field, columnIndex) => (
-                            <td key={field.name} style={{ textAlign: field.align }} title={getCellText(field, row)}>
-                              {renderCell(field, row, rowIndex, columnIndex)}
+                            <td key={field.name} style={{ textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name])}>
+                              {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name])}
                             </td>
                           ))}
                           {hasRowActions && (
