@@ -28,9 +28,9 @@ import type { FormViewOptions } from './FormViewOptions';
 import { useFormSubmit } from './useFormSubmit';
 import { useFormValidation } from './useFormValidation';
 import type { UploadedFile } from './UploadedFile';
+import { type DetailFieldErrors, mapApiViolations } from './FormApiViolations';
 
 type FieldState = { readonly?: boolean; disabled?: boolean; hidden?: boolean; validationEnabled?: boolean };
-type FormError = { propertyPath: string; message: string };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
 
 function createRemoteSource(field: Field, httpClient: CoreHttpClient): ApiPlatformRemoteDataSource {
@@ -450,6 +450,8 @@ function NativeDetailGrid({
   allowUpdating = true,
   detailFields,
   httpClient,
+  detailErrors = {},
+  onClearCellError,
   onRowsChange,
   onRowsMutated,
   remoteOptions,
@@ -460,6 +462,8 @@ function NativeDetailGrid({
   allowUpdating?: boolean;
   detailFields: Field[];
   httpClient: CoreHttpClient;
+  detailErrors?: DetailFieldErrors;
+  onClearCellError?: (rowIndex: number, fieldName: string) => void;
   onRowsChange: (rows: FormDataRecord[]) => void;
   onRowsMutated: () => void;
   remoteOptions: Record<string, DataRecord[]>;
@@ -479,6 +483,7 @@ function NativeDetailGrid({
   }
 
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
+    onClearCellError?.(rowIndex, field.name);
     let nextRow = { ...rows[rowIndex], [field.name]: value };
     if (field.onChange) {
       const draft = { ...rows[rowIndex] };
@@ -509,13 +514,15 @@ function NativeDetailGrid({
 
   const renderDetailControl = (row: FormDataRecord, rowIndex: number, field: Field) => {
     const value = row[field.name];
+    const error = detailErrors[rowIndex]?.[field.name];
+    const errorClass = error ? ' is-error' : '';
     if (field.formatter && field.type === FieldType.NONE) {
       return field.formatter({ value, data: row, rowIndex, columnIndex: 0 });
     }
     if (field.type === FieldType.ENTITY) {
       return (
         <NativeEntitySelect
-          className="native-form__control"
+          className={`native-form__control${errorClass}`}
           disabled={!allowUpdating || field.disabled}
           field={field}
           httpClient={httpClient}
@@ -528,7 +535,7 @@ function NativeDetailGrid({
     if (field.type === FieldType.SELECT || field.type === FieldType.ENUM) {
       return (
         <NativeEnumSelect
-          className="native-form__control"
+          className={`native-form__control${errorClass}`}
           disabled={!allowUpdating || field.disabled}
           field={field}
           value={value}
@@ -538,7 +545,7 @@ function NativeDetailGrid({
     }
     return (
       <input
-        className="native-form__control"
+        className={`native-form__control${errorClass}`}
         value={inputValue(value)}
         readOnly={!allowUpdating || field.readonly}
         disabled={field.disabled}
@@ -580,6 +587,7 @@ function NativeDetailGrid({
                 {visibleFields.map((field) => (
                   <td key={field.name}>
                     {renderDetailControl(row, rowIndex, field)}
+                    {detailErrors[rowIndex]?.[field.name] && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
                   </td>
                 ))}
                 {allowDeleting && (
@@ -614,6 +622,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const detailRowsRef = useRef(detailRows);
   const [fieldState, setFieldState] = useState<Record<string, FieldState>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [detailErrors, setDetailErrors] = useState<DetailFieldErrors>({});
   const [remoteOptions, setRemoteOptions] = useState<Record<string, DataRecord[]>>({});
   const [activeTab, setActiveTab] = useState(0);
 
@@ -648,6 +657,22 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     onFieldDataChanged?.(nextData);
     void (field?.onChange as ((value: unknown) => void | Promise<void>) | undefined)?.(value);
   }, [fields, onFieldDataChanged]);
+
+  const clearDetailCellError = useCallback((rowIndex: number, fieldName: string) => {
+    setDetailErrors((current) => {
+      const rowErrors = current[rowIndex];
+      if (!rowErrors?.[fieldName]) return current;
+      const nextRowErrors = { ...rowErrors };
+      delete nextRowErrors[fieldName];
+      const next = { ...current };
+      if (Object.keys(nextRowErrors).length === 0) {
+        delete next[rowIndex];
+      } else {
+        next[rowIndex] = nextRowErrors;
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => { formDataRef.current = formData; }, [formData]);
   useEffect(() => { detailRowsRef.current = detailRows; }, [detailRows]);
@@ -691,6 +716,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       if (error) nextErrors[field.name] = error;
     });
     setErrors(nextErrors);
+    setDetailErrors({});
     return Object.keys(nextErrors).length === 0;
   }, [fieldState, options.fields]);
 
@@ -739,6 +765,8 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
   const applyAddPayload = useCallback((payload: EventRowPayload | undefined) => {
     uploadedFiles.current = [];
+    setErrors({});
+    setDetailErrors({});
     setNextDetailRows([]);
     const row = payload ? normalizeFormData(payload, options.fields) : buildEmptyRow(options.fields);
     setNextFormData(row);
@@ -750,13 +778,13 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
   useEffect(() => {
     const subs = [
-      on<FormError[]>(scopedFormErrorsEvent, (formErrors) => {
+      on<unknown>(scopedFormErrorsEvent, (formErrors) => {
+        const mapped = mapApiViolations(formErrors, detailPropertyName);
         notify(t('form.validationError'), 'error');
         setErrors((current) => {
-          const next = { ...current };
-          formErrors.forEach((error) => { next[error.propertyPath] = error.message; });
-          return next;
+          return { ...current, ...mapped.fieldErrors };
         });
+        setDetailErrors(mapped.detailErrors);
       }),
     ];
 
@@ -765,6 +793,8 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       subs.push(on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
         const row = normalizeFormData(payload.row, options.fields);
         uploadedFiles.current = [];
+        setErrors({});
+        setDetailErrors({});
         setNextFormData(row);
         isEdit.current = true;
 
@@ -994,7 +1024,9 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       allowDeleting={options.allowDeleting}
       allowUpdating={options.allowUpdating}
       detailFields={options.detailFields}
+      detailErrors={detailErrors}
       httpClient={httpClient}
+      onClearCellError={clearDetailCellError}
       onRowsMutated={notifyDetailRowsMutated}
       remoteOptions={remoteOptions}
       rows={detailRows}
