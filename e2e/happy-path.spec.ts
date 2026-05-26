@@ -1136,10 +1136,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
       }
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-register/${openedCashShiftId}/close`);
-      await waitForGridLoad(page);
-      // CashRegisterClose toolbar has a grid-header div with "Cierre de caja"
+      // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
       await expect(
-        page.locator('.grid-header').filter({ hasText: 'Cierre de caja' }).first(),
+        page.locator('h1.cash-close__title'),
       ).toBeVisible({ timeout: 20000 });
     });
 
@@ -1155,9 +1154,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const firstDataRow = page.locator('table tbody tr').first();
       await firstDataRow.waitFor({ state: 'visible', timeout: 15000 });
 
-      // El input de "Monto contado" está siempre visible (no click-to-edit).
-      const countedAmountCell = firstDataRow.locator('td.col-counted-amount');
-      const cellEditor = countedAmountCell.locator('input[type="number"]').first();
+      // El input de "Monto contado" tiene class cash-close__input--num (siempre visible, no click-to-edit).
+      const cellEditor = firstDataRow.locator('input.cash-close__input--num').first();
       await cellEditor.waitFor({ state: 'visible', timeout: 8000 });
       await cellEditor.fill('0'); // monto contado = 0 (suficiente para el test)
       await page.keyboard.press('Tab'); // trigger onBlur → updateRow → React re-render
