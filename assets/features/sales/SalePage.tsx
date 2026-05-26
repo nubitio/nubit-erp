@@ -258,7 +258,6 @@ export const SalePage = () => {
           detailFields={detailFields}
           detailPropertyName="writeItems"
           events={saleEvents}
-          useIRI={true}
         />
       </DialogView>
       <DiscountDialog />

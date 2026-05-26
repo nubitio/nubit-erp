@@ -420,6 +420,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         detailUrl={gridDetail?.url}
         detailFields={gridDetail?.fields}
         onFilterChange={onFiltersChange}
+        adapter={resolvedResource.adapter}
       />
       {!isInlineEditMode && (
         <DialogView
@@ -458,6 +459,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             formLayout={resolvedResource.formLayout}
             computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
+            adapter={resolvedResource.adapter}
           />
         </DialogView>
       )}

@@ -86,7 +86,7 @@ export const CashMovements = () => {
         paging={false}
       />
       <DialogView title="Movimiento de caja" events={EVENTS}>
-        <FormView url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+        <FormView url={API_URL} fields={fields} events={EVENTS} />
       </DialogView>
     </div>
   );

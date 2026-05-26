@@ -38,6 +38,11 @@ export const coreTranslationsEs: CoreTranslationKeys = {
   'dialog.buttonSave': 'Guardar',
   'dialog.confirmDelete': '¿Está seguro de eliminar el registro?',
   'dialog.confirmDeleteTitle': 'Confirmar eliminación',
+  'common.yes': 'Sí',
+  'common.no': 'No',
+  'validation.defaultError': 'Valor inválido',
+  'form.searchButton': 'Buscar',
+  'form.actionButton': 'Acción',
 };
 
 export const coreTranslationsEn: CoreTranslationKeys = {
@@ -78,4 +83,9 @@ export const coreTranslationsEn: CoreTranslationKeys = {
   'dialog.buttonSave': 'Save',
   'dialog.confirmDelete': 'Are you sure you want to delete this record?',
   'dialog.confirmDeleteTitle': 'Confirm deletion',
+  'common.yes': 'Yes',
+  'common.no': 'No',
+  'validation.defaultError': 'Invalid value',
+  'form.searchButton': 'Search',
+  'form.actionButton': 'Action',
 };

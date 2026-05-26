@@ -4,6 +4,7 @@ import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
 import type { GridHandle } from './GridHandle';
+import type { BackendAdapter } from '../adapter/BackendAdapter';
 
 export interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord[];
@@ -56,7 +57,6 @@ export interface DataGridViewOptions {
   beforeToolbar?: () => ReactNode;
   editMode?: 'popup' | 'row' | 'cell' | 'batch';
   visibleColumns?: string[] | null;
+  /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */
+  adapter?: BackendAdapter;
 }
-
-/** @deprecated Prefer GridHandle. */
-export type DataGridViewEvents = GridHandle;

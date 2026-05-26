@@ -36,4 +36,9 @@ export interface CoreTranslationKeys {
   'dialog.buttonSave': string;
   'dialog.confirmDelete': string;
   'dialog.confirmDeleteTitle': string;
+  'common.yes': string;
+  'common.no': string;
+  'validation.defaultError': string;
+  'form.searchButton': string;
+  'form.actionButton': string;
 }

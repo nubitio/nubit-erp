@@ -14,14 +14,11 @@ const baseResource = (overrides: Partial<ResourceConfig> = {}): ResourceConfig =
 });
 
 describe('resolveResourceDetails', () => {
-  it('prefers explicit gridDetail and formDetail over legacy detail config', () => {
-    const legacyField = field('legacy');
+  it('returns gridDetail and formDetail when both are set', () => {
     const gridField = field('grid');
     const formField = field('form');
 
     const resolved = resolveResourceDetails(baseResource({
-      detailUrl: '/legacy/{id}/items',
-      detailFields: [legacyField],
       gridDetail: { url: '/grid/{id}/items', fields: [gridField] },
       formDetail: { url: '/form/{id}/items', fields: [formField], required: true },
     }));
@@ -30,51 +27,47 @@ describe('resolveResourceDetails', () => {
     expect(resolved.formDetail).toEqual({ url: '/form/{id}/items', fields: [formField], required: true });
   });
 
-  it('maps legacy detailFields/detailUrl to both grid and form detail', () => {
-    const detailField = field('item');
+  it('returns undefined for missing detail configs', () => {
+    const resolved = resolveResourceDetails(baseResource());
+
+    expect(resolved.gridDetail).toBeUndefined();
+    expect(resolved.formDetail).toBeUndefined();
+  });
+
+  it('returns only gridDetail when formDetail is absent', () => {
+    const gridField = field('grid');
 
     const resolved = resolveResourceDetails(baseResource({
-      detailUrl: '/legacy/{id}/items',
-      detailFields: [detailField],
-      detailPropertyName: 'items',
-      detailAllowAdding: false,
-      detailAllowDeleting: true,
-      detailAllowUpdating: false,
-      detailRequired: true,
+      gridDetail: { url: '/grid/{id}/items', fields: [gridField] },
     }));
 
-    expect(resolved.gridDetail).toEqual({ url: '/legacy/{id}/items', fields: [detailField] });
+    expect(resolved.gridDetail).toEqual({ url: '/grid/{id}/items', fields: [gridField] });
+    expect(resolved.formDetail).toBeUndefined();
+  });
+
+  it('passes through formDetail with all optional fields', () => {
+    const formField = field('item');
+
+    const resolved = resolveResourceDetails(baseResource({
+      formDetail: {
+        url: '/api/{id}/items',
+        fields: [formField],
+        propertyName: 'items',
+        allowAdding: false,
+        allowDeleting: true,
+        allowUpdating: false,
+        required: true,
+      },
+    }));
+
     expect(resolved.formDetail).toEqual({
-      url: '/legacy/{id}/items',
-      fields: [detailField],
+      url: '/api/{id}/items',
+      fields: [formField],
       propertyName: 'items',
       allowAdding: false,
       allowDeleting: true,
       allowUpdating: false,
       required: true,
     });
-  });
-
-  it('uses legacy gridDetailFields only for grid detail', () => {
-    const formField = field('formItem');
-    const gridField = field('gridItem');
-
-    const resolved = resolveResourceDetails(baseResource({
-      detailUrl: '/legacy/{id}/items',
-      detailFields: [formField],
-      gridDetailFields: [gridField],
-    }));
-
-    expect(resolved.gridDetail).toEqual({ url: '/legacy/{id}/items', fields: [gridField] });
-    expect(resolved.formDetail?.fields).toEqual([formField]);
-  });
-
-  it('does not create a grid detail when legacy config has fields without url', () => {
-    const detailField = field('item');
-
-    const resolved = resolveResourceDetails(baseResource({ detailFields: [detailField] }));
-
-    expect(resolved.gridDetail).toBeUndefined();
-    expect(resolved.formDetail).toEqual({ fields: [detailField] });
   });
 });

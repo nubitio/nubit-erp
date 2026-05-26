@@ -51,7 +51,6 @@ export type {
   SelectionState,
   FieldOverride,
   SmartCrudFieldContract,
-  SmartCrudRecord,
   AuditEntry,
   AuditTrailConfig,
 } from '@nubit/crud';

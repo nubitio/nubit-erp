@@ -3,6 +3,8 @@ import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { UploadedFile } from './UploadedFile';
 import type { FormDataRecord } from './FormDataSnapshot';
+import type { BackendAdapter } from '../adapter/BackendAdapter';
+import { HydraAdapter } from '../adapter/HydraAdapter';
 
 export interface SerializeFieldsContext {
   /** Files uploaded during the current form session. */
@@ -11,23 +13,17 @@ export interface SerializeFieldsContext {
   getFieldValue?: (field: string) => unknown;
   /** Submission format; affects how FILE fields are handled. */
   format?: 'json' | 'multipart';
-}
-
-function getIRI(url: string, value: string): string {
-  if (value.startsWith('/')) {
-    return value;
-  }
-
-  return `${url}/${value}`;
+  /** Backend adapter controlling entity serialization. Defaults to HydraAdapter. */
+  adapter?: BackendAdapter;
 }
 
 /**
  * Pure serialization of form data before HTTP submission.
  *
  * Transforms raw form field values into the shape expected by the API:
- * - Applies uploaded file IRIs
+ * - Applies uploaded file references
  * - Evaluates computed fields
- * - Resolves ENTITY fields to Hydra IRIs
+ * - Resolves ENTITY fields via the BackendAdapter (default: Hydra IRIs)
  * - Formats DATE fields as YYYY-MM-DD business dates, with no timezone conversion
  * - Coerces numeric fields
  * - Strips NONE/FILE fields as appropriate
@@ -56,9 +52,11 @@ export function serializeFormFields(
     }
   });
 
+  const adapter = ctx.adapter ?? HydraAdapter;
+
   fields.forEach((field) => {
     if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
-      serializeEntityField(formData, field);
+      serializeEntityField(formData, field, adapter);
       return;
     }
 
@@ -91,58 +89,26 @@ export function serializeFormFields(
   return formData;
 }
 
-function serializeEntityField(formData: FormDataRecord, field: Field): void {
+function serializeEntityField(formData: FormDataRecord, field: Field, adapter: BackendAdapter): void {
   const val = formData[field.name];
-  const type = typeof val;
-
-  // Sentinel -999 = "no selection" placeholder used by dropdown editors
-  if (val === null || val === undefined || val === '' || val === -999) {
-    delete formData[field.name];
-    return;
-  }
-
-  if (type === 'object' && val !== null && !field.multiple) {
-    const entityValue = val as FormDataRecord;
-    const atId = entityValue['@id'];
-    if (typeof atId === 'string') {
-      formData[field.name] = getIRI(field.url ?? '', atId);
-    } else {
-      // When the API returns plain JSON (no @id), fall back to the numeric/string
-      // `id` property before trying the configured valueField.  This covers the
-      // common case where the grid loads data without JSON-LD headers and nested
-      // objects arrive as { id: 5, name: "..." } instead of { "@id": "/api/…/5" }.
-      const idValue = entityValue['id'];
-      const resolvedId =
-        idValue !== undefined && idValue !== null
-          ? String(idValue)
-          : String(entityValue[field.valueField]);
-      formData[field.name] = getIRI(field.url ?? '', resolvedId);
-    }
-  }
-
-  if (type === 'string' || type === 'number') {
-    formData[field.name] = getIRI(field.url ?? '', val!.toString());
-  }
 
   if (field.multiple) {
     if (Array.isArray(val)) {
-      formData[field.name] = val.map((item: unknown) => {
-        if (typeof item === 'object') {
-          const record = item as FormDataRecord;
-          const atId = record['@id'];
-          if (typeof atId === 'string') return getIRI(field.url ?? '', atId);
-          const idValue = record['id'];
-          const resolvedId =
-            idValue !== undefined && idValue !== null
-              ? String(idValue)
-              : String(record[field.valueField]);
-          return getIRI(field.url ?? '', resolvedId);
-        }
-        return getIRI(field.url ?? '', String(item));
-      });
+      formData[field.name] = val.map((item) => adapter.serializeEntityRef(field, item));
+    } else if (val !== null && val !== undefined && val !== '') {
+      const serialized = adapter.serializeEntityRef(field, val);
+      formData[field.name] = serialized !== undefined ? [serialized] : [];
     } else {
-      formData[field.name] = [getIRI(field.url ?? '', val!.toString())];
+      delete formData[field.name];
     }
+    return;
+  }
+
+  const serialized = adapter.serializeEntityRef(field, val);
+  if (serialized === undefined) {
+    delete formData[field.name];
+  } else {
+    formData[field.name] = serialized;
   }
 }
 
@@ -194,7 +160,7 @@ function serializeNumericField(formData: FormDataRecord, field: Field): void {
 }
 
 /**
- * Serializes detail grid rows (entity IRIs, numeric coercion, identity cleanup).
+ * Serializes detail grid rows (entity refs, numeric coercion, identity cleanup).
  * Pure function — operates on an array of row records.
  */
 export function serializeDetailRows(
@@ -202,36 +168,18 @@ export function serializeDetailRows(
   detailFields: Field[],
   detailIdField: string,
   isEditMode: boolean,
+  adapter: BackendAdapter = HydraAdapter,
 ): FormDataRecord[] {
   const details = JSON.parse(JSON.stringify(rows)) as FormDataRecord[];
 
   detailFields.forEach((field) => {
     if (field.type === FieldType.ENTITY) {
       details.forEach((detail) => {
-        const currentValue = detail[field.name];
-        if (currentValue === null || currentValue === undefined || currentValue === '' || currentValue === -999) {
+        const serialized = adapter.serializeEntityRef(field, detail[field.name]);
+        if (serialized === undefined) {
           delete detail[field.name];
-          return;
-        }
-
-        if (typeof currentValue === 'object') {
-          const entityValue = currentValue as FormDataRecord;
-          const atId = entityValue['@id'];
-          if (typeof atId === 'string') {
-            detail[field.name] = getIRI(field.url ?? '', atId);
-          } else {
-            const idValue = entityValue['id'];
-            const resolvedId =
-              idValue !== undefined && idValue !== null
-                ? String(idValue)
-                : String(entityValue[field.valueField]);
-            detail[field.name] = getIRI(field.url ?? '', resolvedId);
-          }
-          return;
-        }
-
-        if (typeof currentValue === 'string' || typeof currentValue === 'number') {
-          detail[field.name] = getIRI(field.url ?? '', String(currentValue));
+        } else {
+          detail[field.name] = serialized;
         }
       });
     }

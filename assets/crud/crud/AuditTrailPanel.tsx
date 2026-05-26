@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useCoreHttpClient } from '@nubit/core';
+import { useCoreHttpClient, getCoreLocale, getCoreTimezone } from '@nubit/core';
 import type { AuditEntry } from './AuditTrail';
 import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 
@@ -20,7 +20,7 @@ const ACTION_COLORS: Record<AuditEntry['action'], string> = {
 function DefaultEntryRenderer({ entry }: { entry: AuditEntry }): React.JSX.Element {
   const { t } = useCoreTranslation();
   const date = new Date(entry.timestamp);
-  const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString('es-PE', { timeZone: 'America/Lima' });
+  const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString(getCoreLocale(), { timeZone: getCoreTimezone() });
 
   const actionLabels: Record<AuditEntry['action'], string> = {
     create: t('auditTrail.action.create'),

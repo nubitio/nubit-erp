@@ -49,9 +49,6 @@ export type {
   SelectionState,
   SmartCrudFieldContract,
   SmartCrudFieldOperation,
-  SmartCrudFieldOperationBehavior,
-  SmartCrudFieldOperationFlag,
-  SmartCrudFieldOperationState,
   SmartCrudFieldPatch,
   SmartCrudFieldResolutionStrategy,
   SmartCrudFieldSourceMode,
@@ -61,7 +58,6 @@ export type {
   SmartCrudManualFieldContract,
   SmartCrudModelFieldKey,
   SmartCrudOperation,
-  SmartCrudRecord,
 } from './crud';
 
 // ── Field DSL ─────────────────────────────────────────────────────────────────
@@ -119,6 +115,11 @@ export { ConfirmDialog } from '@nubit/ui';
 export type { ConfirmDialogProps } from '@nubit/ui';
 export { AppDialog } from '@nubit/ui';
 export type { AppDialogProps } from '@nubit/ui';
+
+// ── Backend adapters ──────────────────────────────────────────────────────────
+export type { BackendAdapter } from './adapter/BackendAdapter';
+export { HydraAdapter } from './adapter/HydraAdapter';
+export { RestAdapter } from './adapter/RestAdapter';
 
 // ── Base data types (convenience re-exports from @nubit/core) ─────────────────
 export type { DataRecord } from '@nubit/core';

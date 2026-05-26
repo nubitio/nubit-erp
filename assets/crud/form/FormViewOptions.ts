@@ -2,6 +2,7 @@ import type { FormLayout } from './FormLayout';
 import type { FormEventNames } from '../../core/event/EventTypes';
 import type { Field } from '../field/Field';
 import type { FormDataChangedHandler, FormDataSnapshot } from './FormDataSnapshot';
+import type { BackendAdapter } from '../adapter/BackendAdapter';
 
 export interface FormViewOptions {
   className?: string;
@@ -17,8 +18,8 @@ export interface FormViewOptions {
   editable?: boolean;
   format?: 'json' | 'multipart';
   requiredDetail?: boolean;
-  /** @deprecated no tiene efecto, IRI siempre se aplica. */
-  useIRI?: boolean;
+  /** Backend adapter controlling entity serialization and URL building. Defaults to HydraAdapter. */
+  adapter?: BackendAdapter;
   /** Called after a successful POST or PATCH. Receives the server response. */
   onSaveSuccess?: (response: unknown) => void;
   /** Called when POST or PATCH fails after HTTP error handling. */
@@ -35,6 +36,4 @@ export interface FormViewOptions {
   onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
   computedValues?: FormDataSnapshot;
-  /** @deprecated no longer used, sidebar is always single column. */
-  sidebarColCount?: never;
 }

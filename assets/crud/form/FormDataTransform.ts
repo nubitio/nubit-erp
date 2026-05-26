@@ -1,38 +1,9 @@
+import { getCoreTimezone } from '@nubit/core';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { FormDataRecord } from './FormDataSnapshot';
-
-function trimTrailingSlash(value: string): string {
-  return value.replace(/\/+$/, '');
-}
-
-function synthesizeEntityIri(field: Field, entityValue: FormDataRecord): string | undefined {
-  if (!field.url) return undefined;
-
-  const baseUrl = trimTrailingSlash(field.url);
-  const directId = entityValue.id;
-  if (typeof directId === 'string' || typeof directId === 'number') {
-    return `${baseUrl}/${directId}`;
-  }
-
-  const directValue = entityValue[field.valueField];
-  if (
-    field.valueField !== '_iri' &&
-    (typeof directValue === 'string' || typeof directValue === 'number')
-  ) {
-    return `${baseUrl}/${directValue}`;
-  }
-
-  const candidateKeys = ['code', 'uuid', 'slug'];
-  for (const key of candidateKeys) {
-    const candidate = entityValue[key];
-    if (typeof candidate === 'string' || typeof candidate === 'number') {
-      return `${baseUrl}/${candidate}`;
-    }
-  }
-
-  return undefined;
-}
+import type { BackendAdapter } from '../adapter/BackendAdapter';
+import { HydraAdapter } from '../adapter/HydraAdapter';
 
 function upsertPrependData(field: Field, item: FormDataRecord): void {
   const existingLoadOption = field.loadOptions.find((option) => Array.isArray(option.prependData));
@@ -74,7 +45,11 @@ export function buildEmptyRow(fields: Field[]): FormDataRecord {
  * - DATE fields remain YYYY-MM-DD strings
  * - ENTITY fields are normalized to their scalar key for select-style editors
  */
-export function normalizeFormData(data: FormDataRecord, fields: Field[]): FormDataRecord {
+export function normalizeFormData(
+  data: FormDataRecord,
+  fields: Field[],
+  adapter: BackendAdapter = HydraAdapter,
+): FormDataRecord {
   const row = { ...data };
   fields.forEach((field) => {
     if (field.type === FieldType.FILE) {
@@ -88,55 +63,44 @@ export function normalizeFormData(data: FormDataRecord, fields: Field[]): FormDa
       if (typeof rawValue === 'string') {
         row[field.name] = rawValue.slice(0, 10);
       } else if (rawValue instanceof Date) {
-        row[field.name] = rawValue.toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+        row[field.name] = rawValue.toLocaleDateString('en-CA', { timeZone: getCoreTimezone() });
       } else {
         row[field.name] = null;
       }
     }
     if (field.type === FieldType.ENTITY) {
-      normalizeEntityField(row, field);
+      normalizeEntityField(row, field, adapter);
     }
   });
 
   return row;
 }
 
-function normalizeEntityField(row: FormDataRecord, field: Field): void {
+function normalizeEntityField(row: FormDataRecord, field: Field, adapter: BackendAdapter): void {
   const rawValue = row[field.name];
-  const type = typeof rawValue;
-  if (type === 'string') {
-    // If valueField is '_iri', preserve the full IRI; otherwise extract the last segment.
-    const value =
-      field.valueField === '_iri' ? rawValue : (rawValue as string).split('/').pop();
-    row[field.name] = value;
-  }
-  if (type === 'object' && row[field.name] !== null) {
-    const entityValue = { ...(row[field.name] as FormDataRecord) };
-    if (
-      field.valueField === '_iri' &&
-      typeof entityValue['_iri'] !== 'string' &&
-      typeof entityValue['@id'] !== 'string'
-    ) {
-      const synthesizedIri = synthesizeEntityIri(field, entityValue);
-      if (synthesizedIri) {
-        entityValue['_iri'] = synthesizedIri;
+
+  if (typeof rawValue === 'object' && rawValue !== null) {
+    const entityValue = { ...(rawValue as FormDataRecord) };
+
+    // Allow the adapter to synthesize a canonical key when the object lacks one.
+    // For Hydra: synthesizes an `_iri` when `@id` is absent.
+    // For REST: no-op (returns undefined).
+    if (field.valueField === '_iri') {
+      const synthesized = adapter.synthesizeEntityKey(field, entityValue);
+      if (synthesized && typeof entityValue['_iri'] !== 'string' && typeof entityValue['@id'] !== 'string') {
+        entityValue['_iri'] = synthesized;
       }
     }
+
+    // Always add the full object to the dropdown options so the selected item
+    // can be displayed even when it is not in the loaded page of results.
     upsertPrependData(field, entityValue);
-    const atId: unknown = entityValue['@id'];
-    if (typeof atId === 'string') {
-      // When valueField is '_iri', keep the full IRI so the SelectBox can match
-      // against datasource items (which also have '_iri' as the full IRI).
-      const value = field.valueField === '_iri' ? atId : (atId.split('/').pop() ?? atId);
-      row[field.name] = value;
-    } else {
-      const directValue: unknown = entityValue[field.valueField];
-      if (directValue !== undefined && directValue !== null) {
-        row[field.name] = directValue;
-      }
-    }
   }
+
+  const normalized = adapter.normalizeEntityValue(rawValue, field);
+  row[field.name] = normalized ?? null;
+
   if (row[field.name] === null || row[field.name] === undefined) {
-    row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
+    row[field.name] = field.loadOptions[0]?.prependData?.[0] ?? null;
   }
 }

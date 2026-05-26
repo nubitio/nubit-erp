@@ -10,6 +10,7 @@ import type { BulkAction } from './BulkAction';
 import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
 import type { SmartCrudFieldContract } from './fieldContract';
+import type { BackendAdapter } from '../adapter/BackendAdapter';
 /**
  * Generic factory that receives a form ref and returns typed field definitions.
  * Defaults to `DataRecord` for backward compatibility.
@@ -82,6 +83,13 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   title: string;
   apiUrl: string;
   /**
+   * Backend adapter that controls how the engine interacts with the API.
+   * - `HydraAdapter` (default) — API Platform / JSON-LD + Hydra backends.
+   * - `RestAdapter` — plain OpenAPI / REST backends with numeric or UUID ids.
+   * - Provide a custom implementation for any other convention.
+   */
+  adapter?: BackendAdapter;
+  /**
    * Legacy/manual field entrypoint.
    * Prefer `fieldContract` for canonical SmartCrud authoring; this remains as
    * a compatibility path for manual screens and in-flight migrations.
@@ -100,29 +108,6 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   gridDetail?: ResourceGridDetail;
   /** Detail rows rendered inside the create/edit form. */
   formDetail?: ResourceFormDetail;
-  /** @deprecated Use `formDetail.fields` instead. */
-  /** Fields rendered in the dialog form's detail grid. Must be a plain array (FormView constraint). */
-  detailFields?: Field[];
-  /** @deprecated Use `gridDetail.fields` instead. */
-  /** Fields rendered in the main grid's expandable detail rows. Supports a factory function
-   *  `(parentRow) => Field[]`. Falls back to `detailFields` when absent. */
-  gridDetailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
-  /** @deprecated Use `gridDetail.url` and/or `formDetail.url` instead. */
-  detailUrl?: string;
-  /** @deprecated Use `formDetail.propertyName` instead. */
-  detailPropertyName?: string;
-  /** @deprecated Use `formDetail.allowAdding` instead. */
-  /** Allow adding rows to the form detail grid (default: true). */
-  detailAllowAdding?: boolean;
-  /** @deprecated Use `formDetail.allowDeleting` instead. */
-  /** Allow deleting rows from the form detail grid (default: true). */
-  detailAllowDeleting?: boolean;
-  /** @deprecated Use `formDetail.allowUpdating` instead. */
-  /** Allow updating rows in the form detail grid (default: true). */
-  detailAllowUpdating?: boolean;
-  /** @deprecated Use `formDetail.required` instead. */
-  /** Require at least one detail row before the form can be saved (default: false). */
-  detailRequired?: boolean;
   sort?: Array<{ selector: string; desc: boolean }>;
   filter?: FilterRule[];
   mode?: 'normal' | 'minimal';

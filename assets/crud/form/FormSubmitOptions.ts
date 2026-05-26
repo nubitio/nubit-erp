@@ -1,6 +1,7 @@
 import type { FormEventNames } from '../../core/event/EventTypes';
 import type { Field } from '../field/Field';
 import type { CoreHttpClient } from '@nubit/core';
+import type { BackendAdapter } from '../adapter/BackendAdapter';
 
 export interface UseFormSubmitOptions {
   url: string;
@@ -17,4 +18,5 @@ export interface UseFormSubmitOptions {
   onDeleteError?: (error?: unknown) => void;
   onLoadingChange?: (loading: boolean) => void;
   httpClient: CoreHttpClient;
+  adapter?: BackendAdapter;
 }

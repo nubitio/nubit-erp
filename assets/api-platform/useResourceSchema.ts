@@ -1,4 +1,4 @@
-import type { Field, SmartCrudFieldContract, SmartCrudRecord, DataRecord, FieldOverride } from '@nubit/crud';
+import type { Field, SmartCrudFieldContract, DataRecord, FieldOverride } from '@nubit/crud';
 import { resolveSmartCrudFields } from '@nubit/crud';
 import { mapHydraSchemaToFields } from './HydraToFieldMapper';
 import { parseHydraDoc, parseOpenApiDoc } from './openApiParser';
@@ -27,7 +27,7 @@ function normalizeUrl(url: string): string {
   return base.startsWith('/') ? base.slice(1) : base;
 }
 
-export function useResourceSchema<T extends SmartCrudRecord = DataRecord>(
+export function useResourceSchema<T extends DataRecord = DataRecord>(
   apiUrl: string,
   manualFields?: Field[],
   overrides?: FieldOverride[],

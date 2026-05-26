@@ -13,7 +13,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useCoreHttpClient, useCoreRuntime, useEvents, type CoreHttpClient } from '@nubit/core';
+import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, type CoreHttpClient } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import { ApiPlatformRemoteDataSource } from '@nubit/api-platform';
@@ -61,7 +61,7 @@ function fieldFilters(field: Field): unknown[][] | undefined {
 }
 
 function inputValue(value: unknown): string | number | readonly string[] | undefined {
-  if (value instanceof Date) return value.toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+  if (value instanceof Date) return value.toLocaleDateString('en-CA', { timeZone: getCoreTimezone() });
   if (typeof value === 'string' || typeof value === 'number') return value;
   return value == null ? '' : String(value);
 }
@@ -751,6 +751,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     events: options.events,
     formErrorsEvent: scopedFormErrorsEvent,
     httpClient,
+    adapter: options.adapter,
     onSaveSuccess: options.onSaveSuccess,
     onSaveError: options.onSaveError,
     onDeleteSuccess: options.onDeleteSuccess,
@@ -768,7 +769,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     setErrors({});
     setDetailErrors({});
     setNextDetailRows([]);
-    const row = payload ? normalizeFormData(payload, options.fields) : buildEmptyRow(options.fields);
+    const row = payload ? normalizeFormData(payload, options.fields, options.adapter) : buildEmptyRow(options.fields);
     setNextFormData(row);
     if (payload && Array.isArray(payload[detailPropertyName])) {
       setNextDetailRows(payload[detailPropertyName] as FormDataRecord[]);
@@ -779,7 +780,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   useEffect(() => {
     const subs = [
       on<unknown>(scopedFormErrorsEvent, (formErrors) => {
-        const mapped = mapApiViolations(formErrors, detailPropertyName);
+        const mapped = mapApiViolations(formErrors, detailPropertyName, t('validation.defaultError'));
         notify(t('form.validationError'), 'error');
         setErrors((current) => {
           return { ...current, ...mapped.fieldErrors };
@@ -957,7 +958,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
             <div className="native-form__input-actions">
               {fieldButtons.map((button, index) => {
                 const buttonOptions = button.options ?? {};
-                const buttonLabel = button.name === 'search' ? 'Buscar' : String(button.name ?? 'Acción');
+                const buttonLabel = button.name === 'search' ? t('form.searchButton') : String(button.name ?? t('form.actionButton'));
                 return (
                   <button
                     key={String(button.name ?? index)}

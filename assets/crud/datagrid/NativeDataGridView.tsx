@@ -13,7 +13,7 @@ import { ApiPlatformRemoteDataSource, type RemoteLoadOptions } from '@nubit/api-
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { useEvents, useCoreRuntime, useCoreHttpClient } from '@nubit/core';
+import { useEvents, useCoreRuntime, useCoreHttpClient, getCoreLocale, getCoreTimezone } from '@nubit/core';
 import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
@@ -41,10 +41,10 @@ function getIdField(fields: Field[]): string {
 }
 
 
-function getPrimitiveDisplay(value: unknown): string {
+function getPrimitiveDisplay(value: unknown, yesLabel = 'Yes', noLabel = 'No'): string {
   if (value === null || value === undefined) return '';
-  if (value instanceof Date) return value.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
-  if (typeof value === 'boolean') return value ? 'Si' : 'No';
+  if (value instanceof Date) return value.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
+  if (typeof value === 'boolean') return value ? yesLabel : noLabel;
   if (typeof value === 'object') return '';
   return String(value);
 }
@@ -53,14 +53,14 @@ function getDateDisplay(value: unknown): string {
   if (!value) return '';
   const d = value instanceof Date ? value : new Date(String(value));
   if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
+  return d.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
 }
 
 function getDateTimeDisplay(value: unknown): string {
   if (!value) return '';
   const d = value instanceof Date ? value : new Date(String(value));
   if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleString('es-PE', { timeZone: 'America/Lima', dateStyle: 'short', timeStyle: 'short' });
+  return d.toLocaleString(getCoreLocale(), { timeZone: getCoreTimezone(), dateStyle: 'short', timeStyle: 'short' });
 }
 
 function getEntityDisplayValue(field: Field, value: unknown, entityOptions?: DataRecord[]): string {
@@ -90,17 +90,17 @@ function getEnumDisplayValue(field: Field, value: unknown): string {
   return getPrimitiveDisplay(match?.['text'] ?? match?.[field.textField] ?? value);
 }
 
-function getCellText(field: Field, row: DataRecord, entityOptions?: DataRecord[]): string {
+function getCellText(field: Field, row: DataRecord, entityOptions?: DataRecord[], yesLabel = 'Yes', noLabel = 'No'): string {
   if (field.formatter) return '';
   const value = row[field.name];
   if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value, entityOptions);
   if (field.type === FieldType.ENUM || field.type === FieldType.SWITCH) return getEnumDisplayValue(field, value);
   if (field.type === FieldType.DATE) return getDateDisplay(value);
   if (field.type === FieldType.DATETIME) return getDateTimeDisplay(value);
-  return getPrimitiveDisplay(value);
+  return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
 
-function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex: number, entityOptions?: DataRecord[]) {
+function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex: number, entityOptions?: DataRecord[], yesLabel = 'Yes', noLabel = 'No') {
   const value = row[field.name];
   if (field.formatter) {
     return field.formatter({ value, data: row, rowIndex, columnIndex });
@@ -111,7 +111,7 @@ function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex
   }
   if (field.type === FieldType.DATE) return getDateDisplay(value);
   if (field.type === FieldType.DATETIME) return getDateTimeDisplay(value);
-  return getPrimitiveDisplay(value);
+  return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
 
 function buildToolbarButtons(items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) {
@@ -332,6 +332,7 @@ function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryI
 
 function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
   const httpClient = useCoreHttpClient();
+  const { t } = useCoreTranslation();
   const [rows, setRows] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -344,8 +345,8 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
       .finally(() => setLoading(false));
   }, [fields, httpClient, url]);
 
-  if (loading) return <div className="native-datagrid__loading">Cargando...</div>;
-  if (rows.length === 0) return <div className="native-datagrid__empty">Sin detalle</div>;
+  if (loading) return <div className="native-datagrid__loading">{t('grid.loading')}</div>;
+  if (rows.length === 0) return <div className="native-datagrid__empty">{t('grid.noRecords')}</div>;
 
   return (
     <div className="native-datagrid__detail-content">
@@ -361,7 +362,7 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
           {rows.map((row, rowIndex) => (
             <tr key={String(row[getIdField(fields)] ?? rowIndex)}>
               {fields.filter((field) => field.visible && !field.hidden).map((field, columnIndex) => (
-                <td key={field.name}>{renderCell(field, row, rowIndex, columnIndex)}</td>
+                <td key={field.name}>{renderCell(field, row, rowIndex, columnIndex, undefined, t('common.yes'), t('common.no'))}</td>
               ))}
             </tr>
           ))}
@@ -781,8 +782,8 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             </td>
                           )}
                           {visibleFields.map((field, columnIndex) => (
-                            <td key={field.name} style={{ textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name])}>
-                              {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name])}
+                            <td key={field.name} style={{ textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
+                              {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
                             </td>
                           ))}
                           {hasRowActions && (

@@ -32,6 +32,7 @@ function readViolation(value: unknown): ApiViolation | null {
 export function mapApiViolations(
   violations: unknown,
   detailPropertyName = 'items',
+  defaultMessage = 'Invalid value',
 ): MappedApiViolations {
   const fieldErrors: Record<string, string> = {};
   const detailErrors: DetailFieldErrors = {};
@@ -45,7 +46,7 @@ export function mapApiViolations(
     const violation = readViolation(item);
     if (!violation) return;
 
-    const message = violation.message ?? 'Valor inválido';
+    const message = violation.message ?? defaultMessage;
     const path = violation.propertyPath ? normalizePath(violation.propertyPath) : '';
     if (!path) {
       unassigned.push(message);

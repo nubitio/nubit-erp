@@ -5,6 +5,7 @@ import { useCoreRuntime } from '@nubit/core';
 import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 import type { FormDataRecord } from './FormDataSnapshot';
 import { FORM_ERRORS_EVENT } from './FormEvents';
+import { HydraAdapter } from '../adapter/HydraAdapter';
 
 export type { UseFormSubmitAccessors } from './FormSubmitAccessors';
 export type { UseFormSubmitOptions } from './FormSubmitOptions';
@@ -26,6 +27,7 @@ export const useFormSubmit = (
   const { t } = useCoreTranslation();
   const { confirm } = useCoreRuntime();
 
+  const adapter = options.adapter ?? HydraAdapter;
   const getIdField = () => options.fields.find((f) => f.isIdentity)?.name ?? '';
   const getDetailIdField = () => options.detailFields?.find((f) => f.isIdentity)?.name ?? '';
 
@@ -47,6 +49,7 @@ export const useFormSubmit = (
       uploadedFiles: accessors.getUploadedFiles(),
       getFieldValue: accessors.getFieldValue,
       format: options.format,
+      adapter,
     });
   };
 
@@ -59,6 +62,7 @@ export const useFormSubmit = (
       options.detailFields,
       getDetailIdField(),
       accessors.isEditMode(),
+      adapter,
     );
   };
 
@@ -87,7 +91,7 @@ export const useFormSubmit = (
     };
 
     const request = accessors.isEditMode()
-      ? options.httpClient.patch(`${options.url}/${id}`, payload)
+      ? options.httpClient.patch(adapter.buildItemUrl(options.url, id as string | number), payload)
       : options.httpClient.post(options.url, payload);
 
     request
@@ -130,7 +134,7 @@ export const useFormSubmit = (
     };
 
     options.httpClient
-      .delete(`${options.url}/${payload.row[getIdField()]}`)
+      .delete(adapter.buildItemUrl(options.url, payload.row[getIdField()] as string | number))
       .then((response: unknown) => {
         if (successEvent) emit(successEvent, response);
         options.onDeleteSuccess?.(response);

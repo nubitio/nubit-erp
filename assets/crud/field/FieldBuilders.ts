@@ -1,3 +1,4 @@
+import { getCoreTimezone } from '@nubit/core';
 import { BaseFieldBuilder } from './BaseFieldBuilder';
 import { FieldType } from './FieldType';
 import type { Field } from './Field';
@@ -126,7 +127,7 @@ class DateFieldBuilder extends BaseFieldBuilder {
   constructor() {
     super(FieldType.DATE);
     this._field.defaultValue = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Lima',
+      timeZone: getCoreTimezone(),
     }).format(new Date());
   }
 }
