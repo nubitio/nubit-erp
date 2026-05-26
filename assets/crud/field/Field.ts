@@ -95,6 +95,9 @@ export interface Field {
   /** Derived value — field is rendered as read-only with this computed value */
   computed?: (formData: DataRecord) => unknown;
 
+  /** Default value applied when the current value is empty for the current form data */
+  defaultWhen?: (formData: DataRecord) => unknown;
+
   /** Returns true when the field should be required for the current form data */
   requiredWhen?: (formData: DataRecord) => boolean;
 

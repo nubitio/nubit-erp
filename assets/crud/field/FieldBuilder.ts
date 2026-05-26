@@ -329,6 +329,11 @@ export class FieldBuilder {
     return this;
   }
 
+  defaultWhen(fn: (formData: DataRecord) => unknown): FieldBuilder {
+    this._field.defaultWhen = fn;
+    return this;
+  }
+
   requiredWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
     this._field.requiredWhen = fn;
     return this;

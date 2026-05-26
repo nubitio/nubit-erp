@@ -25,6 +25,28 @@ describe('evaluateConditionalRuleState', () => {
     expect(evaluateConditionalRuleState(field, {}).required).toBe(true);
   });
 
+  it('applies defaultWhen when the current field value is empty', () => {
+    const field = new FieldBuilder()
+      .name('currency')
+      .label('Moneda')
+      .defaultWhen((data) => (data['country'] === 'PE' ? 'PEN' : 'USD'))
+      .build();
+
+    expect(evaluateConditionalRuleState(field, { country: 'PE', currency: '' })).toMatchObject({
+      computedValue: 'PEN',
+    });
+  });
+
+  it('does not apply defaultWhen over an existing value', () => {
+    const field = new FieldBuilder()
+      .name('currency')
+      .label('Moneda')
+      .defaultWhen(() => 'PEN')
+      .build();
+
+    expect(evaluateConditionalRuleState(field, { currency: 'USD' }).computedValue).toBeUndefined();
+  });
+
   it('emits a null computed value when clearWhenHidden hides the field', () => {
     const field = new FieldBuilder()
       .name('discount')

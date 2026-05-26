@@ -131,6 +131,15 @@ describe('FieldBuilder', () => {
       expect(field.requiredWhen?.({ status: 'rejected' })).toBe(true);
     });
 
+    it('defaultWhen stores the default resolver', () => {
+      const fn = (data: Record<string, unknown>) => (data['country'] === 'PE' ? 'PEN' : 'USD');
+      const field = new FieldBuilder().name('currency').label('Moneda').defaultWhen(fn).build();
+
+      expect(field.defaultWhen).toBe(fn);
+      expect(field.defaultWhen?.({ country: 'PE' })).toBe('PEN');
+      expect(field.defaultWhen?.({ country: 'US' })).toBe('USD');
+    });
+
     it('clearWhenHidden enables hidden field clearing by default', () => {
       const field = new FieldBuilder().name('reason').label('Motivo').clearWhenHidden().build();
 

@@ -10,6 +10,10 @@ export interface FieldState {
   computedValue?: unknown;
 }
 
+function isEmptyRuleValue(value: unknown): boolean {
+  return value === null || value === undefined || value === '';
+}
+
 export function evaluateConditionalRuleState(
   field: Field,
   formData: FormDataRecord | null,
@@ -35,7 +39,12 @@ export function evaluateConditionalRuleState(
     return { name: field.name, visible, disabled, required, computedValue: null };
   }
 
-  const computedValue = field.computed ? field.computed(formData) : undefined;
+  let computedValue = field.computed ? field.computed(formData) : undefined;
+
+  if (computedValue === undefined && field.defaultWhen && isEmptyRuleValue(formData[field.name])) {
+    computedValue = field.defaultWhen(formData);
+  }
+
   return { name: field.name, visible, disabled, required, computedValue };
 }
 
