@@ -9,7 +9,7 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiPlatformRemoteDataSource, type RemoteLoadOptions } from '@nubit/api-platform';
+import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
@@ -332,18 +332,19 @@ function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryI
 
 function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
   const httpClient = useCoreHttpClient();
+  const resourceStoreFactory = useResourceStoreFactory();
   const { t } = useCoreTranslation();
   const [rows, setRows] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const source = new ApiPlatformRemoteDataSource({ url, idField: getIdField(fields), httpClient });
+    const source = resourceStoreFactory({ url, idField: getIdField(fields), httpClient });
     setLoading(true);
     source
       .load({})
       .then((result) => setRows(result.data))
       .finally(() => setLoading(false));
-  }, [fields, httpClient, url]);
+  }, [fields, httpClient, resourceStoreFactory, url]);
 
   if (loading) return <div className="native-datagrid__loading">{t('grid.loading')}</div>;
   if (rows.length === 0) return <div className="native-datagrid__empty">{t('grid.noRecords')}</div>;
@@ -376,6 +377,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const { t } = useCoreTranslation();
   const { notify } = useCoreRuntime();
   const httpClient = useCoreHttpClient();
+  const resourceStoreFactory = useResourceStoreFactory();
   const navigate = useNavigate();
   const [on, emit] = useEvents();
   const idField = useMemo(() => getIdField(options.fields), [options.fields]);
@@ -416,20 +418,20 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
   const source = useMemo(
     () =>
-      new ApiPlatformRemoteDataSource({
+      resourceStoreFactory({
         url: options.url,
         idField,
         defaultFilterRules: options.filter as unknown[][] | undefined,
         defaultSortRules: sort,
         httpClient,
       }),
-    [httpClient, idField, options.filter, options.url, sort],
+    [httpClient, idField, options.filter, options.url, resourceStoreFactory, sort],
   );
 
   const loadRows = useCallback(async () => {
     if (options.manualLoad) return rowsRef.current;
     setIsGridLoading(true);
-    const loadOptions: RemoteLoadOptions = {
+    const loadOptions: ResourceLoadOptions = {
       filter: buildFilterExpression(filters, filterOperators),
       sort,
     };
@@ -466,12 +468,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       .filter((f) => f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
       .forEach((f) => {
         loadedFilterOptionsRef.current.add(f.name);
-        new ApiPlatformRemoteDataSource({ url: f.url!, idField: f.valueField, httpClient, iriMode: true })
+        resourceStoreFactory({ url: f.url!, idField: f.valueField, httpClient, iriMode: true })
           .load({ take: 500 })
           .then((result) => setFilterRemoteOptions((prev) => ({ ...prev, [f.name]: result.data })))
           .catch(() => {});
       });
-  }, [httpClient, visibleFields]);
+  }, [httpClient, resourceStoreFactory, visibleFields]);
 
   // Snapshot of mutable state read by the imperative handle. Updated after every render
   // so handle methods always see current values without the handle itself being rebuilt.

@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsdown';
 
-const NUBIT_PACKAGES = ['@nubit/core', '@nubit/crud', '@nubit/ui', '@nubit/admin', '@nubit/api-platform'];
+const NUBIT_PACKAGES = ['@nubit/core', '@nubit/crud', '@nubit/ui', '@nubit/admin', '@nubit/hydra'];
 
 // IDs that must never be bundled regardless of tsconfig path aliases.
 const ALWAYS_EXTERNAL = (id: string) =>
@@ -52,12 +52,12 @@ export default [
     outDir: 'assets/ui/dist',
   }),
 
-  // ── @nubit/api-platform ───────────────────────────────────────────────────────
+  // ── @nubit/hydra ─────────────────────────────────────────────────────────────
   // Bundles Hydra/OpenAPI parser code. All @nubit/core references are external.
   defineConfig({
     ...sharedConfig,
-    entry: { index: 'assets/api-platform/public.ts' },
-    outDir: 'assets/api-platform/dist',
+    entry: { index: 'assets/hydra/public.ts' },
+    outDir: 'assets/hydra/dist',
   }),
 
   // ── @nubit/react-admin ────────────────────────────────────────────────────────

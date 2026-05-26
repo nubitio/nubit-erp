@@ -1,7 +1,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 let _nubit_core = require("@nubit/core");
 let _nubit_crud = require("@nubit/crud");
-let _nubit_api_platform = require("@nubit/api-platform");
+let _nubit_hydra = require("@nubit/hydra");
 let _nubit_ui = require("@nubit/ui");
 let _nubit_admin = require("@nubit/admin");
 Object.defineProperty(exports, "AdminHeader", {
@@ -20,12 +20,6 @@ Object.defineProperty(exports, "AdminSidebarMenu", {
 	enumerable: true,
 	get: function() {
 		return _nubit_admin.AdminSidebarMenu;
-	}
-});
-Object.defineProperty(exports, "ApiPlatformRemoteDataSource", {
-	enumerable: true,
-	get: function() {
-		return _nubit_api_platform.ApiPlatformRemoteDataSource;
 	}
 });
 Object.defineProperty(exports, "AppDialog", {
@@ -112,6 +106,24 @@ Object.defineProperty(exports, "FormView", {
 		return _nubit_crud.FormView;
 	}
 });
+Object.defineProperty(exports, "HydraRemoteDataSource", {
+	enumerable: true,
+	get: function() {
+		return _nubit_hydra.HydraRemoteDataSource;
+	}
+});
+Object.defineProperty(exports, "HydraResourceSchemaProvider", {
+	enumerable: true,
+	get: function() {
+		return _nubit_hydra.HydraResourceSchemaProvider;
+	}
+});
+Object.defineProperty(exports, "HydraResourceStoreProvider", {
+	enumerable: true,
+	get: function() {
+		return _nubit_hydra.HydraResourceStoreProvider;
+	}
+});
 Object.defineProperty(exports, "LIMA_TZ", {
 	enumerable: true,
 	get: function() {
@@ -124,10 +136,22 @@ Object.defineProperty(exports, "MercureProvider", {
 		return _nubit_core.MercureProvider;
 	}
 });
+Object.defineProperty(exports, "ResourceSchemaProvider", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.ResourceSchemaProvider;
+	}
+});
+Object.defineProperty(exports, "ResourceStoreProvider", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.ResourceStoreProvider;
+	}
+});
 Object.defineProperty(exports, "SchemaProvider", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.SchemaProvider;
+		return _nubit_hydra.SchemaProvider;
 	}
 });
 Object.defineProperty(exports, "SmartCrudPage", {
@@ -271,7 +295,7 @@ Object.defineProperty(exports, "initCoreI18n", {
 Object.defineProperty(exports, "mapHydraSchemaToFields", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.mapHydraSchemaToFields;
+		return _nubit_hydra.mapHydraSchemaToFields;
 	}
 });
 Object.defineProperty(exports, "noneField", {
@@ -289,13 +313,13 @@ Object.defineProperty(exports, "numberField", {
 Object.defineProperty(exports, "parseHydraDoc", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.parseHydraDoc;
+		return _nubit_hydra.parseHydraDoc;
 	}
 });
 Object.defineProperty(exports, "parseOpenApiDoc", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.parseOpenApiDoc;
+		return _nubit_hydra.parseOpenApiDoc;
 	}
 });
 Object.defineProperty(exports, "passwordField", {
@@ -307,7 +331,7 @@ Object.defineProperty(exports, "passwordField", {
 Object.defineProperty(exports, "resolveRangeTag", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.resolveRangeTag;
+		return _nubit_hydra.resolveRangeTag;
 	}
 });
 Object.defineProperty(exports, "resolveSmartCrudFields", {
@@ -373,7 +397,7 @@ Object.defineProperty(exports, "useEvents", {
 Object.defineProperty(exports, "useHydraMetadata", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.useHydraMetadata;
+		return _nubit_hydra.useHydraMetadata;
 	}
 });
 Object.defineProperty(exports, "useMercureHub", {
@@ -394,16 +418,28 @@ Object.defineProperty(exports, "usePermissions", {
 		return _nubit_crud.usePermissions;
 	}
 });
+Object.defineProperty(exports, "useResolvedResourceFields", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.useResolvedResourceFields;
+	}
+});
 Object.defineProperty(exports, "useResourceSchema", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.useResourceSchema;
+		return _nubit_hydra.useResourceSchema;
+	}
+});
+Object.defineProperty(exports, "useResourceStoreFactory", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.useResourceStoreFactory;
 	}
 });
 Object.defineProperty(exports, "useSchemaContext", {
 	enumerable: true,
 	get: function() {
-		return _nubit_api_platform.useSchemaContext;
+		return _nubit_hydra.useSchemaContext;
 	}
 });
 Object.defineProperty(exports, "useScreenSize", {

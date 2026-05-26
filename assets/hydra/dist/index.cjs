@@ -22,12 +22,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 }) : target, mod));
 //#endregion
 let _nubit_core = require("@nubit/core");
-let _nubit_crud = require("@nubit/crud");
-let _tanstack_react_query = require("@tanstack/react-query");
 let react = require("react");
 react = __toESM(react);
+let _nubit_crud = require("@nubit/crud");
 let react_jsx_runtime = require("react/jsx-runtime");
-//#region assets/api-platform/ApiPlatformRemoteDataSource.ts
+let _tanstack_react_query = require("@tanstack/react-query");
+//#region assets/hydra/HydraRemoteDataSource.ts
 const defaultHttpClient = (0, _nubit_core.createCoreHttpClient)({ baseUrl: "" });
 function findPreloadedItem(loadOptions, idField, id) {
 	const prependData = Array.isArray(loadOptions.prependData) ? loadOptions.prependData : [];
@@ -75,11 +75,25 @@ function stripAdapterOnlyParams(loadOptions) {
 	if (nextOptions.searchExpr === void 0) delete nextOptions.searchValue;
 	return nextOptions;
 }
+function convertPaginationParams(loadOptions) {
+	const nextOptions = { ...loadOptions };
+	const take = typeof nextOptions.take === "number" ? nextOptions.take : void 0;
+	const skip = typeof nextOptions.skip === "number" ? nextOptions.skip : void 0;
+	if (take !== void 0) {
+		nextOptions.itemsPerPage = take;
+		delete nextOptions.take;
+	}
+	if (take !== void 0 && skip !== void 0) {
+		nextOptions.page = Math.floor(skip / take) + 1;
+		delete nextOptions.skip;
+	} else if (skip !== void 0) delete nextOptions.skip;
+	return nextOptions;
+}
 function getFlatIriFilter(filter) {
 	if (!Array.isArray(filter)) return null;
 	return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
 }
-var ApiPlatformRemoteDataSource = class {
+var HydraRemoteDataSource = class {
 	config;
 	httpClient;
 	constructor(config) {
@@ -92,11 +106,11 @@ var ApiPlatformRemoteDataSource = class {
 	prepareLoadOptions(loadOptions) {
 		const withDefaults = applyLoadOptionDefaults(loadOptions, this.config.options ?? []);
 		const normalizedFilters = normalizeFilterRules(withDefaults.filter ?? [], this.config.defaultFilterRules ?? []);
-		return stripAdapterOnlyParams({
+		return convertPaginationParams(stripAdapterOnlyParams({
 			...withDefaults,
 			filter: normalizedFilters,
 			sort: normalizeSortRules(withDefaults.sort ?? [], this.config.defaultSortRules ?? [], this.config.idField)
-		});
+		}));
 	}
 	async load(loadOptions) {
 		const preparedOptions = this.prepareLoadOptions(loadOptions);
@@ -144,8 +158,17 @@ var ApiPlatformRemoteDataSource = class {
 		return this.httpClient.get(resolvedUrl).then((response) => response.data).catch(() => findPreloadedItem(loadOptions, this.config.idField, id));
 	}
 };
+const createHydraResourceStore = (options) => new HydraRemoteDataSource(options);
 //#endregion
-//#region assets/api-platform/openApiParser.ts
+//#region assets/hydra/HydraResourceStoreProvider.tsx
+function HydraResourceStoreProvider({ children }) {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_crud.ResourceStoreProvider, {
+		factory: createHydraResourceStore,
+		children
+	});
+}
+//#endregion
+//#region assets/hydra/openApiParser.ts
 /**
 * Converts a camelCase or PascalCase name to dash-case.
 * Mirrors API Platform's DashPathSegmentNameGenerator behaviour.
@@ -387,7 +410,7 @@ function parseOpenApiDoc(doc) {
 	return result;
 }
 //#endregion
-//#region assets/api-platform/HydraToFieldMapper.ts
+//#region assets/hydra/HydraToFieldMapper.ts
 /**
 * Returns true when the given `range` string declares an XSD integer type.
 * Supports both short-form `xmls:` prefixes and full XSD IRIs.
@@ -424,6 +447,11 @@ function resolveRangeTag(range, propertyType) {
 		if (local === "string") return "text";
 		return "text";
 	}
+	if (range === "xsd:boolean") return "boolean";
+	if (range === "xsd:dateTime" || range === "xsd:date") return "dateTime";
+	if (range === "xsd:integer" || range === "xsd:int" || range === "xsd:long") return "integer";
+	if (range === "xsd:decimal" || range === "xsd:float" || range === "xsd:double") return "decimal";
+	if (range === "xsd:string") return "text";
 	if (range === "xmls:boolean") return "boolean";
 	if (range === "xmls:dateTime") return "dateTime";
 	if (range === "xmls:integer") return "integer";
@@ -616,7 +644,7 @@ function mapHydraSchemaToFields(schema, urlLookup, schemaLookup) {
 	return fields;
 }
 //#endregion
-//#region assets/api-platform/useHydraMetadata.ts
+//#region assets/hydra/useHydraMetadata.ts
 const JSONLD_URL = "/api/docs.jsonld";
 const JSON_URL = "/api/docs.json";
 const isDev = typeof process !== "undefined" && process.env?.NODE_ENV !== "production";
@@ -683,7 +711,7 @@ function useHydraMetadata() {
 	};
 }
 //#endregion
-//#region assets/api-platform/SchemaContext.tsx
+//#region assets/hydra/SchemaContext.tsx
 /**
 * SchemaContext — shared parsed schema, no per-page re-fetch.
 *
@@ -741,40 +769,17 @@ function useSchemaContext() {
 	};
 }
 //#endregion
-//#region assets/api-platform/useResourceSchema.ts
+//#region assets/hydra/useResourceSchema.ts
 /**
-* Normalizes an API URL by stripping any leading slash so that
-* 'api/categories' and '/api/categories' are treated as equal.
+* Normalizes an API URL by stripping any leading slash and query string so that
+* 'api/categories', '/api/categories', and '/api/categories?foo=bar' are treated as equal.
 */
 function normalizeUrl(url) {
-	return url.startsWith("/") ? url.slice(1) : url;
+	const base = url.split("?")[0];
+	return base.startsWith("/") ? base.slice(1) : base;
 }
-function useResourceSchema(apiUrl, manualFields, overrides, fieldContract) {
+function useResourceSchema(apiUrl) {
 	const { data, isLoading, error } = useSchemaContext();
-	const resolveWithRuntimeErrors = (resolver, supportedOperations = []) => {
-		try {
-			return {
-				fields: resolver(),
-				isLoading: false,
-				error: void 0,
-				supportedOperations
-			};
-		} catch (runtimeError) {
-			return {
-				fields: [],
-				isLoading: false,
-				error: runtimeError instanceof Error ? runtimeError : new Error(String(runtimeError)),
-				supportedOperations
-			};
-		}
-	};
-	if (fieldContract?.source === "manual") return resolveWithRuntimeErrors(() => (0, _nubit_crud.resolveSmartCrudFields)({ contract: fieldContract }));
-	if (manualFields && manualFields.length > 0) return {
-		fields: manualFields,
-		isLoading: false,
-		error: void 0,
-		supportedOperations: []
-	};
 	if (!data) return {
 		fields: [],
 		isLoading,
@@ -790,17 +795,31 @@ function useResourceSchema(apiUrl, manualFields, overrides, fieldContract) {
 		error: /* @__PURE__ */ new Error(`No schema found for ${apiUrl} in API doc`),
 		supportedOperations: []
 	};
-	const inferred = mapHydraSchemaToFields(resourceSchema, (className) => resourceMap[className]?.apiUrl, (className) => resourceMap[className]);
-	return resolveWithRuntimeErrors(() => (0, _nubit_crud.resolveSmartCrudFields)({
-		baselineFields: inferred,
-		contract: fieldContract,
-		legacyOverrides: fieldContract ? void 0 : overrides
-	}), resourceSchema.supportedOperations ?? []);
+	return {
+		fields: mapHydraSchemaToFields(resourceSchema, (className) => resourceMap[className]?.apiUrl, (className) => resourceMap[className]),
+		isLoading: false,
+		error: void 0,
+		supportedOperations: resourceSchema.supportedOperations ?? []
+	};
+}
+//#endregion
+//#region assets/hydra/HydraResourceSchemaProvider.tsx
+function useHydraResourceSchema({ apiUrl }) {
+	return useResourceSchema(apiUrl);
+}
+function HydraResourceSchemaProvider({ children }) {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_crud.ResourceSchemaProvider, {
+		resolver: (0, react.useMemo)(() => ({ useResourceSchema: useHydraResourceSchema }), []),
+		children
+	});
 }
 //#endregion
 exports.API_DOC_QUERY_KEY = API_DOC_QUERY_KEY;
-exports.ApiPlatformRemoteDataSource = ApiPlatformRemoteDataSource;
+exports.HydraRemoteDataSource = HydraRemoteDataSource;
+exports.HydraResourceSchemaProvider = HydraResourceSchemaProvider;
+exports.HydraResourceStoreProvider = HydraResourceStoreProvider;
 exports.SchemaProvider = SchemaProvider;
+exports.createHydraResourceStore = createHydraResourceStore;
 exports.mapHydraSchemaToFields = mapHydraSchemaToFields;
 exports.parseHydraDoc = parseHydraDoc;
 exports.parseOpenApiDoc = parseOpenApiDoc;

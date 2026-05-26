@@ -1,29 +1,20 @@
 import { createCoreHttpClient, type CoreHttpClient, type GridData } from '@nubit/core';
-import { type FilterRule, type LoadOption, type DataRecord } from '@nubit/crud';
+import type { DataRecord } from '@nubit/core';
+import type {
+  ResourceFilterDescriptor,
+  ResourceFilterRule,
+  ResourceLoadOption,
+  ResourceLoadOptions,
+  ResourceSortDescriptor,
+  ResourceStore,
+  ResourceStoreFactory,
+  ResourceStoreOptions,
+} from '@nubit/crud';
 
-export type RemoteFilterDescriptor = unknown[];
-export type RemoteSortDescriptor = { selector?: string; desc?: boolean } | string;
-
-export type RemoteLoadOptions = DataRecord & {
-  filter?: RemoteFilterDescriptor;
-  sort?: RemoteSortDescriptor[];
-  appendData?: DataRecord[];
-  prependData?: DataRecord[];
-  searchExpr?: unknown;
-  searchValue?: unknown;
-  searchOperation?: unknown;
-};
-
-export type RemoteDataSourceOptions = {
-  url: string;
-  idField: string;
-  byKeyUrl?: string | null;
-  defaultFilterRules?: RemoteFilterDescriptor[];
-  defaultSortRules?: RemoteSortDescriptor[];
-  options?: LoadOption[];
-  iriMode?: boolean;
-  httpClient?: CoreHttpClient;
-};
+export type RemoteFilterDescriptor = ResourceFilterDescriptor;
+export type RemoteSortDescriptor = ResourceSortDescriptor;
+export type RemoteLoadOptions = ResourceLoadOptions;
+export type RemoteDataSourceOptions = ResourceStoreOptions;
 
 const defaultHttpClient = createCoreHttpClient({ baseUrl: '' });
 
@@ -51,10 +42,10 @@ function addIriField(url: string, item: DataRecord): DataRecord {
 }
 
 function normalizeFilterRules(
-  filterRules: RemoteFilterDescriptor,
-  defaultFilterRules: RemoteFilterDescriptor[],
-): RemoteFilterDescriptor[] {
-  const filters: RemoteFilterDescriptor[] = [];
+  filterRules: ResourceFilterDescriptor,
+  defaultFilterRules: ResourceFilterDescriptor[],
+): ResourceFilterDescriptor[] {
+  const filters: ResourceFilterDescriptor[] = [];
   defaultFilterRules.forEach((rule) => filters.push(rule));
 
   if (filterRules.length === 3 && typeof filterRules[0] !== 'object') {
@@ -69,10 +60,10 @@ function normalizeFilterRules(
 }
 
 function applyLoadOptionDefaults(
-  loadOptions: RemoteLoadOptions,
-  options: LoadOption[],
-): RemoteLoadOptions {
-  const nextOptions: RemoteLoadOptions = { ...loadOptions };
+  loadOptions: ResourceLoadOptions,
+  options: ResourceLoadOption[],
+): ResourceLoadOptions {
+  const nextOptions: ResourceLoadOptions = { ...loadOptions };
 
   options.forEach((option) => {
     for (const key in option) {
@@ -86,10 +77,10 @@ function applyLoadOptionDefaults(
 }
 
 function normalizeSortRules(
-  sortRules: RemoteSortDescriptor[],
-  defaultSortRules: RemoteSortDescriptor[],
+  sortRules: ResourceSortDescriptor[],
+  defaultSortRules: ResourceSortDescriptor[],
   idField: string,
-): RemoteSortDescriptor[] {
+): ResourceSortDescriptor[] {
   const [firstSort] = sortRules;
   const firstSelector = typeof firstSort === 'string' ? firstSort : firstSort?.selector;
 
@@ -104,8 +95,8 @@ function normalizeSortRules(
   return sortRules;
 }
 
-function stripAdapterOnlyParams(loadOptions: RemoteLoadOptions): RemoteLoadOptions {
-  const nextOptions: RemoteLoadOptions = { ...loadOptions };
+function stripAdapterOnlyParams(loadOptions: ResourceLoadOptions): ResourceLoadOptions {
+  const nextOptions: ResourceLoadOptions = { ...loadOptions };
   delete nextOptions.searchOperation;
 
   if (nextOptions.searchExpr === undefined) {
@@ -115,8 +106,8 @@ function stripAdapterOnlyParams(loadOptions: RemoteLoadOptions): RemoteLoadOptio
   return nextOptions;
 }
 
-function convertPaginationParams(loadOptions: RemoteLoadOptions): RemoteLoadOptions {
-  const nextOptions: RemoteLoadOptions = { ...loadOptions };
+function convertPaginationParams(loadOptions: ResourceLoadOptions): ResourceLoadOptions {
+  const nextOptions: ResourceLoadOptions = { ...loadOptions };
 
   const take = typeof nextOptions.take === 'number' ? nextOptions.take : undefined;
   const skip = typeof nextOptions.skip === 'number' ? nextOptions.skip : undefined;
@@ -141,20 +132,20 @@ function getFlatIriFilter(filter: unknown): unknown[] | null {
   return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
 }
 
-export class ApiPlatformRemoteDataSource {
+export class HydraRemoteDataSource implements ResourceStore {
   private readonly httpClient: CoreHttpClient;
 
-  constructor(private readonly config: RemoteDataSourceOptions) {
+  constructor(private readonly config: ResourceStoreOptions) {
     this.httpClient = config.httpClient ?? defaultHttpClient;
   }
 
-  makeFilterRules(filterRules: FilterRule[]): string {
+  makeFilterRules(filterRules: ResourceFilterRule[]): string {
     return filterRules
       .map((filter) => `filter[]=["${filter.field}","${filter.operator}","${filter.value}"]`)
       .join('&');
   }
 
-  prepareLoadOptions(loadOptions: RemoteLoadOptions): RemoteLoadOptions {
+  prepareLoadOptions(loadOptions: ResourceLoadOptions): ResourceLoadOptions {
     const withDefaults = applyLoadOptionDefaults(loadOptions, this.config.options ?? []);
     const normalizedFilters = normalizeFilterRules(
       (withDefaults.filter ?? []) as RemoteFilterDescriptor,
@@ -172,7 +163,7 @@ export class ApiPlatformRemoteDataSource {
     }));
   }
 
-  async load(loadOptions: RemoteLoadOptions): Promise<GridData<DataRecord>> {
+  async load(loadOptions: ResourceLoadOptions): Promise<GridData<DataRecord>> {
     const preparedOptions = this.prepareLoadOptions(loadOptions);
 
     if (this.config.iriMode) {
@@ -234,7 +225,7 @@ export class ApiPlatformRemoteDataSource {
   private async fetchById(
     url: string,
     id: unknown,
-    loadOptions: RemoteLoadOptions,
+    loadOptions: ResourceLoadOptions,
   ): Promise<DataRecord | null> {
     const preloadedItem = findPreloadedItem(loadOptions, this.config.idField, id);
     if (preloadedItem) return preloadedItem;
@@ -247,3 +238,6 @@ export class ApiPlatformRemoteDataSource {
       .catch(() => findPreloadedItem(loadOptions, this.config.idField, id));
   }
 }
+
+export const createHydraResourceStore: ResourceStoreFactory = (options) =>
+  new HydraRemoteDataSource(options);

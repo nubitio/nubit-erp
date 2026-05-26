@@ -1,14 +1,11 @@
-import { n as __reExport, t as __exportAll } from "./chunk-BBjsoOtd.mjs";
-import React, { createContext, forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import "./datagrid/NativeDataGridView.scss";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { API_DOC_QUERY_KEY, ApiPlatformRemoteDataSource, useResourceSchema } from "@nubit/api-platform";
-import { DateUtils, dispatch, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useEvents, useMercureSubscription } from "@nubit/core";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import { dispatch, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useEvents, useMercureSubscription } from "@nubit/core";
 import { useTranslation } from "react-i18next";
 import "./form/NativeFormView.scss";
 import { createPortal } from "react-dom";
-import { DateTime } from "luxon";
-import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import "./dialog/CrudDialogView.scss";
 import { AppDialog, AppDialog as AppDialog$1, ConfirmDialog, ConfirmDialog as ConfirmDialog$1 } from "@nubit/ui";
 import { useQueryClient } from "@tanstack/react-query";
@@ -75,13 +72,8 @@ function fromOperations(supportedOperations) {
 * Resolves RBAC permissions for a resource with the following precedence
 * (highest → lowest):
 *   1. `resource.permissions.canX` — callable or boolean override
-*   2. `resource.allowX`           — legacy boolean alias
-*   3. inferred from `supportedOperations` (hydra:supportedOperation methods)
-*   4. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
-*
-* The `supportedOperations` parameter comes from `useResourceSchema` and is
-* only consulted when neither a `resource.permissions.canX` nor a
-* `resource.allowX` value was explicitly provided by the caller.
+*   2. inferred from `supportedOperations` (hydra:supportedOperation methods)
+*   3. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
 *
 * Memoized on `resource.id` — stable reference across re-renders.
 */
@@ -90,17 +82,16 @@ function usePermissions(resource, supportedOperations = []) {
 	return useMemo(() => {
 		const p = resource.permissions;
 		const inferred = fromOperations(supportedOperations);
-		function resolveWithInferred(permValue, allowValue, inferredValue, platformDefault) {
+		function resolveWithInferred(permValue, inferredValue, platformDefault) {
 			if (permValue !== void 0) return resolve(permValue, platformDefault);
-			if (allowValue !== void 0) return allowValue;
 			if (inferredValue !== void 0) return inferredValue;
 			return platformDefault;
 		}
 		return {
-			canAdd: resolveWithInferred(p?.canAdd, resource.allowAdd, inferred?.canAdd, true),
-			canEdit: resolveWithInferred(p?.canEdit, resource.allowEdit, inferred?.canEdit, true),
-			canDelete: resolveWithInferred(p?.canDelete, resource.allowDelete, inferred?.canDelete, true),
-			canExport: resolve(p?.canExport, resource.allowExport ?? false),
+			canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
+			canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
+			canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
+			canExport: resolve(p?.canExport, false),
 			canBulkDelete: resolve(p?.canBulkDelete, false)
 		};
 	}, [resource.id, opsKey]);
@@ -220,10 +211,11 @@ function resolveCrudResource(resource, overrides = {}) {
 }
 //#endregion
 //#region assets/crud/crud/useCrudPage.ts
-function useCrudPage(resource) {
+function useCrudPage(resource, externalFormRef) {
 	const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
 	const events = resolvedResource.events;
-	const formRef = useRef(null);
+	const _internalFormRef = useRef(null);
+	const formRef = externalFormRef ?? _internalFormRef;
 	const fields = useMemo(() => {
 		if (typeof resolvedResource.fields === "function") return resolvedResource.fields(formRef);
 		return resolvedResource.fields;
@@ -246,6 +238,20 @@ const DATA_GRID_EVENTS = {
 	SELECTION_CHANGED: "datagrid:selection.changed",
 	TOOLBAR_EVENT: "datagrid:toolbar.event"
 };
+//#endregion
+//#region assets/crud/data/ResourceStore.tsx
+const ResourceStoreFactoryContext = createContext(null);
+function ResourceStoreProvider({ children, factory }) {
+	return /* @__PURE__ */ jsx(ResourceStoreFactoryContext.Provider, {
+		value: factory,
+		children
+	});
+}
+function useResourceStoreFactory() {
+	const factory = useContext(ResourceStoreFactoryContext);
+	if (!factory) throw new Error("No ResourceStore factory configured. Wrap your app with ResourceStoreProvider or a backend-specific provider such as HydraResourceStoreProvider.");
+	return factory;
+}
 //#endregion
 //#region assets/crud/field/FieldType.ts
 let FieldType = /* @__PURE__ */ function(FieldType) {
@@ -286,26 +292,96 @@ const FORM_EVENTS = {
 };
 const FORM_ERRORS_EVENT = "form-errors";
 //#endregion
-//#region assets/crud/form/FormDataTransform.ts
+//#region assets/crud/adapter/HydraAdapter.ts
 function trimTrailingSlash(value) {
 	return value.replace(/\/+$/, "");
 }
-function synthesizeEntityIri(field, entityValue) {
-	if (!field.url) return void 0;
-	const baseUrl = trimTrailingSlash(field.url);
-	const directId = entityValue.id;
-	if (typeof directId === "string" || typeof directId === "number") return `${baseUrl}/${directId}`;
-	const directValue = entityValue[field.valueField];
-	if (field.valueField !== "_iri" && (typeof directValue === "string" || typeof directValue === "number")) return `${baseUrl}/${directValue}`;
-	for (const key of [
-		"code",
-		"uuid",
-		"slug"
-	]) {
-		const candidate = entityValue[key];
-		if (typeof candidate === "string" || typeof candidate === "number") return `${baseUrl}/${candidate}`;
-	}
+function buildIRI(url, value) {
+	if (value.startsWith("/")) return value;
+	return `${url}/${value}`;
 }
+/**
+* Default backend adapter for API Platform / JSON-LD + Hydra backends.
+*
+* Conventions assumed:
+* - Records carry an `@id` IRI (e.g. `/api/users/5`) as their canonical identifier.
+* - Entity fields are serialized as IRI strings in POST/PATCH bodies.
+* - Collection responses follow the `hydra:member` / `hydra:totalItems` shape.
+* - `_iri` is a synthetic alias for `@id` used internally by the engine.
+*/
+const HydraAdapter = {
+	getRowId(record, idField) {
+		const direct = record[idField];
+		if (direct !== void 0 && direct !== null) return String(direct);
+		const iri = record["@id"] ?? record["_iri"];
+		if (iri !== void 0 && iri !== null) return String(iri);
+		return String(record["id"] ?? "");
+	},
+	buildItemUrl(_baseUrl, id) {
+		return String(id);
+	},
+	serializeEntityRef(field, rawValue) {
+		if (rawValue === null || rawValue === void 0 || rawValue === "" || rawValue === -999) return;
+		if (typeof rawValue === "object") {
+			const entity = rawValue;
+			const atId = entity["@id"];
+			if (typeof atId === "string") return buildIRI(field.url ?? "", atId);
+			const idValue = entity["id"];
+			const resolvedId = idValue !== void 0 && idValue !== null ? String(idValue) : String(entity[field.valueField]);
+			return buildIRI(field.url ?? "", resolvedId);
+		}
+		return buildIRI(field.url ?? "", String(rawValue));
+	},
+	normalizeEntityValue(rawValue, field) {
+		if (typeof rawValue === "string") return field.valueField === "_iri" ? rawValue : rawValue.split("/").pop();
+		if (typeof rawValue === "object" && rawValue !== null) {
+			const entity = rawValue;
+			const atId = entity["@id"];
+			if (typeof atId === "string") return field.valueField === "_iri" ? atId : atId.split("/").pop() ?? atId;
+			const directValue = entity[field.valueField];
+			if (directValue !== void 0 && directValue !== null) return directValue;
+		}
+		return rawValue;
+	},
+	getEntityOptionKey(item, field) {
+		if (field.valueField === "_iri") return item["_iri"] ?? item["@id"] ?? item["id"];
+		return item[field.valueField] ?? item["value"] ?? item["id"] ?? item["@id"];
+	},
+	parseListResponse(response) {
+		const r = response;
+		const member = r["hydra:member"];
+		if (Array.isArray(member)) return {
+			items: member,
+			total: Number(r["hydra:totalItems"] ?? member.length)
+		};
+		if (Array.isArray(response)) return {
+			items: response,
+			total: response.length
+		};
+		return {
+			items: [],
+			total: 0
+		};
+	},
+	synthesizeEntityKey(field, entityValue) {
+		if (!field.url) return void 0;
+		const base = trimTrailingSlash(field.url);
+		const directId = entityValue["id"];
+		if (typeof directId === "string" || typeof directId === "number") return `${base}/${directId}`;
+		const directValue = entityValue[field.valueField];
+		if (field.valueField !== "_iri" && (typeof directValue === "string" || typeof directValue === "number")) return `${base}/${directValue}`;
+		for (const key of [
+			"code",
+			"uuid",
+			"slug"
+		]) {
+			const candidate = entityValue[key];
+			if (typeof candidate === "string" || typeof candidate === "number") return `${base}/${candidate}`;
+		}
+	}
+};
+//#endregion
+//#region assets/crud/form/FormDataTransform.ts
 function upsertPrependData(field, item) {
 	const existingLoadOption = field.loadOptions.find((option) => Array.isArray(option.prependData));
 	if (existingLoadOption) {
@@ -332,49 +408,37 @@ function buildEmptyRow(fields) {
 *
 * - FILE fields are stripped (uploaded separately)
 * - PASSWORD fields are blanked
-* - DATE fields are parsed into JS Date objects
+* - DATE fields remain YYYY-MM-DD strings
 * - ENTITY fields are normalized to their scalar key for select-style editors
 */
-function normalizeFormData(data, fields) {
+function normalizeFormData(data, fields, adapter = HydraAdapter) {
 	const row = { ...data };
 	fields.forEach((field) => {
 		if (field.type === "file") delete row[field.name];
 		if (field.type === "password") row[field.name] = "";
 		if (field.type === "date") {
 			const rawValue = row[field.name];
-			const type = typeof rawValue;
-			if (type === "string") row[field.name] = DateUtils.dateParser(rawValue);
-			else if (type === "object") row[field.name] = new Date(rawValue);
+			if (typeof rawValue === "string") row[field.name] = rawValue.slice(0, 10);
+			else if (rawValue instanceof Date) row[field.name] = rawValue.toLocaleDateString("en-CA", { timeZone: getCoreTimezone() });
 			else row[field.name] = null;
 		}
-		if (field.type === "entity") normalizeEntityField(row, field);
+		if (field.type === "entity") normalizeEntityField(row, field, adapter);
 	});
 	return row;
 }
-function normalizeEntityField(row, field) {
+function normalizeEntityField(row, field, adapter) {
 	const rawValue = row[field.name];
-	const type = typeof rawValue;
-	if (type === "string") {
-		const value = field.valueField === "_iri" ? rawValue : rawValue.split("/").pop();
-		row[field.name] = value;
-	}
-	if (type === "object" && row[field.name] !== null) {
-		const entityValue = { ...row[field.name] };
-		if (field.valueField === "_iri" && typeof entityValue["_iri"] !== "string" && typeof entityValue["@id"] !== "string") {
-			const synthesizedIri = synthesizeEntityIri(field, entityValue);
-			if (synthesizedIri) entityValue["_iri"] = synthesizedIri;
+	if (typeof rawValue === "object" && rawValue !== null) {
+		const entityValue = { ...rawValue };
+		if (field.valueField === "_iri") {
+			const synthesized = adapter.synthesizeEntityKey(field, entityValue);
+			if (synthesized && typeof entityValue["_iri"] !== "string" && typeof entityValue["@id"] !== "string") entityValue["_iri"] = synthesized;
 		}
 		upsertPrependData(field, entityValue);
-		const atId = entityValue["@id"];
-		if (typeof atId === "string") {
-			const value = field.valueField === "_iri" ? atId : atId.split("/").pop() ?? atId;
-			row[field.name] = value;
-		} else {
-			const directValue = entityValue[field.valueField];
-			if (directValue !== void 0 && directValue !== null) row[field.name] = directValue;
-		}
 	}
-	if (row[field.name] === null || row[field.name] === void 0) row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
+	const normalized = adapter.normalizeEntityValue(rawValue, field);
+	row[field.name] = normalized ?? null;
+	if (row[field.name] === null || row[field.name] === void 0) row[field.name] = field.loadOptions[0]?.prependData?.[0] ?? null;
 }
 //#endregion
 //#region assets/crud/form/FormLayoutModel.ts
@@ -419,18 +483,14 @@ function buildFormLayoutModel(fields, formLayout, overflowLabel) {
 }
 //#endregion
 //#region assets/crud/form/serializeFormData.ts
-function getIRI(url, value) {
-	if (value.startsWith("/")) return value;
-	return `${url}/${value}`;
-}
 /**
 * Pure serialization of form data before HTTP submission.
 *
 * Transforms raw form field values into the shape expected by the API:
-* - Applies uploaded file IRIs
+* - Applies uploaded file references
 * - Evaluates computed fields
-* - Resolves ENTITY fields to Hydra IRIs
-* - Formats DATE fields as UTC ISO-8601 (from Lima timezone)
+* - Resolves ENTITY fields via the BackendAdapter (default: Hydra IRIs)
+* - Formats DATE fields as YYYY-MM-DD business dates, with no timezone conversion
 * - Coerces numeric fields
 * - Strips NONE/FILE fields as appropriate
 *
@@ -446,9 +506,10 @@ function serializeFormFields(rawData, fields, ctx) {
 		const computedValue = field.computed(formData);
 		if (computedValue !== void 0) formData[field.name] = computedValue;
 	});
+	const adapter = ctx.adapter ?? HydraAdapter;
 	fields.forEach((field) => {
 		if (field.type === "entity" || field.type === "tags") {
-			serializeEntityField(formData, field);
+			serializeEntityField(formData, field, adapter);
 			return;
 		}
 		if (field.type === "file") {
@@ -468,36 +529,19 @@ function serializeFormFields(rawData, fields, ctx) {
 	});
 	return formData;
 }
-function serializeEntityField(formData, field) {
+function serializeEntityField(formData, field, adapter) {
 	const val = formData[field.name];
-	const type = typeof val;
-	if (val === null || val === void 0 || val === "" || val === -999) {
-		delete formData[field.name];
+	if (field.multiple) {
+		if (Array.isArray(val)) formData[field.name] = val.map((item) => adapter.serializeEntityRef(field, item));
+		else if (val !== null && val !== void 0 && val !== "") {
+			const serialized = adapter.serializeEntityRef(field, val);
+			formData[field.name] = serialized !== void 0 ? [serialized] : [];
+		} else delete formData[field.name];
 		return;
 	}
-	if (type === "object" && val !== null && !field.multiple) {
-		const entityValue = val;
-		const atId = entityValue["@id"];
-		if (typeof atId === "string") formData[field.name] = getIRI(field.url ?? "", atId);
-		else {
-			const idValue = entityValue["id"];
-			const resolvedId = idValue !== void 0 && idValue !== null ? String(idValue) : String(entityValue[field.valueField]);
-			formData[field.name] = getIRI(field.url ?? "", resolvedId);
-		}
-	}
-	if (type === "string" || type === "number") formData[field.name] = getIRI(field.url ?? "", val.toString());
-	if (field.multiple) if (Array.isArray(val)) formData[field.name] = val.map((item) => {
-		if (typeof item === "object") {
-			const record = item;
-			const atId = record["@id"];
-			if (typeof atId === "string") return getIRI(field.url ?? "", atId);
-			const idValue = record["id"];
-			const resolvedId = idValue !== void 0 && idValue !== null ? String(idValue) : String(record[field.valueField]);
-			return getIRI(field.url ?? "", resolvedId);
-		}
-		return getIRI(field.url ?? "", String(item));
-	});
-	else formData[field.name] = [getIRI(field.url ?? "", val.toString())];
+	const serialized = adapter.serializeEntityRef(field, val);
+	if (serialized === void 0) delete formData[field.name];
+	else formData[field.name] = serialized;
 }
 function serializeFileField(formData, field, ctx) {
 	if (ctx.format === "multipart" && ctx.getFieldValue) {
@@ -510,12 +554,19 @@ function serializeFileField(formData, field, ctx) {
 }
 function serializeDateField(formData, field) {
 	const val = formData[field.name];
-	if (val === null || val === void 0) {
+	if (val === null || val === void 0 || val === "") {
 		delete formData[field.name];
 		return;
 	}
-	const date = new Date(val);
-	formData[field.name] = DateTime.fromJSDate(date, { zone: getCoreTimezone() }).toUTC().toISO();
+	if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+		formData[field.name] = val;
+		return;
+	}
+	if (val instanceof Date) {
+		formData[field.name] = new Intl.DateTimeFormat("en-CA", { timeZone: getCoreTimezone() }).format(val);
+		return;
+	}
+	formData[field.name] = String(val).slice(0, 10);
 }
 function serializeNumericField(formData, field) {
 	if (field.isIdentity) return;
@@ -525,30 +576,16 @@ function serializeNumericField(formData, field) {
 	} else formData[field.name] = Number(formData[field.name]);
 }
 /**
-* Serializes detail grid rows (entity IRIs, numeric coercion, identity cleanup).
+* Serializes detail grid rows (entity refs, numeric coercion, identity cleanup).
 * Pure function — operates on an array of row records.
 */
-function serializeDetailRows(rows, detailFields, detailIdField, isEditMode) {
+function serializeDetailRows(rows, detailFields, detailIdField, isEditMode, adapter = HydraAdapter) {
 	const details = JSON.parse(JSON.stringify(rows));
 	detailFields.forEach((field) => {
 		if (field.type === "entity") details.forEach((detail) => {
-			const currentValue = detail[field.name];
-			if (currentValue === null || currentValue === void 0 || currentValue === "" || currentValue === -999) {
-				delete detail[field.name];
-				return;
-			}
-			if (typeof currentValue === "object") {
-				const entityValue = currentValue;
-				const atId = entityValue["@id"];
-				if (typeof atId === "string") detail[field.name] = getIRI(field.url ?? "", atId);
-				else {
-					const idValue = entityValue["id"];
-					const resolvedId = idValue !== void 0 && idValue !== null ? String(idValue) : String(entityValue[field.valueField]);
-					detail[field.name] = getIRI(field.url ?? "", resolvedId);
-				}
-				return;
-			}
-			if (typeof currentValue === "string" || typeof currentValue === "number") detail[field.name] = getIRI(field.url ?? "", String(currentValue));
+			const serialized = adapter.serializeEntityRef(field, detail[field.name]);
+			if (serialized === void 0) delete detail[field.name];
+			else detail[field.name] = serialized;
 		});
 		if (field.type === "number" || field.type === "currency") details.forEach((detail) => {
 			if (field.sendAsString) {
@@ -572,6 +609,7 @@ function serializeDetailRows(rows, detailFields, detailIdField, isEditMode) {
 const useFormSubmit = (options, accessors, emit, validateFn) => {
 	const { t } = useCoreTranslation();
 	const { confirm } = useCoreRuntime();
+	const adapter = options.adapter ?? HydraAdapter;
 	const getIdField = () => options.fields.find((f) => f.isIdentity)?.name ?? "";
 	const getDetailIdField = () => options.detailFields?.find((f) => f.isIdentity)?.name ?? "";
 	/** Build multipart FormData from a plain object */
@@ -588,13 +626,14 @@ const useFormSubmit = (options, accessors, emit, validateFn) => {
 		return serializeFormFields(rawData, options.fields, {
 			uploadedFiles: accessors.getUploadedFiles(),
 			getFieldValue: accessors.getFieldValue,
-			format: options.format
+			format: options.format,
+			adapter
 		});
 	};
 	/** Append serialized detail grid rows to formData */
 	const appendDetailRows = (formData) => {
 		if (!options.detailFields) return;
-		formData[options.detailPropertyName] = serializeDetailRows(accessors.getDetailRows(), options.detailFields, getDetailIdField(), accessors.isEditMode());
+		formData[options.detailPropertyName] = serializeDetailRows(accessors.getDetailRows(), options.detailFields, getDetailIdField(), accessors.isEditMode(), adapter);
 	};
 	/** Handle the SAVE event: validate → serialize → POST or PATCH */
 	const handleSave = () => {
@@ -611,11 +650,11 @@ const useFormSubmit = (options, accessors, emit, validateFn) => {
 			if (loadingEvent) emit(loadingEvent, false);
 			options.onLoadingChange?.(false);
 		};
-		(accessors.isEditMode() ? options.httpClient.patch(`${options.url}/${id}`, payload) : options.httpClient.post(options.url, payload)).then((response) => {
+		(accessors.isEditMode() ? options.httpClient.patch(adapter.buildItemUrl(options.url, id), payload) : options.httpClient.post(options.url, payload)).then((response) => {
 			if (successEvent) emit(successEvent, response);
 			options.onSaveSuccess?.(response);
 		}).catch((err) => {
-			if (typeof err === "object" && err !== null && "status" in err && err.status === 422 && "data" in err && typeof err.data === "object" && err.data !== null && "violations" in err.data) emit(FORM_ERRORS_EVENT, err.data.violations);
+			if (typeof err === "object" && err !== null && "status" in err && err.status === 422 && "data" in err && typeof err.data === "object" && err.data !== null && "violations" in err.data) emit(options.formErrorsEvent ?? "form-errors", err.data.violations);
 			options.onSaveError?.(err);
 		}).finally(finalize);
 	};
@@ -629,7 +668,7 @@ const useFormSubmit = (options, accessors, emit, validateFn) => {
 			if (loadingEvent) emit(loadingEvent, false);
 			options.onLoadingChange?.(false);
 		};
-		options.httpClient.delete(`${options.url}/${payload.row[getIdField()]}`).then((response) => {
+		options.httpClient.delete(adapter.buildItemUrl(options.url, payload.row[getIdField()])).then((response) => {
 			if (successEvent) emit(successEvent, response);
 			options.onDeleteSuccess?.(response);
 		}).catch((err) => {
@@ -682,9 +721,61 @@ function useFormValidation({ accessors, detailFields, detailNoDataText, required
 	};
 }
 //#endregion
+//#region assets/crud/form/FormApiViolations.ts
+function normalizePath(path) {
+	return path.replace(/^children\[([^\]]+)\]\.data$/, "$1").replace(/^children\[([^\]]+)\]$/, "$1").replace(/^\[([^\]]+)\]$/, "$1").replace(/\[(\w+)\]/g, ".$1").replace(/^\./, "");
+}
+function readViolation(value) {
+	if (!value || typeof value !== "object") return null;
+	const record = value;
+	const propertyPath = typeof record["propertyPath"] === "string" ? record["propertyPath"] : void 0;
+	const message = typeof record["message"] === "string" ? record["message"] : void 0;
+	if (!propertyPath && !message) return null;
+	return {
+		propertyPath,
+		message
+	};
+}
+function mapApiViolations(violations, detailPropertyName = "items", defaultMessage = "Invalid value") {
+	const fieldErrors = {};
+	const detailErrors = {};
+	const unassigned = [];
+	if (!Array.isArray(violations)) return {
+		fieldErrors,
+		detailErrors,
+		unassigned
+	};
+	violations.forEach((item) => {
+		const violation = readViolation(item);
+		if (!violation) return;
+		const message = violation.message ?? defaultMessage;
+		const path = violation.propertyPath ? normalizePath(violation.propertyPath) : "";
+		if (!path) {
+			unassigned.push(message);
+			return;
+		}
+		const parts = path.split(".").filter(Boolean);
+		if (parts[0] === detailPropertyName && /^\d+$/.test(parts[1] ?? "") && parts[2]) {
+			const rowIndex = Number(parts[1]);
+			const fieldName = parts.slice(2).join(".");
+			detailErrors[rowIndex] = {
+				...detailErrors[rowIndex],
+				[fieldName]: message
+			};
+			return;
+		}
+		fieldErrors[path] = message;
+	});
+	return {
+		fieldErrors,
+		detailErrors,
+		unassigned
+	};
+}
+//#endregion
 //#region assets/crud/form/NativeFormView.tsx
-function createRemoteSource(field, httpClient) {
-	return new ApiPlatformRemoteDataSource({
+function createRemoteSource(field, httpClient, resourceStoreFactory) {
+	return resourceStoreFactory({
 		url: field.url ?? "",
 		idField: field.valueField,
 		byKeyUrl: field.byKeyUrl,
@@ -711,7 +802,7 @@ function fieldFilters(field) {
 	]);
 }
 function inputValue(value) {
-	if (value instanceof Date) return value.toLocaleDateString("en-CA", { timeZone: "America/Lima" });
+	if (value instanceof Date) return value.toLocaleDateString("en-CA", { timeZone: getCoreTimezone() });
 	if (typeof value === "string" || typeof value === "number") return value;
 	return value == null ? "" : String(value);
 }
@@ -725,23 +816,169 @@ function fieldSearchExpr(field) {
 function colSpan(field) {
 	return { "--native-form-col": String(field.col ?? 12) };
 }
-function NativeEntitySelect({ className, disabled, field, httpClient, id, onChange, options, readOnly, required, value }) {
+const FIELD_BUTTON_ICONS = {
+	search: "ph ph-magnifying-glass",
+	add: "ph ph-plus",
+	clear: "ph ph-x"
+};
+function resolveButtonIcon(icon) {
+	if (!icon) return "ph ph-magnifying-glass";
+	if (icon.startsWith("ph ")) return icon;
+	if (icon.startsWith("ph-")) return `ph ${icon}`;
+	return FIELD_BUTTON_ICONS[icon] ?? "ph ph-magnifying-glass";
+}
+function useLookupDropdown() {
 	const [open, setOpen] = useState(false);
 	const [draftQuery, setDraftQuery] = useState(null);
-	const [searchedItems, setSearchedItems] = useState(null);
-	const [loading, setLoading] = useState(false);
-	const [loadingMore, setLoadingMore] = useState(false);
-	const [hasMore, setHasMore] = useState(true);
 	const containerRef = useRef(null);
 	const [menuStyle, setMenuStyle] = useState({
 		position: "fixed",
 		visibility: "hidden",
 		margin: 0
 	});
+	useEffect(() => {
+		if (!open || !containerRef.current) return;
+		const observer = new IntersectionObserver(([entry]) => {
+			if (!entry.isIntersecting) setOpen(false);
+		}, { threshold: 0 });
+		observer.observe(containerRef.current);
+		return () => observer.disconnect();
+	}, [open]);
+	useLayoutEffect(() => {
+		if (!open) return;
+		const updatePosition = () => {
+			if (!containerRef.current) return;
+			const rect = containerRef.current.getBoundingClientRect();
+			if (rect.top >= window.innerHeight || rect.bottom <= 0 || rect.left >= window.innerWidth || rect.right <= 0) {
+				setOpen(false);
+				return;
+			}
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const spaceAbove = rect.top;
+			if (spaceBelow < 250 && spaceAbove > spaceBelow) setMenuStyle({
+				position: "fixed",
+				left: `${rect.left}px`,
+				width: `${rect.width}px`,
+				bottom: `${window.innerHeight - rect.top + 4}px`,
+				top: "auto",
+				margin: 0,
+				zIndex: 9999,
+				visibility: "visible"
+			});
+			else setMenuStyle({
+				position: "fixed",
+				left: `${rect.left}px`,
+				width: `${rect.width}px`,
+				top: `${rect.bottom + 4}px`,
+				bottom: "auto",
+				margin: 0,
+				zIndex: 9999,
+				visibility: "visible"
+			});
+		};
+		updatePosition();
+		window.addEventListener("resize", updatePosition);
+		window.addEventListener("scroll", updatePosition, {
+			capture: true,
+			passive: true
+		});
+		return () => {
+			window.removeEventListener("resize", updatePosition);
+			window.removeEventListener("scroll", updatePosition, { capture: true });
+		};
+	}, [open]);
+	return {
+		open,
+		setOpen,
+		draftQuery,
+		setDraftQuery,
+		containerRef,
+		menuStyle
+	};
+}
+function LookupDropdown({ children, className, containerRef, disabled, id, label, menuStyle, normalizedValue, onClear, onQueryChange, onScroll, open, query, readOnly, required, setDraftQuery, setOpen }) {
 	const blurTimer = useRef(void 0);
+	return /* @__PURE__ */ jsxs("div", {
+		ref: containerRef,
+		className: `native-form__lookup${normalizedValue !== "" ? " has-value" : ""}`,
+		children: [
+			/* @__PURE__ */ jsx("input", {
+				autoComplete: "off",
+				className,
+				disabled,
+				id,
+				readOnly,
+				required,
+				role: "combobox",
+				"aria-autocomplete": "list",
+				"aria-expanded": open,
+				value: query,
+				onBlur: () => {
+					blurTimer.current = setTimeout(() => {
+						setOpen(false);
+						setDraftQuery(null);
+					}, 120);
+				},
+				onChange: (event) => onQueryChange(event.currentTarget.value),
+				onFocus: () => {
+					clearTimeout(blurTimer.current);
+					setOpen(true);
+				}
+			}),
+			!disabled && !readOnly && normalizedValue !== "" && /* @__PURE__ */ jsx("button", {
+				type: "button",
+				className: "native-form__lookup-clear",
+				"aria-label": `Limpiar ${label}`,
+				onMouseDown: (e) => e.preventDefault(),
+				onClick: onClear,
+				children: /* @__PURE__ */ jsx("i", {
+					className: "ph ph-x",
+					"aria-hidden": "true"
+				})
+			}),
+			!disabled && !readOnly && /* @__PURE__ */ jsx("button", {
+				type: "button",
+				className: "native-form__lookup-toggle",
+				"aria-label": `Abrir ${label}`,
+				onMouseDown: (e) => e.preventDefault(),
+				onClick: () => {
+					clearTimeout(blurTimer.current);
+					setOpen((prev) => !prev);
+				},
+				children: /* @__PURE__ */ jsx("i", {
+					className: "ph ph-caret-down",
+					"aria-hidden": "true",
+					style: {
+						transition: "transform 180ms cubic-bezier(0.4, 0, 0.2, 1)",
+						transform: open ? "rotate(180deg)" : "rotate(0deg)"
+					}
+				})
+			}),
+			open && !disabled && !readOnly && createPortal(/* @__PURE__ */ jsx("div", {
+				className: "native-form__lookup-menu",
+				role: "listbox",
+				style: menuStyle,
+				onScroll,
+				onMouseDown: (e) => e.preventDefault(),
+				children
+			}), document.body)
+		]
+	});
+}
+function NativeEntitySelect({ className, disabled, field, httpClient, id, onChange, options, readOnly, required, value }) {
+	const resourceStoreFactory = useResourceStoreFactory();
+	const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
+	const [searchedItems, setSearchedItems] = useState(null);
+	const [selectedItemCache, setSelectedItemCache] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [loadingMore, setLoadingMore] = useState(false);
+	const [hasMore, setHasMore] = useState(true);
 	const normalizedValue = String(value && typeof value === "object" ? fieldKeyValue(field, value) : value ?? "");
 	const items = searchedItems ?? options;
-	const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue) ?? options.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue);
+	const objectValue = value && typeof value === "object" ? value : null;
+	const cachedSelectedItem = selectedItemCache && String(fieldKeyValue(field, selectedItemCache) ?? "") === normalizedValue ? selectedItemCache : void 0;
+	const objectSelectedItem = objectValue && String(fieldKeyValue(field, objectValue) ?? "") === normalizedValue ? objectValue : void 0;
+	const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue) ?? options.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue) ?? cachedSelectedItem ?? objectSelectedItem;
 	const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : "";
 	const query = draftQuery ?? selectedText;
 	useEffect(() => {
@@ -750,7 +987,7 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		const timer = setTimeout(() => {
 			setLoading(true);
 			setHasMore(true);
-			createRemoteSource(field, httpClient).load({
+			createRemoteSource(field, httpClient, resourceStoreFactory).load({
 				take: 50,
 				skip: 0,
 				searchExpr: fieldSearchExpr(field),
@@ -768,14 +1005,15 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		field,
 		httpClient,
 		open,
-		query
+		query,
+		resourceStoreFactory
 	]);
 	const loadMore = useCallback(() => {
 		if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
 		setLoadingMore(true);
 		const searchValue = query.trim();
 		const currentCount = searchedItems ? searchedItems.length : 0;
-		createRemoteSource(field, httpClient).load({
+		createRemoteSource(field, httpClient, resourceStoreFactory).load({
 			take: 50,
 			skip: currentCount,
 			searchExpr: fieldSearchExpr(field),
@@ -785,19 +1023,15 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 				const nextItems = [...prev ?? [], ...result.data];
 				const seen = /* @__PURE__ */ new Set();
 				return nextItems.filter((item) => {
-					const key = fieldKeyValue(field, item);
-					if (seen.has(key)) return false;
-					seen.add(key);
+					const k = fieldKeyValue(field, item);
+					if (seen.has(k)) return false;
+					seen.add(k);
 					return true;
 				});
 			});
-			const nextTotalLoaded = currentCount + result.data.length;
-			setHasMore(result.data.length === 50 && (result.totalCount === void 0 || nextTotalLoaded < result.totalCount));
-		}).catch(() => {
-			setHasMore(false);
-		}).finally(() => {
-			setLoadingMore(false);
-		});
+			const nextTotal = currentCount + result.data.length;
+			setHasMore(result.data.length === 50 && (result.totalCount === void 0 || nextTotal < result.totalCount));
+		}).catch(() => setHasMore(false)).finally(() => setLoadingMore(false));
 	}, [
 		field,
 		httpClient,
@@ -805,331 +1039,124 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		loadingMore,
 		hasMore,
 		query,
+		resourceStoreFactory,
 		searchedItems
 	]);
 	const handleScroll = (event) => {
-		const target = event.currentTarget;
-		if (target.scrollHeight - target.scrollTop <= target.clientHeight + 20) loadMore();
+		const t = event.currentTarget;
+		if (t.scrollHeight - t.scrollTop <= t.clientHeight + 20) loadMore();
 	};
-	useEffect(() => {
-		if (!open || !containerRef.current) return;
-		const observer = new IntersectionObserver(([entry]) => {
-			if (!entry.isIntersecting) setOpen(false);
-		}, { threshold: 0 });
-		observer.observe(containerRef.current);
-		return () => observer.disconnect();
-	}, [open]);
-	useLayoutEffect(() => {
-		if (!open) return;
-		const updatePosition = () => {
-			if (!containerRef.current) return;
-			const rect = containerRef.current.getBoundingClientRect();
-			if (!(rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0)) {
-				setOpen(false);
-				return;
-			}
-			const spaceBelow = window.innerHeight - rect.bottom;
-			const spaceAbove = rect.top;
-			if (spaceBelow < 250 && spaceAbove > spaceBelow) setMenuStyle({
-				position: "fixed",
-				left: `${rect.left}px`,
-				width: `${rect.width}px`,
-				bottom: `${window.innerHeight - rect.top + 4}px`,
-				top: "auto",
-				margin: 0,
-				zIndex: 9999,
-				visibility: "visible"
-			});
-			else setMenuStyle({
-				position: "fixed",
-				left: `${rect.left}px`,
-				width: `${rect.width}px`,
-				top: `${rect.bottom + 4}px`,
-				bottom: "auto",
-				margin: 0,
-				zIndex: 9999,
-				visibility: "visible"
-			});
-		};
-		updatePosition();
-		window.addEventListener("resize", updatePosition);
-		window.addEventListener("scroll", updatePosition, {
-			capture: true,
-			passive: true
-		});
-		return () => {
-			window.removeEventListener("resize", updatePosition);
-			window.removeEventListener("scroll", updatePosition, { capture: true });
-		};
-	}, [open]);
 	const selectItem = (item) => {
-		onChange(fieldKeyValue(field, item) ?? null);
+		setSelectedItemCache(item);
+		onChange(fieldKeyValue(field, item) ?? null, item);
 		setDraftQuery(fieldTextValue(field, item));
 		setOpen(false);
 	};
-	const clearSelection = () => {
-		onChange(null);
-		setDraftQuery("");
-		setOpen(true);
-	};
-	return /* @__PURE__ */ jsxs("div", {
-		ref: containerRef,
-		className: `native-form__lookup${normalizedValue !== "" ? " has-value" : ""}`,
+	return /* @__PURE__ */ jsxs(LookupDropdown, {
+		className,
+		containerRef,
+		disabled,
+		id,
+		label: field.label,
+		menuStyle,
+		normalizedValue,
+		onClear: () => {
+			setSelectedItemCache(null);
+			onChange(null, null);
+			setDraftQuery("");
+			setOpen(true);
+		},
+		onQueryChange: (v) => {
+			setDraftQuery(v);
+			setOpen(true);
+			if (v === "") onChange(null, null);
+		},
+		onScroll: handleScroll,
+		open,
+		query,
+		readOnly,
+		required,
+		setDraftQuery,
+		setOpen,
 		children: [
-			/* @__PURE__ */ jsx("input", {
-				autoComplete: "off",
-				className,
-				disabled,
-				id,
-				readOnly,
-				required,
-				role: "combobox",
-				"aria-autocomplete": "list",
-				"aria-expanded": open,
-				value: query,
-				onBlur: () => {
-					blurTimer.current = setTimeout(() => {
-						setOpen(false);
-						setDraftQuery(null);
-						setSearchedItems(null);
-					}, 120);
-				},
-				onChange: (event) => {
-					setDraftQuery(event.currentTarget.value);
-					setOpen(true);
-					if (event.currentTarget.value === "") onChange(null);
-				},
-				onFocus: () => {
-					if (blurTimer.current) clearTimeout(blurTimer.current);
-					setOpen(true);
-				}
+			loading && items.length === 0 && /* @__PURE__ */ jsx("div", {
+				className: "native-form__lookup-status",
+				children: "Buscando..."
 			}),
-			!disabled && !readOnly && normalizedValue !== "" && /* @__PURE__ */ jsx("button", {
-				type: "button",
-				className: "native-form__lookup-clear",
-				"aria-label": `Limpiar ${field.label}`,
-				onMouseDown: (event) => event.preventDefault(),
-				onClick: clearSelection,
-				children: /* @__PURE__ */ jsx("i", {
-					className: "ph ph-x",
-					"aria-hidden": "true"
-				})
+			!loading && items.length === 0 && /* @__PURE__ */ jsx("div", {
+				className: "native-form__lookup-status",
+				children: "Sin resultados"
 			}),
-			!disabled && !readOnly && /* @__PURE__ */ jsx("button", {
-				type: "button",
-				className: "native-form__lookup-toggle",
-				"aria-label": `Abrir ${field.label}`,
-				onMouseDown: (event) => event.preventDefault(),
-				onClick: () => {
-					if (blurTimer.current) clearTimeout(blurTimer.current);
-					setOpen((prev) => !prev);
-				},
-				children: /* @__PURE__ */ jsx("i", {
-					className: "ph ph-caret-down",
-					"aria-hidden": "true",
-					style: {
-						transition: "transform 180ms cubic-bezier(0.4, 0, 0.2, 1)",
-						transform: open ? "rotate(180deg)" : "rotate(0deg)"
-					}
-				})
+			!loading && items.map((item) => {
+				const itemValue = fieldKeyValue(field, item);
+				return /* @__PURE__ */ jsx("button", {
+					type: "button",
+					role: "option",
+					"aria-selected": String(itemValue ?? "") === normalizedValue,
+					className: "native-form__lookup-option",
+					onMouseDown: (e) => e.preventDefault(),
+					onClick: () => selectItem(item),
+					children: fieldTextValue(field, item)
+				}, String(itemValue));
 			}),
-			open && !disabled && !readOnly && createPortal(/* @__PURE__ */ jsxs("div", {
-				className: "native-form__lookup-menu",
-				role: "listbox",
-				style: menuStyle,
-				onScroll: handleScroll,
-				onMouseDown: (event) => event.preventDefault(),
-				children: [
-					loading && items.length === 0 && /* @__PURE__ */ jsx("div", {
-						className: "native-form__lookup-status",
-						children: "Buscando..."
-					}),
-					!loading && items.length === 0 && /* @__PURE__ */ jsx("div", {
-						className: "native-form__lookup-status",
-						children: "Sin resultados"
-					}),
-					!loading && items.map((item) => {
-						const itemValue = fieldKeyValue(field, item);
-						const itemText = fieldTextValue(field, item);
-						return /* @__PURE__ */ jsx("button", {
-							type: "button",
-							role: "option",
-							"aria-selected": String(itemValue ?? "") === normalizedValue,
-							className: "native-form__lookup-option",
-							onMouseDown: (event) => event.preventDefault(),
-							onClick: () => selectItem(item),
-							children: itemText
-						}, String(itemValue));
-					}),
-					loadingMore && /* @__PURE__ */ jsx("div", {
-						className: "native-form__lookup-status",
-						children: "Cargando más..."
-					})
-				]
-			}), document.body)
+			loadingMore && /* @__PURE__ */ jsx("div", {
+				className: "native-form__lookup-status",
+				children: "Cargando más..."
+			})
 		]
 	});
 }
 function NativeEnumSelect({ className, disabled, field, id, onChange, readOnly, required, value }) {
-	const [open, setOpen] = useState(false);
-	const [draftQuery, setDraftQuery] = useState(null);
-	const containerRef = useRef(null);
-	const blurTimer = useRef(void 0);
-	const [menuStyle, setMenuStyle] = useState({
-		position: "fixed",
-		visibility: "hidden",
-		margin: 0
-	});
+	const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
 	const allItems = field.data ?? [];
 	const normalizedValue = String(value ?? "");
 	const selectedItem = allItems.find((item) => String(item["value"] ?? "") === normalizedValue);
 	const selectedText = selectedItem ? String(selectedItem["text"] ?? selectedItem["value"] ?? "") : "";
 	const query = draftQuery ?? selectedText;
 	const visibleItems = draftQuery != null && draftQuery !== "" ? allItems.filter((item) => String(item["text"] ?? item["value"] ?? "").toLowerCase().includes(draftQuery.toLowerCase())) : allItems;
-	useEffect(() => {
-		if (!open || !containerRef.current) return;
-		const observer = new IntersectionObserver(([entry]) => {
-			if (!entry.isIntersecting) setOpen(false);
-		}, { threshold: 0 });
-		observer.observe(containerRef.current);
-		return () => observer.disconnect();
-	}, [open]);
-	useLayoutEffect(() => {
-		if (!open) return;
-		const updatePosition = () => {
-			if (!containerRef.current) return;
-			const rect = containerRef.current.getBoundingClientRect();
-			if (!(rect.top < window.innerHeight && rect.bottom > 0)) {
-				setOpen(false);
-				return;
-			}
-			const spaceBelow = window.innerHeight - rect.bottom;
-			const spaceAbove = rect.top;
-			if (spaceBelow < 250 && spaceAbove > spaceBelow) setMenuStyle({
-				position: "fixed",
-				left: `${rect.left}px`,
-				width: `${rect.width}px`,
-				bottom: `${window.innerHeight - rect.top + 4}px`,
-				top: "auto",
-				margin: 0,
-				zIndex: 9999,
-				visibility: "visible"
-			});
-			else setMenuStyle({
-				position: "fixed",
-				left: `${rect.left}px`,
-				width: `${rect.width}px`,
-				top: `${rect.bottom + 4}px`,
-				bottom: "auto",
-				margin: 0,
-				zIndex: 9999,
-				visibility: "visible"
-			});
-		};
-		updatePosition();
-		window.addEventListener("resize", updatePosition);
-		window.addEventListener("scroll", updatePosition, {
-			capture: true,
-			passive: true
-		});
-		return () => {
-			window.removeEventListener("resize", updatePosition);
-			window.removeEventListener("scroll", updatePosition, { capture: true });
-		};
-	}, [open]);
-	const selectItem = (item) => {
-		onChange(item["value"] ?? null);
-		setDraftQuery(String(item["text"] ?? item["value"] ?? ""));
-		setOpen(false);
-	};
-	const clearSelection = () => {
-		onChange(null);
-		setDraftQuery("");
-		setOpen(true);
-	};
-	return /* @__PURE__ */ jsxs("div", {
-		ref: containerRef,
-		className: `native-form__lookup${normalizedValue !== "" ? " has-value" : ""}`,
-		children: [
-			/* @__PURE__ */ jsx("input", {
-				autoComplete: "off",
-				className,
-				disabled,
-				id,
-				readOnly,
-				required,
-				role: "combobox",
-				"aria-autocomplete": "list",
-				"aria-expanded": open,
-				value: query,
-				onBlur: () => {
-					blurTimer.current = setTimeout(() => {
-						setOpen(false);
-						setDraftQuery(null);
-					}, 120);
-				},
-				onChange: (event) => {
-					setDraftQuery(event.currentTarget.value);
-					setOpen(true);
-					if (event.currentTarget.value === "") onChange(null);
-				},
-				onFocus: () => {
-					if (blurTimer.current) clearTimeout(blurTimer.current);
-					setOpen(true);
-				}
-			}),
-			!disabled && !readOnly && normalizedValue !== "" && /* @__PURE__ */ jsx("button", {
+	return /* @__PURE__ */ jsxs(LookupDropdown, {
+		className,
+		containerRef,
+		disabled,
+		id,
+		label: field.label,
+		menuStyle,
+		normalizedValue,
+		onClear: () => {
+			onChange(null);
+			setDraftQuery("");
+			setOpen(true);
+		},
+		onQueryChange: (v) => {
+			setDraftQuery(v);
+			setOpen(true);
+			if (v === "") onChange(null);
+		},
+		open,
+		query,
+		readOnly,
+		required,
+		setDraftQuery,
+		setOpen,
+		children: [visibleItems.length === 0 && /* @__PURE__ */ jsx("div", {
+			className: "native-form__lookup-status",
+			children: "Sin resultados"
+		}), visibleItems.map((item) => {
+			const itemValue = String(item["value"] ?? "");
+			return /* @__PURE__ */ jsx("button", {
 				type: "button",
-				className: "native-form__lookup-clear",
-				"aria-label": `Limpiar ${field.label}`,
-				onMouseDown: (event) => event.preventDefault(),
-				onClick: clearSelection,
-				children: /* @__PURE__ */ jsx("i", {
-					className: "ph ph-x",
-					"aria-hidden": "true"
-				})
-			}),
-			!disabled && !readOnly && /* @__PURE__ */ jsx("button", {
-				type: "button",
-				className: "native-form__lookup-toggle",
-				"aria-label": `Abrir ${field.label}`,
-				onMouseDown: (event) => event.preventDefault(),
+				role: "option",
+				"aria-selected": itemValue === normalizedValue,
+				className: "native-form__lookup-option",
+				onMouseDown: (e) => e.preventDefault(),
 				onClick: () => {
-					if (blurTimer.current) clearTimeout(blurTimer.current);
-					setOpen((prev) => !prev);
+					onChange(item["value"] ?? null);
+					setDraftQuery(String(item["text"] ?? item["value"] ?? ""));
+					setOpen(false);
 				},
-				children: /* @__PURE__ */ jsx("i", {
-					className: "ph ph-caret-down",
-					"aria-hidden": "true",
-					style: {
-						transition: "transform 180ms cubic-bezier(0.4, 0, 0.2, 1)",
-						transform: open ? "rotate(180deg)" : "rotate(0deg)"
-					}
-				})
-			}),
-			open && !disabled && !readOnly && createPortal(/* @__PURE__ */ jsxs("div", {
-				className: "native-form__lookup-menu",
-				role: "listbox",
-				style: menuStyle,
-				onMouseDown: (event) => event.preventDefault(),
-				children: [visibleItems.length === 0 && /* @__PURE__ */ jsx("div", {
-					className: "native-form__lookup-status",
-					children: "Sin resultados"
-				}), visibleItems.map((item) => {
-					const itemValue = String(item["value"] ?? "");
-					const itemText = String(item["text"] ?? item["value"] ?? "");
-					return /* @__PURE__ */ jsx("button", {
-						type: "button",
-						role: "option",
-						"aria-selected": itemValue === normalizedValue,
-						className: "native-form__lookup-option",
-						onMouseDown: (event) => event.preventDefault(),
-						onClick: () => selectItem(item),
-						children: itemText
-					}, itemValue);
-				})]
-			}), document.body)
-		]
+				children: String(item["text"] ?? item["value"] ?? "")
+			}, itemValue);
+		})]
 	});
 }
 function validateField(field, value, formData) {
@@ -1160,10 +1187,13 @@ function validateField(field, value, formData) {
 	}
 	return null;
 }
-function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdating = true, detailFields, httpClient, onRowsChange, onRowsMutated, remoteOptions, rows }) {
+function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdating = true, detailFields, httpClient, detailErrors = {}, onClearCellError, onRowsChange, onRowsMutated, remoteOptions, rows }) {
 	const { t } = useCoreTranslation();
 	const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
+	const rowKeysRef = useRef(rows.map(() => crypto.randomUUID()));
+	if (rowKeysRef.current.length !== rows.length) rowKeysRef.current = rows.map(() => crypto.randomUUID());
 	const updateCell = async (rowIndex, field, value) => {
+		onClearCellError?.(rowIndex, field.name);
 		let nextRow = {
 			...rows[rowIndex],
 			[field.name]: value
@@ -1182,15 +1212,18 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 		onRowsMutated();
 	};
 	const addRow = () => {
+		rowKeysRef.current.push(crypto.randomUUID());
 		onRowsChange([...rows, buildEmptyRow(detailFields)]);
 		onRowsMutated();
 	};
 	const removeRow = (rowIndex) => {
+		rowKeysRef.current.splice(rowIndex, 1);
 		onRowsChange(rows.filter((_, index) => index !== rowIndex));
 		onRowsMutated();
 	};
 	const renderDetailControl = (row, rowIndex, field) => {
 		const value = row[field.name];
+		const errorClass = detailErrors[rowIndex]?.[field.name] ? " is-error" : "";
 		if (field.formatter && field.type === "none") return field.formatter({
 			value,
 			data: row,
@@ -1198,7 +1231,7 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 			columnIndex: 0
 		});
 		if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
-			className: "native-form__control",
+			className: `native-form__control${errorClass}`,
 			disabled: !allowUpdating || field.disabled,
 			field,
 			httpClient,
@@ -1207,14 +1240,14 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 			onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
 		});
 		if (field.type === "select" || field.type === "enum") return /* @__PURE__ */ jsx(NativeEnumSelect, {
-			className: "native-form__control",
+			className: `native-form__control${errorClass}`,
 			disabled: !allowUpdating || field.disabled,
 			field,
 			value,
 			onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
 		});
 		return /* @__PURE__ */ jsx("input", {
-			className: "native-form__control",
+			className: `native-form__control${errorClass}`,
 			value: inputValue(value),
 			readOnly: !allowUpdating || field.readonly,
 			disabled: field.disabled,
@@ -1247,15 +1280,24 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 					colSpan: visibleFields.length + (allowDeleting ? 1 : 0),
 					className: "native-form__detail-empty",
 					children: t("form.detailEmpty")
-				}) }), rows.map((row, rowIndex) => /* @__PURE__ */ jsxs("tr", { children: [visibleFields.map((field) => /* @__PURE__ */ jsx("td", { children: renderDetailControl(row, rowIndex, field) }, field.name)), allowDeleting && /* @__PURE__ */ jsx("td", { children: /* @__PURE__ */ jsx("button", {
-					type: "button",
-					className: "app-icon-button",
-					onClick: () => removeRow(rowIndex),
-					children: /* @__PURE__ */ jsx("i", {
-						className: "ph ph-trash",
-						"aria-hidden": "true"
-					})
-				}) })] }, rowIndex))] })]
+				}) }), rows.map((row, rowIndex) => {
+					const rowKey = rowKeysRef.current[rowIndex];
+					return /* @__PURE__ */ jsxs("tr", { children: [visibleFields.map((field) => /* @__PURE__ */ jsxs("td", { children: [renderDetailControl(row, rowIndex, field), detailErrors[rowIndex]?.[field.name] && /* @__PURE__ */ jsxs("span", {
+						className: "native-form__error",
+						children: [/* @__PURE__ */ jsx("i", {
+							className: "ph ph-warning-circle",
+							"aria-hidden": "true"
+						}), detailErrors[rowIndex][field.name]]
+					})] }, field.name)), allowDeleting && /* @__PURE__ */ jsx("td", { children: /* @__PURE__ */ jsx("button", {
+						type: "button",
+						className: "app-icon-button",
+						onClick: () => removeRow(rowIndex),
+						children: /* @__PURE__ */ jsx("i", {
+							className: "ph ph-trash",
+							"aria-hidden": "true"
+						})
+					}) })] }, rowKey);
+				})] })]
 			})
 		})]
 	});
@@ -1264,7 +1306,9 @@ const NativeFormView = forwardRef((options, ref) => {
 	const { t } = useCoreTranslation();
 	const { notify } = useCoreRuntime();
 	const httpClient = useCoreHttpClient();
+	const resourceStoreFactory = useResourceStoreFactory();
 	const [on, emit] = useEvents();
+	const scopedFormErrorsEvent = `${FORM_ERRORS_EVENT}:${useId()}`;
 	const isEdit = useRef(false);
 	const uploadedFiles = useRef([]);
 	const [formData, setFormData] = useState(() => buildEmptyRow(options.fields));
@@ -1273,6 +1317,7 @@ const NativeFormView = forwardRef((options, ref) => {
 	const detailRowsRef = useRef(detailRows);
 	const [fieldState, setFieldState] = useState({});
 	const [errors, setErrors] = useState({});
+	const [detailErrors, setDetailErrors] = useState({});
 	const [remoteOptions, setRemoteOptions] = useState({});
 	const [activeTab, setActiveTab] = useState(0);
 	const fields = options.fields;
@@ -1312,6 +1357,18 @@ const NativeFormView = forwardRef((options, ref) => {
 		onFieldDataChanged?.(nextData);
 		(field?.onChange)?.(value);
 	}, [fields, onFieldDataChanged]);
+	const clearDetailCellError = useCallback((rowIndex, fieldName) => {
+		setDetailErrors((current) => {
+			const rowErrors = current[rowIndex];
+			if (!rowErrors?.[fieldName]) return current;
+			const nextRowErrors = { ...rowErrors };
+			delete nextRowErrors[fieldName];
+			const next = { ...current };
+			if (Object.keys(nextRowErrors).length === 0) delete next[rowIndex];
+			else next[rowIndex] = nextRowErrors;
+			return next;
+		});
+	}, []);
 	useEffect(() => {
 		formDataRef.current = formData;
 	}, [formData]);
@@ -1328,7 +1385,7 @@ const NativeFormView = forwardRef((options, ref) => {
 				}));
 				return;
 			}
-			createRemoteSource(field, httpClient).load({ take: 50 }).then((result) => {
+			createRemoteSource(field, httpClient, resourceStoreFactory).load({ take: 50 }).then((result) => {
 				setRemoteOptions((current) => ({
 					...current,
 					[field.name]: result.data
@@ -1344,6 +1401,7 @@ const NativeFormView = forwardRef((options, ref) => {
 	}, [
 		httpClient,
 		optionFields,
+		resourceStoreFactory,
 		setFieldValue
 	]);
 	useEffect(() => {
@@ -1372,6 +1430,7 @@ const NativeFormView = forwardRef((options, ref) => {
 					if (error) nextErrors[field.name] = error;
 				});
 				setErrors(nextErrors);
+				setDetailErrors({});
 				return Object.keys(nextErrors).length === 0;
 			}, [fieldState, options.fields])
 		},
@@ -1395,17 +1454,25 @@ const NativeFormView = forwardRef((options, ref) => {
 		detailPropertyName,
 		format: options.format,
 		events: options.events,
+		formErrorsEvent: scopedFormErrorsEvent,
 		httpClient,
+		adapter: options.adapter,
 		onSaveSuccess: options.onSaveSuccess,
 		onSaveError: options.onSaveError,
 		onDeleteSuccess: options.onDeleteSuccess,
 		onDeleteError: options.onDeleteError,
 		onLoadingChange: options.onLoadingChange
 	}, submitAccessors, emit, validate);
+	const handleSaveRef = useRef(handleSave);
+	handleSaveRef.current = handleSave;
+	const handleDeleteRef = useRef(handleDelete);
+	handleDeleteRef.current = handleDelete;
 	const applyAddPayload = useCallback((payload) => {
 		uploadedFiles.current = [];
+		setErrors({});
+		setDetailErrors({});
 		setNextDetailRows([]);
-		setNextFormData(payload ? normalizeFormData(payload, options.fields) : buildEmptyRow(options.fields));
+		setNextFormData(payload ? normalizeFormData(payload, options.fields, options.adapter) : buildEmptyRow(options.fields));
 		if (payload && Array.isArray(payload[detailPropertyName])) setNextDetailRows(payload[detailPropertyName]);
 		isEdit.current = false;
 	}, [
@@ -1415,20 +1482,23 @@ const NativeFormView = forwardRef((options, ref) => {
 		setNextFormData
 	]);
 	useEffect(() => {
-		on(FORM_ERRORS_EVENT, (formErrors) => {
+		const subs = [on(scopedFormErrorsEvent, (formErrors) => {
+			const mapped = mapApiViolations(formErrors, detailPropertyName, t("validation.defaultError"));
 			notify(t("form.validationError"), "error");
 			setErrors((current) => {
-				const next = { ...current };
-				formErrors.forEach((error) => {
-					next[error.propertyPath] = error.message;
-				});
-				return next;
+				return {
+					...current,
+					...mapped.fieldErrors
+				};
 			});
-		});
-		if (options.events?.ADD) on(options.events.ADD, (payload) => applyAddPayload(payload));
-		if (options.events?.EDIT) on(options.events.EDIT, (payload) => {
+			setDetailErrors(mapped.detailErrors);
+		})];
+		if (options.events?.ADD) subs.push(on(options.events.ADD, (payload) => applyAddPayload(payload)));
+		if (options.events?.EDIT) subs.push(on(options.events.EDIT, (payload) => {
 			const row = normalizeFormData(payload.row, options.fields);
 			uploadedFiles.current = [];
+			setErrors({});
+			setDetailErrors({});
 			setNextFormData(row);
 			isEdit.current = true;
 			const detailId = row[options.fields.find((field) => field.isIdentity)?.name ?? ""];
@@ -1436,10 +1506,11 @@ const NativeFormView = forwardRef((options, ref) => {
 			if (!detailUrl) return;
 			emit(FORM_EVENTS.LOADING, true);
 			httpClient.get(detailUrl).then((response) => setNextDetailRows(response.data)).finally(() => emit(FORM_EVENTS.LOADING, false));
-		});
-		if (options.events?.DELETE) on(options.events.DELETE, (payload) => handleDelete(payload));
-		if (options.events?.SAVE) on(options.events.SAVE, () => handleSave());
-	}, []);
+		}));
+		if (options.events?.DELETE) subs.push(on(options.events.DELETE, (payload) => handleDeleteRef.current(payload)));
+		if (options.events?.SAVE) subs.push(on(options.events.SAVE, () => handleSaveRef.current()));
+		return () => subs.forEach((sub) => sub.unsubscribe());
+	}, [scopedFormErrorsEvent]);
 	useEffect(() => {
 		if (computedFieldNames.length === 0 || !options.computedValues) return;
 		let changed = false;
@@ -1586,7 +1657,13 @@ const NativeFormView = forwardRef((options, ref) => {
 				readOnly,
 				required: field.required,
 				value,
-				onChange: (nextValue) => setFieldValue(field.name, nextValue)
+				onChange: (nextValue, item) => {
+					setFieldValue(field.name, nextValue);
+					field.onSelect?.({
+						value: nextValue,
+						itemData: item ?? void 0
+					});
+				}
 			});
 		} else if (field.type === "enum" || field.type === "select") control = /* @__PURE__ */ jsx(NativeEnumSelect, {
 			className: `native-form__control${errorClass}`,
@@ -1628,12 +1705,41 @@ const NativeFormView = forwardRef((options, ref) => {
 		});
 		else {
 			const type = field.type === "number" || field.type === "currency" ? "number" : field.type === "date" ? "date" : field.type === "datetime" ? "datetime-local" : field.type === "password" ? "password" : "text";
-			control = /* @__PURE__ */ jsx("input", {
+			const inputControl = /* @__PURE__ */ jsx("input", {
 				...commonProps,
 				type,
 				value: inputValue(value),
 				onChange: (event) => setFieldValue(field.name, event.target.value)
 			});
+			const fieldButtons = Array.isArray(field.buttons) ? field.buttons : [];
+			if (fieldButtons.length > 0) {
+				const buttonFormApi = {
+					getFieldValue: (name) => formDataRef.current[name],
+					setFieldValue
+				};
+				control = /* @__PURE__ */ jsxs("div", {
+					className: "native-form__input-group",
+					children: [inputControl, /* @__PURE__ */ jsx("div", {
+						className: "native-form__input-actions",
+						children: fieldButtons.map((button, index) => {
+							const buttonOptions = button.options ?? {};
+							const buttonLabel = button.name === "search" ? t("form.searchButton") : String(button.name ?? t("form.actionButton"));
+							return /* @__PURE__ */ jsx("button", {
+								type: "button",
+								className: "native-form__input-button",
+								disabled: disabled || readOnly,
+								"aria-label": buttonLabel,
+								title: buttonLabel,
+								onClick: (event) => buttonOptions.onClick?.(event, buttonFormApi),
+								children: /* @__PURE__ */ jsx("i", {
+									className: resolveButtonIcon(buttonOptions.icon),
+									"aria-hidden": "true"
+								})
+							}, String(button.name ?? index));
+						})
+					})]
+				});
+			} else control = inputControl;
 		}
 		return /* @__PURE__ */ jsxs("div", {
 			className: "native-form__field",
@@ -1695,7 +1801,9 @@ const NativeFormView = forwardRef((options, ref) => {
 		allowDeleting: options.allowDeleting,
 		allowUpdating: options.allowUpdating,
 		detailFields: options.detailFields,
+		detailErrors,
 		httpClient,
+		onClearCellError: clearDetailCellError,
 		onRowsMutated: notifyDetailRowsMutated,
 		remoteOptions,
 		rows: detailRows,
@@ -1735,20 +1843,40 @@ const PAGE_SIZE_OPTIONS = [
 function getIdField(fields) {
 	return fields.find((field) => field.isIdentity)?.name ?? "id";
 }
-function getVisibleFields(options) {
-	return options.fields.filter((field) => field.visible && !field.hidden).filter((field) => options.visibleColumns == null || options.visibleColumns.includes(field.name)).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
-}
-function getPrimitiveDisplay(value) {
+function getPrimitiveDisplay(value, yesLabel = "Yes", noLabel = "No") {
 	if (value === null || value === void 0) return "";
-	if (value instanceof Date) return value.toLocaleDateString("es-PE", { timeZone: "America/Lima" });
-	if (typeof value === "boolean") return value ? "Si" : "No";
+	if (value instanceof Date) return value.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
+	if (typeof value === "boolean") return value ? yesLabel : noLabel;
 	if (typeof value === "object") return "";
 	return String(value);
 }
-function getEntityDisplayValue(field, value) {
+function getDateDisplay(value) {
+	if (!value) return "";
+	const d = value instanceof Date ? value : new Date(String(value));
+	if (isNaN(d.getTime())) return String(value);
+	return d.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
+}
+function getDateTimeDisplay(value) {
+	if (!value) return "";
+	const d = value instanceof Date ? value : new Date(String(value));
+	if (isNaN(d.getTime())) return String(value);
+	return d.toLocaleString(getCoreLocale(), {
+		timeZone: getCoreTimezone(),
+		dateStyle: "short",
+		timeStyle: "short"
+	});
+}
+function getEntityDisplayValue(field, value, entityOptions) {
 	if (value && typeof value === "object") {
 		const record = value;
 		return getPrimitiveDisplay(record[field.textField] ?? record["name"] ?? record["businessName"]);
+	}
+	if (value && typeof value === "string" && entityOptions) {
+		const match = entityOptions.find((item) => item[field.valueField] === value || item["@id"] === value || item["_iri"] === value);
+		if (match) {
+			const display = match[field.textField] ?? match["name"] ?? match["businessName"];
+			if (display != null) return getPrimitiveDisplay(display);
+		}
 	}
 	return getPrimitiveDisplay(value);
 }
@@ -1756,14 +1884,16 @@ function getEnumDisplayValue(field, value) {
 	const match = Array.isArray(field.data) ? field.data.find((item) => item["value"] === value || item[field.valueField] === value) : void 0;
 	return getPrimitiveDisplay(match?.["text"] ?? match?.[field.textField] ?? value);
 }
-function getCellText(field, row) {
+function getCellText(field, row, entityOptions, yesLabel = "Yes", noLabel = "No") {
 	if (field.formatter) return "";
 	const value = row[field.name];
-	if (field.type === "entity") return getEntityDisplayValue(field, value);
+	if (field.type === "entity") return getEntityDisplayValue(field, value, entityOptions);
 	if (field.type === "enum" || field.type === "switch") return getEnumDisplayValue(field, value);
-	return getPrimitiveDisplay(value);
+	if (field.type === "date") return getDateDisplay(value);
+	if (field.type === "datetime") return getDateTimeDisplay(value);
+	return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
-function renderCell(field, row, rowIndex, columnIndex) {
+function renderCell(field, row, rowIndex, columnIndex, entityOptions, yesLabel = "Yes", noLabel = "No") {
 	const value = row[field.name];
 	if (field.formatter) return field.formatter({
 		value,
@@ -1771,9 +1901,11 @@ function renderCell(field, row, rowIndex, columnIndex) {
 		rowIndex,
 		columnIndex
 	});
-	if (field.type === "entity") return getEntityDisplayValue(field, value);
+	if (field.type === "entity") return getEntityDisplayValue(field, value, entityOptions);
 	if (field.type === "enum" || field.type === "switch") return getEnumDisplayValue(field, value);
-	return getPrimitiveDisplay(value);
+	if (field.type === "date") return getDateDisplay(value);
+	if (field.type === "datetime") return getDateTimeDisplay(value);
+	return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
 function buildToolbarButtons(items = []) {
 	return items.flatMap((item, index) => {
@@ -1906,10 +2038,11 @@ function buildFilterExpression(filters, operators) {
 	]);
 }
 function FilterCell({ field, operator, remoteOptions, value, onClear, onInputChange, onSelectChange, onOperatorChange }) {
+	const httpClient = useCoreHttpClient();
 	if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
 		className: "native-datagrid__filter-select",
 		field,
-		httpClient: useCoreHttpClient(),
+		httpClient,
 		options: remoteOptions,
 		value,
 		onChange: (nextVal) => onSelectChange(nextVal ? String(nextVal) : "")
@@ -1985,10 +2118,12 @@ function SummaryView({ summaryFields, rows }) {
 }
 function DetailRows({ fields, url }) {
 	const httpClient = useCoreHttpClient();
+	const resourceStoreFactory = useResourceStoreFactory();
+	const { t } = useCoreTranslation();
 	const [rows, setRows] = useState([]);
 	const [loading, setLoading] = useState(true);
 	useEffect(() => {
-		const source = new ApiPlatformRemoteDataSource({
+		const source = resourceStoreFactory({
 			url,
 			idField: getIdField(fields),
 			httpClient
@@ -1998,21 +2133,22 @@ function DetailRows({ fields, url }) {
 	}, [
 		fields,
 		httpClient,
+		resourceStoreFactory,
 		url
 	]);
 	if (loading) return /* @__PURE__ */ jsx("div", {
 		className: "native-datagrid__loading",
-		children: "Cargando..."
+		children: t("grid.loading")
 	});
 	if (rows.length === 0) return /* @__PURE__ */ jsx("div", {
 		className: "native-datagrid__empty",
-		children: "Sin detalle"
+		children: t("grid.noRecords")
 	});
 	return /* @__PURE__ */ jsx("div", {
 		className: "native-datagrid__detail-content",
 		children: /* @__PURE__ */ jsxs("table", {
 			className: "native-datagrid__detail-table",
-			children: [/* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: fields.filter((field) => field.visible && !field.hidden).map((field) => /* @__PURE__ */ jsx("th", { children: field.label }, field.name)) }) }), /* @__PURE__ */ jsx("tbody", { children: rows.map((row, rowIndex) => /* @__PURE__ */ jsx("tr", { children: fields.filter((field) => field.visible && !field.hidden).map((field, columnIndex) => /* @__PURE__ */ jsx("td", { children: renderCell(field, row, rowIndex, columnIndex) }, field.name)) }, String(row[getIdField(fields)] ?? rowIndex))) })]
+			children: [/* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: fields.filter((field) => field.visible && !field.hidden).map((field) => /* @__PURE__ */ jsx("th", { children: field.label }, field.name)) }) }), /* @__PURE__ */ jsx("tbody", { children: rows.map((row, rowIndex) => /* @__PURE__ */ jsx("tr", { children: fields.filter((field) => field.visible && !field.hidden).map((field, columnIndex) => /* @__PURE__ */ jsx("td", { children: renderCell(field, row, rowIndex, columnIndex, void 0, t("common.yes"), t("common.no")) }, field.name)) }, String(row[getIdField(fields)] ?? rowIndex))) })]
 		})
 	});
 }
@@ -2020,10 +2156,11 @@ const NativeDataGridView = forwardRef((options, ref) => {
 	const { t } = useCoreTranslation();
 	const { notify } = useCoreRuntime();
 	const httpClient = useCoreHttpClient();
+	const resourceStoreFactory = useResourceStoreFactory();
 	const navigate = useNavigate();
 	const [on, emit] = useEvents();
 	const idField = useMemo(() => getIdField(options.fields), [options.fields]);
-	const visibleFields = useMemo(() => getVisibleFields(options), [options]);
+	const visibleFields = useMemo(() => options.fields.filter((field) => field.visible && !field.hidden).filter((field) => options.visibleColumns == null || options.visibleColumns.includes(field.name)).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)), [options.fields, options.visibleColumns]);
 	const [rows, setRows] = useState([]);
 	const rowsRef = useRef([]);
 	const [totalCount, setTotalCount] = useState(0);
@@ -2042,10 +2179,14 @@ const NativeDataGridView = forwardRef((options, ref) => {
 	const [isGridLoading, setIsGridLoading] = useState(!options.manualLoad);
 	const [loadingMessage, setLoadingMessage] = useState("");
 	const onContentReadyRef = useRef(options.onContentReady);
+	const onRowPreparedRef = useRef(options.onRowPrepared);
 	useEffect(() => {
 		onContentReadyRef.current = options.onContentReady;
 	}, [options.onContentReady]);
-	const source = useMemo(() => new ApiPlatformRemoteDataSource({
+	useEffect(() => {
+		onRowPreparedRef.current = options.onRowPrepared;
+	}, [options.onRowPrepared]);
+	const source = useMemo(() => resourceStoreFactory({
 		url: options.url,
 		idField,
 		defaultFilterRules: options.filter,
@@ -2056,6 +2197,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		idField,
 		options.filter,
 		options.url,
+		resourceStoreFactory,
 		sort
 	]);
 	const loadRows = useCallback(async () => {
@@ -2090,32 +2232,59 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		loadRows();
 	}, [loadRows]);
 	useEffect(() => {
-		if (options.events?.SUCCESS) on(options.events.SUCCESS, () => void loadRows());
+		rows.forEach((row, rowIndex) => onRowPreparedRef.current?.({
+			data: row,
+			rowIndex
+		}));
+	}, [rows]);
+	useEffect(() => {
+		if (!options.events?.SUCCESS) return;
+		const sub = on(options.events.SUCCESS, () => void loadRows());
+		return () => sub.unsubscribe();
 	}, [
 		loadRows,
 		on,
 		options.events
 	]);
 	useEffect(() => {
-		visibleFields.filter((f) => f.filterable && f.type === "entity" && f.url && !loadedFilterOptionsRef.current.has(f.name)).forEach((f) => {
+		visibleFields.filter((f) => f.type === "entity" && f.url && !loadedFilterOptionsRef.current.has(f.name)).forEach((f) => {
 			loadedFilterOptionsRef.current.add(f.name);
-			new ApiPlatformRemoteDataSource({
+			resourceStoreFactory({
 				url: f.url,
 				idField: f.valueField,
-				httpClient
+				httpClient,
+				iriMode: true
 			}).load({ take: 500 }).then((result) => setFilterRemoteOptions((prev) => ({
 				...prev,
 				[f.name]: result.data
 			}))).catch(() => {});
 		});
-	}, [httpClient, visibleFields]);
+	}, [
+		httpClient,
+		resourceStoreFactory,
+		visibleFields
+	]);
+	const handleStateRef = useRef({
+		selectedKeys,
+		filters,
+		filterOperators,
+		loadRows,
+		idField
+	});
+	handleStateRef.current = {
+		selectedKeys,
+		filters,
+		filterOperators,
+		loadRows,
+		idField
+	};
 	useImperativeHandle(ref, () => ({
 		showLoading: (message) => {
 			setLoadingMessage(message ?? t("grid.loading"));
 			setIsGridLoading(true);
 		},
 		hideLoading: () => setIsGridLoading(false),
-		refresh: () => void loadRows(),
+		refresh: () => void handleStateRef.current.loadRows(),
 		reset: () => {
 			clearTimeout(filterDebounceRef.current);
 			setSelectedKeys([]);
@@ -2128,17 +2297,18 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		},
 		loadData: () => Promise.resolve(rowsRef.current),
 		getSelectedRowKey: () => {
-			const key = selectedKeys[0];
+			const key = handleStateRef.current.selectedKeys[0];
 			return typeof key === "string" || typeof key === "number" ? key : void 0;
 		},
-		getSelectedRow: () => rowsRef.current.find((row) => row[idField] === selectedKeys[0]),
-		getSelectedRowKeys: () => selectedKeys,
-		getSelectedRows: () => rowsRef.current.filter((row) => selectedKeys.includes(row[idField])),
-		getFilter: () => buildFilterExpression(filters, filterOperators),
+		getSelectedRow: () => rowsRef.current.find((row) => row[handleStateRef.current.idField] === handleStateRef.current.selectedKeys[0]),
+		getSelectedRowKeys: () => handleStateRef.current.selectedKeys,
+		getSelectedRows: () => rowsRef.current.filter((row) => handleStateRef.current.selectedKeys.includes(row[handleStateRef.current.idField])),
+		getFilter: () => buildFilterExpression(handleStateRef.current.filters, handleStateRef.current.filterOperators),
 		filter: (filterRule) => {
+			const { filterOperators: currentOps } = handleStateRef.current;
 			const nextFilters = filterRule ? { [filterRule.field]: String(filterRule.value ?? "") } : {};
 			const nextOperators = filterRule ? {
-				...filterOperators,
+				...currentOps,
 				[filterRule.field]: filterRule.operator || getDefaultFilterOperator(options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0])
 			} : computeDefaultOperators(options.fields);
 			clearTimeout(filterDebounceRef.current);
@@ -2147,7 +2317,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 			setFilterOperators(nextOperators);
 			setPage(0);
 		}
-	}));
+	}), [options.fields, t]);
 	const selectedRows = rows.filter((row) => selectedKeys.includes(row[idField]));
 	const selectRow = (row) => {
 		const key = row[idField];
@@ -2381,10 +2551,6 @@ const NativeDataGridView = forwardRef((options, ref) => {
 								const detailFields = typeof options.detailFields === "function" ? options.detailFields(row) : options.detailFields;
 								const detailUrl = options.detailUrl?.replace("{id}", String(key));
 								const expanded = expandedKeys.has(key);
-								options.onRowPrepared?.({
-									data: row,
-									rowIndex
-								});
 								return /* @__PURE__ */ jsxs(React.Fragment, { children: [/* @__PURE__ */ jsxs("tr", {
 									className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selectedKeys.includes(key) ? "native-datagrid__row--selected" : ""}`,
 									tabIndex: 0,
@@ -2437,8 +2603,8 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										}),
 										visibleFields.map((field, columnIndex) => /* @__PURE__ */ jsx("td", {
 											style: { textAlign: field.align },
-											title: getCellText(field, row),
-											children: renderCell(field, row, rowIndex, columnIndex)
+											title: getCellText(field, row, filterRemoteOptions[field.name], t("common.yes"), t("common.no")),
+											children: renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t("common.yes"), t("common.no"))
 										}, field.name)),
 										hasRowActions && /* @__PURE__ */ jsx("td", {
 											className: "native-datagrid__actions-cell",
@@ -2743,7 +2909,7 @@ const ACTION_COLORS = {
 function DefaultEntryRenderer({ entry }) {
 	const { t } = useCoreTranslation();
 	const date = new Date(entry.timestamp);
-	const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString("es-PE", { timeZone: "America/Lima" });
+	const formatted = Number.isNaN(date.getTime()) ? entry.timestamp : date.toLocaleString(getCoreLocale(), { timeZone: getCoreTimezone() });
 	const actionLabels = {
 		create: t("auditTrail.action.create"),
 		update: t("auditTrail.action.update"),
@@ -2993,6 +3159,19 @@ function useCrudDialogStore(resourceId) {
 	};
 }
 //#endregion
+//#region assets/crud/crud/resolveResourceDetails.ts
+function resolveResourceDetails(resource) {
+	return {
+		gridDetail: resource.gridDetail,
+		formDetail: resource.formDetail
+	};
+}
+//#endregion
+//#region assets/crud/crud/resolveResourceToolbar.ts
+function resolveResourceToolbar(resource, context) {
+	return typeof resource.toolbar === "function" ? resource.toolbar(context) : resource.toolbar;
+}
+//#endregion
 //#region assets/crud/crud/CrudPage.tsx
 function inferFilterOperator(field) {
 	if (field.selectedFilterOperation) return field.selectedFilterOperation;
@@ -3013,18 +3192,23 @@ function buildRoutingFilterRules(fields, initialFilters) {
 * Public export — wraps CrudPageInner in its own DialogStoreProvider so that
 * existing pages do not need to add a provider themselves.
 */
-const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, computedValues, initialFilters, onFiltersChange }) => /* @__PURE__ */ jsx(DialogStoreProvider, { children: /* @__PURE__ */ jsx(CrudPageInner, {
+const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, computedValues, initialFilters, onFiltersChange, formRef, onSelectionChanged, editDisabled, deleteDisabled, gridRef }) => /* @__PURE__ */ jsx(DialogStoreProvider, { children: /* @__PURE__ */ jsx(CrudPageInner, {
 	resource,
 	onFormDataChange,
 	initialRecordId,
 	initialIsNew,
 	computedValues,
 	initialFilters,
-	onFiltersChange
+	onFiltersChange,
+	formRef,
+	onSelectionChanged,
+	editDisabled,
+	deleteDisabled,
+	gridRef
 }) });
-const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange }) => {
+const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange, formRef: externalFormRef, onSelectionChanged: externalOnSelectionChanged, editDisabled, deleteDisabled, gridRef: externalGridRef }) => {
 	const { t } = useCoreTranslation();
-	const { events, resource: resolvedResource, fields, formRef, permissions, selectionState, presetState } = useCrudPage(useMemo(() => resolveCrudResource(resource), [resource]));
+	const { events, resource: resolvedResource, fields, formRef, permissions, selectionState, presetState } = useCrudPage(useMemo(() => resolveCrudResource(resource), [resource]), externalFormRef);
 	const datagridFields = useMemo(() => fields.filter((field) => field.isIdentity || field.visible !== false), [fields]);
 	const routeAwareGridFields = useMemo(() => datagridFields.map((field) => {
 		const routeFilterValue = initialFilters[field.name];
@@ -3050,6 +3234,10 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 	const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
 	const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
 	const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
+	const { gridDetail, formDetail } = resolveResourceDetails(resolvedResource);
+	const internalGridRef = React.useRef(null);
+	const gridRef = externalGridRef ?? internalGridRef;
+	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowId, setSelectedRowId] = useState(null);
 	const [auditOpen, setAuditOpen] = useState(false);
 	const [confirmState, setConfirmState] = useState({
@@ -3057,31 +3245,14 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		action: null
 	});
 	const { isOpen: dialogIsOpen, mode: dialogMode, openDialog, closeDialog } = useCrudDialogStore(resolvedResource.id);
-	const [on] = useEvents();
-	const wireEventsRef = React.useRef(() => {
-		if (events.ADD) on(events.ADD, (payload) => {
-			openDialog("add", payload?.rowData ?? null);
-		});
-		if (events.EDIT) on(events.EDIT, (rowData) => {
-			openDialog("edit", rowData ?? null);
-		});
-		if (events.SUCCESS) on(events.SUCCESS, () => {
-			closeDialog();
-		});
-	});
-	wireEventsRef.current = () => {
-		if (events.ADD) on(events.ADD, (payload) => {
-			openDialog("add", payload?.rowData ?? null);
-		});
-		if (events.EDIT) on(events.EDIT, (rowData) => {
-			openDialog("edit", rowData ?? null);
-		});
-		if (events.SUCCESS) on(events.SUCCESS, () => {
-			closeDialog();
-		});
-	};
+	const [on, emit] = useEvents();
 	React.useEffect(() => {
-		wireEventsRef.current();
+		const subs = [
+			events.ADD && on(events.ADD, (payload) => openDialog("add", payload?.rowData ?? null)),
+			events.EDIT && on(events.EDIT, (rowData) => openDialog("edit", rowData ?? null)),
+			events.SUCCESS && on(events.SUCCESS, () => closeDialog())
+		].filter(Boolean);
+		return () => subs.forEach((sub) => sub.unsubscribe());
 	}, []);
 	React.useEffect(() => {
 		if (initialRecordId != null) {
@@ -3104,9 +3275,12 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 	React.useEffect(() => {
 		if (!onDetailRowsChangedRef.current) return;
 		const handler = () => onDetailRowsChangedRef.current?.(formRef);
-		on(FORM_EVENTS.ROW_ADDED, handler);
-		on(FORM_EVENTS.ROW_UPDATED, handler);
-		on(FORM_EVENTS.ROW_REMOVED, handler);
+		const subs = [
+			on(FORM_EVENTS.ROW_ADDED, handler),
+			on(FORM_EVENTS.ROW_UPDATED, handler),
+			on(FORM_EVENTS.ROW_REMOVED, handler)
+		];
+		return () => subs.forEach((sub) => sub.unsubscribe());
 	}, []);
 	const dialogTitle = useMemo(() => {
 		return {
@@ -3118,9 +3292,12 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 	/** Bridge between the grid renderer's selection event and our selection state.
 	* Also captures the selected row ID for the audit trail. */
 	const handleSelectionChanged = (e) => {
-		selectionState.onSelectionChanged(e.selectedRowsData ?? []);
+		const rows = e.selectedRowsData ?? [];
+		setSelectedRows(rows);
+		selectionState.onSelectionChanged(rows);
+		externalOnSelectionChanged?.(rows);
 		if (hasAuditTrail) {
-			const first = (e.selectedRowsData ?? [])[0];
+			const first = rows[0];
 			if (first != null) setSelectedRowId(first["id"] ?? first["ID"] ?? null);
 		}
 	};
@@ -3141,6 +3318,24 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		});
 		else executeBulkAction(action);
 	}, [executeBulkAction]);
+	const toolbar = useMemo(() => {
+		return resolveResourceToolbar(resolvedResource, {
+			resource: resolvedResource,
+			selectedRow: selectedRows[0],
+			selectedRows,
+			gridRef,
+			formRef,
+			events,
+			emit
+		});
+	}, [
+		emit,
+		events,
+		formRef,
+		gridRef,
+		resolvedResource,
+		selectedRows
+	]);
 	/** Preset selector rendered as a toolbar slot via `beforeToolbar`. */
 	const renderPresetSelector = hasPresets ? () => /* @__PURE__ */ jsxs("div", {
 		className: "column-preset-selector",
@@ -3201,6 +3396,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				})
 			}),
 			/* @__PURE__ */ jsx(NativeDataGridView, {
+				ref: gridRef,
 				id: resolvedResource.id,
 				title: resolvedResource.title,
 				url: resolvedResource.apiUrl,
@@ -3210,21 +3406,24 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				allowEdit: permissions.canEdit,
 				allowDelete: permissions.canDelete,
 				allowExport: permissions.canExport,
+				editDisabled,
+				deleteDisabled,
 				sort: resolvedResource.sort,
 				filter: routeAwareFilters,
 				paging: resolvedResource.paging,
 				headerFilter: resolvedResource.headerFilter,
 				mode: resolvedResource.mode,
 				stateStoringEnabled: resolvedResource.stateStoring,
-				toolbar: resolvedResource.toolbar,
+				toolbar,
 				selectionMode: hasMultipleSelection ? "multiple" : "single",
 				onSelectionChanged: handleSelectionChanged,
 				editMode: resolvedResource.editMode,
 				visibleColumns: presetState.visibleColumns,
 				beforeToolbar: renderPresetSelector,
-				detailUrl: resolvedResource.detailUrl,
-				detailFields: resolvedResource.detailFields,
-				onFilterChange: onFiltersChange
+				detailUrl: gridDetail?.url,
+				detailFields: gridDetail?.fields,
+				onFilterChange: onFiltersChange,
+				adapter: resolvedResource.adapter
 			}),
 			!isInlineEditMode && /* @__PURE__ */ jsx(CrudDialogView, {
 				events,
@@ -3238,9 +3437,13 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					url: resolvedResource.apiUrl,
 					fields,
 					events,
-					detailFields: resolvedResource.detailFields,
-					detailUrl: resolvedResource.detailUrl,
-					detailPropertyName: resolvedResource.detailPropertyName,
+					detailFields: formDetail?.fields,
+					detailUrl: formDetail?.url,
+					detailPropertyName: formDetail?.propertyName,
+					allowAdding: formDetail?.allowAdding,
+					allowDeleting: formDetail?.allowDeleting,
+					allowUpdating: formDetail?.allowUpdating,
+					requiredDetail: formDetail?.required,
 					format: resolvedResource.format,
 					onSaveSuccess: resolvedResource.onSaveSuccess ? (response) => resolvedResource.onSaveSuccess?.(response) : void 0,
 					onSaveError: resolvedResource.onSaveError,
@@ -3248,7 +3451,8 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					onDeleteError: resolvedResource.onDeleteError,
 					formLayout: resolvedResource.formLayout,
 					computedValues,
-					onFieldDataChanged: onFormDataChange
+					onFieldDataChanged: onFormDataChange,
+					adapter: resolvedResource.adapter
 				})
 			}),
 			hasAuditTrail && /* @__PURE__ */ jsx(AuditTrailPanel, {
@@ -3520,9 +3724,42 @@ function useFieldPermissions(fields, userRoles) {
 }
 //#endregion
 //#region assets/crud/crud/rules/useConditionalRules.ts
+function isEmptyRuleValue(value) {
+	return value === null || value === void 0 || value === "";
+}
+function evaluateConditionalRuleState(field, formData) {
+	const baseVisible = field.visibleOnForm;
+	const baseRequired = field.required;
+	if (formData == null) return {
+		name: field.name,
+		visible: baseVisible,
+		disabled: false,
+		required: baseRequired,
+		computedValue: void 0
+	};
+	const visible = field.visibleWhen ? baseVisible && field.visibleWhen(formData) : baseVisible;
+	const disabled = field.disabledWhen ? field.disabledWhen(formData) : false;
+	const required = field.requiredWhen ? baseRequired || field.requiredWhen(formData) : baseRequired;
+	if (!visible && field.clearWhenHidden) return {
+		name: field.name,
+		visible,
+		disabled,
+		required,
+		computedValue: null
+	};
+	let computedValue = field.computed ? field.computed(formData) : void 0;
+	if (computedValue === void 0 && field.defaultWhen && isEmptyRuleValue(formData[field.name])) computedValue = field.defaultWhen(formData);
+	return {
+		name: field.name,
+		visible,
+		disabled,
+		required,
+		computedValue
+	};
+}
 /**
 * Given the current Field definitions and live form data,
-* returns the reactive state (visible/disabled/computedValue) for each field.
+* returns the reactive state (visible/disabled/required/computedValue) for each field.
 *
 * Pure computation — re-runs whenever formData changes.
 *
@@ -3532,24 +3769,7 @@ function useFieldPermissions(fields, userRoles) {
 */
 function useConditionalRules(fields, formData) {
 	return useMemo(() => {
-		return fields.map((field) => {
-			const baseVisible = field.visibleOnForm;
-			if (formData == null) return {
-				name: field.name,
-				visible: baseVisible,
-				disabled: false,
-				computedValue: void 0
-			};
-			const visible = field.visibleWhen ? baseVisible && field.visibleWhen(formData) : baseVisible;
-			const disabled = field.disabledWhen ? field.disabledWhen(formData) : false;
-			const computedValue = field.computed ? field.computed(formData) : void 0;
-			return {
-				name: field.name,
-				visible,
-				disabled,
-				computedValue
-			};
-		});
+		return fields.map((field) => evaluateConditionalRuleState(field, formData));
 	}, [fields, formData]);
 }
 //#endregion
@@ -3759,7 +3979,7 @@ function applyFieldOperationSemantics(field, operation, behavior, owner = `Field
 * Runs the full SmartCrud field processing pipeline:
 *   1. Operation semantics — adjusts visibility/required/readonly per create/edit
 *   2. RBAC — filters or disables fields based on user roles
-*   3. Conditional rules — evaluates visibleWhen / disabledWhen / computed
+*   3. Conditional rules — evaluates visibleWhen / disabledWhen / requiredWhen / defaultWhen / computed
 *   4. Dependency invalidation — refetches dependent field options on change
 *   5. Field state merge — applies conditional state back to field definitions
 *
@@ -3778,146 +3998,26 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 	const fieldStates = useConditionalRules(permissionFilteredFields, formData);
 	useDependsOn(permissionFilteredFields, formData);
 	return {
-		processedFields: useMemo(() => permissionFilteredFields.map((field) => {
-			if (field.isIdentity) return field;
-			const state = fieldStates.find((s) => s.name === field.name);
-			if (!state) return field;
-			const updated = { ...field };
-			updated.visibleOnForm = state.visible;
-			updated.hidden = !state.visible;
-			if (state.disabled) updated.disabled = true;
-			if (state.computedValue !== void 0) updated.readonly = true;
-			return updated;
-		}), [permissionFilteredFields, fieldStates]),
+		processedFields: useMemo(() => {
+			const stateByName = new Map(fieldStates.map((s) => [s.name, s]));
+			return permissionFilteredFields.map((field) => {
+				if (field.isIdentity) return field;
+				const state = stateByName.get(field.name);
+				if (!state) return field;
+				const updated = { ...field };
+				updated.visibleOnForm = state.visible;
+				updated.hidden = !state.visible;
+				if (state.disabled) updated.disabled = true;
+				updated.required = state.required;
+				if (state.computedValue !== void 0) updated.readonly = true;
+				return updated;
+			});
+		}, [permissionFilteredFields, fieldStates]),
 		computedValues: useMemo(() => fieldStates.reduce((acc, state) => {
 			if (state.computedValue !== void 0) acc[state.name] = state.computedValue;
 			return acc;
 		}, {}), [fieldStates])
 	};
-}
-//#endregion
-//#region assets/crud/crud/SmartCrudPage.tsx
-function CrudSkeleton() {
-	return /* @__PURE__ */ jsxs("div", {
-		className: "p-6 space-y-4 animate-pulse",
-		children: [/* @__PURE__ */ jsx("div", { className: "h-8 bg-gray-200 rounded w-1/3" }), /* @__PURE__ */ jsx("div", { className: "h-64 bg-gray-200 rounded" })]
-	});
-}
-function CrudError({ message, onRetry }) {
-	const { t } = useCoreTranslation();
-	return /* @__PURE__ */ jsxs("div", {
-		className: "p-6 space-y-3 text-sm text-secondary",
-		role: "alert",
-		children: [
-			/* @__PURE__ */ jsx("p", {
-				className: "m-0 text-base font-semibold text-primary",
-				children: t("crudPage.schemaErrorTitle")
-			}),
-			/* @__PURE__ */ jsx("p", {
-				className: "m-0 max-w-2xl",
-				children: t("crudPage.schemaErrorMessage")
-			}),
-			/* @__PURE__ */ jsxs("details", {
-				className: "max-w-2xl text-xs",
-				children: [/* @__PURE__ */ jsx("summary", {
-					className: "cursor-pointer text-secondary",
-					children: t("crudPage.schemaErrorDetails")
-				}), /* @__PURE__ */ jsx("pre", {
-					className: "mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap",
-					children: message
-				})]
-			}),
-			/* @__PURE__ */ jsx("button", {
-				onClick: onRetry,
-				className: "app-button app-button--secondary app-button--sm",
-				type: "button",
-				children: t("crudPage.schemaErrorRetry")
-			})
-		]
-	});
-}
-function formatRuntimeErrorMessage(error) {
-	const issues = "issues" in error && Array.isArray(error.issues) ? error.issues : [];
-	return issues.length > 0 ? `${error.message} ${issues.join(" ")}` : error.message;
-}
-/**
-* SmartCrudPage — wraps CrudPage with Hydra auto-discovery and declarative rules.
-*
-* ## Field resolution
-* - If `resource.fields` is a non-empty array, it is used as-is (pass-through).
-* - If `resource.fields` is empty / absent, fields are inferred from the Hydra
-*   API spec at `/api/docs.json` via `useResourceSchema`.
-* - While the schema loads: renders a skeleton loader.
-* - If the schema fetch errors: renders a user-visible error with a retry button.
-*
-* ## Declarative rules pipeline (via `useSmartCrudFields`)
-*   1. `useFieldPermissions` — RBAC: hides or disables fields based on user roles
-*   2. `useConditionalRules` — evaluates visibleWhen / disabledWhen / computed
-*   3. `useDependsOn`        — invalidates entity queries when dependency fields change
-*
-* ## Operation & form state (via `useSmartCrudOperation`)
-*   Manages `activeOperation` + `formData` as a unified state pair, synced
-*   from routing changes and the resource event bus (ADD/EDIT/CANCEL/SUCCESS).
-*
-* URL deep-linking is wired via `initialRecordId` / `initialIsNew` props on CrudPage.
-*/
-function SmartCrudPage({ resource, fieldOverrides }) {
-	const queryClient = useQueryClient();
-	const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
-	const events = resolvedBaseResource.events;
-	const hasManualFields = !resource.fieldContract && Array.isArray(resource.fields) && resource.fields.length > 0;
-	const { fields, isLoading, error, supportedOperations } = useResourceSchema(resolvedBaseResource.apiUrl, hasManualFields ? resource.fields : void 0, hasManualFields ? void 0 : fieldOverrides, resource.fieldContract);
-	const hintFiredRef = useRef(false);
-	useEffect(() => {
-		if (!resource.fieldContract && !hasManualFields && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
-			hintFiredRef.current = true;
-			logDevHint(resource.apiUrl, fields, supportedOperations);
-		}
-	}, [
-		resource.fieldContract,
-		hasManualFields,
-		isLoading,
-		error,
-		fields,
-		resource.apiUrl,
-		supportedOperations
-	]);
-	const routingState = useRouting(resource.routing);
-	const { activeOperation, formData, handleFormDataChange } = useSmartCrudOperation(events, routingState);
-	const roles = useSmartCrudRoles();
-	const { processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, useMemo(() => roles ?? [], [roles]));
-	useMercureSubscription(resource.apiUrl, () => {
-		if (events.SUCCESS) dispatch(events.SUCCESS);
-	}, resolvedBaseResource.mercure !== false);
-	const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith("/") ? resolvedBaseResource.apiUrl : `/${resolvedBaseResource.apiUrl}`;
-	const resolvedResource = useMemo(() => ({
-		...resolvedBaseResource,
-		...hasManualFields ? {} : { fields },
-		apiUrl: normalizedApiUrl,
-		fields: processedFields,
-		_supportedOperations: supportedOperations
-	}), [
-		fields,
-		hasManualFields,
-		normalizedApiUrl,
-		processedFields,
-		resolvedBaseResource,
-		supportedOperations
-	]);
-	if (!hasManualFields && isLoading) return /* @__PURE__ */ jsx(CrudSkeleton, {});
-	if (!hasManualFields && error) return /* @__PURE__ */ jsx(CrudError, {
-		message: formatRuntimeErrorMessage(error),
-		onRetry: () => queryClient.invalidateQueries({ queryKey: API_DOC_QUERY_KEY })
-	});
-	return /* @__PURE__ */ jsx(CrudPage, {
-		resource: resolvedResource,
-		onFormDataChange: handleFormDataChange,
-		computedValues,
-		initialRecordId: routingState.initialRecordId,
-		initialIsNew: routingState.initialIsNew,
-		initialFilters: routingState.initialFilters,
-		onFiltersChange: routingState.syncFilters
-	});
 }
 //#endregion
 //#region assets/crud/crud/fieldValidation.ts
@@ -3963,13 +4063,11 @@ const MANUAL_FIELD_KEYS = [...[
 	"width",
 	"height",
 	"minWidth",
-	"minHeight",
 	"align",
 	"sortable",
 	"filterable",
 	"hideable",
 	"validators",
-	"mode",
 	"url",
 	"loadOptions",
 	"filters",
@@ -3989,7 +4087,6 @@ const MANUAL_FIELD_KEYS = [...[
 	"onChange",
 	"onSelect",
 	"onClick",
-	"onKeyPress",
 	"readonly",
 	"disabled",
 	"hidden",
@@ -3997,22 +4094,21 @@ const MANUAL_FIELD_KEYS = [...[
 	"precision",
 	"accept",
 	"buttons",
-	"hidingPriority",
 	"searchEnabled",
 	"searchExpr",
-	"fixed",
-	"fixedPosition",
 	"helpText",
 	"contentRender",
 	"visibleOnForm",
 	"maxLength",
 	"multiple",
-	"editorOptions",
 	"sendAsString",
 	"order",
 	"visibleWhen",
 	"disabledWhen",
 	"computed",
+	"defaultWhen",
+	"requiredWhen",
+	"clearWhenHidden",
 	"dependsOn",
 	"permissions"
 ], "operation"];
@@ -4141,12 +4237,6 @@ function validateResolvedFieldNames(fields, owner) {
 	validateUniqueFieldNames(fields, owner);
 }
 //#endregion
-//#region assets/crud/crud/fieldContract.ts
-function defineFields(contract) {
-	return validateFieldContract(contract);
-}
-const defineFieldContract = defineFields;
-//#endregion
 //#region assets/crud/crud/resolveSmartCrudFields.ts
 function cloneField(field) {
 	return { ...field };
@@ -4214,6 +4304,198 @@ function resolveSmartCrudFields(options) {
 	return resolveHydraFields(baselineFields, contract);
 }
 //#endregion
+//#region assets/crud/schema/ResourceSchema.tsx
+const ResourceSchemaResolverContext = createContext(null);
+function ResourceSchemaProvider({ children, resolver }) {
+	return /* @__PURE__ */ jsx(ResourceSchemaResolverContext.Provider, {
+		value: resolver,
+		children
+	});
+}
+function resolveWithRuntimeErrors(resolver, supportedOperations = []) {
+	try {
+		return {
+			fields: resolver(),
+			isLoading: false,
+			error: void 0,
+			supportedOperations
+		};
+	} catch (runtimeError) {
+		return {
+			fields: [],
+			isLoading: false,
+			error: runtimeError instanceof Error ? runtimeError : new Error(String(runtimeError)),
+			supportedOperations
+		};
+	}
+}
+function useResolvedResourceFields({ apiUrl, manualFields, overrides, fieldContract }) {
+	const schemaResolver = useContext(ResourceSchemaResolverContext);
+	if (fieldContract?.source === "manual") return resolveWithRuntimeErrors(() => resolveSmartCrudFields({ contract: fieldContract }));
+	if (manualFields && manualFields.length > 0) return {
+		fields: manualFields,
+		isLoading: false,
+		error: void 0,
+		supportedOperations: []
+	};
+	if (!schemaResolver) return {
+		fields: [],
+		isLoading: false,
+		error: /* @__PURE__ */ new Error(`No ResourceSchema resolver configured for ${apiUrl}. Wrap your app with ResourceSchemaProvider or a backend-specific provider such as HydraResourceSchemaProvider.`),
+		supportedOperations: []
+	};
+	const baseline = schemaResolver.useResourceSchema({ apiUrl });
+	if (baseline.isLoading || baseline.error) return baseline;
+	return resolveWithRuntimeErrors(() => resolveSmartCrudFields({
+		baselineFields: baseline.fields,
+		contract: fieldContract,
+		legacyOverrides: fieldContract ? void 0 : overrides
+	}), baseline.supportedOperations);
+}
+//#endregion
+//#region assets/crud/crud/SmartCrudPage.tsx
+function CrudSkeleton() {
+	return /* @__PURE__ */ jsxs("div", {
+		className: "p-6 space-y-4 animate-pulse",
+		children: [/* @__PURE__ */ jsx("div", { className: "h-8 bg-gray-200 rounded w-1/3" }), /* @__PURE__ */ jsx("div", { className: "h-64 bg-gray-200 rounded" })]
+	});
+}
+function CrudError({ message, onRetry }) {
+	const { t } = useCoreTranslation();
+	return /* @__PURE__ */ jsxs("div", {
+		className: "p-6 space-y-3 text-sm text-secondary",
+		role: "alert",
+		children: [
+			/* @__PURE__ */ jsx("p", {
+				className: "m-0 text-base font-semibold text-primary",
+				children: t("crudPage.schemaErrorTitle")
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "m-0 max-w-2xl",
+				children: t("crudPage.schemaErrorMessage")
+			}),
+			/* @__PURE__ */ jsxs("details", {
+				className: "max-w-2xl text-xs",
+				children: [/* @__PURE__ */ jsx("summary", {
+					className: "cursor-pointer text-secondary",
+					children: t("crudPage.schemaErrorDetails")
+				}), /* @__PURE__ */ jsx("pre", {
+					className: "mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap",
+					children: message
+				})]
+			}),
+			/* @__PURE__ */ jsx("button", {
+				onClick: onRetry,
+				className: "app-button app-button--secondary app-button--sm",
+				type: "button",
+				children: t("crudPage.schemaErrorRetry")
+			})
+		]
+	});
+}
+function formatRuntimeErrorMessage(error) {
+	const issues = "issues" in error && Array.isArray(error.issues) ? error.issues : [];
+	return issues.length > 0 ? `${error.message} ${issues.join(" ")}` : error.message;
+}
+/**
+* SmartCrudPage — wraps CrudPage with Hydra auto-discovery and declarative rules.
+*
+* ## Field resolution
+* - If `resource.fields` is a non-empty array, it is used as-is (pass-through).
+* - If `resource.fields` is empty / absent, fields are inferred from the Hydra
+*   API spec at `/api/docs.json` via `useResourceSchema`.
+* - While the schema loads: renders a skeleton loader.
+* - If the schema fetch errors: renders a user-visible error with a retry button.
+*
+* ## Declarative rules pipeline (via `useSmartCrudFields`)
+*   1. `useFieldPermissions` — RBAC: hides or disables fields based on user roles
+*   2. `useConditionalRules` — evaluates visibleWhen / disabledWhen / computed
+*   3. `useDependsOn`        — invalidates entity queries when dependency fields change
+*
+* ## Operation & form state (via `useSmartCrudOperation`)
+*   Manages `activeOperation` + `formData` as a unified state pair, synced
+*   from routing changes and the resource event bus (ADD/EDIT/CANCEL/SUCCESS).
+*
+* URL deep-linking is wired via `initialRecordId` / `initialIsNew` props on CrudPage.
+*/
+function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, editDisabled, deleteDisabled, gridRef }) {
+	const queryClient = useQueryClient();
+	const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
+	const events = resolvedBaseResource.events;
+	const isFieldsFactory = !resource.fieldContract && typeof resource.fields === "function";
+	const hasManualFields = !resource.fieldContract && Array.isArray(resource.fields) && resource.fields.length > 0;
+	const { fields, isLoading, error, supportedOperations } = useResolvedResourceFields({
+		apiUrl: resolvedBaseResource.apiUrl,
+		manualFields: hasManualFields ? resource.fields : void 0,
+		overrides: hasManualFields ? void 0 : fieldOverrides,
+		fieldContract: resource.fieldContract
+	});
+	const hintFiredRef = useRef(false);
+	useEffect(() => {
+		if (!resource.fieldContract && !hasManualFields && !isFieldsFactory && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
+			hintFiredRef.current = true;
+			logDevHint(resource.apiUrl, fields, supportedOperations);
+		}
+	}, [
+		resource.fieldContract,
+		hasManualFields,
+		isFieldsFactory,
+		isLoading,
+		error,
+		fields,
+		resource.apiUrl,
+		supportedOperations
+	]);
+	const routingState = useRouting(resource.routing);
+	const { activeOperation, formData, handleFormDataChange } = useSmartCrudOperation(events, routingState);
+	const roles = useSmartCrudRoles();
+	const { processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, useMemo(() => roles ?? [], [roles]));
+	useMercureSubscription(resource.apiUrl, () => {
+		if (events.SUCCESS) dispatch(events.SUCCESS);
+	}, resolvedBaseResource.mercure !== false);
+	const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith("/") ? resolvedBaseResource.apiUrl : `/${resolvedBaseResource.apiUrl}`;
+	const resolvedResource = useMemo(() => ({
+		...resolvedBaseResource,
+		...!hasManualFields && !isFieldsFactory ? { fields } : {},
+		apiUrl: normalizedApiUrl,
+		...!isFieldsFactory ? { fields: processedFields } : {},
+		_supportedOperations: supportedOperations
+	}), [
+		fields,
+		hasManualFields,
+		isFieldsFactory,
+		normalizedApiUrl,
+		processedFields,
+		resolvedBaseResource,
+		supportedOperations
+	]);
+	if (!hasManualFields && !isFieldsFactory && isLoading) return /* @__PURE__ */ jsx(CrudSkeleton, {});
+	if (!hasManualFields && !isFieldsFactory && error) return /* @__PURE__ */ jsx(CrudError, {
+		message: formatRuntimeErrorMessage(error),
+		onRetry: () => queryClient.invalidateQueries()
+	});
+	return /* @__PURE__ */ jsx(CrudPage, {
+		resource: resolvedResource,
+		onFormDataChange: handleFormDataChange,
+		computedValues,
+		initialRecordId: routingState.initialRecordId,
+		initialIsNew: routingState.initialIsNew,
+		initialFilters: routingState.initialFilters,
+		onFiltersChange: routingState.syncFilters,
+		formRef,
+		onSelectionChanged,
+		editDisabled,
+		deleteDisabled,
+		gridRef
+	});
+}
+//#endregion
+//#region assets/crud/crud/fieldContract.ts
+function defineFields(contract) {
+	return validateFieldContract(contract);
+}
+const defineFieldContract = defineFields;
+//#endregion
 //#region assets/core/i18n/coreTranslations.ts
 const coreTranslationsEs = {
 	"crudPage.selectedCount": "{{count}} seleccionados",
@@ -4252,7 +4534,12 @@ const coreTranslationsEs = {
 	"dialog.buttonCancel": "Cancelar",
 	"dialog.buttonSave": "Guardar",
 	"dialog.confirmDelete": "¿Está seguro de eliminar el registro?",
-	"dialog.confirmDeleteTitle": "Confirmar eliminación"
+	"dialog.confirmDeleteTitle": "Confirmar eliminación",
+	"common.yes": "Sí",
+	"common.no": "No",
+	"validation.defaultError": "Valor inválido",
+	"form.searchButton": "Buscar",
+	"form.actionButton": "Acción"
 };
 const coreTranslationsEn = {
 	"crudPage.selectedCount": "{{count}} selected",
@@ -4291,7 +4578,12 @@ const coreTranslationsEn = {
 	"dialog.buttonCancel": "Cancel",
 	"dialog.buttonSave": "Save",
 	"dialog.confirmDelete": "Are you sure you want to delete this record?",
-	"dialog.confirmDeleteTitle": "Confirm deletion"
+	"dialog.confirmDeleteTitle": "Confirm deletion",
+	"common.yes": "Yes",
+	"common.no": "No",
+	"validation.defaultError": "Invalid value",
+	"form.searchButton": "Search",
+	"form.actionButton": "Action"
 };
 //#endregion
 //#region assets/core/i18n/initCoreI18n.ts
@@ -4299,45 +4591,6 @@ function initCoreI18n() {
 	i18next.addResourceBundle("es", "core", coreTranslationsEs, true, false);
 	i18next.addResourceBundle("en", "core", coreTranslationsEn, true, false);
 }
-//#endregion
-//#region assets/crud/crud/hydra/index.ts
-var hydra_exports = /* @__PURE__ */ __exportAll({});
-import * as import__nubit_api_platform from "@nubit/api-platform";
-__reExport(hydra_exports, import__nubit_api_platform);
-__reExport(/* @__PURE__ */ __exportAll({
-	AuditTrailPanel: () => AuditTrailPanel,
-	CrudPage: () => CrudPage,
-	DialogStoreProvider: () => DialogStoreProvider,
-	SmartCrudFieldContractError: () => SmartCrudFieldContractError,
-	SmartCrudFieldOperationSemanticsError: () => SmartCrudFieldOperationSemanticsError,
-	SmartCrudPage: () => SmartCrudPage,
-	SmartCrudRolesProvider: () => SmartCrudRolesProvider,
-	applyFieldOperationSemantics: () => applyFieldOperationSemantics,
-	collectOperationSemanticsIssues: () => collectOperationSemanticsIssues,
-	createScopedEventBus: () => createScopedEventBus,
-	defineFieldContract: () => defineFieldContract,
-	defineFields: () => defineFields,
-	defineResource: () => defineResource,
-	initCoreI18n: () => initCoreI18n,
-	mergeOverrides: () => mergeOverrides,
-	normalizeFieldOperationSemantics: () => normalizeFieldOperationSemantics,
-	resolveFieldOperationSemantics: () => resolveFieldOperationSemantics,
-	resolveSmartCrudFields: () => resolveSmartCrudFields,
-	useColumnPreset: () => useColumnPreset,
-	useConditionalRules: () => useConditionalRules,
-	useCoreTranslation: () => useCoreTranslation,
-	useCrudDialogStore: () => useCrudDialogStore,
-	useCrudPage: () => useCrudPage,
-	useDependsOn: () => useDependsOn,
-	useFieldPermissions: () => useFieldPermissions,
-	usePermissions: () => usePermissions,
-	useRouting: () => useRouting,
-	useSelectionState: () => useSelectionState,
-	useSmartCrudRoles: () => useSmartCrudRoles,
-	validateFieldContract: () => validateFieldContract,
-	validateHydraFieldResolutionInput: () => validateHydraFieldResolutionInput,
-	validateResolvedFieldNames: () => validateResolvedFieldNames
-}), hydra_exports);
 //#endregion
 //#region assets/crud/field/BaseFieldBuilder.ts
 var BaseFieldBuilder = class {
@@ -4352,13 +4605,11 @@ var BaseFieldBuilder = class {
 			width: void 0,
 			height: null,
 			minWidth: void 0,
-			minHeight: void 0,
 			align: "left",
 			sortable: true,
 			filterable: true,
 			hideable: true,
 			validators: [],
-			mode: "local",
 			url: void 0,
 			loadOptions: [],
 			filters: [],
@@ -4377,7 +4628,6 @@ var BaseFieldBuilder = class {
 			onChange: void 0,
 			onSelect: void 0,
 			onClick: void 0,
-			onKeyPress: void 0,
 			readonly: false,
 			disabled: false,
 			hidden: false,
@@ -4385,19 +4635,15 @@ var BaseFieldBuilder = class {
 			precision: 0,
 			accept: null,
 			buttons: [],
-			hidingPriority: void 0,
 			searchEnabled: true,
 			searchExpr: null,
-			fixed: false,
-			fixedPosition: void 0,
 			helpText: void 0,
 			contentRender: null,
 			visibleOnForm: true,
 			maxLength: void 0,
 			multiple: false,
 			autoSelectIfSingle: false,
-			sendAsString: false,
-			editorOptions: void 0
+			sendAsString: false
 		};
 	}
 	isIdentity(isIdentity) {
@@ -4428,10 +4674,6 @@ var BaseFieldBuilder = class {
 		this._field.minWidth = minWidth;
 		return this;
 	}
-	minHeight(minHeight) {
-		this._field.minHeight = minHeight;
-		return this;
-	}
 	align(align) {
 		this._field.align = align;
 		return this;
@@ -4450,10 +4692,6 @@ var BaseFieldBuilder = class {
 	}
 	validators(validators) {
 		this._field.validators = validators;
-		return this;
-	}
-	mode(mode) {
-		this._field.mode = mode;
 		return this;
 	}
 	valueType(valueType) {
@@ -4528,24 +4766,12 @@ var BaseFieldBuilder = class {
 		this._field.buttons = value;
 		return this;
 	}
-	hidingPriority(value) {
-		this._field.hidingPriority = value;
-		return this;
-	}
 	searchEnabled(value) {
 		this._field.searchEnabled = value;
 		return this;
 	}
 	searchExpr(value) {
 		this._field.searchExpr = value;
-		return this;
-	}
-	fixed(value) {
-		this._field.fixed = value;
-		return this;
-	}
-	fixedPosition(value) {
-		this._field.fixedPosition = value;
 		return this;
 	}
 	helpText(value) {
@@ -4558,10 +4784,6 @@ var BaseFieldBuilder = class {
 	}
 	visibleOnForm(value) {
 		this._field.visibleOnForm = value;
-		return this;
-	}
-	onKeyPress(param) {
-		this._field.onKeyPress = param;
 		return this;
 	}
 	autoSelectIfSingle(value) {
@@ -4604,10 +4826,6 @@ var BaseFieldBuilder = class {
 		this._field.multiple = value;
 		return this;
 	}
-	editorOptions(param) {
-		this._field.editorOptions = param;
-		return this;
-	}
 	maxLength(value) {
 		this._field.maxLength = value;
 		return this;
@@ -4622,6 +4840,18 @@ var BaseFieldBuilder = class {
 	}
 	computed(fn) {
 		this._field.computed = fn;
+		return this;
+	}
+	defaultWhen(fn) {
+		this._field.defaultWhen = fn;
+		return this;
+	}
+	requiredWhen(fn) {
+		this._field.requiredWhen = fn;
+		return this;
+	}
+	clearWhenHidden(value = true) {
+		this._field.clearWhenHidden = value;
 		return this;
 	}
 	dependsOn(fields) {
@@ -4672,7 +4902,6 @@ function identityField() {
 *   new EntityFieldBuilder('customers', 'id', 'businessName')
 *     .label('Cliente')
 *     .name('customer')
-*     .mode('remote')
 *     .formatter(cell => cell.value?.businessName)
 *     .build()
 */
@@ -4750,7 +4979,7 @@ function imageField(apiBaseUrl) {
 var DateFieldBuilder = class extends BaseFieldBuilder {
 	constructor() {
 		super("date");
-		this._field.defaultValue = /* @__PURE__ */ new Date();
+		this._field.defaultValue = new Intl.DateTimeFormat("en-CA", { timeZone: getCoreTimezone() }).format(/* @__PURE__ */ new Date());
 	}
 };
 function dateField() {
@@ -4962,13 +5191,11 @@ var FieldBuilder = class {
 			width: void 0,
 			height: null,
 			minWidth: void 0,
-			minHeight: void 0,
 			align: "left",
 			sortable: true,
 			filterable: true,
 			hideable: true,
 			validators: [],
-			mode: "local",
 			url: void 0,
 			loadOptions: [],
 			filters: [],
@@ -4988,7 +5215,6 @@ var FieldBuilder = class {
 			onChange: void 0,
 			onSelect: void 0,
 			onClick: void 0,
-			onKeyPress: void 0,
 			readonly: false,
 			disabled: false,
 			hidden: false,
@@ -4996,17 +5222,13 @@ var FieldBuilder = class {
 			precision: 0,
 			accept: null,
 			buttons: [],
-			hidingPriority: void 0,
 			searchEnabled: true,
 			searchExpr: null,
-			fixed: false,
-			fixedPosition: void 0,
 			helpText: void 0,
 			contentRender: null,
 			visibleOnForm: true,
 			maxLength: void 0,
 			multiple: false,
-			editorOptions: void 0,
 			sendAsString: false
 		};
 	}
@@ -5042,10 +5264,6 @@ var FieldBuilder = class {
 		this._field.minWidth = minWidth;
 		return this;
 	}
-	minHeight(minHeight) {
-		this._field.minHeight = minHeight;
-		return this;
-	}
 	align(align) {
 		this._field.align = align;
 		return this;
@@ -5064,10 +5282,6 @@ var FieldBuilder = class {
 	}
 	validators(validators) {
 		this._field.validators = validators;
-		return this;
-	}
-	mode(mode) {
-		this._field.mode = mode;
 		return this;
 	}
 	url(url) {
@@ -5174,24 +5388,12 @@ var FieldBuilder = class {
 		this._field.buttons = value;
 		return this;
 	}
-	hidingPriority(value) {
-		this._field.hidingPriority = value;
-		return this;
-	}
 	searchEnabled(value) {
 		this._field.searchEnabled = value;
 		return this;
 	}
 	searchExpr(value) {
 		this._field.searchExpr = value;
-		return this;
-	}
-	fixed(value) {
-		this._field.fixed = value;
-		return this;
-	}
-	fixedPosition(value) {
-		this._field.fixedPosition = value;
 		return this;
 	}
 	helpText(value) {
@@ -5206,16 +5408,8 @@ var FieldBuilder = class {
 		this._field.visibleOnForm = value;
 		return this;
 	}
-	onKeyPress(param) {
-		this._field.onKeyPress = param;
-		return this;
-	}
 	multiple(value) {
 		this._field.multiple = value;
-		return this;
-	}
-	editorOptions(param) {
-		this._field.editorOptions = param;
 		return this;
 	}
 	sendAsString(value) {
@@ -5226,9 +5420,104 @@ var FieldBuilder = class {
 		this._field.maxLength = value;
 		return this;
 	}
+	visibleWhen(fn) {
+		this._field.visibleWhen = fn;
+		return this;
+	}
+	disabledWhen(fn) {
+		this._field.disabledWhen = fn;
+		return this;
+	}
+	computed(fn) {
+		this._field.computed = fn;
+		return this;
+	}
+	defaultWhen(fn) {
+		this._field.defaultWhen = fn;
+		return this;
+	}
+	requiredWhen(fn) {
+		this._field.requiredWhen = fn;
+		return this;
+	}
+	clearWhenHidden(value = true) {
+		this._field.clearWhenHidden = value;
+		return this;
+	}
+	dependsOn(fields) {
+		this._field.dependsOn = fields;
+		return this;
+	}
+	permissions(value) {
+		this._field.permissions = value;
+		return this;
+	}
 	build() {
 		return { ...this._field };
 	}
 };
 //#endregion
-export { AppDialog, ConfirmDialog, CrudPage, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, SmartCrudPage, SmartCrudRolesProvider, checkboxField, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, initCoreI18n, mergeOverrides, noneField, numberField, passwordField, resolveSmartCrudFields, selectField, switchField, textField, textareaField, useCoreTranslation, useCrudPage, usePermissions, useSelectionState, useSmartCrudRoles };
+//#region assets/crud/adapter/RestAdapter.ts
+/**
+* Backend adapter for plain OpenAPI / REST backends.
+*
+* Conventions assumed:
+* - Records use a plain `id` field (numeric or string UUID) as their identifier.
+* - Entity fields are serialized as scalar IDs in POST/PATCH bodies.
+* - Collection responses are either a plain array or `{ items: [...], total: N }`.
+*   Also handles `{ data: [...], total: N }` (common in Laravel / many REST frameworks).
+*/
+const RestAdapter = {
+	getRowId(record, idField) {
+		const direct = record[idField];
+		if (direct !== void 0 && direct !== null) return direct;
+		const id = record["id"];
+		if (id !== void 0 && id !== null) return id;
+		return "";
+	},
+	buildItemUrl(baseUrl, id) {
+		return `${baseUrl.replace(/\/+$/, "")}/${id}`;
+	},
+	serializeEntityRef(field, rawValue) {
+		if (rawValue === null || rawValue === void 0 || rawValue === "" || rawValue === -999) return;
+		if (typeof rawValue === "object") {
+			const entity = rawValue;
+			const idValue = entity[field.valueField] ?? entity["id"];
+			if (idValue !== void 0 && idValue !== null) return idValue;
+			return;
+		}
+		return rawValue;
+	},
+	normalizeEntityValue(rawValue, field) {
+		if (typeof rawValue === "object" && rawValue !== null) {
+			const entity = rawValue;
+			const directValue = entity[field.valueField];
+			if (directValue !== void 0 && directValue !== null) return directValue;
+			const id = entity["id"];
+			if (id !== void 0 && id !== null) return id;
+		}
+		return rawValue;
+	},
+	getEntityOptionKey(item, field) {
+		return item[field.valueField] ?? item["value"] ?? item["id"];
+	},
+	parseListResponse(response) {
+		if (Array.isArray(response)) return {
+			items: response,
+			total: response.length
+		};
+		const r = response;
+		const items = r["items"] ?? r["data"] ?? r["results"];
+		if (Array.isArray(items)) return {
+			items,
+			total: Number(r["total"] ?? r["count"] ?? items.length)
+		};
+		return {
+			items: [],
+			total: 0
+		};
+	},
+	synthesizeEntityKey(_field, _entityValue) {}
+};
+//#endregion
+export { AppDialog, ConfirmDialog, CrudPage, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, checkboxField, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, initCoreI18n, mergeOverrides, noneField, numberField, passwordField, resolveResourceDetails, resolveResourceToolbar, resolveSmartCrudFields, selectField, switchField, textField, textareaField, useCoreTranslation, useCrudPage, usePermissions, useResolvedResourceFields, useResourceStoreFactory, useSelectionState, useSmartCrudRoles };

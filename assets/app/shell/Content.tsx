@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { appRoutes } from './app-routes';
 import { EfactAdminShell } from './EfactAdminShell';
 import { userInformation } from '@app/userInformation';
-import { SchemaProvider } from '@nubit/api-platform';
+import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubit/hydra';
 import { RouteErrorBoundary } from '@shared/components/RouteErrorBoundary';
 
 export const Content = () => {
@@ -11,22 +11,26 @@ export const Content = () => {
 
   return (
     <SchemaProvider>
-      <EfactAdminShell title={userInformation().currentBranchName}>
-        <Routes>
-          {appRoutes.map(({ path, element: RouteComponent }) => (
-            <Route
-              key={path}
-              path={path}
-              element={(
-                <RouteErrorBoundary>
-                  <RouteComponent />
-                </RouteErrorBoundary>
-              )}
-            />
-          ))}
-          <Route path="*" element={<Navigate to={defaultPath} />} />
-        </Routes>
-      </EfactAdminShell>
+      <HydraResourceSchemaProvider>
+        <HydraResourceStoreProvider>
+          <EfactAdminShell title={userInformation().currentBranchName}>
+            <Routes>
+              {appRoutes.map(({ path, element: RouteComponent }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={(
+                    <RouteErrorBoundary>
+                      <RouteComponent />
+                    </RouteErrorBoundary>
+                  )}
+                />
+              ))}
+              <Route path="*" element={<Navigate to={defaultPath} />} />
+            </Routes>
+          </EfactAdminShell>
+        </HydraResourceStoreProvider>
+      </HydraResourceSchemaProvider>
     </SchemaProvider>
   );
 };

@@ -1,11 +1,9 @@
 import React, { useMemo, useEffect, useRef, type RefObject } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { CrudPage } from './CrudPage';
-import { useResourceSchema } from './hydra/useResourceSchema';
-import { API_DOC_QUERY_KEY } from './hydra/useHydraMetadata';
 import type { ResourceConfig } from './ResourceConfig';
 import type { Field } from '../field/Field';
-import type { FieldOverride } from './hydra/useResourceSchema';
+import type { FieldOverride } from './resolveSmartCrudFields';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
 import { dispatch, useMercureSubscription } from '@nubit/core';
@@ -17,6 +15,7 @@ import type { DataRecord } from '@nubit/core';
 import type { FormHandle } from '../form/FormHandle';
 import type { GridHandle } from '../datagrid/GridHandle';
 import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
+import { useResolvedResourceFields } from '../schema/ResourceSchema';
 
 function CrudSkeleton() {
   return (
@@ -117,12 +116,12 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     Array.isArray(resource.fields) &&
     (resource.fields as unknown[]).length > 0;
 
-  const { fields, isLoading, error, supportedOperations } = useResourceSchema(
-    resolvedBaseResource.apiUrl,
-    hasManualFields ? (resource.fields as Field[]) : undefined,
-    hasManualFields ? undefined : fieldOverrides,
-    resource.fieldContract,
-  );
+  const { fields, isLoading, error, supportedOperations } = useResolvedResourceFields({
+    apiUrl: resolvedBaseResource.apiUrl,
+    manualFields: hasManualFields ? (resource.fields as Field[]) : undefined,
+    overrides: hasManualFields ? undefined : fieldOverrides,
+    fieldContract: resource.fieldContract,
+  });
 
   // Dev hint: log a defineResource() snippet once per resource URL when fields
   // were auto-inferred. No-op in production.
@@ -220,7 +219,7 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     return (
       <CrudError
         message={formatRuntimeErrorMessage(error)}
-        onRetry={() => queryClient.invalidateQueries({ queryKey: API_DOC_QUERY_KEY })}
+        onRetry={() => queryClient.invalidateQueries()}
       />
     );
   }

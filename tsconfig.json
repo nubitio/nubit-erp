@@ -20,7 +20,7 @@
       "@nubit/core": ["assets/core/public.ts"],
       "@nubit/ui": ["assets/ui/public.ts"],
       "@nubit/admin": ["assets/admin/public.ts"],
-      "@nubit/api-platform": ["assets/api-platform/public.ts"],
+      "@nubit/hydra": ["assets/hydra/public.ts"],
 
       // Canonical frontend layer aliases (ADR-015)
       "@app/*": ["assets/app/*"],

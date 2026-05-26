@@ -24,7 +24,7 @@ const frontendAliases = {
   '@nubit/core': fileURLToPath(new URL('./assets/core/public.ts', import.meta.url)),
   '@nubit/ui': fileURLToPath(new URL('./assets/ui/public.ts', import.meta.url)),
   '@nubit/admin': fileURLToPath(new URL('./assets/admin/public.ts', import.meta.url)),
-  '@nubit/api-platform': fileURLToPath(new URL('./assets/api-platform/public.ts', import.meta.url)),
+  '@nubit/hydra': fileURLToPath(new URL('./assets/hydra/public.ts', import.meta.url)),
 
   // Canonical frontend layer aliases (ADR-015)
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
@@ -194,7 +194,7 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
-          // Keep the in-repo Nubit facades together while CRUD/API Platform are
+          // Keep the in-repo Nubit facades together while CRUD/Hydra are
           // still being split. This avoids circular execution-order warnings
           // between facade re-exports and implementation modules.
           if (
@@ -202,7 +202,7 @@ export default defineConfig({
             id.includes('/assets/crud/') ||
             id.includes('/assets/ui/') ||
             id.includes('/assets/admin/') ||
-            id.includes('/assets/api-platform/') ||
+            id.includes('/assets/hydra/') ||
             id.includes('/assets/react-admin/')
           ) {
             return 'nubit';

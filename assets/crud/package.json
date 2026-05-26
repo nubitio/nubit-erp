@@ -16,7 +16,6 @@
   },
   "files": ["dist"],
   "dependencies": {
-    "@nubit/api-platform": "^0.1.0",
     "@nubit/core": "^0.1.0",
     "@nubit/ui": "^0.1.0"
   },

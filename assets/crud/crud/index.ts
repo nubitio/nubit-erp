@@ -74,6 +74,5 @@ export { useCoreTranslation, initCoreI18n } from '../../core/i18n';
 export { DialogStoreProvider } from './DialogStoreProvider';
 export { useCrudDialogStore } from './useCrudDialogStore';
 export type { DialogState, DialogMode, DialogActions, DialogSlice } from './dialogStore';
-export * from './hydra';
 export * from './rules';
 export * from './routing';

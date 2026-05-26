@@ -1,16 +1,22 @@
-// @nubit/api-platform — API Platform/Hydra/OpenAPI adapter.
+// @nubit/hydra — Hydra/OpenAPI adapter for CRUD schema discovery and data loading.
 // Import from this facade only; do not reach into implementation paths.
 //
 // Requires: <CoreConfigProvider locale="es" timezone="America/Lima"> from @nubit/core
 // in the app provider tree so that useHydraMetadata picks up the correct locale.
 
-export { ApiPlatformRemoteDataSource } from './ApiPlatformRemoteDataSource';
+export { HydraRemoteDataSource, createHydraResourceStore } from './HydraRemoteDataSource';
 export type {
   RemoteDataSourceOptions,
   RemoteFilterDescriptor,
   RemoteLoadOptions,
   RemoteSortDescriptor,
-} from './ApiPlatformRemoteDataSource';
+} from './HydraRemoteDataSource';
+
+export { HydraResourceStoreProvider } from './HydraResourceStoreProvider';
+export type { HydraResourceStoreProviderProps } from './HydraResourceStoreProvider';
+
+export { HydraResourceSchemaProvider } from './HydraResourceSchemaProvider';
+export type { HydraResourceSchemaProviderProps } from './HydraResourceSchemaProvider';
 
 export {
   parseHydraDoc,
@@ -31,7 +37,7 @@ export {
   useResourceSchema,
 } from './useResourceSchema';
 
-export type { FieldOverride } from './useResourceSchema';
+export type { FieldOverride } from '@nubit/crud';
 
 export {
   SchemaProvider,

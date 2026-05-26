@@ -143,7 +143,7 @@ SDK externo lo requieran y la excepcion quede documentada.
 La extraccion reusable futura no debe convertir `@core` en un paquete monolitico. La direccion
 actual es separar la superficie frontend en paquetes `@nubit/*`: `@nubit/ui` para primitivas
 visuales, `@nubit/core` para runtime/HTTP/eventos/i18n, `@nubit/crud` para SmartCrud y grillas,
-`@nubit/api-platform` para Hydra/OpenAPI, y `@nubit/admin` para el shell de admin panel. El shell
+`@nubit/hydra` para Hydra/OpenAPI, y `@nubit/admin` para el shell de admin panel. El shell
 puede ser reusable, pero debe recibir menus, usuario, notificaciones, acciones de header, footer y
 auth mediante props/slots/adaptadores; no debe importar servicios o features concretas de eFact.
 

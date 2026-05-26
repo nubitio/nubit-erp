@@ -107,6 +107,31 @@ export type {
   DataGridViewOptions,
 } from './datagrid/DataGridViewOptions';
 
+// ── Resource stores ───────────────────────────────────────────────────────────
+export { ResourceStoreProvider, useResourceStoreFactory } from './data/ResourceStore';
+export type {
+  ResourceFilterDescriptor,
+  ResourceFilterRule,
+  ResourceLoadOption,
+  ResourceLoadOptions,
+  ResourceLoadResult,
+  ResourceSortDescriptor,
+  ResourceStore,
+  ResourceStoreFactory,
+  ResourceStoreOptions,
+  ResourceStoreProviderProps,
+} from './data/ResourceStore';
+
+// ── Resource schemas ──────────────────────────────────────────────────────────
+export { ResourceSchemaProvider, useResolvedResourceFields } from './schema/ResourceSchema';
+export type {
+  ResolveResourceFieldsOptions,
+  ResourceSchemaProviderProps,
+  ResourceSchemaRequest,
+  ResourceSchemaResolution,
+  ResourceSchemaResolver,
+} from './schema/ResourceSchema';
+
 // ── CRUD events ───────────────────────────────────────────────────────────────
 export { createCrudEvents } from '../core/event/createCrudEvents';
 

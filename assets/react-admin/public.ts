@@ -33,7 +33,11 @@ export {
   defineFieldContract,
   useCrudPage,
   usePermissions,
+  ResourceSchemaProvider,
+  ResourceStoreProvider,
   useSelectionState,
+  useResolvedResourceFields,
+  useResourceStoreFactory,
   useSmartCrudRoles,
   initCoreI18n,
   useCoreTranslation,
@@ -49,6 +53,9 @@ export type {
   FormSection,
   FormTab,
   SelectionState,
+  ResourceSchemaResolver,
+  ResourceStore,
+  ResourceStoreFactory,
   FieldOverride,
   SmartCrudFieldContract,
   AuditEntry,
@@ -101,14 +108,14 @@ export { DateUtils, LIMA_TZ, getCoreLocale, getCoreTimezone } from '@nubit/core'
 // ── Data ──────────────────────────────────────────────────────────────────────
 export type { DataRecord } from '@nubit/core';
 
-// ── API Platform Data Source ──────────────────────────────────────────────────
-export { ApiPlatformRemoteDataSource } from '@nubit/api-platform';
+// ── Hydra Data Source ─────────────────────────────────────────────────────────
+export { HydraRemoteDataSource } from '@nubit/hydra';
 export type {
   RemoteDataSourceOptions,
   RemoteFilterDescriptor,
   RemoteLoadOptions,
   RemoteSortDescriptor,
-} from '@nubit/api-platform';
+} from '@nubit/hydra';
 
 // ── Mercure (real-time) ───────────────────────────────────────────────────────
 export { MercureProvider, useMercureHub, useMercureSubscription } from '@nubit/core';
@@ -118,23 +125,25 @@ export type { MercureProviderProps } from '@nubit/core';
 export { AppDialog, ConfirmDialog, AppToolbar, Card, ThemeProvider, ThemeContext, useTheme, ThemeSwitcher } from '@nubit/ui';
 export type { AppDialogProps, ConfirmDialogProps, AppToolbarProps, CardProps, ThemeProviderProps, ThemeContextValue, Theme, ThemeMode, ThemeSwitcherProps } from '@nubit/ui';
 
-// ── API Platform / Hydra adapter ──────────────────────────────────────────────
+// ── Hydra/OpenAPI adapter ─────────────────────────────────────────────────────
 export {
   SchemaProvider,
   useSchemaContext,
   useHydraMetadata,
   useResourceSchema,
+  HydraResourceSchemaProvider,
+  HydraResourceStoreProvider,
   parseHydraDoc,
   parseOpenApiDoc,
   mapHydraSchemaToFields,
   resolveRangeTag,
-} from '@nubit/api-platform';
+} from '@nubit/hydra';
 export type {
   UseSchemaContextResult,
   HydraApiDoc,
   OpenApiDoc,
   ApiDoc,
-} from '@nubit/api-platform';
+} from '@nubit/hydra';
 
 // ── Admin shell ───────────────────────────────────────────────────────────────
 export {

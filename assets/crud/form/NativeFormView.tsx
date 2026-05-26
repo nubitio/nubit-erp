@@ -16,8 +16,8 @@ import { createPortal } from 'react-dom';
 import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, type CoreHttpClient } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { ApiPlatformRemoteDataSource } from '@nubit/api-platform';
 import type { DataRecord } from '@nubit/core';
+import { type ResourceStore, type ResourceStoreFactory, useResourceStoreFactory } from '../data/ResourceStore';
 import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
 import { buildEmptyRow, normalizeFormData } from './FormDataTransform';
@@ -33,8 +33,12 @@ import { type DetailFieldErrors, mapApiViolations } from './FormApiViolations';
 type FieldState = { readonly?: boolean; disabled?: boolean; hidden?: boolean; validationEnabled?: boolean };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
 
-function createRemoteSource(field: Field, httpClient: CoreHttpClient): ApiPlatformRemoteDataSource {
-  return new ApiPlatformRemoteDataSource({
+function createRemoteSource(
+  field: Field,
+  httpClient: CoreHttpClient,
+  resourceStoreFactory: ResourceStoreFactory,
+): ResourceStore {
+  return resourceStoreFactory({
     url: field.url ?? '',
     idField: field.valueField,
     byKeyUrl: field.byKeyUrl,
@@ -238,6 +242,7 @@ export function NativeEntitySelect({
   required?: boolean;
   value: unknown;
 }) {
+  const resourceStoreFactory = useResourceStoreFactory();
   const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
   const [selectedItemCache, setSelectedItemCache] = useState<DataRecord | null>(null);
@@ -262,7 +267,7 @@ export function NativeEntitySelect({
     const timer = setTimeout(() => {
       setLoading(true);
       setHasMore(true);
-      createRemoteSource(field, httpClient)
+      createRemoteSource(field, httpClient, resourceStoreFactory)
         .load({ take: 50, skip: 0, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
         .then((result) => {
           setSearchedItems(result.data);
@@ -272,14 +277,14 @@ export function NativeEntitySelect({
         .finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(timer);
-  }, [field, httpClient, open, query]);
+  }, [field, httpClient, open, query, resourceStoreFactory]);
 
   const loadMore = useCallback(() => {
     if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
     setLoadingMore(true);
     const searchValue = query.trim();
     const currentCount = searchedItems ? searchedItems.length : 0;
-    createRemoteSource(field, httpClient)
+    createRemoteSource(field, httpClient, resourceStoreFactory)
       .load({ take: 50, skip: currentCount, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
       .then((result) => {
         setSearchedItems((prev) => {
@@ -292,7 +297,7 @@ export function NativeEntitySelect({
       })
       .catch(() => setHasMore(false))
       .finally(() => setLoadingMore(false));
-  }, [field, httpClient, loading, loadingMore, hasMore, query, searchedItems]);
+  }, [field, httpClient, loading, loadingMore, hasMore, query, resourceStoreFactory, searchedItems]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const t = event.currentTarget;
@@ -611,6 +616,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const { t } = useCoreTranslation();
   const { notify } = useCoreRuntime();
   const httpClient = useCoreHttpClient();
+  const resourceStoreFactory = useResourceStoreFactory();
   const [on, emit] = useEvents();
   const instanceId = useId();
   const scopedFormErrorsEvent = `${FORM_ERRORS_EVENT}:${instanceId}`;
@@ -684,7 +690,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
         setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         return;
       }
-      const source = createRemoteSource(field, httpClient);
+      const source = createRemoteSource(field, httpClient, resourceStoreFactory);
       source
         .load({ take: 50 })
         .then((result) => {
@@ -697,7 +703,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         });
     });
-  }, [httpClient, optionFields, setFieldValue]);
+  }, [httpClient, optionFields, resourceStoreFactory, setFieldValue]);
 
   useEffect(() => {
     fields.forEach((field) => {

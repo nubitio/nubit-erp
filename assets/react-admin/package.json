@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Batteries-included admin stack: core runtime, CRUD, API Platform adapter, and AdminShell.",
+  "description": "Batteries-included admin stack: core runtime, CRUD, Hydra adapter, and AdminShell.",
   "source": "./public.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -18,7 +18,7 @@
   "files": ["dist"],
   "dependencies": {
     "@nubit/admin": "^0.1.0",
-    "@nubit/api-platform": "^0.1.0",
+    "@nubit/hydra": "^0.1.0",
     "@nubit/core": "^0.1.0",
     "@nubit/crud": "^0.1.0",
     "@nubit/ui": "^0.1.0"

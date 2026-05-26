@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ApiPlatformRemoteDataSource } from './ApiPlatformRemoteDataSource';
+import { HydraRemoteDataSource } from './HydraRemoteDataSource';
 
 const makeSource = (overrides = {}) =>
-  new ApiPlatformRemoteDataSource({
+  new HydraRemoteDataSource({
     url: '/api/products',
     idField: 'id',
     ...overrides,
@@ -10,7 +10,7 @@ const makeSource = (overrides = {}) =>
 
 // ── prepareLoadOptions ────────────────────────────────────────────────────────
 
-describe('ApiPlatformRemoteDataSource.prepareLoadOptions', () => {
+describe('HydraRemoteDataSource.prepareLoadOptions', () => {
   it('passes through load options unchanged when no defaults are set', () => {
     const ds = makeSource();
     const result = ds.prepareLoadOptions({ filter: [], sort: [] });
@@ -66,7 +66,7 @@ describe('ApiPlatformRemoteDataSource.prepareLoadOptions', () => {
 
 // ── makeFilterRules ───────────────────────────────────────────────────────────
 
-describe('ApiPlatformRemoteDataSource.makeFilterRules', () => {
+describe('HydraRemoteDataSource.makeFilterRules', () => {
   it('serializes filter rules to query string format', () => {
     const ds = makeSource();
     const result = ds.makeFilterRules([
