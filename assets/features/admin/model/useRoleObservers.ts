@@ -12,6 +12,7 @@ type UseRoleObserversParams = {
   on: OnEventFn;
   emit: <T>(name: string, payload?: T) => void;
   permissionEvents: {
+    ADD: string;
     SAVE: string;
     SUCCESS: string;
   };

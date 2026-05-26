@@ -28,14 +28,16 @@ interface StockEntryPageProps {
 export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const { currentBranchId } = useSessionInfo();
   const events = createCrudEvents(`stock-entry-${mode}`);
+  const detailFields = StockEntryItemFields(mode);
+  const detailUrl = API_URL + '/{id}/items';
 
   const resource = defineResource({
     id:        `stock-entry-${mode}`,
     title:     TITLES[mode],
     apiUrl:    `${API_URL}?type=${TYPE_FILTER[mode]}`,
     fields:    StockEntryFields(mode, currentBranchId),
-    detailFields: StockEntryItemFields(mode),
-    detailUrl: API_URL + '/{id}/items',
+    gridDetail: { url: detailUrl, fields: detailFields },
+    formDetail: { url: detailUrl, fields: detailFields },
     events,
     sort:      [{ selector: 'createdAt', desc: true }],
     permissions: {

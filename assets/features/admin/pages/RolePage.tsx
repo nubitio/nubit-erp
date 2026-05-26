@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubit/crud';
 import { permissionEvents, roleEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
@@ -34,7 +34,7 @@ export const RolePage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }) => [
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
         {
           text: 'Permisos',
           type: 'info',

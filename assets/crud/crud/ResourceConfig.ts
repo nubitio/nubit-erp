@@ -62,6 +62,21 @@ export type ResourceToolbar<T extends DataRecord = DataRecord> =
   | ResourceToolbarItems
   | ((context: ResourceToolbarContext<T>) => ResourceToolbarItems);
 
+export interface ResourceGridDetail {
+  url: string;
+  fields: Field[] | ((parentRow: DataRecord) => Field[]);
+}
+
+export interface ResourceFormDetail {
+  url?: string;
+  fields: Field[];
+  propertyName?: string;
+  allowAdding?: boolean;
+  allowDeleting?: boolean;
+  allowUpdating?: boolean;
+  required?: boolean;
+}
+
 export interface ResourceConfig<T extends DataRecord = DataRecord> {
   id: string;
   title: string;
@@ -81,19 +96,31 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   /** Optional: inject a pre-existing event bus (e.g. a module-level singleton).
    *  When omitted, `useCrudPage` creates fresh events via `createCrudEvents(id)`. */
   events?: FormEventNames;
+  /** Detail rows rendered in the main grid's expandable row panel. */
+  gridDetail?: ResourceGridDetail;
+  /** Detail rows rendered inside the create/edit form. */
+  formDetail?: ResourceFormDetail;
+  /** @deprecated Use `formDetail.fields` instead. */
   /** Fields rendered in the dialog form's detail grid. Must be a plain array (FormView constraint). */
   detailFields?: Field[];
+  /** @deprecated Use `gridDetail.fields` instead. */
   /** Fields rendered in the main grid's expandable detail rows. Supports a factory function
    *  `(parentRow) => Field[]`. Falls back to `detailFields` when absent. */
   gridDetailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
+  /** @deprecated Use `gridDetail.url` and/or `formDetail.url` instead. */
   detailUrl?: string;
+  /** @deprecated Use `formDetail.propertyName` instead. */
   detailPropertyName?: string;
+  /** @deprecated Use `formDetail.allowAdding` instead. */
   /** Allow adding rows to the form detail grid (default: true). */
   detailAllowAdding?: boolean;
+  /** @deprecated Use `formDetail.allowDeleting` instead. */
   /** Allow deleting rows from the form detail grid (default: true). */
   detailAllowDeleting?: boolean;
+  /** @deprecated Use `formDetail.allowUpdating` instead. */
   /** Allow updating rows in the form detail grid (default: true). */
   detailAllowUpdating?: boolean;
+  /** @deprecated Use `formDetail.required` instead. */
   /** Require at least one detail row before the form can be saved (default: false). */
   detailRequired?: boolean;
   sort?: Array<{ selector: string; desc: boolean }>;

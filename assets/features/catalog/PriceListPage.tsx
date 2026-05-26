@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubit/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
@@ -27,7 +27,7 @@ export const PriceListPage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }) => [
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
         {
           text: 'Precios',
           type: 'info',

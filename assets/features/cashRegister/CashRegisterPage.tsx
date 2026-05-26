@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SmartCrudPage, defineResource } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type ResourceToolbarContext } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { cashRegisterEvents } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
@@ -20,7 +20,7 @@ export const CashRegisterPage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }) => [
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
         {
           text: 'Ver turnos',
           type: 'info',

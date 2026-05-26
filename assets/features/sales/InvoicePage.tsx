@@ -21,9 +21,11 @@ const baseResource = defineResource({
   title: 'Comprobantes',
   apiUrl: API_URL + '?type=invoice',
   fields,
-  gridDetailFields: (parentRow: DataRecord) =>
-    InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
-  detailUrl: API_URL + '/{id}/lines',
+  gridDetail: {
+    url: API_URL + '/{id}/lines',
+    fields: (parentRow: DataRecord) =>
+      InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
+  },
   events: invoiceEvents,
   sort: [{ selector: 'createdAt', desc: true }],
   dialogWidth: 900,

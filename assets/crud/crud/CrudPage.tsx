@@ -197,6 +197,27 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
   const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
   const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
+  const gridDetail = resolvedResource.gridDetail ?? (
+    resolvedResource.detailUrl && (resolvedResource.gridDetailFields ?? resolvedResource.detailFields)
+      ? {
+          url: resolvedResource.detailUrl,
+          fields: resolvedResource.gridDetailFields ?? resolvedResource.detailFields!,
+        }
+      : undefined
+  );
+  const formDetail = resolvedResource.formDetail ?? (
+    resolvedResource.detailFields
+      ? {
+          url: resolvedResource.detailUrl,
+          fields: resolvedResource.detailFields,
+          propertyName: resolvedResource.detailPropertyName,
+          allowAdding: resolvedResource.detailAllowAdding,
+          allowDeleting: resolvedResource.detailAllowDeleting,
+          allowUpdating: resolvedResource.detailAllowUpdating,
+          required: resolvedResource.detailRequired,
+        }
+      : undefined
+  );
 
   const internalGridRef = React.useRef<GridHandle | null>(null);
   const gridRef = externalGridRef ?? internalGridRef;
@@ -418,8 +439,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         editMode={resolvedResource.editMode}
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
-        detailUrl={resolvedResource.detailUrl}
-        detailFields={resolvedResource.gridDetailFields ?? resolvedResource.detailFields}
+        detailUrl={gridDetail?.url}
+        detailFields={gridDetail?.fields}
         onFilterChange={onFiltersChange}
       />
       {!isInlineEditMode && (
@@ -436,13 +457,13 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             url={resolvedResource.apiUrl}
             fields={fields}
             events={events}
-            detailFields={resolvedResource.detailFields}
-            detailUrl={resolvedResource.detailUrl}
-            detailPropertyName={resolvedResource.detailPropertyName}
-            allowAdding={resolvedResource.detailAllowAdding}
-            allowDeleting={resolvedResource.detailAllowDeleting}
-            allowUpdating={resolvedResource.detailAllowUpdating}
-            requiredDetail={resolvedResource.detailRequired}
+            detailFields={formDetail?.fields}
+            detailUrl={formDetail?.url}
+            detailPropertyName={formDetail?.propertyName}
+            allowAdding={formDetail?.allowAdding}
+            allowDeleting={formDetail?.allowDeleting}
+            allowUpdating={formDetail?.allowUpdating}
+            requiredDetail={formDetail?.required}
             format={resolvedResource.format}
             onSaveSuccess={
               resolvedResource.onSaveSuccess
