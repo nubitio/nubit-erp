@@ -8,6 +8,9 @@ export type {
   FieldsFactory,
   ResourcePermissions,
   ResourceRouting,
+  ResourceToolbar,
+  ResourceToolbarContext,
+  ResourceToolbarItems,
 } from './ResourceConfig';
 export {
   defineFieldContract,

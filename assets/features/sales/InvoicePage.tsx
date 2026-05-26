@@ -33,11 +33,10 @@ const baseResource = defineResource({
 
 export const InvoicePage = () => {
   const gridRef = useRef<GridHandle | null>(null);
-  const selectedRowRef = useRef<DataRecord | null>(null);
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => selectedRowRef.current as InvoiceRow | undefined,
+      getSelectedRow: () => gridRef.current?.getSelectedRow() as InvoiceRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),
@@ -77,13 +76,5 @@ export const InvoicePage = () => {
     [actionDeps],
   );
 
-  return (
-    <SmartCrudPage
-      resource={resource}
-      gridRef={gridRef}
-      onSelectionChanged={(rows) => {
-        selectedRowRef.current = rows[0] ?? null;
-      }}
-    />
-  );
+  return <SmartCrudPage resource={resource} gridRef={gridRef} />;
 };

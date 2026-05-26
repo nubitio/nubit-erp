@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type DataRecord } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource } from '@nubit/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
@@ -22,22 +22,21 @@ const baseResource = defineResource({
 
 export const PriceListPage = () => {
   const [on, emit] = useEvents();
-  const selectedRowRef = useRef<DataRecord | null>(null);
   const pricesRef = useRef<PriceEditorGridHandle | null>(null);
 
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: [
+      toolbar: ({ selectedRow }) => [
         {
           text: 'Precios',
           type: 'info',
           onClick: () => {
-            if (!selectedRowRef.current) {
+            if (!selectedRow) {
               toast('Debe seleccionar una tarifa', 'warning');
               return;
             }
-            emit(priceEvents.ADD, { title: 'Precios de ' + selectedRowRef.current.name });
+            emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
           },
         },
       ],
@@ -45,16 +44,11 @@ export const PriceListPage = () => {
     [emit],
   );
 
-  usePriceListObservers({ on, emit, pricesEvent: priceEvents, selectedRowRef, pricesRef });
+  usePriceListObservers({ on, emit, pricesEvent: priceEvents, pricesRef });
 
   return (
     <>
-      <SmartCrudPage
-        resource={resource}
-        onSelectionChanged={(rows) => {
-          selectedRowRef.current = rows[0] ?? null;
-        }}
-      />
+      <SmartCrudPage resource={resource} />
       <DialogView events={priceEvents}>
         <PriceEditorGrid ref={pricesRef} />
       </DialogView>

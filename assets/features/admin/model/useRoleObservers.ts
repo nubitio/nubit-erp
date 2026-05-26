@@ -15,7 +15,6 @@ type UseRoleObserversParams = {
     SAVE: string;
     SUCCESS: string;
   };
-  selectedRowRef: React.RefObject<DataRecord | null>;
   treeRef: React.RefObject<PermissionTreeHandle | null>;
 };
 
@@ -23,24 +22,27 @@ export const useRoleObservers = ({
   on,
   emit,
   permissionEvents,
-  selectedRowRef,
   treeRef,
 }: UseRoleObserversParams) => {
-  const callbacksRef = useRef({ on, emit, permissionEvents, selectedRowRef, treeRef });
+  const currentRoleRef = useRef<DataRecord | null>(null);
+  const callbacksRef = useRef({ on, emit, permissionEvents, treeRef });
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix
-  callbacksRef.current = { on, emit, permissionEvents, selectedRowRef, treeRef };
+  callbacksRef.current = { on, emit, permissionEvents, treeRef };
 
   useEffect(() => {
     const {
       on: onEvent,
       emit: emitEvent,
       permissionEvents: ev,
-      selectedRowRef: rowRef,
       treeRef: tree,
     } = callbacksRef.current;
 
+    onEvent<{ row?: DataRecord } | undefined>(ev.ADD, (payload) => {
+      currentRoleRef.current = payload?.row ?? null;
+    });
+
     onEvent(ev.SAVE, () => {
-      const row = rowRef.current;
+      const row = currentRoleRef.current;
       if (!row) return;
       const permissions = tree.current?.getSelectedPermissionIds() ?? [];
       httpClient

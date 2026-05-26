@@ -16,7 +16,6 @@ type UsePriceListObserversParams = {
     SAVE: string;
     SUCCESS: string;
   };
-  selectedRowRef: React.RefObject<DataRecord | null>;
   pricesRef: React.RefObject<PriceEditorGridHandle | null>;
 };
 
@@ -24,24 +23,24 @@ export const usePriceListObservers = ({
   on,
   emit,
   pricesEvent,
-  selectedRowRef,
   pricesRef,
 }: UsePriceListObserversParams) => {
-  const callbacksRef = useRef({ on, emit, pricesEvent, selectedRowRef, pricesRef });
+  const currentPriceListRef = useRef<DataRecord | null>(null);
+  const callbacksRef = useRef({ on, emit, pricesEvent, pricesRef });
   // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix
-  callbacksRef.current = { on, emit, pricesEvent, selectedRowRef, pricesRef };
+  callbacksRef.current = { on, emit, pricesEvent, pricesRef };
 
   useEffect(() => {
     const {
       on: onEvent,
       emit: emitEvent,
       pricesEvent: ev,
-      selectedRowRef: rowRef,
       pricesRef: prices,
     } = callbacksRef.current;
 
-    onEvent(ev.ADD, () => {
-      const row = rowRef.current;
+    onEvent<{ row?: DataRecord } | undefined>(ev.ADD, (payload) => {
+      const row = payload?.row ?? null;
+      currentPriceListRef.current = row;
       if (!row) {
         toast('Debe seleccionar una tarifa', 'warning');
         return;
@@ -66,7 +65,7 @@ export const usePriceListObservers = ({
     });
 
     onEvent(ev.SAVE, () => {
-      const row = rowRef.current;
+      const row = currentPriceListRef.current;
       if (!row) {
         toast('Debe seleccionar una tarifa', 'warning');
         return;

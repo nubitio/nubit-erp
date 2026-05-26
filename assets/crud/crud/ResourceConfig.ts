@@ -4,6 +4,7 @@ import type { FilterRule } from '../field/FilterRule';
 import type { DataRecord } from '@nubit/core';
 import type { FormEventNames, ToolbarButtonItem } from '../../core/event/EventTypes';
 import type { FormHandle } from '../form/FormHandle';
+import type { GridHandle } from '../datagrid/GridHandle';
 import type { FormLayout } from '../form/FormLayout';
 import type { BulkAction } from './BulkAction';
 import type { ColumnPreset } from './ColumnPreset';
@@ -44,6 +45,22 @@ export interface ResourcePermissions {
   canExport?: boolean | (() => boolean);
   canBulkDelete?: boolean | (() => boolean);
 }
+
+export type ResourceToolbarItems = ToolbarButtonItem[] | ToolbarButtonItem[][];
+
+export interface ResourceToolbarContext<T extends DataRecord = DataRecord> {
+  resource: ResourceConfig<T>;
+  selectedRow: T | undefined;
+  selectedRows: T[];
+  gridRef: RefObject<GridHandle | null>;
+  formRef: RefObject<FormHandle | null>;
+  events: FormEventNames;
+  emit: <P>(name: string, payload?: P) => void;
+}
+
+export type ResourceToolbar<T extends DataRecord = DataRecord> =
+  | ResourceToolbarItems
+  | ((context: ResourceToolbarContext<T>) => ResourceToolbarItems);
 
 export interface ResourceConfig<T extends DataRecord = DataRecord> {
   id: string;
@@ -92,7 +109,7 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   dialogWidth?: number;
   dialogHeight?: number;
   format?: 'json' | 'multipart';
-  toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
+  toolbar?: ResourceToolbar<T>;
   onSaveSuccess?: (response: T) => void;
   onSaveError?: (error?: unknown) => void;
   onDeleteSuccess?: (response: T) => void;

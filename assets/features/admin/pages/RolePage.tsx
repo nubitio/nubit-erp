@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type DataRecord } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource } from '@nubit/crud';
 import { permissionEvents, roleEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from '../api/roleEndpoints';
@@ -29,20 +29,19 @@ const baseResource = defineResource({
 
 export const RolePage = () => {
   const [on, emit] = useEvents();
-  const selectedRowRef = useRef<DataRecord | null>(null);
   const treeRef = useRef<PermissionTreeHandle>(null);
 
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: [
+      toolbar: ({ selectedRow }) => [
         {
           text: 'Permisos',
           type: 'info',
           onClick: () => {
-            const row = selectedRowRef.current as SelectedRole | undefined;
+            const row = selectedRow as SelectedRole | undefined;
             if (row) {
-              emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
+              emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name, row });
               httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
                 treeRef.current?.setItems(response.data);
               });
@@ -56,16 +55,11 @@ export const RolePage = () => {
     [emit],
   );
 
-  useRoleObservers({ on, emit, permissionEvents, selectedRowRef, treeRef });
+  useRoleObservers({ on, emit, permissionEvents, treeRef });
 
   return (
     <>
-      <SmartCrudPage
-        resource={resource}
-        onSelectionChanged={(rows) => {
-          selectedRowRef.current = rows[0] ?? null;
-        }}
-      />
+      <SmartCrudPage resource={resource} />
       <DialogView events={permissionEvents}>
         <PermissionTreeView ref={treeRef} />
       </DialogView>

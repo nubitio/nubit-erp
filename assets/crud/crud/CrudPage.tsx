@@ -198,6 +198,9 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
   const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
 
+  const internalGridRef = React.useRef<GridHandle | null>(null);
+  const gridRef = externalGridRef ?? internalGridRef;
+  const [selectedRows, setSelectedRows] = useState<T[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | number | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
   const [confirmState, setConfirmState] = useState<{
@@ -212,7 +215,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     closeDialog,
   } = useCrudDialogStore(resolvedResource.id);
 
-  const [on] = useEvents();
+  const [on, emit] = useEvents();
 
   // Subscribe to ADD / EDIT / SUCCESS events and mirror them into the store.
   // openDialog/closeDialog are Zustand actions (stable); events are static resource config strings.
@@ -273,6 +276,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
    * Also captures the selected row ID for the audit trail. */
   const handleSelectionChanged = (e: GridSelectionChange) => {
     const rows = (e.selectedRowsData ?? []) as DataRecord[];
+    setSelectedRows(rows as T[]);
     selectionState.onSelectionChanged(rows);
     externalOnSelectionChanged?.(rows);
     if (hasAuditTrail) {
@@ -311,6 +315,23 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     },
     [executeBulkAction],
   );
+
+  const toolbar = useMemo(() => {
+    if (typeof resolvedResource.toolbar !== 'function') {
+      return resolvedResource.toolbar;
+    }
+
+    // eslint-disable-next-line react-hooks/refs -- toolbar factories receive refs as opaque handles for event callbacks
+    return resolvedResource.toolbar({
+      resource: resolvedResource,
+      selectedRow: selectedRows[0],
+      selectedRows,
+      gridRef,
+      formRef,
+      events,
+      emit,
+    });
+  }, [emit, events, formRef, gridRef, resolvedResource, selectedRows]);
 
   /** Preset selector rendered as a toolbar slot via `beforeToolbar`. */
   const renderPresetSelector = hasPresets
@@ -373,7 +394,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         </div>
       )}
       <DataGridView
-        ref={externalGridRef}
+        ref={gridRef}
         id={resolvedResource.id}
         title={resolvedResource.title}
         url={resolvedResource.apiUrl}
@@ -391,7 +412,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         headerFilter={resolvedResource.headerFilter}
         mode={resolvedResource.mode}
         stateStoringEnabled={resolvedResource.stateStoring}
-        toolbar={resolvedResource.toolbar}
+        toolbar={toolbar}
         selectionMode={hasMultipleSelection ? 'multiple' : 'single'}
         onSelectionChanged={handleSelectionChanged}
         editMode={resolvedResource.editMode}

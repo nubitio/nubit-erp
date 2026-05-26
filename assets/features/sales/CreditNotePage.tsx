@@ -28,7 +28,6 @@ export const CreditNotePage = () => {
   const [on] = useEvents();
   const gridRef = useRef<GridHandle | null>(null);
   const formRef = useRef<FormHandle | null>(null);
-  const selectedRowRef = useRef<DataRecord | null>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
   const [formDetailFields, setFormDetailFields] = useState(() => CreditNoteDetailFields());
 
@@ -41,7 +40,7 @@ export const CreditNotePage = () => {
 
   const actionDeps = useMemo(
     () => ({
-      getSelectedRow: () => selectedRowRef.current as CreditNoteRow | undefined,
+      getSelectedRow: () => gridRef.current?.getSelectedRow() as CreditNoteRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),
@@ -105,10 +104,7 @@ export const CreditNotePage = () => {
       gridRef={gridRef}
       editDisabled={editDisabled}
       deleteDisabled={deleteDisabled}
-      onSelectionChanged={(rows) => {
-        selectedRowRef.current = rows[0] ?? null;
-        handleSelectionChanged(rows);
-      }}
+      onSelectionChanged={handleSelectionChanged}
     />
   );
 };
