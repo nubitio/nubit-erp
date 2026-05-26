@@ -18,6 +18,8 @@ import type { FormDataRecord } from '../form/FormDataSnapshot';
 import type { FormHandle } from '../form/FormHandle';
 import type { DataRecord } from '@nubit/core';
 import type { GridHandle } from '../datagrid/GridHandle';
+import { resolveResourceDetails } from './resolveResourceDetails';
+import { resolveResourceToolbar } from './resolveResourceToolbar';
 
 type GridSelectionChange = {
   selectedRowsData?: unknown[];
@@ -197,27 +199,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
   const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
   const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
-  const gridDetail = resolvedResource.gridDetail ?? (
-    resolvedResource.detailUrl && (resolvedResource.gridDetailFields ?? resolvedResource.detailFields)
-      ? {
-          url: resolvedResource.detailUrl,
-          fields: resolvedResource.gridDetailFields ?? resolvedResource.detailFields!,
-        }
-      : undefined
-  );
-  const formDetail = resolvedResource.formDetail ?? (
-    resolvedResource.detailFields
-      ? {
-          url: resolvedResource.detailUrl,
-          fields: resolvedResource.detailFields,
-          propertyName: resolvedResource.detailPropertyName,
-          allowAdding: resolvedResource.detailAllowAdding,
-          allowDeleting: resolvedResource.detailAllowDeleting,
-          allowUpdating: resolvedResource.detailAllowUpdating,
-          required: resolvedResource.detailRequired,
-        }
-      : undefined
-  );
+  const { gridDetail, formDetail } = resolveResourceDetails(resolvedResource);
 
   const internalGridRef = React.useRef<GridHandle | null>(null);
   const gridRef = externalGridRef ?? internalGridRef;
@@ -338,12 +320,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   );
 
   const toolbar = useMemo(() => {
-    if (typeof resolvedResource.toolbar !== 'function') {
-      return resolvedResource.toolbar;
-    }
-
     // eslint-disable-next-line react-hooks/refs -- toolbar factories receive refs as opaque handles for event callbacks
-    return resolvedResource.toolbar({
+    return resolveResourceToolbar(resolvedResource, {
       resource: resolvedResource,
       selectedRow: selectedRows[0],
       selectedRows,

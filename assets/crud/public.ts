@@ -19,6 +19,8 @@ export {
   defineResource,
   initCoreI18n,
   resolveSmartCrudFields,
+  resolveResourceDetails,
+  resolveResourceToolbar,
   mergeOverrides,
   useCoreTranslation,
   useCrudPage,

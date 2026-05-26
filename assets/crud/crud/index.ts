@@ -29,6 +29,8 @@ export {
   SmartCrudFieldOperationSemanticsError,
 } from './fieldOperationSemantics';
 export { resolveSmartCrudFields } from './resolveSmartCrudFields';
+export { resolveResourceDetails } from './resolveResourceDetails';
+export { resolveResourceToolbar } from './resolveResourceToolbar';
 export type {
   SmartCrudFieldContract,
   SmartCrudFieldOperation,
