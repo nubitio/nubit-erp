@@ -1,12 +1,12 @@
 // Admin feature barrel — public API
 // Pages
-export { DashboardPage } from './pages/DashboardPage';
-export { BranchPage } from './pages/BranchPage';
-export { CompanyPage } from './pages/CompanyPage';
-export { ConfigPage } from './pages/ConfigPage';
-export { ExchangeRatePage } from './pages/ExchangeRatePage';
-export { RolePage } from './pages/RolePage';
-export { UserPage } from './pages/UserPage';
+export { DashboardPage } from './DashboardPage';
+export { BranchPage } from './BranchPage';
+export { CompanyPage } from './CompanyPage';
+export { ConfigPage } from './ConfigPage';
+export { ExchangeRatePage } from './ExchangeRatePage';
+export { RolePage } from './RolePage';
+export { UserPage } from './UserPage';
 
 // Public types (dashboard domain model)
 export type {
@@ -27,7 +27,7 @@ export type {
   RecentSaleToday,
   DashboardData,
   CashRegisterStatus,
-} from './pages/types';
+} from './types';
 
 // Routes
 export { adminRoutes } from './routes';

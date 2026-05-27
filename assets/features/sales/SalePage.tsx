@@ -16,18 +16,9 @@ import {
   DiscountDialogApplyPayload,
   DiscountDialogEvent,
 } from '@shared/ui/discount-dialog/DiscountDialog';
-import {
-  applySaleAutoInvoiceOnAdd,
-  cloneSaleToForm,
-  createInvoicePrinter,
-  createSaleToolbar,
-  runMakeInvoiceAction,
-  runReplaceRejectedAction,
-  runVoidSaleAction,
-  saleEvents,
-  useSalePrintPreview,
-  useSalePageObservers,
-} from '@features/sale';
+import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './model';
+import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
+import { createSaleToolbar, useSalePrintPreview } from './ui';
 import { CustomerPage, CustomerFields } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';

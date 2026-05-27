@@ -1,11 +1,4 @@
 import type ApiResponse from './ApiResponse';
-import { httpClient } from './HttpClient';
-
-/**
- * Canonical entry point for frontend business/API calls.
- * New business integrations should build on this client or wrappers over it.
- */
-export const businessHttpClient = httpClient;
 
 export const httpRequest = <T>(request: Promise<ApiResponse<T>>): Promise<ApiResponse<T>> => {
   return request;
@@ -24,7 +17,7 @@ export type DirectFetchReason =
 
 /**
  * Escape hatch for the few places where native fetch remains valid.
- * Do not use this for business API calls; use `businessHttpClient` instead.
+ * Use httpClient for business API calls instead.
  */
 export const exceptionalFetch = (
   input: RequestInfo | URL,

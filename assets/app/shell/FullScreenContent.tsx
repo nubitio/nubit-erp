@@ -2,7 +2,7 @@ import React, { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RouteErrorBoundary } from '../../shared/components/RouteErrorBoundary';
 
-const POSPage = lazy(() => import('@features/pos/pages/POSPage'));
+const POSPage = lazy(() => import('@features/pos/POSPage'));
 
 export const FullScreenContent = () => {
   return (

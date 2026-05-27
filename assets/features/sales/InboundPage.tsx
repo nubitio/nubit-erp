@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { SmartCrudPage, defineResource, type FormHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
-import { purchasesEvents } from '@features/purchases/model/events';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
 
 export const PurchasesPage = () => {
@@ -13,14 +12,12 @@ export const PurchasesPage = () => {
     const detailFields = PurchasesDetailFields();
     const detailUrl = API_BASE_URL + 'purchases/{id}/items';
 
-    return defineResource({
+    return defineResource(API_BASE_URL + 'purchases', {
       id: 'purchases',
       title: 'Compras',
-      apiUrl: API_BASE_URL + 'purchases',
       fields: PurchasesFields(currentBranchId),
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: { url: detailUrl, fields: detailFields },
-      events: purchasesEvents,
       sort: [{ selector: 'createdAt', desc: true }],
       dialogWidth: 900,
       dialogHeight: 600,

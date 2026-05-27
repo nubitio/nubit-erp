@@ -1,12 +1,12 @@
 // POS feature barrel — public API
 // Page
-export { POSPage } from './pages/POSPage';
+export { POSPage } from './POSPage';
 
 // Public hooks
-export { usePosCheckout } from './pages/usePosCheckout';
-export { usePosCustomers } from './pages/usePosCustomers';
-export { usePosCatalogData } from './pages/usePosCatalogData';
-export { useWarehouseStock } from './pages/useWarehouseStock';
+export { usePosCheckout } from './usePosCheckout';
+export { usePosCustomers } from './usePosCustomers';
+export { usePosCatalogData } from './usePosCatalogData';
+export { useWarehouseStock } from './useWarehouseStock';
 
 // Public types
 export type {
@@ -16,7 +16,7 @@ export type {
   PaymentMethodOption,
   WarehouseOption,
   Category,
-} from './pages/types';
+} from './types';
 
 // Routes
 export { posRoutes } from './routes';

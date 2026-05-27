@@ -10,16 +10,17 @@ import {
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@nubit/core';
-import type { CreditNoteRow } from '@features/creditNote/lib/creditNoteActions';
+import type { CreditNoteRow } from './lib/creditNoteActions';
 import {
-  creditNoteEvents,
   runOpenCreditNoteReceiptAction,
   runSendCreditNoteToSunatAction,
   runConsultCreditNoteCdrAction,
   runConsultCreditNoteCpeAction,
+} from './lib/creditNoteActions';
+import {
   useCreditNoteRelatedDocumentObserver,
   useCreditNoteSelectionState,
-} from '@features/creditNote';
+} from './model';
 
 const API_URL = API_BASE_URL + 'tax-documents';
 const fields = CreditNoteFields();
@@ -52,10 +53,9 @@ export const CreditNotePage = () => {
 
   const resource = useMemo(
     () =>
-      defineResource({
+      defineResource(API_URL + '?type=note', {
         id: 'creditNote',
         title: 'Notas de crédito',
-        apiUrl: API_URL + '?type=note',
         fields,
         gridDetail: {
           url: API_URL + '/{id}/lines',
@@ -71,7 +71,6 @@ export const CreditNotePage = () => {
           allowUpdating: true,
           required: true,
         },
-        events: creditNoteEvents,
         dialogWidth: 1200,
         dialogHeight: 720,
         permissions: { canAdd: true, canEdit: true, canDelete: true },

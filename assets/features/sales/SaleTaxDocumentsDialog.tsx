@@ -4,14 +4,14 @@ import { useScreenSize } from '@nubit/admin';
 import { DataGridView, type GridHandle } from '@nubit/crud';
 import { API_BASE_URL } from '@app/constants';
 import { InvoiceFields } from './InvoiceFields';
-import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
+import type { InvoiceRow } from './lib/invoiceActions';
 import {
   runConsultInvoiceCdrAction,
   runConsultInvoiceCpeAction,
   runOpenInvoiceReceiptAction,
   runSendInvoiceEmailAction,
   runSendInvoiceToSunatAction,
-} from '@features/invoice/lib/invoiceActions';
+} from './lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
 
 interface Props {

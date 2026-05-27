@@ -14,7 +14,8 @@ import {
 } from '@nubit/crud';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
 import { productService } from '@features/product';
 import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
@@ -132,7 +133,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .visible(false)
       .onChange(async (event: any) => {
         priceList = await httpRequestData<PriceListItemDto[]>(
-          businessHttpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
+          httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
         );
         const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: any) => {

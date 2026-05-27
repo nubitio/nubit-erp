@@ -3,8 +3,8 @@ import { httpClient } from '@shared/api/HttpClient';
 import { API_BASE_URL } from '@app/constants';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { getCachedProducts, getLastProductsSyncAt, persistProducts } from '@offline/catalog';
-import type { Category, PosItem } from '@features/pos/pages/types';
-import { extractCollection, normalizeProduct } from '@features/pos/pages/posHelpers';
+import type { Category, PosItem } from '@features/pos/types';
+import { extractCollection, normalizeProduct } from '@features/pos/posHelpers';
 
 export const useOfflineCatalog = () => {
   const { isOnline } = useConnectivity();

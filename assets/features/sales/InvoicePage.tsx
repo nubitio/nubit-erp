@@ -2,31 +2,28 @@ import { useMemo, useRef } from 'react';
 import { API_BASE_URL } from '@app/constants';
 import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubit/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
-import type { InvoiceRow } from '@features/invoice/lib/invoiceActions';
-import { invoiceEvents } from '@features/invoice/model/events';
+import type { InvoiceRow } from './lib/invoiceActions';
 import {
   runConsultInvoiceCdrAction,
   runConsultInvoiceCpeAction,
   runOpenInvoiceReceiptAction,
   runSendInvoiceEmailAction,
   runSendInvoiceToSunatAction,
-} from '@features/invoice/lib/invoiceActions';
+} from './lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
 
 const API_URL = API_BASE_URL + 'tax-documents';
 const fields = InvoiceFields();
 
-const baseResource = defineResource({
+const baseResource = defineResource(API_URL + '?type=invoice', {
   id: 'invoice',
   title: 'Comprobantes',
-  apiUrl: API_URL + '?type=invoice',
   fields,
   gridDetail: {
     url: API_URL + '/{id}/lines',
     fields: (parentRow: DataRecord) =>
       InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
   },
-  events: invoiceEvents,
   sort: [{ selector: 'createdAt', desc: true }],
   dialogWidth: 900,
   dialogHeight: 720,

@@ -1,21 +1,9 @@
-// eFact domain CRUD event namespaces.
-// These are eFact-specific and must not live in @nubit/core.
+// eFact domain event namespaces used for cross-component coordination.
+// Only include events that are dispatched or subscribed to from OUTSIDE the
+// SmartCrudPage that owns the resource — internal event buses are auto-created
+// by resolveCrudResource() and don't need to be listed here.
 import { createCrudEvents } from '@nubit/crud';
 
-export const branchEvents        = createCrudEvents('branch');
-export const categoryEvents      = createCrudEvents('category');
-export const companyEvents       = createCrudEvents('company');
-export const inboundEvents       = createCrudEvents('inbound');
-export const operationEvents     = createCrudEvents('operation');
-export const paymentMethodEvents = createCrudEvents('payment-methods');
-export const permissionEvents    = createCrudEvents('permission');
-export const priceEvents         = createCrudEvents('price');
-export const priceListEvents     = createCrudEvents('price-list');
-export const roleEvents          = createCrudEvents('role');
-export const sunatCatalogEvents  = createCrudEvents('sunat-catalog');
-export const supplierEvents      = createCrudEvents('supplier');
-export const unitOfMeasureEvents = createCrudEvents('unit-of-measure');
-export const userEvents          = createCrudEvents('user');
-export const voucherSeriesEvents = createCrudEvents('voucher-series');
-export const voucherTypeEvents   = createCrudEvents('voucherType');
-export const warehouseEvents     = createCrudEvents('warehouse');
+export const companyEvents    = createCrudEvents('company');
+export const permissionEvents = createCrudEvents('permission');
+export const priceEvents      = createCrudEvents('price');

@@ -1,2 +1,0 @@
-export { purchasesEvents } from './events';
-
