@@ -5074,9 +5074,9 @@ function textareaField() {
 *
 * Usage:
 *   noneField()
-*     .name('sunatStatus')
-*     .label('Envío sunat')
-*     .formatter(cell => SharedUtils.billStatusFormatter(cell.value))
+*     .name('status')
+*     .label('Status')
+*     .formatter(cell => statusFormatter(cell.value))
 *     .build()
 */
 var NoneFieldBuilder = class extends BaseFieldBuilder {

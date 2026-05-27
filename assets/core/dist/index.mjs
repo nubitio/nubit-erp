@@ -5,28 +5,48 @@ import i18next from "i18next";
 //#region assets/core/config/CoreConfig.tsx
 const _coreConfig = {
 	locale: "es",
-	timezone: "UTC"
+	timezone: "UTC",
+	apiBaseUrl: "/api/"
 };
-function configureCoreDate(config) {
+/**
+* Configure core runtime values (locale, timezone, apiBaseUrl).
+* This updates the module-level singleton so it can be read from non-React code
+* (e.g. inside defineResource, entityField builders, DateUtils, etc.).
+*/
+function configureCore(config) {
 	if (config.locale !== void 0) _coreConfig.locale = config.locale;
 	if (config.timezone !== void 0) _coreConfig.timezone = config.timezone;
+	if (config.apiBaseUrl !== void 0) _coreConfig.apiBaseUrl = config.apiBaseUrl;
 }
+/**
+* @deprecated Use configureCore() instead.
+*/
+const configureCoreDate = configureCore;
 function getCoreLocale() {
 	return _coreConfig.locale;
 }
 function getCoreTimezone() {
 	return _coreConfig.timezone;
 }
+function getCoreApiBaseUrl() {
+	return _coreConfig.apiBaseUrl;
+}
 const CoreConfigContext = React.createContext(_coreConfig);
-const CoreConfigProvider = ({ locale, timezone, children }) => {
-	configureCoreDate({
+const CoreConfigProvider = ({ locale, timezone, apiBaseUrl, children }) => {
+	configureCore({
 		locale,
-		timezone
+		timezone,
+		apiBaseUrl
 	});
 	const value = React.useMemo(() => ({
 		locale,
-		timezone
-	}), [locale, timezone]);
+		timezone,
+		apiBaseUrl
+	}), [
+		locale,
+		timezone,
+		apiBaseUrl
+	]);
 	return /* @__PURE__ */ jsx(CoreConfigContext.Provider, {
 		value,
 		children
@@ -37,6 +57,11 @@ function useCoreConfig() {
 }
 //#endregion
 //#region assets/core/date/DateUtils.ts
+/**
+* Recommended default for new projects using @nubit/core.
+* You should almost always override this via CoreConfigProvider.
+*/
+const DEFAULT_TIMEZONE = "UTC";
 function coreDateParts(date) {
 	const parts = new Intl.DateTimeFormat("en-CA", {
 		timeZone: getCoreTimezone(),
@@ -357,7 +382,11 @@ var CoreHttpClient = class {
 			...extraHeaders
 		};
 	}
-	async refreshSession() {
+	/**
+	* Built-in cookie-based refresh (the original behavior).
+	* Only used when `refreshFn` is not provided in config.
+	*/
+	async performBuiltInRefresh() {
 		const refreshPath = this.config.refreshPath ?? "auth/refresh";
 		const refreshUrl = joinUrl(this.config.baseUrl ?? "/api/", refreshPath);
 		this.refreshPromise ??= globalThis.fetch(refreshUrl, {
@@ -369,6 +398,10 @@ var CoreHttpClient = class {
 			this.refreshPromise = null;
 		});
 		return this.refreshPromise;
+	}
+	async performRefresh() {
+		if (this.config.refreshFn) return this.config.refreshFn(this);
+		return this.performBuiltInRefresh();
 	}
 	async safeErrorData(response) {
 		try {
@@ -399,8 +432,9 @@ var CoreHttpClient = class {
 		const loginPath = this.config.loginPath ?? "auth/login";
 		const refreshPath = this.config.refreshPath ?? "auth/refresh";
 		const isAuthEndpoint = url.includes(loginPath) || url.includes(refreshPath);
-		if (response.status === 401 && retryOnUnauthorized && !isAuthEndpoint) try {
-			await this.refreshSession();
+		const shouldAutoRefresh = this.config.autoRefresh !== false;
+		if (response.status === 401 && retryOnUnauthorized && !isAuthEndpoint && shouldAutoRefresh) try {
+			await this.performRefresh();
 			return this.request(method, url, body, config, false);
 		} catch (refreshError) {
 			const unauthorizedError = refreshError instanceof Error ? Object.assign(refreshError, { status: 401 }) : error;
@@ -440,7 +474,13 @@ function createCoreHttpClient(config) {
 //#region assets/core/http/CoreHttpContext.tsx
 const CoreHttpContext = createContext(createCoreHttpClient());
 function CoreHttpProvider({ children, client, config }) {
-	const value = useMemo(() => client ?? createCoreHttpClient(config), [client, config]);
+	const value = useMemo(() => {
+		if (client) return client;
+		return createCoreHttpClient({
+			...config,
+			baseUrl: config?.baseUrl ?? getCoreApiBaseUrl()
+		});
+	}, [client, config]);
 	return /* @__PURE__ */ jsx(CoreHttpContext.Provider, {
 		value,
 		children
@@ -615,14 +655,14 @@ const mercureManager = new MercureManager();
 * ## Usage
 *
 * ```tsx
-* // In EfactApp.tsx (or your app root):
+* // In your app root:
 * <MercureProvider hubUrl={discoveredHubUrl}>
 *   <App />
 * </MercureProvider>
 * ```
 *
-* The `hubUrl` prop is typically discovered from the `Link` header of API responses
-* via an Axios response interceptor (see AC-4 in SLICE-014).
+* The `hubUrl` is typically discovered from the `Link` header of API responses
+* (common pattern with API Platform + Mercure).
 */
 /** The hub URL, or null if Mercure is not configured / not yet discovered. */
 const MercureContext = createContext(null);
@@ -650,7 +690,7 @@ function MercureProvider({ hubUrl, children }) {
 * - Mercure is not configured in the backend.
 *
 * This hook does NOT perform any fetch or side effect — it only reads from context.
-* Hub discovery is handled by the Axios response interceptor registered in EfactApp.tsx.
+* Hub discovery (usually from a `Link` header) must be done by the host application.
 *
 * ## Usage
 *
@@ -713,4 +753,4 @@ function useMercureSubscription(apiUrl, onUpdate, enabled = true) {
 	]);
 }
 //#endregion
-export { CoreConfigProvider, CoreHttpClient, CoreHttpProvider, CoreProvider, CoreRuntimeProvider, DateUtils, mercureManager as MercureManager, MercureProvider, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };
+export { CoreConfigProvider, CoreHttpClient, CoreHttpProvider, CoreProvider, CoreRuntimeProvider, DEFAULT_TIMEZONE, DateUtils, mercureManager as MercureManager, MercureProvider, configureCore, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreApiBaseUrl, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };

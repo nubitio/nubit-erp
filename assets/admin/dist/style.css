@@ -1,0 +1,285 @@
+.side-nav-outer-toolbar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.layout-header {
+  z-index: 1501;
+}
+
+.layout-body {
+  background-color: var(--background-color);
+}
+
+.side-nav-outer-toolbar__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.side-nav-outer-toolbar__panel {
+  background-color: var(--side-panel-background);
+  box-shadow: var(--shadow-sm);
+  flex: 0 0 250px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  transition: flex-basis 180ms ease, transform 180ms ease, width 180ms ease;
+  width: 250px;
+  z-index: 1500;
+}
+
+.side-nav-outer-toolbar__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.side-nav-outer-toolbar__content > div {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.side-nav-outer-toolbar__content > .view-wrapper-scroll {
+  overflow-y: auto;
+}
+
+.side-nav-outer-toolbar__scrim {
+  background: rgba(0, 0, 0, 0.32);
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  z-index: 1499;
+}
+
+.side-nav-outer-toolbar__body.is-large.is-compact .side-nav-outer-toolbar__panel {
+  flex-basis: var(--side-panel-min-width);
+  width: var(--side-panel-min-width);
+}
+
+.side-nav-outer-toolbar__body.is-overlay .side-nav-outer-toolbar__panel {
+  inset: 0 auto 0 0;
+  position: absolute;
+}
+.side-nav-outer-toolbar__body.is-overlay.is-closed:not(.is-xsmall) .side-nav-outer-toolbar__panel {
+  width: var(--side-panel-min-width);
+}
+.side-nav-outer-toolbar__body.is-overlay.is-closed.is-xsmall .side-nav-outer-toolbar__panel {
+  transform: translateX(-100%);
+}
+
+.content {
+  flex-grow: 1;
+}
+
+.header-component {
+  box-shadow: var(--shadow-sm);
+  flex: 0 0 auto;
+  padding: 5px 0;
+  position: relative;
+  z-index: 1501;
+}
+
+.header-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  min-height: 36px;
+  padding-right: var(--content-padding);
+}
+
+.header-toolbar__before,
+.header-toolbar__after {
+  align-items: center;
+  display: flex;
+}
+
+.header-toolbar__before {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-toolbar__after {
+  flex: 0 0 auto;
+  gap: 0.25rem;
+}
+
+.header-title {
+  color: var(--text-primary);
+  font-family: "Syne", var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-button {
+  flex: 0 0 var(--side-panel-min-width);
+  width: var(--side-panel-min-width);
+}
+
+.messages {
+  position: relative;
+}
+
+.header-popover {
+  position: relative;
+}
+
+.header-popover__panel {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 1700;
+}
+
+.notification-popover {
+  width: min(460px, 100vw - 20px);
+}
+
+.app-badge {
+  align-items: center;
+  background-color: var(--error-color);
+  border-radius: 10px;
+  color: #fff;
+  display: flex;
+  font-size: 12px;
+  justify-content: center;
+  min-width: 18px;
+  padding: 1px 5px;
+  position: absolute;
+  right: -10%;
+  top: -10%;
+}
+
+.side-navigation-menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  width: 250px !important;
+}
+.side-navigation-menu .menu-container {
+  background-color: var(--side-panel-background);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: var(--font-size-sm, 13px);
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: var(--footer-height);
+  padding-top: 8px;
+}
+.side-navigation-menu__nav {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  width: 100%;
+}
+.side-navigation-menu__section {
+  border-bottom: 1px solid var(--border-color);
+}
+.side-navigation-menu__item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  min-height: 36px;
+  padding: 0;
+  text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+  width: 100%;
+}
+.side-navigation-menu__item:hover {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+.side-navigation-menu__item.is-selected {
+  background: color-mix(in srgb, var(--accent-color) 18%, transparent);
+  border-left: 3px solid var(--accent-color);
+  color: var(--accent-color);
+  font-weight: var(--font-weight-semibold);
+}
+.side-navigation-menu__item--parent {
+  font-weight: var(--font-weight-semibold, 600);
+}
+.side-navigation-menu__chevron {
+  border-bottom: 1.5px solid currentcolor;
+  border-right: 1.5px solid currentcolor;
+  display: inline-flex;
+  flex: 0 0 7px;
+  height: 7px;
+  margin-left: auto;
+  margin-right: 1rem;
+  opacity: 0.75;
+  transform: rotate(45deg);
+  transition: transform 150ms ease;
+  width: 7px;
+}
+.side-navigation-menu__chevron.is-expanded {
+  transform: rotate(225deg);
+}
+.side-navigation-menu__section.has-selected-child > .side-navigation-menu__item--parent {
+  color: var(--accent-color);
+  font-weight: var(--font-weight-semibold);
+}
+.side-navigation-menu__icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 var(--side-panel-min-width);
+  justify-content: center;
+  margin: 0 !important;
+  width: var(--side-panel-min-width) !important;
+}
+.side-navigation-menu__text {
+  overflow: hidden;
+  padding-right: 0.75rem;
+  text-overflow: ellipsis;
+}
+.side-navigation-menu__item--child .side-navigation-menu__text {
+  font-weight: normal;
+  padding-left: var(--side-panel-min-width);
+}
+.side-navigation-menu.compact .side-navigation-menu__item.is-selected {
+  border-left: none;
+}
+.side-navigation-menu.compact .side-navigation-menu__text {
+  opacity: 0;
+}
+
+.footer {
+  display: block;
+  color: var(--base-text-color-alpha);
+  padding: 20px 0 16px var(--footer-left-padding);
+  background-color: var(--side-panel-background);
+  height: var(--footer-height);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+}
+.side-nav-outer-toolbar__body.is-open .footer {
+  opacity: 1;
+  transition: opacity 0.4s;
+}

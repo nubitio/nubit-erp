@@ -178,6 +178,12 @@ Object.defineProperty(exports, "checkboxField", {
 		return _nubit_crud.checkboxField;
 	}
 });
+Object.defineProperty(exports, "configureCore", {
+	enumerable: true,
+	get: function() {
+		return _nubit_core.configureCore;
+	}
+});
 Object.defineProperty(exports, "configureCoreDate", {
 	enumerable: true,
 	get: function() {
@@ -260,6 +266,12 @@ Object.defineProperty(exports, "enumField", {
 	enumerable: true,
 	get: function() {
 		return _nubit_crud.enumField;
+	}
+});
+Object.defineProperty(exports, "getCoreApiBaseUrl", {
+	enumerable: true,
+	get: function() {
+		return _nubit_core.getCoreApiBaseUrl;
 	}
 });
 Object.defineProperty(exports, "getCoreLocale", {

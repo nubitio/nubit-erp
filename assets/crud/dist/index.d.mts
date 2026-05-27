@@ -1059,9 +1059,9 @@ declare function textareaField<TRecord extends DataRecord$1 = DataRecord$1>(): T
  *
  * Usage:
  *   noneField()
- *     .name('sunatStatus')
- *     .label('Envío sunat')
- *     .formatter(cell => SharedUtils.billStatusFormatter(cell.value))
+ *     .name('status')
+ *     .label('Status')
+ *     .formatter(cell => statusFormatter(cell.value))
  *     .build()
  */
 declare class NoneFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {

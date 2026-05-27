@@ -11,6 +11,11 @@ interface GridData<T> {
 }
 //#endregion
 //#region assets/core/date/DateUtils.d.ts
+/**
+ * Recommended default for new projects using @nubit/core.
+ * You should almost always override this via CoreConfigProvider.
+ */
+declare const DEFAULT_TIMEZONE = "UTC";
 declare class DateUtils {
   static dateFormatter(date: Date): string;
   static dateParser(dateString: string): Date;
@@ -26,18 +31,31 @@ declare class DateUtils {
 interface CoreConfig {
   locale: string;
   timezone: string;
+  apiBaseUrl: string;
 }
-declare function configureCoreDate(config: Partial<CoreConfig>): void;
+/**
+ * Configure core runtime values (locale, timezone, apiBaseUrl).
+ * This updates the module-level singleton so it can be read from non-React code
+ * (e.g. inside defineResource, entityField builders, DateUtils, etc.).
+ */
+declare function configureCore(config: Partial<CoreConfig>): void;
+/**
+ * @deprecated Use configureCore() instead.
+ */
+declare const configureCoreDate: typeof configureCore;
 declare function getCoreLocale(): string;
 declare function getCoreTimezone(): string;
+declare function getCoreApiBaseUrl(): string;
 interface CoreConfigProviderProps {
   locale: string;
   timezone: string;
+  apiBaseUrl: string;
   children: React.ReactNode;
 }
 declare const CoreConfigProvider: ({
   locale,
   timezone,
+  apiBaseUrl,
   children
 }: CoreConfigProviderProps) => import("react/jsx-runtime").JSX.Element;
 declare function useCoreConfig(): CoreConfig;
@@ -230,8 +248,36 @@ interface CoreHttpClientConfig {
   baseUrl?: string;
   credentials?: RequestCredentials;
   locale?: string;
+  /**
+   * Path used by the built-in cookie refresh logic (only used when no `refreshFn` is provided).
+   * @default "auth/refresh"
+   */
   refreshPath?: string;
+  /**
+   * Path used to detect "this is a login attempt" (skips auto-refresh).
+   * @default "auth/login"
+   */
   loginPath?: string;
+  /**
+   * If false, the client will never attempt automatic session refresh on 401.
+   * Useful when you want full control (e.g. Bearer JWT + react-query error handling).
+   * @default true
+   */
+  autoRefresh?: boolean;
+  /**
+   * Completely replace the internal refresh logic.
+   * If provided, this function is called instead of the built-in cookie refresh.
+   * Should throw (or return a rejected promise) when refresh fails.
+   *
+   * Example (custom Bearer token refresh):
+   *   refreshFn: async (client) => {
+   *     const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+   *     if (!res.ok) throw new Error('Refresh failed');
+   *     const { accessToken } = await res.json();
+   *     // store token somewhere your requests can use it (e.g. in memory or secure storage)
+   *   }
+   */
+  refreshFn?: (client: CoreHttpClient) => Promise<void>;
   onUnauthorized?: (error: CoreHttpError) => void;
   onError?: (error: CoreHttpError) => void;
 }
@@ -240,7 +286,12 @@ declare class CoreHttpClient {
   private refreshPromise;
   constructor(config?: CoreHttpClientConfig);
   private headers;
-  private refreshSession;
+  /**
+   * Built-in cookie-based refresh (the original behavior).
+   * Only used when `refreshFn` is not provided in config.
+   */
+  private performBuiltInRefresh;
+  private performRefresh;
   private safeErrorData;
   private request;
   get<T>(url: string, config?: CoreRequestConfig): Promise<CoreHttpResponse<T>>;
@@ -319,7 +370,7 @@ declare function MercureProvider({
  * - Mercure is not configured in the backend.
  *
  * This hook does NOT perform any fetch or side effect — it only reads from context.
- * Hub discovery is handled by the Axios response interceptor registered in EfactApp.tsx.
+ * Hub discovery (usually from a `Link` header) must be done by the host application.
  *
  * ## Usage
  *
@@ -425,4 +476,4 @@ declare class MercureManager {
 /** Singleton instance — shared across the entire application. */
 declare const mercureManager: MercureManager;
 //#endregion
-export { type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, type CoreTranslationKeys, type DataGridEventNames, type DataRecord, DateUtils, type DialogEventNames, type EventSubscription, type FormEventNames, type GridData, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, type ScopedFormEventNames, type ToolbarButtonItem, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };
+export { type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, type CoreTranslationKeys, DEFAULT_TIMEZONE, type DataGridEventNames, type DataRecord, DateUtils, type DialogEventNames, type EventSubscription, type FormEventNames, type GridData, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, type ScopedFormEventNames, type ToolbarButtonItem, configureCore, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreApiBaseUrl, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };

@@ -30,11 +30,15 @@
   },
   "files": ["dist"],
   "sideEffects": ["**/*.css"],
-  "dependencies": {
-    "@nubit/core": "^0.1.0",
-    "@nubit/ui": "^0.1.0"
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "peerDependencies": {
+    "@nubit/core": "^0.1.0",
+    "@nubit/ui": "^0.1.0",
     "@tanstack/react-query": "^5.0.0",
     "i18next": "^23.0.0",
     "luxon": "^3.0.0",

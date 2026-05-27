@@ -1,0 +1,205 @@
+.app-dialog-root {
+  inset: 0;
+  position: fixed;
+  z-index: 2000;
+}
+
+.app-dialog__scrim {
+  background: rgba(0, 0, 0, 0.38);
+  border: 0;
+  cursor: default;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.app-dialog {
+  background: var(--base-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  left: 50%;
+  max-height: calc(100vh - 32px);
+  max-width: calc(100vw - 32px);
+  min-width: 280px;
+  overflow: hidden;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.app-dialog--fullscreen {
+  border-radius: 0;
+  height: 100vh !important;
+  inset: 0;
+  max-height: none;
+  max-width: none;
+  transform: none;
+  width: 100vw !important;
+}
+
+.app-dialog__header {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.app-dialog__title {
+  color: var(--base-text-color);
+  flex: 1;
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-dialog__close {
+  flex: 0 0 auto;
+}
+
+.app-dialog__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.app-dialog__footer {
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  padding: 0.45rem 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+.view-wrapper.view-wrapper-dashboard {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding-top: var(--content-padding);
+  padding-bottom: var(--content-padding);
+  position: relative;
+  gap: var(--space-4);
+}
+@media only screen and (max-width: 900px) {
+  .view-wrapper.view-wrapper-dashboard .card .card-contents {
+    height: auto;
+  }
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--surface-0) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+  border-radius: var(--radius-xl, 18px);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar__start {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar__start i {
+  font-size: 18px;
+  color: var(--accent-color);
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar__center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar__end {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.view-wrapper.view-wrapper-dashboard .app-toolbar .toolbar-header {
+  font-size: 22px;
+  font-weight: 400;
+  padding-right: 25px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+  padding-right: 0;
+}
+@media only screen and (max-width: 900px) {
+  .view-wrapper.view-wrapper-dashboard {
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-4);
+  }
+  .view-wrapper.view-wrapper-dashboard .app-toolbar {
+    border-radius: var(--radius-lg);
+    padding: 8px 10px;
+  }
+}
+.app-card {
+  display: flex;
+  height: 100%;
+}
+.app-card button,
+.app-card .app-button {
+  text-transform: none;
+}
+.app-card .app-card__content {
+  margin: auto auto;
+  padding: 24px;
+  flex-grow: 0;
+  max-width: 360px;
+  width: auto;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md, 0 12px 32px rgba(15, 23, 42, 0.12));
+}
+.app-card .app-card__content.content {
+  height: auto;
+}
+.screen-x-small .app-card .app-card__content {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  border: 0;
+  flex-grow: 1;
+}
+.app-card .app-card__content .header {
+  margin-bottom: 24px;
+  margin-top: 24px;
+}
+.app-card .app-card__content .header .title {
+  color: var(--base-text-color);
+  text-align: center;
+  line-height: 24px;
+  font-weight: 500;
+  font-size: 24px;
+}
+.app-card .app-card__content .header .description {
+  color: var(--base-text-color-alpha);
+  line-height: 16px;
+  font-size: 12px;
+  margin-top: 32px;
+  text-align: center;
+}

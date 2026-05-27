@@ -30,9 +30,12 @@ export const HydraAdapter: BackendAdapter = {
     return String(record['id'] ?? '');
   },
 
-  buildItemUrl(_baseUrl, id) {
-    // For Hydra, the id IS the IRI — it already contains the full path.
-    return String(id);
+  buildItemUrl(baseUrl, id) {
+    const str = String(id);
+    // If id is already an IRI (full path), use it directly.
+    if (str.startsWith('/')) return str;
+    // Otherwise construct from base URL + numeric/string id.
+    return `${trimTrailingSlash(baseUrl)}/${str}`;
   },
 
   serializeEntityRef(field, rawValue) {

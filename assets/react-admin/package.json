@@ -29,7 +29,13 @@
     "./style.css": "./dist/style.css"
   },
   "files": ["dist"],
-  "sideEffects": ["**/*.css", "style.css"],
+  "sideEffects": ["**/*.css"],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@nubit/admin": "^0.1.0",
     "@nubit/hydra": "^0.1.0",
