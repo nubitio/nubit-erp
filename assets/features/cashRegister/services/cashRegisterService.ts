@@ -1,5 +1,7 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 export interface XReportDto {
   openingBalance: string;
@@ -27,24 +29,24 @@ export interface CashRegisterClosureItem {
 const cashRegisterService = () => {
   const openCashRegister = (id: string, openingBalance: number) => {
     const amount = Number(openingBalance ?? 0);
-    return httpClient.post<any>(API_BASE_URL + `cash-registers/${id}/open`, {
+    return httpClient.post<any>(API + `cash-registers/${id}/open`, {
       id: Number(id),
       openingBalance: Number(amount.toFixed(2)),
     });
   };
 
   const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
-    return httpClient.post<any>(API_BASE_URL + `cash-registers/${id}/close`, {
+    return httpClient.post<any>(API + `cash-registers/${id}/close`, {
       closureItems: closureData,
     });
   };
 
   const getMovements = (id: string) => {
-    return httpClient.get<unknown>(API_BASE_URL + `cash-registers/${id}/movements`);
+    return httpClient.get<unknown>(API + `cash-registers/${id}/movements`);
   };
 
   const getXReport = (shiftId: string | number) => {
-    return httpClient.get<XReportDto>(API_BASE_URL + `cash-shifts/${shiftId}/x-report`);
+    return httpClient.get<XReportDto>(API + `cash-shifts/${shiftId}/x-report`);
   };
 
   return {

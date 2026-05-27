@@ -8,14 +8,16 @@ import {
   type GridCellContext,
 } from '@nubit/crud';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
-import { Constants } from '../../../../core/common/Constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 const cashMovementsFields = (cashShiftId: string | undefined) => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
   fields.push(
-    entityField(Constants.API_BASE_URL + 'cash-sessions', 'id', 'id')
+    entityField(API + 'cash-sessions', 'id', 'id')
       .name('cashSession')
       .label('Sesión')
       .valueType('number')
@@ -27,10 +29,10 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .build(),
   );
   fields.push(
-    entityField(Constants.API_BASE_URL + 'cash-movement-categories', 'id', 'name')
+    entityField(API + 'cash-movement-categories', 'id', 'name')
       .name('category')
       .label('Categoría')
-      .formatter((cell: GridCellContext) => cell.value?.name)
+      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .required(true)
       .build(),
   );
@@ -58,7 +60,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
     currencyField()
       .name('amount')
       .label('Monto')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
       .required(true)
       .build(),
   );

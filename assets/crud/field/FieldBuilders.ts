@@ -1,6 +1,7 @@
 import { getCoreTimezone } from '@nubit/core';
 import { BaseFieldBuilder } from './BaseFieldBuilder';
 import { FieldType } from './FieldType';
+import type { DataRecord } from '@nubit/core';
 import type { Field } from './Field';
 
 /**
@@ -14,7 +15,7 @@ import type { Field } from './Field';
  * Defaults set automatically:
  *   isIdentity(true), visible(false), required(true), name('id'), label('Id')
  */
-class IdentityFieldBuilder extends BaseFieldBuilder {
+class IdentityFieldBuilder extends BaseFieldBuilder<DataRecord> {
   constructor() {
     super(FieldType.NONE);
     this._field.isIdentity = true;
@@ -42,7 +43,7 @@ export function identityField(): IdentityFieldBuilder {
  *     .formatter(cell => cell.value?.businessName)
  *     .build()
  */
-export class EntityFieldBuilder extends BaseFieldBuilder {
+export class EntityFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor(url: string, valueField: string, textField: string) {
     super(FieldType.ENTITY);
     this._field.url = url;
@@ -51,12 +52,12 @@ export class EntityFieldBuilder extends BaseFieldBuilder {
   }
 }
 
-export function entityField(
+export function entityField<TRecord extends DataRecord = DataRecord>(
   url: string,
   valueField: string,
   textField: string,
-): EntityFieldBuilder {
-  return new EntityFieldBuilder(url, valueField, textField);
+): EntityFieldBuilder<TRecord> {
+  return new EntityFieldBuilder<TRecord>(url, valueField, textField);
 }
 
 /**
@@ -72,7 +73,7 @@ export function entityField(
  *     .formatter(cell => NumberUtils.formatCurrency(cell.value, cell.data?.currency))
  *     .build()
  */
-export class CurrencyFieldBuilder extends BaseFieldBuilder {
+export class CurrencyFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.CURRENCY);
     this._field.sendAsString = true;
@@ -80,24 +81,24 @@ export class CurrencyFieldBuilder extends BaseFieldBuilder {
   }
 }
 
-export function currencyField(): CurrencyFieldBuilder {
-  return new CurrencyFieldBuilder();
+export function currencyField<TRecord extends DataRecord = DataRecord>(): CurrencyFieldBuilder<TRecord> {
+  return new CurrencyFieldBuilder<TRecord>();
 }
 
 /**
  * Factory for image upload fields (FILE type).
  *
- * Defaults: url=Constants.API_BASE_URL+'media', accept='image/*', align='center'
+ * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
  * Formatter must be provided by the caller since it depends on the data shape.
  *
  * Usage:
- *   imageField(Constants.API_BASE_URL)
+ *   imageField('/api/')
  *     .name('photo')
  *     .label('Imagen')
  *     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
  *     .build()
  */
-class ImageFieldBuilder extends BaseFieldBuilder {
+class ImageFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor(apiBaseUrl: string) {
     super(FieldType.FILE);
     this._field.url = apiBaseUrl + 'media';
@@ -106,8 +107,8 @@ class ImageFieldBuilder extends BaseFieldBuilder {
   }
 }
 
-export function imageField(apiBaseUrl: string): ImageFieldBuilder {
-  return new ImageFieldBuilder(apiBaseUrl);
+export function imageField<TRecord extends DataRecord = DataRecord>(apiBaseUrl: string): ImageFieldBuilder<TRecord> {
+  return new ImageFieldBuilder<TRecord>(apiBaseUrl);
 }
 
 /**
@@ -123,7 +124,7 @@ export function imageField(apiBaseUrl: string): ImageFieldBuilder {
  *     .formatter(cell => SharedUtils.dateFormatter(cell.value))
  *     .build()
  */
-class DateFieldBuilder extends BaseFieldBuilder {
+class DateFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.DATE);
     this._field.defaultValue = new Intl.DateTimeFormat('en-CA', {
@@ -132,8 +133,8 @@ class DateFieldBuilder extends BaseFieldBuilder {
   }
 }
 
-export function dateField(): DateFieldBuilder {
-  return new DateFieldBuilder();
+export function dateField<TRecord extends DataRecord = DataRecord>(): DateFieldBuilder<TRecord> {
+  return new DateFieldBuilder<TRecord>();
 }
 
 /**
@@ -149,15 +150,15 @@ export function dateField(): DateFieldBuilder {
  *     .formatter(cell => SharedUtils.dateTimeFormatter(cell.value))
  *     .build()
  */
-class DateTimeFieldBuilder extends BaseFieldBuilder {
+class DateTimeFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.DATETIME);
     this._field.defaultValue = new Date();
   }
 }
 
-export function datetimeField(): DateTimeFieldBuilder {
-  return new DateTimeFieldBuilder();
+export function datetimeField<TRecord extends DataRecord = DataRecord>(): DateTimeFieldBuilder<TRecord> {
+  return new DateTimeFieldBuilder<TRecord>();
 }
 
 /**
@@ -171,14 +172,14 @@ export function datetimeField(): DateTimeFieldBuilder {
  *     .align('center')
  *     .build()
  */
-class NumberFieldBuilder extends BaseFieldBuilder {
+class NumberFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.NUMBER);
   }
 }
 
-export function numberField(): NumberFieldBuilder {
-  return new NumberFieldBuilder();
+export function numberField<TRecord extends DataRecord = DataRecord>(): NumberFieldBuilder<TRecord> {
+  return new NumberFieldBuilder<TRecord>();
 }
 
 /** A single option item for ENUM / SELECT fields. */
@@ -200,15 +201,15 @@ export type EnumOption = { value: string | number; text: string };
  *     .formatter(cell => cell.value === 'income' ? 'Ingreso' : 'Egreso')
  *     .build()
  */
-export class EnumFieldBuilder extends BaseFieldBuilder {
+export class EnumFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor(options: EnumOption[]) {
     super(FieldType.ENUM);
     this._field.data = options;
   }
 }
 
-export function enumField(options: EnumOption[]): EnumFieldBuilder {
-  return new EnumFieldBuilder(options);
+export function enumField<TRecord extends DataRecord = DataRecord>(options: EnumOption[]): EnumFieldBuilder<TRecord> {
+  return new EnumFieldBuilder<TRecord>(options);
 }
 
 /**
@@ -221,14 +222,14 @@ export function enumField(options: EnumOption[]): EnumFieldBuilder {
  *     .required(true)
  *     .build()
  */
-export class TextFieldBuilder extends BaseFieldBuilder {
+export class TextFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.TEXT);
   }
 }
 
-export function textField(): TextFieldBuilder {
-  return new TextFieldBuilder();
+export function textField<TRecord extends DataRecord = DataRecord>(): TextFieldBuilder<TRecord> {
+  return new TextFieldBuilder<TRecord>();
 }
 
 /**
@@ -240,14 +241,14 @@ export function textField(): TextFieldBuilder {
  *     .label('Nota')
  *     .build()
  */
-class TextareaFieldBuilder extends BaseFieldBuilder {
+class TextareaFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.TEXTAREA);
   }
 }
 
-export function textareaField(): TextareaFieldBuilder {
-  return new TextareaFieldBuilder();
+export function textareaField<TRecord extends DataRecord = DataRecord>(): TextareaFieldBuilder<TRecord> {
+  return new TextareaFieldBuilder<TRecord>();
 }
 
 /**
@@ -255,19 +256,19 @@ export function textareaField(): TextareaFieldBuilder {
  *
  * Usage:
  *   noneField()
- *     .name('sunatStatus')
- *     .label('Envío sunat')
- *     .formatter(cell => SharedUtils.billStatusFormatter(cell.value))
+ *     .name('status')
+ *     .label('Status')
+ *     .formatter(cell => statusFormatter(cell.value))
  *     .build()
  */
-class NoneFieldBuilder extends BaseFieldBuilder {
+class NoneFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.NONE);
   }
 }
 
-export function noneField(): NoneFieldBuilder {
-  return new NoneFieldBuilder();
+export function noneField<TRecord extends DataRecord = DataRecord>(): NoneFieldBuilder<TRecord> {
+  return new NoneFieldBuilder<TRecord>();
 }
 
 /**
@@ -281,14 +282,14 @@ export function noneField(): NoneFieldBuilder {
  *     .formatter(SharedUtils.booleanFormatter)
  *     .build()
  */
-class SwitchFieldBuilder extends BaseFieldBuilder {
+class SwitchFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.SWITCH);
   }
 }
 
-export function switchField(): SwitchFieldBuilder {
-  return new SwitchFieldBuilder();
+export function switchField<TRecord extends DataRecord = DataRecord>(): SwitchFieldBuilder<TRecord> {
+  return new SwitchFieldBuilder<TRecord>();
 }
 
 /**
@@ -301,14 +302,14 @@ export function switchField(): SwitchFieldBuilder {
  *     .data([{ value: 'PEN', text: 'Soles' }, { value: 'USD', text: 'Dólares' }])
  *     .build()
  */
-class SelectFieldBuilder extends BaseFieldBuilder {
+class SelectFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.SELECT);
   }
 }
 
-export function selectField(): SelectFieldBuilder {
-  return new SelectFieldBuilder();
+export function selectField<TRecord extends DataRecord = DataRecord>(): SelectFieldBuilder<TRecord> {
+  return new SelectFieldBuilder<TRecord>();
 }
 
 /**
@@ -321,14 +322,14 @@ export function selectField(): SelectFieldBuilder {
  *     .defaultValue(false)
  *     .build()
  */
-class CheckboxFieldBuilder extends BaseFieldBuilder {
+class CheckboxFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.CHECKBOX);
   }
 }
 
-export function checkboxField(): CheckboxFieldBuilder {
-  return new CheckboxFieldBuilder();
+export function checkboxField<TRecord extends DataRecord = DataRecord>(): CheckboxFieldBuilder<TRecord> {
+  return new CheckboxFieldBuilder<TRecord>();
 }
 
 /**
@@ -341,14 +342,14 @@ export function checkboxField(): CheckboxFieldBuilder {
  *     .required(true)
  *     .build()
  */
-class PasswordFieldBuilder extends BaseFieldBuilder {
+class PasswordFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor() {
     super(FieldType.PASSWORD);
   }
 }
 
-export function passwordField(): PasswordFieldBuilder {
-  return new PasswordFieldBuilder();
+export function passwordField<TRecord extends DataRecord = DataRecord>(): PasswordFieldBuilder<TRecord> {
+  return new PasswordFieldBuilder<TRecord>();
 }
 
 export type { Field };

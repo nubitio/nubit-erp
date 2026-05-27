@@ -1,23 +1,33 @@
 {
   "name": "@nubit/core",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
+  "description": "Runtime foundation for Nubit: HTTP client, event bus, i18n, Mercure SSE, CoreProvider, and date utilities.",
+  "license": "MIT",
+  "keywords": ["react", "admin", "http", "mercure", "i18n", "event-bus"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/efact-project/efact.git"
+  },
+  "bugs": {
+    "url": "https://github.com/efact-project/efact/issues"
+  },
+  "homepage": "https://github.com/efact-project/efact#readme",
   "source": "./public.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }
   },
   "files": ["dist"],
-  "dependencies": {
-    "@nubit/ui": "^0.1.0"
-  },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
     "i18next": "^23.0.0",

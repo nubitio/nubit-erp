@@ -1,14 +1,16 @@
 import { ConsultInfoDto } from '@shared/api/consult.info.dto';
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 class ConsultService {
   consultRuc(ruc: string) {
-    return httpClient.get<ConsultInfoDto>(`${API_BASE_URL}consults/ruc/${ruc}`);
+    return httpClient.get<ConsultInfoDto>(`${API}consults/ruc/${ruc}`);
   }
 
   consultDni(dni: string) {
-    return httpClient.get<ConsultInfoDto>(`${API_BASE_URL}consults/dni/${dni}`);
+    return httpClient.get<ConsultInfoDto>(`${API}consults/dni/${dni}`);
   }
 }
 

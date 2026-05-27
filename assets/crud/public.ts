@@ -1,11 +1,13 @@
 /**
  * @nubit/crud — CRUD engine, field DSL, form/grid views.
  *
- * Extracted from @nubit/core. All CRUD-layer abstractions live here;
- * @nubit/core retains only runtime primitives (HTTP, Mercure, config, events).
+ * Core entry point for building admin CRUD pages against any REST or Hydra backend.
  *
- * Convenience re-exports of base data types from @nubit/core are included
- * so CRUD consumers can use a single import.
+ * Quick start:
+ *   const resource = defineResource('/api/products', { title: 'Products' });
+ *   export const ProductPage = () => <SmartCrudPage resource={resource} />;
+ *
+ * defineResource(apiUrl, overrides?) is the only call form — the legacy object overload is gone.
  */
 
 // ── CRUD engine ───────────────────────────────────────────────────────────────
@@ -13,27 +15,20 @@ export {
   CrudPage,
   SmartCrudPage,
   SmartCrudRolesProvider,
-  createScopedEventBus,
+  useSmartCrudRoles,
   defineFieldContract,
   defineFields,
   defineResource,
-  initCoreI18n,
-  resolveSmartCrudFields,
-  resolveResourceDetails,
-  resolveResourceToolbar,
-  mergeOverrides,
-  useCoreTranslation,
-  useCrudPage,
-  usePermissions,
-  useSelectionState,
-  useSmartCrudRoles,
+  validateFieldContract,
+  createCrudEvents,
+  AuditTrailPanel,
 } from './crud';
 export type {
   AuditEntry,
   AuditTrailConfig,
+  AuditTrailPanelProps,
   BulkAction,
   ColumnPreset,
-  FieldOverride,
   FormLayout,
   FormSection,
   FormTab,
@@ -45,18 +40,13 @@ export type {
   ResourceToolbar,
   ResourceToolbarContext,
   ResourceToolbarItems,
-  ResolvedPermissions,
-  SelectionState,
   SmartCrudFieldContract,
   SmartCrudFieldOperation,
   SmartCrudFieldPatch,
-  SmartCrudFieldResolutionStrategy,
-  SmartCrudFieldSourceMode,
   SmartCrudHydraFieldContract,
   SmartCrudHydraFieldDirective,
   SmartCrudManualField,
   SmartCrudManualFieldContract,
-  SmartCrudModelFieldKey,
   SmartCrudOperation,
 } from './crud';
 
@@ -107,44 +97,38 @@ export type {
   DataGridViewOptions,
 } from './datagrid/DataGridViewOptions';
 
-// ── Resource stores ───────────────────────────────────────────────────────────
-export { ResourceStoreProvider, useResourceStoreFactory } from './data/ResourceStore';
+// ── Backend adapters ──────────────────────────────────────────────────────────
+export type { BackendAdapter } from './adapter/BackendAdapter';
+export { HydraAdapter } from './adapter/HydraAdapter';
+export { RestAdapter } from './adapter/RestAdapter';
+
+// ── Extension points (for @nubit/hydra and adapter implementors) ──────────────
+export {
+  ResourceSchemaProvider,
+} from './schema/ResourceSchema';
+export type {
+  ResourceSchemaProviderProps,
+  ResourceSchemaResolution,
+  ResourceSchemaResolver,
+} from './schema/ResourceSchema';
+export {
+  ResourceStoreProvider,
+} from './data/ResourceStore';
+export type { FieldOverride } from './crud/resolveSmartCrudFields';
+export {
+  useResourceStoreFactory,
+} from './data/ResourceStore';
 export type {
   ResourceFilterDescriptor,
   ResourceFilterRule,
   ResourceLoadOption,
   ResourceLoadOptions,
-  ResourceLoadResult,
   ResourceSortDescriptor,
   ResourceStore,
   ResourceStoreFactory,
   ResourceStoreOptions,
   ResourceStoreProviderProps,
 } from './data/ResourceStore';
-
-// ── Resource schemas ──────────────────────────────────────────────────────────
-export { ResourceSchemaProvider, useResolvedResourceFields } from './schema/ResourceSchema';
-export type {
-  ResolveResourceFieldsOptions,
-  ResourceSchemaProviderProps,
-  ResourceSchemaRequest,
-  ResourceSchemaResolution,
-  ResourceSchemaResolver,
-} from './schema/ResourceSchema';
-
-// ── CRUD events ───────────────────────────────────────────────────────────────
-export { createCrudEvents } from '../core/event/createCrudEvents';
-
-// ── UI dialogs (convenience re-exports from @nubit/ui) ────────────────────────
-export { ConfirmDialog } from '@nubit/ui';
-export type { ConfirmDialogProps } from '@nubit/ui';
-export { AppDialog } from '@nubit/ui';
-export type { AppDialogProps } from '@nubit/ui';
-
-// ── Backend adapters ──────────────────────────────────────────────────────────
-export type { BackendAdapter } from './adapter/BackendAdapter';
-export { HydraAdapter } from './adapter/HydraAdapter';
-export { RestAdapter } from './adapter/RestAdapter';
 
 // ── Base data types (convenience re-exports from @nubit/core) ─────────────────
 export type { DataRecord } from '@nubit/core';

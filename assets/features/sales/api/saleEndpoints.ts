@@ -1,9 +1,9 @@
-import { API_BASE_URL } from '@app/constants';
 import { createEndpoints } from '@shared/api/endpoints';
 
-const BASE = API_BASE_URL;
+// createEndpoints already resolves the base URL from CoreConfig via getCoreApiBaseUrl().
+const sales = createEndpoints('sales');
 
 export const saleEndpoints = {
-  ...createEndpoints('sales'),
-  items: (id: string | number) => `${BASE}sales/${id}/items`,
+  ...sales,
+  items: (id: string | number) => `${sales.list()}/${id}/items`,
 };

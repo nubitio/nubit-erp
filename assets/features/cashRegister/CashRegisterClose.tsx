@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 import cashRegisterService from './services/cashRegisterService';
@@ -32,8 +34,8 @@ export const CashRegisterClose = () => {
     }
 
     const data = closureData.map((item) => ({
-      cashShift: API_BASE_URL + 'cash-shifts/' + id,
-      paymentMethod: API_BASE_URL + 'payment-methods/' + item.paymentMethodId,
+      cashShift: API + 'cash-shifts/' + id,
+      paymentMethod: API + 'payment-methods/' + item.paymentMethodId,
       expectedAmount: Number(item.expectedAmount),
       countedAmount: item.countedAmount,
       difference: differences.find((diff) => diff.paymentMethodId === item.paymentMethodId)
@@ -63,7 +65,7 @@ export const CashRegisterClose = () => {
   useEffect(() => {
     gridRef.current?.showLoading('Cargando datos...');
     httpClient
-      .get<CashClosureRow[]>(API_BASE_URL + 'cash-shifts/' + id + '/summary')
+      .get<CashClosureRow[]>(API + 'cash-shifts/' + id + '/summary')
       .then((response) => {
         gridRef.current?.setRows(response.data);
       })

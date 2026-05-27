@@ -1,16 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SmartCrudPage, defineResource, type ResourceToolbarContext } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
-import { cashRegisterEvents } from '@features/cashRegister';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { CashRegisterFields } from './CashRegisterFields';
 
-const baseResource = defineResource({
+const baseResource = defineResource(`${API}cash-registers`, {
   id: 'cash-register',
   title: 'Cajas',
-  apiUrl: `${API_BASE_URL}cash-registers`,
   fields: CashRegisterFields(),
-  events: cashRegisterEvents,
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

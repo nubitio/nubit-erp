@@ -1,12 +1,8 @@
 import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { sunatCatalogEvents } from '@app/domainEvents';
 import { sunatCatalogEndpoints } from './api/catalogEndpoints';
 
-const resource = defineResource({
+const resource = defineResource(sunatCatalogEndpoints.list(), {
   id: 'sunat-catalog',
   title: 'Catálogos SUNAT',
-  apiUrl: sunatCatalogEndpoints.list(),
-  fields: [],
-  events: sunatCatalogEvents,
 });
 export const SunatCatalogPage = () => <SmartCrudPage resource={resource} />;

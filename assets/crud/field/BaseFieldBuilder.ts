@@ -3,10 +3,10 @@ import { FieldType } from './FieldType';
 import { Field, FieldButton, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
-import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import { FormatterFn, GridCellContext, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 import type { DataRecord } from '@nubit/core';
 
-export class BaseFieldBuilder {
+export class BaseFieldBuilder<TRecord extends DataRecord = DataRecord> {
   protected _field: Field;
 
   constructor(type: FieldType) {
@@ -141,8 +141,8 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  formatter(formatter: FormatterFn): this {
-    this._field.formatter = formatter;
+  formatter(formatter: (cell: GridCellContext<TRecord>) => React.ReactNode): this {
+    this._field.formatter = formatter as FormatterFn;
     return this;
   }
 
@@ -310,28 +310,28 @@ export class BaseFieldBuilder {
   // Declarative rules (SLICE-006)
   // ---------------------------------------------------------------------------
 
-  visibleWhen(fn: (formData: DataRecord) => boolean): this {
-    this._field.visibleWhen = fn;
+  visibleWhen(fn: (formData: TRecord) => boolean): this {
+    this._field.visibleWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 
-  disabledWhen(fn: (formData: DataRecord) => boolean): this {
-    this._field.disabledWhen = fn;
+  disabledWhen(fn: (formData: TRecord) => boolean): this {
+    this._field.disabledWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 
-  computed(fn: (formData: DataRecord) => unknown): this {
-    this._field.computed = fn;
+  computed(fn: (formData: TRecord) => unknown): this {
+    this._field.computed = fn as (formData: DataRecord) => unknown;
     return this;
   }
 
-  defaultWhen(fn: (formData: DataRecord) => unknown): this {
-    this._field.defaultWhen = fn;
+  defaultWhen(fn: (formData: TRecord) => unknown): this {
+    this._field.defaultWhen = fn as (formData: DataRecord) => unknown;
     return this;
   }
 
-  requiredWhen(fn: (formData: DataRecord) => boolean): this {
-    this._field.requiredWhen = fn;
+  requiredWhen(fn: (formData: TRecord) => boolean): this {
+    this._field.requiredWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 

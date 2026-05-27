@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import {
   SmartCrudPage,
   defineFields,
@@ -9,7 +11,6 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/crud';
-import { cashMovementCategoryEvents } from '@features/cashRegister';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 interface CashMovementCategoryRecord extends DataRecord {
@@ -56,16 +57,13 @@ const booleanSwitchPatch = (name: 'system' | 'active', label: string) =>
       .name(name)
       .label(label)
       .defaultValue(true)
-      .formatter((cell) => SharedUtils.booleanFormatter(cell.value))
+      .formatter((cell) => SharedUtils.booleanFormatter(cell.value as boolean))
       .build(),
   );
 
-const resource = defineResource<CashMovementCategoryRecord>({
+const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement-categories', {
   id: 'cash-movement-categories',
   title: 'Categorías de caja',
-  apiUrl: API_BASE_URL + 'cash-movement-categories',
-  fields: [],
-  events: cashMovementCategoryEvents,
   fieldContract: defineFields<CashMovementCategoryRecord>({
     source: 'hydra',
     strategy: 'augment',

@@ -3,12 +3,11 @@ import { DataGridView } from '../datagrid/DataGridView';
 import { DialogView } from '../dialog/DialogView';
 import { FormView, FORM_EVENTS } from '../form/FormView';
 import { useCrudPage } from './useCrudPage';
-import { dispatch, useEvents, type EventSubscription } from '@nubit/core';
+import { useCoreTranslation, useEvents } from '@nubit/core';
 import type { ResourceConfig } from './ResourceConfig';
 import type { BulkAction } from './BulkAction';
 import type { Field } from '../field/Field';
 import { AuditTrailPanel } from './AuditTrailPanel';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 import { DialogStoreProvider } from './DialogStoreProvider';
 import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
@@ -20,6 +19,7 @@ import type { DataRecord } from '@nubit/core';
 import type { GridHandle } from '../datagrid/GridHandle';
 import { resolveResourceDetails } from './resolveResourceDetails';
 import { resolveResourceToolbar } from './resolveResourceToolbar';
+import type { SmartCrudOperation } from './fieldOperationSemantics';
 
 type GridSelectionChange = {
   selectedRowsData?: unknown[];
@@ -66,6 +66,7 @@ interface CrudPageProps<T extends DataRecord = DataRecord> {
   /** External ref forwarded to the DataGridView — allows the parent to call
    *  showLoading / hideLoading / refresh / getSelectedRow imperatively. */
   gridRef?: React.RefObject<GridHandle | null>;
+  onOperationChange?: (operation: SmartCrudOperation | null) => void;
 }
 
 function inferFilterOperator(field: Field): NonNullable<Field['selectedFilterOperation']> {
@@ -115,6 +116,7 @@ export const CrudPage = <T extends DataRecord = DataRecord>({
   editDisabled,
   deleteDisabled,
   gridRef,
+  onOperationChange,
 }: CrudPageProps<T>) => (
   <DialogStoreProvider>
     <CrudPageInner
@@ -130,6 +132,7 @@ export const CrudPage = <T extends DataRecord = DataRecord>({
       editDisabled={editDisabled}
       deleteDisabled={deleteDisabled}
       gridRef={gridRef}
+      onOperationChange={onOperationChange}
     />
   </DialogStoreProvider>
 );
@@ -147,6 +150,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   editDisabled,
   deleteDisabled,
   gridRef: externalGridRef,
+  onOperationChange,
 }: CrudPageProps<T>) => {
   const { t } = useCoreTranslation();
   const resolvedInputResource = useMemo(() => resolveCrudResource(resource), [resource]);
@@ -214,38 +218,52 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const {
     isOpen: dialogIsOpen,
     mode: dialogMode,
+    rowData: dialogRowData,
     openDialog,
     closeDialog,
   } = useCrudDialogStore(resolvedResource.id);
 
   const [on, emit] = useEvents();
+  const [operationVersion, setOperationVersion] = useState(0);
 
-  // Subscribe to ADD / EDIT / SUCCESS events and mirror them into the store.
-  // openDialog/closeDialog are Zustand actions (stable); events are static resource config strings.
-  React.useEffect(() => {
-    const subs = [
-      events.ADD && on<{ title?: string; rowData?: DataRecord } | undefined>(events.ADD, (payload) => openDialog('add', payload?.rowData ?? null)),
-      events.EDIT && on<DataRecord | undefined>(events.EDIT, (rowData) => openDialog('edit', rowData ?? null)),
-      events.SUCCESS && on(events.SUCCESS, () => closeDialog()),
-    ].filter(Boolean) as EventSubscription[];
-    return () => subs.forEach((sub) => sub.unsubscribe());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const refreshGrid = useCallback(() => {
+    gridRef.current?.refresh();
+  }, [gridRef]);
+
+  const resetDialogOperation = useCallback(() => {
+    closeDialog();
+    onOperationChange?.(null);
+  }, [closeDialog, onOperationChange]);
+
+  const openAddDialog = useCallback((rowData: DataRecord | null = null) => {
+    setOperationVersion((current) => current + 1);
+    openDialog('add', rowData);
+    onOperationChange?.('create');
+  }, [onOperationChange, openDialog]);
+
+  const openEditDialog = useCallback((row: DataRecord) => {
+    setOperationVersion((current) => current + 1);
+    openDialog('edit', row);
+    onOperationChange?.('edit');
+  }, [onOperationChange, openDialog]);
+
+  const routingActionsRef = React.useRef({ openAddDialog, openEditDialog, resetDialogOperation });
+  routingActionsRef.current = { openAddDialog, openEditDialog, resetDialogOperation }; // eslint-disable-line react-hooks/refs
 
   // Deep-link: open the appropriate dialog on mount when routing props are provided.
   React.useEffect(() => {
     if (initialRecordId != null) {
-      openDialog('edit', { id: initialRecordId });
+      routingActionsRef.current.openEditDialog({ id: initialRecordId });
       return;
     }
 
     if (initialIsNew) {
-      openDialog('add', null);
+      routingActionsRef.current.openAddDialog(null);
       return;
     }
 
-    closeDialog();
-  }, [closeDialog, initialIsNew, initialRecordId, openDialog]);
+    routingActionsRef.current.resetDialogOperation();
+  }, [initialIsNew, initialRecordId]);
 
   // Subscribe to detail-grid row mutation events and call onDetailRowsChanged when defined.
   // The callback receives `formRef` so it can imperatively update header-form fields
@@ -301,11 +319,9 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     async (action: BulkAction) => {
       await action.onAction(selectionState.selectedIds);
       selectionState.clearSelection();
-      if (events.SUCCESS) {
-        dispatch(events.SUCCESS);
-      }
+      refreshGrid();
     },
-    [selectionState, events],
+    [refreshGrid, selectionState],
   );
 
   const handleBulkAction = useCallback(
@@ -412,6 +428,9 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         mode={resolvedResource.mode}
         stateStoringEnabled={resolvedResource.stateStoring}
         toolbar={toolbar}
+        onAdd={() => openAddDialog(null)}
+        onEdit={openEditDialog}
+        onDelete={(row) => formRef.current?.deleteRow(row)}
         selectionMode={hasMultipleSelection ? 'multiple' : 'single'}
         onSelectionChanged={handleSelectionChanged}
         editMode={resolvedResource.editMode}
@@ -429,7 +448,9 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
           height={resolvedResource.dialogHeight}
           title={dialogTitle}
           isOpen={dialogIsOpen}
-          onClose={closeDialog}
+          onClose={resetDialogOperation}
+          onCancel={resetDialogOperation}
+          onSave={() => formRef.current?.save()}
         >
           <FormView
             ref={formRef}
@@ -445,21 +466,27 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             requiredDetail={formDetail?.required}
             format={resolvedResource.format}
             onSaveSuccess={
-              resolvedResource.onSaveSuccess
-                ? (response) => resolvedResource.onSaveSuccess?.(response as T)
-                : undefined
+              (response) => {
+                resolvedResource.onSaveSuccess?.(response as T);
+                resetDialogOperation();
+                refreshGrid();
+              }
             }
             onSaveError={resolvedResource.onSaveError}
             onDeleteSuccess={
-              resolvedResource.onDeleteSuccess
-                ? (response) => resolvedResource.onDeleteSuccess?.(response as T)
-                : undefined
+              (response) => {
+                resolvedResource.onDeleteSuccess?.(response as T);
+                refreshGrid();
+              }
             }
             onDeleteError={resolvedResource.onDeleteError}
             formLayout={resolvedResource.formLayout}
             computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
             adapter={resolvedResource.adapter}
+            operation={dialogIsOpen && dialogMode !== 'view' ? dialogMode : null}
+            rowData={dialogRowData}
+            operationVersion={operationVersion}
           />
         </DialogView>
       )}

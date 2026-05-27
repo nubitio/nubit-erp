@@ -49,7 +49,7 @@ export const CashRegisterShiftsFields = () => {
       .name('openedAt')
       .defaultValue(undefined)
       .label('Apertura')
-      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value as string))
       .build(),
   );
 
@@ -58,7 +58,7 @@ export const CashRegisterShiftsFields = () => {
       .name('closedAt')
       .defaultValue(undefined)
       .label('Cierre')
-      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateTimeFormatter(cell.value as string))
       .build(),
   );
 

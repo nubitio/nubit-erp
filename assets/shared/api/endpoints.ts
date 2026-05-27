@@ -1,6 +1,7 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
 
-const BASE = API_BASE_URL;
+// Uses the apiBaseUrl configured in CoreConfigProvider (single source of truth).
+const BASE = getCoreApiBaseUrl();
 
 /**
  * Creates a typed endpoint map for a REST resource.

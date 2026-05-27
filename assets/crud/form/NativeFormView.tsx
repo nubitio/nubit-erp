@@ -13,14 +13,13 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, type CoreHttpClient } from '@nubit/core';
+import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, useCoreTranslation, type CoreHttpClient } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { DataRecord } from '@nubit/core';
 import { type ResourceStore, type ResourceStoreFactory, useResourceStoreFactory } from '../data/ResourceStore';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
-import { buildEmptyRow, normalizeFormData } from './FormDataTransform';
+import { buildEmptyRow, normalizeFormData, type PrependDataMap } from './FormDataTransform';
 import { buildFormLayoutModel, type FormLayoutGroup, type FormLayoutModel } from './FormLayoutModel';
 import type { FormDataRecord } from './FormDataSnapshot';
 import type { FormHandle } from './FormHandle';
@@ -37,13 +36,17 @@ function createRemoteSource(
   field: Field,
   httpClient: CoreHttpClient,
   resourceStoreFactory: ResourceStoreFactory,
+  prependData?: FormDataRecord[],
 ): ResourceStore {
+  const options = prependData?.length
+    ? [{ prependData }, ...field.loadOptions]
+    : field.loadOptions;
   return resourceStoreFactory({
     url: field.url ?? '',
     idField: field.valueField,
     byKeyUrl: field.byKeyUrl,
     defaultFilterRules: fieldFilters(field),
-    options: field.loadOptions,
+    options,
     iriMode: field.valueField === '_iri',
     httpClient,
   });
@@ -227,6 +230,7 @@ export function NativeEntitySelect({
   id,
   onChange,
   options,
+  prependData,
   readOnly,
   required,
   value,
@@ -238,6 +242,7 @@ export function NativeEntitySelect({
   id?: string;
   onChange: (value: unknown, item?: DataRecord | null) => void;
   options: DataRecord[];
+  prependData?: FormDataRecord[];
   readOnly?: boolean;
   required?: boolean;
   value: unknown;
@@ -267,7 +272,7 @@ export function NativeEntitySelect({
     const timer = setTimeout(() => {
       setLoading(true);
       setHasMore(true);
-      createRemoteSource(field, httpClient, resourceStoreFactory)
+      createRemoteSource(field, httpClient, resourceStoreFactory, prependData)
         .load({ take: 50, skip: 0, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
         .then((result) => {
           setSearchedItems(result.data);
@@ -284,7 +289,7 @@ export function NativeEntitySelect({
     setLoadingMore(true);
     const searchValue = query.trim();
     const currentCount = searchedItems ? searchedItems.length : 0;
-    createRemoteSource(field, httpClient, resourceStoreFactory)
+    createRemoteSource(field, httpClient, resourceStoreFactory, prependData)
       .load({ take: 50, skip: currentCount, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
       .then((result) => {
         setSearchedItems((prev) => {
@@ -459,6 +464,7 @@ function NativeDetailGrid({
   onClearCellError,
   onRowsChange,
   onRowsMutated,
+  prependData,
   remoteOptions,
   rows,
 }: {
@@ -471,6 +477,7 @@ function NativeDetailGrid({
   onClearCellError?: (rowIndex: number, fieldName: string) => void;
   onRowsChange: (rows: FormDataRecord[]) => void;
   onRowsMutated: () => void;
+  prependData?: PrependDataMap;
   remoteOptions: Record<string, DataRecord[]>;
   rows: FormDataRecord[];
 }) {
@@ -532,6 +539,7 @@ function NativeDetailGrid({
           field={field}
           httpClient={httpClient}
           options={remoteOptions[field.name] ?? field.data ?? []}
+          prependData={prependData?.get(field.name)}
           value={value}
           onChange={(nextValue) => void updateCell(rowIndex, field, nextValue)}
         />
@@ -631,6 +639,8 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const [detailErrors, setDetailErrors] = useState<DetailFieldErrors>({});
   const [remoteOptions, setRemoteOptions] = useState<Record<string, DataRecord[]>>({});
   const [activeTab, setActiveTab] = useState(0);
+  const appliedOperationRef = useRef<string | null>(null);
+  const prependDataRef = useRef<PrependDataMap>(new Map());
 
   const fields = options.fields;
   const onFieldDataChanged = options.onFieldDataChanged;
@@ -690,7 +700,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
         setRemoteOptions((current) => ({ ...current, [field.name]: field.data ?? [] }));
         return;
       }
-      const source = createRemoteSource(field, httpClient, resourceStoreFactory);
+      const source = createRemoteSource(field, httpClient, resourceStoreFactory, prependDataRef.current.get(field.name));
       source
         .load({ take: 50 })
         .then((result) => {
@@ -775,13 +785,53 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     setErrors({});
     setDetailErrors({});
     setNextDetailRows([]);
-    const row = payload ? normalizeFormData(payload, options.fields, options.adapter) : buildEmptyRow(options.fields);
+    prependDataRef.current = new Map();
+    const row = payload ? normalizeFormData(payload, options.fields, options.adapter, prependDataRef.current) : buildEmptyRow(options.fields);
     setNextFormData(row);
     if (payload && Array.isArray(payload[detailPropertyName])) {
       setNextDetailRows(payload[detailPropertyName] as FormDataRecord[]);
     }
     isEdit.current = false;
-  }, [detailPropertyName, options.fields, setNextDetailRows, setNextFormData]);
+  }, [detailPropertyName, options.adapter, options.fields, setNextDetailRows, setNextFormData]);
+
+  const applyEditPayload = useCallback((payload: { row: FormDataRecord }) => {
+    prependDataRef.current = new Map();
+    const row = normalizeFormData(payload.row, options.fields, options.adapter, prependDataRef.current);
+    uploadedFiles.current = [];
+    setErrors({});
+    setDetailErrors({});
+    setNextFormData(row);
+    isEdit.current = true;
+
+    const idField = options.fields.find((field) => field.isIdentity)?.name ?? '';
+    const detailId = row[idField];
+    const detailUrl = typeof detailId === 'string' || typeof detailId === 'number' ? options.detailUrl?.replace('{id}', String(detailId)) : undefined;
+    if (!detailUrl) return;
+
+    emit(FORM_EVENTS.LOADING, true);
+    httpClient
+      .get<FormDataRecord[]>(detailUrl)
+      .then((response) => setNextDetailRows(response.data))
+      .finally(() => emit(FORM_EVENTS.LOADING, false));
+  }, [emit, httpClient, options.adapter, options.detailUrl, options.fields, setNextDetailRows, setNextFormData]);
+
+  useEffect(() => {
+    if (!options.operation) {
+      appliedOperationRef.current = null;
+      return;
+    }
+    const operationKey = `${options.operation}:${options.operationVersion ?? 0}`;
+    if (appliedOperationRef.current === operationKey) return;
+    appliedOperationRef.current = operationKey;
+
+    if (options.operation === 'add') {
+      applyAddPayload(options.rowData ?? undefined);
+      return;
+    }
+    if (options.operation === 'edit' && options.rowData) {
+      applyEditPayload({ row: options.rowData });
+    }
+  }, [applyAddPayload, applyEditPayload, options.operation, options.operationVersion, options.rowData]);
 
   useEffect(() => {
     const subs = [
@@ -797,25 +847,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
     if (options.events?.ADD) subs.push(on(options.events.ADD, (payload: EventRowPayload | undefined) => applyAddPayload(payload)));
     if (options.events?.EDIT) {
-      subs.push(on(options.events.EDIT, (payload: { row: FormDataRecord }) => {
-        const row = normalizeFormData(payload.row, options.fields);
-        uploadedFiles.current = [];
-        setErrors({});
-        setDetailErrors({});
-        setNextFormData(row);
-        isEdit.current = true;
-
-        const idField = options.fields.find((field) => field.isIdentity)?.name ?? '';
-        const detailId = row[idField];
-        const detailUrl = typeof detailId === 'string' || typeof detailId === 'number' ? options.detailUrl?.replace('{id}', String(detailId)) : undefined;
-        if (!detailUrl) return;
-
-        emit(FORM_EVENTS.LOADING, true);
-        httpClient
-          .get<FormDataRecord[]>(detailUrl)
-          .then((response) => setNextDetailRows(response.data))
-          .finally(() => emit(FORM_EVENTS.LOADING, false));
-      }));
+      subs.push(on(options.events.EDIT, (payload: { row: FormDataRecord }) => applyEditPayload(payload)));
     }
     if (options.events?.DELETE) subs.push(on(options.events.DELETE, (payload: { row: FormDataRecord }) => handleDeleteRef.current(payload)));
     if (options.events?.SAVE) subs.push(on(options.events.SAVE, () => handleSaveRef.current()));
@@ -847,7 +879,12 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     setDetailData: setNextDetailRows,
     saveDetailData: () => undefined,
     reloadDetailData: () => undefined,
-    setValues: (data) => setNextFormData(normalizeFormData(data, options.fields)),
+    setValues: (data) => {
+      prependDataRef.current = new Map();
+      setNextFormData(normalizeFormData(data, options.fields, undefined, prependDataRef.current));
+    },
+    save: () => handleSaveRef.current(),
+    deleteRow: (row) => handleDeleteRef.current({ row }),
     setReadonly: (field, value) => setFieldState((current) => ({ ...current, [field]: { ...current[field], readonly: value } })),
     setDisabled: (field, value) => setFieldState((current) => ({ ...current, [field]: { ...current[field], disabled: value } })),
     enableValidation: (field) => setFieldState((current) => ({ ...current, [field]: { ...current[field], validationEnabled: true } })),
@@ -909,6 +946,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           httpClient={httpClient}
           id={`native-form-${field.name}`}
           options={items}
+          prependData={prependDataRef.current.get(field.name)}
           readOnly={readOnly}
           required={field.required}
           value={value}
@@ -1035,6 +1073,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       httpClient={httpClient}
       onClearCellError={clearDetailCellError}
       onRowsMutated={notifyDetailRowsMutated}
+      prependData={prependDataRef.current}
       remoteOptions={remoteOptions}
       rows={detailRows}
       onRowsChange={setNextDetailRows}
@@ -1044,7 +1083,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   return (
     <div className={`native-form${options.detailFields ? ' native-form--with-detail' : ''} ${options.className ?? ''}`}>
       {options.detailFields ? (
-        <div className="native-form__sales-layout">
+        <div className="native-form__master-detail">
           <div className="native-form__master-panel">{renderLayout(formLayoutModel)}</div>
           <div className="native-form__detail-panel">{detailGrid}</div>
         </div>

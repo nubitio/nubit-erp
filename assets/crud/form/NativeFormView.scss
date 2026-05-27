@@ -9,7 +9,7 @@
   min-height: min(680px, calc(100vh - 180px));
 }
 
-.native-form__sales-layout {
+.native-form__master-detail {
   display: grid;
   grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
   gap: 16px;
@@ -434,7 +434,7 @@
 }
 
 @media (max-width: 720px) {
-  .native-form__sales-layout {
+  .native-form__master-detail {
     grid-template-columns: 1fr;
   }
 

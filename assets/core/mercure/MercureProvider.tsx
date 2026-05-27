@@ -9,14 +9,14 @@
  * ## Usage
  *
  * ```tsx
- * // In EfactApp.tsx (or your app root):
+ * // In your app root:
  * <MercureProvider hubUrl={discoveredHubUrl}>
  *   <App />
  * </MercureProvider>
  * ```
  *
- * The `hubUrl` prop is typically discovered from the `Link` header of API responses
- * via an Axios response interceptor (see AC-4 in SLICE-014).
+ * The `hubUrl` is typically discovered from the `Link` header of API responses
+ * (common pattern with API Platform + Mercure).
  */
 
 import React, { createContext, useEffect, type ReactNode } from 'react';

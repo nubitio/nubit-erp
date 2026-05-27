@@ -1,8 +1,7 @@
 import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
-import type { DataRecord } from '@nubit/core';
-import type { FormEventNames, ToolbarButtonItem } from '../../core/event/EventTypes';
+import type { DataRecord, FormEventNames, ToolbarButtonItem } from '@nubit/core';
 import type { FormHandle } from '../form/FormHandle';
 import type { GridHandle } from '../datagrid/GridHandle';
 import type { FormLayout } from '../form/FormLayout';
@@ -11,13 +10,6 @@ import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
 import type { SmartCrudFieldContract } from './fieldContract';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
-/**
- * Generic factory that receives a form ref and returns typed field definitions.
- * Defaults to `DataRecord` for backward compatibility.
- */
-export type FieldsFactory<T extends DataRecord = DataRecord> = (
-  formRef: RefObject<FormHandle | null>,
-) => FieldDef<T>[];
 
 /**
  * URL-based deep-linking and filter sync configuration for SmartCrudPage.
@@ -90,19 +82,21 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
    */
   adapter?: BackendAdapter;
   /**
-   * Legacy/manual field entrypoint.
-   * Prefer `fieldContract` for canonical SmartCrud authoring; this remains as
-   * a compatibility path for manual screens and in-flight migrations.
+   * Manual field definitions for this resource.
+   * Omit (or pass an empty array) to let SmartCrudPage auto-infer fields from
+   * the Hydra/OpenAPI schema. Prefer `fieldContract` for augmenting inferred fields.
    */
-  fields: Field[] | FieldDef<T>[] | FieldsFactory<T>;
+  fields?: Field[] | FieldDef<T>[];
   /**
    * Canonical production field contract for SmartCrud.
    * SmartCrud runtime treats this as authoritative over legacy
    * `fields` + `fieldOverrides` combinations whenever it is present.
    */
   fieldContract?: SmartCrudFieldContract<T>;
-  /** Optional: inject a pre-existing event bus (e.g. a module-level singleton).
-   *  When omitted, `useCrudPage` creates fresh events via `createCrudEvents(id)`. */
+  /**
+   * @deprecated Prefer callback/state coordination. This remains only as a legacy
+   * escape hatch for code that still listens to CRUD event names directly.
+   */
   events?: FormEventNames;
   /** Detail rows rendered in the main grid's expandable row panel. */
   gridDetail?: ResourceGridDetail;

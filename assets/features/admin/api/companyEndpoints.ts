@@ -1,9 +1,8 @@
-import { API_BASE_URL } from '@app/constants';
 import { createEndpoints } from '@shared/api/endpoints';
 
-const BASE = API_BASE_URL;
+const companies = createEndpoints('companies');
 
 export const companyEndpoints = {
-  ...createEndpoints('companies'),
-  ubigeo: (id: string | number) => `${BASE}ubigeos/${id}`,
+  ...companies,
+  ubigeo: (id: string | number) => `${companies.list()}/ubigeos/${id}`,
 };

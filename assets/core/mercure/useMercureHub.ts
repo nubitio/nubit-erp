@@ -7,7 +7,7 @@
  * - Mercure is not configured in the backend.
  *
  * This hook does NOT perform any fetch or side effect — it only reads from context.
- * Hub discovery is handled by the Axios response interceptor registered in EfactApp.tsx.
+ * Hub discovery (usually from a `Link` header) must be done by the host application.
  *
  * ## Usage
  *

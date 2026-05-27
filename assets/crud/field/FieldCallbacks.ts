@@ -2,8 +2,8 @@ import React from 'react';
 import type { DataRecord } from '@nubit/core';
 
 export interface GridCellContext<
-  TData extends DataRecord = Record<string, any>,
-  TValue = any,
+  TData extends DataRecord = DataRecord,
+  TValue = unknown,
 > {
   value?: TValue;
   data: TData;
@@ -16,11 +16,13 @@ export interface GridCellContext<
  * Callback for grid column cell rendering.
  * Receives the app-owned cell context; UI adapters may provide extra fields.
  *
- * @example
- *   .formatter(cell => cell.value?.name)
- *   .formatter(cell => NumberUtils.formatCurrency(cell.value))
+ * Pass a TData type argument to get typed access to cell.data:
+ *   FormatterFn<InvoiceRecord>
+ *   (cell: GridCellContext<InvoiceRecord>) => cell.data.customer?.ruc
  */
-export type FormatterFn = (cell: GridCellContext) => React.ReactNode;
+export type FormatterFn<TData extends DataRecord = DataRecord> = (
+  cell: GridCellContext<TData>,
+) => React.ReactNode;
 
 /**
  * Callback for grid column `setCellValue` — called when the user edits a cell in an

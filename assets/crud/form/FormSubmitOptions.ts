@@ -1,6 +1,5 @@
-import type { FormEventNames } from '../../core/event/EventTypes';
+import type { CoreHttpClient, FormEventNames } from '@nubit/core';
 import type { Field } from '../field/Field';
-import type { CoreHttpClient } from '@nubit/core';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
 
 export interface UseFormSubmitOptions {

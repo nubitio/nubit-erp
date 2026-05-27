@@ -2,7 +2,9 @@ import { useRef, useMemo } from 'react';
 import { AppDialog } from '@nubit/ui';
 import { useScreenSize } from '@nubit/admin';
 import { DataGridView, type GridHandle } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from './lib/invoiceActions';
 import {
@@ -82,7 +84,7 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
           id="sale-tax-documents"
           ref={gridRef}
           title="Comprobantes"
-          url={`${API_BASE_URL}sales/${saleId}/tax-documents`}
+          url={`${API}sales/${saleId}/tax-documents`}
           fields={fields}
           toolbar={toolbar}
           sort={[{ selector: 'createdAt', desc: true }]}

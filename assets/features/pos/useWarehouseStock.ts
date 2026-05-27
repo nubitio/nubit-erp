@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import type { CartItem, PosItem } from './types';
 import { toOptionalNumber } from './posHelpers';
 
@@ -35,7 +37,7 @@ export const useWarehouseStock = (
       }
 
       const request = httpClient
-        .get<any>(`${API_BASE_URL}products/${productId}/stock/${warehouseId}`)
+        .get<any>(`${API}products/${productId}/stock/${warehouseId}`)
         .then((response) => {
             const stock = toOptionalNumber(response.data?.stock);
             setWarehouseStockByProductId((prev) => ({ ...prev, [productId]: stock ?? 0 }));

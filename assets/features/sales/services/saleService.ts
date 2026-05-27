@@ -1,14 +1,16 @@
 import { httpClient } from '@shared/api/HttpClient';
 import AppResponse from '@shared/api/AppResponse';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 class SaleService {
   getOne(saleId: string) {
-    return httpClient.get<any>(`${API_BASE_URL}sales/${saleId}`);
+    return httpClient.get<any>(`${API}sales/${saleId}`);
   }
 
   voidSale(saleId: string, reason: string, restoreStock = false) {
-    return httpClient.post<AppResponse>(`${API_BASE_URL}sales/${saleId}/void`, {
+    return httpClient.post<AppResponse>(`${API}sales/${saleId}/void`, {
       saleId,
       reason,
       restoreStock,
@@ -17,7 +19,7 @@ class SaleService {
 
   makeInvoice(saleId: string) {
     return httpClient.post<AppResponse>(
-      `${API_BASE_URL}sales/${saleId}/invoice`,
+      `${API}sales/${saleId}/invoice`,
       {
         saleId,
       },
@@ -26,7 +28,7 @@ class SaleService {
 
   printInvoice(saleId: string) {
     return httpClient.get<ArrayBuffer>(
-      `${API_BASE_URL}sales/${saleId}/print-invoice`,
+      `${API}sales/${saleId}/print-invoice`,
       {
         responseType: 'arraybuffer',
       },
@@ -34,11 +36,11 @@ class SaleService {
   }
 
   makeNote(noteId: string) {
-    return httpClient.post<any>(`${API_BASE_URL}sales/${noteId}/credit-note`);
+    return httpClient.post<any>(`${API}sales/${noteId}/credit-note`);
   }
 
   replaceRejected(saleId: string) {
-    return httpClient.post<AppResponse>(`${API_BASE_URL}sales/${saleId}/replace-rejected`);
+    return httpClient.post<AppResponse>(`${API}sales/${saleId}/replace-rejected`);
   }
 }
 

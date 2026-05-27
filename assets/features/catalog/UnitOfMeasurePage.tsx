@@ -9,7 +9,6 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/crud';
-import { unitOfMeasureEvents } from '@app/domainEvents';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { unitOfMeasureEndpoints } from './api/catalogEndpoints';
 
@@ -138,16 +137,13 @@ const referencePatch = toPatch(
     .helpText('Indica si es la unidad base')
     .align('center')
     .defaultValue(false)
-    .formatter((cell) => SharedUtils.booleanFormatter(cell.value))
+    .formatter((cell) => SharedUtils.booleanFormatter(cell.value as boolean))
     .build(),
 );
 
-const resource = defineResource<UnitOfMeasureRecord>({
+const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list(), {
   id: 'unitOfMeasure',
   title: 'Unidades de medida',
-  apiUrl: unitOfMeasureEndpoints.list(),
-  fields: [],
-  events: unitOfMeasureEvents,
   fieldContract: defineFields<UnitOfMeasureRecord>({
     source: 'hydra',
     strategy: 'augment',

@@ -11,7 +11,7 @@ export type {
   SmartCrudOperation,
 } from './fieldOperationSemantics';
 
-export type SmartCrudRecord = object;
+export type SmartCrudRecord = DataRecord;
 export type SmartCrudModelFieldKey<T extends SmartCrudRecord> = Extract<keyof T, string>;
 type SmartCrudFieldRecord<T extends SmartCrudRecord> = T & DataRecord;
 export type SmartCrudFieldSourceMode = 'hydra' | 'manual';

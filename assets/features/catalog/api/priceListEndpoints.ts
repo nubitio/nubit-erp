@@ -1,10 +1,9 @@
-import { API_BASE_URL } from '@app/constants';
 import { createEndpoints } from '@shared/api/endpoints';
 
-const BASE = API_BASE_URL;
+const priceLists = createEndpoints('price-lists');
 
 export const priceListEndpoints = {
-  ...createEndpoints('price-lists'),
-  prices: (id: string | number) => `${BASE}price-lists/${id}/prices`,
-  updatePrices: () => `${BASE}price-lists/update`,
+  ...priceLists,
+  prices: (id: string | number) => `${priceLists.list()}/${id}/prices`,
+  updatePrices: () => `${priceLists.list()}/update`,
 };

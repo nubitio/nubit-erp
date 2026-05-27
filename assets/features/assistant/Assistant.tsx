@@ -1,8 +1,9 @@
 import React, { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
-import { AppToolbar } from '@shared/ui/toolbar/AppToolbar';
-import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import { AppToolbar } from '@nubit/ui';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
 import {
   assistantService,
@@ -115,7 +116,7 @@ async function uploadFile(file: File): Promise<AssistantAttachmentPayload> {
   const formData = new FormData();
   formData.append('file', file);
   const data = await httpRequestData<{ id: string; path: string }>(
-    businessHttpClient.post('/api/media', formData),
+    httpClient.post('/api/media', formData),
   );
 
   return {

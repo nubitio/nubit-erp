@@ -7,7 +7,9 @@ import {
   type DataRecord,
   type GridCellContext,
 } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -114,11 +116,9 @@ const actionBtnStyle: React.CSSProperties = {
 export const StockItemPage = () => {
   const navigate = useNavigate();
 
-  const resource = defineResource<StockItemRecord>({
+  const resource = defineResource<StockItemRecord>(API + 'stock-items', {
     id: 'stock-item',
     title: 'Existencias',
-    apiUrl: API_BASE_URL + 'stock-items',
-    fields: [],
     fieldContract: defineFields<StockItemRecord>({
       source: 'hydra',
       strategy: 'augment',
@@ -133,7 +133,7 @@ export const StockItemPage = () => {
             label: 'Almacén',
             valueField: '_iri',
             textField: 'name',
-            url: API_BASE_URL + 'warehouses',
+            url: API + 'warehouses',
             selectedFilterOperation: '=',
             formatter: (e) => formatWarehouse(e.value),
           },
@@ -147,7 +147,7 @@ export const StockItemPage = () => {
             label: 'Producto',
             valueField: '_iri',
             textField: 'name',
-            url: API_BASE_URL + 'products',
+            url: API + 'products',
             selectedFilterOperation: '=',
             formatter: (e) => formatProduct(e.value),
           },

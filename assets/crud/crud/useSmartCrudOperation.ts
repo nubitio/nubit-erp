@@ -1,6 +1,5 @@
 import { useReducer, useCallback, useEffect } from 'react';
-import { useEvents, type EventSubscription as Subscription } from '@nubit/core';
-import type { FormEventNames } from '../../core/event/EventTypes';
+import { useEvents, type EventSubscription as Subscription, type FormEventNames } from '@nubit/core';
 import type { SmartCrudOperation } from './fieldOperationSemantics';
 import type { FormDataRecord } from '../form/FormDataSnapshot';
 
@@ -57,6 +56,9 @@ export interface SmartCrudOperationState {
   activeOperation: SmartCrudOperation | null;
   formData: FormDataRecord | null;
   handleFormDataChange: (data: FormDataRecord) => void;
+  startCreate: () => void;
+  startEdit: () => void;
+  resetOperation: () => void;
 }
 
 type CrudState = Pick<SmartCrudOperationState, 'activeOperation' | 'formData'>;
@@ -117,7 +119,7 @@ function crudReducer(state: CrudState, action: CrudAction): CrudState {
  * previously managed these coupled states independently.
  */
 export function useSmartCrudOperation(
-  events: FormEventNames,
+  events: FormEventNames | undefined,
   routingState: RoutingSnapshot,
 ): SmartCrudOperationState {
   const [on] = useEvents();
@@ -131,6 +133,18 @@ export function useSmartCrudOperation(
   // Stable callback — avoids re-rendering CrudPage on every setState call
   const handleFormDataChange = useCallback((data: FormDataRecord) => {
     dispatchState({ type: 'set-form-data', data });
+  }, []);
+
+  const startCreate = useCallback(() => {
+    dispatchState({ type: 'create' });
+  }, []);
+
+  const startEdit = useCallback(() => {
+    dispatchState({ type: 'edit' });
+  }, []);
+
+  const resetOperation = useCallback(() => {
+    dispatchState({ type: 'reset' });
   }, []);
 
   // Sync from routing state changes
@@ -148,7 +162,7 @@ export function useSmartCrudOperation(
   useEffect(() => {
     const subscriptions: Subscription[] = [];
 
-    if (events.ADD) {
+    if (events?.ADD) {
       subscriptions.push(
         on(events.ADD, () => {
           dispatchState({ type: 'create' });
@@ -156,7 +170,7 @@ export function useSmartCrudOperation(
       );
     }
 
-    if (events.EDIT) {
+    if (events?.EDIT) {
       subscriptions.push(
         on(events.EDIT, () => {
           dispatchState({ type: 'edit' });
@@ -164,7 +178,7 @@ export function useSmartCrudOperation(
       );
     }
 
-    if (events.CANCEL) {
+    if (events?.CANCEL) {
       subscriptions.push(
         on(events.CANCEL, () => {
           dispatchState({ type: 'reset' });
@@ -172,7 +186,7 @@ export function useSmartCrudOperation(
       );
     }
 
-    if (events.SUCCESS) {
+    if (events?.SUCCESS) {
       subscriptions.push(
         on(events.SUCCESS, () => {
           dispatchState({ type: 'reset' });
@@ -183,7 +197,7 @@ export function useSmartCrudOperation(
     return () => {
       subscriptions.forEach((sub) => sub.unsubscribe());
     };
-  }, [events.ADD, events.CANCEL, events.EDIT, events.SUCCESS, on]);
+  }, [events?.ADD, events?.CANCEL, events?.EDIT, events?.SUCCESS, on]);
 
-  return { activeOperation, formData, handleFormDataChange };
+  return { activeOperation, formData, handleFormDataChange, startCreate, startEdit, resetOperation };
 }

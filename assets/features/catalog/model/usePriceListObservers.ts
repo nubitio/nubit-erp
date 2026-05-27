@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { DataRecord } from '@nubit/crud';
-import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
 import { priceListEndpoints } from '../api/priceListEndpoints';
 import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
@@ -49,7 +50,7 @@ export const usePriceListObservers = ({
       prices.current?.showLoading('Cargando precios...');
 
       void httpRequestData<PriceEditorRow[]>(
-        businessHttpClient.get<PriceEditorRow[]>(
+        httpClient.get<PriceEditorRow[]>(
           priceListEndpoints.prices(row.id as string | number),
         ),
       )
@@ -80,7 +81,7 @@ export const usePriceListObservers = ({
         return;
       }
       void httpRequestData<AppResponse>(
-        businessHttpClient.post<AppResponse>(priceListEndpoints.updatePrices(), {
+        httpClient.post<AppResponse>(priceListEndpoints.updatePrices(), {
           priceListId: row.id,
           prices: pricesPayload,
         }),

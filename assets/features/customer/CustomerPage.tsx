@@ -6,7 +6,9 @@ import {
   type DataRecord,
   type FormHandle,
 } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { customerApiUrl, customerEvents } from './model/constants';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
@@ -24,11 +26,9 @@ interface CustomerRecord extends DataRecord {
 
 type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
-const customerResource = defineResource<CustomerRecord>({
+const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   id: 'customer',
   title: 'Clientes',
-  apiUrl: customerApiUrl,
-  fields: [],
   events: customerEvents,
   fieldContract: defineFields<CustomerRecord>({
     source: 'hydra',
@@ -58,8 +58,8 @@ const customerResource = defineResource<CustomerRecord>({
             {
               type: 'custom',
               options: {
-                validationCallback: (e: { value: string }) => {
-                  const doc = e.value;
+                validationCallback: (value) => {
+                  const doc = String(value ?? '');
                   return doc.length === 8 ? true : SharedUtils.validateRUC(doc);
                 },
                 message: 'El RUC ingresado no es válido',
@@ -108,7 +108,7 @@ const customerResource = defineResource<CustomerRecord>({
         key: 'priceList',
         patch: {
           type: FieldType.ENTITY,
-          url: API_BASE_URL + 'price-lists',
+          url: API + 'price-lists',
           valueField: '_iri',
           textField: 'name',
           label: 'Tarifa',

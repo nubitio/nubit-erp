@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { DateUtils } from '@nubit/core';
 import { SmartCrudPage, defineResource, textField, datetimeField, type Field, type DataRecord } from '@nubit/crud';
 import { httpClient } from '@shared/api/HttpClient';
@@ -25,7 +27,7 @@ interface StockMovementRecord extends DataRecord {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const BASE_URL = API_BASE_URL + 'stock-movements';
+const BASE_URL = API + 'stock-movements';
 
 const formatQty = (value: unknown): string => {
   if (value === null || value === undefined || value === '') return '';
@@ -123,7 +125,7 @@ export const KardexPage = () => {
   const [products,   setProducts]   = useState<SimpleOption[]>([]);
 
   useEffect(() => {
-    httpClient.get<any>(`${API_BASE_URL}warehouses?itemsPerPage=200`)
+    httpClient.get<any>(`${API}warehouses?itemsPerPage=200`)
       .then((r) =>
         setWarehouses(
           (r.data?.['hydra:member'] ?? []).map((w: any) => ({ id: w.id, name: w.name })),
@@ -133,7 +135,7 @@ export const KardexPage = () => {
   }, []);
 
   useEffect(() => {
-    httpClient.get<any>(`${API_BASE_URL}products?itemsPerPage=500`)
+    httpClient.get<any>(`${API}products?itemsPerPage=500`)
       .then((r) =>
         setProducts(
           (r.data?.['hydra:member'] ?? []).map((p: any) => ({
@@ -161,10 +163,9 @@ export const KardexPage = () => {
 
   const resource = useMemo(
     () =>
-      defineResource<StockMovementRecord>({
-        id: `kardex-${activeUrl}`,          // key change forces grid remount on filter
+      defineResource<StockMovementRecord>(activeUrl, {
+        id: `kardex-${activeUrl}`,
         title: 'Kardex — Movimientos de stock',
-        apiUrl: activeUrl,
         fields: buildFields(showProductColumns, showBalance),
         sort: [{ selector: 'occurredAt', desc: true }],
         permissions: { canAdd: false, canEdit: false, canDelete: false },

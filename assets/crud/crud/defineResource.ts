@@ -15,64 +15,48 @@ function cacheKey(apiUrl: string, overrides?: DataRecord): string | null {
 
 /**
  * Derives the resource `id` from a URL string.
- * '/api/products'        → 'products'
- * '/api/voucher-series'  → 'voucher-series'
+ * '/api/products'         → 'products'
+ * '/api/voucher-series'   → 'voucher-series'
  * 'http://host/a/b/items' → 'items'
  */
 function deriveId(apiUrl: string): string {
   const stripped = apiUrl.replace(/\/+$/, '');
   const last = stripped.split('/').pop() ?? stripped;
-  // Strip query params if any
   return last.split('?')[0];
 }
 
-/**
- * Overload 1 — Zero config: derive id from URL.
- * `mercure` defaults to `true` (opt-in) when not specified.
- */
+/** Zero config — `id` and `title` derived from the URL. */
 export function defineResource(apiUrl: string): ResourceConfig;
 
 /**
- * Overload 2 — URL + partial overrides.
- * Pass `mercure: false` to disable real-time Mercure subscription for this resource.
- * When omitted, `mercure` is effectively `true` (opt-in by default).
+ * URL + partial overrides (canonical form).
+ * Pass `mercure: false` to disable the real-time Mercure subscription.
  */
 export function defineResource<T extends DataRecord>(
   apiUrl: string,
-  overrides: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },
-): ResourceConfig<T>;
-
-/** Overload 3 — Full config object (legacy / full control — retrocompatible). */
-export function defineResource<T extends DataRecord = DataRecord>(
-  config: ResourceConfig<T>,
+  overrides: Partial<Omit<ResourceConfig<T>, 'apiUrl'>> & { id?: string },
 ): ResourceConfig<T>;
 
 export function defineResource<T extends DataRecord = DataRecord>(
-  configOrUrl: ResourceConfig<T> | string,
-  overrides?: Omit<ResourceConfig<T>, 'apiUrl'> & { id?: string },
+  apiUrl: string,
+  overrides?: Partial<Omit<ResourceConfig<T>, 'apiUrl'>> & { id?: string },
 ): ResourceConfig<T> {
-  if (typeof configOrUrl === 'string') {
-    const apiUrl = configOrUrl;
-    const key = cacheKey(apiUrl, overrides as DataRecord | undefined);
-    if (key !== null && stringResourceCache.has(key)) {
-      return stringResourceCache.get(key)! as ResourceConfig<T>;
-    }
-
-    const id = overrides?.id ?? deriveId(apiUrl);
-    const resource = {
-      id,
-      title: '',
-      fields: [],
-      ...overrides,
-      apiUrl,
-    } as ResourceConfig<T>;
-
-    if (key !== null) {
-      stringResourceCache.set(key, resource as ResourceConfig);
-    }
-
-    return resource;
+  const key = cacheKey(apiUrl, overrides as DataRecord | undefined);
+  if (key !== null && stringResourceCache.has(key)) {
+    return stringResourceCache.get(key)! as ResourceConfig<T>;
   }
-  // Legacy: pass-through
-  return configOrUrl;
+
+  const id = overrides?.id ?? deriveId(apiUrl);
+  const resource = {
+    id,
+    title: '',
+    ...overrides,
+    apiUrl,
+  } as ResourceConfig<T>;
+
+  if (key !== null) {
+    stringResourceCache.set(key, resource as ResourceConfig);
+  }
+
+  return resource;
 }

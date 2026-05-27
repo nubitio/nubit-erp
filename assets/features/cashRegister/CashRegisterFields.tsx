@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { Field } from '@nubit/crud';
 import { identityField, entityField, textField } from '@nubit/crud';
 import type { GridCellContext } from '@nubit/crud';
@@ -8,10 +10,10 @@ export const CashRegisterFields = () => {
 
   fields.push(identityField().build());
   fields.push(
-    entityField(API_BASE_URL + 'branches', 'id', 'name')
+    entityField(API + 'branches', 'id', 'name')
       .name('branch')
       .label('Sucursal')
-      .formatter((cell: GridCellContext) => cell.value?.name)
+      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .required(true)
       .build(),
   );

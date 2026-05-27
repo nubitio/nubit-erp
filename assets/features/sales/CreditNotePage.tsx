@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import {
   SmartCrudPage,
   defineResource,
@@ -22,7 +24,7 @@ import {
   useCreditNoteSelectionState,
 } from './model';
 
-const API_URL = API_BASE_URL + 'tax-documents';
+const API_URL = API + 'tax-documents';
 const fields = CreditNoteFields();
 
 export const CreditNotePage = () => {

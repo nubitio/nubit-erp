@@ -1,1 +1,1 @@
-export { DateUtils, LIMA_TZ } from './DateUtils';
+export { DateUtils, DEFAULT_TIMEZONE } from './DateUtils';

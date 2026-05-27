@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import type { FormHandle } from '@nubit/crud';
 import { Field } from '@nubit/crud';
 import {
@@ -75,12 +77,12 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .name('issuedDate')
       .label('Fecha')
       .required(true)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .valueType('date')
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
       .filters([
@@ -99,12 +101,12 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .defaultValue(1)
       .required(true)
-      .formatter((cell: GridCellContext) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .onSelect((event: any) => {
         if (event.itemData.price_list) {
           form?.setFieldValue('price_list', event.itemData.price_list.id);
@@ -126,7 +128,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'price-lists', 'id', 'name')
+    entityField(API + 'price-lists', 'id', 'name')
       .name('price_list')
       .label('Tarifa')
       .valueType('number')
@@ -151,13 +153,13 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'payment-methods', 'id', 'name')
+    entityField(API + 'payment-methods', 'id', 'name')
       .name('paymentMethod')
       .label('Método de pago')
       .valueType('number')
       .defaultValue(1)
       .required(true)
-      .formatter((cell: GridCellContext) => cell.value?.name)
+      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .build(),
   );
   fields.push(
@@ -195,7 +197,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           const url = `/receipt/${cell.data.id}/ticket?format=a4`;
           return (
             <a href={url} className="text-reset" target="_blank" rel="noreferrer">
-              <i className="ph ph-file-pdf text-emerald-700" /> {cell.value}
+              <i className="ph ph-file-pdf text-emerald-700" /> {cell.value as string}
             </a>
           );
         }
@@ -230,7 +232,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .name('grandTotal')
       .label('Total')
       .formatter((cell: GridCellContext) =>
-        NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
+        NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
       )
       .disabled(true)
       .build(),
@@ -267,7 +269,7 @@ export const SaleDetailFields = (
 
   fields.push(identityField().build());
   fields.push(
-    entityField(API_BASE_URL + 'products', 'id', 'name')
+    entityField(API + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(300)
@@ -299,7 +301,7 @@ export const SaleDetailFields = (
         row.netAmount = price;
         this.defaultSetCellValue(row, product, currentRow);
       })
-      .formatter((cell: GridCellContext) => cell.value?.name)
+      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .required(true)
       .sortable(false)
       .build(),
@@ -357,7 +359,7 @@ export const SaleDetailFields = (
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
         this.defaultSetCellValue(row, value, currentRow);
       })
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .required(true)
       .sortable(false)
       .build(),
@@ -388,7 +390,7 @@ export const SaleDetailFields = (
       .name('discountAmount')
       .label('Desc. S/')
       .defaultValue(0)
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value ?? 0, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency((cell.value as number | undefined) ?? 0, currency))
       .filterable(false)
       .disabled(true)
       .sortable(false)
@@ -404,7 +406,7 @@ export const SaleDetailFields = (
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);
       })
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .required(true)
       .filterable(false)
       .disabled(true)

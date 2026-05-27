@@ -1,5 +1,7 @@
 import { type RefObject } from 'react';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import type { FormHandle } from '@nubit/crud';
 import { Field } from '@nubit/crud';
 import { entityField, textField, textareaField } from '@nubit/crud';
@@ -120,10 +122,10 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'price-lists', 'id', 'name')
+    entityField(API + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')
-      .formatter((cell: GridCellContext) => cell.value?.name)
+      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .valueType('number')
       .build(),
   );

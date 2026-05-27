@@ -8,7 +8,6 @@ import {
   type SmartCrudFieldPatch,
 } from '@nubit/crud';
 import React from 'react';
-import { operationEvents } from '@app/domainEvents';
 import { operationEndpoints } from './api/catalogEndpoints';
 
 interface OperationRecord extends DataRecord {
@@ -47,12 +46,9 @@ const typePatch = toPatch(
     .build(),
 );
 
-const resource = defineResource<OperationRecord>({
+const resource = defineResource<OperationRecord>(operationEndpoints.list(), {
   id: 'operation',
   title: 'Operaciones',
-  apiUrl: operationEndpoints.list(),
-  fields: [],
-  events: operationEvents,
   fieldContract: defineFields<OperationRecord>({
     source: 'hydra',
     strategy: 'augment',

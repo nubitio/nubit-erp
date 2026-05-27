@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { Field } from '@nubit/crud';
 import {
   identityField,
@@ -34,11 +36,11 @@ export const InboundFields = (branchId: string | number = '') => {
       .name('issuedAt')
       .label('Fecha')
       .width(130)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
       .width(200)
@@ -53,7 +55,7 @@ export const InboundFields = (branchId: string | number = '') => {
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'suppliers', 'id', 'businessName')
+    entityField(API + 'suppliers', 'id', 'businessName')
       .name('supplier')
       .label('Proveedor')
       .width(240)
@@ -66,7 +68,7 @@ export const InboundFields = (branchId: string | number = '') => {
       .label('Total')
       .width(140)
       .defaultValue(0)
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
       .readonly(true)
       .build(),
   );
@@ -81,7 +83,7 @@ export const InboundDetailFields = () => {
 
   fields.push(identityField().build());
   fields.push(
-    entityField(API_BASE_URL + 'products', 'id', 'name')
+    entityField(API + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(200)
@@ -122,7 +124,7 @@ export const InboundDetailFields = () => {
       .name('unitCost')
       .label('Precio unitario')
       .defaultValue(0)
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
       .onChange(function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
         row.totalAmount = Number(currentRow.qty ?? 0) * Number(value ?? 0);
@@ -136,7 +138,7 @@ export const InboundDetailFields = () => {
       .name('totalAmount')
       .label('Precio total')
       .defaultValue(0)
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
       .sortable(false)
       .filterable(false)
       .build(),

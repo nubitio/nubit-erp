@@ -1,12 +1,10 @@
-import { API_BASE_URL } from '@app/constants';
-import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { voucherSeriesEvents } from '@app/domainEvents';
+import { getCoreApiBaseUrl } from '@nubit/core';
 
-const resource = defineResource({
+const API = getCoreApiBaseUrl();
+import { SmartCrudPage, defineResource } from '@nubit/crud';
+
+const resource = defineResource(API + 'voucher-series', {
   id: 'voucherSeries',
   title: 'Serie comprobantes',
-  apiUrl: API_BASE_URL + 'voucher-series',
-  fields: [],
-  events: voucherSeriesEvents,
 });
 export const VoucherSeriesPage = () => <SmartCrudPage resource={resource} />;

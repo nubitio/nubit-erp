@@ -2,7 +2,10 @@ import ApiResponse from './ApiResponse';
 import { HttpCode } from './HttpCode';
 import toast from '../lib/SharedUtils';
 import { dispatch } from '../../core/event/EventHook';
-import { Constants } from '../../core/common/Constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+import { BASE_URL } from '@app/constants';
+
+const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client only
 import { StorageUtils } from '../lib/StorageUtils';
 import mercureManager from '../../core/mercure/MercureManager';
 import type { DataRecord } from '../../core/data/DataRecord';
@@ -244,7 +247,7 @@ class HttpClient {
   private handleUnauthorizedError<T>(retry: () => Promise<T>): Promise<T> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
-      this.refreshPromise = globalThis.fetch(`${Constants.API_BASE_URL}auth/refresh`, {
+      this.refreshPromise = globalThis.fetch(`${API_BASE_URL}auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       })
@@ -299,7 +302,7 @@ class HttpClient {
       this.tokenExpiredModalShown = true;
       showBlockingAlert(HttpClient.DEFAULT_MESSAGES.unauthorized).then(() => {
         StorageUtils.removeItem('user');
-        window.location.href = Constants.BASE_URL;
+        window.location.href = BASE_URL;
       });
     }
     toast(HttpClient.DEFAULT_MESSAGES.unauthorized, 'error');

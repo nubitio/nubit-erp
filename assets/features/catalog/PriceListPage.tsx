@@ -5,18 +5,16 @@ import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@nubit/core';
 import { usePriceListObservers } from './model/usePriceListObservers';
-import { priceListEvents, priceEvents } from '@app/domainEvents';
+import { priceEvents } from '@app/domainEvents';
 import {
   PriceEditorGrid,
   type PriceEditorGridHandle,
 } from './components/PriceEditorGrid';
 
-const baseResource = defineResource({
+const baseResource = defineResource(priceListEndpoints.list(), {
   id: 'price-list',
   title: 'Tarifas',
-  apiUrl: priceListEndpoints.list(),
   fields: PriceListFields(),
-  events: priceListEvents,
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

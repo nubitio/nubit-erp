@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 
@@ -20,9 +22,9 @@ export const cloneSaleToForm = ({
   emit(loadingEventName, true);
 
   void Promise.all([
-    httpRequestData<any>(httpClient.get<any>(`${API_BASE_URL}sales/${saleId}`)),
+    httpRequestData<any>(httpClient.get<any>(`${API}sales/${saleId}`)),
     httpRequestData<any>(
-      httpClient.get<any>(`${API_BASE_URL}sales/${saleId}/items`),
+      httpClient.get<any>(`${API}sales/${saleId}/items`),
     ),
   ])
     .then(([sale, items]) => {

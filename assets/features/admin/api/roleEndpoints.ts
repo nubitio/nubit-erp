@@ -1,10 +1,9 @@
-import { API_BASE_URL } from '@app/constants';
 import { createEndpoints } from '@shared/api/endpoints';
 
-const BASE = API_BASE_URL;
+const roles = createEndpoints('roles');
 
 export const roleEndpoints = {
-  ...createEndpoints('roles'),
-  menu: (roleId: string | number) => `${BASE}role-menu/${roleId}`,
-  saveMenu: () => `${BASE}role-menu`,
+  ...roles,
+  menu: (roleId: string | number) => `${roles.list()}/menu/${roleId}`,
+  saveMenu: () => `${roles.list()}/menu`,
 };

@@ -7,7 +7,9 @@ import { AuthProvider } from '@app/contexts/auth';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
 import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubit/core';
-import { API_BASE_URL } from '@app/constants';
+// Single source of truth for this efact deployment's API base URL.
+// Everything else in the app should go through getCoreApiBaseUrl() from @nubit/core.
+const EFECT_API_BASE_URL = '/api/';
 import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 
@@ -21,7 +23,9 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
   const locale = i18n.language?.split('-')[0] || 'es';
 
   const httpConfig = useMemo(() => ({
-    baseUrl: API_BASE_URL,
+    // baseUrl is now optional — it falls back to the one configured in CoreConfigProvider.
+    // We still pass it here for explicitness / backward compat with advanced use cases.
+    baseUrl: EFECT_API_BASE_URL,
     refreshPath: 'auth/refresh',
     loginPath: 'auth/login',
   }), []);
@@ -38,7 +42,11 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
           http={httpConfig}
           runtime={runtimeConfig}
         >
-          <CoreConfigProvider locale={locale} timezone="America/Lima">
+          <CoreConfigProvider
+            locale={locale}
+            timezone="America/Lima"
+            apiBaseUrl={EFECT_API_BASE_URL}
+          >
             <AuthProvider>
               <SmartCrudAuthBridge>
                 <ConnectivityProvider>

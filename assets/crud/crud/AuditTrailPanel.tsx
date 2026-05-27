@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useCoreHttpClient, getCoreLocale, getCoreTimezone } from '@nubit/core';
+import { useCoreHttpClient, getCoreLocale, getCoreTimezone, useCoreTranslation } from '@nubit/core';
 import type { AuditEntry } from './AuditTrail';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 
 export interface AuditTrailPanelProps {
   url: string | null;

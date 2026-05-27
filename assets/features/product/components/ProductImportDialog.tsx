@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { useScreenSize } from '@nubit/admin';
 import { MercureManager, useMercureHub } from '@nubit/core';
 import { AppDialog } from '@nubit/ui';
-import { businessHttpClient } from '@shared/api/network';
+import { httpClient } from '@shared/api/HttpClient';
 
 import './ProductImportDialog.scss';
 
@@ -149,7 +149,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
     formData.append('file', selectedFile);
 
     try {
-      const response = await businessHttpClient.post<{ jobId: string; status: string; topic: string }>(
+      const response = await httpClient.post<{ jobId: string; status: string; topic: string }>(
         '/api/v1/products/import',
         formData,
       );

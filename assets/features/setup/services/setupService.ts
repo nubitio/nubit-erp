@@ -1,5 +1,7 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 export type SetupStatus = {
   configured: boolean;
@@ -23,11 +25,11 @@ export type SetupPayload = {
 
 class SetupService {
   getStatus() {
-    return httpClient.get<SetupStatus>(API_BASE_URL + 'setup');
+    return httpClient.get<SetupStatus>(API + 'setup');
   }
 
   complete(payload: SetupPayload) {
-    return httpClient.post<SetupStatus>(API_BASE_URL + 'setup', payload);
+    return httpClient.post<SetupStatus>(API + 'setup', payload);
   }
 }
 

@@ -1,20 +1,16 @@
-import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { voucherTypeEvents } from '@app/domainEvents';
+import { SmartCrudPage, defineResource, defineFieldContract } from '@nubit/crud';
 import { voucherTypeEndpoints } from './api/catalogEndpoints';
 
-const resource = defineResource({
+const resource = defineResource(voucherTypeEndpoints.list(), {
   id: 'voucherType',
   title: 'Tipos de comprobante',
-  apiUrl: voucherTypeEndpoints.list(),
-  fields: [],
-  events: voucherTypeEvents,
+  fieldContract: defineFieldContract({
+    source: 'hydra',
+    strategy: 'augment',
+    directives: [
+      { kind: 'override', key: 'id', patch: { isIdentity: false, visible: false, visibleOnForm: false } },
+      { kind: 'override', key: 'code', patch: { isIdentity: true } },
+    ],
+  }),
 });
-export const VoucherTypePage = () => (
-  <SmartCrudPage
-    resource={resource}
-    fieldOverrides={[
-      { key: 'id', isIdentity: false, visible: false, visibleOnForm: false },
-      { key: 'code', isIdentity: true },
-    ]}
-  />
-);
+export const VoucherTypePage = () => <SmartCrudPage resource={resource} />;

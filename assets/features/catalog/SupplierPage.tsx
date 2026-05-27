@@ -6,7 +6,6 @@ import {
   type DataRecord,
   type FormHandle,
 } from '@nubit/crud';
-import { supplierEvents } from '@app/domainEvents';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
@@ -21,12 +20,9 @@ interface SupplierRecord extends DataRecord {
 
 type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
-const resource = defineResource<SupplierRecord>({
+const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   id: 'supplier',
   title: 'Proveedores',
-  apiUrl: supplierEndpoints.list(),
-  fields: [],
-  events: supplierEvents,
   fieldContract: defineFields<SupplierRecord>({
     source: 'hydra',
     strategy: 'augment',
@@ -48,8 +44,8 @@ const resource = defineResource<SupplierRecord>({
             {
               type: 'custom',
               options: {
-                validationCallback: (e: { value: string }) => {
-                  const doc = String(e.value ?? '').trim();
+                validationCallback: (value) => {
+                  const doc = String(value ?? '').trim();
                   return SharedUtils.validateRUC(doc);
                 },
                 message: 'El RUC ingresado no es válido',

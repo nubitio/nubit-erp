@@ -1,17 +1,13 @@
-import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { warehouseEvents } from '@app/domainEvents';
+import { SmartCrudPage, defineResource, defineFieldContract } from '@nubit/crud';
 import { warehouseEndpoints } from './api/catalogEndpoints';
 
-const resource = defineResource({
+const resource = defineResource(warehouseEndpoints.list(), {
   id: 'warehouse',
   title: 'Almacen',
-  apiUrl: warehouseEndpoints.list(),
-  fields: [],
-  events: warehouseEvents,
+  fieldContract: defineFieldContract({
+    source: 'hydra',
+    strategy: 'augment',
+    directives: [{ kind: 'remove', key: 'productStocks' }],
+  }),
 });
-export const WarehousePage = () => (
-  <SmartCrudPage
-    resource={resource}
-    fieldOverrides={[{ key: 'productStocks', hidden: true, visible: false, visibleOnForm: false }]}
-  />
-);
+export const WarehousePage = () => <SmartCrudPage resource={resource} />;

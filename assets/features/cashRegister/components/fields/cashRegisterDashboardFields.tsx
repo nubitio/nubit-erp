@@ -35,7 +35,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
     currencyField()
       .name('balance')
       .label('Saldo actual')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
       .build(),
   );
   fields.push(

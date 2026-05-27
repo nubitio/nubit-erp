@@ -13,13 +13,12 @@ import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/Resou
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { useEvents, useCoreRuntime, useCoreHttpClient, getCoreLocale, getCoreTimezone } from '@nubit/core';
+import { useEvents, useCoreRuntime, useCoreHttpClient, getCoreLocale, getCoreTimezone, useCoreTranslation } from '@nubit/core';
 import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
 import type { FilterRule } from '../field/FilterRule';
-import type { ToolbarButtonItem } from '../../core/event/EventTypes';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
+import type { ToolbarButtonItem } from '@nubit/core';
 import { NativeEntitySelect } from '../form/NativeFormView';
 
 type SortRule = { selector: string; desc: boolean };
@@ -537,10 +536,20 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     emit(DATA_GRID_EVENTS.SELECTION_CHANGED, nextRows);
   };
 
-  const onAddClick = () => options.events?.ADD && emit(options.events.ADD);
+  const onAddClick = () => {
+    if (options.onAdd) {
+      options.onAdd();
+      return;
+    }
+    if (options.events?.ADD) emit(options.events.ADD);
+  };
   const onEditClick = () => {
     const row = selectedRows[0];
     if (row) {
+      if (options.onEdit) {
+        options.onEdit(row);
+        return;
+      }
       if (options.events?.EDIT) emit(options.events.EDIT, { row });
     } else {
       notify(t('grid.selectRequired'), 'warning', 2000);
@@ -556,7 +565,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   };
 
   const confirmDelete = () => {
-    if (confirmRow && options.events?.DELETE) emit(options.events.DELETE, { row: confirmRow });
+    if (confirmRow) {
+      if (options.onDelete) {
+        options.onDelete(confirmRow);
+      } else if (options.events?.DELETE) {
+        emit(options.events.DELETE, { row: confirmRow });
+      }
+    }
     setConfirmRow(null);
   };
 
@@ -737,9 +752,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           tabIndex={0}
                           onClick={() => selectRow(row)}
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' && options.events?.EDIT) {
-                              emit(options.events.EDIT, { row });
-                            } else if (event.key === 'Delete' && options.events?.DELETE) {
+                            if (event.key === 'Enter' && (options.onEdit || options.events?.EDIT)) {
+                              if (options.onEdit) options.onEdit(row);
+                              else emit(options.events!.EDIT!, { row });
+                            } else if (event.key === 'Delete' && (options.onDelete || options.events?.DELETE)) {
                               setConfirmRow(row);
                             } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                               event.preventDefault();
@@ -791,18 +807,22 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           {hasRowActions && (
                             <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
                               <div className="native-datagrid__row-actions">
-                                {options.allowEdit && options.events?.EDIT && (
+                                {options.allowEdit && (options.onEdit || options.events?.EDIT) && (
                                   <button
                                     type="button"
                                     className="app-icon-button"
                                     aria-label={t('grid.buttonEdit')}
                                     title={t('grid.buttonEdit')}
-                                    onClick={(e) => { e.stopPropagation(); emit(options.events!.EDIT!, { row }); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (options.onEdit) options.onEdit(row);
+                                      else emit(options.events!.EDIT!, { row });
+                                    }}
                                   >
                                     <i className="ph ph-pencil-simple" aria-hidden="true" />
                                   </button>
                                 )}
-                                {options.allowDelete && options.events?.DELETE && (
+                                {options.allowDelete && (options.onDelete || options.events?.DELETE) && (
                                   <button
                                     type="button"
                                     className="app-icon-button"

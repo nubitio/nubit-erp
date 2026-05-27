@@ -31,7 +31,7 @@ type RangeRule = {
 type CompareRule = {
   type: 'compare';
   options: {
-    comparisonTarget: () => any;
+    comparisonTarget: () => unknown;
     comparisonType?: '==' | '!=' | '>' | '<' | '>=' | '<=';
     message?: string;
   };
@@ -39,12 +39,12 @@ type CompareRule = {
 
 type CustomRule = {
   type: 'custom';
-  options: { validationCallback: (options: any) => boolean; message?: string };
+  options: { validationCallback: (value: unknown) => boolean; message?: string };
 };
 
 type AsyncRule = {
   type: 'async';
-  options: { validationCallback: (options: any) => Promise<boolean>; message?: string };
+  options: { validationCallback: (value: unknown) => Promise<boolean>; message?: string };
 };
 
 export type ValidationRule =

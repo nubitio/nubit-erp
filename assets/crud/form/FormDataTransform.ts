@@ -5,20 +5,23 @@ import type { FormDataRecord } from './FormDataSnapshot';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
 import { HydraAdapter } from '../adapter/HydraAdapter';
 
-function upsertPrependData(field: Field, item: FormDataRecord): void {
-  const existingLoadOption = field.loadOptions.find((option) => Array.isArray(option.prependData));
+export type PrependDataMap = Map<string, FormDataRecord[]>;
 
-  if (existingLoadOption) {
-    const prependData = existingLoadOption.prependData as FormDataRecord[];
+function upsertPrependData(
+  store: PrependDataMap,
+  field: Field,
+  item: FormDataRecord,
+): void {
+  const existing = store.get(field.name);
+  if (existing) {
     const nextId = item[field.valueField];
-    const alreadyPresent = prependData.some((candidate) => candidate[field.valueField] === nextId);
+    const alreadyPresent = existing.some((candidate) => candidate[field.valueField] === nextId);
     if (!alreadyPresent) {
-      prependData.unshift(item);
+      existing.unshift(item);
     }
     return;
   }
-
-  field.loadOptions = [{ prependData: [item] }, ...field.loadOptions];
+  store.set(field.name, [item]);
 }
 
 /**
@@ -49,6 +52,7 @@ export function normalizeFormData(
   data: FormDataRecord,
   fields: Field[],
   adapter: BackendAdapter = HydraAdapter,
+  prependDataByField?: PrependDataMap,
 ): FormDataRecord {
   const row = { ...data };
   fields.forEach((field) => {
@@ -69,14 +73,19 @@ export function normalizeFormData(
       }
     }
     if (field.type === FieldType.ENTITY) {
-      normalizeEntityField(row, field, adapter);
+      normalizeEntityField(row, field, adapter, prependDataByField);
     }
   });
 
   return row;
 }
 
-function normalizeEntityField(row: FormDataRecord, field: Field, adapter: BackendAdapter): void {
+function normalizeEntityField(
+  row: FormDataRecord,
+  field: Field,
+  adapter: BackendAdapter,
+  prependDataByField?: PrependDataMap,
+): void {
   const rawValue = row[field.name];
 
   if (typeof rawValue === 'object' && rawValue !== null) {
@@ -94,13 +103,16 @@ function normalizeEntityField(row: FormDataRecord, field: Field, adapter: Backen
 
     // Always add the full object to the dropdown options so the selected item
     // can be displayed even when it is not in the loaded page of results.
-    upsertPrependData(field, entityValue);
+    if (prependDataByField) {
+      upsertPrependData(prependDataByField, field, entityValue);
+    }
   }
 
   const normalized = adapter.normalizeEntityValue(rawValue, field);
   row[field.name] = normalized ?? null;
 
   if (row[field.name] === null || row[field.name] === undefined) {
-    row[field.name] = field.loadOptions[0]?.prependData?.[0] ?? null;
+    const fromMap = prependDataByField?.get(field.name);
+    row[field.name] = fromMap?.[0] ?? field.loadOptions[0]?.prependData?.[0] ?? null;
   }
 }

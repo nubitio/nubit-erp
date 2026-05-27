@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { httpClient } from '@shared/api/HttpClient';
 
 export type NotificationType =
@@ -25,19 +27,19 @@ export interface Notification {
 class NotificationService {
   getNotifications(): Promise<Notification[]> {
     return httpClient
-      .get<Notification[]>(API_BASE_URL + 'user-notifications')
+      .get<Notification[]>(API + 'user-notifications')
       .then((response) => response.data);
   }
 
   markRead(id: number): Promise<void> {
     return httpClient
-      .patch<void>(API_BASE_URL + `user-notifications/${id}/read`, {})
+      .patch<void>(API + `user-notifications/${id}/read`, {})
       .then(() => undefined);
   }
 
   markAllRead(): Promise<void> {
     return httpClient
-      .post<void>(API_BASE_URL + 'user-notifications/read-all')
+      .post<void>(API + 'user-notifications/read-all')
       .then(() => undefined);
   }
 }

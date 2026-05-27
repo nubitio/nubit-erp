@@ -2,9 +2,7 @@ import './CrudDialogView.scss';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { AppDialog } from '@nubit/ui';
-import { useEvents } from '@nubit/core';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
-import type { DialogEventNames } from '../../core/event/EventTypes';
+import { useCoreTranslation, useEvents, type DialogEventNames } from '@nubit/core';
 
 const getIsXSmall = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 575.98px)').matches;
 
@@ -30,6 +28,10 @@ export interface CrudDialogViewOptions {
   height?: number;
   maxHeight?: number;
   visible?: boolean;
+  /**
+   * @deprecated Prefer controlled open state plus onSave/onCancel callbacks.
+   * Events remain as a legacy fallback for direct DialogView consumers.
+   */
   events?: DialogEventNames;
   children?: React.ReactNode;
   positiveText?: string;
@@ -38,6 +40,8 @@ export interface CrudDialogViewOptions {
   fitContent?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  onCancel?: () => void;
+  onSave?: () => void;
 }
 
 export interface CrudDialogViewEvents {
@@ -81,10 +85,18 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
 
     const onCancelClick = () => {
       handleClose();
+      if (options.onCancel) {
+        options.onCancel();
+        return;
+      }
       if (options.events?.CANCEL) emit(options.events.CANCEL);
     };
 
     const onSaveClick = () => {
+      if (options.onSave) {
+        options.onSave();
+        return;
+      }
       if (options.events?.SAVE) emit(options.events.SAVE);
     };
 

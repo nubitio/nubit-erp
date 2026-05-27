@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { Field } from '@nubit/crud';
 import {
   identityField,
@@ -60,7 +62,7 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
 
   // Source warehouse
   fields.push(
-    entityField(API_BASE_URL + 'warehouses', 'id', 'name')
+    entityField(API + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label(mode === 'transfer' ? 'Almacén origen' : 'Almacén')
       .filters([{ field: 'branch', operator: '=', value: branchId }])
@@ -71,7 +73,7 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
   // Target warehouse — only for TRANSFER
   if (mode === 'transfer') {
     fields.push(
-      entityField(API_BASE_URL + 'warehouses', 'id', 'name')
+      entityField(API + 'warehouses', 'id', 'name')
         .name('targetWarehouse')
         .label('Almacén destino')
         .required(true)
@@ -82,7 +84,7 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
   // Operation category — for RECEIPT and ISSUE
   if (mode === 'receipt' || mode === 'issue') {
     fields.push(
-      entityField(API_BASE_URL + 'logistic-operations', 'id', 'name')
+      entityField(API + 'logistic-operations', 'id', 'name')
         .name('operation')
         .label('Tipo de operación')
         .filters([{ field: 'type', operator: '=', value: OPERATION_TYPE_MAP[mode] }])
@@ -124,7 +126,7 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
       .label('Fecha')
       .readonly(true)
       .visibleOnForm(false)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .build(),
   );
 
@@ -139,7 +141,7 @@ export const StockEntryItemFields = (mode: StockEntryMode): Field[] => {
   fields.push(identityField().build());
 
   fields.push(
-    entityField(API_BASE_URL + 'products', 'id', 'name')
+    entityField(API + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .required(true)
@@ -177,7 +179,7 @@ export const StockEntryItemFields = (mode: StockEntryMode): Field[] => {
   }
 
   fields.push(
-    entityField(API_BASE_URL + 'unit-of-measures', 'id', 'name')
+    entityField(API + 'unit-of-measures', 'id', 'name')
       .name('unit')
       .label('Unidad')
       .build(),

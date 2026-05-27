@@ -1,11 +1,13 @@
 import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { createCrudEvents } from '@nubit/crud';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
 
-const API_URL = API_BASE_URL + 'stock-entries';
+const API_URL = API + 'stock-entries';
 
 const TITLES: Record<StockEntryMode, string> = {
   receipt:    'Entradas manuales',
@@ -31,11 +33,10 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const detailFields = StockEntryItemFields(mode);
   const detailUrl = API_URL + '/{id}/items';
 
-  const resource = defineResource({
-    id:        `stock-entry-${mode}`,
-    title:     TITLES[mode],
-    apiUrl:    `${API_URL}?type=${TYPE_FILTER[mode]}`,
-    fields:    StockEntryFields(mode, currentBranchId),
+  const resource = defineResource(`${API_URL}?type=${TYPE_FILTER[mode]}`, {
+    id:     `stock-entry-${mode}`,
+    title:  TITLES[mode],
+    fields: StockEntryFields(mode, currentBranchId),
     gridDetail: { url: detailUrl, fields: detailFields },
     formDetail: { url: detailUrl, fields: detailFields },
     events,

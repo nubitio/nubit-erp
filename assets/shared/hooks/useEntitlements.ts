@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { businessHttpClient, httpRequestData } from '@shared/api/network';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
 import type { DataRecord } from '@nubit/core';
 
 // ---------------------------------------------------------------------------
@@ -31,7 +32,7 @@ export const ENTITLEMENTS_QUERY_KEY = ['tenant-entitlements'] as const;
 
 async function fetchEntitlements(): Promise<EntitlementsResponse> {
   return httpRequestData(
-    businessHttpClient.get<EntitlementsResponse>('/api/tenant/entitlements'),
+    httpClient.get<EntitlementsResponse>('/api/tenant/entitlements'),
   );
 }
 

@@ -1,5 +1,7 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 export interface CashRegisterDashboardDto {
   id: number;
@@ -16,7 +18,7 @@ export interface CashRegisterDashboardDto {
 class CashboxService {
   getDashboard() {
     return httpClient.get<CashRegisterDashboardDto[]>(
-      API_BASE_URL + 'cash-registers/dashboard',
+      API + 'cash-registers/dashboard',
     );
   }
 }

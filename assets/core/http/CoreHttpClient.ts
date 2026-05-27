@@ -32,8 +32,41 @@ export interface CoreHttpClientConfig {
   baseUrl?: string;
   credentials?: RequestCredentials;
   locale?: string;
+
+  /**
+   * Path used by the built-in cookie refresh logic (only used when no `refreshFn` is provided).
+   * @default "auth/refresh"
+   */
   refreshPath?: string;
+
+  /**
+   * Path used to detect "this is a login attempt" (skips auto-refresh).
+   * @default "auth/login"
+   */
   loginPath?: string;
+
+  /**
+   * If false, the client will never attempt automatic session refresh on 401.
+   * Useful when you want full control (e.g. Bearer JWT + react-query error handling).
+   * @default true
+   */
+  autoRefresh?: boolean;
+
+  /**
+   * Completely replace the internal refresh logic.
+   * If provided, this function is called instead of the built-in cookie refresh.
+   * Should throw (or return a rejected promise) when refresh fails.
+   *
+   * Example (custom Bearer token refresh):
+   *   refreshFn: async (client) => {
+   *     const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+   *     if (!res.ok) throw new Error('Refresh failed');
+   *     const { accessToken } = await res.json();
+   *     // store token somewhere your requests can use it (e.g. in memory or secure storage)
+   *   }
+   */
+  refreshFn?: (client: CoreHttpClient) => Promise<void>;
+
   onUnauthorized?: (error: CoreHttpError) => void;
   onError?: (error: CoreHttpError) => void;
 }
@@ -113,7 +146,11 @@ export class CoreHttpClient {
     };
   }
 
-  private async refreshSession(): Promise<void> {
+  /**
+   * Built-in cookie-based refresh (the original behavior).
+   * Only used when `refreshFn` is not provided in config.
+   */
+  private async performBuiltInRefresh(): Promise<void> {
     const refreshPath = this.config.refreshPath ?? 'auth/refresh';
     const refreshUrl = joinUrl(this.config.baseUrl ?? '/api/', refreshPath);
 
@@ -129,6 +166,13 @@ export class CoreHttpClient {
     });
 
     return this.refreshPromise;
+  }
+
+  private async performRefresh(): Promise<void> {
+    if (this.config.refreshFn) {
+      return this.config.refreshFn(this);
+    }
+    return this.performBuiltInRefresh();
   }
 
   private async safeErrorData(response: Response): Promise<CoreHttpErrorData> {
@@ -181,9 +225,11 @@ export class CoreHttpClient {
     const refreshPath = this.config.refreshPath ?? 'auth/refresh';
     const isAuthEndpoint = url.includes(loginPath) || url.includes(refreshPath);
 
-    if (response.status === 401 && retryOnUnauthorized && !isAuthEndpoint) {
+    const shouldAutoRefresh = this.config.autoRefresh !== false; // default true for backward compat
+
+    if (response.status === 401 && retryOnUnauthorized && !isAuthEndpoint && shouldAutoRefresh) {
       try {
-        await this.refreshSession();
+        await this.performRefresh();
         return this.request<T>(method, url, body, config, false);
       } catch (refreshError) {
         const unauthorizedError = refreshError instanceof Error

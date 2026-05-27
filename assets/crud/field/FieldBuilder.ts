@@ -3,11 +3,10 @@ import { FieldType } from './FieldType';
 import { Field, FieldButton, LoadOption } from './Field';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
-import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import { FormatterFn, GridCellContext, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 import type { DataRecord } from '@nubit/core';
 
-
-export class FieldBuilder {
+export class FieldBuilder<TRecord extends DataRecord = DataRecord> {
   private readonly _field: Field;
 
   constructor() {
@@ -197,8 +196,8 @@ export class FieldBuilder {
     return this;
   }
 
-  formatter(formatter: FormatterFn): FieldBuilder {
-    this._field.formatter = formatter;
+  formatter(formatter: (cell: GridCellContext<TRecord>) => React.ReactNode): FieldBuilder<TRecord> {
+    this._field.formatter = formatter as FormatterFn;
     return this;
   }
 
@@ -314,28 +313,28 @@ export class FieldBuilder {
     return this;
   }
 
-  visibleWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
-    this._field.visibleWhen = fn;
+  visibleWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord> {
+    this._field.visibleWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 
-  disabledWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
-    this._field.disabledWhen = fn;
+  disabledWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord> {
+    this._field.disabledWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 
-  computed(fn: (formData: DataRecord) => unknown): FieldBuilder {
-    this._field.computed = fn;
+  computed(fn: (formData: TRecord) => unknown): FieldBuilder<TRecord> {
+    this._field.computed = fn as (formData: DataRecord) => unknown;
     return this;
   }
 
-  defaultWhen(fn: (formData: DataRecord) => unknown): FieldBuilder {
-    this._field.defaultWhen = fn;
+  defaultWhen(fn: (formData: TRecord) => unknown): FieldBuilder<TRecord> {
+    this._field.defaultWhen = fn as (formData: DataRecord) => unknown;
     return this;
   }
 
-  requiredWhen(fn: (formData: DataRecord) => boolean): FieldBuilder {
-    this._field.requiredWhen = fn;
+  requiredWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord> {
+    this._field.requiredWhen = fn as (formData: DataRecord) => boolean;
     return this;
   }
 

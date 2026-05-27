@@ -1,7 +1,7 @@
 import type { FormLayout } from './FormLayout';
-import type { FormEventNames } from '../../core/event/EventTypes';
+import type { FormEventNames } from '@nubit/core';
 import type { Field } from '../field/Field';
-import type { FormDataChangedHandler, FormDataSnapshot } from './FormDataSnapshot';
+import type { FormDataChangedHandler, FormDataRecord, FormDataSnapshot } from './FormDataSnapshot';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
 
 export interface FormViewOptions {
@@ -14,6 +14,10 @@ export interface FormViewOptions {
   allowAdding?: boolean;
   allowUpdating?: boolean;
   allowDeleting?: boolean;
+  /**
+   * @deprecated Prefer operation/rowData plus the imperative FormHandle save/deleteRow methods.
+   * Events remain as a legacy fallback for direct FormView consumers.
+   */
   events?: FormEventNames;
   editable?: boolean;
   format?: 'json' | 'multipart';
@@ -36,4 +40,10 @@ export interface FormViewOptions {
   onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
   computedValues?: FormDataSnapshot;
+  /** Callback/state-driven operation. When set, replaces ADD/EDIT event bootstrapping. */
+  operation?: 'add' | 'edit' | null;
+  /** Row payload used when operation changes. */
+  rowData?: FormDataRecord | null;
+  /** Increment to force re-applying the current operation and row payload. */
+  operationVersion?: number;
 }

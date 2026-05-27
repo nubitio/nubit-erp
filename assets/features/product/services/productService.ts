@@ -1,14 +1,17 @@
 import { ProductDto } from '@features/product/types/product.dto';
-import { businessHttpClient, httpRequest, httpRequestData } from '@shared/api/network';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequest, httpRequestData } from '@shared/api/network';
 import GridData from '@shared/data/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { ProductStockDto } from '@features/product/types/product.stock.dto';
 import type { DataRecord } from '@nubit/core';
 
 class ProductService {
   getAll(loadOptions: DataRecord): Promise<GridData<ProductDto>> {
-    const request$ = businessHttpClient.get<ProductDto[]>(`${API_BASE_URL}products`, {
+    const request$ = httpClient.get<ProductDto[]>(`${API}products`, {
       params: loadOptions,
     });
 
@@ -23,15 +26,15 @@ class ProductService {
   getOne(id: string, asPromise = false) {
     if (asPromise) {
       return httpRequestData<ProductDto>(
-        businessHttpClient.get<ProductDto>(`${API_BASE_URL}products/${id}`),
+        httpClient.get<ProductDto>(`${API}products/${id}`),
       );
     }
-    return businessHttpClient.get<ProductDto>(`${API_BASE_URL}products/${id}`);
+    return httpClient.get<ProductDto>(`${API}products/${id}`);
   }
 
   getProducts(_warehouseId: string) {
-    //return httpClient.get<ProductDto[]>(`${API_BASE_URL}warehouses/${warehouseId}/product`);
-    return businessHttpClient.get<ProductDto[]>(`${API_BASE_URL}products?rows=1000`);
+    //return httpClient.get<ProductDto[]>(`${API}warehouses/${warehouseId}/product`);
+    return httpClient.get<ProductDto[]>(`${API}products?rows=1000`);
   }
 
   create(_values: unknown): Promise<string> {
@@ -39,8 +42,8 @@ class ProductService {
   }
 
   getStock(id: string, warehouseId: string) {
-    return businessHttpClient.get<ProductStockDto>(
-      `${API_BASE_URL}products/${id}/stock/${warehouseId}`,
+    return httpClient.get<ProductStockDto>(
+      `${API}products/${id}/stock/${warehouseId}`,
     );
   }
 }

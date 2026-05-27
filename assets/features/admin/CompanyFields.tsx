@@ -11,7 +11,9 @@ import {
 import type { FormHandle, DataRecord } from '@nubit/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import type { GridCellContext } from '@nubit/crud';
 
 export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
@@ -77,7 +79,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(textField().name('tradeName').label('Nombre comercial').build());
   fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
   fields.push(
-    entityField(`${API_BASE_URL}ubigeos`, 'code', 'name')
+    entityField(`${API}ubigeos`, 'code', 'name')
       .name('ubigeo')
       .label('Ubigeo (INEI)')
       .searchExpr(['code', 'department', 'province', 'district'])
@@ -111,11 +113,14 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(textField().name('bankCci').label('CCI').build());
   fields.push(textField().name('detraccionAccount').label('Cuenta de detracciones').build());
   fields.push(
-    imageField(API_BASE_URL)
+    imageField(API)
       .name('logo')
       .label('Logo')
       .formatter((e: GridCellContext) => {
-        return SharedUtils.imageFormatter(e.data?.logo?.path, e.data?.nombre_comercial);
+        return SharedUtils.imageFormatter(
+          (e.data.logo as { path?: string } | undefined)?.path,
+          e.data.nombre_comercial as string | undefined,
+        );
       })
       .build(),
   );

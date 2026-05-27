@@ -2,7 +2,9 @@ import './CashMovements.scss';
 import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
 import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEffect, useRef, useState } from 'react';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import cashMovementsFields from './components/fields/cashMovementsFields';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEvents } from '@nubit/core';
@@ -14,7 +16,7 @@ type CashMovementsParams = {
 
 export const CashMovements = () => {
   const { id } = useParams<CashMovementsParams>();
-  const API_URL = API_BASE_URL + 'cash-movements';
+  const API_URL = API + 'cash-movements';
   const gridRef = useRef<GridHandle>(null);
   const fields = cashMovementsFields(id);
   const [balance, setBalance] = useState<number | undefined>(undefined);
@@ -67,7 +69,7 @@ export const CashMovements = () => {
         id="cash-movements"
         title="Movimientos de caja"
         toolbar={toolbar}
-        url={API_BASE_URL + 'cash-shifts/' + id + '/movements'}
+        url={API + 'cash-shifts/' + id + '/movements'}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}

@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { Field } from '@nubit/crud';
 import {
   identityField,
@@ -63,7 +65,7 @@ export const CreditNoteFields = () => {
 
   fields.push(identityField().label('ID').build());
   fields.push(
-    entityField(API_BASE_URL + 'tax-documents', 'id', 'fullNumber')
+    entityField(API + 'tax-documents', 'id', 'fullNumber')
       .name('relatedTaxDocument')
       .label('Comprobante')
       .visible(false)
@@ -92,15 +94,15 @@ export const CreditNoteFields = () => {
     dateField()
       .name('issueDate')
       .label('Fecha')
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .required(true)
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .formatter((cell: GridCellContext) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .visibleOnForm(false)
       .build(),
   );
@@ -114,7 +116,7 @@ export const CreditNoteFields = () => {
         } else if (cell.value === '08') {
           return 'Nota de Débito';
         } else {
-          return cell.value;
+          return cell.value as React.ReactNode;
         }
       })
       .align('center')
@@ -127,7 +129,7 @@ export const CreditNoteFields = () => {
       .data(reasonCodes)
       .formatter((cell: GridCellContext) => {
         const reason = reasonCodes.find((r) => r.value === cell.value);
-        return reason ? reason.value + ' - ' + reason.text : cell.value;
+        return reason ? reason.value + ' - ' + reason.text : String(cell.value ?? '');
       })
       .required(true)
       .build(),
@@ -142,7 +144,7 @@ export const CreditNoteFields = () => {
       .name('affectedDocument')
       .label('Doc. afectado')
       .align('center')
-      .formatter((cell: GridCellContext) => cell.value ?? cell.data?.sale?.invoice ?? '')
+      .formatter((cell: GridCellContext) => (cell.value ?? (cell.data.sale as { invoice?: string } | undefined)?.invoice ?? '') as React.ReactNode)
       .build(),
   );
   fields.push(
@@ -150,7 +152,7 @@ export const CreditNoteFields = () => {
       .name('sunatStatus')
       .label('Envio sunat')
       .align('center')
-      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined))
       .build(),
   );
   fields.push(noneField().name('sunatMessage').label('Mensaje sunat').build());
@@ -204,7 +206,7 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .readonly(true)
       .build(),
   );
@@ -212,7 +214,7 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .readonly(true)
       .build(),
   );

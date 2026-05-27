@@ -1,4 +1,6 @@
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { Field } from '@nubit/crud';
 import {
   identityField,
@@ -26,7 +28,7 @@ export const InvoiceFields = () => {
       .width(120)
       .defaultValue(undefined)
       .valueType('date')
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .build(),
   );
   fields.push(
@@ -34,15 +36,15 @@ export const InvoiceFields = () => {
       .name('ruc')
       .label('DNI/RUC')
       .width(130)
-      .formatter((cell: GridCellContext) => cell.data?.customer?.ruc)
+      .formatter((cell: GridCellContext) => (cell.data.customer as { ruc?: string } | undefined)?.ruc)
       .build(),
   );
   fields.push(
-    entityField(API_BASE_URL + 'customers', 'id', 'businessName')
+    entityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .width(200)
-      .formatter((cell: GridCellContext) => cell.value?.businessName)
+      .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .build(),
   );
   fields.push(
@@ -66,7 +68,7 @@ export const InvoiceFields = () => {
       .label('Total')
       .width(130)
       .formatter((cell: GridCellContext) =>
-        NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
+        NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
       )
       .build(),
   );
@@ -93,7 +95,7 @@ export const InvoiceFields = () => {
       .name('sunatStatus')
       .label('Envio sunat')
       .width(140)
-      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value))
+      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined))
       .align('center')
       .build(),
   );
@@ -106,7 +108,7 @@ export const InvoiceFields = () => {
       .align('center')
       .formatter((cell: GridCellContext) => {
         if (!cell.value) return '';
-        return <span className="badge text-bg-info">{cell.value}</span>;
+        return <span className="badge text-bg-info">{cell.value as string}</span>;
       })
       .build(),
   );
@@ -147,21 +149,21 @@ export const InvoiceDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .build(),
   );
   fields.push(
     currencyField()
       .name('taxAmount')
       .label('IGV')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .build(),
   );
   fields.push(
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value, currency))
+      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
       .build(),
   );
 

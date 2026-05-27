@@ -6,7 +6,7 @@ import type { Field } from '../field/Field';
 import type { FieldOverride } from './resolveSmartCrudFields';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
-import { dispatch, useMercureSubscription } from '@nubit/core';
+import { useCoreTranslation, useMercureSubscription } from '@nubit/core';
 import { resolveCrudResource } from './resolveCrudResource';
 import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
@@ -14,7 +14,6 @@ import { useSmartCrudFields } from './useSmartCrudFields';
 import type { DataRecord } from '@nubit/core';
 import type { FormHandle } from '../form/FormHandle';
 import type { GridHandle } from '../datagrid/GridHandle';
-import { useCoreTranslation } from '../../core/i18n/useCoreTranslation';
 import { useResolvedResourceFields } from '../schema/ResourceSchema';
 
 function CrudSkeleton() {
@@ -47,11 +46,9 @@ function CrudError({ message, onRetry }: { message: string; onRetry: () => void 
 interface SmartCrudPageProps<T extends DataRecord = DataRecord> {
   resource: ResourceConfig<T>;
   /**
-   * Legacy per-field overrides applied on top of auto-inferred Hydra fields.
-   * Each entry must contain a `key` matching the field's `name`, plus any
-   * `Field` properties to override (e.g. `{ key: 'name', label: 'Custom' }`).
-   * Ignored when the canonical `resource.fieldContract` is present.
-   * Has no effect when `resource.fields` is a non-empty manual array.
+   * @deprecated Use `resource.fieldContract` (defineFieldContract) instead.
+   * Per-field overrides applied on top of auto-inferred Hydra fields.
+   * Ignored when `resource.fieldContract` is present.
    */
   fieldOverrides?: FieldOverride[];
   /** External form ref forwarded to CrudPage — lets the parent call setFieldValue / getFieldValue. */
@@ -105,16 +102,15 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   gridRef,
 }: SmartCrudPageProps<T>) {
   const queryClient = useQueryClient();
+  const internalGridRef = useRef<GridHandle | null>(null);
+  const effectiveGridRef = gridRef ?? internalGridRef;
 
   const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
-  const events = resolvedBaseResource.events;
 
-  // Determine whether the consumer supplied manual fields or a factory function.
-  const isFieldsFactory = !resource.fieldContract && typeof resource.fields === 'function';
   const hasManualFields =
     !resource.fieldContract &&
     Array.isArray(resource.fields) &&
-    (resource.fields as unknown[]).length > 0;
+    resource.fields.length > 0;
 
   const { fields, isLoading, error, supportedOperations } = useResolvedResourceFields({
     apiUrl: resolvedBaseResource.apiUrl,
@@ -130,7 +126,6 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     if (
       !resource.fieldContract &&
       !hasManualFields &&
-      !isFieldsFactory &&
       !isLoading &&
       !error &&
       fields.length > 0 &&
@@ -142,7 +137,6 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   }, [
     resource.fieldContract,
     hasManualFields,
-    isFieldsFactory,
     isLoading,
     error,
     fields,
@@ -154,10 +148,14 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   const routingState = useRouting(resource.routing);
 
   // Operation + form data state (unified)
-  const { activeOperation, formData, handleFormDataChange } = useSmartCrudOperation(
-    events,
-    routingState,
-  );
+  const {
+    activeOperation,
+    formData,
+    handleFormDataChange,
+    startCreate,
+    startEdit,
+    resetOperation,
+  } = useSmartCrudOperation(undefined, routingState);
 
   // Roles
   const roles = useSmartCrudRoles();
@@ -175,9 +173,7 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   useMercureSubscription(
     resource.apiUrl,
     () => {
-      if (events.SUCCESS) {
-        dispatch(events.SUCCESS);
-      }
+      effectiveGridRef.current?.refresh();
     },
     resolvedBaseResource.mercure !== false,
   );
@@ -191,17 +187,14 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     () =>
       ({
         ...resolvedBaseResource,
-        // For factory functions, preserve the factory as-is; otherwise set Hydra/manual fields.
-        ...(!hasManualFields && !isFieldsFactory ? { fields } : {}),
+        ...(!hasManualFields ? { fields } : {}),
         apiUrl: normalizedApiUrl,
-        // Apply the declarative rules pipeline only for non-factory fields.
-        ...(!isFieldsFactory ? { fields: processedFields } : {}),
+        fields: processedFields,
         _supportedOperations: supportedOperations,
       }) as ResourceConfig<T>,
     [
       fields,
       hasManualFields,
-      isFieldsFactory,
       normalizedApiUrl,
       processedFields,
       resolvedBaseResource,
@@ -211,11 +204,11 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
 
   // --- Render ---
 
-  if (!hasManualFields && !isFieldsFactory && isLoading) {
+  if (!hasManualFields && isLoading) {
     return <CrudSkeleton />;
   }
 
-  if (!hasManualFields && !isFieldsFactory && error) {
+  if (!hasManualFields && error) {
     return (
       <CrudError
         message={formatRuntimeErrorMessage(error)}
@@ -237,7 +230,18 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
       onSelectionChanged={onSelectionChanged}
       editDisabled={editDisabled}
       deleteDisabled={deleteDisabled}
-      gridRef={gridRef}
+      gridRef={effectiveGridRef}
+      onOperationChange={(operation) => {
+        if (operation === 'create') {
+          startCreate();
+          return;
+        }
+        if (operation === 'edit') {
+          startEdit();
+          return;
+        }
+        resetOperation();
+      }}
     />
   );
 }

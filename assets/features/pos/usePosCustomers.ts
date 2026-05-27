@@ -1,6 +1,8 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import type { CustomerOption } from './types';
 import { buildCustomersUrl, extractCollection, CUSTOMER_PAGE_SIZE } from './posHelpers';
 
@@ -108,7 +110,7 @@ export const usePosCustomers = () => {
     let cancelled = false;
     const controller = new AbortController();
     httpClient
-      .get<any>(`${API_BASE_URL}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
+      .get<any>(`${API}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
       .then((response) => {
           if (cancelled) return;
           const customer = response.data;

@@ -1,8 +1,10 @@
 import { getCoreTimezone, getCoreLocale } from '../config/CoreConfig';
 
-// Retained for backward-compat: code that imports LIMA_TZ directly still works.
-// New code should use getCoreTimezone() from CoreConfig.
-export const LIMA_TZ = 'America/Lima';
+/**
+ * Recommended default for new projects using @nubit/core.
+ * You should almost always override this via CoreConfigProvider.
+ */
+export const DEFAULT_TIMEZONE = 'UTC';
 
 function coreDateParts(date: Date): { year: number; month: number; day: number } {
   const formatter = new Intl.DateTimeFormat('en-CA', {

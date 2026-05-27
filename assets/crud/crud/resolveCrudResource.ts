@@ -1,5 +1,4 @@
-import { createScopedEventBus } from '../../core/event/createScopedEventBus';
-import type { FormEventNames } from '../../core/event/EventTypes';
+import { createScopedEventBus, type FormEventNames } from '@nubit/core';
 import type { ResourceConfig } from './ResourceConfig';
 import type { DataRecord } from '@nubit/core';
 

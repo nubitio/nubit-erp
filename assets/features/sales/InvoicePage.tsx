@@ -1,5 +1,7 @@
 import { useMemo, useRef } from 'react';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubit/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from './lib/invoiceActions';
@@ -12,7 +14,7 @@ import {
 } from './lib/invoiceActions';
 import toast from '@shared/lib/SharedUtils';
 
-const API_URL = API_BASE_URL + 'tax-documents';
+const API_URL = API + 'tax-documents';
 const fields = InvoiceFields();
 
 const baseResource = defineResource(API_URL + '?type=invoice', {

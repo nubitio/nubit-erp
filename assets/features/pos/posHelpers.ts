@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreTimezone, getCoreApiBaseUrl } from '@nubit/core';
 
-const LIMA_TZ = 'America/Lima';
 import type { PaymentMethodOption, PosItem } from './types';
 
 export const IGV_RATE = 0.18;
@@ -95,16 +94,25 @@ export function nowUtcIso(): string {
   return DateTime.now().toUTC().toISO() as string;
 }
 
-export function todayLimaDate(): string {
-  return DateTime.now().setZone(LIMA_TZ).toISODate() as string;
+/**
+ * Returns today's date (YYYY-MM-DD) according to the business timezone
+ * configured via CoreConfigProvider (getCoreTimezone()).
+ *
+ * This is used for business-day calculations (e.g. invoice dates, daily correlatives).
+ */
+export function todayBusinessDate(): string {
+  return DateTime.now().setZone(getCoreTimezone()).toISODate() as string;
 }
 
 /**
- * Converts a JS Date to a UTC ISO-8601 string (with Z suffix),
- * interpreting the Date as representing a moment in America/Lima.
+ * Converts a JS Date (that was created in business local time) to a UTC ISO string.
+ * Uses the timezone configured in CoreConfigProvider.
+ *
+ * @deprecated This function is currently unused. Prefer working with UTC or
+ * using the configured timezone explicitly via getCoreTimezone().
  */
 export function toUtcIso(date: Date): string {
-  return DateTime.fromJSDate(date, { zone: LIMA_TZ }).toUTC().toISO() as string;
+  return DateTime.fromJSDate(date, { zone: getCoreTimezone() }).toUTC().toISO() as string;
 }
 
 export const isCashPaymentMethod = (method: PaymentMethodOption | null | undefined) => {
@@ -128,7 +136,7 @@ export const buildCustomersUrl = (query: string, page: number) => {
     params.set('searchValue', trimmed);
   }
 
-  return `${API_BASE_URL}customers?${params.toString()}`;
+  return `${getCoreApiBaseUrl()}customers?${params.toString()}`;
 };
 
 export const parseBooleanSetting = (value: unknown, fallback: boolean): boolean => {

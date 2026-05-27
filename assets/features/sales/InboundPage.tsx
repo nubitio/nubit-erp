@@ -1,8 +1,10 @@
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
 import { SmartCrudPage, defineResource, type FormHandle } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
+
+const API = getCoreApiBaseUrl();
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
 
 export const PurchasesPage = () => {
@@ -10,9 +12,9 @@ export const PurchasesPage = () => {
 
   const resource = useMemo(() => {
     const detailFields = PurchasesDetailFields();
-    const detailUrl = API_BASE_URL + 'purchases/{id}/items';
+    const detailUrl = API + 'purchases/{id}/items';
 
-    return defineResource(API_BASE_URL + 'purchases', {
+    return defineResource(API + 'purchases', {
       id: 'purchases',
       title: 'Compras',
       fields: PurchasesFields(currentBranchId),

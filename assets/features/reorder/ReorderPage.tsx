@@ -8,7 +8,9 @@ import {
   type DataRecord,
   type GridCellContext,
 } from '@nubit/crud';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,7 +83,7 @@ function CoverageCell({ data }: GridCellContext) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const API_URL = `${API_BASE_URL}stock-items?belowMin=1`;
+const API_URL = `${API}stock-items?belowMin=1`;
 
 export const ReorderPage = () => {
   const navigate = useNavigate();
@@ -122,11 +124,9 @@ export const ReorderPage = () => {
 
   const resource = useMemo(
     () =>
-      defineResource<ReorderRecord>({
+      defineResource<ReorderRecord>(API_URL, {
         id: 'reorder-alerts',
         title: 'Alertas de reabastecimiento',
-        apiUrl: API_URL,
-        fields: [],
         fieldContract: defineFields<ReorderRecord>({
           source: 'hydra',
           strategy: 'augment',

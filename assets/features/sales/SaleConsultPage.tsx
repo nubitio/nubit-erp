@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { Card } from '@shared/ui';
 import { DateUtils } from '@shared/lib/DateUtils';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
+
+const API = getCoreApiBaseUrl();
 import './SaleConsultPage.scss';
 
 const reportTypes = [
@@ -44,7 +46,7 @@ export const SaleConsultPage = () => {
     const parseLocal = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
     const dateFrom = DateUtils.dateFormatter(parseLocal(startDate));
     const dateTo   = DateUtils.dateFormatter(parseLocal(endDate));
-    const url      = `${API_BASE_URL}sales/report?report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
+    const url      = `${API}sales/report?report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
 
     setLoading(true);
     const win = window.open(url);

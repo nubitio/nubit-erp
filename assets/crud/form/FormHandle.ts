@@ -9,6 +9,8 @@ export interface FormHandle {
   saveDetailData: () => Promise<void> | void;
   reloadDetailData: () => void;
   setValues: (data: FormDataRecord) => void;
+  save: () => void;
+  deleteRow: (row: FormDataRecord) => void;
   setReadonly: (field: string, value: boolean) => void;
   setDisabled: (field: string, value: boolean) => void;
   enableValidation: (field: string) => void;

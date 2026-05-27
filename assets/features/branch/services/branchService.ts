@@ -1,13 +1,15 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { API_BASE_URL } from '@app/constants';
+import { getCoreApiBaseUrl } from '@nubit/core';
 import { StorageUtils } from '../../../shared/lib/StorageUtils';
+
+const API = getCoreApiBaseUrl();
 
 class BranchService {
   private static readonly SELECTED_BRANCH_ID = 'selectedBranchId';
   private static readonly SELECTED_BRANCH_NAME = 'selectedBranchName';
 
   getAll() {
-    return httpClient.get<any>(`${API_BASE_URL}branches`);
+    return httpClient.get<any>(`${API}branches`);
   }
 
   /**
