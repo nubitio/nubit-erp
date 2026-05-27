@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 //#region assets/core/config/CoreConfig.tsx
 const _coreConfig = {
 	locale: "es",
@@ -35,7 +37,6 @@ function useCoreConfig() {
 }
 //#endregion
 //#region assets/core/date/DateUtils.ts
-const LIMA_TZ = "America/Lima";
 function coreDateParts(date) {
 	const parts = new Intl.DateTimeFormat("en-CA", {
 		timeZone: getCoreTimezone(),
@@ -151,6 +152,154 @@ const dispatch = (name, payload) => {
 		} catch {}
 	});
 };
+//#endregion
+//#region assets/core/event/createCrudEvents.ts
+/**
+* Generic factory that builds a typed set of CRUD event name strings for a
+* given `prefix`.  The returned object is `const`-asserted so every value is
+* a template-literal type — callers get full type inference without having to
+* cast anything.
+*
+* This helper belongs in `core/` because it has no feature-specific logic; it
+* is used by both the core event bus and by every feature module that needs
+* its own event namespace.
+*
+* @example
+* const productEvents = createCrudEvents('product');
+* // productEvents.ADD === 'product:add'
+*/
+const createCrudEvents = (prefix) => ({
+	ADD: `${prefix}:add`,
+	EDIT: `${prefix}:edit`,
+	DELETE: `${prefix}:delete`,
+	SAVE: `${prefix}:save`,
+	CANCEL: `${prefix}:cancel`,
+	SUCCESS: `${prefix}:success`,
+	LOADING: `${prefix}:loading`
+});
+//#endregion
+//#region assets/core/event/createScopedEventBus.ts
+/**
+* Creates a scoped event bus for the given resource.
+*
+* Internally this generates an 8-character random scope token and delegates to
+* `createCrudEvents(`${resourceId}:${scopeId}`)`. This means each call produces
+* a unique set of event name strings, even for the same `resourceId`, which
+* prevents accidental cross-instance event coupling when multiple CRUD pages
+* for the same resource are mounted simultaneously.
+*
+* @param resourceId - The resource id (e.g. `'product'`).
+* @returns A `ScopedFormEventNames` object with a stable `_scopeId` tag.
+*/
+function createScopedEventBus(resourceId) {
+	const scopeId = Math.random().toString(36).slice(2, 10);
+	return {
+		...createCrudEvents(`${resourceId}:${scopeId}`),
+		_scopeId: scopeId
+	};
+}
+//#endregion
+//#region assets/core/i18n/coreTranslations.ts
+const coreTranslationsEs = {
+	"crudPage.selectedCount": "{{count}} seleccionados",
+	"crudPage.auditTrailButton": "Historial",
+	"crudPage.allColumns": "Todas",
+	"crudPage.columnsLabel": "Columnas:",
+	"crudPage.dialogTitleAdd": "Nuevo",
+	"crudPage.dialogTitleEdit": "Editar",
+	"crudPage.dialogTitleView": "Ver",
+	"crudPage.schemaErrorTitle": "No se pudo cargar esta vista",
+	"crudPage.schemaErrorMessage": "La configuración del recurso no está disponible. Intenta nuevamente o contacta a soporte si el problema continúa.",
+	"crudPage.schemaErrorDetails": "Detalle técnico",
+	"crudPage.schemaErrorRetry": "Reintentar",
+	"auditTrail.title": "Historial de cambios",
+	"auditTrail.closeButton": "Cerrar historial de cambios",
+	"auditTrail.selectRecord": "Seleccione un registro...",
+	"auditTrail.loading": "Cargando...",
+	"auditTrail.error": "Error al cargar el historial.",
+	"auditTrail.empty": "No hay entradas de historial.",
+	"auditTrail.action.create": "Creado",
+	"auditTrail.action.update": "Actualizado",
+	"auditTrail.action.delete": "Eliminado",
+	"form.detailRequired": "Agrega al menos un ítem para continuar",
+	"form.detailEmpty": "No hay ítems agregados",
+	"form.validationError": "Uno o más campos del formulario no son válidos",
+	"form.loading": "Cargando...",
+	"form.groupOther": "Otros",
+	"grid.noRecords": "No hay registros para mostrar",
+	"grid.selectRequired": "Debe seleccionar un registro",
+	"grid.loading": "Cargando...",
+	"grid.buttonNew": "Nuevo",
+	"grid.buttonEdit": "Editar",
+	"grid.buttonDelete": "Eliminar",
+	"grid.buttonRefresh": "Actualizar",
+	"grid.rowsPerPage": "Filas por página",
+	"dialog.buttonCancel": "Cancelar",
+	"dialog.buttonSave": "Guardar",
+	"dialog.confirmDelete": "¿Está seguro de eliminar el registro?",
+	"dialog.confirmDeleteTitle": "Confirmar eliminación",
+	"common.yes": "Sí",
+	"common.no": "No",
+	"validation.defaultError": "Valor inválido",
+	"form.searchButton": "Buscar",
+	"form.actionButton": "Acción"
+};
+const coreTranslationsEn = {
+	"crudPage.selectedCount": "{{count}} selected",
+	"crudPage.auditTrailButton": "History",
+	"crudPage.allColumns": "All",
+	"crudPage.columnsLabel": "Columns:",
+	"crudPage.dialogTitleAdd": "New",
+	"crudPage.dialogTitleEdit": "Edit",
+	"crudPage.dialogTitleView": "View",
+	"crudPage.schemaErrorTitle": "This view could not be loaded",
+	"crudPage.schemaErrorMessage": "The resource configuration is not available. Try again or contact support if the problem continues.",
+	"crudPage.schemaErrorDetails": "Technical details",
+	"crudPage.schemaErrorRetry": "Retry",
+	"auditTrail.title": "Change history",
+	"auditTrail.closeButton": "Close change history",
+	"auditTrail.selectRecord": "Select a record...",
+	"auditTrail.loading": "Loading...",
+	"auditTrail.error": "Error loading history.",
+	"auditTrail.empty": "No history entries.",
+	"auditTrail.action.create": "Created",
+	"auditTrail.action.update": "Updated",
+	"auditTrail.action.delete": "Deleted",
+	"form.detailRequired": "Add at least one item to continue",
+	"form.detailEmpty": "No items added",
+	"form.validationError": "One or more form fields are invalid",
+	"form.loading": "Loading...",
+	"form.groupOther": "Other",
+	"grid.noRecords": "No records to display",
+	"grid.selectRequired": "You must select a record",
+	"grid.loading": "Loading...",
+	"grid.buttonNew": "New",
+	"grid.buttonEdit": "Edit",
+	"grid.buttonDelete": "Delete",
+	"grid.buttonRefresh": "Refresh",
+	"grid.rowsPerPage": "Rows per page",
+	"dialog.buttonCancel": "Cancel",
+	"dialog.buttonSave": "Save",
+	"dialog.confirmDelete": "Are you sure you want to delete this record?",
+	"dialog.confirmDeleteTitle": "Confirm deletion",
+	"common.yes": "Yes",
+	"common.no": "No",
+	"validation.defaultError": "Invalid value",
+	"form.searchButton": "Search",
+	"form.actionButton": "Action"
+};
+//#endregion
+//#region assets/core/i18n/useCoreTranslation.ts
+function useCoreTranslation() {
+	const { t } = useTranslation("core");
+	return { t: (key, options) => t(key, options) };
+}
+//#endregion
+//#region assets/core/i18n/initCoreI18n.ts
+function initCoreI18n() {
+	i18next.addResourceBundle("es", "core", coreTranslationsEs, true, false);
+	i18next.addResourceBundle("en", "core", coreTranslationsEn, true, false);
+}
 //#endregion
 //#region assets/core/http/CoreHttpClient.ts
 function joinUrl(baseUrl, url) {
@@ -564,4 +713,4 @@ function useMercureSubscription(apiUrl, onUpdate, enabled = true) {
 	]);
 }
 //#endregion
-export { CoreConfigProvider, CoreHttpClient, CoreHttpProvider, CoreProvider, CoreRuntimeProvider, DateUtils, LIMA_TZ, mercureManager as MercureManager, MercureProvider, configureCoreDate, createCoreHttpClient, dispatch, getCoreLocale, getCoreTimezone, useCoreConfig, useCoreHttpClient, useCoreRuntime, useEvents, useMercureHub, useMercureSubscription };
+export { CoreConfigProvider, CoreHttpClient, CoreHttpProvider, CoreProvider, CoreRuntimeProvider, DateUtils, mercureManager as MercureManager, MercureProvider, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };

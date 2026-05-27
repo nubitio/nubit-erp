@@ -132,6 +132,34 @@ function getFlatIriFilter(filter: unknown): unknown[] | null {
   return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
 }
 
+function parseCollectionResponse(
+  responseData: unknown,
+  responseHeaders: Headers,
+): { data: DataRecord[]; totalCount: number } {
+  if (Array.isArray(responseData)) {
+    const headerCount = Number(responseHeaders.get('x-total-count'));
+    return {
+      data: responseData as DataRecord[],
+      totalCount: Number.isFinite(headerCount) ? headerCount : responseData.length,
+    };
+  }
+
+  if (responseData && typeof responseData === 'object') {
+    const body = responseData as DataRecord;
+    const member = body['hydra:member'] ?? body['member'];
+    if (Array.isArray(member)) {
+      const rawTotal = body['hydra:totalItems'] ?? body['totalItems'] ?? member.length;
+      const totalCount = Number(rawTotal);
+      return {
+        data: member as DataRecord[],
+        totalCount: Number.isFinite(totalCount) ? totalCount : member.length,
+      };
+    }
+  }
+
+  return { data: [], totalCount: 0 };
+}
+
 export class HydraRemoteDataSource implements ResourceStore {
   private readonly httpClient: CoreHttpClient;
 
@@ -204,8 +232,9 @@ export class HydraRemoteDataSource implements ResourceStore {
   }
 
   private async fetchAll(loadOptions: RemoteLoadOptions): Promise<GridData<DataRecord>> {
-    const response = await this.httpClient.get<DataRecord[]>(this.config.url, { params: loadOptions });
-    let data = response.data;
+    const response = await this.httpClient.get<unknown>(this.config.url, { params: loadOptions });
+    const parsed = parseCollectionResponse(response.data, response.headers);
+    let data = parsed.data;
 
     if (loadOptions.appendData) {
       data = [...data, ...loadOptions.appendData];
@@ -214,10 +243,10 @@ export class HydraRemoteDataSource implements ResourceStore {
       data = [...loadOptions.prependData, ...data];
     }
 
-    const headerCount = Number(response.headers.get('x-total-count'));
+    const totalCount = parsed.totalCount === parsed.data.length ? data.length : parsed.totalCount;
     return {
       data,
-      totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
+      totalCount,
       summary: null,
     };
   }

@@ -2,9 +2,9 @@ import { defineConfig } from 'tsdown';
 
 const NUBIT_PACKAGES = ['@nubit/core', '@nubit/crud', '@nubit/ui', '@nubit/admin', '@nubit/hydra'];
 
-// IDs that must never be bundled regardless of tsconfig path aliases.
+// External: only cross-package @nubit/* imports. CSS/SCSS is processed by
+// @tsdown/css and extracted into dist/index.css alongside the JS bundles.
 const ALWAYS_EXTERNAL = (id: string) =>
-  /\.s?css$/.test(id) ||
   NUBIT_PACKAGES.some((pkg) => id === pkg || id.startsWith(pkg + '/'));
 
 const sharedConfig = {
@@ -12,8 +12,15 @@ const sharedConfig = {
   dts: true,
   clean: true,
   sourcemap: false,
-  // Rolldown receives the original specifier before tsconfig alias resolution,
-  // so we can externalize '@nubit/core' and CSS files here.
+  // @tsdown/css compiles SCSS and extracts all component styles to dist/index.css.
+  // `loadPaths` lets every SCSS file resolve `@use 'variables'` from assets/.
+  css: {
+    preprocessorOptions: {
+      scss: {
+        loadPaths: ['assets'],
+      },
+    },
+  },
   inputOptions: {
     external: ALWAYS_EXTERNAL,
   },

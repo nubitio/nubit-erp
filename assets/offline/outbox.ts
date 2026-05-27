@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
-import { getCoreTimezone } from '@shared/lib/DateUtils';
+import { getCoreTimezone } from '@nubit/core';
+
 import { offlineDb } from './db';
 import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';
 import { logSyncEvent } from './telemetry';
@@ -35,12 +36,15 @@ let activeSyncPromise: Promise<void> | null = null;
 const asIso = (date: Date) => date.toISOString();
 
 const buildTemporalCorrelative = async () => {
-  // Use the configured timezone (via CoreConfigProvider) so the daily correlative counter
-  // rolls over at local midnight for the tenant. Falls back to the core default (America/Lima).
-  const now = DateTime.now().setZone(getCoreTimezone());
+  // Use the configured business timezone (via CoreConfigProvider) so that
+  // the daily correlative counter rolls over at local midnight for the business,
+  // not at UTC midnight. This prevents duplicate correlatives for sales made
+  // near the end of the business day.
+  const businessTz = getCoreTimezone();
+  const now = DateTime.now().setZone(businessTz);
   const year = now.year;
-  const dayStart = now.startOf('day'); // 00:00:00 Lima
-  const dayEnd = now.endOf('day'); // 23:59:59.999 Lima
+  const dayStart = now.startOf('day');
+  const dayEnd = now.endOf('day');
   const count = await offlineDb.sales
     .where('createdAt')
     .between(dayStart.toUTC().toISO()!, dayEnd.toUTC().toISO()!, true, true)

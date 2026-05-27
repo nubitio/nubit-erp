@@ -2651,6 +2651,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsdown/css@npm:^0.22.0":
+  version: 0.22.0
+  resolution: "@tsdown/css@npm:0.22.0"
+  dependencies:
+    lightningcss: "npm:^1.32.0"
+    postcss-load-config: "npm:^6.0.1"
+    rolldown: "npm:^1.0.0"
+  peerDependencies:
+    postcss: ^8.4.0
+    postcss-import: ^16.0.0
+    postcss-modules: ^6.0.0
+    sass: "*"
+    sass-embedded: "*"
+    tsdown: 0.22.0
+  peerDependenciesMeta:
+    postcss:
+      optional: true
+    postcss-import:
+      optional: true
+    postcss-modules:
+      optional: true
+    sass:
+      optional: true
+    sass-embedded:
+      optional: true
+  checksum: 10c0/5164f591c3820a81340f8d58efc0526cf0842ad18dd24ec252cc41bb97079c4c88b370e012541d7f3bc88e00f1b6097ce93cf198845344bf00e5203ade20c134
+  languageName: node
+  linkType: hard
+
 "@tybys/wasm-util@npm:^0.10.1":
   version: 0.10.2
   resolution: "@tybys/wasm-util@npm:0.10.2"
@@ -4073,6 +4102,7 @@ __metadata:
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/react": "npm:^16.3.2"
     "@testing-library/user-event": "npm:^14.6.1"
+    "@tsdown/css": "npm:^0.22.0"
     "@types/dompurify": "npm:^3.0.0"
     "@types/luxon": "npm:^3.7.1"
     "@types/node": "npm:^22.19.15"
@@ -5938,6 +5968,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lilconfig@npm:^3.1.1":
+  version: 3.1.3
+  resolution: "lilconfig@npm:3.1.3"
+  checksum: 10c0/f5604e7240c5c275743561442fbc5abf2a84ad94da0f5adc71d25e31fa8483048de3dcedcb7a44112a942fed305fd75841cdf6c9681c7f640c63f1049e9a5dcc
+  languageName: node
+  linkType: hard
+
 "locate-path@npm:^6.0.0":
   version: 6.0.0
   resolution: "locate-path@npm:6.0.0"
@@ -6481,6 +6518,29 @@ __metadata:
   version: 1.1.0
   resolution: "possible-typed-array-names@npm:1.1.0"
   checksum: 10c0/c810983414142071da1d644662ce4caebce890203eb2bc7bf119f37f3fe5796226e117e6cca146b521921fa6531072674174a3325066ac66fce089a53e1e5196
+  languageName: node
+  linkType: hard
+
+"postcss-load-config@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "postcss-load-config@npm:6.0.1"
+  dependencies:
+    lilconfig: "npm:^3.1.1"
+  peerDependencies:
+    jiti: ">=1.21.0"
+    postcss: ">=8.0.9"
+    tsx: ^4.8.1
+    yaml: ^2.4.2
+  peerDependenciesMeta:
+    jiti:
+      optional: true
+    postcss:
+      optional: true
+    tsx:
+      optional: true
+    yaml:
+      optional: true
+  checksum: 10c0/74173a58816dac84e44853f7afbd283f4ef13ca0b6baeba27701214beec33f9e309b128f8102e2b173e8d45ecba45d279a9be94b46bf48d219626aa9b5730848
   languageName: node
   linkType: hard
 

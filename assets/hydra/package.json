@@ -1,15 +1,28 @@
 {
   "name": "@nubit/hydra",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
+  "description": "Hydra / OpenAPI adapter for @nubit/crud — automatic schema discovery and data source from API Platform docs.",
+  "license": "MIT",
+  "keywords": ["react", "hydra", "openapi", "api-platform", "crud"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/efact-project/efact.git"
+  },
+  "bugs": {
+    "url": "https://github.com/efact-project/efact/issues"
+  },
+  "homepage": "https://github.com/efact-project/efact#readme",
   "source": "./public.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }
@@ -21,7 +34,9 @@
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
+    "i18next": "^23.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-i18next": "^14.0.0"
   }
 }

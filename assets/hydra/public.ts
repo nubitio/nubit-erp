@@ -1,8 +1,8 @@
 // @nubit/hydra — Hydra/OpenAPI adapter for CRUD schema discovery and data loading.
 // Import from this facade only; do not reach into implementation paths.
 //
-// Requires: <CoreConfigProvider locale="es" timezone="America/Lima"> from @nubit/core
-// in the app provider tree so that useHydraMetadata picks up the correct locale.
+// Requires: <CoreConfigProvider locale="..." timezone="..." apiBaseUrl="..."> from @nubit/core
+// in the app provider tree so that useHydraMetadata and data loading use the correct configuration.
 
 export { HydraRemoteDataSource, createHydraResourceStore } from './HydraRemoteDataSource';
 export type {
@@ -36,8 +36,6 @@ export {
 export {
   useResourceSchema,
 } from './useResourceSchema';
-
-export type { FieldOverride } from '@nubit/crud';
 
 export {
   SchemaProvider,

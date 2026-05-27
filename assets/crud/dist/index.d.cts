@@ -1,6 +1,5 @@
-import React$1, { ReactNode, RefObject } from "react";
-import { CoreHttpClient, DataRecord, DataRecord as DataRecord$1, GridData, GridData as GridData$1 } from "@nubit/core";
-import { AppDialog, AppDialogProps, ConfirmDialog, ConfirmDialogProps } from "@nubit/ui";
+import React, { ReactNode, RefObject } from "react";
+import { CoreHttpClient, DataGridEventNames, DataRecord, DataRecord as DataRecord$1, DialogEventNames, FormEventNames, GridData, GridData as GridData$1, ToolbarButtonItem, createCrudEvents } from "@nubit/core";
 
 //#region assets/crud/field/FieldType.d.ts
 declare enum FieldType {
@@ -75,7 +74,7 @@ type RangeRule = {
 type CompareRule = {
   type: 'compare';
   options: {
-    comparisonTarget: () => any;
+    comparisonTarget: () => unknown;
     comparisonType?: '==' | '!=' | '>' | '<' | '>=' | '<=';
     message?: string;
   };
@@ -83,21 +82,21 @@ type CompareRule = {
 type CustomRule = {
   type: 'custom';
   options: {
-    validationCallback: (options: any) => boolean;
+    validationCallback: (value: unknown) => boolean;
     message?: string;
   };
 };
 type AsyncRule = {
   type: 'async';
   options: {
-    validationCallback: (options: any) => Promise<boolean>;
+    validationCallback: (value: unknown) => Promise<boolean>;
     message?: string;
   };
 };
 type ValidationRule = RequiredRule | EmailRule | NumericRule | PatternRule | StringLengthRule | RangeRule | CompareRule | CustomRule | AsyncRule;
 //#endregion
 //#region assets/crud/field/FieldCallbacks.d.ts
-interface GridCellContext<TData extends DataRecord$1 = Record<string, any>, TValue = any> {
+interface GridCellContext<TData extends DataRecord$1 = DataRecord$1, TValue = unknown> {
   value?: TValue;
   data: TData;
   rowIndex?: number;
@@ -108,11 +107,11 @@ interface GridCellContext<TData extends DataRecord$1 = Record<string, any>, TVal
  * Callback for grid column cell rendering.
  * Receives the app-owned cell context; UI adapters may provide extra fields.
  *
- * @example
- *   .formatter(cell => cell.value?.name)
- *   .formatter(cell => NumberUtils.formatCurrency(cell.value))
+ * Pass a TData type argument to get typed access to cell.data:
+ *   FormatterFn<InvoiceRecord>
+ *   (cell: GridCellContext<InvoiceRecord>) => cell.data.customer?.ruc
  */
-type FormatterFn = (cell: GridCellContext) => React$1.ReactNode;
+type FormatterFn<TData extends DataRecord$1 = DataRecord$1> = (cell: GridCellContext<TData>) => React.ReactNode;
 /**
  * Callback for grid column `setCellValue` — called when the user edits a cell in an
  * inline grid editor. The active grid adapter passes three arguments:
@@ -140,7 +139,7 @@ type OnChangeFn = GridOnChangeFn | FormOnChangeFn;
  * @example
  *   .itemFormatter(item => `${item.code} – ${item.name}`)
  */
-type ItemFormatterFn = (item: unknown) => React$1.ReactNode;
+type ItemFormatterFn = (item: unknown) => React.ReactNode;
 //#endregion
 //#region assets/crud/field/Field.d.ts
 type LoadOption = Record<string, any>;
@@ -199,7 +198,7 @@ interface Field {
   searchEnabled: boolean;
   searchExpr: string[] | null;
   helpText: string | undefined;
-  contentRender: string | ((...args: unknown[]) => React$1.ReactNode) | null | undefined;
+  contentRender: string | ((...args: unknown[]) => React.ReactNode) | null | undefined;
   visibleOnForm: boolean;
   maxLength: number | undefined;
   multiple: boolean;
@@ -241,48 +240,6 @@ type FieldDef<T extends DataRecord$1 = DataRecord$1> = Omit<Field, 'defaultValue
   onChange?: ((value: T[keyof T]) => void | Promise<void>) | GridOnChangeFn;
 };
 //#endregion
-//#region assets/core/event/EventTypes.d.ts
-/**
- * Typed event name interfaces for core components.
- * Each field is optional — only declare the events your feature uses.
- */
-interface DataGridEventNames {
-  ADD?: string;
-  EDIT?: string;
-  DELETE?: string;
-  SUCCESS?: string;
-  LOADING?: string;
-  CANCEL?: string;
-  EXPORT?: string;
-}
-interface FormEventNames {
-  ADD?: string;
-  EDIT?: string;
-  DELETE?: string;
-  SAVE?: string;
-  SUCCESS?: string;
-  LOADING?: string;
-  CANCEL?: string;
-}
-interface DialogEventNames {
-  ADD?: string;
-  EDIT?: string;
-  SAVE?: string;
-  SUCCESS?: string;
-  LOADING?: string;
-  CANCEL?: string;
-}
-interface ToolbarButtonItem {
-  icon?: string;
-  text: string;
-  hint?: string;
-  /** Semantic button type. Common values: 'default' | 'normal' | 'danger' | 'success' | 'back' */
-  type?: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  visible?: boolean;
-}
-//#endregion
 //#region assets/crud/form/FormDataSnapshot.d.ts
 type FormDataRecord = DataRecord$1;
 type FormDataSnapshot = FormDataRecord;
@@ -298,6 +255,8 @@ interface FormHandle {
   saveDetailData: () => Promise<void> | void;
   reloadDetailData: () => void;
   setValues: (data: FormDataRecord) => void;
+  save: () => void;
+  deleteRow: (row: FormDataRecord) => void;
   setReadonly: (field: string, value: boolean) => void;
   setDisabled: (field: string, value: boolean) => void;
   enableValidation: (field: string) => void;
@@ -397,12 +356,46 @@ interface SmartCrudFieldOperationBehavior {
   edit?: SmartCrudFieldOperationState;
 }
 //#endregion
+//#region assets/crud/crud/fieldValidation.d.ts
+type SmartCrudRecord$1 = object;
+type SmartCrudHydraDirectiveLike<T extends SmartCrudRecord$1> = {
+  kind: 'override';
+  key: Extract<keyof T, string>;
+  patch: SmartCrudFieldPatchLike;
+} | {
+  kind: 'remove';
+  key: Extract<keyof T, string>;
+} | {
+  kind: 'prepend';
+  field: SmartCrudManualFieldLike;
+} | {
+  kind: 'append';
+  field: SmartCrudManualFieldLike;
+};
+type SmartCrudFieldContractLike<T extends SmartCrudRecord$1> = {
+  source: 'hydra';
+  strategy: 'augment';
+  directives: readonly SmartCrudHydraDirectiveLike<T>[];
+} | {
+  source: 'manual';
+  strategy: 'replace';
+  fields: readonly SmartCrudManualFieldLike[];
+};
+declare const FIELD_KEYS: readonly ["isIdentity", "type", "col", "name", "label", "width", "height", "minWidth", "align", "sortable", "filterable", "hideable", "validators", "url", "loadOptions", "filters", "byKeyUrl", "textField", "valueField", "valueType", "format", "selectedFilterOperation", "filterValue", "data", "formatter", "itemFormatter", "visible", "defaultValue", "autoSelectIfSingle", "onChange", "onSelect", "onClick", "readonly", "disabled", "hidden", "required", "precision", "accept", "buttons", "searchEnabled", "searchExpr", "helpText", "contentRender", "visibleOnForm", "maxLength", "multiple", "sendAsString", "order", "visibleWhen", "disabledWhen", "computed", "defaultWhen", "requiredWhen", "clearWhenHidden", "dependsOn", "permissions"];
+type SmartCrudFieldShape = Partial<Record<(typeof FIELD_KEYS)[number], unknown>>;
+type SmartCrudFieldPatchLike = SmartCrudFieldShape & {
+  operation?: SmartCrudFieldOperationBehavior;
+};
+type SmartCrudManualFieldLike = SmartCrudFieldShape & {
+  name: string;
+  operation?: SmartCrudFieldOperationBehavior;
+};
+declare function validateFieldContract<T extends SmartCrudRecord$1>(contract: SmartCrudFieldContractLike<T>): SmartCrudFieldContractLike<T>;
+//#endregion
 //#region assets/crud/crud/fieldContract.d.ts
-type SmartCrudRecord = object;
+type SmartCrudRecord = DataRecord$1;
 type SmartCrudModelFieldKey<T extends SmartCrudRecord> = Extract<keyof T, string>;
 type SmartCrudFieldRecord<T extends SmartCrudRecord> = T & DataRecord$1;
-type SmartCrudFieldSourceMode = 'hydra' | 'manual';
-type SmartCrudFieldResolutionStrategy = 'augment' | 'replace';
 type SmartCrudFieldPatch<T extends SmartCrudRecord> = Partial<Omit<FieldDef<SmartCrudFieldRecord<T>>, 'name' | 'defaultValue' | 'onChange' | 'required' | 'readonly' | 'disabled'>> & {
   defaultValue?: FieldDef<SmartCrudFieldRecord<T>>['defaultValue'];
   onChange?: FieldDef<SmartCrudFieldRecord<T>>['onChange'];
@@ -527,11 +520,6 @@ interface BackendAdapter {
 //#endregion
 //#region assets/crud/crud/ResourceConfig.d.ts
 /**
- * Generic factory that receives a form ref and returns typed field definitions.
- * Defaults to `DataRecord` for backward compatibility.
- */
-type FieldsFactory<T extends DataRecord$1 = DataRecord$1> = (formRef: RefObject<FormHandle | null>) => FieldDef<T>[];
-/**
  * URL-based deep-linking and filter sync configuration for SmartCrudPage.
  * All fields are optional — if `routing` is absent, no URL behaviour is applied.
  */
@@ -592,19 +580,21 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
    */
   adapter?: BackendAdapter;
   /**
-   * Legacy/manual field entrypoint.
-   * Prefer `fieldContract` for canonical SmartCrud authoring; this remains as
-   * a compatibility path for manual screens and in-flight migrations.
+   * Manual field definitions for this resource.
+   * Omit (or pass an empty array) to let SmartCrudPage auto-infer fields from
+   * the Hydra/OpenAPI schema. Prefer `fieldContract` for augmenting inferred fields.
    */
-  fields: Field[] | FieldDef<T>[] | FieldsFactory<T>;
+  fields?: Field[] | FieldDef<T>[];
   /**
    * Canonical production field contract for SmartCrud.
    * SmartCrud runtime treats this as authoritative over legacy
    * `fields` + `fieldOverrides` combinations whenever it is present.
    */
   fieldContract?: SmartCrudFieldContract<T>;
-  /** Optional: inject a pre-existing event bus (e.g. a module-level singleton).
-   *  When omitted, `useCrudPage` creates fresh events via `createCrudEvents(id)`. */
+  /**
+   * @deprecated Prefer callback/state coordination. This remains only as a legacy
+   * escape hatch for code that still listens to CRUD event names directly.
+   */
   events?: FormEventNames;
   /** Detail rows rendered in the main grid's expandable row panel. */
   gridDetail?: ResourceGridDetail;
@@ -678,77 +668,15 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
 }
 //#endregion
 //#region assets/crud/crud/defineResource.d.ts
-/**
- * Overload 1 — Zero config: derive id from URL.
- * `mercure` defaults to `true` (opt-in) when not specified.
- */
+/** Zero config — `id` and `title` derived from the URL. */
 declare function defineResource(apiUrl: string): ResourceConfig;
 /**
- * Overload 2 — URL + partial overrides.
- * Pass `mercure: false` to disable real-time Mercure subscription for this resource.
- * When omitted, `mercure` is effectively `true` (opt-in by default).
+ * URL + partial overrides (canonical form).
+ * Pass `mercure: false` to disable the real-time Mercure subscription.
  */
-declare function defineResource<T extends DataRecord$1>(apiUrl: string, overrides: Omit<ResourceConfig<T>, 'apiUrl'> & {
+declare function defineResource<T extends DataRecord$1>(apiUrl: string, overrides: Partial<Omit<ResourceConfig<T>, 'apiUrl'>> & {
   id?: string;
 }): ResourceConfig<T>;
-/** Overload 3 — Full config object (legacy / full control — retrocompatible). */
-declare function defineResource<T extends DataRecord$1 = DataRecord$1>(config: ResourceConfig<T>): ResourceConfig<T>;
-//#endregion
-//#region assets/crud/crud/usePermissions.d.ts
-/** Fully-resolved, all-required permissions (guaranteed booleans). */
-interface ResolvedPermissions {
-  canAdd: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
-  canExport: boolean;
-  canBulkDelete: boolean;
-}
-/**
- * Resolves RBAC permissions for a resource with the following precedence
- * (highest → lowest):
- *   1. `resource.permissions.canX` — callable or boolean override
- *   2. inferred from `supportedOperations` (hydra:supportedOperation methods)
- *   3. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
- *
- * Memoized on `resource.id` — stable reference across re-renders.
- */
-declare function usePermissions(resource: ResourceConfig, supportedOperations?: string[]): ResolvedPermissions;
-//#endregion
-//#region assets/crud/crud/useSelectionState.d.ts
-interface SelectionState {
-  selectedIds: (string | number)[];
-  selectedCount: number;
-  hasSelection: boolean;
-  clearSelection: () => void;
-}
-declare function useSelectionState(identityField: string): SelectionState & {
-  onSelectionChanged: (selectedRows: DataRecord$1[]) => void;
-};
-//#endregion
-//#region assets/crud/crud/useColumnPreset.d.ts
-interface ColumnPresetState {
-  activePreset: string | null;
-  setPreset: (key: string | null) => void;
-  visibleColumns: string[] | null;
-}
-//#endregion
-//#region assets/crud/crud/resolveCrudResource.d.ts
-type ResolvedCrudResource<T extends DataRecord$1> = ResourceConfig<T> & {
-  events: FormEventNames;
-};
-//#endregion
-//#region assets/crud/crud/useCrudPage.d.ts
-declare function useCrudPage<T extends DataRecord$1 = DataRecord$1>(resource: ResourceConfig<T>, externalFormRef?: React.RefObject<FormHandle | null>): {
-  events: FormEventNames;
-  resource: ResolvedCrudResource<T>;
-  fields: Field[];
-  formRef: React.RefObject<FormHandle | null>;
-  permissions: ResolvedPermissions;
-  selectionState: SelectionState & {
-    onSelectionChanged: (rows: DataRecord$1[]) => void;
-  };
-  presetState: ColumnPresetState;
-};
 //#endregion
 //#region assets/crud/crud/CrudPage.d.ts
 interface CrudPageProps<T extends DataRecord$1 = DataRecord$1> {
@@ -779,7 +707,7 @@ interface CrudPageProps<T extends DataRecord$1 = DataRecord$1> {
    * creating an internal one — allows the parent to call setFieldValue /
    * getFieldValue on the active dialog form (e.g. for field observers).
    */
-  formRef?: React$1.RefObject<FormHandle | null>;
+  formRef?: React.RefObject<FormHandle | null>;
   /**
    * Called whenever grid row selection changes, after internal selection state
    * is updated. Receives the full selected row objects.
@@ -791,7 +719,8 @@ interface CrudPageProps<T extends DataRecord$1 = DataRecord$1> {
   deleteDisabled?: boolean;
   /** External ref forwarded to the DataGridView — allows the parent to call
    *  showLoading / hideLoading / refresh / getSelectedRow imperatively. */
-  gridRef?: React$1.RefObject<GridHandle | null>;
+  gridRef?: React.RefObject<GridHandle | null>;
+  onOperationChange?: (operation: SmartCrudOperation | null) => void;
 }
 /**
  * Public export — wraps CrudPageInner in its own DialogStoreProvider so that
@@ -809,30 +738,22 @@ declare const CrudPage: <T extends DataRecord$1 = DataRecord$1>({
   onSelectionChanged,
   editDisabled,
   deleteDisabled,
-  gridRef
+  gridRef,
+  onOperationChange
 }: CrudPageProps<T>) => import("react/jsx-runtime").JSX.Element;
 //#endregion
 //#region assets/crud/crud/resolveSmartCrudFields.d.ts
 type FieldOverride = Partial<Field> & {
   key: string;
 };
-interface ResolveSmartCrudFieldsOptions<T extends SmartCrudRecord> {
-  baselineFields?: readonly Field[];
-  contract?: SmartCrudFieldContract<T>;
-  legacyOverrides?: readonly FieldOverride[];
-}
-declare function mergeOverrides(inferred: Field[], overrides: readonly FieldOverride[]): Field[];
-declare function resolveSmartCrudFields<T extends SmartCrudRecord>(options: ResolveSmartCrudFieldsOptions<T>): Field[];
 //#endregion
 //#region assets/crud/crud/SmartCrudPage.d.ts
 interface SmartCrudPageProps<T extends DataRecord$1 = DataRecord$1> {
   resource: ResourceConfig<T>;
   /**
-   * Legacy per-field overrides applied on top of auto-inferred Hydra fields.
-   * Each entry must contain a `key` matching the field's `name`, plus any
-   * `Field` properties to override (e.g. `{ key: 'name', label: 'Custom' }`).
-   * Ignored when the canonical `resource.fieldContract` is present.
-   * Has no effect when `resource.fields` is a non-empty manual array.
+   * @deprecated Use `resource.fieldContract` (defineFieldContract) instead.
+   * Per-field overrides applied on top of auto-inferred Hydra fields.
+   * Ignored when `resource.fieldContract` is present.
    */
   fieldOverrides?: FieldOverride[];
   /** External form ref forwarded to CrudPage — lets the parent call setFieldValue / getFieldValue. */
@@ -882,104 +803,27 @@ declare function SmartCrudPage<T extends DataRecord$1 = DataRecord$1>({
 declare function SmartCrudRolesProvider({
   children,
   roles
-}: React$1.PropsWithChildren<{
+}: React.PropsWithChildren<{
   roles?: string[];
 }>): import("react/jsx-runtime").JSX.Element;
 declare function useSmartCrudRoles(): string[];
 //#endregion
-//#region assets/crud/crud/resolveResourceDetails.d.ts
-interface ResolvedResourceDetails {
-  gridDetail?: ResourceGridDetail;
-  formDetail?: ResourceFormDetail;
+//#region assets/crud/crud/AuditTrailPanel.d.ts
+interface AuditTrailPanelProps {
+  url: string | null;
+  renderEntry?: (entry: AuditEntry) => ReactNode;
+  visible: boolean;
+  onClose: () => void;
 }
-declare function resolveResourceDetails<T extends DataRecord$1>(resource: ResourceConfig<T>): ResolvedResourceDetails;
-//#endregion
-//#region assets/crud/crud/resolveResourceToolbar.d.ts
-declare function resolveResourceToolbar<T extends DataRecord$1>(resource: ResourceConfig<T>, context: ResourceToolbarContext<T>): ResourceToolbarItems | undefined;
-//#endregion
-//#region assets/core/event/createScopedEventBus.d.ts
-/**
- * A `FormEventNames` object whose event strings are namespaced with a
- * per-instance scope ID to prevent cross-component event leakage.
- * The extra `_scopeId` property carries the raw 8-char scope token for
- * diagnostics / testing.
- */
-type ScopedFormEventNames = FormEventNames & {
-  readonly _scopeId: string;
-};
-/**
- * Creates a scoped event bus for the given resource.
- *
- * Internally this generates an 8-character random scope token and delegates to
- * `createCrudEvents(`${resourceId}:${scopeId}`)`. This means each call produces
- * a unique set of event name strings, even for the same `resourceId`, which
- * prevents accidental cross-instance event coupling when multiple CRUD pages
- * for the same resource are mounted simultaneously.
- *
- * @param resourceId - The resource id (e.g. `'product'`).
- * @returns A `ScopedFormEventNames` object with a stable `_scopeId` tag.
- */
-declare function createScopedEventBus(resourceId: string): ScopedFormEventNames;
-//#endregion
-//#region assets/core/i18n/CoreTranslationKeys.d.ts
-interface CoreTranslationKeys {
-  'crudPage.selectedCount': string;
-  'crudPage.auditTrailButton': string;
-  'crudPage.allColumns': string;
-  'crudPage.columnsLabel': string;
-  'crudPage.dialogTitleAdd': string;
-  'crudPage.dialogTitleEdit': string;
-  'crudPage.dialogTitleView': string;
-  'crudPage.schemaErrorTitle': string;
-  'crudPage.schemaErrorMessage': string;
-  'crudPage.schemaErrorDetails': string;
-  'crudPage.schemaErrorRetry': string;
-  'auditTrail.title': string;
-  'auditTrail.closeButton': string;
-  'auditTrail.selectRecord': string;
-  'auditTrail.loading': string;
-  'auditTrail.error': string;
-  'auditTrail.empty': string;
-  'auditTrail.action.create': string;
-  'auditTrail.action.update': string;
-  'auditTrail.action.delete': string;
-  'form.detailRequired': string;
-  'form.detailEmpty': string;
-  'form.validationError': string;
-  'form.loading': string;
-  'form.groupOther': string;
-  'grid.noRecords': string;
-  'grid.selectRequired': string;
-  'grid.loading': string;
-  'grid.buttonNew': string;
-  'grid.buttonEdit': string;
-  'grid.buttonDelete': string;
-  'grid.buttonRefresh': string;
-  'grid.rowsPerPage': string;
-  'dialog.buttonCancel': string;
-  'dialog.buttonSave': string;
-  'dialog.confirmDelete': string;
-  'dialog.confirmDeleteTitle': string;
-  'common.yes': string;
-  'common.no': string;
-  'validation.defaultError': string;
-  'form.searchButton': string;
-  'form.actionButton': string;
-}
-//#endregion
-//#region assets/core/data/DataRecord.d.ts
-type DataRecord$2 = Record<string, unknown>;
-//#endregion
-//#region assets/core/i18n/useCoreTranslation.d.ts
-declare function useCoreTranslation(): {
-  t: (key: keyof CoreTranslationKeys, options?: DataRecord$2) => string;
-};
-//#endregion
-//#region assets/core/i18n/initCoreI18n.d.ts
-declare function initCoreI18n(): void;
+declare function AuditTrailPanel({
+  url,
+  renderEntry,
+  visible,
+  onClose
+}: AuditTrailPanelProps): React.JSX.Element | null;
 //#endregion
 //#region assets/crud/field/BaseFieldBuilder.d.ts
-declare class BaseFieldBuilder {
+declare class BaseFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> {
   protected _field: Field;
   constructor(type: FieldType);
   isIdentity(isIdentity: boolean): this;
@@ -998,7 +842,7 @@ declare class BaseFieldBuilder {
   filterValue(filterValue: string | number | boolean | Date | null | undefined): this;
   data(data: DataRecord$1[]): this;
   format(format: string): this;
-  formatter(formatter: FormatterFn): this;
+  formatter(formatter: (cell: GridCellContext<TRecord>) => React.ReactNode): this;
   itemFormatter(itemFormatter: ItemFormatterFn): this;
   visible(visible: boolean): this;
   defaultValue(defaultValue: string | number | boolean | Date | null | undefined | (() => unknown)): this;
@@ -1015,7 +859,7 @@ declare class BaseFieldBuilder {
   searchEnabled(value: boolean): this;
   searchExpr(value: string[]): this;
   helpText(value: string): this;
-  contentRender(value: string | ((...args: unknown[]) => React$1.ReactNode) | null | undefined): this;
+  contentRender(value: string | ((...args: unknown[]) => React.ReactNode) | null | undefined): this;
   visibleOnForm(value: boolean): this;
   autoSelectIfSingle(value: boolean): this;
   url(url: string): this;
@@ -1028,11 +872,11 @@ declare class BaseFieldBuilder {
   sendAsString(value: boolean): this;
   multiple(value: boolean): this;
   maxLength(value: number): this;
-  visibleWhen(fn: (formData: DataRecord$1) => boolean): this;
-  disabledWhen(fn: (formData: DataRecord$1) => boolean): this;
-  computed(fn: (formData: DataRecord$1) => unknown): this;
-  defaultWhen(fn: (formData: DataRecord$1) => unknown): this;
-  requiredWhen(fn: (formData: DataRecord$1) => boolean): this;
+  visibleWhen(fn: (formData: TRecord) => boolean): this;
+  disabledWhen(fn: (formData: TRecord) => boolean): this;
+  computed(fn: (formData: TRecord) => unknown): this;
+  defaultWhen(fn: (formData: TRecord) => unknown): this;
+  requiredWhen(fn: (formData: TRecord) => boolean): this;
   clearWhenHidden(value?: boolean): this;
   dependsOn(fields: string[]): this;
   permissions(perms: {
@@ -1054,7 +898,7 @@ declare class BaseFieldBuilder {
  * Defaults set automatically:
  *   isIdentity(true), visible(false), required(true), name('id'), label('Id')
  */
-declare class IdentityFieldBuilder extends BaseFieldBuilder {
+declare class IdentityFieldBuilder extends BaseFieldBuilder<DataRecord$1> {
   constructor();
 }
 declare function identityField(): IdentityFieldBuilder;
@@ -1071,10 +915,10 @@ declare function identityField(): IdentityFieldBuilder;
  *     .formatter(cell => cell.value?.businessName)
  *     .build()
  */
-declare class EntityFieldBuilder extends BaseFieldBuilder {
+declare class EntityFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor(url: string, valueField: string, textField: string);
 }
-declare function entityField(url: string, valueField: string, textField: string): EntityFieldBuilder;
+declare function entityField<TRecord extends DataRecord$1 = DataRecord$1>(url: string, valueField: string, textField: string): EntityFieldBuilder<TRecord>;
 /**
  * Builder for CURRENCY fields.
  *
@@ -1088,27 +932,27 @@ declare function entityField(url: string, valueField: string, textField: string)
  *     .formatter(cell => NumberUtils.formatCurrency(cell.value, cell.data?.currency))
  *     .build()
  */
-declare class CurrencyFieldBuilder extends BaseFieldBuilder {
+declare class CurrencyFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function currencyField(): CurrencyFieldBuilder;
+declare function currencyField<TRecord extends DataRecord$1 = DataRecord$1>(): CurrencyFieldBuilder<TRecord>;
 /**
  * Factory for image upload fields (FILE type).
  *
- * Defaults: url=Constants.API_BASE_URL+'media', accept='image/*', align='center'
+ * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
  * Formatter must be provided by the caller since it depends on the data shape.
  *
  * Usage:
- *   imageField(Constants.API_BASE_URL)
+ *   imageField('/api/')
  *     .name('photo')
  *     .label('Imagen')
  *     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
  *     .build()
  */
-declare class ImageFieldBuilder extends BaseFieldBuilder {
+declare class ImageFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor(apiBaseUrl: string);
 }
-declare function imageField(apiBaseUrl: string): ImageFieldBuilder;
+declare function imageField<TRecord extends DataRecord$1 = DataRecord$1>(apiBaseUrl: string): ImageFieldBuilder<TRecord>;
 /**
  * Builder for DATE fields.
  *
@@ -1122,10 +966,10 @@ declare function imageField(apiBaseUrl: string): ImageFieldBuilder;
  *     .formatter(cell => SharedUtils.dateFormatter(cell.value))
  *     .build()
  */
-declare class DateFieldBuilder extends BaseFieldBuilder {
+declare class DateFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function dateField(): DateFieldBuilder;
+declare function dateField<TRecord extends DataRecord$1 = DataRecord$1>(): DateFieldBuilder<TRecord>;
 /**
  * Builder for DATETIME fields.
  *
@@ -1139,10 +983,10 @@ declare function dateField(): DateFieldBuilder;
  *     .formatter(cell => SharedUtils.dateTimeFormatter(cell.value))
  *     .build()
  */
-declare class DateTimeFieldBuilder extends BaseFieldBuilder {
+declare class DateTimeFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function datetimeField(): DateTimeFieldBuilder;
+declare function datetimeField<TRecord extends DataRecord$1 = DataRecord$1>(): DateTimeFieldBuilder<TRecord>;
 /**
  * Builder for NUMBER fields.
  *
@@ -1154,10 +998,10 @@ declare function datetimeField(): DateTimeFieldBuilder;
  *     .align('center')
  *     .build()
  */
-declare class NumberFieldBuilder extends BaseFieldBuilder {
+declare class NumberFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function numberField(): NumberFieldBuilder;
+declare function numberField<TRecord extends DataRecord$1 = DataRecord$1>(): NumberFieldBuilder<TRecord>;
 /** A single option item for ENUM / SELECT fields. */
 type EnumOption = {
   value: string | number;
@@ -1179,10 +1023,10 @@ type EnumOption = {
  *     .formatter(cell => cell.value === 'income' ? 'Ingreso' : 'Egreso')
  *     .build()
  */
-declare class EnumFieldBuilder extends BaseFieldBuilder {
+declare class EnumFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor(options: EnumOption[]);
 }
-declare function enumField(options: EnumOption[]): EnumFieldBuilder;
+declare function enumField<TRecord extends DataRecord$1 = DataRecord$1>(options: EnumOption[]): EnumFieldBuilder<TRecord>;
 /**
  * Builder for TEXT (plain string input) fields.
  *
@@ -1193,10 +1037,10 @@ declare function enumField(options: EnumOption[]): EnumFieldBuilder;
  *     .required(true)
  *     .build()
  */
-declare class TextFieldBuilder extends BaseFieldBuilder {
+declare class TextFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function textField(): TextFieldBuilder;
+declare function textField<TRecord extends DataRecord$1 = DataRecord$1>(): TextFieldBuilder<TRecord>;
 /**
  * Builder for TEXTAREA (multi-line text) fields.
  *
@@ -1206,10 +1050,10 @@ declare function textField(): TextFieldBuilder;
  *     .label('Nota')
  *     .build()
  */
-declare class TextareaFieldBuilder extends BaseFieldBuilder {
+declare class TextareaFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function textareaField(): TextareaFieldBuilder;
+declare function textareaField<TRecord extends DataRecord$1 = DataRecord$1>(): TextareaFieldBuilder<TRecord>;
 /**
  * Builder for NONE (display-only, no editor) fields.
  *
@@ -1220,10 +1064,10 @@ declare function textareaField(): TextareaFieldBuilder;
  *     .formatter(cell => SharedUtils.billStatusFormatter(cell.value))
  *     .build()
  */
-declare class NoneFieldBuilder extends BaseFieldBuilder {
+declare class NoneFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function noneField(): NoneFieldBuilder;
+declare function noneField<TRecord extends DataRecord$1 = DataRecord$1>(): NoneFieldBuilder<TRecord>;
 /**
  * Builder for SWITCH (boolean toggle) fields.
  *
@@ -1235,10 +1079,10 @@ declare function noneField(): NoneFieldBuilder;
  *     .formatter(SharedUtils.booleanFormatter)
  *     .build()
  */
-declare class SwitchFieldBuilder extends BaseFieldBuilder {
+declare class SwitchFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function switchField(): SwitchFieldBuilder;
+declare function switchField<TRecord extends DataRecord$1 = DataRecord$1>(): SwitchFieldBuilder<TRecord>;
 /**
  * Builder for SELECT (local dropdown, value+text pairs) fields.
  *
@@ -1249,10 +1093,10 @@ declare function switchField(): SwitchFieldBuilder;
  *     .data([{ value: 'PEN', text: 'Soles' }, { value: 'USD', text: 'Dólares' }])
  *     .build()
  */
-declare class SelectFieldBuilder extends BaseFieldBuilder {
+declare class SelectFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function selectField(): SelectFieldBuilder;
+declare function selectField<TRecord extends DataRecord$1 = DataRecord$1>(): SelectFieldBuilder<TRecord>;
 /**
  * Builder for CHECKBOX (boolean check) fields.
  *
@@ -1263,10 +1107,10 @@ declare function selectField(): SelectFieldBuilder;
  *     .defaultValue(false)
  *     .build()
  */
-declare class CheckboxFieldBuilder extends BaseFieldBuilder {
+declare class CheckboxFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function checkboxField(): CheckboxFieldBuilder;
+declare function checkboxField<TRecord extends DataRecord$1 = DataRecord$1>(): CheckboxFieldBuilder<TRecord>;
 /**
  * Builder for PASSWORD (masked text input) fields.
  *
@@ -1277,13 +1121,13 @@ declare function checkboxField(): CheckboxFieldBuilder;
  *     .required(true)
  *     .build()
  */
-declare class PasswordFieldBuilder extends BaseFieldBuilder {
+declare class PasswordFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
   constructor();
 }
-declare function passwordField(): PasswordFieldBuilder;
+declare function passwordField<TRecord extends DataRecord$1 = DataRecord$1>(): PasswordFieldBuilder<TRecord>;
 //#endregion
 //#region assets/crud/field/FieldBuilder.d.ts
-declare class FieldBuilder {
+declare class FieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> {
   private readonly _field;
   constructor();
   isIdentity(isIdentity: boolean): FieldBuilder;
@@ -1310,7 +1154,7 @@ declare class FieldBuilder {
   filterValue(filterValue: string | number | boolean | Date | null | undefined): FieldBuilder;
   data(data: DataRecord$1[]): FieldBuilder;
   format(format: string): FieldBuilder;
-  formatter(formatter: FormatterFn): FieldBuilder;
+  formatter(formatter: (cell: GridCellContext<TRecord>) => React.ReactNode): FieldBuilder<TRecord>;
   itemFormatter(itemFormatter: ItemFormatterFn): FieldBuilder;
   visible(visible: boolean): FieldBuilder;
   defaultValue(defaultValue: string | number | boolean | Date | null | undefined | (() => unknown)): FieldBuilder;
@@ -1328,16 +1172,16 @@ declare class FieldBuilder {
   searchEnabled(value: boolean): FieldBuilder;
   searchExpr(value: string[]): FieldBuilder;
   helpText(value: string): this;
-  contentRender(value: string | ((...args: unknown[]) => React$1.ReactNode) | null | undefined): this;
+  contentRender(value: string | ((...args: unknown[]) => React.ReactNode) | null | undefined): this;
   visibleOnForm(value: boolean): this;
   multiple(value: boolean): FieldBuilder;
   sendAsString(value: boolean): FieldBuilder;
   maxLength(value: number): FieldBuilder;
-  visibleWhen(fn: (formData: DataRecord$1) => boolean): FieldBuilder;
-  disabledWhen(fn: (formData: DataRecord$1) => boolean): FieldBuilder;
-  computed(fn: (formData: DataRecord$1) => unknown): FieldBuilder;
-  defaultWhen(fn: (formData: DataRecord$1) => unknown): FieldBuilder;
-  requiredWhen(fn: (formData: DataRecord$1) => boolean): FieldBuilder;
+  visibleWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord>;
+  disabledWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord>;
+  computed(fn: (formData: TRecord) => unknown): FieldBuilder<TRecord>;
+  defaultWhen(fn: (formData: TRecord) => unknown): FieldBuilder<TRecord>;
+  requiredWhen(fn: (formData: TRecord) => boolean): FieldBuilder<TRecord>;
   clearWhenHidden(value?: boolean): FieldBuilder;
   dependsOn(fields: string[]): FieldBuilder;
   permissions(value: NonNullable<Field['permissions']>): FieldBuilder;
@@ -1369,6 +1213,10 @@ interface DataGridViewOptions {
   fields: Field[];
   detailFields?: Field[] | ((parentRow: DataRecord$1) => Field[]);
   toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
+  /**
+   * @deprecated Prefer onAdd/onEdit/onDelete callbacks. Events remain as a
+   * legacy fallback for direct DataGridView consumers.
+   */
   events?: DataGridEventNames;
   allowAdd?: boolean;
   allowEdit?: boolean;
@@ -1393,6 +1241,9 @@ interface DataGridViewOptions {
   selectionMode?: 'single' | 'multiple';
   inlineActions?: boolean;
   onBack?: () => void;
+  onAdd?: () => void;
+  onEdit?: (row: DataRecord$1) => void;
+  onDelete?: (row: DataRecord$1) => void;
   onSelectionChanged?: (event: DataGridSelectionChangedEvent) => void;
   onRowPrepared?: (event: unknown) => void;
   onContentReady?: () => void;
@@ -1408,7 +1259,7 @@ interface DataGridViewOptions {
 }
 //#endregion
 //#region assets/crud/datagrid/NativeDataGridView.d.ts
-declare const NativeDataGridView: React$1.ForwardRefExoticComponent<DataGridViewOptions & React$1.RefAttributes<GridHandle>>;
+declare const NativeDataGridView: React.ForwardRefExoticComponent<DataGridViewOptions & React.RefAttributes<GridHandle>>;
 //#endregion
 //#region assets/crud/dialog/CrudDialogView.d.ts
 interface CrudDialogViewOptions {
@@ -1417,20 +1268,26 @@ interface CrudDialogViewOptions {
   height?: number;
   maxHeight?: number;
   visible?: boolean;
+  /**
+   * @deprecated Prefer controlled open state plus onSave/onCancel callbacks.
+   * Events remain as a legacy fallback for direct DialogView consumers.
+   */
   events?: DialogEventNames;
-  children?: React$1.ReactNode;
+  children?: React.ReactNode;
   positiveText?: string;
   negativeText?: string;
   footerVisible?: boolean;
   fitContent?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  onCancel?: () => void;
+  onSave?: () => void;
 }
 interface CrudDialogViewEvents {
   open: (title?: string) => void;
   close: () => void;
 }
-declare const CrudDialogView: React$1.ForwardRefExoticComponent<CrudDialogViewOptions & React$1.RefAttributes<CrudDialogViewEvents>>;
+declare const CrudDialogView: React.ForwardRefExoticComponent<CrudDialogViewOptions & React.RefAttributes<CrudDialogViewEvents>>;
 //#endregion
 //#region assets/crud/form/FormViewOptions.d.ts
 interface FormViewOptions {
@@ -1443,6 +1300,10 @@ interface FormViewOptions {
   allowAdding?: boolean;
   allowUpdating?: boolean;
   allowDeleting?: boolean;
+  /**
+   * @deprecated Prefer operation/rowData plus the imperative FormHandle save/deleteRow methods.
+   * Events remain as a legacy fallback for direct FormView consumers.
+   */
   events?: FormEventNames;
   editable?: boolean;
   format?: 'json' | 'multipart';
@@ -1465,10 +1326,16 @@ interface FormViewOptions {
   onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
   computedValues?: FormDataSnapshot;
+  /** Callback/state-driven operation. When set, replaces ADD/EDIT event bootstrapping. */
+  operation?: 'add' | 'edit' | null;
+  /** Row payload used when operation changes. */
+  rowData?: FormDataRecord | null;
+  /** Increment to force re-applying the current operation and row payload. */
+  operationVersion?: number;
 }
 //#endregion
 //#region assets/crud/form/NativeFormView.d.ts
-declare const NativeFormView: React$1.ForwardRefExoticComponent<FormViewOptions & React$1.RefAttributes<FormHandle>>;
+declare const NativeFormView: React.ForwardRefExoticComponent<FormViewOptions & React.RefAttributes<FormHandle>>;
 //#endregion
 //#region assets/crud/form/FormEvents.d.ts
 declare const FORM_EVENTS: {
@@ -1479,6 +1346,52 @@ declare const FORM_EVENTS: {
   LOADING: string;
   LOADING_DETAIL: string;
 };
+//#endregion
+//#region assets/crud/adapter/HydraAdapter.d.ts
+/**
+ * Default backend adapter for API Platform / JSON-LD + Hydra backends.
+ *
+ * Conventions assumed:
+ * - Records carry an `@id` IRI (e.g. `/api/users/5`) as their canonical identifier.
+ * - Entity fields are serialized as IRI strings in POST/PATCH bodies.
+ * - Collection responses follow the `hydra:member` / `hydra:totalItems` shape.
+ * - `_iri` is a synthetic alias for `@id` used internally by the engine.
+ */
+declare const HydraAdapter: BackendAdapter;
+//#endregion
+//#region assets/crud/adapter/RestAdapter.d.ts
+/**
+ * Backend adapter for plain OpenAPI / REST backends.
+ *
+ * Conventions assumed:
+ * - Records use a plain `id` field (numeric or string UUID) as their identifier.
+ * - Entity fields are serialized as scalar IDs in POST/PATCH bodies.
+ * - Collection responses are either a plain array or `{ items: [...], total: N }`.
+ *   Also handles `{ data: [...], total: N }` (common in Laravel / many REST frameworks).
+ */
+declare const RestAdapter: BackendAdapter;
+//#endregion
+//#region assets/crud/schema/ResourceSchema.d.ts
+interface ResourceSchemaRequest {
+  apiUrl: string;
+}
+interface ResourceSchemaResolution {
+  fields: Field[];
+  isLoading: boolean;
+  error: Error | undefined;
+  supportedOperations: string[];
+}
+interface ResourceSchemaResolver {
+  useResourceSchema(request: ResourceSchemaRequest): ResourceSchemaResolution;
+}
+interface ResourceSchemaProviderProps {
+  children: React.ReactNode;
+  resolver: ResourceSchemaResolver;
+}
+declare function ResourceSchemaProvider({
+  children,
+  resolver
+}: ResourceSchemaProviderProps): import("react/jsx-runtime").JSX.Element;
 //#endregion
 //#region assets/crud/data/ResourceStore.d.ts
 type ResourceFilterDescriptor = unknown[];
@@ -1518,7 +1431,7 @@ interface ResourceStore<TRecord extends DataRecord$1 = DataRecord$1> {
 }
 type ResourceStoreFactory = (options: ResourceStoreOptions) => ResourceStore;
 interface ResourceStoreProviderProps {
-  children: React$1.ReactNode;
+  children: React.ReactNode;
   factory: ResourceStoreFactory;
 }
 declare function ResourceStoreProvider({
@@ -1527,87 +1440,4 @@ declare function ResourceStoreProvider({
 }: ResourceStoreProviderProps): import("react/jsx-runtime").JSX.Element;
 declare function useResourceStoreFactory(): ResourceStoreFactory;
 //#endregion
-//#region assets/crud/schema/ResourceSchema.d.ts
-interface ResourceSchemaRequest {
-  apiUrl: string;
-}
-interface ResourceSchemaResolution {
-  fields: Field[];
-  isLoading: boolean;
-  error: Error | undefined;
-  supportedOperations: string[];
-}
-interface ResourceSchemaResolver {
-  useResourceSchema(request: ResourceSchemaRequest): ResourceSchemaResolution;
-}
-interface ResolveResourceFieldsOptions<T extends DataRecord$1 = DataRecord$1> {
-  apiUrl: string;
-  manualFields?: Field[];
-  overrides?: FieldOverride[];
-  fieldContract?: SmartCrudFieldContract<T>;
-}
-interface ResourceSchemaProviderProps {
-  children: React$1.ReactNode;
-  resolver: ResourceSchemaResolver;
-}
-declare function ResourceSchemaProvider({
-  children,
-  resolver
-}: ResourceSchemaProviderProps): import("react/jsx-runtime").JSX.Element;
-declare function useResolvedResourceFields<T extends DataRecord$1 = DataRecord$1>({
-  apiUrl,
-  manualFields,
-  overrides,
-  fieldContract
-}: ResolveResourceFieldsOptions<T>): ResourceSchemaResolution;
-//#endregion
-//#region assets/core/event/createCrudEvents.d.ts
-/**
- * Generic factory that builds a typed set of CRUD event name strings for a
- * given `prefix`.  The returned object is `const`-asserted so every value is
- * a template-literal type — callers get full type inference without having to
- * cast anything.
- *
- * This helper belongs in `core/` because it has no feature-specific logic; it
- * is used by both the core event bus and by every feature module that needs
- * its own event namespace.
- *
- * @example
- * const productEvents = createCrudEvents('product');
- * // productEvents.ADD === 'product:add'
- */
-declare const createCrudEvents: <TPrefix extends string>(prefix: TPrefix) => {
-  readonly ADD: `${TPrefix}:add`;
-  readonly EDIT: `${TPrefix}:edit`;
-  readonly DELETE: `${TPrefix}:delete`;
-  readonly SAVE: `${TPrefix}:save`;
-  readonly CANCEL: `${TPrefix}:cancel`;
-  readonly SUCCESS: `${TPrefix}:success`;
-  readonly LOADING: `${TPrefix}:loading`;
-};
-//#endregion
-//#region assets/crud/adapter/HydraAdapter.d.ts
-/**
- * Default backend adapter for API Platform / JSON-LD + Hydra backends.
- *
- * Conventions assumed:
- * - Records carry an `@id` IRI (e.g. `/api/users/5`) as their canonical identifier.
- * - Entity fields are serialized as IRI strings in POST/PATCH bodies.
- * - Collection responses follow the `hydra:member` / `hydra:totalItems` shape.
- * - `_iri` is a synthetic alias for `@id` used internally by the engine.
- */
-declare const HydraAdapter: BackendAdapter;
-//#endregion
-//#region assets/crud/adapter/RestAdapter.d.ts
-/**
- * Backend adapter for plain OpenAPI / REST backends.
- *
- * Conventions assumed:
- * - Records use a plain `id` field (numeric or string UUID) as their identifier.
- * - Entity fields are serialized as scalar IDs in POST/PATCH bodies.
- * - Collection responses are either a plain array or `{ items: [...], total: N }`.
- *   Also handles `{ data: [...], total: N }` (common in Laravel / many REST frameworks).
- */
-declare const RestAdapter: BackendAdapter;
-//#endregion
-export { AppDialog, type AppDialogProps, type AuditEntry, type AuditTrailConfig, type BackendAdapter, type BulkAction, type ColumnPreset, ConfirmDialog, type ConfirmDialogProps, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResolveResourceFieldsOptions, type ResolvedPermissions, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourceLoadResult, type ResourcePermissions, type ResourceRouting, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaRequest, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SelectionState, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudFieldResolutionStrategy, type SmartCrudFieldSourceMode, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudModelFieldKey, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type ValidationRule, checkboxField, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, initCoreI18n, mergeOverrides, noneField, numberField, passwordField, resolveResourceDetails, resolveResourceToolbar, resolveSmartCrudFields, selectField, switchField, textField, textareaField, useCoreTranslation, useCrudPage, usePermissions, useResolvedResourceFields, useResourceStoreFactory, useSelectionState, useSmartCrudRoles };
+export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type ValidationRule, checkboxField, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, noneField, numberField, passwordField, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

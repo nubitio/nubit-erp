@@ -93,6 +93,31 @@ function getFlatIriFilter(filter) {
 	if (!Array.isArray(filter)) return null;
 	return filter.length === 1 && Array.isArray(filter[0]) ? filter[0] : filter;
 }
+function parseCollectionResponse(responseData, responseHeaders) {
+	if (Array.isArray(responseData)) {
+		const headerCount = Number(responseHeaders.get("x-total-count"));
+		return {
+			data: responseData,
+			totalCount: Number.isFinite(headerCount) ? headerCount : responseData.length
+		};
+	}
+	if (responseData && typeof responseData === "object") {
+		const body = responseData;
+		const member = body["hydra:member"] ?? body["member"];
+		if (Array.isArray(member)) {
+			const rawTotal = body["hydra:totalItems"] ?? body["totalItems"] ?? member.length;
+			const totalCount = Number(rawTotal);
+			return {
+				data: member,
+				totalCount: Number.isFinite(totalCount) ? totalCount : member.length
+			};
+		}
+	}
+	return {
+		data: [],
+		totalCount: 0
+	};
+}
 var HydraRemoteDataSource = class {
 	config;
 	httpClient;
@@ -141,13 +166,14 @@ var HydraRemoteDataSource = class {
 	}
 	async fetchAll(loadOptions) {
 		const response = await this.httpClient.get(this.config.url, { params: loadOptions });
-		let data = response.data;
+		const parsed = parseCollectionResponse(response.data, response.headers);
+		let data = parsed.data;
 		if (loadOptions.appendData) data = [...data, ...loadOptions.appendData];
 		if (loadOptions.prependData) data = [...loadOptions.prependData, ...data];
-		const headerCount = Number(response.headers.get("x-total-count"));
+		const totalCount = parsed.totalCount === parsed.data.length ? data.length : parsed.totalCount;
 		return {
 			data,
-			totalCount: Number.isFinite(headerCount) ? headerCount : data.length,
+			totalCount,
 			summary: null
 		};
 	}

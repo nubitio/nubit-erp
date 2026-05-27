@@ -1,10 +1,7 @@
 import React, { useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import "./AppDialog.scss";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { useTranslation } from "react-i18next";
-import "./AppToolbar.scss";
-import "./Card.scss";
 //#region assets/ui/AppDialog.tsx
 const formatSize = (value) => {
 	if (value === void 0) return void 0;

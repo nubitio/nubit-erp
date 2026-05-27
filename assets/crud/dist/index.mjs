@@ -1,15 +1,10 @@
 import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
-import "./datagrid/NativeDataGridView.scss";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
-import { dispatch, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useEvents, useMercureSubscription } from "@nubit/core";
-import { useTranslation } from "react-i18next";
-import "./form/NativeFormView.scss";
+import { createCrudEvents, createScopedEventBus, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureSubscription } from "@nubit/core";
 import { createPortal } from "react-dom";
-import "./dialog/CrudDialogView.scss";
-import { AppDialog, AppDialog as AppDialog$1, ConfirmDialog, ConfirmDialog as ConfirmDialog$1 } from "@nubit/ui";
+import { AppDialog, ConfirmDialog } from "@nubit/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import i18next from "i18next";
 //#region assets/crud/crud/defineResource.ts
 const stringResourceCache = /* @__PURE__ */ new Map();
 function cacheKey(apiUrl, overrides) {
@@ -22,215 +17,25 @@ function cacheKey(apiUrl, overrides) {
 }
 /**
 * Derives the resource `id` from a URL string.
-* '/api/products'        → 'products'
-* '/api/voucher-series'  → 'voucher-series'
+* '/api/products'         → 'products'
+* '/api/voucher-series'   → 'voucher-series'
 * 'http://host/a/b/items' → 'items'
 */
 function deriveId(apiUrl) {
 	const stripped = apiUrl.replace(/\/+$/, "");
 	return (stripped.split("/").pop() ?? stripped).split("?")[0];
 }
-function defineResource(configOrUrl, overrides) {
-	if (typeof configOrUrl === "string") {
-		const apiUrl = configOrUrl;
-		const key = cacheKey(apiUrl, overrides);
-		if (key !== null && stringResourceCache.has(key)) return stringResourceCache.get(key);
-		const resource = {
-			id: overrides?.id ?? deriveId(apiUrl),
-			title: "",
-			fields: [],
-			...overrides,
-			apiUrl
-		};
-		if (key !== null) stringResourceCache.set(key, resource);
-		return resource;
-	}
-	return configOrUrl;
-}
-//#endregion
-//#region assets/crud/crud/usePermissions.ts
-/** Resolve a single permission entry: callable → call it, boolean → use it, undefined → fallback. */
-function resolve(value, fallback) {
-	if (value === void 0) return fallback;
-	if (typeof value === "function") return value();
-	return value;
-}
-/**
-* Derive permissions from `hydra:supportedOperation` method list.
-* Returns `undefined` for each permission when `supportedOperations` is empty
-* (signals "no info available — use the next fallback level").
-*/
-function fromOperations(supportedOperations) {
-	if (supportedOperations.length === 0) return void 0;
-	return {
-		canAdd: supportedOperations.includes("POST"),
-		canEdit: supportedOperations.includes("PUT") || supportedOperations.includes("PATCH"),
-		canDelete: supportedOperations.includes("DELETE")
-	};
-}
-/**
-* Resolves RBAC permissions for a resource with the following precedence
-* (highest → lowest):
-*   1. `resource.permissions.canX` — callable or boolean override
-*   2. inferred from `supportedOperations` (hydra:supportedOperation methods)
-*   3. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
-*
-* Memoized on `resource.id` — stable reference across re-renders.
-*/
-function usePermissions(resource, supportedOperations = []) {
-	const opsKey = supportedOperations.slice().sort().join(",");
-	return useMemo(() => {
-		const p = resource.permissions;
-		const inferred = fromOperations(supportedOperations);
-		function resolveWithInferred(permValue, inferredValue, platformDefault) {
-			if (permValue !== void 0) return resolve(permValue, platformDefault);
-			if (inferredValue !== void 0) return inferredValue;
-			return platformDefault;
-		}
-		return {
-			canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
-			canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
-			canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
-			canExport: resolve(p?.canExport, false),
-			canBulkDelete: resolve(p?.canBulkDelete, false)
-		};
-	}, [resource.id, opsKey]);
-}
-//#endregion
-//#region assets/crud/crud/useSelectionState.ts
-function useSelectionState(identityField) {
-	const [selectedIds, setSelectedIds] = useState([]);
-	const onSelectionChanged = useCallback((selectedRows) => {
-		setSelectedIds(selectedRows.map((row) => {
-			const val = row[identityField];
-			if (typeof val === "string" || typeof val === "number") return val;
-			return String(val);
-		}));
-	}, [identityField]);
-	const clearSelection = useCallback(() => {
-		setSelectedIds([]);
-	}, []);
-	return {
-		selectedIds,
-		selectedCount: selectedIds.length,
-		hasSelection: selectedIds.length > 0,
-		clearSelection,
-		onSelectionChanged
-	};
-}
-//#endregion
-//#region assets/crud/crud/useColumnPreset.ts
-function readFromStorage(resourceId) {
-	try {
-		return localStorage.getItem(`column-preset:${resourceId}`);
-	} catch {
-		return null;
-	}
-}
-function writeToStorage(resourceId, key) {
-	try {
-		if (key === null) localStorage.removeItem(`column-preset:${resourceId}`);
-		else localStorage.setItem(`column-preset:${resourceId}`, key);
-	} catch {}
-}
-function resolveVisibleColumns(resource, activeKey) {
-	if (activeKey === null || !resource.columnPresets?.length) return null;
-	return resource.columnPresets.find((p) => p.key === activeKey)?.columns ?? null;
-}
-function useColumnPreset(resource) {
-	const [activePreset, setActivePresetState] = useState(() => {
-		if (!resource.columnPresets?.length) return null;
-		const stored = readFromStorage(resource.id);
-		if (stored && resource.columnPresets.some((p) => p.key === stored)) return stored;
-		return resource.defaultPreset ?? null;
-	});
-	return {
-		activePreset,
-		setPreset: useCallback((key) => {
-			writeToStorage(resource.id, key);
-			setActivePresetState(key);
-		}, [resource.id]),
-		visibleColumns: resolveVisibleColumns(resource, activePreset)
-	};
-}
-//#endregion
-//#region assets/core/event/createCrudEvents.ts
-/**
-* Generic factory that builds a typed set of CRUD event name strings for a
-* given `prefix`.  The returned object is `const`-asserted so every value is
-* a template-literal type — callers get full type inference without having to
-* cast anything.
-*
-* This helper belongs in `core/` because it has no feature-specific logic; it
-* is used by both the core event bus and by every feature module that needs
-* its own event namespace.
-*
-* @example
-* const productEvents = createCrudEvents('product');
-* // productEvents.ADD === 'product:add'
-*/
-const createCrudEvents = (prefix) => ({
-	ADD: `${prefix}:add`,
-	EDIT: `${prefix}:edit`,
-	DELETE: `${prefix}:delete`,
-	SAVE: `${prefix}:save`,
-	CANCEL: `${prefix}:cancel`,
-	SUCCESS: `${prefix}:success`,
-	LOADING: `${prefix}:loading`
-});
-//#endregion
-//#region assets/core/event/createScopedEventBus.ts
-/**
-* Creates a scoped event bus for the given resource.
-*
-* Internally this generates an 8-character random scope token and delegates to
-* `createCrudEvents(`${resourceId}:${scopeId}`)`. This means each call produces
-* a unique set of event name strings, even for the same `resourceId`, which
-* prevents accidental cross-instance event coupling when multiple CRUD pages
-* for the same resource are mounted simultaneously.
-*
-* @param resourceId - The resource id (e.g. `'product'`).
-* @returns A `ScopedFormEventNames` object with a stable `_scopeId` tag.
-*/
-function createScopedEventBus(resourceId) {
-	const scopeId = Math.random().toString(36).slice(2, 10);
-	return {
-		...createCrudEvents(`${resourceId}:${scopeId}`),
-		_scopeId: scopeId
-	};
-}
-//#endregion
-//#region assets/crud/crud/resolveCrudResource.ts
-function resolveCrudResource(resource, overrides = {}) {
-	const events = resource.events ?? createScopedEventBus(resource.id);
-	return {
-		...resource,
+function defineResource(apiUrl, overrides) {
+	const key = cacheKey(apiUrl, overrides);
+	if (key !== null && stringResourceCache.has(key)) return stringResourceCache.get(key);
+	const resource = {
+		id: overrides?.id ?? deriveId(apiUrl),
+		title: "",
 		...overrides,
-		events
+		apiUrl
 	};
-}
-//#endregion
-//#region assets/crud/crud/useCrudPage.ts
-function useCrudPage(resource, externalFormRef) {
-	const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
-	const events = resolvedResource.events;
-	const _internalFormRef = useRef(null);
-	const formRef = externalFormRef ?? _internalFormRef;
-	const fields = useMemo(() => {
-		if (typeof resolvedResource.fields === "function") return resolvedResource.fields(formRef);
-		return resolvedResource.fields;
-	}, [resolvedResource.fields]);
-	return {
-		events,
-		resource: resolvedResource,
-		fields,
-		formRef,
-		permissions: usePermissions(resolvedResource, resolvedResource._supportedOperations ?? []),
-		selectionState: useSelectionState(useMemo(() => {
-			return (typeof resolvedResource.fields === "function" ? fields : resolvedResource.fields).find((f) => f.isIdentity)?.name ?? "id";
-		}, [fields, resolvedResource.fields])),
-		presetState: useColumnPreset(resolvedResource)
-	};
+	if (key !== null) stringResourceCache.set(key, resource);
+	return resource;
 }
 //#endregion
 //#region assets/crud/datagrid/DataGridEvents.ts
@@ -274,12 +79,6 @@ let FieldType = /* @__PURE__ */ function(FieldType) {
 	FieldType["HTML"] = "html";
 	return FieldType;
 }({});
-//#endregion
-//#region assets/core/i18n/useCoreTranslation.ts
-function useCoreTranslation() {
-	const { t } = useTranslation("core");
-	return { t: (key, options) => t(key, options) };
-}
 //#endregion
 //#region assets/crud/form/FormEvents.ts
 const FORM_EVENTS = {
@@ -382,15 +181,14 @@ const HydraAdapter = {
 };
 //#endregion
 //#region assets/crud/form/FormDataTransform.ts
-function upsertPrependData(field, item) {
-	const existingLoadOption = field.loadOptions.find((option) => Array.isArray(option.prependData));
-	if (existingLoadOption) {
-		const prependData = existingLoadOption.prependData;
+function upsertPrependData(store, field, item) {
+	const existing = store.get(field.name);
+	if (existing) {
 		const nextId = item[field.valueField];
-		if (!prependData.some((candidate) => candidate[field.valueField] === nextId)) prependData.unshift(item);
+		if (!existing.some((candidate) => candidate[field.valueField] === nextId)) existing.unshift(item);
 		return;
 	}
-	field.loadOptions = [{ prependData: [item] }, ...field.loadOptions];
+	store.set(field.name, [item]);
 }
 /**
 * Builds an empty row from field definitions, applying default values.
@@ -411,7 +209,7 @@ function buildEmptyRow(fields) {
 * - DATE fields remain YYYY-MM-DD strings
 * - ENTITY fields are normalized to their scalar key for select-style editors
 */
-function normalizeFormData(data, fields, adapter = HydraAdapter) {
+function normalizeFormData(data, fields, adapter = HydraAdapter, prependDataByField) {
 	const row = { ...data };
 	fields.forEach((field) => {
 		if (field.type === "file") delete row[field.name];
@@ -422,11 +220,11 @@ function normalizeFormData(data, fields, adapter = HydraAdapter) {
 			else if (rawValue instanceof Date) row[field.name] = rawValue.toLocaleDateString("en-CA", { timeZone: getCoreTimezone() });
 			else row[field.name] = null;
 		}
-		if (field.type === "entity") normalizeEntityField(row, field, adapter);
+		if (field.type === "entity") normalizeEntityField(row, field, adapter, prependDataByField);
 	});
 	return row;
 }
-function normalizeEntityField(row, field, adapter) {
+function normalizeEntityField(row, field, adapter, prependDataByField) {
 	const rawValue = row[field.name];
 	if (typeof rawValue === "object" && rawValue !== null) {
 		const entityValue = { ...rawValue };
@@ -434,11 +232,14 @@ function normalizeEntityField(row, field, adapter) {
 			const synthesized = adapter.synthesizeEntityKey(field, entityValue);
 			if (synthesized && typeof entityValue["_iri"] !== "string" && typeof entityValue["@id"] !== "string") entityValue["_iri"] = synthesized;
 		}
-		upsertPrependData(field, entityValue);
+		if (prependDataByField) upsertPrependData(prependDataByField, field, entityValue);
 	}
 	const normalized = adapter.normalizeEntityValue(rawValue, field);
 	row[field.name] = normalized ?? null;
-	if (row[field.name] === null || row[field.name] === void 0) row[field.name] = field.loadOptions[0]?.prependData?.[0] ?? null;
+	if (row[field.name] === null || row[field.name] === void 0) {
+		const fromMap = prependDataByField?.get(field.name);
+		row[field.name] = fromMap?.[0] ?? field.loadOptions[0]?.prependData?.[0] ?? null;
+	}
 }
 //#endregion
 //#region assets/crud/form/FormLayoutModel.ts
@@ -774,13 +575,14 @@ function mapApiViolations(violations, detailPropertyName = "items", defaultMessa
 }
 //#endregion
 //#region assets/crud/form/NativeFormView.tsx
-function createRemoteSource(field, httpClient, resourceStoreFactory) {
+function createRemoteSource(field, httpClient, resourceStoreFactory, prependData) {
+	const options = prependData?.length ? [{ prependData }, ...field.loadOptions] : field.loadOptions;
 	return resourceStoreFactory({
 		url: field.url ?? "",
 		idField: field.valueField,
 		byKeyUrl: field.byKeyUrl,
 		defaultFilterRules: fieldFilters(field),
-		options: field.loadOptions,
+		options,
 		iriMode: field.valueField === "_iri",
 		httpClient
 	});
@@ -965,7 +767,7 @@ function LookupDropdown({ children, className, containerRef, disabled, id, label
 		]
 	});
 }
-function NativeEntitySelect({ className, disabled, field, httpClient, id, onChange, options, readOnly, required, value }) {
+function NativeEntitySelect({ className, disabled, field, httpClient, id, onChange, options, prependData, readOnly, required, value }) {
 	const resourceStoreFactory = useResourceStoreFactory();
 	const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
 	const [searchedItems, setSearchedItems] = useState(null);
@@ -987,7 +789,7 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		const timer = setTimeout(() => {
 			setLoading(true);
 			setHasMore(true);
-			createRemoteSource(field, httpClient, resourceStoreFactory).load({
+			createRemoteSource(field, httpClient, resourceStoreFactory, prependData).load({
 				take: 50,
 				skip: 0,
 				searchExpr: fieldSearchExpr(field),
@@ -1013,7 +815,7 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		setLoadingMore(true);
 		const searchValue = query.trim();
 		const currentCount = searchedItems ? searchedItems.length : 0;
-		createRemoteSource(field, httpClient, resourceStoreFactory).load({
+		createRemoteSource(field, httpClient, resourceStoreFactory, prependData).load({
 			take: 50,
 			skip: currentCount,
 			searchExpr: fieldSearchExpr(field),
@@ -1187,7 +989,7 @@ function validateField(field, value, formData) {
 	}
 	return null;
 }
-function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdating = true, detailFields, httpClient, detailErrors = {}, onClearCellError, onRowsChange, onRowsMutated, remoteOptions, rows }) {
+function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdating = true, detailFields, httpClient, detailErrors = {}, onClearCellError, onRowsChange, onRowsMutated, prependData, remoteOptions, rows }) {
 	const { t } = useCoreTranslation();
 	const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
 	const rowKeysRef = useRef(rows.map(() => crypto.randomUUID()));
@@ -1236,6 +1038,7 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 			field,
 			httpClient,
 			options: remoteOptions[field.name] ?? field.data ?? [],
+			prependData: prependData?.get(field.name),
 			value,
 			onChange: (nextValue) => void updateCell(rowIndex, field, nextValue)
 		});
@@ -1320,6 +1123,8 @@ const NativeFormView = forwardRef((options, ref) => {
 	const [detailErrors, setDetailErrors] = useState({});
 	const [remoteOptions, setRemoteOptions] = useState({});
 	const [activeTab, setActiveTab] = useState(0);
+	const appliedOperationRef = useRef(null);
+	const prependDataRef = useRef(/* @__PURE__ */ new Map());
 	const fields = options.fields;
 	const onFieldDataChanged = options.onFieldDataChanged;
 	const detailPropertyName = options.detailPropertyName ?? "items";
@@ -1385,7 +1190,7 @@ const NativeFormView = forwardRef((options, ref) => {
 				}));
 				return;
 			}
-			createRemoteSource(field, httpClient, resourceStoreFactory).load({ take: 50 }).then((result) => {
+			createRemoteSource(field, httpClient, resourceStoreFactory, prependDataRef.current.get(field.name)).load({ take: 50 }).then((result) => {
 				setRemoteOptions((current) => ({
 					...current,
 					[field.name]: result.data
@@ -1472,14 +1277,58 @@ const NativeFormView = forwardRef((options, ref) => {
 		setErrors({});
 		setDetailErrors({});
 		setNextDetailRows([]);
-		setNextFormData(payload ? normalizeFormData(payload, options.fields, options.adapter) : buildEmptyRow(options.fields));
+		prependDataRef.current = /* @__PURE__ */ new Map();
+		setNextFormData(payload ? normalizeFormData(payload, options.fields, options.adapter, prependDataRef.current) : buildEmptyRow(options.fields));
 		if (payload && Array.isArray(payload[detailPropertyName])) setNextDetailRows(payload[detailPropertyName]);
 		isEdit.current = false;
 	}, [
 		detailPropertyName,
+		options.adapter,
 		options.fields,
 		setNextDetailRows,
 		setNextFormData
+	]);
+	const applyEditPayload = useCallback((payload) => {
+		prependDataRef.current = /* @__PURE__ */ new Map();
+		const row = normalizeFormData(payload.row, options.fields, options.adapter, prependDataRef.current);
+		uploadedFiles.current = [];
+		setErrors({});
+		setDetailErrors({});
+		setNextFormData(row);
+		isEdit.current = true;
+		const detailId = row[options.fields.find((field) => field.isIdentity)?.name ?? ""];
+		const detailUrl = typeof detailId === "string" || typeof detailId === "number" ? options.detailUrl?.replace("{id}", String(detailId)) : void 0;
+		if (!detailUrl) return;
+		emit(FORM_EVENTS.LOADING, true);
+		httpClient.get(detailUrl).then((response) => setNextDetailRows(response.data)).finally(() => emit(FORM_EVENTS.LOADING, false));
+	}, [
+		emit,
+		httpClient,
+		options.adapter,
+		options.detailUrl,
+		options.fields,
+		setNextDetailRows,
+		setNextFormData
+	]);
+	useEffect(() => {
+		if (!options.operation) {
+			appliedOperationRef.current = null;
+			return;
+		}
+		const operationKey = `${options.operation}:${options.operationVersion ?? 0}`;
+		if (appliedOperationRef.current === operationKey) return;
+		appliedOperationRef.current = operationKey;
+		if (options.operation === "add") {
+			applyAddPayload(options.rowData ?? void 0);
+			return;
+		}
+		if (options.operation === "edit" && options.rowData) applyEditPayload({ row: options.rowData });
+	}, [
+		applyAddPayload,
+		applyEditPayload,
+		options.operation,
+		options.operationVersion,
+		options.rowData
 	]);
 	useEffect(() => {
 		const subs = [on(scopedFormErrorsEvent, (formErrors) => {
@@ -1494,19 +1343,7 @@ const NativeFormView = forwardRef((options, ref) => {
 			setDetailErrors(mapped.detailErrors);
 		})];
 		if (options.events?.ADD) subs.push(on(options.events.ADD, (payload) => applyAddPayload(payload)));
-		if (options.events?.EDIT) subs.push(on(options.events.EDIT, (payload) => {
-			const row = normalizeFormData(payload.row, options.fields);
-			uploadedFiles.current = [];
-			setErrors({});
-			setDetailErrors({});
-			setNextFormData(row);
-			isEdit.current = true;
-			const detailId = row[options.fields.find((field) => field.isIdentity)?.name ?? ""];
-			const detailUrl = typeof detailId === "string" || typeof detailId === "number" ? options.detailUrl?.replace("{id}", String(detailId)) : void 0;
-			if (!detailUrl) return;
-			emit(FORM_EVENTS.LOADING, true);
-			httpClient.get(detailUrl).then((response) => setNextDetailRows(response.data)).finally(() => emit(FORM_EVENTS.LOADING, false));
-		}));
+		if (options.events?.EDIT) subs.push(on(options.events.EDIT, (payload) => applyEditPayload(payload)));
 		if (options.events?.DELETE) subs.push(on(options.events.DELETE, (payload) => handleDeleteRef.current(payload)));
 		if (options.events?.SAVE) subs.push(on(options.events.SAVE, () => handleSaveRef.current()));
 		return () => subs.forEach((sub) => sub.unsubscribe());
@@ -1535,7 +1372,12 @@ const NativeFormView = forwardRef((options, ref) => {
 		setDetailData: setNextDetailRows,
 		saveDetailData: () => void 0,
 		reloadDetailData: () => void 0,
-		setValues: (data) => setNextFormData(normalizeFormData(data, options.fields)),
+		setValues: (data) => {
+			prependDataRef.current = /* @__PURE__ */ new Map();
+			setNextFormData(normalizeFormData(data, options.fields, void 0, prependDataRef.current));
+		},
+		save: () => handleSaveRef.current(),
+		deleteRow: (row) => handleDeleteRef.current({ row }),
 		setReadonly: (field, value) => setFieldState((current) => ({
 			...current,
 			[field]: {
@@ -1654,6 +1496,7 @@ const NativeFormView = forwardRef((options, ref) => {
 				httpClient,
 				id: `native-form-${field.name}`,
 				options: items,
+				prependData: prependDataRef.current.get(field.name),
 				readOnly,
 				required: field.required,
 				value,
@@ -1805,6 +1648,7 @@ const NativeFormView = forwardRef((options, ref) => {
 		httpClient,
 		onClearCellError: clearDetailCellError,
 		onRowsMutated: notifyDetailRowsMutated,
+		prependData: prependDataRef.current,
 		remoteOptions,
 		rows: detailRows,
 		onRowsChange: setNextDetailRows
@@ -1812,7 +1656,7 @@ const NativeFormView = forwardRef((options, ref) => {
 	return /* @__PURE__ */ jsx("div", {
 		className: `native-form${options.detailFields ? " native-form--with-detail" : ""} ${options.className ?? ""}`,
 		children: options.detailFields ? /* @__PURE__ */ jsxs("div", {
-			className: "native-form__sales-layout",
+			className: "native-form__master-detail",
 			children: [/* @__PURE__ */ jsx("div", {
 				className: "native-form__master-panel",
 				children: renderLayout(formLayoutModel)
@@ -2327,10 +2171,20 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		options.onSelectionChanged?.({ selectedRowsData: nextRows });
 		emit(DATA_GRID_EVENTS.SELECTION_CHANGED, nextRows);
 	};
-	const onAddClick = () => options.events?.ADD && emit(options.events.ADD);
+	const onAddClick = () => {
+		if (options.onAdd) {
+			options.onAdd();
+			return;
+		}
+		if (options.events?.ADD) emit(options.events.ADD);
+	};
 	const onEditClick = () => {
 		const row = selectedRows[0];
 		if (row) {
+			if (options.onEdit) {
+				options.onEdit(row);
+				return;
+			}
 			if (options.events?.EDIT) emit(options.events.EDIT, { row });
 		} else notify(t("grid.selectRequired"), "warning", 2e3);
 	};
@@ -2340,7 +2194,10 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		else notify(t("grid.selectRequired"), "warning", 2e3);
 	};
 	const confirmDelete = () => {
-		if (confirmRow && options.events?.DELETE) emit(options.events.DELETE, { row: confirmRow });
+		if (confirmRow) {
+			if (options.onDelete) options.onDelete(confirmRow);
+			else if (options.events?.DELETE) emit(options.events.DELETE, { row: confirmRow });
+		}
 		setConfirmRow(null);
 	};
 	const toggleSort = (field) => {
@@ -2556,8 +2413,9 @@ const NativeDataGridView = forwardRef((options, ref) => {
 									tabIndex: 0,
 									onClick: () => selectRow(row),
 									onKeyDown: (event) => {
-										if (event.key === "Enter" && options.events?.EDIT) emit(options.events.EDIT, { row });
-										else if (event.key === "Delete" && options.events?.DELETE) setConfirmRow(row);
+										if (event.key === "Enter" && (options.onEdit || options.events?.EDIT)) if (options.onEdit) options.onEdit(row);
+										else emit(options.events.EDIT, { row });
+										else if (event.key === "Delete" && (options.onDelete || options.events?.DELETE)) setConfirmRow(row);
 										else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
 											event.preventDefault();
 											const allRows = event.currentTarget.closest("tbody")?.querySelectorAll("tr.native-datagrid__row");
@@ -2611,20 +2469,21 @@ const NativeDataGridView = forwardRef((options, ref) => {
 											onClick: (e) => e.stopPropagation(),
 											children: /* @__PURE__ */ jsxs("div", {
 												className: "native-datagrid__row-actions",
-												children: [options.allowEdit && options.events?.EDIT && /* @__PURE__ */ jsx("button", {
+												children: [options.allowEdit && (options.onEdit || options.events?.EDIT) && /* @__PURE__ */ jsx("button", {
 													type: "button",
 													className: "app-icon-button",
 													"aria-label": t("grid.buttonEdit"),
 													title: t("grid.buttonEdit"),
 													onClick: (e) => {
 														e.stopPropagation();
-														emit(options.events.EDIT, { row });
+														if (options.onEdit) options.onEdit(row);
+														else emit(options.events.EDIT, { row });
 													},
 													children: /* @__PURE__ */ jsx("i", {
 														className: "ph ph-pencil-simple",
 														"aria-hidden": "true"
 													})
-												}), options.allowDelete && options.events?.DELETE && /* @__PURE__ */ jsx("button", {
+												}), options.allowDelete && (options.onDelete || options.events?.DELETE) && /* @__PURE__ */ jsx("button", {
 													type: "button",
 													className: "app-icon-button",
 													"aria-label": t("grid.buttonDelete"),
@@ -2835,9 +2694,17 @@ const CrudDialogView = forwardRef((options, ref) => {
 	};
 	const onCancelClick = () => {
 		handleClose();
+		if (options.onCancel) {
+			options.onCancel();
+			return;
+		}
 		if (options.events?.CANCEL) emit(options.events.CANCEL);
 	};
 	const onSaveClick = () => {
+		if (options.onSave) {
+			options.onSave();
+			return;
+		}
 		if (options.events?.SAVE) emit(options.events.SAVE);
 	};
 	const setupObservers = () => {
@@ -2855,7 +2722,7 @@ const CrudDialogView = forwardRef((options, ref) => {
 		open,
 		close
 	}));
-	return /* @__PURE__ */ jsxs(AppDialog$1, {
+	return /* @__PURE__ */ jsxs(AppDialog, {
 		title,
 		open: visible,
 		fullScreen: isXSmall,
@@ -2899,6 +2766,142 @@ const CrudDialogView = forwardRef((options, ref) => {
 	});
 });
 CrudDialogView.displayName = "CrudDialogView";
+//#endregion
+//#region assets/crud/crud/usePermissions.ts
+/** Resolve a single permission entry: callable → call it, boolean → use it, undefined → fallback. */
+function resolve(value, fallback) {
+	if (value === void 0) return fallback;
+	if (typeof value === "function") return value();
+	return value;
+}
+/**
+* Derive permissions from `hydra:supportedOperation` method list.
+* Returns `undefined` for each permission when `supportedOperations` is empty
+* (signals "no info available — use the next fallback level").
+*/
+function fromOperations(supportedOperations) {
+	if (supportedOperations.length === 0) return void 0;
+	return {
+		canAdd: supportedOperations.includes("POST"),
+		canEdit: supportedOperations.includes("PUT") || supportedOperations.includes("PATCH"),
+		canDelete: supportedOperations.includes("DELETE")
+	};
+}
+/**
+* Resolves RBAC permissions for a resource with the following precedence
+* (highest → lowest):
+*   1. `resource.permissions.canX` — callable or boolean override
+*   2. inferred from `supportedOperations` (hydra:supportedOperation methods)
+*   3. platform defaults            — canAdd/Edit/Delete=true, canExport/BulkDelete=false
+*
+* Memoized on `resource.id` — stable reference across re-renders.
+*/
+function usePermissions(resource, supportedOperations = []) {
+	const opsKey = supportedOperations.slice().sort().join(",");
+	return useMemo(() => {
+		const p = resource.permissions;
+		const inferred = fromOperations(supportedOperations);
+		function resolveWithInferred(permValue, inferredValue, platformDefault) {
+			if (permValue !== void 0) return resolve(permValue, platformDefault);
+			if (inferredValue !== void 0) return inferredValue;
+			return platformDefault;
+		}
+		return {
+			canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
+			canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
+			canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
+			canExport: resolve(p?.canExport, false),
+			canBulkDelete: resolve(p?.canBulkDelete, false)
+		};
+	}, [resource.id, opsKey]);
+}
+//#endregion
+//#region assets/crud/crud/useSelectionState.ts
+function useSelectionState(identityField) {
+	const [selectedIds, setSelectedIds] = useState([]);
+	const onSelectionChanged = useCallback((selectedRows) => {
+		setSelectedIds(selectedRows.map((row) => {
+			const val = row[identityField];
+			if (typeof val === "string" || typeof val === "number") return val;
+			return String(val);
+		}));
+	}, [identityField]);
+	const clearSelection = useCallback(() => {
+		setSelectedIds([]);
+	}, []);
+	return {
+		selectedIds,
+		selectedCount: selectedIds.length,
+		hasSelection: selectedIds.length > 0,
+		clearSelection,
+		onSelectionChanged
+	};
+}
+//#endregion
+//#region assets/crud/crud/useColumnPreset.ts
+function readFromStorage(resourceId) {
+	try {
+		return localStorage.getItem(`column-preset:${resourceId}`);
+	} catch {
+		return null;
+	}
+}
+function writeToStorage(resourceId, key) {
+	try {
+		if (key === null) localStorage.removeItem(`column-preset:${resourceId}`);
+		else localStorage.setItem(`column-preset:${resourceId}`, key);
+	} catch {}
+}
+function resolveVisibleColumns(resource, activeKey) {
+	if (activeKey === null || !resource.columnPresets?.length) return null;
+	return resource.columnPresets.find((p) => p.key === activeKey)?.columns ?? null;
+}
+function useColumnPreset(resource) {
+	const [activePreset, setActivePresetState] = useState(() => {
+		if (!resource.columnPresets?.length) return null;
+		const stored = readFromStorage(resource.id);
+		if (stored && resource.columnPresets.some((p) => p.key === stored)) return stored;
+		return resource.defaultPreset ?? null;
+	});
+	return {
+		activePreset,
+		setPreset: useCallback((key) => {
+			writeToStorage(resource.id, key);
+			setActivePresetState(key);
+		}, [resource.id]),
+		visibleColumns: resolveVisibleColumns(resource, activePreset)
+	};
+}
+//#endregion
+//#region assets/crud/crud/resolveCrudResource.ts
+function resolveCrudResource(resource, overrides = {}) {
+	const events = resource.events ?? createScopedEventBus(resource.id);
+	return {
+		...resource,
+		...overrides,
+		events
+	};
+}
+//#endregion
+//#region assets/crud/crud/useCrudPage.ts
+function useCrudPage(resource, externalFormRef) {
+	const resolvedResource = useMemo(() => resolveCrudResource(resource), [resource]);
+	const events = resolvedResource.events;
+	const _internalFormRef = useRef(null);
+	const formRef = externalFormRef ?? _internalFormRef;
+	const fields = useMemo(() => resolvedResource.fields ?? [], [resolvedResource.fields]);
+	return {
+		events,
+		resource: resolvedResource,
+		fields,
+		formRef,
+		permissions: usePermissions(resolvedResource, resolvedResource._supportedOperations ?? []),
+		selectionState: useSelectionState(useMemo(() => {
+			return fields.find((f) => f.isIdentity)?.name ?? "id";
+		}, [fields])),
+		presetState: useColumnPreset(resolvedResource)
+	};
+}
 //#endregion
 //#region assets/crud/crud/AuditTrailPanel.tsx
 const ACTION_COLORS = {
@@ -3192,7 +3195,7 @@ function buildRoutingFilterRules(fields, initialFilters) {
 * Public export — wraps CrudPageInner in its own DialogStoreProvider so that
 * existing pages do not need to add a provider themselves.
 */
-const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, computedValues, initialFilters, onFiltersChange, formRef, onSelectionChanged, editDisabled, deleteDisabled, gridRef }) => /* @__PURE__ */ jsx(DialogStoreProvider, { children: /* @__PURE__ */ jsx(CrudPageInner, {
+const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, computedValues, initialFilters, onFiltersChange, formRef, onSelectionChanged, editDisabled, deleteDisabled, gridRef, onOperationChange }) => /* @__PURE__ */ jsx(DialogStoreProvider, { children: /* @__PURE__ */ jsx(CrudPageInner, {
 	resource,
 	onFormDataChange,
 	initialRecordId,
@@ -3204,9 +3207,10 @@ const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, c
 	onSelectionChanged,
 	editDisabled,
 	deleteDisabled,
-	gridRef
+	gridRef,
+	onOperationChange
 }) });
-const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange, formRef: externalFormRef, onSelectionChanged: externalOnSelectionChanged, editDisabled, deleteDisabled, gridRef: externalGridRef }) => {
+const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange, formRef: externalFormRef, onSelectionChanged: externalOnSelectionChanged, editDisabled, deleteDisabled, gridRef: externalGridRef, onOperationChange }) => {
 	const { t } = useCoreTranslation();
 	const { events, resource: resolvedResource, fields, formRef, permissions, selectionState, presetState } = useCrudPage(useMemo(() => resolveCrudResource(resource), [resource]), externalFormRef);
 	const datagridFields = useMemo(() => fields.filter((field) => field.isIdentity || field.visible !== false), [fields]);
@@ -3244,32 +3248,47 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		open: false,
 		action: null
 	});
-	const { isOpen: dialogIsOpen, mode: dialogMode, openDialog, closeDialog } = useCrudDialogStore(resolvedResource.id);
+	const { isOpen: dialogIsOpen, mode: dialogMode, rowData: dialogRowData, openDialog, closeDialog } = useCrudDialogStore(resolvedResource.id);
 	const [on, emit] = useEvents();
-	React.useEffect(() => {
-		const subs = [
-			events.ADD && on(events.ADD, (payload) => openDialog("add", payload?.rowData ?? null)),
-			events.EDIT && on(events.EDIT, (rowData) => openDialog("edit", rowData ?? null)),
-			events.SUCCESS && on(events.SUCCESS, () => closeDialog())
-		].filter(Boolean);
-		return () => subs.forEach((sub) => sub.unsubscribe());
-	}, []);
+	const [operationVersion, setOperationVersion] = useState(0);
+	const refreshGrid = useCallback(() => {
+		gridRef.current?.refresh();
+	}, [gridRef]);
+	const resetDialogOperation = useCallback(() => {
+		closeDialog();
+		onOperationChange?.(null);
+	}, [closeDialog, onOperationChange]);
+	const openAddDialog = useCallback((rowData = null) => {
+		setOperationVersion((current) => current + 1);
+		openDialog("add", rowData);
+		onOperationChange?.("create");
+	}, [onOperationChange, openDialog]);
+	const openEditDialog = useCallback((row) => {
+		setOperationVersion((current) => current + 1);
+		openDialog("edit", row);
+		onOperationChange?.("edit");
+	}, [onOperationChange, openDialog]);
+	const routingActionsRef = React.useRef({
+		openAddDialog,
+		openEditDialog,
+		resetDialogOperation
+	});
+	routingActionsRef.current = {
+		openAddDialog,
+		openEditDialog,
+		resetDialogOperation
+	};
 	React.useEffect(() => {
 		if (initialRecordId != null) {
-			openDialog("edit", { id: initialRecordId });
+			routingActionsRef.current.openEditDialog({ id: initialRecordId });
 			return;
 		}
 		if (initialIsNew) {
-			openDialog("add", null);
+			routingActionsRef.current.openAddDialog(null);
 			return;
 		}
-		closeDialog();
-	}, [
-		closeDialog,
-		initialIsNew,
-		initialRecordId,
-		openDialog
-	]);
+		routingActionsRef.current.resetDialogOperation();
+	}, [initialIsNew, initialRecordId]);
 	const onDetailRowsChangedRef = React.useRef(resolvedResource.onDetailRowsChanged);
 	onDetailRowsChangedRef.current = resolvedResource.onDetailRowsChanged;
 	React.useEffect(() => {
@@ -3309,8 +3328,8 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 	const executeBulkAction = useCallback(async (action) => {
 		await action.onAction(selectionState.selectedIds);
 		selectionState.clearSelection();
-		if (events.SUCCESS) dispatch(events.SUCCESS);
-	}, [selectionState, events]);
+		refreshGrid();
+	}, [refreshGrid, selectionState]);
 	const handleBulkAction = useCallback((action) => {
 		if (action.confirmMessage) setConfirmState({
 			open: true,
@@ -3415,6 +3434,9 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				mode: resolvedResource.mode,
 				stateStoringEnabled: resolvedResource.stateStoring,
 				toolbar,
+				onAdd: () => openAddDialog(null),
+				onEdit: openEditDialog,
+				onDelete: (row) => formRef.current?.deleteRow(row),
 				selectionMode: hasMultipleSelection ? "multiple" : "single",
 				onSelectionChanged: handleSelectionChanged,
 				editMode: resolvedResource.editMode,
@@ -3431,7 +3453,9 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				height: resolvedResource.dialogHeight,
 				title: dialogTitle,
 				isOpen: dialogIsOpen,
-				onClose: closeDialog,
+				onClose: resetDialogOperation,
+				onCancel: resetDialogOperation,
+				onSave: () => formRef.current?.save(),
 				children: /* @__PURE__ */ jsx(NativeFormView, {
 					ref: formRef,
 					url: resolvedResource.apiUrl,
@@ -3445,14 +3469,24 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					allowUpdating: formDetail?.allowUpdating,
 					requiredDetail: formDetail?.required,
 					format: resolvedResource.format,
-					onSaveSuccess: resolvedResource.onSaveSuccess ? (response) => resolvedResource.onSaveSuccess?.(response) : void 0,
+					onSaveSuccess: (response) => {
+						resolvedResource.onSaveSuccess?.(response);
+						resetDialogOperation();
+						refreshGrid();
+					},
 					onSaveError: resolvedResource.onSaveError,
-					onDeleteSuccess: resolvedResource.onDeleteSuccess ? (response) => resolvedResource.onDeleteSuccess?.(response) : void 0,
+					onDeleteSuccess: (response) => {
+						resolvedResource.onDeleteSuccess?.(response);
+						refreshGrid();
+					},
 					onDeleteError: resolvedResource.onDeleteError,
 					formLayout: resolvedResource.formLayout,
 					computedValues,
 					onFieldDataChanged: onFormDataChange,
-					adapter: resolvedResource.adapter
+					adapter: resolvedResource.adapter,
+					operation: dialogIsOpen && dialogMode !== "view" ? dialogMode : null,
+					rowData: dialogRowData,
+					operationVersion
 				})
 			}),
 			hasAuditTrail && /* @__PURE__ */ jsx(AuditTrailPanel, {
@@ -3461,7 +3495,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				visible: auditOpen,
 				onClose: () => setAuditOpen(false)
 			}),
-			/* @__PURE__ */ jsx(ConfirmDialog$1, {
+			/* @__PURE__ */ jsx(ConfirmDialog, {
 				open: confirmState.open,
 				title: "Confirmar acción",
 				message: confirmState.action?.confirmMessage ?? "",
@@ -3646,6 +3680,15 @@ function useSmartCrudOperation(events, routingState) {
 			data
 		});
 	}, []);
+	const startCreate = useCallback(() => {
+		dispatchState({ type: "create" });
+	}, []);
+	const startEdit = useCallback(() => {
+		dispatchState({ type: "edit" });
+	}, []);
+	const resetOperation = useCallback(() => {
+		dispatchState({ type: "reset" });
+	}, []);
 	useEffect(() => {
 		dispatchState({
 			type: "sync-routing",
@@ -3657,32 +3700,35 @@ function useSmartCrudOperation(events, routingState) {
 	}, [routingState.initialIsNew, routingState.initialRecordId]);
 	useEffect(() => {
 		const subscriptions = [];
-		if (events.ADD) subscriptions.push(on(events.ADD, () => {
+		if (events?.ADD) subscriptions.push(on(events.ADD, () => {
 			dispatchState({ type: "create" });
 		}));
-		if (events.EDIT) subscriptions.push(on(events.EDIT, () => {
+		if (events?.EDIT) subscriptions.push(on(events.EDIT, () => {
 			dispatchState({ type: "edit" });
 		}));
-		if (events.CANCEL) subscriptions.push(on(events.CANCEL, () => {
+		if (events?.CANCEL) subscriptions.push(on(events.CANCEL, () => {
 			dispatchState({ type: "reset" });
 		}));
-		if (events.SUCCESS) subscriptions.push(on(events.SUCCESS, () => {
+		if (events?.SUCCESS) subscriptions.push(on(events.SUCCESS, () => {
 			dispatchState({ type: "reset" });
 		}));
 		return () => {
 			subscriptions.forEach((sub) => sub.unsubscribe());
 		};
 	}, [
-		events.ADD,
-		events.CANCEL,
-		events.EDIT,
-		events.SUCCESS,
+		events?.ADD,
+		events?.CANCEL,
+		events?.EDIT,
+		events?.SUCCESS,
 		on
 	]);
 	return {
 		activeOperation,
 		formData,
-		handleFormDataChange
+		handleFormDataChange,
+		startCreate,
+		startEdit,
+		resetOperation
 	};
 }
 //#endregion
@@ -4420,9 +4466,9 @@ function formatRuntimeErrorMessage(error) {
 */
 function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, editDisabled, deleteDisabled, gridRef }) {
 	const queryClient = useQueryClient();
+	const internalGridRef = useRef(null);
+	const effectiveGridRef = gridRef ?? internalGridRef;
 	const resolvedBaseResource = useMemo(() => resolveCrudResource(resource), [resource]);
-	const events = resolvedBaseResource.events;
-	const isFieldsFactory = !resource.fieldContract && typeof resource.fields === "function";
 	const hasManualFields = !resource.fieldContract && Array.isArray(resource.fields) && resource.fields.length > 0;
 	const { fields, isLoading, error, supportedOperations } = useResolvedResourceFields({
 		apiUrl: resolvedBaseResource.apiUrl,
@@ -4432,14 +4478,13 @@ function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, 
 	});
 	const hintFiredRef = useRef(false);
 	useEffect(() => {
-		if (!resource.fieldContract && !hasManualFields && !isFieldsFactory && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
+		if (!resource.fieldContract && !hasManualFields && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
 			hintFiredRef.current = true;
 			logDevHint(resource.apiUrl, fields, supportedOperations);
 		}
 	}, [
 		resource.fieldContract,
 		hasManualFields,
-		isFieldsFactory,
 		isLoading,
 		error,
 		fields,
@@ -4447,30 +4492,29 @@ function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, 
 		supportedOperations
 	]);
 	const routingState = useRouting(resource.routing);
-	const { activeOperation, formData, handleFormDataChange } = useSmartCrudOperation(events, routingState);
+	const { activeOperation, formData, handleFormDataChange, startCreate, startEdit, resetOperation } = useSmartCrudOperation(void 0, routingState);
 	const roles = useSmartCrudRoles();
 	const { processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, useMemo(() => roles ?? [], [roles]));
 	useMercureSubscription(resource.apiUrl, () => {
-		if (events.SUCCESS) dispatch(events.SUCCESS);
+		effectiveGridRef.current?.refresh();
 	}, resolvedBaseResource.mercure !== false);
 	const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith("/") ? resolvedBaseResource.apiUrl : `/${resolvedBaseResource.apiUrl}`;
 	const resolvedResource = useMemo(() => ({
 		...resolvedBaseResource,
-		...!hasManualFields && !isFieldsFactory ? { fields } : {},
+		...!hasManualFields ? { fields } : {},
 		apiUrl: normalizedApiUrl,
-		...!isFieldsFactory ? { fields: processedFields } : {},
+		fields: processedFields,
 		_supportedOperations: supportedOperations
 	}), [
 		fields,
 		hasManualFields,
-		isFieldsFactory,
 		normalizedApiUrl,
 		processedFields,
 		resolvedBaseResource,
 		supportedOperations
 	]);
-	if (!hasManualFields && !isFieldsFactory && isLoading) return /* @__PURE__ */ jsx(CrudSkeleton, {});
-	if (!hasManualFields && !isFieldsFactory && error) return /* @__PURE__ */ jsx(CrudError, {
+	if (!hasManualFields && isLoading) return /* @__PURE__ */ jsx(CrudSkeleton, {});
+	if (!hasManualFields && error) return /* @__PURE__ */ jsx(CrudError, {
 		message: formatRuntimeErrorMessage(error),
 		onRetry: () => queryClient.invalidateQueries()
 	});
@@ -4486,7 +4530,18 @@ function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, 
 		onSelectionChanged,
 		editDisabled,
 		deleteDisabled,
-		gridRef
+		gridRef: effectiveGridRef,
+		onOperationChange: (operation) => {
+			if (operation === "create") {
+				startCreate();
+				return;
+			}
+			if (operation === "edit") {
+				startEdit();
+				return;
+			}
+			resetOperation();
+		}
 	});
 }
 //#endregion
@@ -4495,102 +4550,6 @@ function defineFields(contract) {
 	return validateFieldContract(contract);
 }
 const defineFieldContract = defineFields;
-//#endregion
-//#region assets/core/i18n/coreTranslations.ts
-const coreTranslationsEs = {
-	"crudPage.selectedCount": "{{count}} seleccionados",
-	"crudPage.auditTrailButton": "Historial",
-	"crudPage.allColumns": "Todas",
-	"crudPage.columnsLabel": "Columnas:",
-	"crudPage.dialogTitleAdd": "Nuevo",
-	"crudPage.dialogTitleEdit": "Editar",
-	"crudPage.dialogTitleView": "Ver",
-	"crudPage.schemaErrorTitle": "No se pudo cargar esta vista",
-	"crudPage.schemaErrorMessage": "La configuración del recurso no está disponible. Intenta nuevamente o contacta a soporte si el problema continúa.",
-	"crudPage.schemaErrorDetails": "Detalle técnico",
-	"crudPage.schemaErrorRetry": "Reintentar",
-	"auditTrail.title": "Historial de cambios",
-	"auditTrail.closeButton": "Cerrar historial de cambios",
-	"auditTrail.selectRecord": "Seleccione un registro...",
-	"auditTrail.loading": "Cargando...",
-	"auditTrail.error": "Error al cargar el historial.",
-	"auditTrail.empty": "No hay entradas de historial.",
-	"auditTrail.action.create": "Creado",
-	"auditTrail.action.update": "Actualizado",
-	"auditTrail.action.delete": "Eliminado",
-	"form.detailRequired": "Agrega al menos un ítem para continuar",
-	"form.detailEmpty": "No hay ítems agregados",
-	"form.validationError": "Uno o más campos del formulario no son válidos",
-	"form.loading": "Cargando...",
-	"form.groupOther": "Otros",
-	"grid.noRecords": "No hay registros para mostrar",
-	"grid.selectRequired": "Debe seleccionar un registro",
-	"grid.loading": "Cargando...",
-	"grid.buttonNew": "Nuevo",
-	"grid.buttonEdit": "Editar",
-	"grid.buttonDelete": "Eliminar",
-	"grid.buttonRefresh": "Actualizar",
-	"grid.rowsPerPage": "Filas por página",
-	"dialog.buttonCancel": "Cancelar",
-	"dialog.buttonSave": "Guardar",
-	"dialog.confirmDelete": "¿Está seguro de eliminar el registro?",
-	"dialog.confirmDeleteTitle": "Confirmar eliminación",
-	"common.yes": "Sí",
-	"common.no": "No",
-	"validation.defaultError": "Valor inválido",
-	"form.searchButton": "Buscar",
-	"form.actionButton": "Acción"
-};
-const coreTranslationsEn = {
-	"crudPage.selectedCount": "{{count}} selected",
-	"crudPage.auditTrailButton": "History",
-	"crudPage.allColumns": "All",
-	"crudPage.columnsLabel": "Columns:",
-	"crudPage.dialogTitleAdd": "New",
-	"crudPage.dialogTitleEdit": "Edit",
-	"crudPage.dialogTitleView": "View",
-	"crudPage.schemaErrorTitle": "This view could not be loaded",
-	"crudPage.schemaErrorMessage": "The resource configuration is not available. Try again or contact support if the problem continues.",
-	"crudPage.schemaErrorDetails": "Technical details",
-	"crudPage.schemaErrorRetry": "Retry",
-	"auditTrail.title": "Change history",
-	"auditTrail.closeButton": "Close change history",
-	"auditTrail.selectRecord": "Select a record...",
-	"auditTrail.loading": "Loading...",
-	"auditTrail.error": "Error loading history.",
-	"auditTrail.empty": "No history entries.",
-	"auditTrail.action.create": "Created",
-	"auditTrail.action.update": "Updated",
-	"auditTrail.action.delete": "Deleted",
-	"form.detailRequired": "Add at least one item to continue",
-	"form.detailEmpty": "No items added",
-	"form.validationError": "One or more form fields are invalid",
-	"form.loading": "Loading...",
-	"form.groupOther": "Other",
-	"grid.noRecords": "No records to display",
-	"grid.selectRequired": "You must select a record",
-	"grid.loading": "Loading...",
-	"grid.buttonNew": "New",
-	"grid.buttonEdit": "Edit",
-	"grid.buttonDelete": "Delete",
-	"grid.buttonRefresh": "Refresh",
-	"grid.rowsPerPage": "Rows per page",
-	"dialog.buttonCancel": "Cancel",
-	"dialog.buttonSave": "Save",
-	"dialog.confirmDelete": "Are you sure you want to delete this record?",
-	"dialog.confirmDeleteTitle": "Confirm deletion",
-	"common.yes": "Yes",
-	"common.no": "No",
-	"validation.defaultError": "Invalid value",
-	"form.searchButton": "Search",
-	"form.actionButton": "Action"
-};
-//#endregion
-//#region assets/core/i18n/initCoreI18n.ts
-function initCoreI18n() {
-	i18next.addResourceBundle("es", "core", coreTranslationsEs, true, false);
-	i18next.addResourceBundle("en", "core", coreTranslationsEn, true, false);
-}
 //#endregion
 //#region assets/crud/field/BaseFieldBuilder.ts
 var BaseFieldBuilder = class {
@@ -4942,11 +4901,11 @@ function currencyField() {
 /**
 * Factory for image upload fields (FILE type).
 *
-* Defaults: url=Constants.API_BASE_URL+'media', accept='image/*', align='center'
+* Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
 * Formatter must be provided by the caller since it depends on the data shape.
 *
 * Usage:
-*   imageField(Constants.API_BASE_URL)
+*   imageField('/api/')
 *     .name('photo')
 *     .label('Imagen')
 *     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
@@ -5520,4 +5479,4 @@ const RestAdapter = {
 	synthesizeEntityKey(_field, _entityValue) {}
 };
 //#endregion
-export { AppDialog, ConfirmDialog, CrudPage, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, checkboxField, createCrudEvents, createScopedEventBus, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, initCoreI18n, mergeOverrides, noneField, numberField, passwordField, resolveResourceDetails, resolveResourceToolbar, resolveSmartCrudFields, selectField, switchField, textField, textareaField, useCoreTranslation, useCrudPage, usePermissions, useResolvedResourceFields, useResourceStoreFactory, useSelectionState, useSmartCrudRoles };
+export { AuditTrailPanel, CrudPage, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, checkboxField, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, noneField, numberField, passwordField, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

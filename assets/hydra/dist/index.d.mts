@@ -1,6 +1,6 @@
 import { DataRecord, GridData } from "@nubit/core";
 import React, { ReactNode } from "react";
-import { DataRecord as DataRecord$1, Field, FieldOverride, ResourceFilterDescriptor, ResourceFilterRule, ResourceLoadOptions, ResourceSchemaResolution, ResourceSortDescriptor, ResourceStore, ResourceStoreFactory, ResourceStoreOptions } from "@nubit/crud";
+import { DataRecord as DataRecord$1, Field, ResourceFilterDescriptor, ResourceFilterRule, ResourceLoadOptions, ResourceSchemaResolution, ResourceSortDescriptor, ResourceStore, ResourceStoreFactory, ResourceStoreOptions } from "@nubit/crud";
 
 //#region assets/hydra/HydraRemoteDataSource.d.ts
 type RemoteFilterDescriptor = ResourceFilterDescriptor;
@@ -333,4 +333,4 @@ interface UseSchemaContextResult {
  */
 declare function useSchemaContext(): UseSchemaContextResult;
 //#endregion
-export { API_DOC_QUERY_KEY, type ApiDoc, type FieldOverride, type HydraApiDoc, HydraRemoteDataSource, HydraResourceSchemaProvider, type HydraResourceSchemaProviderProps, HydraResourceStoreProvider, type HydraResourceStoreProviderProps, type OpenApiDoc, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, SchemaProvider, type UseSchemaContextResult, createHydraResourceStore, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };
+export { API_DOC_QUERY_KEY, type ApiDoc, type HydraApiDoc, HydraRemoteDataSource, HydraResourceSchemaProvider, type HydraResourceSchemaProviderProps, HydraResourceStoreProvider, type HydraResourceStoreProviderProps, type OpenApiDoc, type RemoteDataSourceOptions, type RemoteFilterDescriptor, type RemoteLoadOptions, type RemoteSortDescriptor, SchemaProvider, type UseSchemaContextResult, createHydraResourceStore, mapHydraSchemaToFields, parseHydraDoc, parseOpenApiDoc, resolveRangeTag, useHydraMetadata, useResourceSchema, useSchemaContext };

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { CoreHttpClient } from '@nubit/core';
 import { HydraRemoteDataSource } from './HydraRemoteDataSource';
 
 const makeSource = (overrides = {}) =>
@@ -87,5 +88,60 @@ describe('HydraRemoteDataSource.makeFilterRules', () => {
   it('returns empty string for an empty rule list', () => {
     const ds = makeSource();
     expect(ds.makeFilterRules([])).toBe('');
+  });
+});
+
+// ── load ──────────────────────────────────────────────────────────────────────
+
+describe('HydraRemoteDataSource.load', () => {
+  it('reads array responses with x-total-count headers', async () => {
+    const httpClient = {
+      get: async () => ({
+        data: [{ id: 1 }, { id: 2 }],
+        headers: new Headers({ 'x-total-count': '10' }),
+      }),
+    } as unknown as CoreHttpClient;
+    const ds = makeSource({ httpClient });
+
+    const result = await ds.load({});
+
+    expect(result.data).toEqual([{ id: 1 }, { id: 2 }]);
+    expect(result.totalCount).toBe(10);
+  });
+
+  it('reads Hydra JSON-LD collection responses', async () => {
+    const httpClient = {
+      get: async () => ({
+        data: {
+          'hydra:member': [{ '@id': '/api/products/1', name: 'Laptop' }],
+          'hydra:totalItems': 7,
+        },
+        headers: new Headers(),
+      }),
+    } as unknown as CoreHttpClient;
+    const ds = makeSource({ httpClient });
+
+    const result = await ds.load({});
+
+    expect(result.data).toEqual([{ '@id': '/api/products/1', name: 'Laptop' }]);
+    expect(result.totalCount).toBe(7);
+  });
+
+  it('reads compact collection responses', async () => {
+    const httpClient = {
+      get: async () => ({
+        data: {
+          member: [{ id: 1, name: 'Laptop' }],
+          totalItems: 3,
+        },
+        headers: new Headers(),
+      }),
+    } as unknown as CoreHttpClient;
+    const ds = makeSource({ httpClient });
+
+    const result = await ds.load({});
+
+    expect(result.data).toEqual([{ id: 1, name: 'Laptop' }]);
+    expect(result.totalCount).toBe(3);
   });
 });

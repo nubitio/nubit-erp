@@ -15,7 +15,9 @@ export {
   CoreProvider,
   CoreConfigProvider,
   useCoreConfig,
-  configureCoreDate,
+  configureCore,
+  configureCoreDate, // deprecated
+  getCoreApiBaseUrl,
 } from '@nubit/core';
 export type { CoreProviderProps, CoreConfigProviderProps, CoreConfig } from '@nubit/core';
 
@@ -31,35 +33,39 @@ export {
   defineResource,
   defineFields,
   defineFieldContract,
-  useCrudPage,
-  usePermissions,
-  ResourceSchemaProvider,
-  ResourceStoreProvider,
-  useSelectionState,
-  useResolvedResourceFields,
-  useResourceStoreFactory,
+  validateFieldContract,
   useSmartCrudRoles,
-  initCoreI18n,
-  useCoreTranslation,
-  resolveSmartCrudFields,
+  AuditTrailPanel,
 } from '@nubit/crud';
 export type {
   ResourceConfig,
   ResourcePermissions,
-  ResolvedPermissions,
+  ResourceRouting,
+  ResourceToolbar,
+  ResourceToolbarContext,
+  ResourceToolbarItems,
+  ResourceGridDetail,
+  ResourceFormDetail,
   BulkAction,
   ColumnPreset,
   FormLayout,
   FormSection,
   FormTab,
-  SelectionState,
+  SmartCrudFieldContract,
+  SmartCrudFieldOperation,
+  SmartCrudFieldPatch,
+  SmartCrudHydraFieldContract,
+  SmartCrudHydraFieldDirective,
+  SmartCrudManualField,
+  SmartCrudManualFieldContract,
+  SmartCrudOperation,
+  AuditEntry,
+  AuditTrailConfig,
+  AuditTrailPanelProps,
   ResourceSchemaResolver,
   ResourceStore,
   ResourceStoreFactory,
   FieldOverride,
-  SmartCrudFieldContract,
-  AuditEntry,
-  AuditTrailConfig,
 } from '@nubit/crud';
 
 // ── Field DSL ─────────────────────────────────────────────────────────────────
@@ -104,6 +110,8 @@ export type { EventSubscription } from '@nubit/core';
 
 // ── Locale / date ─────────────────────────────────────────────────────────────
 export { DateUtils, getCoreLocale, getCoreTimezone } from '@nubit/core';
+export { coreTranslationsEs, coreTranslationsEn } from '@nubit/core';
+export type { CoreTranslationKeys } from '@nubit/core';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 export type { DataRecord } from '@nubit/core';

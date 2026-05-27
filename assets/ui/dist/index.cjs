@@ -24,11 +24,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 let react = require("react");
 react = __toESM(react);
 let react_dom = require("react-dom");
-require("./AppDialog.scss");
 let react_jsx_runtime = require("react/jsx-runtime");
 let react_i18next = require("react-i18next");
-require("./AppToolbar.scss");
-require("./Card.scss");
 //#region assets/ui/AppDialog.tsx
 const formatSize = (value) => {
 	if (value === void 0) return void 0;

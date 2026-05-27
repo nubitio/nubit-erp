@@ -11,7 +11,6 @@ interface GridData<T> {
 }
 //#endregion
 //#region assets/core/date/DateUtils.d.ts
-declare const LIMA_TZ = "America/Lima";
 declare class DateUtils {
   static dateFormatter(date: Date): string;
   static dateParser(dateString: string): Date;
@@ -53,6 +52,155 @@ interface EventSubscription {
 }
 declare const useEvents: () => readonly [<T>(name: string, handler: (payload: T) => void) => EventSubscription, <T>(name: string, payload?: T) => void];
 declare const dispatch: <T>(name: string, payload?: T) => void;
+//#endregion
+//#region assets/core/event/createCrudEvents.d.ts
+/**
+ * Generic factory that builds a typed set of CRUD event name strings for a
+ * given `prefix`.  The returned object is `const`-asserted so every value is
+ * a template-literal type — callers get full type inference without having to
+ * cast anything.
+ *
+ * This helper belongs in `core/` because it has no feature-specific logic; it
+ * is used by both the core event bus and by every feature module that needs
+ * its own event namespace.
+ *
+ * @example
+ * const productEvents = createCrudEvents('product');
+ * // productEvents.ADD === 'product:add'
+ */
+declare const createCrudEvents: <TPrefix extends string>(prefix: TPrefix) => {
+  readonly ADD: `${TPrefix}:add`;
+  readonly EDIT: `${TPrefix}:edit`;
+  readonly DELETE: `${TPrefix}:delete`;
+  readonly SAVE: `${TPrefix}:save`;
+  readonly CANCEL: `${TPrefix}:cancel`;
+  readonly SUCCESS: `${TPrefix}:success`;
+  readonly LOADING: `${TPrefix}:loading`;
+};
+//#endregion
+//#region assets/core/event/EventTypes.d.ts
+/**
+ * Typed event name interfaces for core components.
+ * Each field is optional — only declare the events your feature uses.
+ */
+interface DataGridEventNames {
+  ADD?: string;
+  EDIT?: string;
+  DELETE?: string;
+  SUCCESS?: string;
+  LOADING?: string;
+  CANCEL?: string;
+  EXPORT?: string;
+}
+interface FormEventNames {
+  ADD?: string;
+  EDIT?: string;
+  DELETE?: string;
+  SAVE?: string;
+  SUCCESS?: string;
+  LOADING?: string;
+  CANCEL?: string;
+}
+interface DialogEventNames {
+  ADD?: string;
+  EDIT?: string;
+  SAVE?: string;
+  SUCCESS?: string;
+  LOADING?: string;
+  CANCEL?: string;
+}
+interface ToolbarButtonItem {
+  icon?: string;
+  text: string;
+  hint?: string;
+  /** Semantic button type. Common values: 'default' | 'normal' | 'danger' | 'success' | 'back' */
+  type?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  visible?: boolean;
+}
+//#endregion
+//#region assets/core/event/createScopedEventBus.d.ts
+/**
+ * A `FormEventNames` object whose event strings are namespaced with a
+ * per-instance scope ID to prevent cross-component event leakage.
+ * The extra `_scopeId` property carries the raw 8-char scope token for
+ * diagnostics / testing.
+ */
+type ScopedFormEventNames = FormEventNames & {
+  readonly _scopeId: string;
+};
+/**
+ * Creates a scoped event bus for the given resource.
+ *
+ * Internally this generates an 8-character random scope token and delegates to
+ * `createCrudEvents(`${resourceId}:${scopeId}`)`. This means each call produces
+ * a unique set of event name strings, even for the same `resourceId`, which
+ * prevents accidental cross-instance event coupling when multiple CRUD pages
+ * for the same resource are mounted simultaneously.
+ *
+ * @param resourceId - The resource id (e.g. `'product'`).
+ * @returns A `ScopedFormEventNames` object with a stable `_scopeId` tag.
+ */
+declare function createScopedEventBus(resourceId: string): ScopedFormEventNames;
+//#endregion
+//#region assets/core/i18n/CoreTranslationKeys.d.ts
+interface CoreTranslationKeys {
+  'crudPage.selectedCount': string;
+  'crudPage.auditTrailButton': string;
+  'crudPage.allColumns': string;
+  'crudPage.columnsLabel': string;
+  'crudPage.dialogTitleAdd': string;
+  'crudPage.dialogTitleEdit': string;
+  'crudPage.dialogTitleView': string;
+  'crudPage.schemaErrorTitle': string;
+  'crudPage.schemaErrorMessage': string;
+  'crudPage.schemaErrorDetails': string;
+  'crudPage.schemaErrorRetry': string;
+  'auditTrail.title': string;
+  'auditTrail.closeButton': string;
+  'auditTrail.selectRecord': string;
+  'auditTrail.loading': string;
+  'auditTrail.error': string;
+  'auditTrail.empty': string;
+  'auditTrail.action.create': string;
+  'auditTrail.action.update': string;
+  'auditTrail.action.delete': string;
+  'form.detailRequired': string;
+  'form.detailEmpty': string;
+  'form.validationError': string;
+  'form.loading': string;
+  'form.groupOther': string;
+  'grid.noRecords': string;
+  'grid.selectRequired': string;
+  'grid.loading': string;
+  'grid.buttonNew': string;
+  'grid.buttonEdit': string;
+  'grid.buttonDelete': string;
+  'grid.buttonRefresh': string;
+  'grid.rowsPerPage': string;
+  'dialog.buttonCancel': string;
+  'dialog.buttonSave': string;
+  'dialog.confirmDelete': string;
+  'dialog.confirmDeleteTitle': string;
+  'common.yes': string;
+  'common.no': string;
+  'validation.defaultError': string;
+  'form.searchButton': string;
+  'form.actionButton': string;
+}
+//#endregion
+//#region assets/core/i18n/coreTranslations.d.ts
+declare const coreTranslationsEs: CoreTranslationKeys;
+declare const coreTranslationsEn: CoreTranslationKeys;
+//#endregion
+//#region assets/core/i18n/useCoreTranslation.d.ts
+declare function useCoreTranslation(): {
+  t: (key: keyof CoreTranslationKeys, options?: DataRecord) => string;
+};
+//#endregion
+//#region assets/core/i18n/initCoreI18n.d.ts
+declare function initCoreI18n(): void;
 //#endregion
 //#region assets/core/http/CoreHttpClient.d.ts
 type CoreResponseType = 'json' | 'arraybuffer' | 'blob' | 'text';
@@ -277,4 +425,4 @@ declare class MercureManager {
 /** Singleton instance — shared across the entire application. */
 declare const mercureManager: MercureManager;
 //#endregion
-export { type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, type DataRecord, DateUtils, type EventSubscription, type GridData, LIMA_TZ, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, configureCoreDate, createCoreHttpClient, dispatch, getCoreLocale, getCoreTimezone, useCoreConfig, useCoreHttpClient, useCoreRuntime, useEvents, useMercureHub, useMercureSubscription };
+export { type CoreConfig, CoreConfigProvider, type CoreConfigProviderProps, CoreHttpClient, type CoreHttpClientConfig, type CoreHttpError, type CoreHttpErrorData, CoreHttpProvider, type CoreHttpProviderProps, type CoreHttpResponse, type CoreNotificationType, CoreProvider, type CoreProviderProps, type CoreRequestConfig, type CoreResponseType, type CoreRuntime, CoreRuntimeProvider, type CoreRuntimeProviderProps, type CoreTranslationKeys, type DataGridEventNames, type DataRecord, DateUtils, type DialogEventNames, type EventSubscription, type FormEventNames, type GridData, mercureManager as MercureManager, type MercureManager as MercureManagerType, MercureProvider, type MercureProviderProps, type ScopedFormEventNames, type ToolbarButtonItem, configureCoreDate, coreTranslationsEn, coreTranslationsEs, createCoreHttpClient, createCrudEvents, createScopedEventBus, dispatch, getCoreLocale, getCoreTimezone, initCoreI18n, useCoreConfig, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureHub, useMercureSubscription };

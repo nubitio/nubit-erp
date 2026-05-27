@@ -1,20 +1,35 @@
 {
   "name": "@nubit/admin",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
+  "description": "Admin shell layout components: responsive sidebar, header, and screen size utilities for Nubit apps.",
+  "license": "MIT",
+  "keywords": ["react", "admin", "layout", "sidebar", "shell"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/efact-project/efact.git"
+  },
+  "bugs": {
+    "url": "https://github.com/efact-project/efact/issues"
+  },
+  "homepage": "https://github.com/efact-project/efact#readme",
   "source": "./public.ts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
   "files": ["dist"],
+  "sideEffects": ["**/*.css"],
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

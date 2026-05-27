@@ -1,6 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { FieldBuilder } from './FieldBuilder';
 import { FieldType } from './FieldType';
+import {
+  checkboxField,
+  currencyField,
+  dateField,
+  datetimeField,
+  entityField,
+  enumField,
+  identityField,
+  imageField,
+  noneField,
+  numberField,
+  passwordField,
+  selectField,
+  switchField,
+  textField,
+  textareaField,
+} from './FieldBuilders';
 
 describe('FieldBuilder', () => {
   it('builds a field with default values', () => {
@@ -201,5 +218,168 @@ describe('FieldBuilder', () => {
       (first as unknown as Record<string, unknown>)['visibleWhen'] = undefined;
       expect(second.visibleWhen).toBeDefined();
     });
+  });
+});
+
+describe('Field factory functions (public DSL)', () => {
+  it('textField() creates a TEXT field with correct defaults', () => {
+    const f = textField().name('title').label('Título').build();
+    expect(f.type).toBe(FieldType.TEXT);
+    expect(f.name).toBe('title');
+  });
+
+  it('textareaField() creates a TEXTAREA field', () => {
+    const f = textareaField().name('notes').label('Notas').build();
+    expect(f.type).toBe(FieldType.TEXTAREA);
+  });
+
+  it('numberField() creates a NUMBER field', () => {
+    const f = numberField().name('qty').label('Cantidad').precision(0).build();
+    expect(f.type).toBe(FieldType.NUMBER);
+    expect(f.precision).toBe(0);
+  });
+
+  it('currencyField() sets sendAsString and right align by default', () => {
+    const f = currencyField().name('total').label('Total').build();
+    expect(f.type).toBe(FieldType.CURRENCY);
+    expect(f.sendAsString).toBe(true);
+    expect(f.align).toBe('right');
+  });
+
+  it('dateField() sets a defaultValue in en-CA format', () => {
+    const f = dateField().name('date').label('Fecha').build();
+    expect(f.type).toBe(FieldType.DATE);
+    expect(typeof f.defaultValue).toBe('string');
+    // en-CA format is YYYY-MM-DD
+    expect(f.defaultValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('datetimeField() sets type DATETIME and a Date default', () => {
+    const f = datetimeField().name('created').label('Creado').build();
+    expect(f.type).toBe(FieldType.DATETIME);
+    expect(f.defaultValue).toBeInstanceOf(Date);
+  });
+
+  it('switchField() and checkboxField() create boolean fields', () => {
+    const sw = switchField().name('active').label('Activo').build();
+    expect(sw.type).toBe(FieldType.SWITCH);
+
+    const cb = checkboxField().name('agree').label('Acepto').build();
+    expect(cb.type).toBe(FieldType.CHECKBOX);
+  });
+
+  it('selectField() creates a SELECT field', () => {
+    const f = selectField().name('status').label('Estado').build();
+    expect(f.type).toBe(FieldType.SELECT);
+  });
+
+  it('enumField() requires options and stores them in data', () => {
+    const opts = [
+      { value: 'draft', text: 'Borrador' },
+      { value: 'published', text: 'Publicado' },
+    ];
+    const f = enumField(opts).name('state').label('Estado').build();
+    expect(f.type).toBe(FieldType.ENUM);
+    expect(f.data).toEqual(opts);
+  });
+
+  it('passwordField() creates a PASSWORD field', () => {
+    const f = passwordField().name('pwd').label('Contraseña').required(true).build();
+    expect(f.type).toBe(FieldType.PASSWORD);
+    expect(f.required).toBe(true);
+  });
+
+  it('noneField() creates a NONE (display-only) field', () => {
+    const f = noneField().name('statusBadge').label('Status').build();
+    expect(f.type).toBe(FieldType.NONE);
+  });
+
+  it('identityField() sets identity + hidden + required + name="id"', () => {
+    const f = identityField().build();
+    expect(f.isIdentity).toBe(true);
+    expect(f.visible).toBe(false);
+    expect(f.required).toBe(true);
+    expect(f.name).toBe('id');
+    expect(f.type).toBe(FieldType.NONE);
+  });
+
+  it('entityField() requires url, valueField and textField', () => {
+    const f = entityField('/api/customers', 'id', 'businessName')
+      .name('customer')
+      .label('Cliente')
+      .build();
+
+    expect(f.type).toBe(FieldType.ENTITY);
+    expect(f.url).toBe('/api/customers');
+    expect(f.valueField).toBe('id');
+    expect(f.textField).toBe('businessName');
+  });
+
+  it('imageField() sets FILE type + image defaults', () => {
+    const f = imageField('https://api.example.com/').name('photo').label('Foto').build();
+    expect(f.type).toBe(FieldType.FILE);
+    expect(f.accept).toBe('image/*');
+    expect(f.align).toBe('center');
+    expect(f.url).toContain('media');
+  });
+
+  it('factories return chainable builders that support .formatter() and .visibleWhen()', () => {
+    const f = textField()
+      .name('sku')
+      .label('SKU')
+      .formatter((cell) => String(cell.value).toUpperCase())
+      .visibleWhen((data) => data['showSku'] === true)
+      .build();
+
+    expect(f.formatter).toBeDefined();
+    expect(f.visibleWhen).toBeDefined();
+  });
+
+  it('all factories can be further customized with common methods', () => {
+    const f = numberField()
+      .name('price')
+      .label('Precio')
+      .required(true)
+      .readonly(true)
+      .col(6)
+      .align('right')
+      .build();
+
+    expect(f.required).toBe(true);
+    expect(f.readonly).toBe(true);
+    expect(f.col).toBe(6);
+  });
+
+  it('supports .formatter(), .onChange(), .validators() and .loadOptions()', () => {
+    const fmt = (cell: any) => cell.value;
+    const onChange = () => {};
+    const validators = [{ type: 'required' as const }];
+    const loadOpts = [{ label: 'A', value: 1 }];
+
+    const f = textField()
+      .name('x')
+      .formatter(fmt)
+      .onChange(onChange as any)
+      .validators(validators as any)
+      .loadOptions(loadOpts as any)
+      .build();
+
+    expect(f.formatter).toBe(fmt);
+    expect(f.onChange).toBe(onChange);
+    expect(f.validators.length).toBe(1);
+    expect(f.loadOptions.length).toBe(1);
+  });
+
+  it('supports .dependsOn(), .permissions() and advanced rules via factories', () => {
+    const f = entityField('/api/items', 'id', 'name')
+      .name('item')
+      .dependsOn(['warehouse'])
+      .permissions({ visible: ['admin'], editable: ['admin', 'manager'] })
+      .requiredWhen((d) => d['requireItem'] === true)
+      .build();
+
+    expect(f.dependsOn).toEqual(['warehouse']);
+    expect(f.permissions?.visible).toContain('admin');
+    expect(f.requiredWhen).toBeDefined();
   });
 });
