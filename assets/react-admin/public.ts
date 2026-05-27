@@ -103,7 +103,7 @@ export { createCrudEvents } from '@nubit/crud';
 export type { EventSubscription } from '@nubit/core';
 
 // ── Locale / date ─────────────────────────────────────────────────────────────
-export { DateUtils, LIMA_TZ, getCoreLocale, getCoreTimezone } from '@nubit/core';
+export { DateUtils, getCoreLocale, getCoreTimezone } from '@nubit/core';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 export type { DataRecord } from '@nubit/core';

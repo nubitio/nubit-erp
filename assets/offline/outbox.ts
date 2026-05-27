@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { LIMA_TZ } from '@shared/lib/DateUtils';
+import { getCoreTimezone } from '@shared/lib/DateUtils';
 import { offlineDb } from './db';
 import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';
 import { logSyncEvent } from './telemetry';
@@ -35,10 +35,9 @@ let activeSyncPromise: Promise<void> | null = null;
 const asIso = (date: Date) => date.toISOString();
 
 const buildTemporalCorrelative = async () => {
-  // Use Lima time so the daily counter rolls over at Lima midnight (00:00 Lima = 05:00 UTC),
-  // not at UTC midnight (19:00 Lima). Without this, sales made between 19:00–23:59 Lima time
-  // would be counted against the next calendar day, producing duplicate correlatives.
-  const now = DateTime.now().setZone(LIMA_TZ);
+  // Use the configured timezone (via CoreConfigProvider) so the daily correlative counter
+  // rolls over at local midnight for the tenant. Falls back to the core default (America/Lima).
+  const now = DateTime.now().setZone(getCoreTimezone());
   const year = now.year;
   const dayStart = now.startOf('day'); // 00:00:00 Lima
   const dayEnd = now.endOf('day'); // 23:59:59.999 Lima
