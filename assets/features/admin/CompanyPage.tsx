@@ -7,6 +7,7 @@ import { useCompanyObservers } from './model/useCompanyObservers';
 
 export const CompanyPage = () => {
   const formRef = useRef<FormHandle | null>(null);
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const resource = useMemo(
     () =>
       defineResource(companyEndpoints.list(), {

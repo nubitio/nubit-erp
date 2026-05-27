@@ -226,6 +226,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   const [on, emit] = useEvents();
   const [operationVersion, setOperationVersion] = useState(0);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const refreshGrid = useCallback(() => {
     gridRef.current?.refresh();
   }, [gridRef]);
