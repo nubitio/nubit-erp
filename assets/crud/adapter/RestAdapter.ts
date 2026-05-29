@@ -58,6 +58,9 @@ export const RestAdapter: BackendAdapter = {
     if (Array.isArray(response)) {
       return { items: response as DataRecord[], total: (response as unknown[]).length };
     }
+    if (response === null || typeof response !== 'object') {
+      return { items: [], total: 0 };
+    }
     const r = response as Record<string, unknown>;
     const items = r['items'] ?? r['data'] ?? r['results'];
     if (Array.isArray(items)) {

@@ -13,13 +13,14 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, useCoreTranslation, type CoreHttpClient } from '@nubit/core';
+import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, useCoreTranslation, type CoreHttpClient, type CoreTranslationKeys } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { DataRecord } from '@nubit/core';
 import { type ResourceStore, type ResourceStoreFactory, useResourceStoreFactory } from '../data/ResourceStore';
 import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
 import { buildEmptyRow, normalizeFormData, type PrependDataMap } from './FormDataTransform';
+import { safeRandomId } from './safeRandomId';
 import { buildFormLayoutModel, type FormLayoutGroup, type FormLayoutModel } from './FormLayoutModel';
 import type { FormDataRecord } from './FormDataSnapshot';
 import type { FormHandle } from './FormHandle';
@@ -247,6 +248,7 @@ export function NativeEntitySelect({
   required?: boolean;
   value: unknown;
 }) {
+  const { t } = useCoreTranslation();
   const resourceStoreFactory = useResourceStoreFactory();
   const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
@@ -335,8 +337,8 @@ export function NativeEntitySelect({
       setDraftQuery={setDraftQuery}
       setOpen={setOpen}
     >
-      {loading && items.length === 0 && <div className="native-form__lookup-status">Buscando...</div>}
-      {!loading && items.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+      {loading && items.length === 0 && <div className="native-form__lookup-status">{t('form.lookupSearching')}</div>}
+      {!loading && items.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {!loading && items.map((item) => {
         const itemValue = fieldKeyValue(field, item);
         return (
@@ -345,7 +347,7 @@ export function NativeEntitySelect({
           </button>
         );
       })}
-      {loadingMore && <div className="native-form__lookup-status">Cargando más...</div>}
+      {loadingMore && <div className="native-form__lookup-status">{t('form.lookupLoadingMore')}</div>}
     </LookupDropdown>
   );
 }
@@ -369,6 +371,7 @@ function NativeEnumSelect({
   required?: boolean;
   value: unknown;
 }) {
+  const { t } = useCoreTranslation();
   const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
 
   const allItems: DataRecord[] = field.data ?? [];
@@ -398,7 +401,7 @@ function NativeEnumSelect({
       setDraftQuery={setDraftQuery}
       setOpen={setOpen}
     >
-      {visibleItems.length === 0 && <div className="native-form__lookup-status">Sin resultados</div>}
+      {visibleItems.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {visibleItems.map((item) => {
         const itemValue = String(item['value'] ?? '');
         return (
@@ -411,28 +414,30 @@ function NativeEnumSelect({
   );
 }
 
-function validateField(field: Field, value: unknown, formData: FormDataRecord): string | null {
-  if (field.required && isEmptyValue(value)) return `${field.label} es requerido`;
+type Translator = (key: keyof CoreTranslationKeys, options?: DataRecord) => string;
+
+function validateField(field: Field, value: unknown, formData: FormDataRecord, t: Translator): string | null {
+  if (field.required && isEmptyValue(value)) return t('form.fieldRequired', { label: field.label });
 
   for (const rule of field.validators ?? []) {
-    if (rule.type === 'required' && isEmptyValue(value)) return rule.options.message ?? `${field.label} es requerido`;
+    if (rule.type === 'required' && isEmptyValue(value)) return rule.options.message ?? t('form.fieldRequired', { label: field.label });
     if (rule.type === 'email' && typeof value === 'string' && value !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return rule.options.message ?? 'Correo inválido';
+      return rule.options.message ?? t('form.invalidEmail');
     }
     if (rule.type === 'numeric' && value !== '' && value != null && Number.isNaN(Number(value))) {
-      return rule.options.message ?? 'Valor numérico inválido';
+      return rule.options.message ?? t('form.invalidNumeric');
     }
     if (rule.type === 'pattern' && typeof value === 'string' && !new RegExp(rule.options.pattern).test(value)) {
-      return rule.options.message ?? 'Formato inválido';
+      return rule.options.message ?? t('form.invalidPattern');
     }
     if (rule.type === 'stringLength' && typeof value === 'string') {
-      if (rule.options.min !== undefined && value.length < rule.options.min) return rule.options.message ?? 'Texto demasiado corto';
-      if (rule.options.max !== undefined && value.length > rule.options.max) return rule.options.message ?? 'Texto demasiado largo';
+      if (rule.options.min !== undefined && value.length < rule.options.min) return rule.options.message ?? t('form.stringTooShort');
+      if (rule.options.max !== undefined && value.length > rule.options.max) return rule.options.message ?? t('form.stringTooLong');
     }
     if (rule.type === 'range' && value !== '' && value != null) {
       const numericValue = Number(value);
-      if (rule.options.min !== undefined && numericValue < rule.options.min) return rule.options.message ?? 'Valor fuera de rango';
-      if (rule.options.max !== undefined && numericValue > rule.options.max) return rule.options.message ?? 'Valor fuera de rango';
+      if (rule.options.min !== undefined && numericValue < rule.options.min) return rule.options.message ?? t('form.outOfRange');
+      if (rule.options.max !== undefined && numericValue > rule.options.max) return rule.options.message ?? t('form.outOfRange');
     }
     if (rule.type === 'compare') {
       const target = rule.options.comparisonTarget();
@@ -444,10 +449,10 @@ function validateField(field: Field, value: unknown, formData: FormDataRecord): 
         comparison === '<' ? Number(value) < Number(target) :
         comparison === '>=' ? Number(value) >= Number(target) :
         Number(value) <= Number(target);
-      if (!valid) return rule.options.message ?? 'Valor inválido';
+      if (!valid) return rule.options.message ?? t('validation.defaultError');
     }
     if (rule.type === 'custom' && !rule.options.validationCallback({ value, data: formData })) {
-      return rule.options.message ?? 'Valor inválido';
+      return rule.options.message ?? t('validation.defaultError');
     }
   }
 
@@ -483,7 +488,7 @@ function NativeDetailGrid({
 }) {
   const { t } = useCoreTranslation();
   const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
-  const rowKeysRef = useRef<string[]>(rows.map(() => crypto.randomUUID()));
+  const rowKeysRef = useRef<string[]>(rows.map(() => safeRandomId()));
 
   // Re-generate keys when the parent resets rows to a different-length array
   // (e.g. switching between edit records). addRow/removeRow keep rowKeysRef
@@ -491,7 +496,7 @@ function NativeDetailGrid({
   // true external reset. Reading/writing the ref here is intentional.
   // eslint-disable-next-line react-hooks/refs
   if (rowKeysRef.current.length !== rows.length) {
-    rowKeysRef.current = rows.map(() => crypto.randomUUID()); // eslint-disable-line react-hooks/refs
+    rowKeysRef.current = rows.map(() => safeRandomId()); // eslint-disable-line react-hooks/refs
   }
 
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
@@ -513,7 +518,7 @@ function NativeDetailGrid({
   };
 
   const addRow = () => {
-    rowKeysRef.current.push(crypto.randomUUID());
+    rowKeysRef.current.push(safeRandomId());
     onRowsChange([...rows, buildEmptyRow(detailFields)]);
     onRowsMutated();
   };
@@ -571,7 +576,7 @@ function NativeDetailGrid({
   return (
     <div className="native-form__detail">
       <div className="native-form__detail-heading">
-        <h3 className="native-form__detail-title">Detalle</h3>
+        <h3 className="native-form__detail-title">{t('form.detailTitle')}</h3>
         {allowAdding && (
           <button type="button" className="app-icon-button" aria-label="Agregar detalle" onClick={addRow}>
             <i className="ph ph-plus" aria-hidden="true" />
@@ -728,13 +733,13 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     options.fields.forEach((field) => {
       const state = fieldState[field.name];
       if (field.isIdentity || state?.validationEnabled === false || state?.hidden === true || field.hidden || field.visibleOnForm === false) return;
-      const error = validateField(field, formDataRef.current[field.name], formDataRef.current);
+      const error = validateField(field, formDataRef.current[field.name], formDataRef.current, t);
       if (error) nextErrors[field.name] = error;
     });
     setErrors(nextErrors);
     setDetailErrors({});
     return Object.keys(nextErrors).length === 0;
-  }, [fieldState, options.fields]);
+  }, [fieldState, options.fields, t]);
 
   const validate = useFormValidation({
     accessors: {

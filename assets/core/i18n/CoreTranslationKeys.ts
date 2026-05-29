@@ -41,4 +41,16 @@ export interface CoreTranslationKeys {
   'validation.defaultError': string;
   'form.searchButton': string;
   'form.actionButton': string;
+  'form.detailTitle': string;
+  'form.lookupSearching': string;
+  'form.lookupNoResults': string;
+  'form.lookupLoadingMore': string;
+  'form.fieldRequired': string;
+  'form.invalidEmail': string;
+  'form.invalidNumeric': string;
+  'form.invalidPattern': string;
+  'form.stringTooShort': string;
+  'form.stringTooLong': string;
+  'form.outOfRange': string;
+  'crudPage.confirmActionTitle': string;
 }

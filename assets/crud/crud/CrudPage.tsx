@@ -291,7 +291,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
       edit: t('crudPage.dialogTitleEdit'),
       view: t('crudPage.dialogTitleView'),
     };
-    return modeMap[dialogMode] ?? 'Nuevo';
+    return modeMap[dialogMode] ?? t('crudPage.dialogTitleAdd');
   }, [dialogMode, t]);
 
   /** Bridge between the grid renderer's selection event and our selection state.
@@ -501,7 +501,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
       )}
       <ConfirmDialog
         open={confirmState.open}
-        title="Confirmar acción"
+        title={t('crudPage.confirmActionTitle')}
         message={confirmState.action?.confirmMessage ?? ''}
         variant="warning"
         onConfirm={() => {
