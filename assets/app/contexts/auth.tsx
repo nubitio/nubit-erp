@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { AuthContextType, User } from '@app/types';
 import { StorageUtils } from '../../shared/lib/StorageUtils';
 import { branchService } from '../../features/branch';
@@ -40,7 +41,9 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
 
   useEffect(() => {
     const subscription = subscribeToAuthSessionSync(() => {
-      setUser(getStoredAuthenticatedUser());
+      flushSync(() => {
+        setUser(getStoredAuthenticatedUser());
+      });
     });
 
     return () => {

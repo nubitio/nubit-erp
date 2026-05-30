@@ -7,6 +7,8 @@ export interface UserPanelProps {
 export interface UserMenuSectionProps {
   showAvatar?: boolean;
   onAction?: () => void;
+  onChangeBranch?: () => void;
+  onChangePassword?: () => void;
 }
 
 export interface User {

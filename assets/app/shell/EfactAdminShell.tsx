@@ -15,6 +15,9 @@ import { SettingsPanel } from '@nubit/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
+import { BranchPicker } from './components/BranchPicker';
+import { ChangePasswordModal } from './components/ChangePasswordModal';
+import { SessionExpiredDialog } from './components/SessionExpiredDialog';
 
 interface EfactAdminShellProps {
   title?: string;
@@ -23,6 +26,8 @@ interface EfactAdminShellProps {
 
 export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellProps) => {
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
+  const [showBranchPicker, setShowBranchPicker] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
 
   useEffect(() => {
@@ -34,40 +39,55 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
   }, []);
 
   return (
-    <AdminShell
-      title={title}
-      menuItems={menuItems}
-      headerActions={[
-        {
-          id: 'notifications',
-          icon: 'ph ph-bell',
-          label: 'Notificaciones',
-          badge: unreadCount,
-          renderPanel: ({ close }) => (
-            <div className="notification-popover">
-              <NotificationPanel
-                visible
-                onHiding={close}
-                notifications={notifications}
-                loading={loading}
-                markRead={markRead}
-                markAllRead={markAllRead}
-              />
-            </div>
-          ),
-        },
-        {
-          id: 'display-settings',
-          icon: 'ph ph-sliders-horizontal',
-          label: 'Display settings',
-          renderPanel: ({ close }) => <SettingsPanel onClose={close} />,
-        },
-      ]}
-      renderUserMenu={({ close }) => <UserMenuSection showAvatar onAction={close} />}
-      renderThemeSwitcher={() => <ThemeSwitcher />}
-      footer={<span>Copyright © {new Date().getFullYear()} Nubit Labs</span>}
-    >
-      {children}
-    </AdminShell>
+    <>
+      <AdminShell
+        title={title}
+        menuItems={menuItems}
+        headerActions={[
+          {
+            id: 'notifications',
+            icon: 'ph ph-bell',
+            label: 'Notificaciones',
+            badge: unreadCount,
+            renderPanel: ({ close }) => (
+              <div className="notification-popover">
+                <NotificationPanel
+                  visible
+                  onHiding={close}
+                  notifications={notifications}
+                  loading={loading}
+                  markRead={markRead}
+                  markAllRead={markAllRead}
+                />
+              </div>
+            ),
+          },
+          {
+            id: 'display-settings',
+            icon: 'ph ph-sliders-horizontal',
+            label: 'Display settings',
+            renderPanel: ({ close }) => <SettingsPanel onClose={close} />,
+          },
+        ]}
+        renderUserMenu={({ close }) => (
+          <UserMenuSection
+            showAvatar
+            onAction={close}
+            onChangeBranch={() => setShowBranchPicker(true)}
+            onChangePassword={() => setShowChangePassword(true)}
+          />
+        )}
+        renderThemeSwitcher={() => <ThemeSwitcher />}
+        footer={<span>Copyright © {new Date().getFullYear()} Nubit Labs</span>}
+      >
+        {children}
+      </AdminShell>
+      <BranchPicker visible={showBranchPicker} setVisible={setShowBranchPicker} />
+      <ChangePasswordModal
+        visible={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
+      <SessionExpiredDialog />
+    </>
   );
 };

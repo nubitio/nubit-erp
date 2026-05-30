@@ -3,20 +3,12 @@ import { HttpCode } from './HttpCode';
 import toast from '../lib/SharedUtils';
 import { dispatch } from '../../core/event/EventHook';
 import { getCoreApiBaseUrl } from '@nubit/core';
-import { BASE_URL } from '@app/constants';
 
 const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client only
 import { StorageUtils } from '../lib/StorageUtils';
+import { dispatchSessionExpiredEvent } from '../lib/sessionExpiredEvent';
 import mercureManager from '../../core/mercure/MercureManager';
 import type { DataRecord } from '../../core/data/DataRecord';
-
-function showBlockingAlert(message: string): Promise<void> {
-  if (typeof window !== 'undefined') {
-    window.alert(message);
-  }
-
-  return Promise.resolve();
-}
 
 /**
  * Serializes request params to bracket-notation query strings.
@@ -300,10 +292,10 @@ class HttpClient {
   private handleTokenRefreshError() {
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
-      showBlockingAlert(HttpClient.DEFAULT_MESSAGES.unauthorized).then(() => {
-        StorageUtils.removeItem('user');
-        window.location.href = BASE_URL;
-      });
+      StorageUtils.removeItem('user');
+      StorageUtils.removeItem('selectedBranchId');
+      StorageUtils.removeItem('selectedBranchName');
+      dispatchSessionExpiredEvent();
     }
     toast(HttpClient.DEFAULT_MESSAGES.unauthorized, 'error');
   }

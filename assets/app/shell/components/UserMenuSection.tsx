@@ -4,9 +4,6 @@ import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@app/types';
 import { UserAvatar } from './UserAvatar';
 
-import { BranchPicker } from './BranchPicker';
-import { ChangePasswordModal } from './ChangePasswordModal';
-
 import './UserMenuSection.scss';
 
 type MenuItem = {
@@ -16,10 +13,13 @@ type MenuItem = {
   onClick: () => void;
 };
 
-export const UserMenuSection = ({ showAvatar, onAction }: UserMenuSectionProps) => {
+export const UserMenuSection = ({
+  showAvatar,
+  onAction,
+  onChangeBranch,
+  onChangePassword,
+}: UserMenuSectionProps) => {
   const { user, signOut } = useAuth();
-  const [visible, setVisible] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
   const [canChangeBranch, setCanChangeBranch] = useState(false);
 
   useEffect(() => {
@@ -54,8 +54,9 @@ export const UserMenuSection = ({ showAvatar, onAction }: UserMenuSectionProps) 
       items.push({
         text: 'Cambiar sucursal',
         icon: 'ph ph-building',
+        closeAfterAction: true,
         onClick: () => {
-          setVisible(true);
+          onChangeBranch?.();
         },
       });
     }
@@ -64,8 +65,9 @@ export const UserMenuSection = ({ showAvatar, onAction }: UserMenuSectionProps) 
       {
         text: 'Cambiar contraseña',
         icon: 'ph ph-lock',
+        closeAfterAction: true,
         onClick: () => {
-          setShowChangePassword(true);
+          onChangePassword?.();
         },
       },
       {
@@ -77,7 +79,7 @@ export const UserMenuSection = ({ showAvatar, onAction }: UserMenuSectionProps) 
     );
 
     return items;
-  }, [canChangeBranch, signOut]);
+  }, [canChangeBranch, onChangeBranch, onChangePassword, signOut]);
 
   return (
     <>
@@ -103,11 +105,6 @@ export const UserMenuSection = ({ showAvatar, onAction }: UserMenuSectionProps) 
           </button>
         ))}
       </div>
-      <BranchPicker visible={visible} setVisible={setVisible} />
-      <ChangePasswordModal
-        visible={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-      />
     </>
   );
 };
