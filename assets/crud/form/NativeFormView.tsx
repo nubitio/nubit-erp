@@ -117,6 +117,23 @@ function useLookupDropdown() {
     return () => observer.disconnect();
   }, [open]);
 
+  // Close the portal when an ancestor becomes aria-hidden (e.g. keepMounted
+  // dialog hiding itself with visibility:hidden but leaving portals mounted).
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const container = containerRef.current;
+    const checkAriaHidden = () => {
+      let el: HTMLElement | null = container.parentElement;
+      while (el) {
+        if (el.getAttribute('aria-hidden') === 'true') { setOpen(false); return; }
+        el = el.parentElement;
+      }
+    };
+    const mo = new MutationObserver(checkAriaHidden);
+    mo.observe(document.body, { attributes: true, attributeFilter: ['aria-hidden'], subtree: true });
+    return () => mo.disconnect();
+  }, [open]);
+
   useLayoutEffect(() => {
     if (!open) return;
     const updatePosition = () => {
@@ -270,7 +287,11 @@ export function NativeEntitySelect({
 
   useEffect(() => {
     if (!field.url || !field.searchEnabled || !open) return;
-    const searchValue = query.trim();
+    // Use draftQuery directly (not the display-text fallback `query`) so that
+    // opening the dropdown with no active search (draftQuery=null) issues a
+    // blank query and returns the full default list instead of filtering by
+    // the previously-selected item's label.
+    const searchValue = (draftQuery ?? '').trim();
     const timer = setTimeout(() => {
       setLoading(true);
       setHasMore(true);
@@ -284,7 +305,7 @@ export function NativeEntitySelect({
         .finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(timer);
-  }, [field, httpClient, open, query, resourceStoreFactory]);
+  }, [field, httpClient, open, draftQuery, resourceStoreFactory]);
 
   const loadMore = useCallback(() => {
     if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
@@ -314,7 +335,7 @@ export function NativeEntitySelect({
   const selectItem = (item: DataRecord) => {
     setSelectedItemCache(item);
     onChange(fieldKeyValue(field, item) ?? null, item);
-    setDraftQuery(fieldTextValue(field, item));
+    setDraftQuery(null);
     setOpen(false);
   };
 
@@ -405,7 +426,7 @@ function NativeEnumSelect({
       {visibleItems.map((item) => {
         const itemValue = String(item['value'] ?? '');
         return (
-          <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()} onClick={() => { onChange(item['value'] ?? null); setDraftQuery(String(item['text'] ?? item['value'] ?? '')); setOpen(false); }}>
+          <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()}             onClick={() => { onChange(item['value'] ?? null); setDraftQuery(null); setOpen(false); }}>
             {String(item['text'] ?? item['value'] ?? '')}
           </button>
         );

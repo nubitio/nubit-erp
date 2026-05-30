@@ -1,8 +1,6 @@
-// ─── Brand panel tokens (intentionally fixed – brand identity) ───────────────
-$brand-dark:   #061510;
-$brand-mid:    #0a2d1e;
-$brand-light:  #0e4d30;
-$radius-card:  20px;
+// ─── Brand panel tokens — derived from --accent-color at runtime ─────────────
+// Hardcoded green values removed: panel now follows the selected accent color.
+$radius-card: 20px;
 
 // ─── Root ────────────────────────────────────────────────────────────────────
 html, body {
@@ -31,7 +29,12 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(145deg, $brand-dark 0%, $brand-mid 50%, $brand-light 100%);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-color) 18%, #000) 0%,
+    color-mix(in srgb, var(--accent-color) 28%, #000) 50%,
+    color-mix(in srgb, var(--accent-color) 42%, #000) 100%
+  );
 
   // dot-grid texture overlay
   &::after {
@@ -61,18 +64,26 @@ html, body {
   animation: float 12s ease-in-out infinite;
 }
 
-// blobs: brand colours are intentionally fixed (dark background always)
+// blobs: tinted variants of --accent-color against the dark background
 .blob-1 {
   width: 520px; height: 520px;
   top: -140px; left: -120px;
-  background: radial-gradient(circle, #10b981, #059669);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-color) 70%, #fff),
+    color-mix(in srgb, var(--accent-color) 55%, #000)
+  );
   animation-duration: 14s;
 }
 
 .blob-2 {
   width: 360px; height: 360px;
   bottom: -80px; right: -60px;
-  background: radial-gradient(circle, #34d399, #0e7a50);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-color) 80%, #fff),
+    color-mix(in srgb, var(--accent-color) 40%, #000)
+  );
   animation-duration: 10s;
   animation-delay: -4s;
 }
@@ -80,7 +91,11 @@ html, body {
 .blob-3 {
   width: 240px; height: 240px;
   top: 40%; left: 40%;
-  background: radial-gradient(circle, #6ee7b7, #34d399);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-color) 90%, #fff),
+    color-mix(in srgb, var(--accent-color) 65%, #fff)
+  );
   animation-duration: 16s;
   animation-delay: -8s;
 }
@@ -172,7 +187,7 @@ html, body {
 
     i {
       font-size: 18px;
-      color: #34d399;
+      color: color-mix(in srgb, var(--accent-color) 70%, #fff);
       flex-shrink: 0;
     }
   }
