@@ -1,102 +1,74 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Dark Theme — color, surface, and shadow tokens only.
+//
+// Static tokens (typography, spacing, radii, layout) are defined once in
+// tokens.scss and bundled into the main CSS entry. Do NOT add them here.
+//
+// Design reference: Fluent UI Web dark palette / VS Code dark+ surface model.
+// Accent shifts to blue-500 (#3b82f6) — slightly lighter than light-mode accent
+// to maintain contrast against dark surfaces.
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* stylelint-disable */
 :root,
 .app-theme-dark {
-  // Color base
-  --base-bg: rgb(41, 41, 41);
-  --base-bg-darken-5: rgb(28, 28, 28);
-  --base-bg-darken-4: rgb(31, 31, 31);
-  --base-text-color: rgb(255, 255, 255);
-  --base-text-color-alpha: rgba(255, 255, 255, 0.7);
-  --background-gray-color: rgba(255, 255, 255, 0.04);
-  --typography-bg: var(--base-bg);
 
-  // Semantic colors
-  --accent-color: #10b981;
-  --success-color: #54b054;
-  --info-color: #10b981;
-  --warning-color: #fde300;
-  --dark-warning-color: #e87a00;
-  --error-color: rgb(227, 125, 128);
-  --border-color: rgb(97, 97, 97);
+  // ── Color base ──────────────────────────────────────────────────────────────
+  --base-bg:               #1e2128;
+  --base-bg-darken-4:      #181c23;
+  --base-bg-darken-5:      #13161d;
+  --base-text-color:       #e8ecf3;
+  --base-text-color-alpha: rgba(232, 236, 243, 0.65);
+  --background-gray-color: rgba(232, 236, 243, 0.04);
+  --typography-bg:         var(--base-bg);
 
-  // Text
-  --texteditor-edit-color: rgb(255, 255, 255);
-  --texteditor-label-color: #999999;
-  --subtitle-text-color: var(--texteditor-label-color);
-  --text-primary: var(--base-text-color);
-  --text-secondary: var(--subtitle-text-color);
+  // ── Semantic / status colors ────────────────────────────────────────────────
+  --accent-color:       #3b82f6;   // blue-500 — brighter to pop on dark bg
+  // Derived — lighten in dark mode (mix with white, not black).
+  --accent-hover:  color-mix(in srgb, var(--accent-color) 80%, #fff);
+  --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));
+  --success-color:      #22c55e;   // green-500
+  --info-color:         #38bdf8;   // sky-400
+  --warning-color:      #fbbf24;   // amber-400
+  --dark-warning-color: #f59e0b;   // amber-500
+  --error-color:        #f87171;   // red-400 — softened for dark bg readability
 
-  // Component dimensions
-  --toolbar-height: 36px;
-  --list-padding-left: 8px;
-  --list-padding-vertical: 4px;
-  --popup-toolbar-item-spacing: 8px;
-  --drop-down-gnrc-button-height: 24px;
-  --theme-padding: 8px;
-  --button-height-theme-difference: calc((var(--theme-padding) - 10px) / 3);
-  --button-height: calc(26px + var(--button-height-theme-difference));
-  --scheduler-toolbar-height: calc(var(--button-height) + 2 * var(--theme-padding));
+  // ── Borders ─────────────────────────────────────────────────────────────────
+  --border-color:  #2c3241;   // structural
+  --border-subtle: #242937;   // subtle
 
-  // Layout
-  --side-panel-min-width: 48px;
-  --calendar-width: 292px;
-  --header-toolbar-vertical-padding: 10px;
-  --toolbar-vertical-padding: 16px;
-  --content-padding: 16px;
-  --page-padding: 24px;
-  --toolbar-margin-bottom: var(--content-padding);
-  --footer-height: 48px;
-  --footer-left-padding: calc((var(--side-panel-min-width) - 16px) / 2);
+  // ── Text ────────────────────────────────────────────────────────────────────
+  --texteditor-edit-color:  #e8ecf3;
+  --texteditor-label-color: #8b96aa;
+  --subtitle-text-color:    var(--texteditor-label-color);
+  --text-primary:           var(--base-text-color);
+  --text-secondary:         #8b96aa;
+  --text-tertiary:          #5c6880;
+  --text-disabled:          #3a4155;
 
-  // Surfaces (dark-specific: card-background uses darker shade)
-  --card-background: rgb(28, 28, 28);
-  --side-panel-background: var(--base-bg-darken-5);
-  --surface-0: var(--base-bg);
-  --surface-1: var(--card-background);
-  --surface-2: color-mix(in srgb, var(--card-background) 88%, white 12%);
+  // ── Surfaces (4-level elevation) ────────────────────────────────────────────
+  // Dark mode inverts Fluent's model — lower numbers = darker (deeper, further away).
+  --surface-0:  #13161d;   // app shell background — deepest level
+  --surface-1:  #1e2128;   // cards, panels, toolbar
+  --surface-2:  color-mix(in srgb, var(--accent-color) 15%, var(--surface-0));  // hover / selected
+  --surface-3:  color-mix(in srgb, var(--accent-color) 24%, var(--surface-0));  // active / pressed
+  --card-background:       var(--surface-1);
+  --side-panel-background: #181c23;
 
-  // Effects
-  --tooltip-danger-button-color: rgba(227, 125, 128, 0.1);
-  --tooltip-success-button-color: rgba(84, 176, 84, 0.1);
-  --focus-ring-color: color-mix(in srgb, var(--accent-color) 36%, transparent);
+  // ── Shadows ─────────────────────────────────────────────────────────────────
+  // Dark mode shadows use inner border highlights instead of outer drop shadows.
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.50),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-lg:  0 12px 40px rgba(0, 0, 0, 0.60),
+                0 0 0 1px rgba(255, 255, 255, 0.07);
 
-  // Typography
-  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-mono: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 20px;
-  --font-size-xl: 28px;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.65;
-
-  // Spacing
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 40px;
-
-  // Radii
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-
-  // Shadows
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.28);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.35);
+  // ── Effects ─────────────────────────────────────────────────────────────────
+  --focus-ring-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+  --tooltip-danger-button-color:  rgba(248, 113, 113, 0.12);
+  --tooltip-success-button-color: rgba(34, 197, 94, 0.12);
 }
 
-.app-theme-dark {
-  content: '';
-}
+// Sentinel — allows JS/SCSS to detect the active theme class.
+.app-theme-dark { content: ''; }

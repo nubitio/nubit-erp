@@ -34,15 +34,19 @@ export const CashMovements = () => {
     LOADING: 'cash-movement:loading',
   };
 
-  const toolbar = [
-    {
-      text: 'Cerrar Caja',
-      type: 'info',
-      onClick: () => {
-        navigate(`/cash-register/${id}/close`);
+  const toolbar = {
+    utility: [
+      {
+        text: 'Cerrar Caja',
+        type: 'info' as const,
+        group: 'workflow',
+        groupLabel: 'Flujo',
+        onClick: () => {
+          navigate(`/cash-register/${id}/close`);
+        },
       },
-    },
-  ];
+    ],
+  };
 
   const onContentReady = () => {
     setGridError(null);

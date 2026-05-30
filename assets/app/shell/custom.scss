@@ -1,20 +1,22 @@
 @use '@phosphor-icons/web/regular';
 
-$primary: #10b981;
-$secondary: #6c757d;
-$success: #28a745;
-$danger: #dc3545;
-$warning: #ffc107;
-$info: #17a2b8;
-$light: #f8f9fa;
-$dark: #343a40;
-$black: #000;
-$white: #fff;
+// ── Badge palette — kept as SCSS vars because the badge loop needs compile-time values.
+// These are intentionally static; badge colors do not invert in dark mode.
+$badge-primary:   #2563eb;
+$badge-secondary: #6c757d;
+$badge-success:   #28a745;
+$badge-danger:    #dc3545;
+$badge-warning:   #ffc107;
+$badge-info:      #17a2b8;
+$badge-light:     #f8f9fa;
+$badge-dark:      #343a40;
+$black:           #000;
+$white:           #fff;
 
 @mixin badge() {
   padding: 0.35em 0.65em;
   font-size: 0.65em;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium, 500);
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
@@ -41,18 +43,20 @@ $white: #fff;
   }
 
   $colors: (
-    primary: $primary,
-    secondary: $secondary,
-    success: $success,
-    danger: $danger,
-    warning: $warning,
-    info: $info,
-    light: $light,
-    dark: $dark,
+    primary:   $badge-primary,
+    secondary: $badge-secondary,
+    success:   $badge-success,
+    danger:    $badge-danger,
+    warning:   $badge-warning,
+    info:      $badge-info,
+    light:     $badge-light,
+    dark:      $badge-dark,
   );
+
   @each $name, $color in $colors {
     &.text-bg-#{$name} {
-      @include solid-badge-variant($color, if($name == light or $name == warning, $black, $white));
+      $text: if($name == light or $name == warning, $black, $white);
+      @include solid-badge-variant($color, $text);
     }
   }
 
@@ -65,6 +69,7 @@ $white: #fff;
   }
 }
 
+// ── Loading overlay ───────────────────────────────────────────────────────────
 .app-loading {
   align-items: center;
   background: rgb(0 0 0 / 18%);
@@ -85,20 +90,20 @@ $white: #fff;
 }
 
 // ── Shared app-button system ──────────────────────────────────────────────────
-// Base token shared by BranchPicker.scss, VoidDialog.scss, etc.
+// All color values reference CSS tokens so the button system is theme-aware.
 .app-button {
   align-items: center;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  font-size: var(--font-size-sm, 13px);
-  font-weight: 500;
-  gap: 5px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-1);
   justify-content: center;
   min-height: 28px;
   padding: 0.25rem 0.7rem;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 
   &:disabled {
     cursor: default;
@@ -109,7 +114,7 @@ $white: #fff;
 .app-button--secondary {
   background: transparent;
   border: 1px solid var(--border-color);
-  color: var(--base-text-color);
+  color: var(--text-primary);
 
   &:not(:disabled):hover,
   &:not(:disabled):focus-visible {
@@ -132,13 +137,25 @@ $white: #fff;
 }
 
 .app-button--success {
-  background: $success;
-  border: 1px solid $success;
+  background: var(--success-color);
+  border: 1px solid var(--success-color);
   color: #fff;
 
   &:not(:disabled):hover,
   &:not(:disabled):focus-visible {
-    background: color-mix(in srgb, #{$success} 85%, #000);
+    background: color-mix(in srgb, var(--success-color) 85%, #000);
+    outline: none;
+  }
+}
+
+.app-button--danger {
+  background: var(--error-color);
+  border: 1px solid var(--error-color);
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, var(--error-color) 85%, #000);
     outline: none;
   }
 }
@@ -153,42 +170,29 @@ $white: #fff;
   padding: 0.1rem 0.5rem;
 }
 
-// ── Danger variant ────────────────────────────────────────────────────────────
-.app-button--danger {
-  background: $danger;
-  border: 1px solid $danger;
-  color: #fff;
-
-  &:not(:disabled):hover,
-  &:not(:disabled):focus-visible {
-    background: color-mix(in srgb, #{$danger} 85%, #000);
-    outline: none;
-  }
-}
-
 // ── Form controls ─────────────────────────────────────────────────────────────
 .form-label {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   margin-bottom: 0.35rem;
 }
 
 .form-control {
-  background: var(--base-bg);
+  background: var(--surface-1);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 6px);
-  color: var(--base-text-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   display: block;
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   padding: 0.4rem 0.65rem;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
   width: 100%;
 
   &:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
     outline: none;
   }
 
@@ -210,8 +214,8 @@ $white: #fff;
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm, 6px);
-  color: var(--base-text-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
@@ -219,7 +223,7 @@ $white: #fff;
   justify-content: center;
   min-width: 28px;
   padding: 0 0.35rem;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background var(--transition-base), color var(--transition-base);
 
   i {
     font-size: 1.1rem;
@@ -243,8 +247,8 @@ $white: #fff;
 
 .app-icon-button--danger {
   &:hover {
-    background: color-mix(in srgb, #{$danger} 12%, transparent);
-    color: $danger;
+    background: color-mix(in srgb, var(--error-color) 12%, transparent);
+    color: var(--error-color);
   }
 }
 
@@ -258,4 +262,3 @@ $white: #fff;
   height: 14px;
   width: 14px;
 }
-

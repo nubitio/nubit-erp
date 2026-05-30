@@ -1,6 +1,6 @@
 @use 'variables' as *;
 
-// ── Shell layout ──────────────────────────────────────────────────────────────
+// ── Shell layout ───────────────────────────────────────────────────────────────
 
 .side-nav-outer-toolbar {
   display: flex;
@@ -14,7 +14,7 @@
 }
 
 .layout-body {
-  background-color: var(--background-color);
+  background-color: var(--surface-0);
 }
 
 .side-nav-outer-toolbar__body {
@@ -25,15 +25,19 @@
   position: relative;
 }
 
+// Sidebar panel — structural border, not subtle, so it's clearly visible in light mode.
 .side-nav-outer-toolbar__panel {
   background-color: var(--side-panel-background);
-  box-shadow: var(--shadow-sm);
-  flex: 0 0 250px;
+  border-right: 1px solid var(--border-color);
+  flex: 0 0 240px;
   height: 100%;
   overflow: hidden;
   position: relative;
-  transition: flex-basis 180ms ease, transform 180ms ease, width 180ms ease;
-  width: 250px;
+  transition:
+    flex-basis var(--transition-slow),
+    transform var(--transition-slow),
+    width var(--transition-slow);
+  width: 240px;
   z-index: 1500;
 }
 
@@ -59,7 +63,7 @@
 }
 
 .side-nav-outer-toolbar__scrim {
-  background: rgb(0 0 0 / 32%);
+  background: rgb(0 0 0 / 40%);
   border: 0;
   cursor: pointer;
   inset: 0;
@@ -98,12 +102,15 @@
   flex-grow: 1;
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
+// ── Header ─────────────────────────────────────────────────────────────────────
+// Structural border + shadow so the header clearly lifts above the content area.
+// border-color (not border-subtle) ensures visibility in light mode.
 
 .header-component {
-  box-shadow: var(--shadow-sm);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 0 var(--border-subtle);
   flex: 0 0 auto;
-  padding: 5px 0;
   position: relative;
   z-index: 1501;
 }
@@ -111,9 +118,9 @@
 .header-toolbar {
   align-items: center;
   display: flex;
-  gap: 1rem;
-  min-height: 36px;
-  padding-right: var(--content-padding);
+  gap: var(--space-2);
+  min-height: var(--toolbar-height);
+  padding: 0 var(--space-4) 0 0;
 }
 
 .header-toolbar__before,
@@ -125,19 +132,21 @@
 .header-toolbar__before {
   flex: 1;
   min-width: 0;
+  gap: var(--space-1);
 }
 
 .header-toolbar__after {
   flex: 0 0 auto;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 
+// App title — Syne gives it a distinctive brand feel at a legible size.
 .header-title {
   color: var(--text-primary);
-  font-family: 'Syne', var(--font-family-sans);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -153,19 +162,20 @@
   position: relative;
 }
 
+// Popover panel — floats above the page; uses the full shadow tier.
 .header-popover {
   position: relative;
 }
 
 .header-popover__panel {
-  background: var(--base-bg);
+  background: var(--surface-1);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
+  top: calc(100% + var(--space-2));
   z-index: 1700;
 }
 
@@ -173,40 +183,44 @@
   width: min(460px, calc(100vw - 20px));
 }
 
+// Notification badge — sits on top of header icon buttons.
 .app-badge {
   align-items: center;
-  background-color: var(--error-color);
+  background: var(--accent-color);
+  border: 2px solid var(--surface-1);
   border-radius: 10px;
   color: #fff;
   display: flex;
-  font-size: 12px;
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-semibold);
   justify-content: center;
   min-width: 18px;
-  padding: 1px 5px;
+  padding: 1px 4px;
+  pointer-events: none;
   position: absolute;
-  right: -10%;
-  top: -10%;
+  right: -4px;
+  top: -4px;
 }
 
-// ── Sidebar menu ──────────────────────────────────────────────────────────────
+// ── Sidebar menu ───────────────────────────────────────────────────────────────
 
 .side-navigation-menu {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 100%;
-  width: 250px !important;
+  width: 240px !important;
 
   .menu-container {
     background-color: var(--side-panel-background);
     display: flex;
     flex: 1;
     flex-direction: column;
-    font-size: var(--font-size-sm, 13px);
+    font-size: var(--font-size-sm);
     min-height: 0;
     overflow-y: auto;
     padding-bottom: var(--footer-height);
-    padding-top: 8px;
+    padding-top: var(--space-2);
   }
 
   &__nav {
@@ -216,40 +230,56 @@
     width: 100%;
   }
 
+  // Section — groups of related nav items.
+  // Bottom border acts as a visual breathing gap between groups.
   &__section {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-subtle);
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
+  // Nav item — base styles shared by parent and child items.
   &__item {
     align-items: center;
     background: transparent;
     border: 0;
-    color: inherit;
+    border-left: 3px solid transparent; // reserve space to prevent layout shift on select
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     font: inherit;
     min-height: 36px;
     padding: 0;
     text-align: left;
-    transition: background 150ms ease, color 150ms ease;
+    transition:
+      background var(--transition-base),
+      color var(--transition-base),
+      border-color var(--transition-base);
     width: 100%;
 
     &:hover {
-      background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+      background: var(--surface-2);
+      color: var(--text-primary);
     }
 
+    // Selected state — Fluent accent rail + tinted background.
     &.is-selected {
-      background: color-mix(in srgb, var(--accent-color) 18%, transparent);
-      border-left: 3px solid var(--accent-color);
+      background: var(--surface-2);
+      border-left-color: var(--accent-color);
       color: var(--accent-color);
       font-weight: var(--font-weight-semibold);
     }
   }
 
+  // Parent item — slightly heavier weight for group labels.
   &__item--parent {
-    font-weight: var(--font-weight-semibold, 600);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
   }
 
+  // Chevron — CSS-only expand/collapse indicator.
   &__chevron {
     border-bottom: 1.5px solid currentcolor;
     border-right: 1.5px solid currentcolor;
@@ -257,69 +287,111 @@
     flex: 0 0 7px;
     height: 7px;
     margin-left: auto;
-    margin-right: 1rem;
-    opacity: 0.75;
+    margin-right: var(--space-4);
+    opacity: 0.5;
     transform: rotate(45deg);
-    transition: transform 150ms ease;
+    transition: transform var(--transition-base), opacity var(--transition-base);
     width: 7px;
 
     &.is-expanded {
+      opacity: 0.8;
       transform: rotate(225deg);
     }
   }
 
+  // Parent with an active child — tints the parent label.
   &__section.has-selected-child > &__item--parent {
     color: var(--accent-color);
-    font-weight: var(--font-weight-semibold);
   }
 
+  // Icon column — fixed width creates the icon rail.
   &__icon {
     align-items: center;
+    color: inherit;
     display: inline-flex;
     flex: 0 0 var(--side-panel-min-width);
+    font-size: 1.1rem;
     justify-content: center;
     margin: 0 !important;
+    opacity: 0.75;
     width: var(--side-panel-min-width) !important;
+
+    .is-selected & {
+      opacity: 1;
+    }
   }
 
   &__text {
     overflow: hidden;
-    padding-right: 0.75rem;
+    padding-right: var(--space-3);
     text-overflow: ellipsis;
   }
 
-  &__item--child &__text {
-    font-weight: normal;
-    padding-left: var(--side-panel-min-width);
-  }
-
-  &.compact {
-    .side-navigation-menu__item.is-selected {
-      border-left: none;
-    }
+  // Child item — indented; inherits icon rail width.
+  &__item--child {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    min-height: 32px;
 
     .side-navigation-menu__text {
+      font-weight: var(--font-weight-regular);
+      padding-left: var(--side-panel-min-width);
+    }
+
+    &.is-selected {
+      color: var(--accent-color);
+    }
+  }
+
+  // Children container — slight indent for the sub-list.
+  &__children {
+    border-top: 1px solid var(--border-subtle);
+    background: color-mix(in srgb, var(--surface-0) 50%, var(--surface-1) 50%);
+    padding: var(--space-1) 0;
+  }
+
+  // Compact (icon-only) mode — hide text, center icon.
+  &.compact {
+    .side-navigation-menu__item {
+      border-left-color: transparent;
+
+      &.is-selected {
+        border-left-color: var(--accent-color);
+        background: var(--surface-2);
+      }
+    }
+
+    .side-navigation-menu__text,
+    .side-navigation-menu__chevron {
       opacity: 0;
+      pointer-events: none;
+    }
+
+    .side-navigation-menu__icon {
+      opacity: 1;
     }
   }
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
+// ── Footer ─────────────────────────────────────────────────────────────────────
 
 .footer {
-  display: block;
-  color: var(--base-text-color-alpha);
-  padding: 20px 0 16px var(--footer-left-padding);
   background-color: var(--side-panel-background);
-  height: var(--footer-height);
-  position: absolute;
+  border-top: 1px solid var(--border-subtle);
   bottom: 0;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-xxs);
+  height: var(--footer-height);
   left: 0;
-  right: 0;
   opacity: 0;
+  padding: 0 0 0 var(--footer-left-padding);
+  position: absolute;
+  right: 0;
+  transition: opacity var(--transition-slow);
 
   .side-nav-outer-toolbar__body.is-open & {
     opacity: 1;
-    transition: opacity 0.4s;
   }
 }

@@ -19,16 +19,20 @@ export const CashRegisterPage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
-        {
-          text: 'Ver turnos',
-          type: 'info',
-          onClick: () => {
-            if (!selectedRow) return;
-            navigate(`/cash-register/${selectedRow.id}/shifts`);
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => ({
+        selection: [
+          {
+            text: 'Ver turnos',
+            type: 'info',
+            group: 'navigation',
+            groupLabel: 'Navegación',
+            onClick: () => {
+              if (!selectedRow) return;
+              navigate(`/cash-register/${selectedRow.id}/shifts`);
+            },
           },
-        },
-      ],
+        ],
+      }),
     }),
     [navigate],
   );

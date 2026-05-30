@@ -226,6 +226,40 @@ export const SalePage = () => {
     documentsEnabled,
   });
 
+  const rowActions = (row: DataRecord) => {
+    const saleId = row.id != null ? String(row.id) : undefined;
+    if (!saleId) return [];
+
+    return [
+      {
+        text: 'Vista previa',
+        icon: 'ph-eye',
+        onClick: () => salePrintPreview.openPreview(saleId),
+      },
+      {
+        text: 'Imprimir',
+        icon: 'ph-printer',
+        onClick: () => print(saleId),
+      },
+      {
+        text: 'Duplicar',
+        icon: 'ph-copy',
+        onClick: () => cloneSaleToForm({
+          saleId,
+          emit,
+          addEventName: saleEvents.ADD,
+          loadingEventName: FORM_EVENTS.LOADING,
+        }),
+      },
+      {
+        text: 'Anular',
+        icon: 'ph-x-circle',
+        type: 'danger',
+        onClick: () => voidSale(saleId),
+      },
+    ];
+  };
+
   return (
     <div id={container}>
       <DataGridView
@@ -236,6 +270,7 @@ export const SalePage = () => {
         fields={fields}
         allowAdd={true}
         toolbar={toolbar}
+        rowActions={rowActions}
         detailUrl={saleEndpoints.items('{id}')}
         detailFields={gridDetailFields}
         events={saleEvents}

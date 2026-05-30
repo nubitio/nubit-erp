@@ -1,18 +1,30 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Native Form — enterprise-grade form control styling.
+//
+// Controls use a consistent 28px min-height for comfortable touch targets
+// while staying compact enough for dense dialogs.
+// All colours reference design tokens — no hardcoded hex.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Form root ──────────────────────────────────────────────────────────────────
+
 .native-form {
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3, 12px);
-  color: var(--base-text-color);
+  gap: var(--space-3);
 }
 
 .native-form--with-detail {
   min-height: min(680px, calc(100vh - 180px));
 }
 
+// ── Master-detail layout ───────────────────────────────────────────────────────
+
 .native-form__master-detail {
   display: grid;
+  gap: var(--space-4);
   grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
-  gap: 16px;
   min-height: inherit;
 }
 
@@ -21,49 +33,60 @@
   min-width: 0;
 }
 
+// ── Field grid ─────────────────────────────────────────────────────────────────
+
 .native-form__grid {
   display: grid;
+  gap: var(--space-3) var(--space-3);
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 10px 12px;
 }
 
 .native-form__field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--space-1);
   grid-column: span var(--native-form-col, 12);
 }
 
+// ── Labels ─────────────────────────────────────────────────────────────────────
+// Uppercase + letter-spacing at xs size is the Fluent label pattern —
+// clearly separates labels from values without needing bold weight.
+
 .native-form__label {
-  font-size: var(--font-size-xs, 12px);
   color: var(--text-secondary);
-  font-weight: var(--font-weight-medium, 500);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   letter-spacing: 0.01em;
 }
 
 .native-form__label--required::after {
+  color: var(--error-color);
   content: ' *';
-  color: var(--error-color, #dc2626);
 }
 
+// ── Base control ───────────────────────────────────────────────────────────────
+
 .native-form__control {
-  width: 100%;
-  min-height: 28px;
-  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.16)) 88%, var(--base-text-color, #111));
-  border-radius: var(--radius-sm, 6px);
-  background: var(--surface-1, transparent);
-  color: var(--base-text-color, inherit);
-  padding: 4px 9px;
-  font: inherit;
-  font-size: var(--font-size-sm, 13px);
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   box-sizing: border-box;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  min-height: 30px;
+  padding: var(--space-1) var(--space-2);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+  width: 100%;
 }
 
 .native-form__control:focus {
-  border-color: var(--accent-color, #0e7a50);
-  outline: 2px solid var(--focus-ring-color, rgba(14, 122, 80, 0.24));
-  outline-offset: 1px;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+  outline: none;
 }
 
 .native-form__control--action {
@@ -75,24 +98,27 @@
 }
 
 .native-form__control.is-error {
-  border-color: var(--error-color, #dc2626);
+  border-color: var(--error-color);
 
   &:focus {
-    border-color: var(--error-color, #dc2626);
-    outline-color: color-mix(in srgb, var(--error-color, #dc2626) 24%, transparent);
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error-color) 20%, transparent);
   }
 }
 
 .native-form__control:disabled,
 .native-form__control[readonly] {
-  opacity: 0.68;
+  background: var(--surface-0);
   cursor: not-allowed;
+  opacity: 0.72;
 }
 
+// ── Input group (control + inlined actions) ────────────────────────────────────
+
 .native-form__input-group {
-  position: relative;
-  display: flex;
   align-items: stretch;
+  display: flex;
+  position: relative;
   width: 100%;
 }
 
@@ -101,38 +127,40 @@
 }
 
 .native-form__input-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
+  align-items: center;
   bottom: 0;
   display: flex;
-  align-items: center;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .native-form__input-button {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 100%;
-  padding: 0;
   background: transparent;
   border: 0;
-  color: var(--text-secondary, #667085);
-  font-size: 15px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
   cursor: pointer;
-  border-radius: var(--radius-sm, 6px);
-  transition: color 120ms ease;
+  display: flex;
+  font-size: var(--font-size-md);
+  height: 100%;
+  justify-content: center;
+  padding: 0;
+  transition: color var(--transition-base);
+  width: 30px;
+
+  &:hover:not(:disabled) {
+    color: var(--accent-color);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
-.native-form__input-button:hover:not(:disabled) {
-  color: var(--accent-color, #0e7a50);
-}
-
-.native-form__input-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+// ── Lookup (combobox-style) ────────────────────────────────────────────────────
 
 .native-form__lookup {
   position: relative;
@@ -140,31 +168,31 @@
 
 .native-form__lookup .native-form__control {
   padding-right: 30px;
-  transition: padding-right 120ms ease;
+  transition: padding-right var(--transition-fast);
 }
 
 .native-form__lookup.has-value .native-form__control {
   padding-right: 52px;
 }
 
-.native-form__lookup-toggle {
+.native-form__lookup-toggle,
+.native-form__lookup-clear {
   align-items: center;
   background: transparent;
   border: 0;
-  color: var(--text-secondary, #667085);
+  color: var(--text-tertiary);
   cursor: pointer;
   display: inline-flex;
   height: 24px;
   justify-content: center;
   padding: 0;
   position: absolute;
-  right: 4px;
-  top: 2px;
+  top: 3px;
+  transition: color var(--transition-base);
   width: 24px;
-  transition: color 120ms ease;
 
   &:hover {
-    color: var(--base-text-color, #111);
+    color: var(--text-primary);
   }
 
   &:focus-visible {
@@ -172,65 +200,48 @@
   }
 }
 
+.native-form__lookup-toggle {
+  right: 4px;
+}
+
 .native-form__lookup-clear {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  color: var(--text-secondary, #667085);
-  cursor: pointer;
-  display: inline-flex;
-  height: 24px;
-  justify-content: center;
-  padding: 0;
-  position: absolute;
   right: 28px;
-  top: 2px;
-  width: 24px;
-  transition: color 120ms ease;
 }
 
-.native-form__lookup-clear:hover {
-  color: var(--base-text-color, #111);
-}
-
+// Dropdown menu
 .native-form__lookup-menu {
-  background: var(--surface-1, #fff);
-  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.16)) 88%, var(--base-text-color, #111));
-  border-radius: var(--radius-sm, 8px);
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   left: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   max-height: 240px;
   overflow: auto;
-  padding: 4px;
+  padding: var(--space-1);
   position: absolute;
   right: 0;
   z-index: 20;
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--base-text-color, #111) 16%, transparent);
-    border-radius: 3px;
+    background: var(--border-color);
+    border-radius: var(--radius-sm);
   }
   &::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--base-text-color, #111) 28%, transparent);
+    background: color-mix(in srgb, var(--accent-color) 50%, var(--border-color));
   }
 }
 
 .native-form__lookup-option,
 .native-form__lookup-status {
-  border-radius: var(--radius-sm, 6px);
-  color: var(--base-text-color, #111);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   display: block;
   font: inherit;
-  font-size: var(--font-size-sm, 13px);
-  padding: 7px 8px;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-2);
   text-align: left;
   width: 100%;
 }
@@ -239,44 +250,47 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
-}
-
-.native-form__lookup-option:hover {
-  background: color-mix(in srgb, var(--base-text-color, #111) 8%, transparent);
-}
-
-.native-form__lookup-option[aria-selected='true'] {
-  background: var(--accent-color, #0e7a50);
-  color: #fff;
-  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast);
 
   &:hover {
-    background: color-mix(in srgb, var(--accent-color, #0e7a50) 88%, #000);
+    background: var(--surface-2);
+  }
+
+  &[aria-selected='true'] {
+    background: var(--accent-color);
     color: #fff;
+    font-weight: var(--font-weight-medium);
+
+    &:hover {
+      background: var(--accent-hover);
+    }
   }
 }
 
 .native-form__lookup-status {
-  color: var(--text-secondary, #667085);
+  color: var(--text-tertiary);
 }
 
+// ── Textarea ───────────────────────────────────────────────────────────────────
+
 .native-form__textarea {
-  min-height: 64px;
+  min-height: 72px;
   resize: vertical;
 }
 
+// ── Checkbox / radio ───────────────────────────────────────────────────────────
+
 .native-form__checkbox,
 .native-form__radio-list {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 28px;
+  display: flex;
+  gap: var(--space-2);
+  min-height: 30px;
 }
 
 .native-form__checkbox input,
 .native-form__radio-item input {
-  accent-color: var(--accent-color, #0e7a50);
+  accent-color: var(--accent-color);
 }
 
 .native-form__radio-list {
@@ -284,25 +298,29 @@
 }
 
 .native-form__radio-item {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  display: inline-flex;
+  gap: var(--space-2);
 }
 
+// ── HTML preview ───────────────────────────────────────────────────────────────
+
 .native-form__html-preview {
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   min-height: 80px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.16));
-  border-radius: var(--radius-sm, 8px);
-  padding: 10px;
-  background: var(--surface-1, transparent);
+  padding: var(--space-3);
 }
+
+// ── Validation error ───────────────────────────────────────────────────────────
 
 .native-form__error {
   align-items: center;
-  color: var(--error-color, #dc2626);
+  color: var(--error-color);
   display: flex;
-  font-size: var(--font-size-xs, 12px);
-  gap: 4px;
+  font-size: var(--font-size-xs);
+  gap: var(--space-1);
 
   i {
     flex: 0 0 auto;
@@ -310,61 +328,82 @@
   }
 }
 
+// ── Section / tabs / detail panels ────────────────────────────────────────────
+// Bordered containers that group related fields. Tabs variant adds a nav row.
+
 .native-form__section,
 .native-form__tabs,
 .native-form__detail {
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  min-height: 240px;
   height: 100%;
-  border: 1px solid color-mix(in srgb, var(--border-color, rgba(0, 0, 0, 0.12)) 90%, var(--base-text-color, #111));
-  border-radius: var(--radius-md, 12px);
-  padding: 0;
-  background: var(--surface-1, transparent);
+  min-height: 240px;
   overflow: hidden;
+  padding: 0;
 }
 
 .native-form__section-title,
 .native-form__detail-title {
-  margin: 0 0 var(--space-3, 12px);
-  font-size: var(--font-size-sm, 14px);
-  font-weight: var(--font-weight-semibold, 600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--space-3);
 }
 
+// Section/detail heading bar (sticky toolbar inside the panel)
 .native-form__detail-heading {
   align-items: center;
-  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  background: var(--surface-0);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: var(--toolbar-height);
+  padding: 0 var(--space-3);
 }
 
 .native-form__detail-title {
   margin: 0;
 }
 
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+
 .native-form__tabs-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: var(--space-4, 16px);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .native-form__tab-button {
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
-  border-radius: var(--radius-sm, 8px);
   background: transparent;
-  color: var(--base-text-color);
-  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
   cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-3);
+  transition:
+    border-color var(--transition-base),
+    background var(--transition-base),
+    color var(--transition-base);
+
+  &:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+  }
 }
 
 .native-form__tab-button--active {
-  border-color: var(--accent-color, #0e7a50);
-  color: var(--accent-color, #0e7a50);
-  background: color-mix(in srgb, var(--accent-color, #0e7a50) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  font-weight: var(--font-weight-medium);
 }
+
+// ── Detail inline table ────────────────────────────────────────────────────────
 
 .native-form__detail-table-wrap {
   flex: 1 1 auto;
@@ -373,41 +412,39 @@
 }
 
 .native-form__detail-table {
-  width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   min-width: 820px;
   table-layout: fixed;
+  width: 100%;
 }
 
 .native-form__detail-table th,
 .native-form__detail-table td {
-  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
-  padding: 5px 10px;
+  padding: var(--space-1) var(--space-3);
   text-align: left;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
 }
 
-.native-form__detail-table th:first-child,
-.native-form__detail-table td:first-child {
-  width: 300px;
-}
-
 .native-form__detail-table th {
-  background: color-mix(in srgb, var(--surface-2, var(--base-bg)) 48%, var(--surface-1, transparent));
-  color: var(--text-primary, var(--base-text-color));
-  font-weight: var(--font-weight-semibold, 600);
+  background: var(--surface-0);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
   position: sticky;
+  text-transform: uppercase;
   top: 0;
   z-index: 1;
 }
 
 .native-form__detail-table td .native-form__control {
   min-height: 24px;
-  padding: 2px 6px;
+  padding: 2px var(--space-2);
 }
 
 .native-form__detail-table .app-icon-button {
@@ -415,23 +452,25 @@
 }
 
 .native-form__detail-empty {
-  color: var(--text-secondary, #888);
-  font-size: 1.05rem;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-md);
   height: 140px;
   text-align: center !important;
 }
 
 .native-form__detail-actions {
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
   margin-top: 0;
-  padding: 10px 12px;
+  padding: var(--space-3);
 }
 
 .native-form__detail-actions .app-button {
   min-width: 120px;
 }
+
+// ── Responsive ────────────────────────────────────────────────────────────────
 
 @media (max-width: 720px) {
   .native-form__master-detail {

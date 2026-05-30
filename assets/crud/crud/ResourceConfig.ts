@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
 import type { Field, FieldDef } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
-import type { DataRecord, FormEventNames, ToolbarButtonItem } from '@nubit/core';
+import type { DataRecord, FormEventNames } from '@nubit/core';
 import type { FormHandle } from '../form/FormHandle';
 import type { GridHandle } from '../datagrid/GridHandle';
 import type { FormLayout } from '../form/FormLayout';
@@ -39,7 +39,32 @@ export interface ResourcePermissions {
   canBulkDelete?: boolean | (() => boolean);
 }
 
-export type ResourceToolbarItems = ToolbarButtonItem[] | ToolbarButtonItem[][];
+export type ResourceToolbarActionVariant = string;
+
+export interface ResourceToolbarAction {
+  key?: string;
+  text: string;
+  icon?: string;
+  hint?: string;
+  type?: ResourceToolbarActionVariant;
+  group?: string;
+  groupLabel?: string;
+  permission?: string;
+  visible?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}
+
+export type ResourceRowActions<T extends DataRecord = DataRecord> =
+  | ResourceToolbarAction[]
+  | ((row: T) => ResourceToolbarAction[]);
+
+export interface ResourceToolbarItems {
+  primary?: ResourceToolbarAction[];
+  selection?: ResourceToolbarAction[];
+  utility?: ResourceToolbarAction[];
+  showRefresh?: boolean;
+}
 
 export interface ResourceToolbarContext<T extends DataRecord = DataRecord> {
   resource: ResourceConfig<T>;
@@ -116,6 +141,7 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   dialogHeight?: number;
   format?: 'json' | 'multipart';
   toolbar?: ResourceToolbar<T>;
+  rowActions?: ResourceRowActions<T>;
   onSaveSuccess?: (response: T) => void;
   onSaveError?: (error?: unknown) => void;
   onDeleteSuccess?: (response: T) => void;

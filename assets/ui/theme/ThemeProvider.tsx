@@ -36,18 +36,27 @@ function resolveTheme(mode: ThemeMode): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+// Append build-time cache-bust so hard-refreshes always get the latest CSS.
+// __THEME_VERSION__ is replaced at build time; falls back to a timestamp in dev.
+declare const __THEME_VERSION__: string | undefined;
+const THEME_VERSION =
+  typeof __THEME_VERSION__ !== 'undefined' ? __THEME_VERSION__ : String(Date.now());
+
 function setThemeToDOM(href: string): Promise<void> {
+  const versioned = `${href}?v=${THEME_VERSION}`;
   return new Promise((resolve) => {
     const id = 'theme-link';
     let link = document.getElementById(id) as HTMLLinkElement | null;
     if (link) {
-      if (link.href.endsWith(href)) { resolve(); return; }
-      link.href = href;
+      if (link.getAttribute('data-theme-href') === href) { resolve(); return; }
+      link.href = versioned;
+      link.setAttribute('data-theme-href', href);
     } else {
       link = document.createElement('link');
       link.id = id;
       link.rel = 'stylesheet';
-      link.href = href;
+      link.href = versioned;
+      link.setAttribute('data-theme-href', href);
       document.head.appendChild(link);
     }
     link.onload = () => resolve();

@@ -25,19 +25,23 @@ export const PriceListPage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
-        {
-          text: 'Precios',
-          type: 'info',
-          onClick: () => {
-            if (!selectedRow) {
-              toast('Debe seleccionar una tarifa', 'warning');
-              return;
-            }
-            emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => ({
+        selection: [
+          {
+            text: 'Precios',
+            type: 'info',
+            group: 'edit',
+            groupLabel: 'Edición',
+            onClick: () => {
+              if (!selectedRow) {
+                toast('Debe seleccionar una tarifa', 'warning');
+                return;
+              }
+              emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
+            },
           },
-        },
-      ],
+        ],
+      }),
     }),
     [emit],
   );

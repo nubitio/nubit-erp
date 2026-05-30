@@ -4,7 +4,7 @@ import { DialogView } from '../dialog/DialogView';
 import { FormView, FORM_EVENTS } from '../form/FormView';
 import { useCrudPage } from './useCrudPage';
 import { useCoreTranslation, useEvents } from '@nubit/core';
-import type { ResourceConfig } from './ResourceConfig';
+import type { ResourceConfig, ResourceRowActions } from './ResourceConfig';
 import type { BulkAction } from './BulkAction';
 import type { Field } from '../field/Field';
 import { AuditTrailPanel } from './AuditTrailPanel';
@@ -429,6 +429,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         mode={resolvedResource.mode}
         stateStoringEnabled={resolvedResource.stateStoring}
         toolbar={toolbar}
+        rowActions={resolvedResource.rowActions as ResourceRowActions | undefined}
         onAdd={() => openAddDialog(null)}
         onEdit={openEditDialog}
         onDelete={(row) => formRef.current?.deleteRow(row)}

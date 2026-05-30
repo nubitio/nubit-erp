@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
@@ -18,7 +19,8 @@ import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
 import type { FilterRule } from '../field/FilterRule';
-import type { ToolbarButtonItem } from '@nubit/core';
+import type { ResourceToolbarAction, ResourceToolbarItems } from '../crud/ResourceConfig';
+import { useSmartCrudRoles } from '../crud/SmartCrudRolesContext';
 import { NativeEntitySelect } from '../form/NativeFormView';
 
 type SortRule = { selector: string; desc: boolean };
@@ -113,27 +115,168 @@ function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex
   return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
 
-function buildToolbarButtons(items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) {
-  return items.flatMap((item, index) => {
-    const buttonItems = Array.isArray(item) ? item : [item];
-    return buttonItems.map((button, subIndex) => {
-      if (button.visible === false) return null;
-      return (
-        <button
-          key={`${index}-${subIndex}`}
-          type="button"
-          className="app-button app-button--secondary app-button--sm"
-          onClick={button.onClick}
-          disabled={button.disabled}
-          title={button.hint}
-          aria-label={button.hint ?? button.text}
-        >
-          {button.icon && <i className={`ph ${button.icon}`} aria-hidden="true" />}
-          {button.text && <span>{button.text}</span>}
-        </button>
-      );
-    });
-  });
+function normalizeIcon(icon?: string): string | undefined {
+  if (!icon) return undefined;
+  return icon.includes('ph ') || icon.startsWith('ph-') ? icon : `ph-${icon}`;
+}
+
+function getToolbarKey(action: ResourceToolbarAction, index: number): string {
+  return action.key ?? action.text ?? String(index);
+}
+
+function getToolbarButtonClass(action: ResourceToolbarAction, iconOnly = false): string {
+  if (iconOnly) return 'app-icon-button native-datagrid__toolbar-icon-action';
+  const variant = action.type === 'danger' ? 'danger' : action.type === 'primary' ? 'primary' : 'secondary';
+  return `app-button app-button--${variant} app-button--sm`;
+}
+
+function renderToolbarButton(action: ResourceToolbarAction, index: number, iconOnly = false) {
+  if (action.visible === false) return null;
+  const icon = normalizeIcon(action.icon);
+  return (
+    <button
+      key={getToolbarKey(action, index)}
+      type="button"
+      className={getToolbarButtonClass(action, iconOnly)}
+      onClick={action.onClick}
+      disabled={action.disabled}
+      title={action.hint}
+      aria-label={action.hint ?? action.text}
+    >
+      {icon && <i className={`ph ${icon}`} aria-hidden="true" />}
+      {!iconOnly && action.text && <span>{action.text}</span>}
+    </button>
+  );
+}
+
+function isToolbarActionVisible(action: ResourceToolbarAction, permissions: string[]): boolean {
+  if (action.visible === false) return false;
+  if (!action.permission) return true;
+  return permissions.includes(action.permission);
+}
+
+function renderSelectionActionItem(
+  action: ResourceToolbarAction,
+  index: number,
+  disabled: boolean,
+) {
+  const icon = normalizeIcon(action.icon);
+  return (
+    <button
+      key={getToolbarKey(action, index)}
+      type="button"
+      className={`native-datagrid__actions-item${action.type === 'danger' ? ' native-datagrid__actions-item--danger' : ''}`}
+      onClick={action.onClick}
+      disabled={disabled || action.disabled}
+      role="menuitem"
+    >
+      {icon && <i className={`ph ${icon}`} aria-hidden="true" />}
+      <span>{action.text}</span>
+    </button>
+  );
+}
+
+function getResolvedRowActions(
+  row: DataRecord,
+  rowActions: DataGridViewOptions['rowActions'],
+): ResourceToolbarAction[] {
+  if (!rowActions) return [];
+  return typeof rowActions === 'function' ? rowActions(row) : rowActions;
+}
+
+function renderRowActionItem(
+  action: ResourceToolbarAction,
+  index: number,
+  permissions: string[],
+) {
+  if (!isToolbarActionVisible(action, permissions)) return null;
+  return renderSelectionActionItem(action, index, false);
+}
+
+function renderSelectionActions(
+  actionsLabel: string,
+  selectedCount: number,
+  actions: ResourceToolbarAction[] = [],
+  permissions: string[],
+) {
+  const visibleActions = actions.filter((action) => isToolbarActionVisible(action, permissions));
+  if (visibleActions.length === 0) return null;
+
+  const dangerActions = visibleActions.filter((action) => action.type === 'danger');
+  const regularActions = visibleActions.filter((action) => action.type !== 'danger');
+  const groups = regularActions.reduce<Record<string, ResourceToolbarAction[]>>((acc, action) => {
+    const group = action.group ?? 'default';
+    acc[group] = acc[group] ?? [];
+    acc[group].push(action);
+    return acc;
+  }, {});
+
+  const disabled = selectedCount === 0;
+  const label = selectedCount > 0 ? `${actionsLabel} (${selectedCount})` : actionsLabel;
+
+  return (
+    <details className="native-datagrid__actions-menu">
+      <summary
+        className="app-button app-button--secondary app-button--sm"
+        aria-disabled={disabled}
+        onClick={(event) => {
+          if (disabled) event.preventDefault();
+        }}
+      >
+        <span>{label}</span>
+        <i className="ph ph-caret-down" aria-hidden="true" />
+      </summary>
+      <div className="native-datagrid__actions-popover" role="menu">
+        {Object.entries(groups).map(([group, items]) => (
+          <div key={group} className="native-datagrid__actions-group">
+            {items.length > 1 && items[0]?.groupLabel && (
+              <div className="native-datagrid__actions-group-label">
+                {items[0].groupLabel}
+              </div>
+            )}
+            {items.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+          </div>
+        ))}
+        {dangerActions.length > 0 && (
+          <div className="native-datagrid__actions-danger-group">
+            {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function buildToolbar(
+  options: DataGridViewOptions,
+  t: ReturnType<typeof useCoreTranslation>['t'],
+  onAddClick: () => void,
+  onEditClick: () => void,
+  onDeleteClick: () => void,
+): ResourceToolbarItems {
+  const actions: ResourceToolbarAction[] = [];
+
+  if (options.allowEdit) {
+    actions.push({ text: t('grid.buttonEdit'), group: 'edit', groupLabel: t('grid.buttonEdit'), onClick: onEditClick, disabled: options.editDisabled });
+  }
+  if (options.allowDelete) {
+    actions.push({ text: t('grid.buttonDelete'), type: 'danger', group: 'danger', groupLabel: t('grid.buttonDelete'), onClick: onDeleteClick, disabled: options.deleteDisabled });
+  }
+
+  return {
+    primary: options.toolbar?.primary ?? (options.allowAdd
+      ? [{
+          text: t('grid.buttonNew'),
+          icon: 'ph-plus',
+          type: 'primary',
+          onClick: onAddClick,
+          disabled: options.addDisabled,
+        }]
+      : undefined),
+    selection: [...actions, ...(options.toolbar?.selection ?? [])],
+    utility: options.toolbar?.utility,
+    showRefresh: options.toolbar?.showRefresh ?? true,
+  };
 }
 
 type FilterOperator = { value: string; label: string };
@@ -377,6 +520,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const { notify } = useCoreRuntime();
   const httpClient = useCoreHttpClient();
   const resourceStoreFactory = useResourceStoreFactory();
+  const toolbarPermissions = useSmartCrudRoles();
   const navigate = useNavigate();
   const [on, emit] = useEvents();
   const idField = useMemo(() => getIdField(options.fields), [options.fields]);
@@ -404,8 +548,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [expandedKeys, setExpandedKeys] = useState<Set<unknown>>(() => new Set());
   const [isGridLoading, setIsGridLoading] = useState(!options.manualLoad);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [openRowMenu, setOpenRowMenu] = useState<{
+    key: unknown;
+    rect: DOMRect;
+    actions: ResourceToolbarAction[];
+  } | null>(null);
   const onContentReadyRef = useRef(options.onContentReady);
   const onRowPreparedRef = useRef(options.onRowPrepared);
+  const tableWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     onContentReadyRef.current = options.onContentReady;
@@ -414,6 +564,54 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   useEffect(() => {
     onRowPreparedRef.current = options.onRowPrepared;
   }, [options.onRowPrepared]);
+
+  // Row actions menu: close on outside click, Escape, or when rows change
+  const closeRowMenu = useCallback(() => {
+    setOpenRowMenu(null);
+  }, []);
+
+  useEffect(() => {
+    if (!openRowMenu) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeRowMenu();
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.native-datagrid__row-actions-popover')) {
+        closeRowMenu();
+      }
+    };
+    const onScroll = () => {
+      closeRowMenu();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+
+    // Close on scroll of the table (very common when user scrolls while menu is open)
+    const wrap = tableWrapRef.current;
+    wrap?.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      wrap?.removeEventListener('scroll', onScroll);
+    };
+  }, [openRowMenu, closeRowMenu]);
+
+  // Close row menu if the underlying rows change (defensive)
+  useEffect(() => {
+    if (openRowMenu) closeRowMenu();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows.length]);
+
+  // Close row menu when delete confirm dialog opens
+  useEffect(() => {
+    if (confirmRow && openRowMenu) {
+      closeRowMenu();
+    }
+  }, [confirmRow, openRowMenu, closeRowMenu]);
 
   const source = useMemo(
     () =>
@@ -588,8 +786,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const hasCheckbox = options.selectionMode === 'multiple';
-  const hasRowActions = Boolean(options.inlineActions && (options.allowEdit || options.allowDelete) && options.mode !== 'minimal');
+  const hasRowActions = Boolean(
+    options.mode !== 'minimal' && (
+      (options.inlineActions && (options.allowEdit || options.allowDelete)) ||
+      options.rowActions
+    ),
+  );
   const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
+  const toolbar = buildToolbar(options, t, onAddClick, onEditClick, onDeleteClick);
 
   return (
     <div className="view datagrid-list">
@@ -610,28 +814,17 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               {options.mode === 'full' || !options.mode ? <div className="grid-header">{options.title}</div> : null}
               {options.beforeToolbar?.()}
               <div className="native-datagrid__toolbar-spacer" />
-              {options.allowAdd && (
-                <button type="button" className="app-button app-button--primary app-button--sm" onClick={onAddClick} disabled={options.addDisabled}>
-                  {t('grid.buttonNew')}
+              {toolbar.primary?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index))}
+              {renderSelectionActions(t('grid.buttonActions'), selectedRows.length, toolbar.selection, toolbarPermissions)}
+              {toolbar.utility?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index, true))}
+              {toolbar.showRefresh !== false && (
+                <button type="button" className="app-icon-button" aria-label={t('grid.buttonRefresh')} onClick={() => void loadRows()}>
+                  <i className="ph ph-arrow-clockwise" aria-hidden="true" />
                 </button>
               )}
-              {options.allowEdit && (
-                <button type="button" className="app-button app-button--secondary app-button--sm" onClick={onEditClick} disabled={options.editDisabled}>
-                  {t('grid.buttonEdit')}
-                </button>
-              )}
-              {options.allowDelete && (
-                <button type="button" className="app-button app-button--danger app-button--sm" onClick={onDeleteClick} disabled={options.deleteDisabled}>
-                  {t('grid.buttonDelete')}
-                </button>
-              )}
-              {buildToolbarButtons(options.toolbar)}
-              <button type="button" className="app-icon-button" aria-label={t('grid.buttonRefresh')} onClick={() => void loadRows()}>
-                <i className="ph ph-arrow-clockwise" aria-hidden="true" />
-              </button>
             </div>
           )}
-          <div className="native-datagrid__table-wrap">
+           <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
             <table className="native-datagrid__table">
               <thead>
                 <tr>
@@ -744,6 +937,27 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         : options.detailFields;
                     const detailUrl = options.detailUrl?.replace('{id}', String(key));
                     const expanded = expandedKeys.has(key);
+                    const rowActions: ResourceToolbarAction[] = [
+                      ...(options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT)
+                        ? [{
+                            text: t('grid.buttonEdit'),
+                            icon: 'ph-pencil-simple',
+                            onClick: () => {
+                              if (options.onEdit) options.onEdit(row);
+                              else emit(options.events!.EDIT!, { row });
+                            },
+                          }]
+                        : []),
+                      ...getResolvedRowActions(row, options.rowActions),
+                      ...(options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE)
+                        ? [{
+                            text: t('grid.buttonDelete'),
+                            icon: 'ph-trash',
+                            type: 'danger',
+                            onClick: () => setConfirmRow(row),
+                          }]
+                        : []),
+                    ];
 
                     return (
                       <React.Fragment key={String(key)}>
@@ -804,38 +1018,56 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
                             </td>
                           ))}
-                          {hasRowActions && (
-                            <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
-                              <div className="native-datagrid__row-actions">
-                                {options.allowEdit && (options.onEdit || options.events?.EDIT) && (
-                                  <button
-                                    type="button"
-                                    className="app-icon-button"
-                                    aria-label={t('grid.buttonEdit')}
-                                    title={t('grid.buttonEdit')}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (options.onEdit) options.onEdit(row);
-                                      else emit(options.events!.EDIT!, { row });
-                                    }}
-                                  >
-                                    <i className="ph ph-pencil-simple" aria-hidden="true" />
-                                  </button>
-                                )}
-                                {options.allowDelete && (options.onDelete || options.events?.DELETE) && (
-                                  <button
-                                    type="button"
-                                    className="app-icon-button"
-                                    aria-label={t('grid.buttonDelete')}
-                                    title={t('grid.buttonDelete')}
-                                    onClick={(e) => { e.stopPropagation(); setConfirmRow(row); }}
-                                  >
-                                    <i className="ph ph-trash" aria-hidden="true" />
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          )}
+                           {hasRowActions && (
+                             <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
+                               <div className="native-datagrid__row-actions">
+                                 {rowActions.length > 0 && (
+                                   <button
+                                     type="button"
+                                     className="app-icon-button"
+                                     aria-label={t('grid.buttonActions')}
+                                     title={t('grid.buttonActions')}
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                       const rowKey = key;
+
+                                       // Resolve actions at click time (avoids fragile re-lookup later)
+                                       const actionsAtOpen: ResourceToolbarAction[] = [
+                                         ...(options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT)
+                                           ? [{
+                                               text: t('grid.buttonEdit'),
+                                               icon: 'ph-pencil-simple',
+                                               onClick: () => {
+                                                 if (options.onEdit) options.onEdit(row);
+                                                 else emit(options.events!.EDIT!, { row });
+                                               },
+                                             }]
+                                           : []),
+                                         ...getResolvedRowActions(row, options.rowActions),
+                                         ...(options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE)
+                                           ? [{
+                                               text: t('grid.buttonDelete'),
+                                               icon: 'ph-trash',
+                                               type: 'danger' as const,
+                                               onClick: () => setConfirmRow(row),
+                                             }]
+                                           : []),
+                                       ].filter((a) => isToolbarActionVisible(a, toolbarPermissions));
+
+                                       setOpenRowMenu((current) =>
+                                         current && current.key === rowKey
+                                           ? null
+                                           : { key: rowKey, rect, actions: actionsAtOpen }
+                                       );
+                                     }}
+                                   >
+                                     <i className="ph ph-dots-three-vertical" aria-hidden="true" />
+                                   </button>
+                                 )}
+                               </div>
+                             </td>
+                           )}
                         </tr>
                         {expanded && detailUrl && detailFields && (
                           <tr className="native-datagrid__detail-row">
@@ -899,7 +1131,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               </div>
             </div>
           )}
-          {confirmRow && (
+           {confirmRow && (
             <div className="native-datagrid__confirm-overlay" role="alertdialog" aria-modal="true">
               <div className="native-datagrid__confirm-card">
                 <p className="native-datagrid__confirm-title">{t('dialog.confirmDeleteTitle')}</p>
@@ -915,15 +1147,56 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               </div>
             </div>
           )}
-          {isGridLoading && rows.length > 0 && (
-            <div className="native-datagrid__loading-overlay" aria-live="polite">
-              <div className="native-datagrid__loading-card">{loadingMessage || t('grid.loading')}</div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
+           {isGridLoading && rows.length > 0 && (
+             <div className="native-datagrid__loading-overlay" aria-live="polite">
+               <div className="native-datagrid__loading-card">{loadingMessage || t('grid.loading')}</div>
+             </div>
+           )}
+
+            {openRowMenu && createPortal(
+              <div
+                className="native-datagrid__row-actions-popover"
+                role="menu"
+                 style={{
+                   position: 'fixed',
+                   // Anchor the right edge of the menu to the right edge of the ⋮ button.
+                   // This makes the menu open to the left, which is what we want when the
+                   // actions column is the last column on the right of a wide table.
+                   right: `${Math.max(0, window.innerWidth - openRowMenu.rect.right + 4)}px`,
+                   top: (() => {
+                     const menuHeightEstimate = 180;
+                     const wouldOverflowBottom = openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight;
+                     if (wouldOverflowBottom) {
+                       return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
+                     }
+                     return `${openRowMenu.rect.bottom + 4}px`;
+                   })(),
+                   zIndex: 9999,
+                 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+               {(() => {
+                 const regular = openRowMenu.actions.filter((a) => a.type !== 'danger');
+                 const danger = openRowMenu.actions.filter((a) => a.type === 'danger');
+
+                 return (
+                   <>
+                     {regular.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions))}
+                     {danger.length > 0 && (
+                       <div className="native-datagrid__actions-danger-group">
+                         {danger.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions))}
+                       </div>
+                     )}
+                   </>
+                 );
+               })()}
+             </div>,
+             document.body
+           )}
+         </div>
+       </div>
+     </div>
+   );
+ });
 
 NativeDataGridView.displayName = 'NativeDataGridView';

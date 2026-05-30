@@ -26,7 +26,7 @@ const context = (target: ResourceConfig): ResourceToolbarContext => ({
 
 describe('resolveResourceToolbar', () => {
   it('returns static toolbar items unchanged', () => {
-    const toolbar = [{ text: 'Exportar' }];
+    const toolbar = { utility: [{ text: 'Exportar' }] };
     const target = resource({ toolbar });
 
     expect(resolveResourceToolbar(target, context(target))).toBe(toolbar);
@@ -34,11 +34,11 @@ describe('resolveResourceToolbar', () => {
 
   it('evaluates toolbar factories with the current selection context', () => {
     const target = resource({
-      toolbar: ({ selectedRow }: ResourceToolbarContext<DataRecord>) => [
-        { text: selectedRow?.name === 'A' ? 'Abrir A' : 'Abrir' },
-      ],
+      toolbar: ({ selectedRow }: ResourceToolbarContext<DataRecord>) => ({
+        selection: [{ text: selectedRow?.name === 'A' ? 'Abrir A' : 'Abrir' }],
+      }),
     });
 
-    expect(resolveResourceToolbar(target, context(target))).toEqual([{ text: 'Abrir A' }]);
+    expect(resolveResourceToolbar(target, context(target))).toEqual({ selection: [{ text: 'Abrir A' }] });
   });
 });

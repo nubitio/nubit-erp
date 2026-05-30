@@ -32,23 +32,27 @@ export const RolePage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: ({ selectedRow }: ResourceToolbarContext) => [
-        {
-          text: 'Permisos',
-          type: 'info',
-          onClick: () => {
-            const row = selectedRow as SelectedRole | undefined;
-            if (row) {
-              emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name, row });
-              httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
-                treeRef.current?.setItems(response.data);
-              });
-            } else {
-              toast('Debe seleccionar un rol', 'error');
-            }
+      toolbar: ({ selectedRow }: ResourceToolbarContext) => ({
+        selection: [
+          {
+            text: 'Permisos',
+            type: 'info',
+            group: 'security',
+            groupLabel: 'Seguridad',
+            onClick: () => {
+              const row = selectedRow as SelectedRole | undefined;
+              if (row) {
+                emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name, row });
+                httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
+                  treeRef.current?.setItems(response.data);
+                });
+              } else {
+                toast('Debe seleccionar un rol', 'error');
+              }
+            },
           },
-        },
-      ],
+        ],
+      }),
     }),
     [emit],
   );

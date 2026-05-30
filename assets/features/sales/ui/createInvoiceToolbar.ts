@@ -1,8 +1,4 @@
-type ToolbarAction = {
-  text: string;
-  type: string;
-  onClick: () => void;
-};
+import type { ResourceToolbarItems } from '@nubit/crud';
 
 type CreateInvoiceToolbarParams = {
   onSendSunat: () => void;
@@ -18,10 +14,12 @@ export const createInvoiceToolbar = ({
   onView,
   onConsultCdr,
   onConsultCpe,
-}: CreateInvoiceToolbarParams): ToolbarAction[] => [
-  { text: 'Enviar a SUNAT', type: 'info', onClick: onSendSunat },
-  { text: 'Enviar por correo', type: 'success', onClick: onSendEmail },
-  { text: 'Ver', type: 'primary', onClick: onView },
-  { text: 'Consulta CDR', type: 'warning', onClick: onConsultCdr },
-  { text: 'Consulta CPE', type: 'success', onClick: onConsultCpe },
-];
+}: CreateInvoiceToolbarParams): ResourceToolbarItems => ({
+  selection: [
+    { text: 'Ver', type: 'primary', group: 'view', groupLabel: 'Consulta', onClick: onView },
+    { text: 'Consulta CDR', type: 'warning', group: 'view', groupLabel: 'Consulta', onClick: onConsultCdr },
+    { text: 'Consulta CPE', type: 'success', group: 'view', groupLabel: 'Consulta', onClick: onConsultCpe },
+    { text: 'Enviar a SUNAT', type: 'info', group: 'delivery', groupLabel: 'Envío', onClick: onSendSunat },
+    { text: 'Enviar por correo', type: 'success', group: 'delivery', groupLabel: 'Envío', onClick: onSendEmail },
+  ],
+});

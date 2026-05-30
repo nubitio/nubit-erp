@@ -11,6 +11,7 @@ import { AdminShell, type AdminMenuItem } from '@nubit/admin';
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
+import { SettingsPanel } from '@nubit/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
@@ -54,6 +55,12 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
               />
             </div>
           ),
+        },
+        {
+          id: 'display-settings',
+          icon: 'ph ph-sliders-horizontal',
+          label: 'Display settings',
+          renderPanel: ({ close }) => <SettingsPanel onClose={close} />,
         },
       ]}
       renderUserMenu={({ close }) => <UserMenuSection showAvatar onAction={close} />}

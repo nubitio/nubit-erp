@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { ThemeProvider } from '@nubit/ui';
+import { ThemeProvider, DensityProvider, useAccentColor } from '@nubit/ui';
 import { AuthProvider } from '@app/contexts/auth';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
@@ -12,6 +12,13 @@ import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubit/core';
 const EFECT_API_BASE_URL = '/api/';
 import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
+
+// Mounts inside DensityProvider; applies the persisted accent color on every
+// page load — even when the SettingsPanel has never been opened.
+const AccentColorApplier = () => {
+  useAccentColor();
+  return null;
+};
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -37,7 +44,9 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
 
   return (
     <ThemeProvider storageKey="app-theme" themePrefix="app-theme-" basePath="/themes/">
-      <Router>
+      <DensityProvider>
+        <AccentColorApplier />
+        <Router>
         <CoreProvider
           http={httpConfig}
           runtime={runtimeConfig}
@@ -60,7 +69,8 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
             </AuthProvider>
           </CoreConfigProvider>
         </CoreProvider>
-      </Router>
+        </Router>
+      </DensityProvider>
     </ThemeProvider>
   );
 };

@@ -29,7 +29,7 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
   sort: [{ selector: 'createdAt', desc: true }],
   dialogWidth: 900,
   dialogHeight: 720,
-  permissions: { canAdd: true, canEdit: true, canDelete: true },
+  permissions: { canAdd: false, canEdit: false, canDelete: false },
 });
 
 export const InvoicePage = () => {
@@ -50,29 +50,45 @@ export const InvoicePage = () => {
   const resource = useMemo(
     () => ({
       ...baseResource,
-      toolbar: [
-        {
-          text: 'Enviar a SUNAT',
-          type: 'info',
-          onClick: () => runSendInvoiceToSunatAction(actionDeps),
-        },
-        {
-          text: 'Enviar por correo',
-          type: 'success',
-          onClick: () => runSendInvoiceEmailAction(actionDeps),
-        },
-        { text: 'Ver', type: 'primary', onClick: () => runOpenInvoiceReceiptAction(actionDeps) },
-        {
-          text: 'Consulta CDR',
-          type: 'warning',
-          onClick: () => runConsultInvoiceCdrAction(actionDeps),
-        },
-        {
-          text: 'Consulta CPE',
-          type: 'success',
-          onClick: () => runConsultInvoiceCpeAction(actionDeps),
-        },
-      ],
+      toolbar: {
+        selection: [
+          {
+            text: 'Ver',
+            type: 'primary',
+            group: 'view',
+            groupLabel: 'Consulta',
+            onClick: () => runOpenInvoiceReceiptAction(actionDeps),
+          },
+          {
+            text: 'Consulta CDR',
+            type: 'warning',
+            group: 'view',
+            groupLabel: 'Consulta',
+            onClick: () => runConsultInvoiceCdrAction(actionDeps),
+          },
+          {
+            text: 'Consulta CPE',
+            type: 'success',
+            group: 'view',
+            groupLabel: 'Consulta',
+            onClick: () => runConsultInvoiceCpeAction(actionDeps),
+          },
+          {
+            text: 'Enviar a SUNAT',
+            type: 'info',
+            group: 'delivery',
+            groupLabel: 'Envío',
+            onClick: () => runSendInvoiceToSunatAction(actionDeps),
+          },
+          {
+            text: 'Enviar por correo',
+            type: 'success',
+            group: 'delivery',
+            groupLabel: 'Envío',
+            onClick: () => runSendInvoiceEmailAction(actionDeps),
+          },
+        ],
+      },
     }),
     [actionDeps],
   );

@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import type { DataGridEventNames, DataRecord, ToolbarButtonItem } from '@nubit/core';
+import type { DataGridEventNames, DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
 import type { GridHandle } from './GridHandle';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
+import type { ResourceRowActions, ResourceToolbarItems } from '../crud/ResourceConfig';
 
 export interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord[];
@@ -24,7 +25,8 @@ export interface DataGridViewOptions {
   detailUrl?: string;
   fields: Field[];
   detailFields?: Field[] | ((parentRow: DataRecord) => Field[]);
-  toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
+  toolbar?: ResourceToolbarItems;
+  rowActions?: ResourceRowActions;
   /**
    * @deprecated Prefer onAdd/onEdit/onDelete callbacks. Events remain as a
    * legacy fallback for direct DataGridView consumers.

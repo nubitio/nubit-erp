@@ -1,24 +1,7 @@
+// Static design tokens — single source of truth for theme-independent values.
+// Must be loaded before any dynamic theme stylesheet (Firefox FOUC fix included).
+@use 'theme/styles/tokens';
 @use 'variables' as *;
-
-// Design tokens that are theme-independent and must be available before the
-// dynamic theme stylesheet is injected (fixes Firefox "property not set" warnings).
-:root {
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 20px;
-  --font-size-xl: 28px;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.65;
-}
 
 html,
 body {

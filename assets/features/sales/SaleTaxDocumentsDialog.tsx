@@ -41,29 +41,45 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
   );
 
   const toolbar = useMemo(
-    () => [
-      {
-        text: 'Enviar a SUNAT',
-        type: 'info',
-        onClick: () => runSendInvoiceToSunatAction(actionDeps),
-      },
-      {
-        text: 'Enviar por correo',
-        type: 'success',
-        onClick: () => runSendInvoiceEmailAction(actionDeps),
-      },
-      { text: 'Ver', type: 'primary', onClick: () => runOpenInvoiceReceiptAction(actionDeps) },
-      {
-        text: 'Consulta CDR',
-        type: 'warning',
-        onClick: () => runConsultInvoiceCdrAction(actionDeps),
-      },
-      {
-        text: 'Consulta CPE',
-        type: 'success',
-        onClick: () => runConsultInvoiceCpeAction(actionDeps),
-      },
-    ],
+    () => ({
+      selection: [
+        {
+          text: 'Ver',
+          type: 'primary',
+          group: 'view',
+          groupLabel: 'Consulta',
+          onClick: () => runOpenInvoiceReceiptAction(actionDeps),
+        },
+        {
+          text: 'Consulta CDR',
+          type: 'warning',
+          group: 'view',
+          groupLabel: 'Consulta',
+          onClick: () => runConsultInvoiceCdrAction(actionDeps),
+        },
+        {
+          text: 'Consulta CPE',
+          type: 'success',
+          group: 'view',
+          groupLabel: 'Consulta',
+          onClick: () => runConsultInvoiceCpeAction(actionDeps),
+        },
+        {
+          text: 'Enviar a SUNAT',
+          type: 'info',
+          group: 'delivery',
+          groupLabel: 'Envío',
+          onClick: () => runSendInvoiceToSunatAction(actionDeps),
+        },
+        {
+          text: 'Enviar por correo',
+          type: 'success',
+          group: 'delivery',
+          groupLabel: 'Envío',
+          onClick: () => runSendInvoiceEmailAction(actionDeps),
+        },
+      ],
+    }),
     [actionDeps],
   );
 

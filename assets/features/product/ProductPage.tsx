@@ -302,21 +302,22 @@ export function ProductPage() {
   const productResourceWithImport = React.useMemo(
     () => ({
       ...productResource,
-      toolbar: [
-        ...(Array.isArray(productResource.toolbar) ? (productResource.toolbar as unknown[]) : []),
-        {
-          text: '',
-          icon: 'ph ph-download-simple',
-          hint: 'Exportar productos',
-          onClick: () => window.open('/api/v1/products/export', '_blank'),
-        },
-        {
-          text: '',
-          icon: 'ph ph-upload-simple',
-          hint: 'Importar productos',
-          onClick: () => setImportOpen(true),
-        },
-      ] as typeof productResource.toolbar,
+      toolbar: {
+        utility: [
+          {
+            text: 'Exportar productos',
+            icon: 'ph-download-simple',
+            hint: 'Exportar productos',
+            onClick: () => window.open('/api/v1/products/export', '_blank'),
+          },
+          {
+            text: 'Importar productos',
+            icon: 'ph-upload-simple',
+            hint: 'Importar productos',
+            onClick: () => setImportOpen(true),
+          },
+        ],
+      },
     }),
     [],
   );

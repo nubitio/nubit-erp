@@ -1,17 +1,16 @@
-type ToolbarAction = {
-  text: string;
-  icon?: string;
-  type: string;
-  onClick: () => void;
-};
+import type { ResourceToolbarItems } from '@nubit/crud';
 
 export const createCashRegisterShiftsToolbar = (params: {
   onExportPdf: () => void;
-}): ToolbarAction[] => [
-  {
-    text: 'Exportar PDF',
-    icon: 'print',
-    type: 'default',
-    onClick: params.onExportPdf,
-  },
-];
+}): ResourceToolbarItems => ({
+  selection: [
+    {
+      text: 'Exportar PDF',
+      icon: 'ph-printer',
+      type: 'default',
+      group: 'export',
+      groupLabel: 'Exportar',
+      onClick: params.onExportPdf,
+    },
+  ],
+});

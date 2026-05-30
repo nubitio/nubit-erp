@@ -1,36 +1,50 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CRUD Dialog — overrides on top of AppDialog for form/datagrid contexts.
+//
+// CrudDialogView sits at z-index 2500 (above AppDialog at 2000) to allow
+// nested dialogs (e.g. a lookup dialog opened from within a form dialog).
+// ─────────────────────────────────────────────────────────────────────────────
+
 .crud-dialog-root {
   z-index: 2500;
 }
 
 .crud-dialog {
-  .crud-dialog__header {
-    border-bottom: 1px solid var(--border-color);
+  // Override header border to use the stronger structural colour — the form
+  // content below has many subtle borders, so the dialog header needs weight.
+  .app-dialog__header {
+    border-bottom-color: var(--border-color);
   }
 
-  .crud-dialog__title {
+  .app-dialog__title {
     border-bottom: 0;
     padding-bottom: 0;
   }
 
   .app-dialog__body {
     overflow: auto;
+    padding: var(--space-4);
     position: relative;
   }
 
+  // fit-content variant — used when the body is a self-contained view
+  // (e.g. a datagrid lookup). Remove padding so the view fills edge-to-edge.
   &.fit-content {
     .app-dialog__body {
       padding: 0;
 
       .view-wrapper {
-        padding: 0;
         margin: 0 !important;
+        padding: 0;
       }
     }
   }
 }
 
+// When the form inside has a master-detail layout, the dialog needs
+// a fixed height so the inner scroll areas can flex properly.
 .crud-dialog:has(.native-form--with-detail) {
-  height: calc(100vh - 32px) !important;
+  height: calc(100dvh - var(--space-7)) !important;
   overflow: hidden;
 
   .app-dialog__body {
@@ -38,26 +52,30 @@
   }
 }
 
+// ── Footer ─────────────────────────────────────────────────────────────────────
+
 .crud-dialog__footer {
   .form-popup-buttons-container {
-    display: flex;
     align-items: center;
+    display: flex;
+    gap: var(--space-2);
     justify-content: flex-end;
-    gap: 6px !important;
   }
 
   .button-indicator {
     display: inline-block;
     height: 1em;
-    margin-right: 0.5rem;
+    margin-right: var(--space-2);
     vertical-align: middle;
     width: 1em;
   }
 }
 
+// ── Loading overlay ────────────────────────────────────────────────────────────
+
 .crud-dialog__loading {
   align-items: center;
-  background: rgb(0 0 0 / 28%);
+  background: rgb(0 0 0 / 24%);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -67,15 +85,13 @@
 
 .crud-dialog__loading-indicator {
   animation: crud-dialog-spin 700ms linear infinite;
-  border: 3px solid rgb(255 255 255 / 40%);
+  border: 3px solid rgb(255 255 255 / 30%);
   border-radius: 999px;
-  border-top-color: var(--accent-color, #0e7a50);
+  border-top-color: var(--accent-color);
   height: 28px;
   width: 28px;
 }
 
 @keyframes crud-dialog-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }

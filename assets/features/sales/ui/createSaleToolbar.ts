@@ -1,11 +1,5 @@
 import toast from '@shared/lib/SharedUtils';
-
-type ToolbarAction = {
-  text: string;
-  type: string;
-  onClick: () => void;
-  disabled?: boolean;
-};
+import type { ResourceToolbarItems } from '@nubit/crud';
 
 type CreateSaleToolbarParams = {
   getSelectedSaleId: () => string | undefined;
@@ -37,55 +31,35 @@ const requireSelectedSale = (
 
 export const createSaleToolbar = ({
   getSelectedSaleId,
-  onPreview,
-  onPrint,
-  onVoid,
   onMakeInvoice,
-  onClone,
   onReplaceRejected,
   onViewDocuments,
-  printEnabled,
-  cloneEnabled,
   replaceEnabled,
   documentsEnabled,
-}: CreateSaleToolbarParams): ToolbarAction[] => [
-  {
-    text: 'Vista previa',
-    type: 'info',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onPreview),
-  },
-  {
-    text: 'Imprimir',
-    type: 'primary',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onPrint),
-    disabled: !printEnabled,
-  },
-  {
-    text: 'Anular',
-    type: 'danger',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onVoid),
-  },
-  {
-    text: 'Generar comprobante',
-    type: 'warning',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onMakeInvoice),
-  },
-  {
-    text: 'Duplicar',
-    type: 'info',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onClone),
-    disabled: !cloneEnabled,
-  },
-  {
-    text: 'Reemitir',
-    type: 'warning',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onReplaceRejected),
-    disabled: !replaceEnabled,
-  },
-  {
-    text: 'Comprobantes',
-    type: 'secondary',
-    onClick: () => requireSelectedSale(getSelectedSaleId, onViewDocuments),
-    disabled: !documentsEnabled,
-  },
-];
+}: CreateSaleToolbarParams): ResourceToolbarItems => ({
+  selection: [
+    {
+      text: 'Generar comprobante',
+      type: 'warning',
+      group: 'documents',
+      groupLabel: 'Comprobantes',
+      onClick: () => requireSelectedSale(getSelectedSaleId, onMakeInvoice),
+    },
+    {
+      text: 'Comprobantes',
+      type: 'secondary',
+      group: 'documents',
+      groupLabel: 'Comprobantes',
+      onClick: () => requireSelectedSale(getSelectedSaleId, onViewDocuments),
+      disabled: !documentsEnabled,
+    },
+    {
+      text: 'Reemitir',
+      type: 'warning',
+      group: 'edit',
+      groupLabel: 'Edición',
+      onClick: () => requireSelectedSale(getSelectedSaleId, onReplaceRejected),
+      disabled: !replaceEnabled,
+    },
+  ],
+});

@@ -18,30 +18,30 @@
 
 @mixin header {
   font-size: 22px;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   padding-right: 25px;
 }
 
 @mixin user-info {
   .user-info {
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5);
     display: flex;
 
     .photo {
       width: 124px;
       height: 124px;
-      margin-right: 20px;
-      border-radius: 8px;
+      margin-right: var(--space-5);
+      border-radius: var(--radius-lg);
       background-repeat: no-repeat;
       background-size: cover;
-      box-shadow: 0 2px 8px 0 #00000014;
-      border: 1px solid #e0e0e0;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
     }
   }
 
   .title {
-    font-size: 12px;
-    color: var(--texteditor-label-color);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
 
     &:not(:first-child) {
       padding-top: 10px;
@@ -49,15 +49,15 @@
   }
 
   .value {
-    font-size: 16px;
+    font-size: var(--font-size-md);
     color: var(--accent-color);
 
     &.black {
-      color: var(--base-text-color);
+      color: var(--text-primary);
     }
 
     &.small {
-      font-size: 12px;
+      font-size: var(--font-size-xs);
     }
   }
 }
@@ -66,13 +66,13 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  font-size: 12px;
-  color: var(--texteditor-label-color);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
 }
 
 @mixin message-text {
-  padding-top: 5px;
-  line-height: 21px;
+  padding-top: var(--space-1);
+  line-height: var(--line-height-normal);
 }
 
 @mixin status-contact($status-color) {
@@ -86,44 +86,44 @@
 }
 
 @mixin calendar-items-text {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family-sans);
   font-style: normal;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   font-size: 13px;
-  line-height: 16px;
+  line-height: var(--line-height-tight);
 }
 
 @mixin description-text($opacity) {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family-sans);
   font-style: normal;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 18px;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
   opacity: $opacity;
 }
 
 @mixin h1-header-text {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family-sans);
   font-style: normal;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 18px;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
 }
 
 @mixin h2-header-text {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family-sans);
   font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 16px;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
 }
 
 @mixin subtext($opacity: 1) {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-family-sans);
   font-style: normal;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
   opacity: $opacity;
 }
 
@@ -133,7 +133,7 @@
 
 @mixin toolbar-panel() {
   background-color: color-mix(in srgb, var(--surface-1) 92%, transparent);
-  padding: 6px var(--content-padding);
+  padding: var(--space-2) var(--content-padding);
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
   box-shadow: var(--shadow-sm);

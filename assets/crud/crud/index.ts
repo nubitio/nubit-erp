@@ -5,8 +5,11 @@ export { SmartCrudRolesProvider, useSmartCrudRoles } from './SmartCrudRolesConte
 export type {
   ResourceConfig,
   ResourcePermissions,
+  ResourceRowActions,
   ResourceRouting,
   ResourceToolbar,
+  ResourceToolbarAction,
+  ResourceToolbarActionVariant,
   ResourceToolbarContext,
   ResourceToolbarItems,
   ResourceGridDetail,

@@ -76,29 +76,45 @@ export const CreditNotePage = () => {
         dialogWidth: 1200,
         dialogHeight: 720,
         permissions: { canAdd: true, canEdit: true, canDelete: true },
-        toolbar: [
-          {
-            text: 'Enviar a SUNAT',
-            type: 'info',
-            onClick: () => runSendCreditNoteToSunatAction(actionDeps),
-          },
-          {
-            text: 'Enviar por correo',
-            type: 'success',
-            onClick: () => toast('Funcionalidad no implementada', 'warning'),
-          },
-          { text: 'Ver', type: 'primary', onClick: () => runOpenCreditNoteReceiptAction(actionDeps) },
-          {
-            text: 'Consulta CDR',
-            type: 'warning',
-            onClick: () => runConsultCreditNoteCdrAction(actionDeps),
-          },
-          {
-            text: 'Consulta CPE',
-            type: 'success',
-            onClick: () => runConsultCreditNoteCpeAction(actionDeps),
-          },
-        ],
+        toolbar: {
+          selection: [
+            {
+              text: 'Ver',
+              type: 'primary',
+              group: 'view',
+              groupLabel: 'Consulta',
+              onClick: () => runOpenCreditNoteReceiptAction(actionDeps),
+            },
+            {
+              text: 'Consulta CDR',
+              type: 'warning',
+              group: 'view',
+              groupLabel: 'Consulta',
+              onClick: () => runConsultCreditNoteCdrAction(actionDeps),
+            },
+            {
+              text: 'Consulta CPE',
+              type: 'success',
+              group: 'view',
+              groupLabel: 'Consulta',
+              onClick: () => runConsultCreditNoteCpeAction(actionDeps),
+            },
+            {
+              text: 'Enviar a SUNAT',
+              type: 'info',
+              group: 'delivery',
+              groupLabel: 'Envío',
+              onClick: () => runSendCreditNoteToSunatAction(actionDeps),
+            },
+            {
+              text: 'Enviar por correo',
+              type: 'success',
+              group: 'delivery',
+              groupLabel: 'Envío',
+              onClick: () => toast('Funcionalidad no implementada', 'warning'),
+            },
+          ],
+        },
       }),
     [actionDeps, formDetailFields],
   );
