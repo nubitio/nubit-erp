@@ -6,7 +6,7 @@ namespace App\Billing\Receipt\Application;
 
 use App\Efact\Http\BaseController;
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Service\PdfExporter;
+use Nubit\Platform\Export\PdfExporter;
 use App\Settings\Service\TenantSettingsService;
 use App\Billing\Receipt\Domain\ReceiptCdrUseCase;
 use App\Billing\Receipt\Domain\ReceiptPdfUseCase;
@@ -65,6 +65,7 @@ class ReceiptController extends BaseController
         string $id,
         TaxDocumentRepository $taxDocumentRepository,
         TenantSettingsService $tenantSettings,
+        PdfExporter $pdfExporter,
     ): Response {
         $voucher = $taxDocumentRepository->getVoucher($id);
         $qr = '';
@@ -90,8 +91,6 @@ class ReceiptController extends BaseController
         if ($preview) {
             return new Response($content);
         }
-
-        $pdfExporter = new PdfExporter();
 
         return $pdfExporter->export($content, 'invoice');
     }

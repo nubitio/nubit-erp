@@ -63,6 +63,8 @@ export interface DataGridViewOptions {
   headerFilter?: boolean;
   manualLoad?: boolean;
   beforeToolbar?: () => ReactNode;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
   editMode?: 'popup' | 'row' | 'cell' | 'batch';
   visibleColumns?: string[] | null;
   /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */

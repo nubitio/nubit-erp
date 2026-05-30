@@ -325,6 +325,29 @@ function buildToolbar(
 }
 
 type FilterOperator = { value: string; label: string };
+const BETWEEN_VALUE_SEPARATOR = '|';
+
+function isDateLikeField(field: Field): boolean {
+  return field.type === FieldType.DATE || field.type === FieldType.DATETIME;
+}
+
+function getDateStartOfDay(value: string): string {
+  return `${value} 00:00:00`;
+}
+
+function getDateEndOfDay(value: string): string {
+  return `${value} 23:59:59`;
+}
+
+function splitBetweenValue(value: string): [string, string] {
+  const [start = '', end = ''] = value.split(BETWEEN_VALUE_SEPARATOR);
+  return [start, end];
+}
+
+function joinBetweenValue(start: string, end: string): string {
+  if (!start && !end) return '';
+  return `${start}${BETWEEN_VALUE_SEPARATOR}${end}`;
+}
 
 function getDefaultFilterOperator(field: Field): string {
   if (field.selectedFilterOperation) return field.selectedFilterOperation;
@@ -359,10 +382,12 @@ function getFilterOperators(field: Field): FilterOperator[] {
     case FieldType.DATETIME:
       return [
         { value: '=', label: '=' },
+        { value: '<>', label: '≠' },
         { value: '>', label: '>' },
         { value: '>=', label: '≥' },
         { value: '<', label: '<' },
         { value: '<=', label: '≤' },
+        { value: 'between', label: '↔' },
       ];
     case FieldType.ENUM:
     case FieldType.SELECT:
@@ -388,10 +413,36 @@ function computeDefaultOperators(fields: Field[]): Record<string, string> {
   return defaults;
 }
 
-function buildFilterExpression(filters: Record<string, string>, operators: Record<string, string>): unknown[] {
+function buildFilterExpression(
+  filters: Record<string, string>,
+  operators: Record<string, string>,
+  fields: Field[],
+): unknown[] {
   return Object.entries(filters)
     .filter(([, value]) => value.trim() !== '')
-    .map(([fieldName, value]) => [fieldName, operators[fieldName] ?? 'contains', value]);
+    .flatMap(([fieldName, value]) => {
+      const field = fields.find((candidate) => candidate.name === fieldName);
+      const operator = operators[fieldName] ?? 'contains';
+
+      if (field && isDateLikeField(field)) {
+        if (operator === 'between') {
+          const [start, end] = splitBetweenValue(value);
+          return [
+            ...(start ? [[fieldName, '>=', field.type === FieldType.DATETIME ? getDateStartOfDay(start) : start]] : []),
+            ...(end ? [[fieldName, '<=', field.type === FieldType.DATETIME ? getDateEndOfDay(end) : end]] : []),
+          ];
+        }
+
+        if (field.type === FieldType.DATETIME && operator === '=') {
+          return [
+            [fieldName, '>=', getDateStartOfDay(value)],
+            [fieldName, '<=', getDateEndOfDay(value)],
+          ];
+        }
+      }
+
+      return [[fieldName, operator, value]];
+    });
 }
 
 function FilterCell({
@@ -401,6 +452,7 @@ function FilterCell({
   value,
   onClear,
   onInputChange,
+  onBetweenInputChange,
   onSelectChange,
   onOperatorChange,
 }: {
@@ -410,6 +462,7 @@ function FilterCell({
   value: string;
   onClear: () => void;
   onInputChange: (value: string) => void;
+  onBetweenInputChange: (start: string, end: string) => void;
   onSelectChange: (value: string) => void;
   onOperatorChange: (operator: string) => void;
 }) {
@@ -455,11 +508,12 @@ function FilterCell({
   const operators = getFilterOperators(field);
   const inputType =
     field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' :
-    field.type === FieldType.DATE ? 'date' :
-    field.type === FieldType.DATETIME ? 'datetime-local' : 'text';
+    isDateLikeField(field) ? 'date' : 'text';
+  const [betweenStart, betweenEnd] = splitBetweenValue(value);
+  const isBetween = isDateLikeField(field) && operator === 'between';
 
   return (
-    <div className="native-datagrid__filter-wrap">
+    <div className={`native-datagrid__filter-wrap${isBetween ? ' native-datagrid__filter-wrap--between' : ''}`}>
       {operators.length > 1 ? (
         <select
           className="native-datagrid__filter-operator"
@@ -474,13 +528,32 @@ function FilterCell({
       ) : (
         <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
       )}
-      <input
-        type={inputType}
-        className="native-datagrid__filter-input"
-        value={value}
-        aria-label={`Filtrar ${field.label}`}
-        onChange={(e) => onInputChange(e.target.value)}
-      />
+      {isBetween ? (
+        <div className="native-datagrid__filter-between-inputs">
+          <input
+            type="date"
+            className="native-datagrid__filter-input"
+            value={betweenStart}
+            aria-label={`Filtrar ${field.label} desde`}
+            onChange={(e) => onBetweenInputChange(e.target.value, betweenEnd)}
+          />
+          <input
+            type="date"
+            className="native-datagrid__filter-input"
+            value={betweenEnd}
+            aria-label={`Filtrar ${field.label} hasta`}
+            onChange={(e) => onBetweenInputChange(betweenStart, e.target.value)}
+          />
+        </div>
+      ) : (
+        <input
+          type={inputType}
+          className="native-datagrid__filter-input"
+          value={value}
+          aria-label={`Filtrar ${field.label}`}
+          onChange={(e) => onInputChange(e.target.value)}
+        />
+      )}
       <button
         type="button"
         className={`native-datagrid__filter-clear${value ? ' is-active' : ''}`}
@@ -674,7 +747,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     if (options.manualLoad) return rowsRef.current;
     setIsGridLoading(true);
     const loadOptions: ResourceLoadOptions = {
-      filter: buildFilterExpression(filters, filterOperators),
+      filter: buildFilterExpression(filters, filterOperators, options.fields),
       sort,
     };
     if (options.paging ?? true) {
@@ -689,7 +762,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     setIsGridLoading(false);
     onContentReadyRef.current?.();
     return result.data;
-  }, [filterOperators, filters, options.manualLoad, options.paging, page, pageSize, sort, source]);
+  }, [filterOperators, filters, options.fields, options.manualLoad, options.paging, page, pageSize, sort, source]);
 
   useEffect(() => {
     void loadRows();
@@ -747,7 +820,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     getSelectedRow: () => rowsRef.current.find((row) => row[handleStateRef.current.idField] === handleStateRef.current.selectedKeys[0]),
     getSelectedRowKeys: () => handleStateRef.current.selectedKeys,
     getSelectedRows: () => rowsRef.current.filter((row) => handleStateRef.current.selectedKeys.includes(row[handleStateRef.current.idField])),
-    getFilter: () => buildFilterExpression(handleStateRef.current.filters, handleStateRef.current.filterOperators),
+    getFilter: () => buildFilterExpression(handleStateRef.current.filters, handleStateRef.current.filterOperators, options.fields),
     filter: (filterRule: FilterRule | null) => {
       const { filterOperators: currentOps } = handleStateRef.current;
       const nextFilters = filterRule ? { [filterRule.field]: String(filterRule.value ?? '') } : {};
@@ -927,6 +1000,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                 options.onFilterChange?.(nextInputs);
                               }, 300);
                             }}
+                            onBetweenInputChange={(start, end) => {
+                              const nextValue = joinBetweenValue(start, end);
+                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                              if (nextValue === '') delete nextInputs[field.name];
+                              applyImmediate(nextInputs);
+                            }}
                             onSelectChange={(nextValue) => {
                               const nextInputs = { ...filterInputs, [field.name]: nextValue };
                               if (nextValue === '') delete nextInputs[field.name];
@@ -934,8 +1013,16 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             }}
                             onOperatorChange={(nextOperator) => {
                               setFilterOperators((prev) => ({ ...prev, [field.name]: nextOperator }));
-                              if (filterInputs[field.name]) {
-                                applyImmediate({ ...filterInputs });
+                              const currentValue = filterInputs[field.name];
+                              if (currentValue) {
+                                const nextInputs = { ...filterInputs };
+                                if (nextOperator === 'between' && !currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
+                                  nextInputs[field.name] = joinBetweenValue(currentValue, '');
+                                }
+                                if (nextOperator !== 'between' && currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
+                                  nextInputs[field.name] = splitBetweenValue(currentValue).find(Boolean) ?? '';
+                                }
+                                applyImmediate(nextInputs);
                               }
                             }}
                             onClear={() => {
@@ -949,6 +1036,26 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     );
                     })}
                     {hasRowActions && <td />}
+                  </tr>
+                )}
+                {options.errorMessage && (
+                  <tr className="native-datagrid__error-row">
+                    <td colSpan={colSpan}>
+                      <div className="native-datagrid__error-message" role="alert">
+                        <i className="ph ph-warning-circle" aria-hidden="true" />
+                        <span>{options.errorMessage}</span>
+                        {options.onDismissError && (
+                          <button
+                            type="button"
+                            className="native-datagrid__error-close"
+                            aria-label="Cerrar error"
+                            onClick={options.onDismissError}
+                          >
+                            <i className="ph ph-x" aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 )}
               </thead>

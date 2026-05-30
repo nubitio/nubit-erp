@@ -1,157 +1,195 @@
-import { useRef, useState } from 'react';
-import { Card } from '@shared/ui';
-import { DateUtils } from '@shared/lib/DateUtils';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { DataGridView, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
 import { getCoreApiBaseUrl } from '@nubit/core';
+import { httpClient } from '@shared/api/HttpClient';
+import { SaleFields } from './SaleFields';
+import { saleEndpoints } from './api/saleEndpoints';
 
-const API = getCoreApiBaseUrl();
 import './SaleConsultPage.scss';
 
+const API = getCoreApiBaseUrl();
+
 const reportTypes = [
-  { value: 'sale-by-product',      text: 'Ventas por producto' },
-  { value: 'detailed-sales',       text: 'Ventas detalladas' },
-  { value: 'accounting-report',    text: 'Reporte contable' },
+  { value: 'sale-by-product', text: 'Ventas por producto' },
+  { value: 'detailed-sales', text: 'Ventas detalladas' },
+  { value: 'accounting-report', text: 'Reporte contable' },
   { value: 'payment-method-daily', text: 'Pagos diarios por método' },
-  { value: 'daily-summary',        text: 'Resumen diario de ventas' },
-  { value: 'voided-sales',         text: 'Documentos anulados' },
-  { value: 'credit-notes',         text: 'Notas de crédito' },
+  { value: 'daily-summary', text: 'Resumen diario de ventas' },
+  { value: 'voided-sales', text: 'Documentos anulados' },
+  { value: 'credit-notes', text: 'Notas de crédito' },
 ];
 
+const visibleColumns = [
+  'issuedDate',
+  'customer',
+  'invoiceFullNumber',
+  'paymentMethod',
+  'currency',
+  'grandTotal',
+  'status',
+];
+
+function datePart(value: unknown): string {
+  return String(value ?? '').slice(0, 10);
+}
+
+function collectFilterRules(filter: unknown): unknown[][] {
+  if (!Array.isArray(filter)) return [];
+  if (filter.length >= 3 && typeof filter[0] === 'string') return [filter];
+
+  return filter.flatMap((item) => collectFilterRules(item));
+}
+
+function extractIssuedDateRange(filter: unknown[]): { from: string; to: string } {
+  let from = '';
+  let to = '';
+
+  collectFilterRules(filter).forEach(([field, operator, value]) => {
+    if (field !== 'issuedDate') return;
+
+    const date = datePart(value);
+    if (!date) return;
+
+    if (operator === '=') {
+      from = date;
+      to = date;
+    } else if (operator === '>=') {
+      from = date;
+    } else if (operator === '<=') {
+      to = date;
+    }
+  });
+
+  return { from, to };
+}
+
+function getFilenameFromDisposition(disposition: string | undefined): string {
+  if (!disposition) return 'reporte_ventas.xlsx';
+
+  const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+  if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1].replace(/"/g, ''));
+
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  return match?.[1] ?? 'reporte_ventas.xlsx';
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
 export const SaleConsultPage = () => {
-  const [selectedReport, setSelectedReport] = useState('');
-  const [startDate,      setStartDate]      = useState('');
-  const [endDate,        setEndDate]        = useState('');
-  const [loading,        setLoading]        = useState(false);
-  const [error,          setError]          = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const gridRef = useRef<GridHandle>(null);
+  const [selectedReport, setSelectedReport] = useState('detailed-sales');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const canGenerate = !!selectedReport && !!startDate && !!endDate;
+  const fields = useMemo(() => SaleFields(null), []);
+  const canGenerate = !!selectedReport;
 
-  const handleGenerateReport = () => {
+  const handleGenerateReport = useCallback(async () => {
     setError(null);
 
     if (!selectedReport) {
       setError('Selecciona un tipo de reporte.');
       return;
     }
-    if (!startDate || !endDate) {
-      setError('Selecciona el rango de fechas.');
-      return;
-    }
-    if (startDate > endDate) {
+    const gridFilter = gridRef.current?.getFilter() ?? [];
+    const dateRange = extractIssuedDateRange(gridFilter);
+    if (dateRange.from && dateRange.to && dateRange.from > dateRange.to) {
       setError('La fecha "desde" no puede ser posterior a la fecha "hasta".');
       return;
     }
 
-    // Parse YYYY-MM-DD as local date (avoid UTC midnight → day-before bug)
-    const parseLocal = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-    const dateFrom = DateUtils.dateFormatter(parseLocal(startDate));
-    const dateTo   = DateUtils.dateFormatter(parseLocal(endDate));
-    const url      = `${API}sales/report?report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
+    const params = new URLSearchParams({
+      report: selectedReport,
+    });
+    if (gridFilter.length > 0) params.set('filter', JSON.stringify(gridFilter));
+    if (dateRange.from) params.set('date-from', dateRange.from);
+    if (dateRange.to) params.set('date-to', dateRange.to);
+    const url = `${API}sales/report?${params.toString()}`;
 
     setLoading(true);
-    const win = window.open(url);
-    setTimeout(() => {
+    try {
+      const response = await httpClient.get<Blob>(url, { responseType: 'blob' });
+      downloadBlob(response.data, getFilenameFromDisposition(response.headers['content-disposition']));
+    } catch (err) {
+      const message = err instanceof Error
+        ? err.message
+        : 'No se pudo exportar el reporte.';
+      setError(message);
+    } finally {
       setLoading(false);
-      if (!win) {
-        setError(
-          'El reporte no pudo abrirse. Verifica que el navegador no esté bloqueando ventanas emergentes.',
-        );
-      }
-    }, 800);
-  };
+    }
+  }, [selectedReport]);
 
-  const handleClear = () => {
-    setSelectedReport('');
-    setStartDate('');
-    setEndDate('');
+  const handleClear = useCallback(() => {
+    setSelectedReport('detailed-sales');
     setError(null);
-    formRef.current?.reset();
-  };
+    gridRef.current?.reset();
+  }, []);
+
+  const toolbar = useMemo<DataGridViewOptions['toolbar']>(() => ({
+    primary: [
+      {
+        text: loading ? 'Generando...' : 'Exportar XLSX',
+        icon: 'ph-download-simple',
+        type: 'primary',
+        onClick: handleGenerateReport,
+        disabled: !canGenerate || loading,
+      },
+    ],
+    utility: [
+      {
+        text: 'Limpiar',
+        icon: 'ph-x',
+        onClick: handleClear,
+        disabled: loading,
+      },
+    ],
+    showRefresh: true,
+  }), [canGenerate, handleClear, handleGenerateReport, loading]);
+
+  const beforeToolbar = useCallback(() => (
+    <label className="sale-consult-page__report-filter">
+      <span>Reporte</span>
+      <select
+        className="sale-consult-page__report-select"
+        value={selectedReport}
+        onChange={(e) => { setSelectedReport(e.target.value); setError(null); }}
+      >
+        {reportTypes.map((report) => (
+          <option key={report.value} value={report.value}>{report.text}</option>
+        ))}
+      </select>
+    </label>
+  ), [selectedReport]);
 
   return (
-    <Card title="Reportes de venta">
-      <form ref={formRef} className="consult-form" onSubmit={(e) => e.preventDefault()}>
-
-        {/* Tipo de reporte */}
-        <div className="consult-field">
-          <label className="consult-field__label" htmlFor="report-type">
-            Tipo de reporte
-          </label>
-          <select
-            id="report-type"
-            className="consult-select"
-            value={selectedReport}
-            onChange={(e) => { setSelectedReport(e.target.value); setError(null); }}
-          >
-            <option value="">Seleccionar…</option>
-            {reportTypes.map((r) => (
-              <option key={r.value} value={r.value}>{r.text}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Fecha desde */}
-        <div className="consult-field">
-          <label className="consult-field__label" htmlFor="date-from">
-            Fecha desde
-          </label>
-          <input
-            id="date-from"
-            type="date"
-            className="consult-input"
-            value={startDate}
-            max={endDate || undefined}
-            onChange={(e) => { setStartDate(e.target.value); setError(null); }}
-          />
-        </div>
-
-        {/* Fecha hasta */}
-        <div className="consult-field">
-          <label className="consult-field__label" htmlFor="date-to">
-            Fecha hasta
-          </label>
-          <input
-            id="date-to"
-            type="date"
-            className="consult-input"
-            value={endDate}
-            min={startDate || undefined}
-            onChange={(e) => { setEndDate(e.target.value); setError(null); }}
-          />
-        </div>
-
-        {/* Error */}
-        {error && (
-          <p className="consult-error" role="alert">{error}</p>
-        )}
-
-        {/* Acciones */}
-        <div className="consult-actions">
-          <button
-            type="submit"
-            className="app-button app-button--primary app-button--full"
-            disabled={!canGenerate || loading}
-            onClick={handleGenerateReport}
-          >
-            {loading && <span className="app-button-spinner" aria-hidden="true" />}
-            {loading ? 'Generando…' : 'Generar reporte'}
-          </button>
-          <button
-            type="button"
-            className="app-icon-button"
-            title="Limpiar"
-            disabled={loading}
-            onClick={handleClear}
-          >
-            <i className="ph ph-x" aria-hidden="true" />
-          </button>
-        </div>
-      </form>
-
-      <p className="consult-hint">
-        El reporte se abrirá en una nueva pestaña en formato PDF.
-        Si el navegador bloquea ventanas emergentes, permite el origen de esta aplicación.
-      </p>
-    </Card>
+    <div className="sale-consult-page">
+      <DataGridView
+        id="sales-consult"
+        ref={gridRef}
+        title="Consulta ventas"
+        url={saleEndpoints.list()}
+        fields={fields}
+        sort={[{ selector: 'issuedDate', desc: true }]}
+        toolbar={toolbar}
+        beforeToolbar={beforeToolbar}
+        allowAdd={false}
+        allowEdit={false}
+        allowDelete={false}
+        selectionMode="single"
+        visibleColumns={visibleColumns}
+        errorMessage={error}
+        onDismissError={() => setError(null)}
+      />
+    </div>
   );
 };

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\CashRegister\Controller;
 
-use App\Efact\Service\PdfExporter;
+use Nubit\Platform\Export\PdfExporter;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
@@ -21,6 +21,7 @@ class CashRegisterReportController extends AbstractController
     public function __construct(
         private readonly Environment $twig,
         private readonly Connection $connection,
+        private readonly PdfExporter $pdfExporter,
     ) {
     }
 
@@ -199,8 +200,6 @@ class CashRegisterReportController extends AbstractController
             'movements'            => $movements,
         ]);
 
-        $pdfExporter = new PdfExporter();
-
-        return $pdfExporter->export($content, sprintf('cierre-caja-%d', $sessionId));
+        return $this->pdfExporter->export($content, sprintf('cierre-caja-%d', $sessionId));
     }
 }
