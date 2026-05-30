@@ -104,21 +104,58 @@ function resolveButtonIcon(icon?: string): string {
 
 // ─── Shared lookup dropdown primitive ────────────────────────────────────────
 
+// Custom event used to coordinate mutual exclusion between lookup dropdowns.
+// When any dropdown opens it dispatches this event; all others close themselves.
+const LOOKUP_OPENED_EVENT = 'lookup:opened';
+
 function useLookupDropdown() {
   const [open, setOpen] = useState(false);
   const [draftQuery, setDraftQuery] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef<symbol>(Symbol());
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
 
-  useEffect(() => {
-    if (!open || !containerRef.current) return;
-    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) setOpen(false); }, { threshold: 0 });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [open]);
+  const getPositionedMenuStyle = useCallback((): React.CSSProperties => {
+    if (!containerRef.current) return { position: 'fixed', visibility: 'hidden', margin: 0 };
+    const rect = containerRef.current.getBoundingClientRect();
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8));
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
 
-  // Close the portal when an ancestor becomes aria-hidden (e.g. keepMounted
-  // dialog hiding itself with visibility:hidden but leaving portals mounted).
+    if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+      return {
+        position: 'fixed',
+        left: `${left}px`,
+        width: `${rect.width}px`,
+        bottom: `${window.innerHeight - rect.top + 4}px`,
+        top: 'auto',
+        margin: 0,
+        zIndex: 9999,
+        visibility: 'visible',
+      };
+    }
+
+    return {
+      position: 'fixed',
+      left: `${left}px`,
+      width: `${rect.width}px`,
+      top: `${rect.bottom + 4}px`,
+      bottom: 'auto',
+      margin: 0,
+      zIndex: 9999,
+      visibility: 'visible',
+    };
+  }, []);
+
+  // Note: IntersectionObserver was removed — it fired false positives during the
+  // dialog-enter CSS animation (scale/translate transform causes the trigger to
+  // briefly appear "off-screen"), causing entity dropdowns to blink.
+  // The scroll listener in the positioning useLayoutEffect already handles
+  // closing the panel when the trigger genuinely leaves the viewport.
+
+  // MutationObserver: close when an ancestor becomes aria-hidden
+  // (keepMounted dialog hiding itself with visibility:hidden).
   useEffect(() => {
     if (!open || !containerRef.current) return;
     const container = containerRef.current;
@@ -134,19 +171,47 @@ function useLookupDropdown() {
     return () => mo.disconnect();
   }, [open]);
 
+  // Mutual exclusion: close when another lookup/actions dropdown opens.
+  useEffect(() => {
+    const id = idRef.current;
+    const handler = (e: Event) => {
+      if ((e as CustomEvent<{ id: symbol }>).detail.id !== id) setOpen(false);
+    };
+    document.addEventListener(LOOKUP_OPENED_EVENT, handler);
+    return () => document.removeEventListener(LOOKUP_OPENED_EVENT, handler);
+  }, []);
+
+  // Broadcast: notify siblings when this dropdown transitions to open.
+  // Kept in useLayoutEffect (not inside a state updater) to avoid the React
+  // Strict Mode double-invocation of updater functions causing a double-dispatch.
+  useLayoutEffect(() => {
+    if (!open) return;
+    document.dispatchEvent(new CustomEvent<{ id: symbol }>(LOOKUP_OPENED_EVENT, { detail: { id: idRef.current } }));
+  }, [open]);
+
+  // Outside-click: close immediately on mousedown outside the trigger+panel.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!containerRef.current?.contains(target) && !menuRef.current?.contains(target)) {
+        setOpen(false);
+        setDraftQuery(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  // Position panel while open. Opening precomputes menuStyle before mounting
+  // the portal, so we do not need a close-time reset render.
   useLayoutEffect(() => {
     if (!open) return;
     const updatePosition = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       if (rect.top >= window.innerHeight || rect.bottom <= 0 || rect.left >= window.innerWidth || rect.right <= 0) { setOpen(false); return; }
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      if (spaceBelow < 250 && spaceAbove > spaceBelow) {
-        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, bottom: `${window.innerHeight - rect.top + 4}px`, top: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
-      } else {
-        setMenuStyle({ position: 'fixed', left: `${rect.left}px`, width: `${rect.width}px`, top: `${rect.bottom + 4}px`, bottom: 'auto', margin: 0, zIndex: 9999, visibility: 'visible' });
-      }
+      setMenuStyle(getPositionedMenuStyle());
     };
     updatePosition();
     window.addEventListener('resize', updatePosition);
@@ -155,9 +220,15 @@ function useLookupDropdown() {
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, { capture: true });
     };
-  }, [open]);
+  }, [getPositionedMenuStyle, open]);
 
-  return { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle };
+  const setOpenWithPosition = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    const next = typeof value === 'function' ? value(open) : value;
+    if (next) setMenuStyle(getPositionedMenuStyle());
+    setOpen(next);
+  }, [getPositionedMenuStyle, open]);
+
+  return { open, setOpen: setOpenWithPosition, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle };
 }
 
 function LookupDropdown({
@@ -167,6 +238,7 @@ function LookupDropdown({
   disabled,
   id,
   label,
+  menuRef,
   menuStyle,
   normalizedValue,
   onClear,
@@ -185,6 +257,7 @@ function LookupDropdown({
   disabled?: boolean;
   id?: string;
   label: string;
+  menuRef: React.RefObject<HTMLDivElement | null>;
   menuStyle: React.CSSProperties;
   normalizedValue: string;
   onClear: () => void;
@@ -213,6 +286,8 @@ function LookupDropdown({
         aria-expanded={open}
         value={query}
         onBlur={() => {
+          // Keep blur timer only for keyboard (Tab) navigation; mouse outside-click
+          // is handled by the document mousedown listener in useLookupDropdown.
           blurTimer.current = setTimeout(() => { setOpen(false); setDraftQuery(null); }, 120);
         }}
         onChange={(event) => onQueryChange(event.currentTarget.value)}
@@ -229,7 +304,7 @@ function LookupDropdown({
         </button>
       )}
       {open && !disabled && !readOnly && createPortal(
-        <div className="native-form__lookup-menu" role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
+        <div ref={menuRef} className="native-form__lookup-menu" role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
           {children}
         </div>,
         document.body,
@@ -267,7 +342,7 @@ export function NativeEntitySelect({
 }) {
   const { t } = useCoreTranslation();
   const resourceStoreFactory = useResourceStoreFactory();
-  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
+  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
   const [selectedItemCache, setSelectedItemCache] = useState<DataRecord | null>(null);
   const [loading, setLoading] = useState(false);
@@ -346,6 +421,7 @@ export function NativeEntitySelect({
       disabled={disabled}
       id={id}
       label={field.label}
+      menuRef={menuRef}
       menuStyle={menuStyle}
       normalizedValue={normalizedValue}
       onClear={() => { setSelectedItemCache(null); onChange(null, null); setDraftQuery(''); setOpen(true); }}
@@ -393,7 +469,7 @@ function NativeEnumSelect({
   value: unknown;
 }) {
   const { t } = useCoreTranslation();
-  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuStyle } = useLookupDropdown();
+  const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
 
   const allItems: DataRecord[] = field.data ?? [];
   const normalizedValue = String(value ?? '');
@@ -411,6 +487,7 @@ function NativeEnumSelect({
       disabled={disabled}
       id={id}
       label={field.label}
+      menuRef={menuRef}
       menuStyle={menuStyle}
       normalizedValue={normalizedValue}
       onClear={() => { onChange(null); setDraftQuery(''); setOpen(true); }}

@@ -193,13 +193,48 @@ function renderRowActionItem(
   return renderSelectionActionItem(action, index, false);
 }
 
-function renderSelectionActions(
-  actionsLabel: string,
-  selectedCount: number,
-  actions: ResourceToolbarAction[] = [],
-  permissions: string[],
-) {
+// Shared event name with NativeFormView so lookup dropdowns and the actions
+// menu close each other (single open dropdown invariant across the whole page).
+const DROPDOWN_OPENED_EVENT = 'lookup:opened';
+
+function SelectionActionsMenu({
+  actionsLabel,
+  selectedCount,
+  actions = [],
+  permissions,
+}: {
+  actionsLabel: string;
+  selectedCount: number;
+  actions?: ResourceToolbarAction[];
+  permissions: string[];
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef<symbol>(Symbol());
+
   const visibleActions = actions.filter((action) => isToolbarActionVisible(action, permissions));
+  const disabled = selectedCount === 0;
+
+  // Close on mousedown outside the container.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  // Mutual exclusion: close when any lookup/dropdown opens.
+  useEffect(() => {
+    const id = idRef.current;
+    const handler = (e: Event) => {
+      if ((e as CustomEvent<{ id: symbol }>).detail.id !== id) setOpen(false);
+    };
+    document.addEventListener(DROPDOWN_OPENED_EVENT, handler);
+    return () => document.removeEventListener(DROPDOWN_OPENED_EVENT, handler);
+  }, []);
+
   if (visibleActions.length === 0) return null;
 
   const dangerActions = visibleActions.filter((action) => action.type === 'danger');
@@ -211,39 +246,49 @@ function renderSelectionActions(
     return acc;
   }, {});
 
-  const disabled = selectedCount === 0;
   const label = selectedCount > 0 ? `${actionsLabel} (${selectedCount})` : actionsLabel;
 
+  const handleToggle = () => {
+    if (disabled) return;
+    const next = !open;
+    if (next) {
+      document.dispatchEvent(new CustomEvent<{ id: symbol }>(DROPDOWN_OPENED_EVENT, { detail: { id: idRef.current } }));
+    }
+    setOpen(next);
+  };
+
   return (
-    <details className="native-datagrid__actions-menu">
-      <summary
+    <div ref={containerRef} className="native-datagrid__actions-menu">
+      <button
+        type="button"
         className="app-button app-button--secondary app-button--sm"
         aria-disabled={disabled}
-        onClick={(event) => {
-          if (disabled) event.preventDefault();
-        }}
+        aria-expanded={open}
+        onClick={handleToggle}
       >
         <span>{label}</span>
         <i className="ph ph-caret-down" aria-hidden="true" />
-      </summary>
-      <div className="native-datagrid__actions-popover" role="menu">
-        {Object.entries(groups).map(([group, items]) => (
-          <div key={group} className="native-datagrid__actions-group">
-            {items.length > 1 && items[0]?.groupLabel && (
-              <div className="native-datagrid__actions-group-label">
-                {items[0].groupLabel}
-              </div>
-            )}
-            {items.map((action, index) => renderSelectionActionItem(action, index, disabled))}
-          </div>
-        ))}
-        {dangerActions.length > 0 && (
-          <div className="native-datagrid__actions-danger-group">
-            {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled))}
-          </div>
-        )}
-      </div>
-    </details>
+      </button>
+      {open && !disabled && (
+        <div className="native-datagrid__actions-popover" role="menu">
+          {Object.entries(groups).map(([group, items]) => (
+            <div key={group} className="native-datagrid__actions-group">
+              {items.length > 1 && items[0]?.groupLabel && (
+                <div className="native-datagrid__actions-group-label">
+                  {items[0].groupLabel}
+                </div>
+              )}
+              {items.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+            </div>
+          ))}
+          {dangerActions.length > 0 && (
+            <div className="native-datagrid__actions-danger-group">
+              {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -815,7 +860,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               {options.beforeToolbar?.()}
               <div className="native-datagrid__toolbar-spacer" />
               {toolbar.primary?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index))}
-              {renderSelectionActions(t('grid.buttonActions'), selectedRows.length, toolbar.selection, toolbarPermissions)}
+              <SelectionActionsMenu actionsLabel={t('grid.buttonActions')} selectedCount={selectedRows.length} actions={toolbar.selection} permissions={toolbarPermissions} />
               {toolbar.utility?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index, true))}
               {toolbar.showRefresh !== false && (
                 <button type="button" className="app-icon-button" aria-label={t('grid.buttonRefresh')} onClick={() => void loadRows()}>

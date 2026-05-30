@@ -104,11 +104,12 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
     entityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
+      .width(240)
       .defaultValue(1)
       .required(true)
       .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .onSelect((event: any) => {
-        if (event.itemData.price_list) {
+        if (event.itemData?.price_list) {
           form?.setFieldValue('price_list', event.itemData.price_list.id);
         }
       })
