@@ -4,8 +4,13 @@ import '@assets/styles.scss';
 import '@theme/theme';
 import './LoginPage.scss';
 import { LoginForm } from './LoginForm';
+import { useAccentColor } from '@nubit/ui';
 
 export const LoginPage = () => {
+  // Apply the user's saved accent color — LoginPage is outside AppProviders
+  // so AccentColorApplier never runs; we call the hook directly here.
+  useAccentColor();
+
   const [brandLogoFailed, setBrandLogoFailed] = useState(false);
   const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
 
