@@ -108,6 +108,7 @@ const POSPage = () => {
     checkoutDisabled,
     handleCheckout,
     getEffectiveStock,
+    igvRate,
   } = usePosCheckout({
     tenantId: window.location.hostname || 'default-tenant',
     storeId: branchId || 'default-store',
@@ -365,9 +366,10 @@ const POSPage = () => {
         quickCashActions={quickCashActions}
         subtotal={subtotal}
         discountAmount={discountAmount}
-        includedTax={includedTax}
-        total={total}
-        amountReceivedNumber={amountReceivedNumber}
+         includedTax={includedTax}
+         total={total}
+         igvRate={igvRate}
+         amountReceivedNumber={amountReceivedNumber}
         amountMissing={amountMissing}
         changeAmount={changeAmount}
         checkoutDisabled={checkoutDisabled}

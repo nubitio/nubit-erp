@@ -8,6 +8,7 @@ const API = getCoreApiBaseUrl();
 import type { PaymentMethodOption, WarehouseOption } from './types';
 import { extractCollection, isCashPaymentMethod } from './posHelpers';
 import { useOfflineCatalog } from '@offline/hooks/useOfflineCatalog';
+import { useWarehouses } from '@shared/hooks/useWarehouses';
 
 type UsePosCatalogDataParams = {
   currentBranchId: string;
@@ -38,37 +39,41 @@ export function usePosPaymentMethods() {
 
 // ─── Warehouses ───────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- API Platform response shape varies
-const mapWarehouses = (responseData: any): WarehouseOption[] =>
-  extractCollection<any>(responseData).map((warehouse) => ({
-    id: String(warehouse.id ?? warehouse.almacen_id),
-    name: String(warehouse.name ?? warehouse.almacen ?? 'Almacen'),
-    branch: warehouse.branch,
+export function usePosWarehouses(currentBranchId: string) {
+  // Delegate the actual fetch to the shared hook
+  const { warehouses: sharedWarehouses, isLoading } = useWarehouses({
+    branchId: currentBranchId || undefined,
+    enabled: true,
+  });
+
+  // Convert shared shape → legacy POS shape and apply the same fallback filtering
+  // that the old implementation had.
+  const legacyWarehouses: WarehouseOption[] = sharedWarehouses.map((w) => ({
+    id: w.id,
+    name: w.name,
+    branch: w.branchId ? { id: w.branchId } : undefined,
   }));
 
-export function usePosWarehouses(currentBranchId: string) {
-  return useQuery<WarehouseOption[], Error>({
-    queryKey: ['pos-warehouses', currentBranchId],
-    queryFn: () =>
-      httpRequestData<any>(
-        httpClient.get<any>(`${API}warehouses?itemsPerPage=100&page=1`),
-      ).then((responseData) => {
-        const list = mapWarehouses(responseData);
-        const filteredByBranch =
-          currentBranchId === ''
-            ? list
-            : list.filter(
-                (warehouse) =>
-                  String(warehouse.branch?.id ?? '').trim() === currentBranchId.trim() ||
-                  String(warehouse.branch ?? '').trim() === currentBranchId.trim() ||
-                  !warehouse.branch?.id,
-              );
-        // Fall back to full list if filtering removed everything
-        return filteredByBranch.length > 0 ? filteredByBranch : list;
-      }),
-    staleTime: 5 * 60 * 1000,
-    placeholderData: [],
-  });
+  const filteredByBranch =
+    currentBranchId === ''
+      ? legacyWarehouses
+      : legacyWarehouses.filter(
+          (warehouse) =>
+            String(warehouse.branch?.id ?? '').trim() === currentBranchId.trim() ||
+            String(warehouse.branch ?? '').trim() === currentBranchId.trim() ||
+            !warehouse.branch?.id,
+        );
+
+  // Fall back to full list if filtering removed everything (exact same behavior as before)
+  const finalList =
+    filteredByBranch.length > 0 ? filteredByBranch : legacyWarehouses;
+
+  // We still return a useQuery-like shape for backward compatibility with the callers
+  return {
+    data: finalList,
+    isLoading,
+    error: null,
+  } as const;
 }
 
 // ─── Composite hook (used by POSPage) ─────────────────────────────────────────

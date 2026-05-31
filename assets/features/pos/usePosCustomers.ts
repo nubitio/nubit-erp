@@ -1,95 +1,36 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
 import type { CustomerOption } from './types';
-import { buildCustomersUrl, extractCollection, CUSTOMER_PAGE_SIZE } from './posHelpers';
+import { useCustomerSearch } from '@shared/hooks/useCustomerSearch';
+import { CUSTOMER_PAGE_SIZE } from './posHelpers';
 
 const DEFAULT_CUSTOMER_ID = 1;
 
 export const usePosCustomers = () => {
-  const [customers, setCustomers] = useState<CustomerOption[]>([]);
-  const [customerSearch, setCustomerSearch] = useState('');
-  const deferredCustomerSearch = useDeferredValue(customerSearch);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const [customersPage, setCustomersPage] = useState(1);
-  const [customersHasMore, setCustomersHasMore] = useState(false);
-  const [customersLoading, setCustomersLoading] = useState(false);
+  // Delegate the actual searching + pagination to the shared hook
+  const shared = useCustomerSearch({
+    pageSize: CUSTOMER_PAGE_SIZE,
+  });
 
-  const customersRequestRef = useRef<AbortController | null>(null);
+  // POS-specific selection state layered on top of the shared search results
+  const [selectedCustomerId, setSelectedCustomerIdState] = useState<number | null>(null);
   const lastSelectedCustomerRef = useRef<CustomerOption | null>(null);
   /** When true, the user explicitly cleared the customer — suppress auto-restore */
   const clearedRef = useRef(false);
 
-  const loadCustomers = useCallback(
-    (query: string, page: number, append: boolean) => {
-      customersRequestRef.current?.abort();
-      const controller = new AbortController();
-      customersRequestRef.current = controller;
-      setCustomersLoading(true);
+  const deferredCustomerSearch = useDeferredValue(shared.query);
 
-      httpClient.get<any>(buildCustomersUrl(query, page), { signal: controller.signal }).then((response) => {
-          if (controller.signal.aborted) return;
-          const list = extractCollection<any>(response.data).map((customer) => ({
-            id: Number(customer.id),
-            businessName: String(
-              customer.businessName ?? customer.name ?? `Cliente ${customer.id}`,
-            ),
-            doc: customer.ruc ?? customer.dni ?? customer.doc,
-          }));
+  // Map shared customers to the shape the old code expected
+  const customers: CustomerOption[] = shared.customers;
 
-          setCustomers((prev) => {
-            const next = append ? [...prev, ...list] : list;
-            const unique = new Map<number, CustomerOption>();
-            next.forEach((customer) => unique.set(customer.id, customer));
-            return Array.from(unique.values());
-          });
+  // Legacy pagination fields (we still expose them for the current UI)
+  const customersPage = 1; // The shared hook manages this internally
+  const customersHasMore = shared.hasMore;
+  const customersLoading = shared.isLoading;
 
-          setCustomersPage(page);
-          setCustomersHasMore(list.length >= CUSTOMER_PAGE_SIZE);
-
-          if (list.length > 0) {
-            if (selectedCustomerId === null && !append && !clearedRef.current) {
-              const defaultCustomer =
-                list.find((item) => item.id === DEFAULT_CUSTOMER_ID) ?? list[0];
-              setSelectedCustomerId(defaultCustomer.id);
-              lastSelectedCustomerRef.current = defaultCustomer;
-              setCustomerSearch(
-                defaultCustomer.doc
-                  ? `${defaultCustomer.businessName} - ${defaultCustomer.doc}`
-                  : defaultCustomer.businessName,
-              );
-            } else {
-              const currentSelected = list.find((item) => item.id === selectedCustomerId);
-              if (currentSelected) {
-                lastSelectedCustomerRef.current = currentSelected;
-              }
-            }
-          } else if (!append) {
-            setCustomersHasMore(false);
-          }
-        }).catch(() => {
-          if (controller.signal.aborted) return;
-          if (!append) {
-            setCustomers([]);
-            setCustomersHasMore(false);
-          }
-        }).finally(() => {
-          if (!controller.signal.aborted) setCustomersLoading(false);
-        });
-    },
-    [selectedCustomerId],
-  );
-
-  useEffect(() => {
-    loadCustomers(deferredCustomerSearch, 1, false);
-
-    return () => {
-      customersRequestRef.current?.abort();
-    };
-  }, [deferredCustomerSearch, loadCustomers]);
-
+  // Keep the same auto-default "Consumidor Final" behavior the POS has always had
   useEffect(() => {
     if (selectedCustomerId !== null || clearedRef.current) {
       return;
@@ -97,9 +38,9 @@ export const usePosCustomers = () => {
 
     const customerInList = customers.find((item) => item.id === DEFAULT_CUSTOMER_ID);
     if (customerInList) {
-      setSelectedCustomerId(customerInList.id);
+      setSelectedCustomerIdState(customerInList.id);
       lastSelectedCustomerRef.current = customerInList;
-      setCustomerSearch(
+      shared.setQuery(
         customerInList.doc
           ? `${customerInList.businessName} - ${customerInList.doc}`
           : customerInList.businessName,
@@ -107,37 +48,39 @@ export const usePosCustomers = () => {
       return;
     }
 
+    // If the default customer isn't in the current page, fetch it directly
     let cancelled = false;
     const controller = new AbortController();
-    httpClient
-      .get<any>(`${API}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
-      .then((response) => {
-          if (cancelled) return;
-          const customer = response.data;
-          const mapped: CustomerOption = {
-            id: Number(customer.id),
-            businessName: String(
-              customer.businessName ?? customer.name ?? `Cliente ${customer.id}`,
-            ),
-            doc: customer.ruc ?? customer.dni ?? customer.doc,
-          };
-          setCustomers((prev) => [mapped, ...prev.filter((item) => item.id !== mapped.id)]);
-          setSelectedCustomerId(mapped.id);
-          lastSelectedCustomerRef.current = mapped;
-          setCustomerSearch(
-            mapped.doc ? `${mapped.businessName} - ${mapped.doc}` : mapped.businessName,
-          );
-        });
+
+    fetch(`${API}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((customer) => {
+        if (cancelled) return;
+        const mapped: CustomerOption = {
+          id: Number(customer.id),
+          businessName: String(
+            customer.businessName ?? customer.name ?? `Cliente ${customer.id}`,
+          ),
+          doc: customer.ruc ?? customer.dni ?? customer.doc,
+        };
+        // We don't mutate the shared hook's list here — we just select it
+        setSelectedCustomerIdState(mapped.id);
+        lastSelectedCustomerRef.current = mapped;
+        shared.setQuery(
+          mapped.doc ? `${mapped.businessName} - ${mapped.doc}` : mapped.businessName,
+        );
+      })
+      .catch(() => {
+        /* ignore network errors for the default customer fallback */
+      });
 
     return () => {
       cancelled = true;
       controller.abort();
     };
-  }, [customers, selectedCustomerId]);
+  }, [customers, selectedCustomerId, shared]);
 
-  /* eslint-disable react-hooks/refs -- lastSelectedCustomerRef is an intentional mutable cache for
-     the last resolved customer entity; reading it inside useMemo provides a stale-value fallback
-     when the customer is not yet in the current page. This is a deliberate design choice. */
+  /* eslint-disable react-hooks/refs -- lastSelectedCustomerRef is an intentional mutable cache */
   const customerOptions = useMemo(() => {
     const selectedInList = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const lastSelected = lastSelectedCustomerRef.current;
@@ -157,31 +100,47 @@ export const usePosCustomers = () => {
 
   const selectCustomer = useCallback(
     (nextId: number | null) => {
-      clearedRef.current = false; // explicit selection resets the cleared flag
-      setSelectedCustomerId(nextId);
+      clearedRef.current = false;
+      setSelectedCustomerIdState(nextId);
+
       const selected = customerOptions.find((customer) => customer.id === nextId) ?? null;
       if (selected) {
         lastSelectedCustomerRef.current = selected;
-        setCustomerSearch(
+        shared.setQuery(
           selected.doc ? `${selected.businessName} - ${selected.doc}` : selected.businessName,
         );
+      } else {
+        shared.setQuery('');
       }
     },
-    [customerOptions],
+    [customerOptions, shared],
   );
 
   /** Call this when the user explicitly removes the customer. Prevents auto-restore. */
   const clearSelectedCustomer = useCallback(() => {
     clearedRef.current = true;
-    setSelectedCustomerId(null);
-    setCustomerSearch('');
+    setSelectedCustomerIdState(null);
+    shared.setQuery('');
     lastSelectedCustomerRef.current = null;
-  }, []);
+  }, [shared]);
 
-  /* eslint-disable react-hooks/refs -- customerOptions is derived from lastSelectedCustomerRef (intentional cache); taint propagates to return */
+  // Legacy `loadCustomers` callback expected by the current POS UI.
+  // We adapt it to the shared hook.
+  const loadCustomers = useCallback(
+    (query: string, _page: number, append: boolean) => {
+      if (append) {
+        shared.loadMore?.();
+      } else {
+        shared.setQuery(query);
+      }
+    },
+    [shared],
+  );
+
+  /* eslint-disable react-hooks/refs */
   return {
-    customerSearch,
-    setCustomerSearch,
+    customerSearch: shared.query,
+    setCustomerSearch: shared.setQuery,
     deferredCustomerSearch,
     selectedCustomerId,
     setSelectedCustomerId: selectCustomer,

@@ -4,7 +4,9 @@ import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
 import type { CartItem, PosItem } from './types';
-import { IGV_RATE, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import { nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import { computeCartTotals } from '@shared/lib/saleCalculations';
+import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
@@ -72,6 +74,7 @@ export const usePosCheckout = ({
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
+  const { igvRate } = useTenantIgvRate();
 
   // Persist cart draft on every change (strip photo to keep storage lean)
   useEffect(() => {
@@ -191,10 +194,16 @@ export const usePosCheckout = ({
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + toNumber(item.salePrice) * item.quantity, 0);
-  const discountAmount = subtotal * (discountPercent / 100);
-  const total = Math.max(0, subtotal - discountAmount);
-  const includedTax = total * (IGV_RATE / (1 + IGV_RATE));
+  const { subtotal, discountAmount, total, includedTax, gravadoBase, exoneradoBase, inafectoBase } =
+    computeCartTotals(
+      cart.map((item) => ({
+        price: toNumber(item.salePrice),
+        quantity: item.quantity,
+        taxType: item.taxType,
+      })),
+      discountPercent,
+      igvRate,
+    );
   const amountReceivedNumber = isCashPaymentSelected
     ? Number.parseFloat(amountReceived || '0') || 0
     : total;
@@ -358,6 +367,11 @@ export const usePosCheckout = ({
     discountAmount,
     total,
     includedTax,
+    gravadoBase,
+    exoneradoBase,
+    inafectoBase,
+    /** Active IGV rate (decimal fraction) used for display. */
+    igvRate,
     amountReceivedNumber,
     changeAmount,
     amountMissing,

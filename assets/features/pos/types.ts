@@ -1,3 +1,7 @@
+import type { SunatTaxType } from '@shared/domain/sale.types';
+
+export type { SunatTaxType };
+
 export interface PosItem {
   id: string;
   name: string;
@@ -12,6 +16,12 @@ export interface PosItem {
   photo?: Image;
   quantity?: number;
   category: Category;
+  /**
+   * SUNAT IGV affectation type for this product.
+   * Sourced from the product API response field `taxType` / `tip_afe_igv`.
+   * Defaults to `'10'` (gravado) when the product has no explicit tax classification.
+   */
+  taxType: SunatTaxType;
 }
 
 export type CartItem = PosItem & {

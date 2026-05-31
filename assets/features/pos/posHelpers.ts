@@ -1,9 +1,14 @@
 import { DateTime } from 'luxon';
 import { getCoreTimezone, getCoreApiBaseUrl } from '@nubit/core';
 
-import type { PaymentMethodOption, PosItem } from './types';
+import type { PaymentMethodOption, PosItem, SunatTaxType } from './types';
 
-export const IGV_RATE = 0.18;
+/**
+ * Re-exported from shared/lib/saleCalculations — single source of truth.
+ * Import directly from '@shared/lib/saleCalculations' in new code.
+ */
+export { IGV_RATE } from '@shared/lib/saleCalculations';
+
 export const CUSTOMER_PAGE_SIZE = 50;
 
 export const normalizeText = (value: string) => value.toLowerCase().trim();
@@ -41,6 +46,15 @@ export const normalizeProduct = (raw: any): PosItem => {
     inventoryBehavior === 'NOT_TRACKED' ||
     (legacyType !== undefined && legacyType !== 1);
 
+  // Resolve SUNAT tax affectation type.
+  // Field precedence: taxType → tipAfeIgv → tip_afe_igv → default '10' (gravado).
+  // When the product API adds the field, it will be picked up automatically here.
+  const rawTaxType = raw?.taxType ?? raw?.tipAfeIgv ?? raw?.tip_afe_igv;
+  const taxType: SunatTaxType =
+    rawTaxType === '20' || rawTaxType === '30' || rawTaxType === '40'
+      ? (rawTaxType as SunatTaxType)
+      : '10';
+
   return {
     ...raw,
     id: String(raw?.id ?? ''),
@@ -54,6 +68,7 @@ export const normalizeProduct = (raw: any): PosItem => {
     stock: toOptionalNumber(raw?.stock),
     sku: raw?.sku ? String(raw.sku) : undefined,
     barcode: raw?.barcode ? String(raw.barcode) : undefined,
+    taxType,
     category:
     raw?.category && raw.category.id
       ? {
