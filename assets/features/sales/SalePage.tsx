@@ -8,7 +8,7 @@ import {
   type GridHandle,
 } from '@nubit/crud';
 import { saleEndpoints } from './api/saleEndpoints';
-import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
+import { SaleDetailFields, SaleFields, SaleFieldStateRef, setTotal } from './SaleFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -17,6 +17,7 @@ import {
   DiscountDialogEvent,
 } from '@shared/ui/discount-dialog/DiscountDialog';
 import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './model';
+import { Setting, settings } from '@app/Settings';
 import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
 import { createSaleToolbar, useSalePrintPreview } from './ui';
 import { CustomerPage, CustomerFields } from '@features/customer';
@@ -32,6 +33,9 @@ export const SalePage = () => {
   const formRef = useRef<FormHandle>(null);
   const customerFormRef = useRef<FormHandle>(null);
   const invoicePrinterRef = useRef(createInvoicePrinter());
+  // Shared mutable state threaded between SaleFields (header) and SaleDetailFields (lines).
+  // Holds the currently selected warehouse ID (for stock checks) and fetched price list items.
+  const saleFieldStateRef = useRef<SaleFieldStateRef>({ priceList: [], warehouseId: '' });
   const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
@@ -56,14 +60,16 @@ export const SalePage = () => {
             (sum, row) => sum + Number(row.netAmount ?? 0),
             0,
           );
+          // discountPercent is already 0–100 (both from the form field and from SaleFields callback).
           const currentDiscountPercent = Number(
-            formRef.current?.getFieldValue('discountPercent') ?? discountPercent * 100,
+            formRef.current?.getFieldValue('discountPercent') ?? discountPercent,
           );
           emit(DiscountDialogEvent.OPEN, {
             total: detailTotal > 0 ? detailTotal : total,
-            discountPercent: currentDiscountPercent / 100,
+            discountPercent: currentDiscountPercent,
           });
         },
+        stateRef: saleFieldStateRef,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -86,8 +92,8 @@ export const SalePage = () => {
         emit(DiscountDialogEvent.OPEN, {
           title: 'Descuento por ítem',
           total: baseValue,
-          // DiscountDialog works with fractions [0,1]; discountPercent in the row is 0–100.
-          discountPercent: discountPercent / 100,
+          // discountPercent from the row is already 0–100 — pass directly.
+          discountPercent: discountPercent,
           context: { rowIndex },
         });
       },
@@ -97,7 +103,7 @@ export const SalePage = () => {
   );
 
   const detailFields = useMemo(
-    () => SaleDetailFields(formRef.current, 'PEN', itemDiscountCallbacks),
+    () => SaleDetailFields(formRef.current, 'PEN', { ...itemDiscountCallbacks, stateRef: saleFieldStateRef }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -106,6 +112,7 @@ export const SalePage = () => {
       SaleDetailFields(
         formRef.current,
         (parentRow?.currency as string) ?? 'PEN',
+        { stateRef: saleFieldStateRef },
       ),
     [],
   );
@@ -133,11 +140,12 @@ export const SalePage = () => {
 
       if (context != null && typeof context === 'object' && 'rowIndex' in context) {
         // Item-level discount: update the specific detail row.
+        // discountPercent from the dialog is already 0–100 — store directly.
         const { rowIndex } = context as { rowIndex: number };
         const rows = formRef.current?.getDetailData() ?? [];
         const row = rows[rowIndex] as DataRecord | undefined;
         if (row) {
-          row.discountPercent = Number((discountPercent * 100).toFixed(2));
+          row.discountPercent = Number(discountPercent.toFixed(2));
           row.discountAmount = discountAmount;
           const qty = Number(row.qty ?? 0);
           const unitPrice = Number(row.unitPrice ?? 0);
@@ -147,8 +155,8 @@ export const SalePage = () => {
         }
       } else {
         // Global discount: apply to the sale header.
-        const discount = Number(discountPercent * 100).toFixed(2);
-        formRef.current?.setFieldValue('discountPercent', Number(discount));
+        // discountPercent from the dialog is already 0–100 — store directly.
+        formRef.current?.setFieldValue('discountPercent', Number(discountPercent.toFixed(2)));
         setTotal(formRef.current);
       }
     },
@@ -159,6 +167,13 @@ export const SalePage = () => {
       formRef.current?.setFieldValue('customer', payload.data);
     },
     onSaleAdd: async () => {
+      // Hide exchange rate by default when currency is PEN (the default).
+      // The currency field's onChange will show it again if the user switches to a foreign currency.
+      const defaultCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN';
+      const currency = (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
+      if (currency === 'PEN' || !currency) {
+        formRef.current?.hideField('exchangeRate');
+      }
       await applySaleAutoInvoiceOnAdd(formRef);
     },
   });

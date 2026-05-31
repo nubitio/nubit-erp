@@ -1,6 +1,7 @@
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
+import type { MutableRefObject } from 'react';
 import type { FormHandle } from '@nubit/crud';
 import { Field } from '@nubit/crud';
 import {
@@ -10,6 +11,7 @@ import {
   dateField,
   numberField,
   checkboxField,
+  switchField,
   selectField,
   textareaField,
   noneField,
@@ -26,24 +28,44 @@ import { Setting, settings } from '@app/Settings';
 import type { GridCellContext } from '@nubit/crud';
 import type { DataRecord } from '@nubit/crud';
 
+/**
+ * Mutable state shared between SaleFields (header) and SaleDetailFields (lines).
+ * Both factory functions must receive the same ref instance so that:
+ *   - the warehouse onChange in the header updates `warehouseId` for stock checks in lines
+ *   - the price_list onChange in the header updates `priceList` for product price lookup in lines
+ *
+ * Create with `useRef<SaleFieldStateRef>({ priceList: [], warehouseId: '' })` in the consuming component
+ * and pass the same ref to both SaleFields and SaleDetailFields.
+ */
+export interface SaleFieldStateRef {
+  priceList: PriceListItemDto[];
+  warehouseId: string;
+}
+
 interface SaleFieldCallbacks {
   branchId?: string | number;
   userId?: string | number;
   onOpenAddCustomer?: () => void;
+  /**
+   * Called when the user clicks the discount field to open the discount editor.
+   * `discountPercent` is in [0, 100] — the same scale used by the form field.
+   */
   onOpenDiscount?: (payload: { total: number; discountPercent: number }) => void | Promise<void>;
+  /** Shared mutable state between header and detail field factories. See SaleFieldStateRef. */
+  stateRef?: MutableRefObject<SaleFieldStateRef>;
 }
 
 interface SaleDetailFieldCallbacks {
   onOpenItemDiscount?: (payload: {
     rowIndex: number;
     baseValue: number;
+    /** Discount percentage in [0, 100]. */
     discountPercent: number;
     discountAmount: number;
   }) => void;
+  /** Shared mutable state between header and detail field factories. See SaleFieldStateRef. */
+  stateRef?: MutableRefObject<SaleFieldStateRef>;
 }
-
-let priceList: PriceListItemDto[] = [];
-let selectedWarehouseId = '';
 
 const isStockTrackedProduct = (product: ProductDto | DataRecord | undefined) => {
   if (!product) return false;
@@ -63,7 +85,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
 
   fields.push(identityField().build());
   fields.push(
-    checkboxField()
+    switchField()
       .name('emitInvoice')
       .label('Emitir comprobante')
       .valueType('boolean')
@@ -84,7 +106,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     entityField(API + 'warehouses', 'id', 'name')
       .name('warehouse')
-      .label('Almacen')
+      .label('Almacén')
       .filters([
         {
           field: 'branch',
@@ -94,7 +116,10 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       ])
       .autoSelectIfSingle(true)
       .onChange((e: any) => {
-        selectedWarehouseId = e;
+        // Write warehouse selection into shared state so detail fields can use it for stock checks.
+        if (callbacks?.stateRef) {
+          callbacks.stateRef.current.warehouseId = e;
+        }
       })
       .visible(false)
       .required(true)
@@ -135,13 +160,17 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .valueType('number')
       .visible(false)
       .onChange(async (event: any) => {
-        priceList = await httpRequestData<PriceListItemDto[]>(
+        const fetchedPriceList = await httpRequestData<PriceListItemDto[]>(
           httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
         );
+        // Write fetched price list into shared state so detail fields can apply it on product select.
+        if (callbacks?.stateRef) {
+          callbacks.stateRef.current.priceList = fetchedPriceList;
+        }
         const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: any) => {
           const actualPrice = item.unitPrice;
-          const priceItem = priceList.find(
+          const priceItem = fetchedPriceList.find(
             (p) => p.id === (item.product?.id ?? item.product?.producto_id),
           );
           if (priceItem && priceItem.price !== actualPrice) {
@@ -174,6 +203,14 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .defaultValue(() => settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN')
       .visible(false)
       .col(6)
+      .onChange((value: any) => {
+        const currency = typeof value === 'string' ? value : (value?.value ?? value);
+        if (currency && currency !== 'PEN') {
+          form?.showField('exchangeRate');
+        } else {
+          form?.hideField('exchangeRate');
+        }
+      })
       .build(),
   );
   fields.push(
@@ -215,11 +252,12 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .label('Descuento %')
       .defaultValue(0)
       .readonly(true)
-      .helpText('Click para aplicar descuento')
+      .helpText('Clic para aplicar descuento')
       .onClick((_e: any) => {
         const total = getSubTotal(form);
         const rawDiscountPercent = form?.getFieldValue('discountPercent');
-        const discountPercent = rawDiscountPercent ? Number(rawDiscountPercent) / 100 : 0;
+        // discountPercent is stored as 0–100 on the form — pass it directly (no conversion).
+        const discountPercent = rawDiscountPercent ? Number(rawDiscountPercent) : 0;
         callbacks?.onOpenDiscount?.({ total, discountPercent });
       })
       .onChange((_e: any) => {
@@ -287,9 +325,11 @@ export const SaleDetailFields = (
         }
 
         const product = (await productService.getOne(value, true)) as ProductDto;
+        // Read price list from shared state (set when user selects a tarifa in the header).
+        const currentPriceList = callbacks?.stateRef?.current.priceList ?? [];
         let price = product.salePrice;
-        if (priceList) {
-          const priceItem = priceList.find((item) => item.id === value);
+        if (currentPriceList.length > 0) {
+          const priceItem = currentPriceList.find((item) => item.id === value);
           if (priceItem) {
             price = priceItem.price;
           }
@@ -311,6 +351,7 @@ export const SaleDetailFields = (
     numberField()
       .name('qty')
       .label('Cantidad')
+      .width(92)
       .align('center')
       .valueType('number')
       .precision(2)
@@ -325,12 +366,15 @@ export const SaleDetailFields = (
         row.discountAmount = discountAmount;
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
 
+        // Read warehouse from shared state (set when user selects an almacén in the header).
+        const currentWarehouseId = callbacks?.stateRef?.current.warehouseId ?? '';
+
         if (value > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE' && isStockTrackedProduct(currentRow.product)) {
-          if (!selectedWarehouseId) {
+          if (!currentWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
           }
-          const stockData = await GetStockUseCase(currentRow.product.id, selectedWarehouseId);
+          const stockData = await GetStockUseCase(currentRow.product.id, currentWarehouseId);
           toast('Stock actual: ' + stockData.stock, 'info', 2000);
           if (value > stockData.stock) {
             toast('No hay stock suficiente', 'error', 2000);
@@ -350,6 +394,8 @@ export const SaleDetailFields = (
     currencyField()
       .name('unitPrice')
       .label('Precio')
+      .width(110)
+      .align('right')
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
@@ -368,7 +414,8 @@ export const SaleDetailFields = (
   fields.push(
     numberField()
       .name('discountPercent')
-      .label('Desc. %')
+      .label('Dto. %')
+      .width(75)
       .align('right')
       .valueType('number')
       .precision(2)
@@ -389,18 +436,21 @@ export const SaleDetailFields = (
   fields.push(
     currencyField()
       .name('discountAmount')
-      .label('Desc. S/')
+      .label('Dto. S/')
       .defaultValue(0)
       .formatter((cell: GridCellContext) => NumberUtils.formatCurrency((cell.value as number | undefined) ?? 0, currency))
       .filterable(false)
       .disabled(true)
       .sortable(false)
+      .visible(false)   // hidden — redundant alongside Dto. % and Total columns
       .build(),
   );
   fields.push(
     currencyField()
       .name('netAmount')
       .label('Total')
+      .width(120)
+      .align('right')
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;

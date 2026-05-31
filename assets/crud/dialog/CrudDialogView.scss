@@ -41,10 +41,10 @@
   }
 }
 
-// When the form inside has a master-detail layout, the dialog needs
-// a fixed height so the inner scroll areas can flex properly.
+// When the form inside has a master-detail layout, let the dialog
+// size to content (AppDialog's max-height still caps it), and
+// enable body scroll for overflow.
 .crud-dialog:has(.native-form--with-detail) {
-  height: calc(100dvh - var(--space-7)) !important;
   overflow: hidden;
 
   .app-dialog__body {

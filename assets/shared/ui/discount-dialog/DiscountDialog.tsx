@@ -15,8 +15,8 @@ export interface DiscountDialogOpenPayload {
   /** Base amount (e.g. grandTotal for global, qty × unitPrice for item). */
   total: number;
   /**
-   * Discount percent expressed as a fraction in [0, 1].
-   * For item-level discounts pass `discountPercent / 100`.
+   * Discount percent in [0, 100].
+   * E.g. pass `10` to pre-fill "10%". Never pass fractions.
    */
   discountPercent: number;
   /** Optional title override. Defaults to "Descuento". */
@@ -31,11 +31,11 @@ export interface DiscountDialogOpenPayload {
 /** Payload emitted when the user confirms. */
 export interface DiscountDialogApplyPayload {
   /**
-   * Discount percent as a fraction in [0, 1].
-   * Multiply by 100 to get the percentage value.
+   * Discount percent in [0, 100].
+   * E.g. `10` means 10%. Use directly as a form field value — no conversion needed.
    */
   discountPercent: number;
-  /** Absolute discount amount (baseValue × discountPercent). */
+  /** Absolute discount amount (baseValue × discountPercent / 100). */
   discountAmount: number;
   /**
    * The same context object that was passed in the OPEN payload.
@@ -51,6 +51,7 @@ export const DiscountDialog = () => {
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('Descuento');
   const [total, setTotal] = useState(0.0);
+  // discountPercent is stored as 0–100 (percent), never as a fraction.
   const [discountPercent, setDiscountPercent] = useState(0.0);
   const [discountAmount, setDiscountAmount] = useState(0.0);
   const contextRef = useRef<unknown>(undefined);
@@ -81,8 +82,8 @@ export const DiscountDialog = () => {
   // When percent changes (user edited percent field), recompute amount.
   useEffect(() => {
     if (lastChanged.current !== 'percent') return;
-    const clamped = Math.min(1, Math.max(0, discountPercent));
-    setDiscountAmount(Number((clamped * total).toFixed(2)));
+    const clamped = Math.min(100, Math.max(0, discountPercent));
+    setDiscountAmount(Number(((clamped / 100) * total).toFixed(2)));
   }, [discountPercent, total]);
 
   // When amount changes (user edited amount field), recompute percent.
@@ -90,7 +91,7 @@ export const DiscountDialog = () => {
     if (lastChanged.current !== 'amount') return;
     if (total > 0) {
       const clamped = Math.min(total, Math.max(0, discountAmount));
-      setDiscountPercent(Number((clamped / total).toFixed(6)));
+      setDiscountPercent(Number(((clamped / total) * 100).toFixed(4)));
     }
   }, [discountAmount, total]);
 
@@ -101,7 +102,7 @@ export const DiscountDialog = () => {
       setTitle(data.title ?? 'Descuento');
       setTotal(data.total);
       setDiscountPercent(data.discountPercent);
-      setDiscountAmount(Number((data.discountPercent * data.total).toFixed(2)));
+      setDiscountAmount(Number(((data.discountPercent / 100) * data.total).toFixed(2)));
       setVisible(true);
     });
   }, []);
@@ -109,7 +110,8 @@ export const DiscountDialog = () => {
   const handlePercentInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     lastChanged.current = 'percent';
     const raw = parseFloat(e.target.value);
-    setDiscountPercent(isNaN(raw) ? 0 : raw / 100);
+    // Input is already in 0–100 scale — store as-is.
+    setDiscountPercent(isNaN(raw) ? 0 : raw);
   };
 
   const handleAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +157,7 @@ export const DiscountDialog = () => {
             min={0}
             max={100}
             step={1}
-            value={Number((discountPercent * 100).toFixed(2))}
+            value={Number(discountPercent.toFixed(2))}
             onChange={handlePercentInput}
           />
         </div>

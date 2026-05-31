@@ -16,7 +16,7 @@
 }
 
 .native-form--with-detail {
-  min-height: min(680px, calc(100vh - 180px));
+  // height is content-driven — dialog max-height caps the outer container
 }
 
 // ── Master-detail layout ───────────────────────────────────────────────────────
@@ -25,7 +25,7 @@
   display: grid;
   gap: var(--space-4);
   grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
-  min-height: inherit;
+  align-items: start;  // each panel sizes independently — detail won't stretch to master height
 }
 
 .native-form__master-panel,
@@ -294,6 +294,67 @@
   accent-color: var(--accent-color);
 }
 
+// ── Toggle switch ──────────────────────────────────────────────────────────────
+// Used by FieldType.SWITCH — renders as a pill toggle with an inline label.
+
+.native-form__switch {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: var(--space-2);
+  min-height: 30px;
+  user-select: none;
+
+  input[type='checkbox'] {
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 22px;
+    position: relative;
+    transition: background var(--transition-base);
+    width: 40px;
+
+    &::after {
+      background: var(--surface-elevated, #fff);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+      content: '';
+      height: 16px;
+      left: 3px;
+      position: absolute;
+      top: 3px;
+      transition: transform var(--transition-base);
+      width: 16px;
+    }
+
+    &:checked {
+      background: var(--accent-color);
+
+      &::after {
+        transform: translateX(18px);
+      }
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+}
+
+.native-form__toggle-label {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
 .native-form__radio-list {
   flex-wrap: wrap;
 }
@@ -340,10 +401,19 @@
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  height: 100%;
   min-height: 240px;
   overflow: hidden;
   padding: 0;
+}
+
+.native-form__section,
+.native-form__tabs {
+  height: 100%;
+}
+
+.native-form__detail {
+  height: auto;
+  max-height: min(calc(100dvh - 320px), 580px);
 }
 
 .native-form__section-title,
@@ -404,7 +474,14 @@
   font-weight: var(--font-weight-medium);
 }
 
-// ── Detail inline table ────────────────────────────────────────────────────────
+// ── Detail inline table — spreadsheet-grade ────────────────────────────────────
+//
+// Design goals:
+//   • Controls fill cells edge-to-edge with no extra padding (spreadsheet feel)
+//   • Fixed-layout columns; the column without an explicit width fills remaining space
+//   • Resize handles on every header cell (drag-to-resize, like DevExtreme)
+//   • Compact 34px row height for dense data entry
+//   • Hover + focus highlights match the app's accent color
 
 .native-form__detail-table-wrap {
   flex: 1 1 auto;
@@ -413,49 +490,181 @@
 }
 
 .native-form__detail-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  min-width: 820px;
+  border-collapse: collapse;
+  min-width: 600px;  // reduced — the fill column expands naturally
   table-layout: fixed;
   width: 100%;
 }
 
-.native-form__detail-table th,
-.native-form__detail-table td {
-  border-bottom: 1px solid var(--border-subtle);
-  overflow: hidden;
-  padding: var(--space-1) var(--space-3);
-  text-align: left;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  white-space: nowrap;
+// ── Header ──────────────────────────────────────────────────────────────────────
+
+.native-form__detail-table thead tr {
+  background: var(--surface-0);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .native-form__detail-table th {
-  background: var(--surface-0);
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  padding: 0 8px;
   position: sticky;
+  text-align: left;
+  text-overflow: ellipsis;
   text-transform: uppercase;
   top: 0;
+  white-space: nowrap;
   z-index: 1;
 }
 
-.native-form__detail-table td .native-form__control {
-  min-height: 24px;
-  padding: 2px var(--space-2);
+// Resize handle — absolutely positioned on the right edge of each <th>
+.native-form__col-header-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  white-space: nowrap;
 }
 
-.native-form__detail-table .app-icon-button {
-  min-width: 28px;
+.native-form__col-resize {
+  background: transparent;
+  bottom: 0;
+  cursor: col-resize;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: background var(--transition-base);
+  width: 4px;
+  z-index: 2;
+
+  &:hover {
+    background: var(--accent-color);
+  }
 }
 
+// Actions column (delete button) — fixed narrow, centred, and sticky-right
+// so the delete button remains visible even if other columns cause overflow.
+.native-form__detail-table th.native-form__col-actions,
+.native-form__detail-table td.native-form__col-actions {
+  position: sticky;
+  right: 0;
+  text-align: center;
+  width: 40px;
+  z-index: 1;
+}
+
+// Header actions cell sits above body cells when both sticky axes overlap
+.native-form__detail-table thead th.native-form__col-actions {
+  background: var(--surface-0);
+  z-index: 2;
+}
+
+// Body actions cell picks up the row background (zebra / hover) automatically
+// via `background: inherit`, but needs an explicit fallback for the base case.
+.native-form__detail-table tbody td.native-form__col-actions {
+  background: var(--surface-1);
+}
+
+.native-form__detail-table tbody tr:nth-child(even) td.native-form__col-actions {
+  background: color-mix(in srgb, var(--surface-0) 60%, var(--surface-1));
+}
+
+.native-form__detail-table tbody tr:hover td.native-form__col-actions {
+  background: color-mix(in srgb, var(--accent-color) 5%, var(--surface-1));
+}
+
+// ── Body rows ───────────────────────────────────────────────────────────────────
+
+.native-form__detail-table td {
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: visible;  // allow dropdowns to escape the cell
+  padding: 0;         // controls fill the full cell
+  position: relative;
+  vertical-align: middle;
+}
+
+// Zebra striping — subtle, not distracting
+.native-form__detail-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--surface-0) 60%, transparent);
+}
+
+.native-form__detail-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-color) 5%, transparent);
+}
+
+// ── Controls inside cells — flush, borderless, spreadsheet-like ────────────────
+
+.native-form__detail-table td .native-form__control,
+.native-form__detail-table td input:not([type='checkbox']):not([type='radio']) {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 34px;
+  outline: none;
+  padding: 4px 8px;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+
+  &:focus {
+    background: color-mix(in srgb, var(--accent-color) 8%, var(--surface-1));
+    box-shadow: inset 0 -2px 0 var(--accent-color);
+    outline: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  // Disabled / readonly cells — show value without affordance
+  &:disabled,
+  &[readonly] {
+    background: transparent;
+    color: var(--text-primary);
+    cursor: default;
+    font-weight: var(--font-weight-medium);
+    opacity: 1;
+  }
+}
+
+// Lookup wrapper (NativeEntitySelect) must also fill the cell
+.native-form__detail-table td .native-form__lookup,
+.native-form__detail-table td .native-form__input-group {
+  display: block;
+  width: 100%;
+
+  .native-form__control {
+    border-radius: 0;
+  }
+}
+
+// Error state on cell controls
+.native-form__detail-table td .native-form__control.is-error {
+  box-shadow: inset 0 -2px 0 var(--error-color);
+}
+
+// Controls inherit text-align from their parent <td> — alignment is driven by
+// field.align on the <td> element (set in NativeFormView.tsx), not by CSS rules.
+.native-form__detail-table td .native-form__control,
+.native-form__detail-table td input {
+  text-align: inherit;
+}
+
+// Icon-only cells (discount tag, delete trash)
+.native-form__detail-table td .app-icon-button {
+  align-items: center;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  min-height: 34px;
+  width: 100%;
+}
+
+// Empty state
 .native-form__detail-empty {
   color: var(--text-tertiary);
   font-size: var(--font-size-md);
-  height: 140px;
+  height: 80px;
   text-align: center !important;
 }
 

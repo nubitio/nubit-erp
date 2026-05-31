@@ -597,6 +597,32 @@ function NativeDetailGrid({
     rowKeysRef.current = rows.map(() => safeRandomId()); // eslint-disable-line react-hooks/refs
   }
 
+  // ── Column resize ────────────────────────────────────────────────────────────
+  // Tracks user-overridden column widths. Falls back to field.width when not set.
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  const resizingRef = useRef<{ name: string; startX: number; startWidth: number } | null>(null);
+
+  const handleResizeMouseDown = (fieldName: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const th = (e.currentTarget as HTMLElement).closest('th') as HTMLTableCellElement | null;
+    if (!th) return;
+    resizingRef.current = { name: fieldName, startX: e.clientX, startWidth: th.offsetWidth };
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!resizingRef.current) return;
+      const next = Math.max(36, resizingRef.current.startWidth + (ev.clientX - resizingRef.current.startX));
+      setColWidths((prev) => ({ ...prev, [resizingRef.current!.name]: next })); // eslint-disable-line react-hooks/refs
+    };
+    const onMouseUp = () => {
+      resizingRef.current = null;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
     onClearCellError?.(rowIndex, field.name);
     let nextRow = { ...rows[rowIndex], [field.name]: value };
@@ -685,8 +711,26 @@ function NativeDetailGrid({
         <table className="native-form__detail-table">
           <thead>
             <tr>
-              {visibleFields.map((field) => <th key={field.name}>{field.label}</th>)}
-              {allowDeleting && <th />}
+              {visibleFields.map((field) => {
+                const w = colWidths[field.name] ?? field.width;
+                return (
+                  <th
+                    key={field.name}
+                    style={{
+                      ...(w ? { width: w } : undefined),
+                      ...(field.align ? { textAlign: field.align } : undefined),
+                    }}
+                  >
+                    <span className="native-form__col-header-text">{field.label}</span>
+                    <span
+                      className="native-form__col-resize"
+                      onMouseDown={handleResizeMouseDown(field.name)}
+                      title="Arrastrar para redimensionar"
+                    />
+                  </th>
+                );
+              })}
+              {allowDeleting && <th className="native-form__col-actions" />}
             </tr>
           </thead>
           <tbody>
@@ -701,13 +745,13 @@ function NativeDetailGrid({
               return (
               <tr key={rowKey}>
                 {visibleFields.map((field) => (
-                  <td key={field.name}>
+                  <td key={field.name} style={field.align ? { textAlign: field.align } : undefined}>
                     {renderDetailControl(row, rowIndex, field)}
                     {detailErrors[rowIndex]?.[field.name] && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
                   </td>
                 ))}
                 {allowDeleting && (
-                  <td>
+                  <td className="native-form__col-actions">
                     <button type="button" className="app-icon-button" onClick={() => removeRow(rowIndex)}>
                       <i className="ph ph-trash" aria-hidden="true" />
                     </button>
@@ -1024,10 +1068,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     } else if (field.type === FieldType.TEXTAREA || field.type === FieldType.HTML) {
       control = <textarea {...commonProps} className={`native-form__control native-form__textarea${errorClass}`} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
     } else if (field.type === FieldType.CHECKBOX || field.type === FieldType.SWITCH) {
+      const isSwitch = field.type === FieldType.SWITCH;
       control = (
-        <label className="native-form__checkbox">
+        <label className={isSwitch ? 'native-form__switch' : 'native-form__checkbox'}>
           <input type="checkbox" checked={Boolean(value)} disabled={disabled || readOnly} onChange={(event) => setFieldValue(field.name, event.target.checked)} />
-          <span>{field.label}</span>
+          <span className={isSwitch ? 'native-form__toggle-label' : undefined}>{field.label}</span>
         </label>
       );
     } else if (field.type === FieldType.RADIO) {
