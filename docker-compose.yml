@@ -40,6 +40,8 @@ services:
       OTEL_LOG_LEVEL: 'debug'
       OTEL_PHP_LOG_DESTINATION: 'stderr'
       E2E_SEED_ENABLED: '1'
+      AUTH_TOKEN_TTL: '${AUTH_TOKEN_TTL:-3600}'
+      REFRESH_TOKEN_TTL: '${REFRESH_TOKEN_TTL:-604800}'
       APP_COOKIE_SECURE: 'false'
       DECOLECTA_TOKEN: '${DECOLECTA_TOKEN:-}'
       MAILER_FROM: '${MAILER_FROM:-noreply@efact.app}'
