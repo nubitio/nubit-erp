@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import { buildLoginRedirectSearch } from '@shared/lib/authRedirect';
 
 const LoginPage = lazyNamed(() => import('@features/auth/LoginPage'), 'LoginPage');
+
+const AuthRouteLoading = () => (
+  <div className="app-loading" role="status" aria-label="Cargando login">
+    <span className="app-loading__spinner" aria-hidden="true" />
+  </div>
+);
 
 export const UnauthenticatedContent = () => {
   const location = useLocation();
@@ -11,7 +17,14 @@ export const UnauthenticatedContent = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={(
+          <Suspense fallback={<AuthRouteLoading />}>
+            <LoginPage />
+          </Suspense>
+        )}
+      />
       <Route path="*" element={<Navigate to={`/login${loginRedirectSearch}`} replace />} />
     </Routes>
   );

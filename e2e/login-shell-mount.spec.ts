@@ -104,4 +104,44 @@ test.describe('Post-login shell entry regression', () => {
       )
       .toBe(1);
   });
+
+  test('session expiry dialog clears branch context and returns to login', async ({ page }) => {
+    const seed = await getE2ESeed();
+
+    await page.goto(`${BASE_URL}/#/login?redirect=%2Fdashboard`);
+    await expect(page.locator('form.login-form')).toBeVisible({ timeout: 15_000 });
+
+    await fillDxInput(page, 'Usuario', seed.username);
+    await fillDxInput(page, 'Contraseña', seed.password);
+
+    await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
+    await completeBranchSelectionIfVisible(page);
+
+    await expect(page.locator('.side-nav-outer-toolbar')).toBeVisible({ timeout: 20_000 });
+    await expect
+      .poll(async () => page.evaluate(() => localStorage.getItem('selectedBranchId')), {
+        timeout: 5_000,
+      })
+      .not.toBeNull();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('efact:session-expired'));
+    });
+
+    const dialog = page.getByRole('dialog', { name: 'Sesión expirada' });
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    await dialog.getByRole('button', { name: 'Ir al login' }).click();
+
+    await expect.poll(() => page.url(), { timeout: 10_000 }).toBe(`${BASE_URL}/#/login`);
+    await expect
+      .poll(
+        async () => page.evaluate(() => ({
+          branchId: localStorage.getItem('selectedBranchId'),
+          branchName: localStorage.getItem('selectedBranchName'),
+          user: localStorage.getItem('user'),
+        })),
+        { timeout: 5_000 },
+      )
+      .toEqual({ branchId: null, branchName: null, user: null });
+  });
 });

@@ -89,6 +89,14 @@ $white:           #fff;
   width: 38px;
 }
 
+.app-route-loading {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: min(360px, 60vh);
+  width: 100%;
+}
+
 // ── Shared app-button system ──────────────────────────────────────────────────
 // All color values reference CSS tokens so the button system is theme-aware.
 .app-button {

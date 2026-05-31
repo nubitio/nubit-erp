@@ -12,6 +12,7 @@ import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubit/core';
 const EFECT_API_BASE_URL = '/api/';
 import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
+import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
 
 // Mounts inside DensityProvider; applies the persisted accent color on every
 // page load — even when the SettingsPanel has never been opened.
@@ -35,6 +36,7 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
     baseUrl: EFECT_API_BASE_URL,
     refreshPath: 'auth/refresh',
     loginPath: 'auth/login',
+    onUnauthorized: handleSessionExpired,
   }), []);
 
   const runtimeConfig = useMemo(() => ({

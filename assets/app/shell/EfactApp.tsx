@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
@@ -47,9 +47,7 @@ function AppShell({ screenSizeClass }: { screenSizeClass: string }) {
   return (
     <div className={`app ${screenSizeClass}`}>
       {isLoaded ? (
-        <Suspense fallback={<AppLoading />}>
-          <RootApp />
-        </Suspense>
+        <RootApp />
       ) : (
         ''
       )}

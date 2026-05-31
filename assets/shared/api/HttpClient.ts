@@ -5,8 +5,7 @@ import { dispatch } from '../../core/event/EventHook';
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client only
-import { StorageUtils } from '../lib/StorageUtils';
-import { dispatchSessionExpiredEvent } from '../lib/sessionExpiredEvent';
+import { handleSessionExpired } from '../lib/sessionExpiredEvent';
 import mercureManager from '../../core/mercure/MercureManager';
 import type { DataRecord } from '../../core/data/DataRecord';
 
@@ -292,10 +291,7 @@ class HttpClient {
   private handleTokenRefreshError() {
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
-      StorageUtils.removeItem('user');
-      StorageUtils.removeItem('selectedBranchId');
-      StorageUtils.removeItem('selectedBranchName');
-      dispatchSessionExpiredEvent();
+      handleSessionExpired();
     }
     toast(HttpClient.DEFAULT_MESSAGES.unauthorized, 'error');
   }
