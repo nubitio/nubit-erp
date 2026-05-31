@@ -93,12 +93,26 @@ export { FormView, FORM_EVENTS } from './form/FormView';
 
 // ── Handles & options ─────────────────────────────────────────────────────────
 export type { FormHandle } from './form/FormHandle';
+export type { FormViewOptions } from './form/FormViewOptions';
 export type { GridHandle } from './datagrid/GridHandle';
 export type {
   DataGridSelectionChangedEvent,
   DataGridSummaryItem,
   DataGridViewOptions,
 } from './datagrid/DataGridViewOptions';
+export type {
+  DetailSummaryOptions,
+  SummaryCalculateContext,
+  SummaryFormat,
+  SummaryItem,
+  SummaryTextContext,
+  SummaryType,
+} from './summary';
+export {
+  computeSummaryValue,
+  formatSummaryValue,
+  resolveSummaryText,
+} from './summary';
 
 // ── Backend adapters ──────────────────────────────────────────────────────────
 export type { BackendAdapter } from './adapter/BackendAdapter';

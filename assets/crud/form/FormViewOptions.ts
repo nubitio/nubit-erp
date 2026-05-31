@@ -3,6 +3,7 @@ import type { FormEventNames } from '@nubit/core';
 import type { Field } from '../field/Field';
 import type { FormDataChangedHandler, FormDataRecord, FormDataSnapshot } from './FormDataSnapshot';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
+import type { DetailSummaryOptions } from '../summary';
 
 export interface FormViewOptions {
   className?: string;
@@ -10,6 +11,8 @@ export interface FormViewOptions {
   detailUrl?: string;
   fields: Field[];
   detailFields?: Field[];
+  /** Optional summary footer for master-detail line tables. */
+  detailSummary?: DetailSummaryOptions;
   detailPropertyName?: string;
   allowAdding?: boolean;
   allowUpdating?: boolean;

@@ -13,24 +13,40 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-height: 0;
 }
 
 .native-form--with-detail {
-  // height is content-driven — dialog max-height caps the outer container
+  // Content-driven: the dialog sizes around the form, while the detail grid
+  // owns its internal scroll when line items exceed available space.
 }
 
 // ── Master-detail layout ───────────────────────────────────────────────────────
 
 .native-form__master-detail {
+  align-items: stretch;
   display: grid;
   gap: var(--space-4);
   grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
-  align-items: start;  // each panel sizes independently — detail won't stretch to master height
+  min-height: 0;
+}
+
+.native-form--with-detail .native-form__master-detail {
+  overflow: visible;
 }
 
 .native-form__master-panel,
 .native-form__detail-panel {
+  min-height: 0;
   min-width: 0;
+}
+
+.native-form__master-panel {
+  display: block;
+}
+
+.native-form__detail-panel {
+  display: flex;
 }
 
 // ── Field grid ─────────────────────────────────────────────────────────────────
@@ -166,13 +182,15 @@
   position: relative;
 }
 
+// Compensate for the absolutely positioned toggle (▼) and clear (×) buttons.
+// padding-right reserves space so text never scrolls under the buttons.
 .native-form__lookup .native-form__control {
   padding-right: 30px;
   transition: padding-right var(--transition-fast);
 }
 
 .native-form__lookup.has-value .native-form__control {
-  padding-right: 52px;
+  padding-right: 54px;
 }
 
 .native-form__lookup-toggle,
@@ -187,7 +205,8 @@
   justify-content: center;
   padding: 0;
   position: absolute;
-  top: 3px;
+  top: 50%;
+  transform: translateY(-50%);
   transition: color var(--transition-base);
   width: 24px;
 
@@ -413,7 +432,9 @@
 
 .native-form__detail {
   height: auto;
-  max-height: min(calc(100dvh - 320px), 580px);
+  max-height: min(calc(100dvh - 220px), 640px);
+  min-height: 0;
+  width: 100%;
 }
 
 .native-form__section-title,
@@ -484,6 +505,14 @@
 //   • Hover + focus highlights match the app's accent color
 
 .native-form__detail-table-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.native-form__detail-table-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
@@ -496,6 +525,10 @@
   width: 100%;
 }
 
+.native-form__col-actions-col {
+  width: 40px;
+}
+
 // ── Header ──────────────────────────────────────────────────────────────────────
 
 .native-form__detail-table thead tr {
@@ -504,6 +537,7 @@
 }
 
 .native-form__detail-table th {
+  background: var(--surface-0);
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -516,7 +550,7 @@
   text-transform: uppercase;
   top: 0;
   white-space: nowrap;
-  z-index: 1;
+  z-index: 3;
 }
 
 // Resize handle — absolutely positioned on the right edge of each <th>
@@ -594,6 +628,71 @@
   background: color-mix(in srgb, var(--accent-color) 5%, transparent);
 }
 
+// ── Summary footer ─────────────────────────────────────────────────────────────
+
+.native-form__detail-summary td {
+  background: var(--surface-0);
+  border-bottom: 0;
+  border-top: 2px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  min-height: 36px;
+  padding: 8px;
+  vertical-align: middle;
+}
+
+.native-form__detail-summary tr,
+.native-form__detail-summary td.native-form__col-actions,
+.native-form__detail-summary tr:nth-child(even),
+.native-form__detail-summary tr:nth-child(even) td.native-form__col-actions,
+.native-form__detail-summary tr:hover,
+.native-form__detail-summary tr:hover td.native-form__col-actions {
+  background: var(--surface-0);
+}
+
+.native-form__detail-summary-table tbody td.native-form__col-actions,
+.native-form__detail-summary-table tbody tr:nth-child(even) td.native-form__col-actions,
+.native-form__detail-summary-table tbody tr:hover td.native-form__col-actions {
+  background: var(--surface-0);
+}
+
+.native-form__detail-summary-wrap {
+  background: var(--surface-0);
+  border-top: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.native-form__detail-summary-table {
+  background: var(--surface-0);
+  min-width: 600px;
+}
+
+.native-form__detail-summary-cell {
+  align-items: baseline;
+  display: inline-flex;
+  gap: var(--space-2);
+  min-width: 100%;
+}
+
+.native-form__detail-summary-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.native-form__detail-summary-value {
+  white-space: nowrap;
+}
+
 // ── Controls inside cells — flush, borderless, spreadsheet-like ────────────────
 
 .native-form__detail-table td .native-form__control,
@@ -636,6 +735,20 @@
   .native-form__control {
     border-radius: 0;
   }
+}
+
+// The detail-table cell rule ".native-form__detail-table td .native-form__control"
+// uses shorthand `padding: 4px 8px` (spec 0,2,1) which overrides the base
+// lookup padding-right rules (spec 0,2,0 and 0,3,0 in the case of has-value
+// when styles are applied in a different cascade order).
+// These higher-specificity rules (0,3,1 / 0,4,1) guarantee the correct
+// padding-right is applied so toggle/clear buttons don't overlap text.
+.native-form__detail-table td .native-form__lookup .native-form__control {
+  padding-right: 30px;
+}
+
+.native-form__detail-table td .native-form__lookup.has-value .native-form__control {
+  padding-right: 54px;
 }
 
 // Error state on cell controls

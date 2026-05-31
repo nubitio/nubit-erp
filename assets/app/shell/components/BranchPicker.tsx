@@ -149,6 +149,17 @@ export const BranchPicker = ({
       closeOnEscape={!selecting}
       onClose={close}
       className="picker-popup"
+      bodyClassName="picker-popup__body"
+      footer={
+        <>
+          <button className="app-button app-button--secondary" type="button" onClick={onCancelClick} disabled={selecting}>
+            Cancelar
+          </button>
+          <button className="app-button app-button--primary" type="button" onClick={onAcceptClick} disabled={selecting}>
+            Aceptar
+          </button>
+        </>
+      }
     >
       <div className="branch-picker">
         <div className="branch-picker__list" role="radiogroup" aria-label="Locales disponibles">
@@ -178,14 +189,6 @@ export const BranchPicker = ({
               );
             })
           )}
-        </div>
-        <div className="picker-popup-buttons-container">
-          <button className="app-button app-button--secondary" type="button" onClick={onCancelClick} disabled={selecting}>
-            Cancelar
-          </button>
-          <button className="app-button app-button--primary" type="button" onClick={onAcceptClick} disabled={selecting}>
-            Aceptar
-          </button>
         </div>
       </div>
     </AppDialog>

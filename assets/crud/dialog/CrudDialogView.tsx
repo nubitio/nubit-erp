@@ -132,7 +132,7 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
         height={options.height ?? 'auto'}
         maxWidth={options.width ?? undefined}
         onClose={handleClose}
-        closeOnEscape={false}
+        closeOnEscape={!isProcessing}
         closeOnOutsideClick={false}
         keepMounted
         rootClassName="crud-dialog-root"

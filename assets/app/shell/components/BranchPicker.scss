@@ -1,5 +1,11 @@
 @use 'variables' as *;
 
+// Prevent the dialog body from adding its own scroll — the branch list
+// handles scrolling internally via overflow: auto on __list.
+.picker-popup__body {
+  overflow: hidden;
+}
+
 .branch-picker {
   display: flex;
   flex-direction: column;
@@ -73,14 +79,4 @@
   color: var(--text-secondary);
   padding: 1rem;
   text-align: center;
-}
-
-.picker-popup-buttons-container {
-  align-items: center;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: var(--popup-toolbar-item-spacing);
-  justify-content: flex-end;
-  margin: 0 -20px -20px;
-  padding: 0.75rem 20px;
 }

@@ -4,6 +4,7 @@ import {
   DialogView,
   FormView,
   FORM_EVENTS,
+  type DetailSummaryOptions,
   type FormHandle,
   type GridHandle,
 } from '@nubit/crud';
@@ -25,6 +26,7 @@ import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';
 import { useEvents } from '@nubit/core';
 import toast from '@shared/lib/SharedUtils';
+import NumberUtils from '@shared/lib/NumberUtils';
 import type { DataRecord } from '@nubit/crud';
 
 export const SalePage = () => {
@@ -105,6 +107,20 @@ export const SalePage = () => {
   const detailFields = useMemo(
     () => SaleDetailFields(formRef.current, 'PEN', { ...itemDiscountCallbacks, stateRef: saleFieldStateRef }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const detailSummary = useMemo<DetailSummaryOptions>(
+    () => ({
+      sticky: true,
+      items: [
+        {
+          column: 'netAmount',
+          label: 'Total',
+          summaryType: 'sum',
+          valueFormat: (value) => NumberUtils.formatCurrency(Number(value ?? 0), 'PEN'),
+        },
+      ],
+    }),
     [],
   );
   const gridDetailFields = useMemo(
@@ -297,6 +313,7 @@ export const SalePage = () => {
           url={API_URL}
           fields={fields}
           detailFields={detailFields}
+          detailSummary={detailSummary}
           detailPropertyName="writeItems"
           events={saleEvents}
         />

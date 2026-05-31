@@ -22,6 +22,7 @@ import type { FilterRule } from '../field/FilterRule';
 import type { ResourceToolbarAction, ResourceToolbarItems } from '../crud/ResourceConfig';
 import { useSmartCrudRoles } from '../crud/SmartCrudRolesContext';
 import { NativeEntitySelect } from '../form/NativeFormView';
+import { resolveSummaryText } from '../summary';
 
 type SortRule = { selector: string; desc: boolean };
 
@@ -573,18 +574,7 @@ function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryI
   return (
     <div className="native-datagrid__summary">
       {summaryFields.map((summary, index) => {
-        const values = rows.map((row) => Number(row[summary.column ?? ''] ?? 0));
-        const value =
-          summary.summaryType === 'sum'
-            ? values.reduce((total, next) => total + (Number.isFinite(next) ? next : 0), 0)
-            : values.length;
-        const text = summary.customizeText
-          ? summary.customizeText({ value, valueText: String(value) })
-          : summary.displayFormat
-            ? summary.displayFormat.replace('{0}', String(value))
-            : String(value);
-
-        return <span key={index}>{text}</span>;
+        return <span key={index}>{resolveSummaryText(rows, summary)}</span>;
       })}
     </div>
   );
@@ -1118,10 +1108,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           tabIndex={0}
                           onClick={() => selectRow(row)}
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' && (options.onEdit || options.events?.EDIT)) {
+                            if (event.key === 'Enter' && options.allowEdit && (options.onEdit || options.events?.EDIT)) {
                               if (options.onEdit) options.onEdit(row);
                               else emit(options.events!.EDIT!, { row });
-                            } else if (event.key === 'Delete' && (options.onDelete || options.events?.DELETE)) {
+                            } else if (event.key === 'Delete' && options.allowDelete && (options.onDelete || options.events?.DELETE)) {
                               setConfirmRow(row);
                             } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                               event.preventDefault();

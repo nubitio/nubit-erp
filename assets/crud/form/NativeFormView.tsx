@@ -29,6 +29,7 @@ import { useFormSubmit } from './useFormSubmit';
 import { useFormValidation } from './useFormValidation';
 import type { UploadedFile } from './UploadedFile';
 import { type DetailFieldErrors, mapApiViolations } from './FormApiViolations';
+import { resolveSummaryText, type DetailSummaryOptions } from '../summary';
 
 type FieldState = { readonly?: boolean; disabled?: boolean; hidden?: boolean; validationEnabled?: boolean };
 type EventRowPayload = FormDataRecord & { row?: FormDataRecord };
@@ -557,6 +558,74 @@ function validateField(field: Field, value: unknown, formData: FormDataRecord, t
   return null;
 }
 
+function DetailColumnGroup({
+  allowDeleting,
+  fields,
+  colWidths,
+}: {
+  allowDeleting?: boolean;
+  fields: Field[];
+  colWidths: Record<string, number>;
+}) {
+  return (
+    <colgroup>
+      {fields.map((field) => {
+        const width = colWidths[field.name] ?? field.width;
+        return <col key={field.name} style={width ? { width } : undefined} />;
+      })}
+      {allowDeleting && <col className="native-form__col-actions-col" />}
+    </colgroup>
+  );
+}
+
+function DetailSummaryFooter({
+  allowDeleting,
+  colWidths,
+  fields,
+  rows,
+  scrollRef,
+  summary,
+}: {
+  allowDeleting?: boolean;
+  colWidths: Record<string, number>;
+  fields: Field[];
+  rows: FormDataRecord[];
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  summary?: DetailSummaryOptions;
+}) {
+  if (!summary?.items.length || summary.visible === false) return null;
+
+  const itemsByColumn = new Map(summary.items.filter((item) => item.column).map((item) => [item.column, item]));
+
+  return (
+    <div ref={scrollRef} className="native-form__detail-summary-wrap" aria-hidden="true">
+      <table className="native-form__detail-table native-form__detail-summary-table">
+        <DetailColumnGroup allowDeleting={allowDeleting} colWidths={colWidths} fields={fields} />
+        <tbody className="native-form__detail-summary">
+          <tr>
+            {fields.map((field) => {
+              const item = itemsByColumn.get(field.name);
+              const align = item?.align ?? field.align;
+              const justifyContent = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+              return (
+                <td key={field.name} style={align ? { textAlign: align } : undefined}>
+                  {item && (
+                    <div className="native-form__detail-summary-cell" style={{ justifyContent }}>
+                      {item.label && <span className="native-form__detail-summary-label">{item.label}</span>}
+                      <span className="native-form__detail-summary-value">{resolveSummaryText(rows, item)}</span>
+                    </div>
+                  )}
+                </td>
+              );
+            })}
+            {allowDeleting && <td className="native-form__col-actions" />}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function NativeDetailGrid({
   allowAdding = true,
   allowDeleting = true,
@@ -570,6 +639,7 @@ function NativeDetailGrid({
   prependData,
   remoteOptions,
   rows,
+  summary,
 }: {
   allowAdding?: boolean;
   allowDeleting?: boolean;
@@ -583,10 +653,13 @@ function NativeDetailGrid({
   prependData?: PrependDataMap;
   remoteOptions: Record<string, DataRecord[]>;
   rows: FormDataRecord[];
+  summary?: DetailSummaryOptions;
 }) {
   const { t } = useCoreTranslation();
   const visibleFields = detailFields.filter((field) => field.visible && !field.hidden);
   const rowKeysRef = useRef<string[]>(rows.map(() => safeRandomId()));
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const summaryWrapRef = useRef<HTMLDivElement>(null);
 
   // Re-generate keys when the parent resets rows to a different-length array
   // (e.g. switching between edit records). addRow/removeRow keep rowKeysRef
@@ -622,6 +695,20 @@ function NativeDetailGrid({
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   };
+
+  useLayoutEffect(() => {
+    const tableScroll = tableScrollRef.current;
+    const summaryWrap = summaryWrapRef.current;
+    if (!tableScroll || !summaryWrap) return;
+
+    const syncSummaryScroll = () => {
+      summaryWrap.scrollLeft = tableScroll.scrollLeft;
+    };
+
+    syncSummaryScroll();
+    tableScroll.addEventListener('scroll', syncSummaryScroll, { passive: true });
+    return () => tableScroll.removeEventListener('scroll', syncSummaryScroll);
+  }, [colWidths]);
 
   const updateCell = async (rowIndex: number, field: Field, value: unknown) => {
     onClearCellError?.(rowIndex, field.name);
@@ -708,60 +795,65 @@ function NativeDetailGrid({
         )}
       </div>
       <div className="native-form__detail-table-wrap">
-        <table className="native-form__detail-table">
-          <thead>
-            <tr>
-              {visibleFields.map((field) => {
-                const w = colWidths[field.name] ?? field.width;
+        <div ref={tableScrollRef} className="native-form__detail-table-scroll">
+          <table className="native-form__detail-table">
+            <DetailColumnGroup allowDeleting={allowDeleting} colWidths={colWidths} fields={visibleFields} />
+            <thead>
+              <tr>
+                {visibleFields.map((field) => (
+                    <th
+                      key={field.name}
+                      style={field.align ? { textAlign: field.align } : undefined}
+                    >
+                      <span className="native-form__col-header-text">{field.label}</span>
+                      <span
+                        className="native-form__col-resize"
+                        onMouseDown={handleResizeMouseDown(field.name)}
+                        title="Arrastrar para redimensionar"
+                      />
+                    </th>
+                ))}
+                {allowDeleting && <th className="native-form__col-actions" />}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">{t('form.detailEmpty')}</td>
+                </tr>
+              )}
+              {/* eslint-disable react-hooks/refs -- rowKeysRef is updated synchronously by addRow/removeRow before onRowsChange fires, so it is always in sync with rows here */}
+              {rows.map((row, rowIndex) => {
+                const rowKey = rowKeysRef.current[rowIndex]; // eslint-disable-line react-hooks/refs
                 return (
-                  <th
-                    key={field.name}
-                    style={{
-                      ...(w ? { width: w } : undefined),
-                      ...(field.align ? { textAlign: field.align } : undefined),
-                    }}
-                  >
-                    <span className="native-form__col-header-text">{field.label}</span>
-                    <span
-                      className="native-form__col-resize"
-                      onMouseDown={handleResizeMouseDown(field.name)}
-                      title="Arrastrar para redimensionar"
-                    />
-                  </th>
+                <tr key={rowKey}>
+                  {visibleFields.map((field) => (
+                    <td key={field.name} style={field.align ? { textAlign: field.align } : undefined}>
+                      {renderDetailControl(row, rowIndex, field)}
+                      {detailErrors[rowIndex]?.[field.name] && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
+                    </td>
+                  ))}
+                  {allowDeleting && (
+                    <td className="native-form__col-actions">
+                      <button type="button" className="app-icon-button" onClick={() => removeRow(rowIndex)}>
+                        <i className="ph ph-trash" aria-hidden="true" />
+                      </button>
+                    </td>
+                  )}
+                </tr>
                 );
               })}
-              {allowDeleting && <th className="native-form__col-actions" />}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">{t('form.detailEmpty')}</td>
-              </tr>
-            )}
-            {/* eslint-disable react-hooks/refs -- rowKeysRef is updated synchronously by addRow/removeRow before onRowsChange fires, so it is always in sync with rows here */}
-            {rows.map((row, rowIndex) => {
-              const rowKey = rowKeysRef.current[rowIndex]; // eslint-disable-line react-hooks/refs
-              return (
-              <tr key={rowKey}>
-                {visibleFields.map((field) => (
-                  <td key={field.name} style={field.align ? { textAlign: field.align } : undefined}>
-                    {renderDetailControl(row, rowIndex, field)}
-                    {detailErrors[rowIndex]?.[field.name] && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
-                  </td>
-                ))}
-                {allowDeleting && (
-                  <td className="native-form__col-actions">
-                    <button type="button" className="app-icon-button" onClick={() => removeRow(rowIndex)}>
-                      <i className="ph ph-trash" aria-hidden="true" />
-                    </button>
-                  </td>
-                )}
-              </tr>
-              );
-            })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
+        <DetailSummaryFooter
+          allowDeleting={allowDeleting}
+          colWidths={colWidths}
+          fields={visibleFields}
+          rows={rows}
+          scrollRef={summaryWrapRef}
+          summary={summary}
+        />
       </div>
     </div>
   );
@@ -1224,6 +1316,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       prependData={prependDataRef.current}
       remoteOptions={remoteOptions}
       rows={detailRows}
+      summary={options.detailSummary}
       onRowsChange={setNextDetailRows}
     />
   ) : null;

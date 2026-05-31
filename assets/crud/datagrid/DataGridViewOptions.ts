@@ -4,19 +4,14 @@ import type { Field } from '../field/Field';
 import type { FilterRule } from '../field/FilterRule';
 import type { GridHandle } from './GridHandle';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
+import type { SummaryItem } from '../summary';
 import type { ResourceRowActions, ResourceToolbarItems } from '../crud/ResourceConfig';
 
 export interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord[];
 }
 
-export interface DataGridSummaryItem {
-  column?: string;
-  summaryType?: string;
-  displayFormat?: string;
-  valueFormat?: string;
-  customizeText?: (cellInfo: unknown) => string;
-}
+export type DataGridSummaryItem = SummaryItem;
 
 export interface DataGridViewOptions {
   id: string;

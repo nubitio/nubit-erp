@@ -273,6 +273,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
       )
+      .visibleOnForm(false)
       .disabled(true)
       .build(),
   );
