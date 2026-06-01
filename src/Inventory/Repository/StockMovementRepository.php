@@ -32,6 +32,10 @@ final readonly class StockMovementRepository
      *   type?: string,
      *   from?: string,
      *   to?: string,
+     *   sourceId?: string,
+     *   sourceIdOperator?: string,
+     *   note?: string,
+     *   noteOperator?: string,
      * } $filters
      *
      * @return list<StockMovement>
@@ -60,12 +64,20 @@ final readonly class StockMovementRepository
 
         if (!empty($filters['from'])) {
             $where[]      = 'sm.occurred_at >= :date_from';
-            $params['date_from'] = $filters['from'] . ' 00:00:00';
+            $params['date_from'] = $this->normalizeDateBoundary($filters['from'], ' 00:00:00');
         }
 
         if (!empty($filters['to'])) {
             $where[]    = 'sm.occurred_at <= :date_to';
-            $params['date_to'] = $filters['to'] . ' 23:59:59';
+            $params['date_to'] = $this->normalizeDateBoundary($filters['to'], ' 23:59:59');
+        }
+
+        if (!empty($filters['sourceId'])) {
+            $this->addTextFilter($where, $params, 'sm.source_id', 'source_id', $filters['sourceId'], $filters['sourceIdOperator'] ?? 'contains');
+        }
+
+        if (!empty($filters['note'])) {
+            $this->addTextFilter($where, $params, 'sm.note', 'note', $filters['note'], $filters['noteOperator'] ?? 'contains');
         }
 
         $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -168,12 +180,20 @@ final readonly class StockMovementRepository
 
         if (!empty($filters['from'])) {
             $where[]              = 'occurred_at >= :date_from';
-            $params['date_from']  = $filters['from'] . ' 00:00:00';
+            $params['date_from']  = $this->normalizeDateBoundary($filters['from'], ' 00:00:00');
         }
 
         if (!empty($filters['to'])) {
             $where[]            = 'occurred_at <= :date_to';
-            $params['date_to']  = $filters['to'] . ' 23:59:59';
+            $params['date_to']  = $this->normalizeDateBoundary($filters['to'], ' 23:59:59');
+        }
+
+        if (!empty($filters['sourceId'])) {
+            $this->addTextFilter($where, $params, 'source_id', 'source_id', $filters['sourceId'], $filters['sourceIdOperator'] ?? 'contains');
+        }
+
+        if (!empty($filters['note'])) {
+            $this->addTextFilter($where, $params, 'note', 'note', $filters['note'], $filters['noteOperator'] ?? 'contains');
         }
 
         $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -252,5 +272,48 @@ final readonly class StockMovementRepository
     private function extractUuid(string $value): string
     {
         return basename($value);
+    }
+
+    private function normalizeDateBoundary(string $value, string $timeSuffix): string
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            return $value . $timeSuffix;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param list<string> $where
+     * @param array<string, mixed> $params
+     */
+    private function addTextFilter(array &$where, array &$params, string $column, string $param, string $value, string $operator): void
+    {
+        switch ($operator) {
+            case '=':
+                $where[] = sprintf('%s = :%s', $column, $param);
+                $params[$param] = $value;
+                break;
+            case '<>':
+                $where[] = sprintf('%s <> :%s', $column, $param);
+                $params[$param] = $value;
+                break;
+            case 'notcontains':
+                $where[] = sprintf('%s NOT LIKE :%s', $column, $param);
+                $params[$param] = '%' . $value . '%';
+                break;
+            case 'startswith':
+                $where[] = sprintf('%s LIKE :%s', $column, $param);
+                $params[$param] = $value . '%';
+                break;
+            case 'endswith':
+                $where[] = sprintf('%s LIKE :%s', $column, $param);
+                $params[$param] = '%' . $value;
+                break;
+            default:
+                $where[] = sprintf('%s LIKE :%s', $column, $param);
+                $params[$param] = '%' . $value . '%';
+                break;
+        }
     }
 }

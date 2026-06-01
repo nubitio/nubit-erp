@@ -45,6 +45,10 @@ final readonly class StockMovementProvider implements ProviderInterface
             'to'        => $request?->query->get('to'),
         ];
 
+        if ($request !== null) {
+            $filters = array_replace($filters, $this->extractGridFilters($request->query->all('filter')));
+        }
+
         // Remove nulls
         $filters = array_filter($filters, static fn ($v) => $v !== null && $v !== '');
 
@@ -55,5 +59,67 @@ final readonly class StockMovementProvider implements ProviderInterface
         $total = $this->repository->countKardex($filters);
 
         return new TraversablePaginator(new \ArrayIterator($items), $page, $perPage, $total);
+    }
+
+    /**
+     * Convert DataGridView filter arrays into the compact repository filter shape.
+     *
+     * @param array<array-key, mixed> $gridFilters
+     *
+     * @return array<string, string>
+     */
+    private function extractGridFilters(array $gridFilters): array
+    {
+        $mapped = [];
+
+        foreach ($gridFilters as $filter) {
+            if (!is_array($filter)) {
+                continue;
+            }
+
+            $field = (string) ($filter[0] ?? '');
+            $operator = (string) ($filter[1] ?? '=');
+            $value = $filter[2] ?? null;
+
+            if (!is_scalar($value) || $value === '') {
+                continue;
+            }
+
+            $value = (string) $value;
+
+            match ($field) {
+                'warehouse', 'product' => $mapped[$field] = $value,
+                'movementType' => $mapped['type'] = $value,
+                'sourceId' => $this->mapTextFilter($mapped, 'sourceId', $operator, $value),
+                'note' => $this->mapTextFilter($mapped, 'note', $operator, $value),
+                'occurredAt' => $this->mapDateFilter($mapped, $operator, $value),
+                default => null,
+            };
+        }
+
+        return $mapped;
+    }
+
+    /** @param array<string, string> $mapped */
+    private function mapTextFilter(array &$mapped, string $name, string $operator, string $value): null
+    {
+        $mapped[$name] = $value;
+        $mapped[$name . 'Operator'] = $operator;
+
+        return null;
+    }
+
+    /** @param array<string, string> $mapped */
+    private function mapDateFilter(array &$mapped, string $operator, string $value): null
+    {
+        if (in_array($operator, ['>', '>=', '='], true)) {
+            $mapped['from'] = $value;
+        }
+
+        if (in_array($operator, ['<', '<=', '='], true)) {
+            $mapped['to'] = $value;
+        }
+
+        return null;
     }
 }

@@ -83,7 +83,7 @@ const formatWarehouse = (value: unknown): string => {
   return String(value ?? '');
 };
 
-const formatMovementType = (value: unknown, data: StockMovementRecord) => {
+const formatMovementType = (value: unknown) => {
   if (!value) return null;
   const tone = movementTone(value as string);
   const entry = MOVEMENT_TYPES.find((t) => t.value === value);
@@ -135,11 +135,11 @@ const buildFields = (): Field[] => [
   { ...datetimeField().name('occurredAt').label('Fecha').build(),   order: 0, width: 150, formatter: (e: any) => formatDate(e.value) },
   { ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(), order: 1, width: 160, formatter: (e: any) => formatWarehouse(e.value) },
   { ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(),   order: 2, width: 220, formatter: (e: any) => formatProduct(e.value) },
-  { ...enumField(MOVEMENT_TYPES).name('movementType').label('Tipo').build(), order: 3, width: 160, formatter: (e: any) => formatMovementType(e.value, e.data as StockMovementRecord) },
+  { ...enumField(MOVEMENT_TYPES).name('movementType').label('Tipo').build(), order: 3, width: 160, formatter: (e: any) => formatMovementType(e.value) },
   { ...textField().name('sourceId').label('Referencia').build(),          order: 4, width: 170, formatter: (e: any) => formatReference(e.data as StockMovementRecord) },
-  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', formatter: (e: any) => formatQty(e.value) },
-  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', formatter: (e: any) => formatQty(e.value) },
-  { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
   { ...textField().name('note').label('Nota').build(), order: 8, width: 220, formatter: (e: any) => formatNote(e.value) },
 ];
 
