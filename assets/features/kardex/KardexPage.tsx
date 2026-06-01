@@ -1,14 +1,20 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import './KardexPage.scss';
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
-import { DateUtils } from '@nubit/core';
-import { SmartCrudPage, defineResource, textField, datetimeField, type Field, type DataRecord } from '@nubit/crud';
-import { httpClient } from '@shared/api/HttpClient';
+import {
+  DataGridView,
+  identityField,
+  textField,
+  datetimeField,
+  entityField,
+  enumField,
+  type Field,
+  type DataRecord,
+} from '@nubit/crud';
+import { Badge } from '../../shared/components/Badge';
 
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+const BASE_URL = API + 'stock-movements';
 
 interface StockMovementRecord extends DataRecord {
   id: string;
@@ -25,9 +31,34 @@ interface StockMovementRecord extends DataRecord {
   note: string | null;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const MOVEMENT_TYPES = [
+  { value: 'PURCHASE_IN', text: 'Compra' },
+  { value: 'SALE_OUT', text: 'Venta' },
+  { value: 'ADJUSTMENT', text: 'Ajuste' },
+  { value: 'TRANSFER_IN', text: 'Traslado entrada' },
+  { value: 'TRANSFER_OUT', text: 'Traslado salida' },
+  { value: 'MANUAL_IN', text: 'Entrada manual' },
+  { value: 'MANUAL_OUT', text: 'Salida manual' },
+  { value: 'VOID_REVERSAL', text: 'Reversa anulación' },
+  { value: 'PURCHASE_VOID', text: 'Anulación compra' },
+  { value: 'RETURN_IN', text: 'Devolución cliente' },
+  { value: 'RECIPE_CONSUMPTION', text: 'Consumo receta' },
+];
 
-const BASE_URL = API + 'stock-movements';
+const INBOUND_TYPES = new Set(['PURCHASE_IN', 'TRANSFER_IN', 'MANUAL_IN', 'VOID_REVERSAL', 'RETURN_IN']);
+const OUTBOUND_TYPES = new Set(['SALE_OUT', 'TRANSFER_OUT', 'MANUAL_OUT', 'PURCHASE_VOID', 'RECIPE_CONSUMPTION']);
+
+const movementTone = (type: string | null | undefined): 'in' | 'out' | 'neutral' => {
+  if (type && INBOUND_TYPES.has(type)) return 'in';
+  if (type && OUTBOUND_TYPES.has(type)) return 'out';
+  return 'neutral';
+};
+
+const BADGE_VARIANT: Record<string, 'success' | 'danger' | 'secondary'> = {
+  in: 'success',
+  out: 'danger',
+  neutral: 'secondary',
+};
 
 const formatQty = (value: unknown): string => {
   if (value === null || value === undefined || value === '') return '';
@@ -52,6 +83,36 @@ const formatWarehouse = (value: unknown): string => {
   return String(value ?? '');
 };
 
+const formatMovementType = (value: unknown, data: StockMovementRecord) => {
+  if (!value) return null;
+  const tone = movementTone(value as string);
+  const entry = MOVEMENT_TYPES.find((t) => t.value === value);
+  return <Badge variant={BADGE_VARIANT[tone]}>{entry?.text || String(value)}</Badge>;
+};
+
+const formatReference = (row: StockMovementRecord) => {
+  const sourceId = row.sourceId ?? '';
+  const [id, type, line] = sourceId.split(':');
+  const shortId = id ? id.slice(0, 8) : '';
+  const entry = MOVEMENT_TYPES.find((t) => t.value === row.movementType);
+  const label = entry?.text || type || row.sourceType || 'Movimiento';
+
+  if (!shortId) return '';
+
+  return (
+    <span className="kardex-reference" title={sourceId}>
+      <span className="kardex-reference__label">{label}</span>
+      <span className="kardex-reference__id">{shortId}{line ? ` · item ${line}` : ''}</span>
+    </span>
+  );
+};
+
+const formatNote = (value: unknown): string => {
+  const note = String(value ?? '');
+  if (note === 'Applied by InventoryServiceSalesInventoryPort') return 'Venta aplicada automáticamente';
+  return note;
+};
+
 const formatDate = (value: unknown): string => {
   if (!value) return '';
   try {
@@ -65,206 +126,36 @@ const formatDate = (value: unknown): string => {
   }
 };
 
-// ─── Field factory ────────────────────────────────────────────────────────────
+const buildFields = (): Field[] => [
+  identityField().build(),
 
-const buildFields = (showProductColumns: boolean, showBalance: boolean): Field[] => [
-  { ...textField().name('id').label('ID').build(),           visible: false, visibleOnForm: false, isIdentity: true, readonly: true },
-  { ...textField().name('movementType').label('Tipo mov.').build(), visible: false, visibleOnForm: false },
-  { ...textField().name('sourceType').label('Fuente').build(),      visible: false, visibleOnForm: false },
-  { ...datetimeField().name('occurredAt').label('Fecha').build(),   order: 0, width: 150, formatter: (e) => formatDate(e.value) },
-  { ...textField().name('warehouse').label('Almacén').build(),  order: 1, width: 160, visible: showProductColumns, visibleOnForm: false, formatter: (e) => formatWarehouse(e.value) },
-  { ...textField().name('product').label('Producto').build(),   order: 2, width: 220, visible: showProductColumns, visibleOnForm: false, formatter: (e) => formatProduct(e.value) },
-  { ...textField().name('movementTypeLabel').label('Tipo').build(),       order: 3, width: 160 },
-  { ...textField().name('sourceId').label('Referencia').build(),          order: 4, width: 180 },
-  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', formatter: (e) => formatQty(e.value) },
-  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', formatter: (e) => formatQty(e.value) },
-  { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', visible: showBalance, visibleOnForm: false, formatter: (e) => formatQty(e.value) },
-  { ...textField().name('note').label('Nota').build(), order: 8, width: 220 },
+  { ...textField().name('movementTypeLabel').label('').build(), visible: false, visibleOnForm: false },
+  { ...textField().name('sourceType').label('').build(),      visible: false, visibleOnForm: false },
+
+  { ...datetimeField().name('occurredAt').label('Fecha').build(),   order: 0, width: 150, formatter: (e: any) => formatDate(e.value) },
+  { ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(), order: 1, width: 160, formatter: (e: any) => formatWarehouse(e.value) },
+  { ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(),   order: 2, width: 220, formatter: (e: any) => formatProduct(e.value) },
+  { ...enumField(MOVEMENT_TYPES).name('movementType').label('Tipo').build(), order: 3, width: 160, formatter: (e: any) => formatMovementType(e.value, e.data as StockMovementRecord) },
+  { ...textField().name('sourceId').label('Referencia').build(),          order: 4, width: 170, formatter: (e: any) => formatReference(e.data as StockMovementRecord) },
+  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('note').label('Nota').build(), order: 8, width: 220, formatter: (e: any) => formatNote(e.value) },
 ];
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-type SimpleOption = { id: string; name: string };
-
-/** Build the API URL from current filter state. `null` values → param omitted. */
-const buildUrl = (
-  warehouseId: string | null,
-  productId: string | null,
-  fromDate: Date | null,
-  toDate: Date | null,
-): string => {
-  const params = new URLSearchParams();
-  if (warehouseId) params.set('warehouse', warehouseId);
-  if (productId)   params.set('product',   productId);
-  if (fromDate)    params.set('from',       DateUtils.dateFormatter(fromDate));
-  if (toDate)      params.set('to',         DateUtils.dateFormatter(toDate));
-  const qs = params.toString();
-  return qs ? `${BASE_URL}?${qs}` : BASE_URL;
-};
-
 export const KardexPage = () => {
-  const [searchParams] = useSearchParams();
-
-  // Pre-fill from URL params (e.g. navigation from StockItemPage / Dashboard)
-  const initialWarehouse = searchParams.get('warehouse');
-  const initialProduct   = searchParams.get('product');
-
-  const [warehouseId, setWarehouseId] = useState<string | null>(initialWarehouse);
-  const [productId,   setProductId]   = useState<string | null>(initialProduct);
-  const [fromDate,    setFromDate]     = useState<Date | null>(null);
-  const [toDate,      setToDate]       = useState<Date | null>(null);
-
-  // activeUrl drives the grid; initialised on mount → shows filtered (or all) movements immediately
-  const [activeUrl, setActiveUrl] = useState<string>(() =>
-    buildUrl(initialWarehouse, initialProduct, null, null),
-  );
-
-  const [activeProductId, setActiveProductId] = useState<string | null>(initialProduct);
-
-  const [warehouses, setWarehouses] = useState<SimpleOption[]>([]);
-  const [products,   setProducts]   = useState<SimpleOption[]>([]);
-
-  useEffect(() => {
-    httpClient.get<any>(`${API}warehouses?itemsPerPage=200`)
-      .then((r) =>
-        setWarehouses(
-          (r.data?.['hydra:member'] ?? []).map((w: any) => ({ id: w.id, name: w.name })),
-        ),
-      )
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    httpClient.get<any>(`${API}products?itemsPerPage=500`)
-      .then((r) =>
-        setProducts(
-          (r.data?.['hydra:member'] ?? []).map((p: any) => ({
-            id: p.id,
-            name: [p.code, p.name].filter(Boolean).join(' - '),
-          })),
-        ),
-      )
-      .catch(() => {});
-  }, []);
-
-  const handleClear = useCallback(() => {
-    setWarehouseId(null);
-    setProductId(null);
-    setFromDate(null);
-    setToDate(null);
-    setActiveUrl(buildUrl(null, null, null, null));
-  }, []);
-
-  // Columns adapt to active filters:
-  //   • product/warehouse columns hidden when filtering by a specific product (redundant)
-  //   • runningBalance only meaningful when filtered by product (cross-product sum has no sense)
-  const showProductColumns = activeProductId === null;
-  const showBalance        = activeProductId !== null;
-
-  const resource = useMemo(
-    () =>
-      defineResource<StockMovementRecord>(activeUrl, {
-        id: `kardex-${activeUrl}`,
-        title: 'Kardex — Movimientos de stock',
-        fields: buildFields(showProductColumns, showBalance),
-        sort: [{ selector: 'occurredAt', desc: true }],
-        permissions: { canAdd: false, canEdit: false, canDelete: false },
-      }),
-    [activeUrl, showProductColumns, showBalance],
-  );
-
-  const applySearch = useCallback(() => {
-    setActiveProductId(productId);          // track which product is active for column logic
-    setActiveUrl(buildUrl(warehouseId, productId, fromDate, toDate));
-  }, [warehouseId, productId, fromDate, toDate]);
-
-  /** Parse YYYY-MM-DD without UTC-midnight shift */
-  const parseLocal = (s: string): Date | null => {
-    if (!s) return null;
-    const [y, m, d] = s.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  };
-
   return (
-    <div id="wrapper">
-      {/* ── Filtros ── */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          flexWrap: 'wrap',
-          padding: '12px 0 8px',
-          alignItems: 'flex-end',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label htmlFor="kardex-warehouse" style={{ fontSize: 12, color: '#666' }}>Almacén</label>
-          <select
-            id="kardex-warehouse"
-            className="form-select"
-            style={{ width: 220 }}
-            value={warehouseId ?? ''}
-            onChange={(e) => setWarehouseId(e.target.value || null)}
-          >
-            <option value="">Todos</option>
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>{w.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label htmlFor="kardex-product" style={{ fontSize: 12, color: '#666' }}>Producto</label>
-          <select
-            id="kardex-product"
-            className="form-select"
-            style={{ width: 280 }}
-            value={productId ?? ''}
-            onChange={(e) => setProductId(e.target.value || null)}
-          >
-            <option value="">Todos</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label htmlFor="kardex-from" style={{ fontSize: 12, color: '#666' }}>Desde</label>
-          <input
-            id="kardex-from"
-            type="date"
-            className="form-control"
-            style={{ width: 140 }}
-            value={fromDate ? DateUtils.dateFormatter(fromDate) : ''}
-            onChange={(e) => setFromDate(parseLocal(e.target.value))}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label htmlFor="kardex-to" style={{ fontSize: 12, color: '#666' }}>Hasta</label>
-          <input
-            id="kardex-to"
-            type="date"
-            className="form-control"
-            style={{ width: 140 }}
-            value={toDate ? DateUtils.dateFormatter(toDate) : ''}
-            onChange={(e) => setToDate(parseLocal(e.target.value))}
-          />
-        </div>
-
-        <button type="button" className="app-button app-button--primary" onClick={applySearch}>
-          <i className="ph ph-magnifying-glass" aria-hidden="true" />
-          Filtrar
-        </button>
-        <button type="button" className="app-button app-button--secondary" onClick={handleClear}>
-          <i className="ph ph-x" aria-hidden="true" />
-          Limpiar
-        </button>
-      </div>
-
-      {/* ── Grilla ── */}
-      <SmartCrudPage resource={resource} />
+    <div className="view-wrapper-scroll kardex-page">
+      <DataGridView
+        id="kardex"
+        title="Kardex — Movimientos de stock"
+        url={BASE_URL}
+        fields={buildFields()}
+        sort={[{ selector: 'occurredAt', desc: true }]}
+        allowAdd={false}
+        allowEdit={false}
+        allowDelete={false}
+      />
     </div>
   );
 };

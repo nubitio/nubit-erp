@@ -8,6 +8,7 @@ use App\Inventory\ApiResource\StockMovement;
 use App\Inventory\Core\Enum\StockMovementType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 
 /**
  * DBAL-based repository for stock_movements (Kardex).
@@ -103,7 +104,7 @@ final readonly class StockMovementRepository
                     sm.qty_delta_base,
                     sm.qty_original,
                     sm.unit_id,
-                    u.descripcion        AS unit_name,
+                    u.name               AS unit_name,
                     sm.source_type,
                     sm.source_id,
                     sm.note,
@@ -126,7 +127,14 @@ final readonly class StockMovementRepository
         $params['limit']  = $perPage;
         $params['offset'] = ($page - 1) * $perPage;
 
-        $rows = $this->connection->fetchAllAssociative($sql, $params);
+        $rows = $this->connection->fetchAllAssociative(
+            $sql,
+            $params,
+            [
+                'limit' => ParameterType::INTEGER,
+                'offset' => ParameterType::INTEGER,
+            ],
+        );
 
         return array_map($this->hydrateRow(...), $rows);
     }

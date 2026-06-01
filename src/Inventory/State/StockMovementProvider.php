@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\State;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\Pagination\ArrayPaginator;
+use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\Inventory\Repository\StockMovementRepository;
 use Override;
@@ -40,7 +40,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         $filters = [
             'warehouse' => $request?->query->get('warehouse'),
             'product'   => $request?->query->get('product'),
-            'type'      => $request?->query->get('type'),
+            'type'      => $request?->query->get('type') ?? $request?->query->get('movementType'),
             'from'      => $request?->query->get('from'),
             'to'        => $request?->query->get('to'),
         ];
@@ -52,8 +52,8 @@ final readonly class StockMovementProvider implements ProviderInterface
         $perPage = max(1, min(200, (int) ($request?->query->get('itemsPerPage', self::DEFAULT_PER_PAGE) ?? self::DEFAULT_PER_PAGE)));
 
         $items = $this->repository->findKardex($filters, $page, $perPage);
+        $total = $this->repository->countKardex($filters);
 
-        // ArrayPaginator(array $results, int $firstResult, int $maxResults)
-        return new ArrayPaginator($items, ($page - 1) * $perPage, $perPage);
+        return new TraversablePaginator(new \ArrayIterator($items), $page, $perPage, $total);
     }
 }

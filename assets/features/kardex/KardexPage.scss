@@ -1,0 +1,29 @@
+@use 'variables' as *;
+
+.kardex-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: clamp(12px, 1.6vw, 20px);
+}
+
+.kardex-reference {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kardex-reference__label {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kardex-reference__id {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

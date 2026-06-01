@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Efact\Doctrine\Filter\DataGridFilter;
 use App\Inventory\State\StockMovementProvider;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
  * Read-only Kardex resource.
@@ -18,7 +19,8 @@ use App\Inventory\State\StockMovementProvider;
  *
  * Recommended filters: warehouse (UUID), product (UUID), from/to (date), type.
  *
- * Security: ROLE_ADMIN or ROLE_SUPER_ADMIN only.
+ * Security: authenticated users can read Kardex; stock writes remain protected
+ * by the StockEntry resource.
  */
 #[ApiResource(
     shortName: 'StockMovement',
@@ -30,45 +32,60 @@ use App\Inventory\State\StockMovementProvider;
     ],
     normalizationContext: ['groups' => ['stock_movement:read']],
     filters: [DataGridFilter::class],
-    security: "is_granted('ROLE_ADMIN')",
+    security: "is_granted('ROLE_USER')",
     mercure: false,
 )]
 final class StockMovement
 {
     #[ApiProperty(identifier: true)]
+    #[Groups(['stock_movement:read'])]
     public string $id;
 
     /** @var array{id: string, name: string}|null */
+    #[Groups(['stock_movement:read'])]
     public ?array $warehouse = null;
 
     /** @var array{id: string, code: string|null, name: string}|null */
+    #[Groups(['stock_movement:read'])]
     public ?array $product = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $occurredAt = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $movementType = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $movementTypeLabel = null;
 
     /** Positive qty when movement is an inbound (null when outbound). */
+    #[Groups(['stock_movement:read'])]
     public ?string $qtyIn = null;
 
     /** Positive qty when movement is an outbound (null when inbound). */
+    #[Groups(['stock_movement:read'])]
     public ?string $qtyOut = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $qtyDeltaBase = null;
 
     /** @var array{id: int, name: string}|null */
+    #[Groups(['stock_movement:read'])]
     public ?array $unit = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $sourceType = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $sourceId = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $note = null;
 
     /** Cumulative balance after this movement (running sum over time). */
+    #[Groups(['stock_movement:read'])]
     public ?string $runningBalance = null;
 
+    #[Groups(['stock_movement:read'])]
     public ?string $createdAt = null;
 }

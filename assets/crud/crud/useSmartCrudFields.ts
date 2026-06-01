@@ -77,7 +77,9 @@ export function useSmartCrudFields(
       // Conditional visibility affects the dialog form only — grid column
       // visibility stays controlled by the static field definition.
       updated.visibleOnForm = state.visible;
-      updated.hidden = !state.visible;
+      if (activeOperation) {
+        updated.hidden = !state.visible;
+      }
 
       if (state.disabled) {
         updated.disabled = true;
