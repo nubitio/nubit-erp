@@ -204,6 +204,22 @@
   z-index: 1;
 }
 
+.native-datagrid__col-resize {
+  background: transparent;
+  bottom: 0;
+  cursor: col-resize;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: background var(--transition-base);
+  width: 4px;
+  z-index: 2;
+
+  &:hover {
+    background: var(--accent-color);
+  }
+}
+
 .native-datagrid__table thead tr:first-child th {
   // top rounding clips to container border radius
   &:first-child { border-top-left-radius: calc(var(--radius-lg) - 1px); }
@@ -780,18 +796,45 @@
   width: 20px;
 }
 
-// ── Summary row ────────────────────────────────────────────────────────────────
+// ── Summary footer ─────────────────────────────────────────────────────────────
 
-.native-datagrid__summary {
-  border-top: 1px solid var(--border-subtle);
+.native-datagrid__summary-footer td {
+  background: var(--surface-0);
+  border-bottom: 0;
+  border-top: 2px solid var(--border-color);
   color: var(--text-primary);
-  display: flex;
-  flex-wrap: wrap;
   font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  height: 36px;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+.native-datagrid__summary-footer tr,
+.native-datagrid__summary-footer td.native-datagrid__actions-cell,
+.native-datagrid__summary-footer td.native-datagrid__detail-cell,
+.native-datagrid__summary-footer td.native-datagrid__select-cell {
+  background: var(--surface-0);
+}
+
+.native-datagrid__summary-cell {
+  align-items: baseline;
+  display: inline-flex;
+  gap: var(--space-2);
+  min-width: 100%;
+}
+
+.native-datagrid__summary-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-medium);
-  gap: var(--space-4);
-  justify-content: flex-end;
-  padding: var(--space-2) var(--space-3);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.native-datagrid__summary-value {
+  white-space: nowrap;
 }
 
 // ── Page size selector ─────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import './CashMovements.scss';
-import { DataGridView, DialogView, FormView, type GridHandle } from '@nubit/crud';
+import { DataGridView, DialogView, FormView } from '@nubit/crud';
 import NumberUtils from '../../shared/lib/NumberUtils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
@@ -17,9 +17,7 @@ type CashMovementsParams = {
 export const CashMovements = () => {
   const { id } = useParams<CashMovementsParams>();
   const API_URL = API + 'cash-movements';
-  const gridRef = useRef<GridHandle>(null);
   const fields = cashMovementsFields(id);
-  const [balance, setBalance] = useState<number | undefined>(undefined);
   const [gridError, setGridError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [on] = useEvents();
@@ -50,14 +48,6 @@ export const CashMovements = () => {
 
   const onContentReady = () => {
     setGridError(null);
-    let balance = 0;
-    gridRef.current?.loadData().then((response: any) => {
-      const rows = Array.isArray(response) ? response : response?.data ?? [];
-      rows.forEach((item: any) => {
-          balance += item.type === 'income' ? Number(item.amount) : -Number(item.amount);
-        });
-      setBalance(balance);
-    });
   };
 
   useEffect(() => {
@@ -69,7 +59,6 @@ export const CashMovements = () => {
   return (
     <div className="cash-movements-page">
       <DataGridView
-        ref={gridRef}
         id="cash-movements"
         title="Movimientos de caja"
         toolbar={toolbar}
@@ -82,10 +71,12 @@ export const CashMovements = () => {
         summaryFields={[
           {
             column: 'amount',
-            summaryType: 'custom',
-            customizeText: (_e) => {
-              return 'Balance: ' + NumberUtils.formatCurrency(balance ?? 0);
-            },
+            label: 'Balance',
+            summaryType: ({ rows }) => rows.reduce(
+              (total, item) => total + (item.type === 'income' ? Number(item.amount) : -Number(item.amount)),
+              0,
+            ),
+            valueFormat: (value) => NumberUtils.formatCurrency(Number(value ?? 0)),
           },
         ]}
         onContentReady={onContentReady}

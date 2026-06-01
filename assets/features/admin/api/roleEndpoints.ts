@@ -4,6 +4,6 @@ const roles = createEndpoints('roles');
 
 export const roleEndpoints = {
   ...roles,
-  menu: (roleId: string | number) => `${roles.list()}/menu/${roleId}`,
-  saveMenu: () => `${roles.list()}/menu`,
+  menu: (roleId: string | number) => `/api/role-menu/${roleId}`,
+  saveMenu: () => '/api/role-menu',
 };

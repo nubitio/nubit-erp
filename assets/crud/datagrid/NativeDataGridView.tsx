@@ -568,15 +568,50 @@ function FilterCell({
   );
 }
 
-function SummaryView({ summaryFields, rows }: { summaryFields?: DataGridSummaryItem[]; rows: DataRecord[] }) {
+function SummaryFooter({
+  fields,
+  hasCheckbox,
+  hasDetail,
+  hasRowActions,
+  rows,
+  summaryFields,
+}: {
+  fields: Field[];
+  hasCheckbox: boolean;
+  hasDetail: boolean;
+  hasRowActions: boolean;
+  rows: DataRecord[];
+  summaryFields?: DataGridSummaryItem[];
+}) {
   if (!summaryFields?.length) return null;
 
+  const itemsByColumn = new Map(summaryFields.filter((item) => item.column).map((item) => [item.column, item]));
+  const unboundItems = summaryFields.filter((item) => !item.column);
+  const fallbackFieldName = fields[fields.length - 1]?.name;
+
   return (
-    <div className="native-datagrid__summary">
-      {summaryFields.map((summary, index) => {
-        return <span key={index}>{resolveSummaryText(rows, summary)}</span>;
-      })}
-    </div>
+    <tfoot className="native-datagrid__summary-footer">
+      <tr>
+        {hasDetail && <td className="native-datagrid__detail-cell" />}
+        {hasCheckbox && <td className="native-datagrid__select-cell" />}
+        {fields.map((field) => {
+          const item = itemsByColumn.get(field.name) ?? (field.name === fallbackFieldName ? unboundItems[0] : undefined);
+          const align = item?.align ?? field.align;
+          const justifyContent = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+          return (
+            <td key={field.name} style={align ? { textAlign: align } : undefined}>
+              {item && (
+                <div className="native-datagrid__summary-cell" style={{ justifyContent }}>
+                  {item.label && <span className="native-datagrid__summary-label">{item.label}</span>}
+                  <span className="native-datagrid__summary-value">{resolveSummaryText(rows, item)}</span>
+                </div>
+              )}
+            </td>
+          );
+        })}
+        {hasRowActions && <td className="native-datagrid__actions-cell" />}
+      </tr>
+    </tfoot>
   );
 }
 
@@ -664,6 +699,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const onContentReadyRef = useRef(options.onContentReady);
   const onRowPreparedRef = useRef(options.onRowPrepared);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  const [tableWidth, setTableWidth] = useState<number | undefined>();
+  const resizingRef = useRef<{ name: string; startX: number; startWidth: number; startTableWidth: number } | null>(null);
 
   useEffect(() => {
     onContentReadyRef.current = options.onContentReady;
@@ -892,6 +930,38 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     });
   };
 
+  const handleResizeMouseDown = (fieldName: string) => (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const th = (event.currentTarget as HTMLElement).closest('th') as HTMLTableCellElement | null;
+    if (!th) return;
+    const table = th.closest('table') as HTMLTableElement | null;
+
+    resizingRef.current = {
+      name: fieldName,
+      startX: event.clientX,
+      startWidth: th.offsetWidth,
+      startTableWidth: table?.offsetWidth ?? tableWrapRef.current?.clientWidth ?? th.offsetWidth,
+    };
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!resizingRef.current) return;
+      const resize = resizingRef.current;
+      const next = Math.max(48, resize.startWidth + (moveEvent.clientX - resize.startX));
+      const actualDelta = next - resize.startWidth;
+      setColWidths((current) => ({ ...current, [resize.name]: next }));
+      setTableWidth(Math.max(tableWrapRef.current?.clientWidth ?? 0, resize.startTableWidth + actualDelta));
+    };
+    const onMouseUp = () => {
+      resizingRef.current = null;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const hasCheckbox = options.selectionMode === 'multiple';
   const hasRowActions = Boolean(
@@ -933,15 +1003,16 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             </div>
           )}
            <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
-            <table className="native-datagrid__table">
+            <table className="native-datagrid__table" style={tableWidth ? { width: tableWidth } : undefined}>
               <thead>
                 <tr>
                   {options.detailFields && <th className="native-datagrid__detail-cell" style={{ width: 36 }} />}
                   {hasCheckbox && <th className="native-datagrid__select-cell" />}
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
+                    const width = colWidths[field.name] ?? field.width;
                     return (
-                      <th key={field.name} title={field.label} style={{ width: field.width, minWidth: field.minWidth, textAlign: field.align }}>
+                      <th key={field.name} title={field.label} style={{ width, minWidth: field.minWidth, textAlign: field.align }}>
                         {field.sortable ? (
                           <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
                             <span>{field.label}</span>
@@ -954,6 +1025,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         ) : (
                           <span className="native-datagrid__column-label">{field.label}</span>
                         )}
+                        <span
+                          className="native-datagrid__col-resize"
+                          onMouseDown={handleResizeMouseDown(field.name)}
+                          onClick={(event) => event.stopPropagation()}
+                          title="Arrastrar para redimensionar"
+                        />
                       </th>
                     );
                   })}
@@ -1223,9 +1300,16 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   })
                 )}
               </tbody>
+              <SummaryFooter
+                fields={visibleFields}
+                hasCheckbox={hasCheckbox}
+                hasDetail={Boolean(options.detailFields)}
+                hasRowActions={hasRowActions}
+                rows={rows}
+                summaryFields={options.summaryFields}
+              />
             </table>
           </div>
-          <SummaryView summaryFields={options.summaryFields} rows={rows} />
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">
               <span className="native-datagrid__pager-info">
