@@ -39,24 +39,25 @@ export const DashboardPage = () => {
           />
         )}
 
-        <DashboardHero
-          isMobile={isMobile}
-          summary={data.summary}
-          metrics={metrics}
-          paymentMethodsToday={data.paymentMethodsToday}
-          recentSalesToday={data.recentSalesToday}
-          currentUserName={currentUserName}
-          currentBranchName={currentBranchName}
-          cashboxLoading={cashboxLoading}
-        />
-
         {!isMobile && (
           <>
-            <DashboardOperations
-              cashRegisters={cashRegisters}
-              cashboxLoading={cashboxLoading}
-              lowStockProducts={data.lowStockProducts}
-            />
+            <div className="dash-priority-row">
+              <DashboardHero
+                isMobile={isMobile}
+                summary={data.summary}
+                metrics={metrics}
+                paymentMethodsToday={data.paymentMethodsToday}
+                recentSalesToday={data.recentSalesToday}
+                currentUserName={currentUserName}
+                currentBranchName={currentBranchName}
+                cashboxLoading={cashboxLoading}
+              />
+              <DashboardOperations
+                cashRegisters={cashRegisters}
+                cashboxLoading={cashboxLoading}
+                lowStockProducts={data.lowStockProducts}
+              />
+            </div>
             <DashboardRankings
               topProducts={data.topProducts}
               topCustomers={data.topCustomers}
@@ -69,13 +70,25 @@ export const DashboardPage = () => {
         )}
 
         {isMobile && (
-          <DashboardRankings
-            topProducts={data.topProducts}
-            topCustomers={data.topCustomers}
-            topPurchasedProducts={data.topPurchasedProducts}
-            purchasesSummary={data.purchasesSummary}
-            metrics={metrics}
-          />
+          <>
+            <DashboardHero
+              isMobile={isMobile}
+              summary={data.summary}
+              metrics={metrics}
+              paymentMethodsToday={data.paymentMethodsToday}
+              recentSalesToday={data.recentSalesToday}
+              currentUserName={currentUserName}
+              currentBranchName={currentBranchName}
+              cashboxLoading={cashboxLoading}
+            />
+            <DashboardRankings
+              topProducts={data.topProducts}
+              topCustomers={data.topCustomers}
+              topPurchasedProducts={data.topPurchasedProducts}
+              purchasesSummary={data.purchasesSummary}
+              metrics={metrics}
+            />
+          </>
         )}
       </AppToolbar>
       {(loading || cashboxLoading) && (

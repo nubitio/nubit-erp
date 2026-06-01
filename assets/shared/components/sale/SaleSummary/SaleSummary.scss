@@ -1,40 +1,42 @@
 /* SaleSummary — shared totals component */
+@use 'variables' as *;
 
 .sale-summary {
   display: grid;
-  gap: 0.35rem;
-  font-size: 0.9rem;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
 }
 
 .sale-summary--compact {
-  border: 1px solid var(--pos-border, #e5e7eb);
-  border-radius: 6px;
-  background: var(--pos-card-alt, #f8fafc);
-  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  padding: var(--space-3) var(--space-3);
 }
 
 .sale-summary__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-2);
 
   span {
-    color: var(--pos-muted, #64748b);
+    color: var(--text-secondary);
   }
+
   strong {
     font-weight: 600;
   }
 }
 
 .sale-summary__discount {
-  color: var(--pos-warning, #d97706) !important;
+  color: var(--warning-color);
 }
 
 .sale-summary__total {
-  margin-top: 0.25rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--pos-border, #e5e7eb);
+  margin-top: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-color);
   font-weight: 700;
-  font-size: 1.02rem;
+  font-size: var(--font-size-md);
 }

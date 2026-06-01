@@ -1,0 +1,100 @@
+@use 'variables' as *;
+
+// ─── Toggle / Switch ──────────────────────────────────────────────────────────
+// Accessible toggle switch wrapping a hidden <input type="checkbox">.
+// BEM: .app-toggle  /  .app-toggle__track  /  .app-toggle__row
+
+// Optional label row
+.app-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.app-toggle {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+
+  // visually-hidden native checkbox
+  input[type='checkbox'] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  &__track {
+    display: block;
+    width: 2.4rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    background: var(--border-color);
+    transition: background var(--transition-base);
+    position: relative;
+    cursor: pointer;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0.2rem;
+      left: 0.2rem;
+      width: 0.95rem;
+      height: 0.95rem;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+      transition:
+        left var(--transition-fast),
+        background var(--transition-fast);
+    }
+  }
+
+  // checked state — accent fill
+  input[type='checkbox']:checked + .app-toggle__track {
+    background: var(--accent-color);
+
+    &::after {
+      left: calc(100% - 1.15rem);
+    }
+  }
+
+  // focus ring
+  input[type='checkbox']:focus-visible + .app-toggle__track {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+
+  // disabled
+  input[type='checkbox']:disabled + .app-toggle__track {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  // sm size
+  &--sm {
+    .app-toggle__track {
+      width: 1.8rem;
+      height: 1rem;
+
+      &::after {
+        width: 0.7rem;
+        height: 0.7rem;
+        top: 0.15rem;
+        left: 0.15rem;
+      }
+    }
+
+    input[type='checkbox']:checked + .app-toggle__track::after {
+      left: calc(100% - 0.85rem);
+    }
+  }
+}

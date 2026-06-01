@@ -1,19 +1,11 @@
 @use '@phosphor-icons/web/regular';
 
-// ── Badge palette — kept as SCSS vars because the badge loop needs compile-time values.
-// These are intentionally static; badge colors do not invert in dark mode.
-$badge-primary:   #2563eb;
-$badge-secondary: #6c757d;
-$badge-success:   #28a745;
-$badge-danger:    #dc3545;
-$badge-warning:   #ffc107;
-$badge-info:      #17a2b8;
-$badge-light:     #f8f9fa;
-$badge-dark:      #343a40;
-$black:           #000;
-$white:           #fff;
+// ── Legacy `.badge` — Bootstrap-compatible badge base class.
+// Variant classes use CSS custom properties so they respond to theme changes.
+// When all consumers have migrated to `app-badge` (from @nubit/ui/Badge),
+// this entire block can be deleted.
 
-@mixin badge() {
+.badge {
   padding: 0.35em 0.65em;
   font-size: 0.65em;
   font-weight: var(--font-weight-medium, 500);
@@ -21,51 +13,31 @@ $white:           #fff;
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: 0.375rem;
-}
-
-@mixin solid-badge-variant($bg-color, $text-color) {
-  background-color: $bg-color;
-  color: $text-color;
-  border: 1px solid $bg-color;
-}
-
-@mixin outlined-badge-variant($color, $bg-color: transparent) {
-  background-color: $bg-color;
-  color: $color;
-  border: 1px solid $color;
-}
-
-.badge {
-  @include badge;
 
   &.rounded-pill {
     border-radius: 50rem;
   }
 
-  $colors: (
-    primary:   $badge-primary,
-    secondary: $badge-secondary,
-    success:   $badge-success,
-    danger:    $badge-danger,
-    warning:   $badge-warning,
-    info:      $badge-info,
-    light:     $badge-light,
-    dark:      $badge-dark,
-  );
+  // ── Solid variants ──
+  &.text-bg-primary   { background-color: var(--accent-color);   color: #fff; border: 1px solid var(--accent-color); }
+  &.text-bg-secondary { background-color: var(--text-secondary); color: #fff; border: 1px solid var(--text-secondary); }
+  &.text-bg-success   { background-color: var(--success-color);  color: #fff; border: 1px solid var(--success-color); }
+  &.text-bg-danger    { background-color: var(--error-color);    color: #fff; border: 1px solid var(--error-color); }
+  &.text-bg-warning   { background-color: var(--warning-color);  color: #000; border: 1px solid var(--warning-color); }
+  &.text-bg-info      { background-color: var(--info-color);     color: #fff; border: 1px solid var(--info-color); }
+  &.text-bg-light     { background-color: var(--surface-2);      color: var(--text-primary); border: 1px solid var(--border-color); }
+  &.text-bg-dark      { background-color: var(--surface-0);      color: var(--text-primary); border: 1px solid var(--border-color); }
 
-  @each $name, $color in $colors {
-    &.text-bg-#{$name} {
-      $text: if($name == light or $name == warning, $black, $white);
-      @include solid-badge-variant($color, $text);
-    }
-  }
-
+  // ── Outlined variants ──
   &.badge-outlined {
-    @each $name, $color in $colors {
-      &.text-bg-#{$name} {
-        @include outlined-badge-variant($color, rgba($color, 0.1));
-      }
-    }
+    &.text-bg-primary   { background-color: color-mix(in srgb, var(--accent-color)   10%, transparent); color: var(--accent-color);   border: 1px solid var(--accent-color); }
+    &.text-bg-secondary { background-color: color-mix(in srgb, var(--text-secondary) 10%, transparent); color: var(--text-secondary); border: 1px solid var(--text-secondary); }
+    &.text-bg-success   { background-color: color-mix(in srgb, var(--success-color)  10%, transparent); color: var(--success-color);  border: 1px solid var(--success-color); }
+    &.text-bg-danger    { background-color: color-mix(in srgb, var(--error-color)    10%, transparent); color: var(--error-color);    border: 1px solid var(--error-color); }
+    &.text-bg-warning   { background-color: color-mix(in srgb, var(--warning-color)  10%, transparent); color: var(--warning-color);  border: 1px solid var(--warning-color); }
+    &.text-bg-info      { background-color: color-mix(in srgb, var(--info-color)     10%, transparent); color: var(--info-color);     border: 1px solid var(--info-color); }
+    &.text-bg-light     { background-color: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border-color); }
+    &.text-bg-dark      { background-color: transparent;      color: var(--text-primary); border: 1px solid var(--border-color); }
   }
 }
 
@@ -77,7 +49,7 @@ $white:           #fff;
   inset: 0;
   justify-content: center;
   position: fixed;
-  z-index: 2000;
+  z-index: var(--z-dialog);
 }
 
 .app-loading__spinner {

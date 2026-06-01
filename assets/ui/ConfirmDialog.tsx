@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AppDialog } from './AppDialog';
+import './ConfirmDialog.scss';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -52,7 +53,7 @@ export function ConfirmDialog({
         </>
       )}
     >
-      <p style={{ margin: '0.5rem 0 1rem', lineHeight: 1.5 }}>{message}</p>
+      <p className="confirm-dialog__message">{message}</p>
     </AppDialog>
   );
 }

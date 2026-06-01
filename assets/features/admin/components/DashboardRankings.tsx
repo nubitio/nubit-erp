@@ -30,9 +30,9 @@ export function DashboardRankings({
   const { purchasesMonthGrowthUp } = metrics;
 
   return (
-    <>
-      <SectionHeader title="Rankings" subtitle="Últimos 30 días" />
-      <div className="dash-rankings-grid">
+    <section className="dash-rankings-section">
+      <SectionHeader title="Rankings y compras" subtitle="Últimos 30 días" />
+      <div className="dash-rankings-grid dash-rankings-grid--compact">
         <CardAnalytics title="Top productos" contentClass="list-card" menuVisible={false}>
           <ul className="ranked-list">
             {topProducts.map((item) => (
@@ -62,10 +62,6 @@ export function DashboardRankings({
             {topCustomers.length === 0 && <div className="empty">Sin datos disponibles</div>}
           </ul>
         </CardAnalytics>
-      </div>
-
-      <SectionHeader title="Compras e ingresos" subtitle="Últimos 30 días" />
-      <div className="dash-rankings-grid">
         <CardAnalytics title="Resumen de compras" contentClass="list-card" menuVisible={false}>
           <ul className="ranked-list">
             <li>
@@ -115,6 +111,6 @@ export function DashboardRankings({
           </ul>
         </CardAnalytics>
       </div>
-    </>
+    </section>
   );
 }

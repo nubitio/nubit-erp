@@ -1,0 +1,50 @@
+@use 'variables' as *;
+
+// ─── StatCard ─────────────────────────────────────────────────────────────────
+// General-purpose analytics / dashboard card.
+// BEM: .stat-card  /  .stat-card__header  /  .stat-card__title
+//      .stat-card__menu  /  .stat-card__body
+
+.stat-card {
+  border-radius: var(--radius-xl);
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--content-padding) var(--content-padding) 0;
+  }
+
+  &__title {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--space-5);
+    padding-right: var(--space-6);
+    display: inline-block;
+  }
+
+  &__extra {
+    flex-shrink: 0;
+  }
+
+  &__menu {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+
+  &__body {
+    padding: 0 var(--content-padding) var(--content-padding);
+    font-size: var(--font-size-sm);
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+}

@@ -22,7 +22,7 @@
 .app-dialog-root {
   inset: 0;
   position: fixed;
-  z-index: 2000;
+  z-index: var(--z-dialog);
 }
 
 // ── Scrim (backdrop) ───────────────────────────────────────────────────────────

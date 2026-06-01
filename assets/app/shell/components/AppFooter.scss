@@ -2,7 +2,7 @@
 
 .footer {
   display: block;
-  color: var(--base-text-color-alpha);
+  color: var(--text-disabled);
   padding: 20px 0 16px var(--footer-left-padding);
   background-color: var(--side-panel-background);
   height: var(--footer-height);
@@ -14,6 +14,6 @@
 
   .side-nav-outer-toolbar__body.is-open & {
     opacity: 1;
-    transition: opacity 0.4s;
+    transition: opacity var(--transition-slow);
   }
 }

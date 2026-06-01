@@ -5,7 +5,7 @@ import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
-import { ConfirmDialog } from '@nubit/ui';
+import { AppDialog, ConfirmDialog } from '@nubit/ui';
 
 interface POSOperatorHeaderProps {
   branchName: string;
@@ -221,47 +221,28 @@ export function POSOperatorHeader({
       </div>
 
       {/* ── Shortcuts modal ── */}
-      {showShortcuts && (
-        <div
-          className="pos-shortcuts-backdrop"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Atajos de teclado"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowShortcuts(false);
-          }}
-        >
-          <div className="pos-shortcuts-modal">
-            <div className="pos-shortcuts-modal__header">
-              <h3>Atajos de teclado</h3>
-              <button
-                type="button"
-                className="pos-shortcuts-modal__close"
-                onClick={() => setShowShortcuts(false)}
-                aria-label="Cerrar"
-              >
-                ×
-              </button>
-            </div>
-            <ul className="pos-shortcuts-list">
-              {(
-                [
-                  ['F2', 'Enfocar buscador de productos'],
-                  ['F3', 'Seleccionar cliente'],
-                  ['Enter', 'Cobrar (cuando el carrito tiene items)'],
-                  ['Esc', 'Cancelar venta y vaciar carrito'],
-                  ['Scanner → Enter', 'Añadir producto por código de barras'],
-                ] as [string, string][]
-              ).map(([key, desc]) => (
-                <li key={key} className="pos-shortcuts-list__item">
-                  <kbd className="pos-shortcuts-list__key">{key}</kbd>
-                  <span>{desc}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      <AppDialog
+        open={showShortcuts}
+        title="Atajos de teclado"
+        onClose={() => setShowShortcuts(false)}
+      >
+        <ul className="pos-shortcuts-list">
+          {(
+            [
+              ['F2', 'Enfocar buscador de productos'],
+              ['F3', 'Seleccionar cliente'],
+              ['Enter', 'Cobrar (cuando el carrito tiene items)'],
+              ['Esc', 'Cancelar venta y vaciar carrito'],
+              ['Scanner → Enter', 'Añadir producto por código de barras'],
+            ] as [string, string][]
+          ).map(([key, desc]) => (
+            <li key={key} className="pos-shortcuts-list__item">
+              <kbd className="pos-shortcuts-list__key">{key}</kbd>
+              <span>{desc}</span>
+            </li>
+          ))}
+        </ul>
+      </AppDialog>
 
       {/* ── Warehouse change confirmation ── */}
       <ConfirmDialog

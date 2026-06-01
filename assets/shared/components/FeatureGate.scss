@@ -36,51 +36,51 @@
   z-index: 10;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm, 8px);
-  font-size: var(--font-size-xs, 12px);
-  font-weight: var(--font-weight-semibold, 600);
-  background: var(--accent-color, #6c47ff);
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--accent-color);
   color: #fff;
   cursor: pointer;
   white-space: nowrap;
   line-height: 1.4;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-sm);
   border: none;
-  transition: background 0.15s;
+  transition: background var(--transition-base);
 
   &:hover,
   &:focus-visible {
-    background: var(--accent-color-hover, #5535d4);
+    background: color-mix(in srgb, var(--accent-color) 85%, #000);
     outline: none;
   }
 }
 
 .feature-gate__prompt {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + var(--space-2));
   right: 0;
-  z-index: 100;
+  z-index: var(--z-popover);
   min-width: 220px;
   max-width: 280px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md, 12px);
-  background: var(--base-bg, #fff);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
-  border: 1px solid var(--border-color, #e5e7eb);
-  font-size: var(--font-size-sm, 14px);
-  line-height: var(--line-height-normal, 1.5);
-  color: var(--base-text-color, #111);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
 
   &__message {
-    margin: 0 0 10px;
+    margin: 0 0 var(--space-2);
   }
 
   &__link {
     display: inline-block;
-    font-weight: var(--font-weight-semibold, 600);
-    color: var(--accent-color, #6c47ff);
+    font-weight: var(--font-weight-semibold);
+    color: var(--accent-color);
     text-decoration: none;
 
     &:hover {
@@ -90,18 +90,18 @@
 
   &__close {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: var(--space-2);
+    right: var(--space-2);
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--secondary-text-color, #6b7280);
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
     line-height: 1;
     padding: 0;
 
     &:hover {
-      color: var(--base-text-color, #111);
+      color: var(--text-primary);
     }
   }
 }

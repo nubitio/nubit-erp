@@ -187,7 +187,7 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
             disabled={loading}
             onClick={handleSubmit}
           >
-            {loading ? <span className="app-spinner" aria-label="Guardando" /> : 'Guardar'}
+            {loading ? <span className="app-button-spinner" aria-label="Guardando" /> : 'Guardar'}
           </button>
         </div>
       </div>

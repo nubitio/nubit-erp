@@ -36,8 +36,8 @@
 
   // ── Borders ─────────────────────────────────────────────────────────────────
   // Two levels: structural (visible dividers) and subtle (internal hairlines).
-  --border-color:        #dde1eb;  // structural — row separators, input borders
-  --border-subtle:       #eef0f6;  // subtle — internal card dividers, table headers
+  --border-color:        #c4d0e4;  // structural — row separators, input borders
+  --border-subtle:       #d8e2f0;  // subtle — internal card dividers, table headers
 
   // ── Text ────────────────────────────────────────────────────────────────────
   --texteditor-edit-color:  #111827;
@@ -50,21 +50,23 @@
 
   // ── Surfaces (4-level elevation) ────────────────────────────────────────────
   // Fluent's layered model: each level sits on the one below.
-  --surface-0:  #eef1f8;   // app shell background — clearly distinct from white cards
+  // surface-0: neutral cool-gray shell — same pattern as MS Teams / SharePoint.
+  // Intentionally un-saturated so white cards feel "elevated" without a colored bg.
+  --surface-0:  #f0f1f6;   // app shell background — neutral near-white, cards float above
   --surface-1:  #ffffff;   // cards, panels, dialogs, toolbar
-  --surface-2:  color-mix(in srgb, var(--accent-color)  8%, #fff);  // hover / selected
-  --surface-3:  color-mix(in srgb, var(--accent-color) 16%, #fff);  // active / pressed
+  --surface-2:  #eaeff8;   // hover / selected / list items inside cards
+  --surface-3:  color-mix(in srgb, var(--accent-color) 18%, #e4ecff);  // active / pressed
   --card-background:        var(--surface-1);
   --side-panel-background:  var(--surface-1);
 
   // ── Shadows (structural — communicate elevation, not decoration) ─────────────
   // Each level adds an outline ring + blur, like Fluent UI's depth system.
-  --shadow-sm:  0 1px 2px rgba(17, 24, 39, 0.07),
-                0 0 0 1px rgba(17, 24, 39, 0.05);
-  --shadow-md:  0 4px 12px rgba(17, 24, 39, 0.10),
+  --shadow-sm:  0 1px 3px rgba(17, 24, 39, 0.10),
                 0 0 0 1px rgba(17, 24, 39, 0.06);
-  --shadow-lg:  0 12px 32px rgba(17, 24, 39, 0.14),
-                0 0 0 1px rgba(17, 24, 39, 0.08);
+  --shadow-md:  0 4px 16px rgba(17, 24, 39, 0.13),
+                0 0 0 1px rgba(17, 24, 39, 0.07);
+  --shadow-lg:  0 12px 40px rgba(17, 24, 39, 0.18),
+                0 0 0 1px rgba(17, 24, 39, 0.09);
 
   // ── Effects ─────────────────────────────────────────────────────────────────
   --focus-ring-color: color-mix(in srgb, var(--accent-color) 30%, transparent);

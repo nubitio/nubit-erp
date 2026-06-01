@@ -29,7 +29,7 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
 
   const goToReceipt = () => navigate('/receipt');
   return (
-    <>
+    <section className="dash-ops-section">
       <SectionHeader title="Estado operacional" />
       <div className="dash-ops-grid">
         <CardAnalytics
@@ -97,6 +97,6 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
           </ul>
         </CardAnalytics>
       </div>
-    </>
+    </section>
   );
 }

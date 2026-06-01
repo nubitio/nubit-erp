@@ -38,7 +38,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
       <SectionHeader title="Evolución de ventas" />
       <div className="dash-charts-2col">
         <CardAnalytics title="Evolución mensual (12 meses)" contentClass="chart-card" menuVisible={false}>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={190}>
             <BarChart data={salesByMonth} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(0,0,0,0.08))" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
@@ -56,7 +56,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
         </CardAnalytics>
 
         <CardAnalytics title="Ventas diarias (mes actual)" contentClass="chart-card" menuVisible={false}>
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={190}>
             <AreaChart data={salesByDay} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <defs>
                 <linearGradient id="salesByDayGradient" x1="0" y1="0" x2="0" y2="1">

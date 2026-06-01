@@ -46,7 +46,7 @@
 }
 
 .user-panel__dropdown {
-  background: var(--base-bg);
+  background: var(--surface-1);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -54,6 +54,6 @@
   overflow: hidden;
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
-  z-index: 1600;
+  top: calc(100% + var(--space-2));
+  z-index: var(--z-shell-dropdown);
 }

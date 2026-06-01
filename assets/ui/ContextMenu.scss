@@ -1,0 +1,92 @@
+@use 'variables' as *;
+
+// ─── ContextMenu ──────────────────────────────────────────────────────────────
+// Three-dot overflow menu. Trigger button + floating dropdown list.
+// BEM: .app-context-menu  /  .app-context-menu__trigger
+//      .app-context-menu__dropdown  /  .app-context-menu__item
+//      .app-context-menu__separator
+
+.app-context-menu {
+  position: relative;
+  display: inline-flex;
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    right: 0;
+    z-index: var(--z-dropdown);
+    min-width: 140px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    list-style: none;
+    margin: 0;
+    padding: var(--space-1) 0;
+
+    // enter animation
+    animation: app-context-menu-enter 100ms ease both;
+  }
+
+  &__item {
+    display: block;
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    transition: background var(--transition-fast);
+
+    &:hover {
+      background: var(--surface-2);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--focus-ring-color);
+      outline-offset: -2px;
+    }
+
+    // destructive variant
+    &--danger {
+      color: var(--error-color);
+
+      &:hover {
+        background: color-mix(in srgb, var(--error-color) 8%, transparent);
+      }
+    }
+
+    &:disabled,
+    &[aria-disabled='true'] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    // optional leading icon
+    > i {
+      margin-right: var(--space-2);
+      font-size: 1em;
+      opacity: 0.8;
+    }
+  }
+
+  &__separator {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: var(--space-1) 0;
+  }
+}
+
+@keyframes app-context-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

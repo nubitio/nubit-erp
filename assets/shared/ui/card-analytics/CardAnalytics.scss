@@ -1,8 +1,8 @@
 @use 'variables' as *;
 
 .card {
-  border-radius: var(--radius-xl) !important;
-  border-radius: 4px;
+  border-radius: var(--radius-xl);
+  background: var(--surface-1);
   box-shadow: none;
   position: relative;
   border: 1px solid var(--border-color);
@@ -14,26 +14,25 @@
 
   .overflow-menu {
     position: absolute;
-    right: 8px;
+    right: var(--space-2);
     left: auto;
-    top: 10px;
+    top: var(--space-2);
   }
 
   .title {
-    color: var(--base-text-color);
-    line-height: 19px;
-    font-weight: 500;
-    font-size: 16px;
-    margin-bottom: 20px;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-md);
+    margin-bottom: var(--space-5);
     display: inline-block;
-    padding-right: 25px;
+    padding-right: var(--space-6);
   }
 
   .card-contents {
     padding: 0 var(--content-padding) var(--content-padding);
     box-sizing: border-box;
-    font-size: 14px;
-    line-height: 17px;
+    font-size: var(--font-size-sm);
     min-height: 0;
   }
 }

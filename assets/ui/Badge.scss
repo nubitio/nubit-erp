@@ -1,0 +1,107 @@
+// ── Badge ──────────────────────────────────────────────────────────────────────
+// Token-native badge component.
+// All colors reference CSS custom properties so they respond correctly to
+// theme switching, accent color overrides, and dark mode.
+
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+
+  // ── Sizes ──────────────────────────────────────────────────────────────────
+  &--sm {
+    font-size: 9px;
+    padding: 1px var(--space-1);
+  }
+
+  // ── Pill ───────────────────────────────────────────────────────────────────
+  &--pill {
+    border-radius: var(--radius-xl);
+  }
+
+  // ── Dot-only ───────────────────────────────────────────────────────────────
+  &--dot {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+  }
+
+  // ── Variants — filled (default) ────────────────────────────────────────────
+  &--primary {
+    background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+    color: var(--accent-color);
+    border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  }
+
+  &--success {
+    background: color-mix(in srgb, var(--success-color) 15%, transparent);
+    color: var(--success-color);
+    border-color: color-mix(in srgb, var(--success-color) 30%, transparent);
+  }
+
+  &--danger {
+    background: color-mix(in srgb, var(--error-color) 15%, transparent);
+    color: var(--error-color);
+    border-color: color-mix(in srgb, var(--error-color) 30%, transparent);
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--warning-color) 18%, transparent);
+    color: color-mix(in srgb, var(--warning-color) 90%, #000);
+    border-color: color-mix(in srgb, var(--warning-color) 40%, transparent);
+  }
+
+  &--info {
+    background: color-mix(in srgb, var(--info-color) 15%, transparent);
+    color: var(--info-color);
+    border-color: color-mix(in srgb, var(--info-color) 30%, transparent);
+  }
+
+  &--secondary {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border-color: var(--border-subtle);
+  }
+
+  &--light {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  &--dark {
+    background: color-mix(in srgb, var(--text-primary) 15%, transparent);
+    color: var(--text-primary);
+    border-color: color-mix(in srgb, var(--text-primary) 25%, transparent);
+  }
+
+  // Dot variants — explicit class names because & mid-selector is invalid in Sass
+  &--dot.app-badge--primary   { background: var(--accent-color); }
+  &--dot.app-badge--success   { background: var(--success-color); }
+  &--dot.app-badge--danger    { background: var(--error-color); }
+  &--dot.app-badge--warning   { background: var(--warning-color); }
+  &--dot.app-badge--info      { background: var(--info-color); }
+  &--dot.app-badge--secondary { background: var(--text-secondary); }
+
+  // ── Outlined variant — transparent bg, colored border + text ───────────────
+  &--outlined {
+    &.app-badge--primary   { background: transparent; color: var(--accent-color); border-color: var(--accent-color); }
+    &.app-badge--success   { background: transparent; color: var(--success-color); border-color: var(--success-color); }
+    &.app-badge--danger    { background: transparent; color: var(--error-color); border-color: var(--error-color); }
+    &.app-badge--warning   { background: transparent; color: color-mix(in srgb, var(--warning-color) 90%, #000); border-color: var(--warning-color); }
+    &.app-badge--info      { background: transparent; color: var(--info-color); border-color: var(--info-color); }
+    &.app-badge--secondary { background: transparent; color: var(--text-secondary); border-color: var(--text-secondary); }
+    &.app-badge--light     { background: transparent; color: var(--text-primary); border-color: var(--border-color); }
+    &.app-badge--dark      { background: transparent; color: var(--text-primary); border-color: var(--text-primary); }
+  }
+}

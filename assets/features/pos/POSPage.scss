@@ -4,12 +4,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 .pos-shell {
   // Surfaces — inherit from the main app's semantic variables
-  --pos-bg: var(--base-bg-darken-4);           // page background (slightly tinted)
-  --pos-card: var(--card-background);           // card/panel surface
-  --pos-card-alt: var(--base-bg);               // alternate surface (input rows, etc.)
+  --pos-bg: var(--surface-0);                   // page background
+  --pos-card: var(--surface-1);                 // card/panel surface
+  --pos-card-alt: var(--surface-2);             // alternate surface (input rows, etc.)
   --pos-border: var(--border-color);            // border / separator
-  --pos-muted: var(--subtitle-text-color);      // secondary label text
-  --pos-text: var(--base-text-color);           // primary body text
+  --pos-muted: var(--text-secondary);           // secondary label text
+  --pos-text: var(--text-primary);              // primary body text
   --pos-text-soft: var(--text-secondary);       // subdued text
 
   // Accent — follows the app's primary colour
@@ -17,15 +17,18 @@
   --pos-primary-hover: color-mix(in srgb, var(--accent-color) 80%, black 20%);
   --pos-primary-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
   --pos-primary-border: color-mix(in srgb, var(--accent-color) 28%, transparent);
+  --pos-focus-ring: var(--focus-ring-color);
 
   // Semantic colours — reuse main app tokens
   --pos-success: var(--success-color);
   --pos-success-soft: color-mix(in srgb, var(--success-color) 14%, transparent);
   --pos-success-border: color-mix(in srgb, var(--success-color) 28%, transparent);
+  --pos-success-focus: color-mix(in srgb, var(--success-color) 22%, transparent);
   --pos-warning: var(--warning-color);
   --pos-warning-soft: color-mix(in srgb, var(--warning-color) 14%, transparent);
   --pos-danger: var(--error-color);
   --pos-danger-soft: color-mix(in srgb, var(--error-color) 14%, transparent);
+  --pos-danger-border: color-mix(in srgb, var(--error-color) 30%, transparent);
 
   // Shadows (dark-mode override below)
   --pos-shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
@@ -52,8 +55,8 @@
   gap: 0.65rem;
   padding: 0.75rem;
   background:
-    radial-gradient(circle at 0% 0%, rgba(20, 99, 255, 0.07), transparent 38%),
-    radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.06), transparent 38%),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--pos-primary) 7%, transparent), transparent 38%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--pos-success) 6%, transparent), transparent 38%),
     var(--pos-bg);
   color: var(--pos-text);
 }
@@ -67,8 +70,8 @@
 
   // Kill the radial colour blobs in dark — they amplify saturation
   background:
-    radial-gradient(circle at 0% 0%, rgba(20, 99, 255, 0.03), transparent 38%),
-    radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.025), transparent 38%),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--pos-primary) 3%, transparent), transparent 38%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--pos-success) 2.5%, transparent), transparent 38%),
     var(--pos-bg);
 }
 
@@ -178,7 +181,7 @@
 
   &:hover, &:focus {
     border-color: var(--pos-primary);
-    box-shadow: 0 0 0 2px rgba(20, 99, 255, 0.15);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-focus-ring) 15%, transparent);
   }
 }
 
@@ -221,7 +224,7 @@
   &.is-closed {
     background: var(--pos-danger-soft);
     color: var(--pos-danger);
-    border-color: #fbb;
+    border-color: var(--pos-danger-soft);
   }
 }
 
@@ -291,13 +294,13 @@
   &.is-offline {
     background: var(--pos-danger-soft);
     color: var(--pos-danger);
-    border-color: #fbb;
+    border-color: var(--pos-danger-soft);
   }
 
   &.is-syncing {
     background: var(--pos-warning-soft);
     color: var(--pos-warning);
-    border-color: rgba(181, 71, 8, 0.25);
+    border-color: color-mix(in srgb, var(--pos-warning) 25%, transparent);
   }
 }
 
@@ -372,15 +375,15 @@
 }
 
 .pos-sync-sale--error {
-  border-color: rgba(180, 35, 24, 0.3);
+  border-color: var(--pos-danger-border);
 }
 
 .pos-sync-sale--syncing {
-  border-color: rgba(181, 71, 8, 0.3);
+  border-color: color-mix(in srgb, var(--pos-warning) 30%, transparent);
 }
 
 .pos-offline-banner {
-  border: 1px solid rgba(181, 71, 8, 0.3);
+  border: 1px solid color-mix(in srgb, var(--pos-warning) 30%, transparent);
   background: var(--pos-warning-soft);
   color: var(--pos-warning);
   border-radius: var(--pos-radius-sm);
@@ -536,7 +539,7 @@
 
   &:focus-within {
     border-color: var(--pos-primary-border);
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 10%, transparent);
     background: var(--pos-card);
 
     svg { color: var(--pos-primary); }
@@ -678,7 +681,7 @@
   padding: 0.05rem 0.4rem;
 
   .pos-chip.is-active & {
-    background: rgba(20, 99, 255, 0.14);
+    background: color-mix(in srgb, var(--pos-primary) 14%, transparent);
   }
 }
 
@@ -715,7 +718,7 @@
 
   &.is-error {
     color: var(--pos-danger);
-    border-color: #f7c7c3;
+    border-color: color-mix(in srgb, var(--pos-danger) 30%, transparent);
     background: var(--pos-danger-soft);
     svg { opacity: 0.7; }
     p { color: var(--pos-danger); }
@@ -773,7 +776,7 @@
 
   &:focus-visible {
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
+    box-shadow: 0 0 0 3px var(--pos-success-focus);
     border-color: var(--pos-primary-border);
   }
 
@@ -824,7 +827,7 @@
   top: 0.28rem;
   right: 0.28rem;
   background: rgba(0, 0, 0, 0.55);
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 0.6rem;
   font-weight: 700;
   min-width: 1.1rem;
@@ -943,12 +946,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(20, 99, 255, 0.35);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--pos-primary) 35%, transparent);
   transition: transform var(--pos-transition), box-shadow var(--pos-transition), background var(--pos-transition);
 
   &:hover {
     transform: scale(1.12);
-    box-shadow: 0 4px 14px rgba(20, 99, 255, 0.5);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--pos-primary) 50%, transparent);
     background: var(--pos-primary-hover);
   }
 
@@ -987,7 +990,7 @@
   color: var(--pos-danger);
   font-size: 0.8rem;
   font-weight: 700;
-  border-bottom: 1px solid #fbb;
+  border-bottom: 1px solid var(--pos-danger-soft);
   flex-shrink: 0;
   text-align: center;
 }
@@ -1101,7 +1104,7 @@
   line-height: 1;
   flex-shrink: 0;
 
-  &:hover { background: #fbb; }
+  &:hover { background: var(--pos-danger-soft); }
 }
 
 .pos-icon-btn {
@@ -1164,7 +1167,7 @@
 
   &:focus, &:focus-visible {
     border-color: var(--pos-primary-border);
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.09);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 9%, transparent);
     background: var(--pos-card);
   }
 }
@@ -1391,11 +1394,11 @@
 
     &.is-remove {
       color: var(--pos-danger);
-      border-color: rgba(180, 35, 24, 0.25);
+      border-color: color-mix(in srgb, var(--pos-danger) 25%, transparent);
 
       &:hover {
         background: var(--pos-danger-soft);
-        border-color: rgba(180, 35, 24, 0.5);
+        border-color: color-mix(in srgb, var(--pos-danger) 50%, transparent);
         color: var(--pos-danger);
       }
     }
@@ -1444,7 +1447,7 @@
 
   &:focus {
     border-color: var(--pos-primary);
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.14);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-primary) 14%, transparent);
   }
 
   // hide spin buttons
@@ -1519,7 +1522,7 @@
 
   &:focus {
     border-color: var(--pos-primary-border);
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.09);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 9%, transparent);
     background: var(--pos-card);
   }
 }
@@ -1659,7 +1662,7 @@
   }
 
   input[type='checkbox']:focus-visible + &__track {
-    box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
+    box-shadow: 0 0 0 3px var(--pos-success-focus);
   }
 }
 
@@ -1735,7 +1738,7 @@
 
     &:focus {
       border-color: var(--pos-primary-border);
-      box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.09);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 9%, transparent);
     }
   }
 
@@ -1755,7 +1758,7 @@
     &:hover {
       background: var(--pos-danger-soft);
       color: var(--pos-danger);
-      border-color: #fbb;
+      border-color: var(--pos-danger-soft);
     }
   }
 }
@@ -1786,7 +1789,7 @@
 
     &:focus {
       border-color: var(--pos-primary);
-      box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.12);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 12%, transparent);
     }
   }
 }
@@ -1885,12 +1888,12 @@
   border: 0;
   border-radius: var(--pos-radius);
   padding: 0.9rem 1.1rem;
-  background: linear-gradient(145deg, #0e7a50 0%, #065e3b 100%);
+  background: linear-gradient(145deg, var(--pos-success) 0%, color-mix(in srgb, var(--pos-success) 75%, black) 100%);
   color: #fff;
   font-weight: 800;
   cursor: pointer;
   box-shadow:
-    0 4px 14px rgba(14, 122, 80, 0.38),
+    0 4px 14px color-mix(in srgb, var(--pos-success) 38%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
     box-shadow 220ms ease,
@@ -1924,7 +1927,7 @@
 
   &:hover:not(:disabled) {
     box-shadow:
-      0 8px 28px rgba(14, 122, 80, 0.52),
+      0 8px 28px color-mix(in srgb, var(--pos-success) 52%, transparent),
       inset 0 1px 0 rgba(255, 255, 255, 0.18);
     transform: translateY(-1px);
   }
@@ -1955,21 +1958,21 @@
 .pos-mode-btn:focus-visible,
 .pos-caja-action-btn:focus-visible {
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
+  box-shadow: 0 0 0 3px var(--pos-success-focus);
 }
 
 // ─── Dark mode overrides ──────────────────────────────────────────────────────
 .pos-shell[data-theme='dark'] {
   // Cobrar: deeper, richer; glow on hover feels premium on dark canvas
   .pos-checkout {
-    background: linear-gradient(145deg, #10b981 0%, #0e7a50 100%);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--pos-success) 90%, white) 0%, var(--pos-success) 100%);
     box-shadow:
-      0 4px 18px rgba(14, 122, 80, 0.30),
+      0 4px 18px color-mix(in srgb, var(--pos-success) 30%, transparent),
       inset 0 1px 0 rgba(255, 255, 255, 0.10);
 
     &:hover:not(:disabled) {
       box-shadow:
-        0 6px 32px rgba(14, 122, 80, 0.55),
+        0 6px 32px color-mix(in srgb, var(--pos-success) 55%, transparent),
         0 0 0 1px rgba(255, 255, 255, 0.06),
         inset 0 1px 0 rgba(255, 255, 255, 0.14);
     }
@@ -2267,7 +2270,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(6, 118, 71, 0.94);
+  background: color-mix(in srgb, var(--pos-success) 94%, black);
   border-radius: var(--pos-radius-lg);
   animation: pos-enter 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 
@@ -2386,59 +2389,7 @@
   }
 }
 
-.pos-shortcuts-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pos-backdrop-in 0.15s ease both;
-}
-
-.pos-shortcuts-modal {
-  background: var(--pos-card);
-  border: 1px solid var(--pos-border);
-  border-radius: var(--pos-radius-lg);
-  box-shadow: var(--pos-shadow);
-  width: min(420px, 92vw);
-  overflow: hidden;
-  animation: pos-enter 0.22s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.9rem 1.1rem 0.75rem;
-    border-bottom: 1px solid var(--pos-border);
-
-    h3 {
-      margin: 0;
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--pos-text);
-    }
-  }
-
-  &__close {
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: var(--pos-radius-sm);
-    border: 1px solid var(--pos-border);
-    background: transparent;
-    color: var(--pos-muted);
-    font-size: 1rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background var(--pos-transition);
-
-    &:hover { background: var(--pos-danger-soft); color: var(--pos-danger); }
-  }
-}
-
+// ─── Shortcuts list (rendered inside AppDialog) ─────────────────────────────
 .pos-shortcuts-list {
   list-style: none;
   margin: 0;

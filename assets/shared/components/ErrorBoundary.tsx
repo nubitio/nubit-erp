@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@nubit/ui';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -24,66 +25,32 @@ function ErrorFallback({ error, onReload }: { error: Error | null; onReload: () 
   const { t } = useTranslation();
 
   return (
-    <div
-      role="alert"
-      aria-live="assertive"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        padding: '2rem',
-        gap: '1rem',
-        fontFamily: 'inherit',
-        textAlign: 'center',
-      }}
-    >
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('common.error')}</h1>
-      <p style={{ color: '#6b7280', margin: 0 }}>
-        Ocurrió un error inesperado. Por favor, recarga la página para continuar.
-      </p>
-
-      <button
-        type="button"
-        onClick={onReload}
-        style={{
-          marginTop: '0.5rem',
-          padding: '0.5rem 1.5rem',
-          borderRadius: '0.375rem',
-          border: 'none',
-          background: '#1463ff',
-          color: '#ffffff',
-          fontWeight: 600,
-          fontSize: '0.875rem',
-          cursor: 'pointer',
-        }}
-      >
-        {t('common.retry')}
-      </button>
-
-      {/* Show technical details only in dev mode to aid debugging. */}
-      {import.meta.env.DEV && error && (
-        <details
-          style={{
-            marginTop: '1rem',
-            maxWidth: '40rem',
-            textAlign: 'left',
-            fontSize: '0.75rem',
-            color: '#ef4444',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-          }}
-        >
-          <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Detalles del error (dev)</summary>
-          <pre style={{ margin: '0.5rem 0 0', overflow: 'auto' }}>
-            {error.toString()}
-            {'\n\n'}
-            {error.stack}
-          </pre>
-        </details>
+    <EmptyState
+      variant="danger"
+      size="lg"
+      fill
+      title={t('common.error')}
+      description="Ocurrió un error inesperado. Por favor, recarga la página para continuar."
+      action={(
+        <>
+          <button type="button" className="app-button app-button--primary" onClick={onReload}>
+            {t('common.retry')}
+          </button>
+          {import.meta.env.DEV && error && (
+            <details style={{ textAlign: 'left', maxWidth: '40rem', marginTop: 'var(--space-3)' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: 'var(--font-size-xs)' }}>
+                Detalles del error (dev)
+              </summary>
+              <pre style={{ margin: 'var(--space-2) 0 0', overflow: 'auto', fontSize: 'var(--font-size-xs)', color: 'var(--error-color)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {error.toString()}
+                {'\n\n'}
+                {error.stack}
+              </pre>
+            </details>
+          )}
+        </>
       )}
-    </div>
+    />
   );
 }
 
