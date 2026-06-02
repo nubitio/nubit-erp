@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconButton } from '../Button';
 import { useTheme } from './ThemeProvider';
 
 const iconByMode = {
@@ -24,15 +25,12 @@ export const ThemeSwitcher = ({ labelByMode: overrides }: ThemeSwitcherProps = {
 
   return (
     <div>
-      <button
-        className="app-icon-button theme-button"
-        type="button"
-        aria-label={label}
-        title={label}
+      <IconButton
+        className="theme-button"
+        icon={iconByMode[mode]}
+        label={label}
         onClick={switchTheme}
-      >
-        <i className={iconByMode[mode]} aria-hidden="true" />
-      </button>
+      />
     </div>
   );
 };

@@ -1,0 +1,142 @@
+// ── Buttons ───────────────────────────────────────────────────────────────────
+// Shared Fluent-inspired action primitives. Class names intentionally match the
+// legacy global button system so existing consumers can migrate incrementally.
+
+.app-button {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-1);
+  justify-content: center;
+  min-height: 28px;
+  padding: 0.25rem 0.7rem;
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.65;
+  }
+}
+
+.app-button--secondary,
+.app-button--ghost {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+  }
+}
+
+.app-button--ghost {
+  border-color: transparent;
+}
+
+.app-button--primary {
+  background: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: var(--accent-hover);
+  }
+}
+
+.app-button--success {
+  background: var(--success-color);
+  border: 1px solid var(--success-color);
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, var(--success-color) 85%, #000);
+  }
+}
+
+.app-button--danger {
+  background: var(--error-color);
+  border: 1px solid var(--error-color);
+  color: #fff;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):focus-visible {
+    background: color-mix(in srgb, var(--error-color) 85%, #000);
+  }
+}
+
+.app-button--full {
+  width: 100%;
+}
+
+.app-button--sm {
+  font-size: 0.8em;
+  min-height: 22px;
+  padding: 0.1rem 0.5rem;
+}
+
+.app-icon-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 28px;
+  justify-content: center;
+  min-width: 28px;
+  padding: 0 0.35rem;
+  transition: background var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
+
+  i {
+    font-size: 1.1rem;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    color: var(--accent-color);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.app-icon-button--danger:hover {
+  background: color-mix(in srgb, var(--error-color) 12%, transparent);
+  color: var(--error-color);
+}
+
+.app-button-spinner {
+  animation: app-spinner-rotate 700ms linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  border-top-color: #fff;
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+}
+
+@keyframes app-spinner-rotate {
+  to { transform: rotate(360deg); }
+}

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useScreenSize } from '@nubit/admin';
 import { MercureManager, useMercureHub } from '@nubit/core';
-import { AppDialog } from '@nubit/ui';
+import { AppDialog, Button } from '@nubit/ui';
 import { httpClient } from '@shared/api/HttpClient';
 
 import './ProductImportDialog.scss';
@@ -184,13 +184,13 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
           <p className="product-import-step__desc">
             Incluye columnas con listas desplegables para categorías y unidades de medida.
           </p>
-          <button
-            type="button"
-            className="app-button app-button--secondary app-button--sm"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => window.open('/api/v1/products/import/template', '_blank')}
           >
             Descargar plantilla .xlsx
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -304,28 +304,25 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
       onClose={handleClose}
       footer={
         <div className="product-import-footer">
-          <button
-            type="button"
-            className="app-button app-button--secondary"
+          <Button
+            variant="secondary"
             onClick={handleClose}
             disabled={isRunning}
           >
             Cerrar
-          </button>
+          </Button>
           {status === 'idle' && (
-            <button
-              type="button"
-              className="app-button app-button--primary"
+            <Button
+              variant="primary"
               disabled={!selectedFile}
               onClick={() => void handleImport()}
             >
               Importar
-            </button>
+            </Button>
           )}
           {status === 'completed' && (
-            <button
-              type="button"
-              className="app-button app-button--primary"
+            <Button
+              variant="primary"
               onClick={() => {
                 setStatus('idle');
                 setSelectedFile(null);
@@ -333,7 +330,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
               }}
             >
               Importar otro
-            </button>
+            </Button>
           )}
         </div>
       }

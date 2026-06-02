@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Button, SelectField, TextField, Toggle } from '@nubit/ui';
 import toast from '@shared/lib/SharedUtils';
 import {
   ConfigKey,
@@ -182,7 +183,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
         {editing ? (
           <div className="config-setting-edit">
             {isEnum ? (
-              <select
+              <SelectField
                 ref={inputRef as React.RefObject<HTMLSelectElement>}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -194,9 +195,9 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
                     {o.label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             ) : isBool ? (
-              <select
+              <SelectField
                 ref={inputRef as React.RefObject<HTMLSelectElement>}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -205,9 +206,9 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
               >
                 <option value="true">Sí</option>
                 <option value="false">No</option>
-              </select>
+              </SelectField>
             ) : (
-              <input
+              <TextField
                 ref={inputRef as React.RefObject<HTMLInputElement>}
                 type={config.type === 'int' || config.type === 'float' ? 'number' : 'text'}
                 value={draft}
@@ -216,29 +217,29 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
                 className="config-setting-input"
               />
             )}
-            <button
-              type="button"
+            <Button
+              variant="primary"
               className="config-btn config-btn--primary"
               onClick={() => void handleSave()}
-              disabled={saving}
+              loading={saving}
             >
-              {saving ? '...' : 'Guardar'}
-            </button>
-            <button
-              type="button"
+              Guardar
+            </Button>
+            <Button
+              variant="ghost"
               className="config-btn config-btn--ghost"
               onClick={handleCancel}
               disabled={saving}
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="config-setting-display">
             <span className="config-setting-current">{displayValue}</span>
-            <button type="button" className="config-btn config-btn--ghost" onClick={handleEdit}>
+            <Button variant="ghost" className="config-btn config-btn--ghost" onClick={handleEdit}>
               Editar
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -347,15 +348,12 @@ const SunatSection = () => {
               : 'El envío está pausado. Actívalo cuando el problema esté resuelto.'}
           </span>
         </div>
-        <button
-          type="button"
-          className={`config-toggle-switch${state.sendEnabled ? ' config-toggle-switch--on' : ''}`}
-          onClick={() => void handleToggle()}
+        <Toggle
+          checked={state.sendEnabled}
+          onChange={() => void handleToggle()}
           disabled={toggling}
           aria-label="Activar/pausar envío a SUNAT"
-        >
-          <span className="config-toggle-thumb" />
-        </button>
+        />
       </div>
 
       {/* Rejection streak (read-only) */}
@@ -384,7 +382,7 @@ const SunatSection = () => {
         <div className="config-setting-value">
           {editingThreshold ? (
             <div className="config-setting-edit">
-              <input
+              <TextField
                 ref={thresholdRef}
                 type="number"
                 min={1}
@@ -397,29 +395,29 @@ const SunatSection = () => {
                 className="config-setting-input"
                 style={{ width: 80 }}
               />
-              <button
-                type="button"
+              <Button
+                variant="primary"
                 className="config-btn config-btn--primary"
                 onClick={() => void handleSaveThreshold()}
-                disabled={savingThreshold}
+                loading={savingThreshold}
               >
-                {savingThreshold ? '...' : 'Guardar'}
-              </button>
-              <button
-                type="button"
+                Guardar
+              </Button>
+              <Button
+                variant="ghost"
                 className="config-btn config-btn--ghost"
                 onClick={() => setEditingThreshold(false)}
                 disabled={savingThreshold}
               >
                 Cancelar
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="config-setting-display">
               <span className="config-setting-current">{state.rejectionThreshold}</span>
-              <button type="button" className="config-btn config-btn--ghost" onClick={handleEditThreshold}>
+              <Button variant="ghost" className="config-btn config-btn--ghost" onClick={handleEditThreshold}>
                 Editar
-              </button>
+              </Button>
             </div>
           )}
         </div>

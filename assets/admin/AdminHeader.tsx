@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { IconButton } from '@nubit/ui';
 
 export interface AdminHeaderAction {
   id: string;
@@ -65,14 +66,12 @@ export const AdminHeader = ({
       <div className="header-toolbar" role="toolbar" aria-label="Main toolbar">
         <div className="header-toolbar__before">
           {menuToggleEnabled && (
-            <button
-              className="app-icon-button menu-button"
-              type="button"
-              aria-label="Toggle menu"
+            <IconButton
+              className="menu-button"
+              icon="ph ph-list"
+              label="Toggle menu"
               onClick={toggleMenu}
-            >
-              <i className="ph ph-list" aria-hidden="true" />
-            </button>
+            />
           )}
           {title && <div className="header-title">{title}</div>}
         </div>
@@ -87,15 +86,12 @@ export const AdminHeader = ({
                 ref={(el) => { panelRefs.current.set(action.id, el); }}
               >
                 <div className="messages">
-                  <button
-                    className="app-icon-button"
-                    type="button"
-                    aria-label={action.label}
+                  <IconButton
+                    icon={action.icon}
+                    label={action.label}
                     aria-expanded={isOpen}
                     onClick={() => setOpenPanelId(isOpen ? null : action.id)}
-                  >
-                    <i className={action.icon} aria-hidden="true" />
-                  </button>
+                  />
                   {!!action.badge && action.badge > 0 && (
                     <div className="app-badge" aria-label={`${action.badge} ${action.label}`}>
                       {action.badge > 99 ? '99+' : action.badge}
@@ -116,15 +112,12 @@ export const AdminHeader = ({
           })}
           {renderUserMenu && (
             <div className="header-popover" ref={userMenuRef}>
-              <button
-                className="app-icon-button"
-                type="button"
-                aria-label="User menu"
+              <IconButton
+                icon="ph ph-user-circle"
+                label="User menu"
                 aria-expanded={userMenuOpen}
                 onClick={() => setUserMenuOpen((prev) => !prev)}
-              >
-                <i className="ph ph-user-circle" aria-hidden="true" />
-              </button>
+              />
               {userMenuOpen && (
                 <div
                   className="header-popover__panel"

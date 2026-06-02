@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { CardMenu } from '../library/card-menu/CardMenu';
+import { StatCard } from '@nubit/ui';
 import './CardAnalytics.scss';
 
 type CardProps = {
@@ -10,7 +10,7 @@ type CardProps = {
   menuVisible?: boolean;
 };
 
-const menuItems = [{ text: 'Configure' }, { text: 'Remove' }];
+const menuItems = [{ label: 'Configure' }, { label: 'Remove' }];
 
 export const CardAnalytics = ({
   title,
@@ -20,12 +20,14 @@ export const CardAnalytics = ({
   additionalHeaderContent,
   menuVisible = true,
 }: React.PropsWithChildren<CardProps>) => (
-  <div className={`card ${contentClass}`}>
-    <div className="header">
-      <CardMenu visible={menuVisible} items={menuItems} />
-      {title && <div className="title">{title}</div>}
-      {additionalHeaderContent}
-    </div>
-    {!isLoading && <div className="card-contents">{children}</div>}
-  </div>
+  <StatCard
+    title={title}
+    className={contentClass}
+    headerExtra={additionalHeaderContent}
+    menuVisible={menuVisible}
+    menuItems={menuItems}
+    isLoading={isLoading}
+  >
+    {children}
+  </StatCard>
 );

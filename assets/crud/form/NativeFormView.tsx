@@ -12,6 +12,7 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { IconButton } from '@nubit/ui';
 
 import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, useCoreTranslation, type CoreHttpClient, type CoreTranslationKeys } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
@@ -789,9 +790,7 @@ function NativeDetailGrid({
       <div className="native-form__detail-heading">
         <h3 className="native-form__detail-title">{t('form.detailTitle')}</h3>
         {allowAdding && (
-          <button type="button" className="app-icon-button" aria-label="Agregar detalle" onClick={addRow}>
-            <i className="ph ph-plus" aria-hidden="true" />
-          </button>
+          <IconButton icon="ph ph-plus" label="Agregar detalle" onClick={addRow} />
         )}
       </div>
       <div className="native-form__detail-table-wrap">
@@ -835,9 +834,7 @@ function NativeDetailGrid({
                   ))}
                   {allowDeleting && (
                     <td className="native-form__col-actions">
-                      <button type="button" className="app-icon-button" onClick={() => removeRow(rowIndex)}>
-                        <i className="ph ph-trash" aria-hidden="true" />
-                      </button>
+                      <IconButton icon="ph ph-trash" label="Eliminar detalle" onClick={() => removeRow(rowIndex)} />
                     </td>
                   )}
                 </tr>

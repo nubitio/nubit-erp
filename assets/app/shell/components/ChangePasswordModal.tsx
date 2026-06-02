@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { authService } from '@features/auth';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@nubit/admin';
+import { Button, IconButton, TextField } from '@nubit/ui';
 
 import { AppDialog } from './AppDialog';
 
@@ -109,25 +110,24 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
       <label className="change-password-field">
         <span className="change-password-field__label">{label}</span>
         <span className={`change-password-field__control${error ? ' has-error' : ''}`}>
-          <input
+          <TextField
             className="change-password-field__input"
             type={showValue ? 'text' : 'password'}
             placeholder={placeholder}
             value={formData[field]}
             disabled={loading}
+            invalid={!!error}
             aria-invalid={!!error}
             aria-describedby={error ? `${field}-error` : undefined}
             onChange={(event) => updateField(field, event.target.value)}
           />
-          <button
+          <IconButton
             className="change-password-field__toggle"
-            type="button"
-            aria-label={showValue ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            label={showValue ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            icon={showValue ? 'ph ph-eye' : 'ph ph-eye-slash'}
             disabled={loading}
             onClick={onToggle}
-          >
-            <i className={showValue ? 'ph ph-eye' : 'ph ph-eye-slash'} aria-hidden="true" />
-          </button>
+          />
         </span>
         {error && <span className="change-password-field__error" id={`${field}-error`}>{error}</span>}
       </label>
@@ -173,22 +173,20 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
         </div>
 
         <div className="change-password-modal__actions">
-          <button
-            className="app-button app-button--secondary"
-            type="button"
+          <Button
+            variant="secondary"
             disabled={loading}
             onClick={handleClose}
           >
             Cancelar
-          </button>
-          <button
-            className="app-button app-button--primary"
-            type="button"
-            disabled={loading}
+          </Button>
+          <Button
+            variant="primary"
+            loading={loading}
             onClick={handleSubmit}
           >
-            {loading ? <span className="app-button-spinner" aria-label="Guardando" /> : 'Guardar'}
-          </button>
+            Guardar
+          </Button>
         </div>
       </div>
     </AppDialog>

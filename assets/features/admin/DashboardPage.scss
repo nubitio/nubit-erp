@@ -1,6 +1,5 @@
 @use 'variables' as *;
 @use 'sass:math';
-@use 'sass:color';
 
 .view-wrapper-scroll.dashboard-page {
   overflow-x: hidden;
@@ -50,10 +49,13 @@
   gap: 8px;
 
   > .card,
+  > .stat-card,
   .dash-ops-grid > .card,
+  .dash-ops-grid > .stat-card,
   .dash-rankings-grid > .card,
-  .dash-charts-2col > .card {
-    // background comes from .card base class (CardAnalytics.scss)
+  .dash-rankings-grid > .stat-card,
+  .dash-charts-2col > .card,
+  .dash-charts-2col > .stat-card {
     box-shadow:
       0 1px 3px rgba(17, 24, 39, 0.08),
       0 4px 16px rgba(17, 24, 39, 0.07);
@@ -105,19 +107,19 @@
   }
 
   &.ok {
-    background: color.change(#15803d, $alpha: 0.1);
-    color: #15803d;
-    border-color: color.change(#15803d, $alpha: 0.2);
+    background: color-mix(in srgb, var(--success-color) 10%, transparent);
+    color: var(--success-color);
+    border-color: color-mix(in srgb, var(--success-color) 20%, transparent);
   }
   &.warn {
-    background: color.change(#d97706, $alpha: 0.1);
-    color: #b45309;
-    border-color: color.change(#d97706, $alpha: 0.2);
+    background: color-mix(in srgb, var(--warning-color) 10%, transparent);
+    color: var(--dark-warning-color);
+    border-color: color-mix(in srgb, var(--warning-color) 20%, transparent);
   }
   &.critical {
-    background: color.change(#dc2626, $alpha: 0.1);
-    color: #b91c1c;
-    border-color: color.change(#dc2626, $alpha: 0.2);
+    background: color-mix(in srgb, var(--error-color) 10%, transparent);
+    color: var(--error-color);
+    border-color: color-mix(in srgb, var(--error-color) 20%, transparent);
   }
   &.neutral {
     background: var(--surface-2);
@@ -194,12 +196,12 @@
     border-radius: 999px;
 
     &.up {
-      background: color.change(#15803d, $alpha: 0.1);
-      color: #15803d;
+      background: color-mix(in srgb, var(--success-color) 10%, transparent);
+      color: var(--success-color);
     }
     &.down {
-      background: color.change(#dc2626, $alpha: 0.1);
-      color: #b91c1c;
+      background: color-mix(in srgb, var(--error-color) 10%, transparent);
+      color: var(--error-color);
     }
   }
 
@@ -255,10 +257,10 @@
     font-size: 11px;
     font-weight: 600;
     &.up {
-      color: #15803d;
+      color: var(--success-color);
     }
     &.down {
-      color: #b91c1c;
+      color: var(--error-color);
     }
   }
 
@@ -452,13 +454,13 @@
     }
 
     &.critical {
-      border-left: 3px solid #dc2626;
-      background: color.change(#dc2626, $alpha: 0.06);
+      border-left: 3px solid var(--error-color);
+      background: color-mix(in srgb, var(--error-color) 6%, transparent);
     }
 
     &.warning {
-      border-left: 3px solid #f59e0b;
-      background: color.change(#f59e0b, $alpha: 0.06);
+      border-left: 3px solid var(--warning-color);
+      background: color-mix(in srgb, var(--warning-color) 6%, transparent);
     }
   }
 
@@ -502,7 +504,7 @@
 
 // ─── Cash register status dots ───────────────────────────────────────────────
 .cash-open {
-  color: #15803d;
+  color: var(--success-color);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -522,8 +524,8 @@
   flex-shrink: 0;
 
   &.open {
-    background: #15803d;
-    box-shadow: 0 0 0 2px color.change(#15803d, $alpha: 0.2);
+    background: var(--success-color);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success-color) 20%, transparent);
   }
 }
 
@@ -580,9 +582,9 @@
   margin-top: 12px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
-  background: color.change(#be123c, $alpha: 0.08);
-  color: #7f1d1d;
-  border: 1px solid color.change(#be123c, $alpha: 0.2);
+  background: color-mix(in srgb, var(--error-color) 8%, transparent);
+  color: var(--error-color);
+  border: 1px solid color-mix(in srgb, var(--error-color) 20%, transparent);
   font-size: 13px;
 }
 
@@ -593,11 +595,11 @@
   gap: 6px;
   padding: 18px;
   border-radius: var(--radius-xl);
-  border: 1px solid color.change(#0f766e, $alpha: 0.25);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
   background: linear-gradient(
     145deg,
-    color.change(#0f766e, $alpha: 0.14),
-    color.change(#0f766e, $alpha: 0.03)
+    color-mix(in srgb, var(--accent-color) 14%, transparent),
+    color-mix(in srgb, var(--accent-color) 3%, transparent)
   );
 
   &__branch {
@@ -635,11 +637,11 @@
     font-size: 12px;
 
     .up {
-      color: #15803d;
+      color: var(--success-color);
       font-weight: 700;
     }
     .down {
-      color: #b91c1c;
+      color: var(--error-color);
       font-weight: 700;
     }
   }

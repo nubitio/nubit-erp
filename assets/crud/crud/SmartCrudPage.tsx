@@ -7,6 +7,7 @@ import type { FieldOverride } from './resolveSmartCrudFields';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
 import { useCoreTranslation, useMercureSubscription } from '@nubit/core';
+import { Button } from '@nubit/ui';
 import { resolveCrudResource } from './resolveCrudResource';
 import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
@@ -36,9 +37,9 @@ function CrudError({ message, onRetry }: { message: string; onRetry: () => void 
         <summary className="cursor-pointer text-secondary">{t('crudPage.schemaErrorDetails')}</summary>
         <pre className="mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap">{message}</pre>
       </details>
-      <button onClick={onRetry} className="app-button app-button--secondary app-button--sm" type="button">
+      <Button onClick={onRetry} variant="secondary" size="sm">
         {t('crudPage.schemaErrorRetry')}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -283,6 +283,7 @@ const coreTranslationsEs = {
 	"grid.buttonEdit": "Editar",
 	"grid.buttonDelete": "Eliminar",
 	"grid.buttonRefresh": "Actualizar",
+	"grid.buttonActions": "Acciones",
 	"grid.rowsPerPage": "Filas por página",
 	"dialog.buttonCancel": "Cancelar",
 	"dialog.buttonSave": "Guardar",
@@ -292,7 +293,19 @@ const coreTranslationsEs = {
 	"common.no": "No",
 	"validation.defaultError": "Valor inválido",
 	"form.searchButton": "Buscar",
-	"form.actionButton": "Acción"
+	"form.actionButton": "Acción",
+	"form.detailTitle": "Detalle",
+	"form.lookupSearching": "Buscando...",
+	"form.lookupNoResults": "Sin resultados",
+	"form.lookupLoadingMore": "Cargando más...",
+	"form.fieldRequired": "{{label}} es requerido",
+	"form.invalidEmail": "Correo inválido",
+	"form.invalidNumeric": "Valor numérico inválido",
+	"form.invalidPattern": "Formato inválido",
+	"form.stringTooShort": "Texto demasiado corto",
+	"form.stringTooLong": "Texto demasiado largo",
+	"form.outOfRange": "Valor fuera de rango",
+	"crudPage.confirmActionTitle": "Confirmar acción"
 };
 const coreTranslationsEn = {
 	"crudPage.selectedCount": "{{count}} selected",
@@ -327,6 +340,7 @@ const coreTranslationsEn = {
 	"grid.buttonEdit": "Edit",
 	"grid.buttonDelete": "Delete",
 	"grid.buttonRefresh": "Refresh",
+	"grid.buttonActions": "Actions",
 	"grid.rowsPerPage": "Rows per page",
 	"dialog.buttonCancel": "Cancel",
 	"dialog.buttonSave": "Save",
@@ -336,7 +350,19 @@ const coreTranslationsEn = {
 	"common.no": "No",
 	"validation.defaultError": "Invalid value",
 	"form.searchButton": "Search",
-	"form.actionButton": "Action"
+	"form.actionButton": "Action",
+	"form.detailTitle": "Detail",
+	"form.lookupSearching": "Searching...",
+	"form.lookupNoResults": "No results",
+	"form.lookupLoadingMore": "Loading more...",
+	"form.fieldRequired": "{{label}} is required",
+	"form.invalidEmail": "Invalid email",
+	"form.invalidNumeric": "Invalid numeric value",
+	"form.invalidPattern": "Invalid format",
+	"form.stringTooShort": "Text too short",
+	"form.stringTooLong": "Text too long",
+	"form.outOfRange": "Value out of range",
+	"crudPage.confirmActionTitle": "Confirm action"
 };
 //#endregion
 //#region assets/core/i18n/useCoreTranslation.ts

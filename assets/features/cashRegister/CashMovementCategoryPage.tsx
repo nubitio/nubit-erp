@@ -11,6 +11,7 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/crud';
+import { Badge } from '@nubit/ui';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 interface CashMovementCategoryRecord extends DataRecord {
@@ -38,11 +39,11 @@ const typePatch = toPatch(
     .label('Tipo')
     .formatter((cell) => {
       if (cell.value === 'income') {
-        return <span className="badge badge-outlined rounded-pill text-bg-success">Ingreso</span>;
+        return <Badge variant="success" outlined>Ingreso</Badge>;
       }
 
       if (cell.value === 'expense') {
-        return <span className="badge badge-outlined rounded-pill text-bg-danger">Egreso</span>;
+        return <Badge variant="danger" outlined>Egreso</Badge>;
       }
 
       return null;

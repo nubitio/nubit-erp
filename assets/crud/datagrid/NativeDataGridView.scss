@@ -107,7 +107,7 @@
 }
 
 .native-datagrid__actions-group-label {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.04em;
@@ -141,7 +141,7 @@
 }
 
 .native-datagrid__actions-item--danger {
-  color: var(--danger-color);
+  color: var(--error-color);
 }
 
 .native-datagrid__actions-danger-group {
@@ -191,7 +191,7 @@
   height: 34px; // explicit height (not min-height) enforces row density
 }
 
-.native-datagrid__table td .badge {
+.native-datagrid__table td .app-badge {
   font-size: var(--font-size-xxs);
   line-height: 1;
   padding: 0.2em 0.5em;
@@ -636,7 +636,7 @@
 
 // ── Badges in grid ─────────────────────────────────────────────────────────────
 
-.native-datagrid .badge {
+.native-datagrid .app-badge {
   border-width: 1px;
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);

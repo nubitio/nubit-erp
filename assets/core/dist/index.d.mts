@@ -196,6 +196,7 @@ interface CoreTranslationKeys {
   'grid.buttonEdit': string;
   'grid.buttonDelete': string;
   'grid.buttonRefresh': string;
+  'grid.buttonActions': string;
   'grid.rowsPerPage': string;
   'dialog.buttonCancel': string;
   'dialog.buttonSave': string;
@@ -206,6 +207,18 @@ interface CoreTranslationKeys {
   'validation.defaultError': string;
   'form.searchButton': string;
   'form.actionButton': string;
+  'form.detailTitle': string;
+  'form.lookupSearching': string;
+  'form.lookupNoResults': string;
+  'form.lookupLoadingMore': string;
+  'form.fieldRequired': string;
+  'form.invalidEmail': string;
+  'form.invalidNumeric': string;
+  'form.invalidPattern': string;
+  'form.stringTooShort': string;
+  'form.stringTooLong': string;
+  'form.outOfRange': string;
+  'crudPage.confirmActionTitle': string;
 }
 //#endregion
 //#region assets/core/i18n/coreTranslations.d.ts

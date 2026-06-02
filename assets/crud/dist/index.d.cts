@@ -1,5 +1,5 @@
 import React, { ReactNode, RefObject } from "react";
-import { CoreHttpClient, DataGridEventNames, DataRecord, DataRecord as DataRecord$1, DialogEventNames, FormEventNames, GridData, GridData as GridData$1, ToolbarButtonItem, createCrudEvents } from "@nubit/core";
+import { CoreHttpClient, DataGridEventNames, DataRecord, DataRecord as DataRecord$1, DialogEventNames, FormEventNames, GridData, GridData as GridData$1, createCrudEvents } from "@nubit/core";
 
 //#region assets/crud/field/FieldType.d.ts
 declare enum FieldType {
@@ -544,7 +544,27 @@ interface ResourcePermissions {
   canExport?: boolean | (() => boolean);
   canBulkDelete?: boolean | (() => boolean);
 }
-type ResourceToolbarItems = ToolbarButtonItem[] | ToolbarButtonItem[][];
+type ResourceToolbarActionVariant = string;
+interface ResourceToolbarAction {
+  key?: string;
+  text: string;
+  icon?: string;
+  hint?: string;
+  type?: ResourceToolbarActionVariant;
+  group?: string;
+  groupLabel?: string;
+  permission?: string;
+  visible?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}
+type ResourceRowActions<T extends DataRecord$1 = DataRecord$1> = ResourceToolbarAction[] | ((row: T) => ResourceToolbarAction[]);
+interface ResourceToolbarItems {
+  primary?: ResourceToolbarAction[];
+  selection?: ResourceToolbarAction[];
+  utility?: ResourceToolbarAction[];
+  showRefresh?: boolean;
+}
 interface ResourceToolbarContext<T extends DataRecord$1 = DataRecord$1> {
   resource: ResourceConfig<T>;
   selectedRow: T | undefined;
@@ -617,6 +637,7 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
   dialogHeight?: number;
   format?: 'json' | 'multipart';
   toolbar?: ResourceToolbar<T>;
+  rowActions?: ResourceRowActions<T>;
   onSaveSuccess?: (response: T) => void;
   onSaveError?: (error?: unknown) => void;
   onDeleteSuccess?: (response: T) => void;
@@ -1194,17 +1215,59 @@ declare const DATA_GRID_EVENTS: {
   TOOLBAR_EVENT: string;
 };
 //#endregion
+//#region assets/crud/summary/SummaryTypes.d.ts
+type SummaryType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'custom';
+type SummaryFormat = 'currency' | 'fixedPoint' | 'decimal' | 'percent' | Intl.NumberFormatOptions | ((value: unknown, item: SummaryItem) => string);
+interface SummaryCalculateContext {
+  rows: DataRecord$1[];
+  column?: string;
+  item: SummaryItem;
+}
+interface SummaryTextContext {
+  value: unknown;
+  valueText: string;
+  item: SummaryItem;
+}
+interface SummaryItem {
+  /** Field/column name used to read values and align table-based summaries. */
+  column?: string;
+  /** Optional label shown by table footer renderers before the computed value. */
+  label?: string;
+  /** Built-in aggregation or a custom calculator for reusable domain summaries. */
+  summaryType?: SummaryType | ((context: SummaryCalculateContext) => unknown);
+  /** Template applied after value formatting, e.g. "Total: {0}". */
+  displayFormat?: string;
+  /** Number format preset, Intl.NumberFormatOptions, or custom formatter. */
+  valueFormat?: SummaryFormat;
+  /** Final text customization hook. */
+  customizeText?: (cellInfo: SummaryTextContext) => string;
+  /** Decimal digits used by number presets. Defaults to 2 for currency/fixedPoint. */
+  precision?: number;
+  /** ISO currency used by the currency preset. Defaults to PEN. */
+  currency?: string;
+  /** Intl currency display for the currency preset. Defaults to narrowSymbol. */
+  currencyDisplay?: Intl.NumberFormatOptions['currencyDisplay'];
+  /** Text alignment override for renderers that are not tied to a Field. */
+  align?: 'left' | 'center' | 'right';
+}
+interface DetailSummaryOptions {
+  items: SummaryItem[];
+  /** Keeps the summary visible at the bottom of the scrollable detail table. */
+  sticky?: boolean;
+  /** Allows temporarily disabling summaries without changing the item list. */
+  visible?: boolean;
+}
+//#endregion
+//#region assets/crud/summary/SummaryUtils.d.ts
+declare function computeSummaryValue(rows: DataRecord$1[], item: SummaryItem): unknown;
+declare function formatSummaryValue(value: unknown, item: SummaryItem): string;
+declare function resolveSummaryText(rows: DataRecord$1[], item: SummaryItem): string;
+//#endregion
 //#region assets/crud/datagrid/DataGridViewOptions.d.ts
 interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord$1[];
 }
-interface DataGridSummaryItem {
-  column?: string;
-  summaryType?: string;
-  displayFormat?: string;
-  valueFormat?: string;
-  customizeText?: (cellInfo: unknown) => string;
-}
+type DataGridSummaryItem = SummaryItem;
 interface DataGridViewOptions {
   id: string;
   title: string;
@@ -1212,7 +1275,8 @@ interface DataGridViewOptions {
   detailUrl?: string;
   fields: Field[];
   detailFields?: Field[] | ((parentRow: DataRecord$1) => Field[]);
-  toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
+  toolbar?: ResourceToolbarItems;
+  rowActions?: ResourceRowActions;
   /**
    * @deprecated Prefer onAdd/onEdit/onDelete callbacks. Events remain as a
    * legacy fallback for direct DataGridView consumers.
@@ -1252,6 +1316,8 @@ interface DataGridViewOptions {
   headerFilter?: boolean;
   manualLoad?: boolean;
   beforeToolbar?: () => ReactNode;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
   editMode?: 'popup' | 'row' | 'cell' | 'batch';
   visibleColumns?: string[] | null;
   /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */
@@ -1296,6 +1362,8 @@ interface FormViewOptions {
   detailUrl?: string;
   fields: Field[];
   detailFields?: Field[];
+  /** Optional summary footer for master-detail line tables. */
+  detailSummary?: DetailSummaryOptions;
   detailPropertyName?: string;
   allowAdding?: boolean;
   allowUpdating?: boolean;
@@ -1440,4 +1508,4 @@ declare function ResourceStoreProvider({
 }: ResourceStoreProviderProps): import("react/jsx-runtime").JSX.Element;
 declare function useResourceStoreFactory(): ResourceStoreFactory;
 //#endregion
-export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type ValidationRule, checkboxField, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, identityField, imageField, noneField, numberField, passwordField, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

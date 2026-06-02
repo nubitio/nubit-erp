@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { EmptyState } from '@nubit/ui';
+import { Button, EmptyState } from '@nubit/ui';
 
 /**
  * Lightweight error fallback for use inside the app layout (SideNavBarLayout).
@@ -21,20 +21,18 @@ export function PageErrorFallback({ error }: { error: Error | null }) {
       description="Esta sección encontró un error. Puedes volver al inicio o intentar de nuevo."
       action={(
         <>
-          <button
-            type="button"
-            className="app-button app-button--secondary"
+          <Button
+            variant="secondary"
             onClick={() => navigate('/dashboard')}
           >
             Ir al inicio
-          </button>
-          <button
-            type="button"
-            className="app-button app-button--primary"
+          </Button>
+          <Button
+            variant="primary"
             onClick={() => window.location.reload()}
           >
             {t('common.retry')}
-          </button>
+          </Button>
           {import.meta.env.DEV && error && (
             <details style={{ textAlign: 'left', maxWidth: '40rem', width: '100%', marginTop: 'var(--space-3)' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: 'var(--font-size-xs)' }}>

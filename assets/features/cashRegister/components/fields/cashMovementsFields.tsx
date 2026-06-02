@@ -7,6 +7,7 @@ import {
   textareaField,
   type GridCellContext,
 } from '@nubit/crud';
+import { Badge } from '@nubit/ui';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { getCoreApiBaseUrl } from '@nubit/core';
 
@@ -45,9 +46,9 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .label('Tipo')
       .formatter((cell: GridCellContext) => {
         if (cell.value === 'income') {
-          return <span className="badge badge-outlined rounded-pill text-bg-success">Ingreso</span>;
+          return <Badge variant="success" outlined>Ingreso</Badge>;
         } else if (cell.value === 'expense') {
-          return <span className="badge badge-outlined rounded-pill text-bg-danger">Egreso</span>;
+          return <Badge variant="danger" outlined>Egreso</Badge>;
         }
       })
       .visibleOnForm(false)

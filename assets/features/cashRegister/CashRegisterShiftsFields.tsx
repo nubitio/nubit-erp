@@ -7,6 +7,7 @@ import {
   textareaField,
 } from '@nubit/crud';
 import type { GridCellContext } from '@nubit/crud';
+import { Badge } from '@nubit/ui';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashRegisterShiftsFields = () => {
@@ -23,12 +24,10 @@ export const CashRegisterShiftsFields = () => {
       .label('Estado')
       .formatter((cell: GridCellContext) => {
         if (cell.value === 'OPEN') {
-          return <span className="badge badge-outlined rounded-pill text-bg-success">Abierto</span>;
+          return <Badge variant="success" outlined>Abierto</Badge>;
         }
         if (cell.value === 'CLOSED') {
-          return (
-            <span className="badge badge-outlined rounded-pill text-bg-secondary">Cerrado</span>
-          );
+          return <Badge variant="secondary" outlined>Cerrado</Badge>;
         }
       })
       .build(),

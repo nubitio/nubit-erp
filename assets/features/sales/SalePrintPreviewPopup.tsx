@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AppDialog } from '@nubit/ui';
+import { AppDialog, Button } from '@nubit/ui';
 import './SalePrintPreviewPopup.scss';
 import { useScreenSize } from '@nubit/admin';
 
@@ -37,16 +37,15 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
         />
       </div>
       <div className="form-popup-buttons-container">
-        <button
-          type="button"
-          className="app-button app-button--secondary"
+        <Button
+          variant="secondary"
           onClick={props.onNegative}
         >
           Cerrar
-        </button>
-        <button type="button" className="app-button app-button--primary" onClick={props.onPositive}>
+        </Button>
+        <Button variant="primary" onClick={props.onPositive}>
           Ver PDF
-        </button>
+        </Button>
       </div>
     </AppDialog>
   );

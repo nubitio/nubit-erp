@@ -1,7 +1,7 @@
 import React, { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
-import { AppToolbar } from '@nubit/ui';
+import { AppToolbar, IconButton } from '@nubit/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
@@ -93,18 +93,12 @@ function AssistantMessageBubble({
         )}
         {isLastAssistantMessage && message.text !== REGENERATION_TEXT && (
           <div className="bubble-button-container">
-            <button type="button" className="app-icon-button" title="Copy" onClick={onCopy} aria-label="Copy">
-              <i className={`ph ph-${copied ? 'check' : 'copy'}`} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="app-icon-button"
-              title="Regenerate"
+            <IconButton icon={`ph ph-${copied ? 'check' : 'copy'}`} label="Copy" onClick={onCopy} />
+            <IconButton
+              icon="ph ph-arrow-clockwise"
+              label="Regenerate"
               onClick={onRegenerate}
-              aria-label="Regenerate"
-            >
-              <i className="ph ph-arrow-clockwise" aria-hidden="true" />
-            </button>
+            />
           </div>
         )}
       </div>
@@ -310,15 +304,12 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
       )}
 
       <form className="chat-messagebox" onSubmit={onSubmit}>
-        <button
-          type="button"
-          className="app-icon-button"
-          aria-label="Adjuntar archivo"
+        <IconButton
+          icon="ph ph-paperclip"
+          label="Adjuntar archivo"
           onClick={() => fileInputRef.current?.click()}
           disabled={isProcessing}
-        >
-          <i className="ph ph-paperclip" aria-hidden="true" />
-        </button>
+        />
         <input
           ref={fileInputRef}
           type="file"
@@ -344,19 +335,14 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
           }}
         />
         {speechSupported && (
-          <button
-            type="button"
-            className="app-icon-button"
-            aria-label="Dictado por voz"
+          <IconButton
+            icon="ph ph-microphone"
+            label="Dictado por voz"
             onClick={startSpeechRecognition}
             disabled={isProcessing}
-          >
-            <i className="ph ph-microphone" aria-hidden="true" />
-          </button>
+          />
         )}
-        <button type="submit" className="app-icon-button" aria-label="Enviar" disabled={isProcessing || !inputText.trim()}>
-          <i className="ph ph-paper-plane-tilt" aria-hidden="true" />
-        </button>
+        <IconButton type="submit" icon="ph ph-paper-plane-tilt" label="Enviar" disabled={isProcessing || !inputText.trim()} />
       </form>
     </div>
   );

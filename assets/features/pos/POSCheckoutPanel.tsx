@@ -45,6 +45,7 @@ interface POSCheckoutPanelProps {
   subtotal: number;
   discountAmount: number;
   includedTax: number;
+  igvRate?: number;
   total: number;
   amountReceivedNumber: number;
   amountMissing: number;

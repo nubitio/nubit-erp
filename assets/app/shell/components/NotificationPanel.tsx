@@ -1,6 +1,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 import { useNavigate } from 'react-router-dom';
+import { IconButton } from '@nubit/ui';
 
 import type {
   Notification,
@@ -81,14 +82,12 @@ const NotificationPanel = (props: NotificationPanelProps) => {
           )}
         </div>
         <div className="notification-header-button">
-          <button
-            className="app-icon-button notification-close-button"
-            type="button"
-            aria-label="Cerrar notificaciones"
+          <IconButton
+            className="notification-close-button"
+            icon="ph ph-x"
+            label="Cerrar notificaciones"
             onClick={props.onHiding}
-          >
-            <i className="ph ph-x" aria-hidden="true" />
-          </button>
+          />
         </div>
       </div>
 

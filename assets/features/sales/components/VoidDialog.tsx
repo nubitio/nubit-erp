@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { AppDialog } from '@nubit/ui';
+import { AppDialog, Button, TextField } from '@nubit/ui';
 import { useScreenSize } from '@nubit/admin';
 import './VoidDialog.scss';
 
@@ -58,11 +58,12 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
           <label className="void-field__label" htmlFor="void-reason">
             Motivo de anulación
           </label>
-          <input
+          <TextField
             ref={inputRef}
             id="void-reason"
             type="text"
             className="void-input"
+            invalid={!!reasonError}
             placeholder="Escribe el motivo..."
             aria-invalid={!!reasonError}
             aria-describedby={reasonError ? 'void-reason-error' : undefined}
@@ -94,17 +95,16 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
       </div>
 
       <div className="form-popup-buttons-container">
-        <button type="button" className="app-button app-button--secondary" onClick={handleCancel}>
+        <Button variant="secondary" onClick={handleCancel}>
           Cancelar
-        </button>
-        <button
-          type="button"
-          className="app-button app-button--primary"
+        </Button>
+        <Button
+          variant="primary"
           disabled={!reason.trim()}
           onClick={handleConfirm}
         >
           Confirmar
-        </button>
+        </Button>
       </div>
     </AppDialog>
   );

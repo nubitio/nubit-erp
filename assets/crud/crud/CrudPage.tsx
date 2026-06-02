@@ -11,7 +11,7 @@ import { AuditTrailPanel } from './AuditTrailPanel';
 import { DialogStoreProvider } from './DialogStoreProvider';
 import { useCrudDialogStore } from './useCrudDialogStore';
 import type { DialogMode } from './dialogStore';
-import { ConfirmDialog } from '@nubit/ui';
+import { Button, ConfirmDialog } from '@nubit/ui';
 import { resolveCrudResource } from './resolveCrudResource';
 import type { FormDataRecord } from '../form/FormDataSnapshot';
 import type { FormHandle } from '../form/FormHandle';
@@ -385,15 +385,15 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             {t('crudPage.selectedCount', { count: selectionState.selectedCount })}
           </span>
           {resolvedResource.bulkActions!.map((action: BulkAction) => (
-            <button
+            <Button
               key={action.key}
-              type="button"
-              className="app-button app-button--secondary app-button--sm"
+              variant="secondary"
+              size="sm"
+              icon={action.icon}
               onClick={() => handleBulkAction(action)}
             >
-              {action.icon && <i className={action.icon} aria-hidden="true" />}
               {action.label}
-            </button>
+            </Button>
           ))}
         </div>
       )}

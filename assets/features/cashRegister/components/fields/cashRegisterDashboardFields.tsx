@@ -1,4 +1,5 @@
 import { identityField, currencyField, textField, type Field, type GridCellContext } from '@nubit/crud';
+import { Badge, Button, IconButton } from '@nubit/ui';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
@@ -12,11 +13,9 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
       .label('Estado')
       .formatter((cell: GridCellContext) => {
         if (cell.data.status === 'open') {
-          return <span className="badge badge-outlined rounded-pill text-bg-success">Abierta</span>;
+          return <Badge variant="success" outlined>Abierta</Badge>;
         } else {
-          return (
-            <span className="badge badge-outlined rounded-pill text-bg-secondary">Cerrada</span>
-          );
+          return <Badge variant="secondary" outlined>Cerrada</Badge>;
         }
       })
       .build(),
@@ -48,37 +47,32 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
         if (cell.data.status === 'open') {
           return (
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                className="app-icon-button"
-                title="Ver Movimientos"
+              <IconButton
+                icon="ph ph-eye"
+                label="Ver Movimientos"
                 data-testid="cash-btn-movements"
                 onClick={() => navigate(`/cash-shift/${cell.data.cashShiftId}/movements`)}
-              >
-                <i className="ph ph-eye" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="app-icon-button app-icon-button--danger"
-                title="Cerrar Caja"
+              />
+              <IconButton
+                icon="ph ph-cash-register"
+                label="Cerrar Caja"
+                variant="danger"
                 data-testid="cash-btn-close"
                 onClick={() => navigate(`/cash-register/${cell.data.cashShiftId}/close`)}
-              >
-                <i className="ph ph-cash-register" aria-hidden="true" />
-              </button>
+              />
             </div>
           );
         } else {
           return (
-            <button
-              type="button"
-              className="app-button app-button--success app-button--sm"
+            <Button
+              variant="success"
+              size="sm"
+              icon="ph ph-cash-register"
               data-testid="cash-btn-open"
               onClick={() => navigate(`/cash-register/${cell.data.id}/open`)}
             >
-              <i className="ph ph-cash-register" aria-hidden="true" />
               Abrir
-            </button>
+            </Button>
           );
         }
       })

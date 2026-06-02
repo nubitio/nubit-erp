@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScreenSize } from '@nubit/admin';
+import { Button } from '@nubit/ui';
 
 import { useAuth } from '@app/contexts/auth';
 import { SESSION_EXPIRED_EVENT } from '@shared/lib/sessionExpiredEvent';
@@ -52,9 +53,9 @@ export const SessionExpiredDialog = () => {
         </div>
       </div>
       <div className="session-expired-dialog__actions">
-        <button className="app-button app-button--primary" type="button" onClick={handleConfirm}>
+        <Button variant="primary" onClick={handleConfirm}>
           Ir al login
-        </button>
+        </Button>
       </div>
     </AppDialog>
   );

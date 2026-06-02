@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { Button } from '@nubit/ui';
 import NumberUtils from '@shared/lib/NumberUtils';
 
 export type CashClosureRow = {
@@ -95,16 +96,15 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, CashClosureGrid
               Cuenta el dinero disponible y registra el monto por cada forma de pago.
             </p>
           </div>
-          <button
-            type="button"
-            className="app-button app-button--primary"
+          <Button
+            variant="primary"
             onClick={onCloseRequest}
-            disabled={closing || rows.length === 0}
+            loading={closing}
+            disabled={rows.length === 0}
             data-testid="cash-close-btn"
           >
-            {closing && <span className="app-button-spinner" aria-hidden="true" />}
             {closing ? 'Cerrando...' : 'Cerrar caja'}
-          </button>
+          </Button>
         </header>
 
         <div className="cash-close__panel">

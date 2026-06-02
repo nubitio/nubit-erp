@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { IconButton } from './Button';
 import './AppToolbar.scss';
 
 export interface AppToolbarProps {
@@ -31,15 +32,11 @@ export const AppToolbar = ({
         </div>
         <div className="app-toolbar__end">
           {showRefreshButton && (
-            <button
-              type="button"
-              className="app-icon-button"
-              title={refreshLabel}
-              aria-label={refreshLabel}
+            <IconButton
+              icon="ph ph-arrow-clockwise"
+              label={refreshLabel}
               onClick={onRefresh}
-            >
-              <i className="ph ph-arrow-clockwise" aria-hidden="true" />
-            </button>
+            />
           )}
         </div>
       </div>

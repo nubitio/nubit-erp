@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { Button, IconButton } from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
@@ -125,28 +126,36 @@ function getToolbarKey(action: ResourceToolbarAction, index: number): string {
   return action.key ?? action.text ?? String(index);
 }
 
-function getToolbarButtonClass(action: ResourceToolbarAction, iconOnly = false): string {
-  if (iconOnly) return 'app-icon-button native-datagrid__toolbar-icon-action';
-  const variant = action.type === 'danger' ? 'danger' : action.type === 'primary' ? 'primary' : 'secondary';
-  return `app-button app-button--${variant} app-button--sm`;
-}
-
 function renderToolbarButton(action: ResourceToolbarAction, index: number, iconOnly = false) {
   if (action.visible === false) return null;
   const icon = normalizeIcon(action.icon);
+  const variant = action.type === 'danger' ? 'danger' : action.type === 'primary' ? 'primary' : 'secondary';
+  if (iconOnly) {
+    return (
+      <IconButton
+        key={getToolbarKey(action, index)}
+        className="native-datagrid__toolbar-icon-action"
+        icon={icon ? `ph ${icon}` : 'ph ph-circle'}
+        label={action.hint ?? action.text ?? ''}
+        onClick={action.onClick}
+        disabled={action.disabled}
+      />
+    );
+  }
+
   return (
-    <button
+    <Button
       key={getToolbarKey(action, index)}
-      type="button"
-      className={getToolbarButtonClass(action, iconOnly)}
+      variant={variant}
+      size="sm"
+      icon={icon ? `ph ${icon}` : undefined}
       onClick={action.onClick}
       disabled={action.disabled}
       title={action.hint}
       aria-label={action.hint ?? action.text}
     >
-      {icon && <i className={`ph ${icon}`} aria-hidden="true" />}
-      {!iconOnly && action.text && <span>{action.text}</span>}
-    </button>
+      {action.text && <span>{action.text}</span>}
+    </Button>
   );
 }
 
@@ -260,16 +269,16 @@ function SelectionActionsMenu({
 
   return (
     <div ref={containerRef} className="native-datagrid__actions-menu">
-      <button
-        type="button"
-        className="app-button app-button--secondary app-button--sm"
+      <Button
+        variant="secondary"
+        size="sm"
         aria-disabled={disabled}
         aria-expanded={open}
         onClick={handleToggle}
       >
         <span>{label}</span>
         <i className="ph ph-caret-down" aria-hidden="true" />
-      </button>
+      </Button>
       {open && !disabled && (
         <div className="native-datagrid__actions-popover" role="menu">
           {Object.entries(groups).map(([group, items]) => (
@@ -980,14 +989,11 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           {(options.toolbarVisible ?? true) && options.mode !== 'minimal' && (
             <div className="native-datagrid__toolbar">
               {options.hasBackButton && (
-                <button
-                  type="button"
-                  className="app-icon-button"
-                  aria-label="Volver"
+                <IconButton
+                  icon="ph ph-arrow-left"
+                  label="Volver"
                   onClick={() => (options.onBack ? options.onBack() : navigate(-1))}
-                >
-                  <i className="ph ph-arrow-left" aria-hidden="true" />
-                </button>
+                />
               )}
               {options.mode === 'full' || !options.mode ? <div className="grid-header">{options.title}</div> : null}
               {options.beforeToolbar?.()}
@@ -996,9 +1002,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               <SelectionActionsMenu actionsLabel={t('grid.buttonActions')} selectedCount={selectedRows.length} actions={toolbar.selection} permissions={toolbarPermissions} />
               {toolbar.utility?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index, true))}
               {toolbar.showRefresh !== false && (
-                <button type="button" className="app-icon-button" aria-label={t('grid.buttonRefresh')} onClick={() => void loadRows()}>
-                  <i className="ph ph-arrow-clockwise" aria-hidden="true" />
-                </button>
+                <IconButton icon="ph ph-arrow-clockwise" label={t('grid.buttonRefresh')} onClick={() => void loadRows()} />
               )}
             </div>
           )}
@@ -1236,12 +1240,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                              <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
                                <div className="native-datagrid__row-actions">
                                  {rowActions.length > 0 && (
-                                   <button
-                                     type="button"
-                                     className="app-icon-button"
-                                     aria-label={t('grid.buttonActions')}
-                                     title={t('grid.buttonActions')}
-                                     onClick={(e) => {
+                                    <IconButton
+                                      icon="ph ph-dots-three-vertical"
+                                      label={t('grid.buttonActions')}
+                                      onClick={(e) => {
                                        e.stopPropagation();
                                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                        const rowKey = key;
@@ -1274,10 +1276,8 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                            ? null
                                            : { key: rowKey, rect, actions: actionsAtOpen }
                                        );
-                                     }}
-                                   >
-                                     <i className="ph ph-dots-three-vertical" aria-hidden="true" />
-                                   </button>
+                                      }}
+                                    />
                                  )}
                                </div>
                              </td>
@@ -1364,12 +1364,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 <p className="native-datagrid__confirm-title">{t('dialog.confirmDeleteTitle')}</p>
                 <p className="native-datagrid__confirm-body">{t('dialog.confirmDelete')}</p>
                 <div className="native-datagrid__confirm-actions">
-                  <button type="button" className="app-button app-button--secondary app-button--sm" onClick={() => setConfirmRow(null)}>
+                  <Button variant="secondary" size="sm" onClick={() => setConfirmRow(null)}>
                     {t('dialog.buttonCancel')}
-                  </button>
-                  <button type="button" className="app-button app-button--danger app-button--sm" onClick={confirmDelete}>
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={confirmDelete}>
                     {t('grid.buttonDelete')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

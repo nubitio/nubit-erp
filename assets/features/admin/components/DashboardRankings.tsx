@@ -1,4 +1,4 @@
-import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
+import { StatCard } from '@nubit/ui';
 import { TopProduct, TopCustomer, TopPurchasedProduct, PurchasesSummaryStats } from '../types';
 import { DashboardMetrics } from '../hooks/useDashboardMetrics';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
@@ -33,7 +33,7 @@ export function DashboardRankings({
     <section className="dash-rankings-section">
       <SectionHeader title="Rankings y compras" subtitle="Últimos 30 días" />
       <div className="dash-rankings-grid dash-rankings-grid--compact">
-        <CardAnalytics title="Top productos" contentClass="list-card" menuVisible={false}>
+        <StatCard title="Top productos" className="list-card" menuVisible={false}>
           <ul className="ranked-list">
             {topProducts.map((item) => (
               <li key={item.product}>
@@ -46,9 +46,9 @@ export function DashboardRankings({
             ))}
             {topProducts.length === 0 && <div className="empty">Sin datos disponibles</div>}
           </ul>
-        </CardAnalytics>
+        </StatCard>
 
-        <CardAnalytics title="Top clientes" contentClass="list-card" menuVisible={false}>
+        <StatCard title="Top clientes" className="list-card" menuVisible={false}>
           <ul className="ranked-list">
             {topCustomers.map((item) => (
               <li key={item.customer}>
@@ -61,8 +61,8 @@ export function DashboardRankings({
             ))}
             {topCustomers.length === 0 && <div className="empty">Sin datos disponibles</div>}
           </ul>
-        </CardAnalytics>
-        <CardAnalytics title="Resumen de compras" contentClass="list-card" menuVisible={false}>
+        </StatCard>
+        <StatCard title="Resumen de compras" className="list-card" menuVisible={false}>
           <ul className="ranked-list">
             <li>
               <div className="ranked-list__title">Compras hoy</div>
@@ -92,9 +92,9 @@ export function DashboardRankings({
               </div>
             </li>
           </ul>
-        </CardAnalytics>
+        </StatCard>
 
-        <CardAnalytics title="Top productos comprados" contentClass="list-card" menuVisible={false}>
+        <StatCard title="Top productos comprados" className="list-card" menuVisible={false}>
           <ul className="ranked-list">
             {topPurchasedProducts.map((item) => (
               <li key={item.product}>
@@ -109,7 +109,7 @@ export function DashboardRankings({
               <div className="empty">Sin datos disponibles</div>
             )}
           </ul>
-        </CardAnalytics>
+        </StatCard>
       </div>
     </section>
   );

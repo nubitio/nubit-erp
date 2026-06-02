@@ -16,6 +16,7 @@ import {
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubit/crud';
+import { Badge } from '@nubit/ui';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -82,7 +83,7 @@ export const InvoiceFields = () => {
       .sortable(false)
       .formatter((cell: GridCellContext) => {
         if (cell.value === true) {
-          return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>;
+          return <Badge variant="danger" outlined>Anulado</Badge>;
         }
         return '';
       })
@@ -108,7 +109,7 @@ export const InvoiceFields = () => {
       .align('center')
       .formatter((cell: GridCellContext) => {
         if (!cell.value) return '';
-        return <span className="badge text-bg-info">{cell.value as string}</span>;
+        return <Badge variant="info">{cell.value as string}</Badge>;
       })
       .build(),
   );
@@ -119,9 +120,7 @@ export const InvoiceFields = () => {
       .width(120)
       .formatter((cell: GridCellContext) => {
         if (cell.value == null || cell.value === 0) return '';
-        return (
-          <span className="badge text-bg-warning">{`S/ ${Number(cell.value).toFixed(2)}`}</span>
-        );
+        return <Badge variant="warning">{`S/ ${Number(cell.value).toFixed(2)}`}</Badge>;
       })
       .build(),
   );

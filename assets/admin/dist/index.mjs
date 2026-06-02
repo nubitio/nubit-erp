@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { IconButton } from "@nubit/ui";
 import { jsx, jsxs } from "react/jsx-runtime";
 //#region assets/admin/AdminHeader.tsx
 const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => {
@@ -37,15 +38,11 @@ const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions 
 			"aria-label": "Main toolbar",
 			children: [/* @__PURE__ */ jsxs("div", {
 				className: "header-toolbar__before",
-				children: [menuToggleEnabled && /* @__PURE__ */ jsx("button", {
-					className: "app-icon-button menu-button",
-					type: "button",
-					"aria-label": "Toggle menu",
-					onClick: toggleMenu,
-					children: /* @__PURE__ */ jsx("i", {
-						className: "ph ph-list",
-						"aria-hidden": "true"
-					})
+				children: [menuToggleEnabled && /* @__PURE__ */ jsx(IconButton, {
+					className: "menu-button",
+					icon: "ph ph-list",
+					label: "Toggle menu",
+					onClick: toggleMenu
 				}), title && /* @__PURE__ */ jsx("div", {
 					className: "header-title",
 					children: title
@@ -63,16 +60,11 @@ const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions 
 							},
 							children: [/* @__PURE__ */ jsxs("div", {
 								className: "messages",
-								children: [/* @__PURE__ */ jsx("button", {
-									className: "app-icon-button",
-									type: "button",
-									"aria-label": action.label,
+								children: [/* @__PURE__ */ jsx(IconButton, {
+									icon: action.icon,
+									label: action.label,
 									"aria-expanded": isOpen,
-									onClick: () => setOpenPanelId(isOpen ? null : action.id),
-									children: /* @__PURE__ */ jsx("i", {
-										className: action.icon,
-										"aria-hidden": "true"
-									})
+									onClick: () => setOpenPanelId(isOpen ? null : action.id)
 								}), !!action.badge && action.badge > 0 && /* @__PURE__ */ jsx("div", {
 									className: "app-badge",
 									"aria-label": `${action.badge} ${action.label}`,
@@ -89,16 +81,11 @@ const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions 
 					renderUserMenu && /* @__PURE__ */ jsxs("div", {
 						className: "header-popover",
 						ref: userMenuRef,
-						children: [/* @__PURE__ */ jsx("button", {
-							className: "app-icon-button",
-							type: "button",
-							"aria-label": "User menu",
+						children: [/* @__PURE__ */ jsx(IconButton, {
+							icon: "ph ph-user-circle",
+							label: "User menu",
 							"aria-expanded": userMenuOpen,
-							onClick: () => setUserMenuOpen((prev) => !prev),
-							children: /* @__PURE__ */ jsx("i", {
-								className: "ph ph-user-circle",
-								"aria-hidden": "true"
-							})
+							onClick: () => setUserMenuOpen((prev) => !prev)
 						}), userMenuOpen && /* @__PURE__ */ jsx("div", {
 							className: "header-popover__panel",
 							role: "dialog",

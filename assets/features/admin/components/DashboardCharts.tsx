@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
+import { StatCard } from '@nubit/ui';
 import { SalesByMonth, SalesByDay } from '../types';
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 
@@ -37,7 +37,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
     <>
       <SectionHeader title="Evolución de ventas" />
       <div className="dash-charts-2col">
-        <CardAnalytics title="Evolución mensual (12 meses)" contentClass="chart-card" menuVisible={false}>
+        <StatCard title="Evolución mensual (12 meses)" className="chart-card" menuVisible={false}>
           <ResponsiveContainer width="100%" height={190}>
             <BarChart data={salesByMonth} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(0,0,0,0.08))" />
@@ -53,9 +53,9 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
               <Bar dataKey="total" fill="var(--accent-color, #4f46e5)" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </CardAnalytics>
+        </StatCard>
 
-        <CardAnalytics title="Ventas diarias (mes actual)" contentClass="chart-card" menuVisible={false}>
+        <StatCard title="Ventas diarias (mes actual)" className="chart-card" menuVisible={false}>
           <ResponsiveContainer width="100%" height={190}>
             <AreaChart data={salesByDay} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
               <defs>
@@ -83,7 +83,7 @@ export function DashboardCharts({ salesByMonth, salesByDay }: Props) {
               />
             </AreaChart>
           </ResponsiveContainer>
-        </CardAnalytics>
+        </StatCard>
       </div>
     </>
   );

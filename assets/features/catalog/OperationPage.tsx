@@ -7,6 +7,7 @@ import {
   type Field,
   type SmartCrudFieldPatch,
 } from '@nubit/crud';
+import { Badge } from '@nubit/ui';
 import React from 'react';
 import { operationEndpoints } from './api/catalogEndpoints';
 
@@ -33,11 +34,11 @@ const typePatch = toPatch(
     .align('center')
     .formatter((cell) => {
       if (cell.value === 1) {
-        return <span className="badge badge-outlined rounded-pill text-bg-success">Entrada</span>;
+        return <Badge variant="success" outlined>Entrada</Badge>;
       }
 
       if (cell.value === 2) {
-        return <span className="badge badge-outlined rounded-pill text-bg-danger">Salida</span>;
+        return <Badge variant="danger" outlined>Salida</Badge>;
       }
 
       return null;

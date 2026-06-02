@@ -1,5 +1,6 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
+import { Badge } from '@nubit/ui';
 import type { DataRecord } from '@nubit/core';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -105,9 +106,9 @@ export class SharedUtils {
 
   static booleanFormatter(value: boolean) {
     if (value) {
-      return <span className="badge badge-outlined rounded-pill text-bg-primary">SI</span>;
+      return <Badge variant="primary" outlined>SI</Badge>;
     } else if (!value) {
-      return <span className="badge badge-outlined rounded-pill text-bg-secondary">NO</span>;
+      return <Badge variant="secondary" outlined>NO</Badge>;
     } else {
       return '';
     }
@@ -240,12 +241,9 @@ export class SharedUtils {
               typeof item[name] === 'string' || typeof item[name] === 'number' ? item[name] : '';
 
             return (
-              <span
-                key={key}
-                className="badge badge-outlined rounded-pill text-bg-primary me-1 mb-1"
-              >
+              <Badge key={key} variant="primary" outlined className="me-1 mb-1">
                 {label}
-              </span>
+              </Badge>
             );
           })}
         </div>
@@ -271,52 +269,52 @@ export class SharedUtils {
     const raw = value === null || value === undefined || value === '' ? -1 : Number(value);
     const code = Number.isNaN(raw) ? -1 : raw;
     if (code === -1) {
-      return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
+      return <Badge variant="info" outlined>PENDIENTE</Badge>;
     } else if (code === 0) {
-      return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>;
+      return <Badge variant="success" outlined>ENVIADO</Badge>;
     } else if (code < 2000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
+      return <Badge variant="warning" outlined>ERRONEO</Badge>;
     } else if (code >= 2000 && code < 4000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
+      return <Badge variant="danger" outlined>RECHAZADO</Badge>;
     } else if (code >= 4000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-secondary">OBSERVADO</span>;
+      return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
     }
   }
 
   static saleStatusFormatter(sale: DataRecord | null | undefined) {
     const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2 || sale?.status === 'VOIDED';
     if (isVoided) {
-      return <span className="badge badge-outlined rounded-pill text-bg-danger">ANULADO</span>;
+      return <Badge variant="danger" outlined>ANULADO</Badge>;
     }
 
     const hasInvoice = !!sale?.invoice || !!sale?.invoiceFullNumber;
     if (!hasInvoice) {
-      return <span className="badge badge-outlined rounded-pill text-bg-success">ACEPTADO</span>;
+      return <Badge variant="success" outlined>ACEPTADO</Badge>;
     }
 
     const rawStatus = sale?.invoiceSunatStatus ?? sale?.sunatStatus;
     if (rawStatus === null || rawStatus === undefined || rawStatus === '') {
-      return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
+      return <Badge variant="info" outlined>PENDIENTE</Badge>;
     }
 
     const statusNumber = Number(rawStatus);
     if (Number.isNaN(statusNumber)) {
-      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
+      return <Badge variant="primary" outlined>PENDIENTE</Badge>;
     }
 
     if (statusNumber === 0) {
-      return <span className="badge badge-outlined rounded-pill text-bg-success">ACEPTADO</span>;
+      return <Badge variant="success" outlined>ACEPTADO</Badge>;
     }
 
     if (statusNumber < 2000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
+      return <Badge variant="warning" outlined>ERRONEO</Badge>;
     }
 
     if (statusNumber < 4000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
+      return <Badge variant="danger" outlined>RECHAZADO</Badge>;
     }
 
-    return <span className="badge badge-outlined rounded-pill text-bg-secondary">OBSERVADO</span>;
+    return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
   }
 }
 

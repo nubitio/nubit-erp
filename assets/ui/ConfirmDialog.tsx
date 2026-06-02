@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AppDialog } from './AppDialog';
+import { Button } from './Button';
 import './ConfirmDialog.scss';
 
 export interface ConfirmDialogProps {
@@ -26,9 +27,6 @@ export function ConfirmDialog({
   const { t } = useTranslation();
   const resolvedConfirmLabel = confirmLabel ?? t('common.confirm');
   const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
-  const confirmClass = variant === 'danger'
-    ? 'app-button app-button--danger'
-    : 'app-button app-button--primary';
 
   return (
     <AppDialog
@@ -39,17 +37,16 @@ export function ConfirmDialog({
       role="alertdialog"
       footer={(
         <>
-          <button
-            type="button"
-            className="app-button app-button--secondary"
+          <Button
+            variant="secondary"
             onClick={onCancel}
             autoFocus
           >
             {resolvedCancelLabel}
-          </button>
-          <button type="button" className={confirmClass} onClick={onConfirm}>
+          </Button>
+          <Button variant={variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
             {resolvedConfirmLabel}
-          </button>
+          </Button>
         </>
       )}
     >

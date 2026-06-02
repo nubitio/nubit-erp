@@ -7,6 +7,7 @@ import { resolveBranchSelectionRedirect, resolvePostLoginRedirect } from '@share
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import toast from '@shared/lib/SharedUtils';
 import { useScreenSize } from '@nubit/admin';
+import { Button } from '@nubit/ui';
 
 import { AppDialog } from './AppDialog';
 
@@ -152,12 +153,12 @@ export const BranchPicker = ({
       bodyClassName="picker-popup__body"
       footer={
         <>
-          <button className="app-button app-button--secondary" type="button" onClick={onCancelClick} disabled={selecting}>
+          <Button variant="secondary" onClick={onCancelClick} disabled={selecting}>
             Cancelar
-          </button>
-          <button className="app-button app-button--primary" type="button" onClick={onAcceptClick} disabled={selecting}>
+          </Button>
+          <Button variant="primary" onClick={onAcceptClick} disabled={selecting}>
             Aceptar
-          </button>
+          </Button>
         </>
       }
     >

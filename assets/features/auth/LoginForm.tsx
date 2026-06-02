@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Button, IconButton, TextField } from '@nubit/ui';
 
 import './LoginForm.scss';
 import { authService } from '@features/auth';
@@ -153,15 +154,16 @@ export const LoginForm = () => {
     <form className="login-form" onSubmit={onSubmit} autoComplete="off" noValidate>
       {/* Username */}
       <div className={`login-field${usernameError ? ' login-field--error' : ''}`}>
-        <input
-          ref={usernameRef}
-          id="login-username"
-          className="login-input"
+          <TextField
+            ref={usernameRef}
+            id="login-username"
+            className="login-input"
           type="text"
           placeholder="Usuario"
           autoComplete="username"
-          aria-label="Usuario"
-          aria-invalid={!!usernameError}
+            aria-label="Usuario"
+            invalid={!!usernameError}
+            aria-invalid={!!usernameError}
           aria-describedby={usernameError ? 'login-username-error' : undefined}
           disabled={loading}
           value={username}
@@ -180,13 +182,14 @@ export const LoginForm = () => {
       {/* Password */}
       <div className={`login-field${passwordError ? ' login-field--error' : ''}`}>
         <div className="login-input-wrapper">
-          <input
+          <TextField
             id="login-password"
             className="login-input"
             type={showPassword ? 'text' : 'password'}
             placeholder="Contraseña"
             autoComplete="current-password"
             aria-label="Contraseña"
+            invalid={!!passwordError}
             aria-invalid={!!passwordError}
             aria-describedby={passwordError ? 'login-password-error' : undefined}
             disabled={loading}
@@ -196,15 +199,13 @@ export const LoginForm = () => {
               clearFieldErrors();
             }}
           />
-          <button
-            type="button"
+          <IconButton
             className="login-password-toggle"
-            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             tabIndex={0}
+            icon={showPassword ? 'ph ph-eye' : 'ph ph-eye-slash'}
             onClick={() => setShowPassword((v) => !v)}
-          >
-            <i className={showPassword ? 'ph ph-eye' : 'ph ph-eye-slash'} aria-hidden="true" />
-          </button>
+          />
         </div>
         {passwordError && (
           <span id="login-password-error" className="login-field__error" role="alert">
@@ -214,9 +215,9 @@ export const LoginForm = () => {
       </div>
 
       {/* Submit */}
-      <button type="submit" className="login-submit" disabled={loading} aria-busy={loading}>
-        {loading ? <span className="login-spinner" aria-hidden="true" /> : 'Ingresar'}
-      </button>
+      <Button type="submit" className="login-submit" variant="primary" fullWidth loading={loading}>
+        Ingresar
+      </Button>
 
       {/* General error */}
       {submitError && (

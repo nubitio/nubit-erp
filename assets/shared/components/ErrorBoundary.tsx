@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from '@nubit/ui';
+import { Button, EmptyState } from '@nubit/ui';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -33,9 +33,9 @@ function ErrorFallback({ error, onReload }: { error: Error | null; onReload: () 
       description="Ocurrió un error inesperado. Por favor, recarga la página para continuar."
       action={(
         <>
-          <button type="button" className="app-button app-button--primary" onClick={onReload}>
+          <Button variant="primary" onClick={onReload}>
             {t('common.retry')}
-          </button>
+          </Button>
           {import.meta.env.DEV && error && (
             <details style={{ textAlign: 'left', maxWidth: '40rem', marginTop: 'var(--space-3)' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: 'var(--font-size-xs)' }}>

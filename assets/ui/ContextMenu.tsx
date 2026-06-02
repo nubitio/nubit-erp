@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, ReactNode } from 'react';
+import { IconButton } from './Button';
 import './ContextMenu.scss';
 
 export interface ContextMenuItem {
@@ -79,16 +80,13 @@ export const ContextMenu = ({
       {trigger ? (
         <span onClick={() => setOpen((v) => !v)}>{trigger}</span>
       ) : (
-        <button
-          type="button"
-          className="app-icon-button"
+        <IconButton
+          icon="ph ph-dots-three"
+          label={triggerLabel}
           aria-haspopup="menu"
           aria-expanded={open}
-          aria-label={triggerLabel}
           onClick={() => setOpen((v) => !v)}
-        >
-          <i className="ph ph-dots-three" aria-hidden="true" />
-        </button>
+        />
       )}
 
       {open && (

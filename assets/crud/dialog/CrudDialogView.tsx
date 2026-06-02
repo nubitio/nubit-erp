@@ -1,7 +1,7 @@
 import './CrudDialogView.scss';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
-import { AppDialog } from '@nubit/ui';
+import { AppDialog, Button } from '@nubit/ui';
 import { useCoreTranslation, useEvents, type DialogEventNames } from '@nubit/core';
 
 const getIsXSmall = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 575.98px)').matches;
@@ -144,23 +144,21 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
         footer={
           (options.footerVisible ?? true) ? (
             <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
-              <button
-                type="button"
-                className="app-button app-button--secondary"
+              <Button
+                variant="secondary"
                 onClick={onCancelClick}
                 disabled={isProcessing}
               >
                 {options.negativeText ?? t('dialog.buttonCancel')}
-              </button>
-              <button
-                type="button"
-                className="app-button app-button--primary dialog-save-button"
+              </Button>
+              <Button
+                variant="primary"
+                className="dialog-save-button"
                 onClick={onSaveClick}
-                disabled={isProcessing}
+                loading={isProcessing}
               >
-                {isProcessing && <span className="button-indicator" aria-hidden="true" />}
                 <span>{options.positiveText ?? t('dialog.buttonSave')}</span>
-              </button>
+              </Button>
             </div>
           ) : undefined
         }

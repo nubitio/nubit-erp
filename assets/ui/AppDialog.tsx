@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { IconButton } from './Button';
 
 import './AppDialog.scss';
 
@@ -142,14 +143,12 @@ export const AppDialog = ({
             {title}
           </h2>
           {showCloseButton && (
-            <button
-              className="app-icon-button app-dialog__close"
-              type="button"
-              aria-label="Cerrar"
+            <IconButton
+              className="app-dialog__close"
+              icon="ph ph-x"
+              label="Cerrar"
               onClick={onClose}
-            >
-              <i className="ph ph-x" aria-hidden="true" />
-            </button>
+            />
           )}
         </div>
         <div className={joinClassNames('app-dialog__body', bodyClassName)}>{children}</div>

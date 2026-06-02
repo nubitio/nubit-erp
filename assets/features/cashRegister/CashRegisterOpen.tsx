@@ -1,4 +1,4 @@
-import { Card } from '@shared/ui';
+import { Button, Card, FormField, TextField } from '@nubit/ui';
 import { useRef, useState } from 'react';
 import cashRegisterService from './services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,30 +45,28 @@ export const CashRegisterOpen = () => {
           }}
         >
           <div className="mb-3">
-            <label htmlFor="cash-opening-balance" className="form-label">
-              Saldo inicial <span aria-hidden="true" style={{ color: 'red' }}>*</span>
-            </label>
-            <input
+            <FormField label={<>Saldo inicial <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="cash-opening-balance">
+            <TextField
               ref={inputRef}
               id="cash-opening-balance"
               type="number"
-              className="form-control"
               min={0}
               step={0.01}
               required
               placeholder="0.00"
             />
+            </FormField>
           </div>
 
-          <button
+          <Button
             type="submit"
-            className="app-button app-button--success app-button--full"
-            disabled={isProcessing}
+            variant="success"
+            fullWidth
+            loading={isProcessing}
             data-testid="cash-open-submit-btn"
           >
-            {isProcessing && <span className="app-button-spinner" aria-hidden="true" />}
             {isProcessing ? 'Procesando...' : 'Abrir caja'}
-          </button>
+          </Button>
         </form>
       </Card>
     </>

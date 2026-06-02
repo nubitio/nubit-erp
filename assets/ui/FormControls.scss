@@ -1,0 +1,84 @@
+// ── Form controls ─────────────────────────────────────────────────────────────
+// Reusable token-native inputs for product forms, dialogs and auth screens.
+
+.app-form-field {
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+}
+
+.app-form-field__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.app-form-field__error,
+.app-form-field__help {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
+}
+
+.app-form-field__error {
+  color: var(--error-color);
+}
+
+.app-form-field__help {
+  color: var(--text-tertiary);
+}
+
+.app-input {
+  appearance: none;
+  background: color-mix(in srgb, var(--surface-2) 70%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+  color: var(--text-primary);
+  display: block;
+  font: inherit;
+  font-size: var(--font-size-md);
+  min-height: 40px;
+  outline: none;
+  padding: 0.65rem 0.75rem;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  width: 100%;
+
+  &::placeholder {
+    color: var(--texteditor-label-color, var(--text-secondary));
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    background: var(--surface-1);
+    border-color: var(--text-secondary);
+  }
+
+  &:focus {
+    background: var(--surface-1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.app-input--invalid,
+.app-form-field--error .app-input {
+  background: color-mix(in srgb, var(--error-color) 4%, var(--surface-1));
+  border-color: var(--error-color);
+}
+
+.app-select {
+  appearance: auto;
+}
+
+.app-textarea {
+  line-height: var(--line-height-normal);
+  min-height: 96px;
+  resize: vertical;
+}

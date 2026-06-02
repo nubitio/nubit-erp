@@ -1,12 +1,19 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
-
-const API = getCoreApiBaseUrl();
+import { httpClient } from '@shared/api/HttpClient';
 import type { CustomerOption } from './types';
 import { useCustomerSearch } from '@shared/hooks/useCustomerSearch';
 import { CUSTOMER_PAGE_SIZE } from './posHelpers';
 
 const DEFAULT_CUSTOMER_ID = 1;
+
+interface CustomerResponse {
+  id: number | string;
+  businessName?: string | null;
+  name?: string | null;
+  ruc?: string | null;
+  dni?: string | null;
+  doc?: string | null;
+}
 
 export const usePosCustomers = () => {
   // Delegate the actual searching + pagination to the shared hook
@@ -52,16 +59,15 @@ export const usePosCustomers = () => {
     let cancelled = false;
     const controller = new AbortController();
 
-    fetch(`${API}customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((customer) => {
+    httpClient.get<CustomerResponse>(`customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
+      .then(({ data: customer }) => {
         if (cancelled) return;
         const mapped: CustomerOption = {
           id: Number(customer.id),
           businessName: String(
             customer.businessName ?? customer.name ?? `Cliente ${customer.id}`,
           ),
-          doc: customer.ruc ?? customer.dni ?? customer.doc,
+          doc: customer.ruc ?? customer.dni ?? customer.doc ?? undefined,
         };
         // We don't mutate the shared hook's list here — we just select it
         setSelectedCustomerIdState(mapped.id);

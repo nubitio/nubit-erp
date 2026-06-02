@@ -1,4 +1,4 @@
-import { AppDialog } from '@nubit/ui';
+import { AppDialog, Button, FormField, TextField } from '@nubit/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useEvents } from '@nubit/core';
@@ -130,13 +130,12 @@ export const DiscountDialog = () => {
       showCloseButton={true}
       restoreFocus={false}
       footer={
-        <button
-          type="button"
-          className="app-button app-button--primary"
+        <Button
+          variant="primary"
           onClick={() => onApply(discountPercent, discountAmount)}
         >
           Aceptar
-        </button>
+        </Button>
       }
     >
       <h3 className="text-center">{NumberUtils.formatCurrency(total - discountAmount)}</h3>
@@ -147,34 +146,30 @@ export const DiscountDialog = () => {
       )}
       <div className="p-2">
         <div className="mb-4">
-          <label className="form-label" htmlFor="discount-percent">
-            Descuento %
-          </label>
-          <input
+          <FormField label="Descuento %" htmlFor="discount-percent">
+          <TextField
             id="discount-percent"
             type="number"
-            className="form-control"
             min={0}
             max={100}
             step={1}
             value={Number(discountPercent.toFixed(2))}
             onChange={handlePercentInput}
           />
+          </FormField>
         </div>
         <div className="mb-4">
-          <label className="form-label" htmlFor="discount-amount">
-            Descuento S/
-          </label>
-          <input
+          <FormField label="Descuento S/" htmlFor="discount-amount">
+          <TextField
             id="discount-amount"
             type="number"
-            className="form-control"
             min={0}
             max={total}
             step={0.01}
             value={Number(discountAmount.toFixed(2))}
             onChange={handleAmountInput}
           />
+          </FormField>
         </div>
       </div>
     </AppDialog>
