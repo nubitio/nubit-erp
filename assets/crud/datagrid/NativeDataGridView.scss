@@ -8,10 +8,21 @@
 
 // ── Layout shell ───────────────────────────────────────────────────────────────
 
+// CrudPage renders <div id="wrapper"> as its root — it has no class and no
+// existing CSS. We must make it a flex column that fills main so that all
+// flex children below (view.datagrid-list → native-datagrid → table-wrap)
+// can use flex-grow / height:100% correctly.
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .view.datagrid-list {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 auto;  // grow to fill #wrapper instead of relying on height:100%
   min-height: 0;
   overflow: hidden;
 }
