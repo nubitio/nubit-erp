@@ -153,6 +153,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  position: relative; // anchors the empty-state overlay
 }
 
 .native-datagrid__table {
@@ -679,6 +680,14 @@
 }
 
 // ── Empty / loading states ─────────────────────────────────────────────────────
+// Empty state is rendered as a sibling of <table> inside table-wrap (position:
+// relative). This lets it fill the full available height without fighting
+// table layout constraints.
+
+.native-datagrid__empty-td {
+  padding: 0 !important;
+  border-bottom: 0 !important;
+}
 
 .native-datagrid__empty {
   align-items: center;
@@ -686,7 +695,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-9) var(--space-5);
+  justify-content: center;
+  // Fill the table-wrap height (minus the sticky header ~32px)
+  min-height: 220px;
+  padding: var(--space-8) var(--space-5);
+  // Sticky-header offset: keep content centered in the visible body area
+  position: sticky;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
 
   i {
     font-size: 40px;

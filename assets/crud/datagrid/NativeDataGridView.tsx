@@ -1140,12 +1140,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   ))
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={colSpan}>
-                      <div className="native-datagrid__empty">
-                        <i className="ph ph-database" aria-hidden="true" />
-                        <span>{t('grid.noRecords')}</span>
-                      </div>
-                    </td>
+                    <td colSpan={colSpan} className="native-datagrid__empty-td" />
                   </tr>
                 ) : (
                   rows.map((row, rowIndex) => {
@@ -1309,6 +1304,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 summaryFields={options.summaryFields}
               />
             </table>
+            {rows.length === 0 && !isGridLoading && (
+              <div className="native-datagrid__empty" aria-live="polite">
+                <i className="ph ph-database" aria-hidden="true" />
+                <span>{t('grid.noRecords')}</span>
+              </div>
+            )}
           </div>
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">

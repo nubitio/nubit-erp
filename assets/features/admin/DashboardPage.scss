@@ -282,13 +282,34 @@
 
   .dash-today {
     height: 100%;
-    min-height: 220px;
+    min-height: 0;       // let content drive height, not a fixed floor
     margin: 0;
+  }
+
+  // Make the right-side section fill the same height as dash-today
+  .dash-ops-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .dash-ops-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    flex: 1 1 auto;      // stretch to fill .dash-ops-section
+    align-items: stretch; // both cards equal height
+
+    // Each card fills its grid cell fully
+    .card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .card-contents {
+        flex: 1 1 auto;
+        height: auto;    // override the fixed 178px — let it fill
+      }
+    }
   }
 
   .dash-section-header {
@@ -296,7 +317,8 @@
   }
 
   .list-card .card-contents {
-    height: 78px;
+    height: auto;
+    max-height: 220px;   // cap so neither card grows unbounded
   }
 
   .ranked-list li {
@@ -307,8 +329,11 @@
   @media (max-width: 1120px) {
     grid-template-columns: 1fr;
 
+    .dash-ops-section { height: auto; }
+
     .dash-ops-grid {
       grid-template-columns: 1fr 1fr;
+      align-items: start;
     }
   }
 
