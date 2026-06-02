@@ -1,7 +1,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 import { useNavigate } from 'react-router-dom';
-import { IconButton } from '@nubit/ui';
+import { Badge, Button, EmptyState, IconButton, Skeleton } from '@nubit/ui';
 
 import type {
   Notification,
@@ -94,16 +94,15 @@ const NotificationPanel = (props: NotificationPanelProps) => {
       <div className="notification-body" role="list" aria-label="Lista de notificaciones">
         {loading && notifications.length === 0 ? (
           <div className="notification-loading" aria-label="Cargando notificaciones">
-            <span className="notification-spinner" role="status" />
+            <Skeleton variant="circle" width={28} height={28} />
           </div>
         ) : sorted.length === 0 ? (
-          <div className="notification-empty">
-            <span className="notification-empty-icon" aria-hidden="true">
-              🔔
-            </span>
-            <span className="notification-empty-title">Sin notificaciones</span>
-            <span className="notification-empty-subtitle">Todo está en orden</span>
-          </div>
+          <EmptyState
+            icon="bell"
+            title="Sin notificaciones"
+            description="Todo está en orden"
+            size="sm"
+          />
         ) : (
           sorted.map((item) => {
             const isRead = item.readAt !== null;
@@ -138,11 +137,14 @@ const NotificationPanel = (props: NotificationPanelProps) => {
                     )}
                   </div>
                   {typeLabel && (
-                    <span
-                      className={`notification-type-badge notification-type-badge--${item.severity}`}
+                    <Badge
+                      variant={item.severity === 'critical' ? 'danger' : item.severity === 'warning' ? 'warning' : 'info'}
+                      size="sm"
+                      pill
+                      className="notification-type-badge"
                     >
                       {typeLabel}
-                    </span>
+                    </Badge>
                   )}
                   <div className="notification-body-item-title-body">{item.body}</div>
                   <div className="notification-body-item-title-time">
@@ -156,14 +158,14 @@ const NotificationPanel = (props: NotificationPanelProps) => {
       </div>
 
       <div className="notification-footer">
-        <button
-          className="notification-mark-all-button"
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           disabled={loading || notifications.every((n) => n.readAt !== null)}
           onClick={markAllRead}
         >
           Marcar todo como leído
-        </button>
+        </Button>
       </div>
     </>
   );

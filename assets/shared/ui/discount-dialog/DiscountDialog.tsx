@@ -138,15 +138,16 @@ export const DiscountDialog = () => {
         </Button>
       }
     >
-      <h3 className="text-center">{NumberUtils.formatCurrency(total - discountAmount)}</h3>
+      <h3 style={{ textAlign: 'center', margin: '0 0 var(--space-1)' }}>
+        {NumberUtils.formatCurrency(total - discountAmount)}
+      </h3>
       {discountAmount > 0 && (
-        <h6 className="text-center text-decoration-line-through">
+        <p style={{ textAlign: 'center', textDecoration: 'line-through', color: 'var(--text-secondary)', margin: '0 0 var(--space-3)', fontSize: 'var(--font-size-sm)' }}>
           {NumberUtils.formatCurrency(total)}
-        </h6>
+        </p>
       )}
-      <div className="p-2">
-        <div className="mb-4">
-          <FormField label="Descuento %" htmlFor="discount-percent">
+      <div style={{ padding: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <FormField label="Descuento %" htmlFor="discount-percent">
           <TextField
             id="discount-percent"
             type="number"
@@ -156,10 +157,8 @@ export const DiscountDialog = () => {
             value={Number(discountPercent.toFixed(2))}
             onChange={handlePercentInput}
           />
-          </FormField>
-        </div>
-        <div className="mb-4">
-          <FormField label="Descuento S/" htmlFor="discount-amount">
+        </FormField>
+        <FormField label="Descuento S/" htmlFor="discount-amount">
           <TextField
             id="discount-amount"
             type="number"
@@ -169,8 +168,7 @@ export const DiscountDialog = () => {
             value={Number(discountAmount.toFixed(2))}
             onChange={handleAmountInput}
           />
-          </FormField>
-        </div>
+        </FormField>
       </div>
     </AppDialog>
   );

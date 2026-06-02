@@ -1,4 +1,6 @@
 // @nubit/ui — visual primitives facade.
+export { Avatar, getAvatarInitials, getAvatarHue } from './Avatar';
+export type { AvatarProps, AvatarShape, AvatarSize } from './Avatar';
 export { AppDialog } from './AppDialog';
 export type { AppDialogProps } from './AppDialog';
 export { ConfirmDialog } from './ConfirmDialog';
@@ -35,3 +37,9 @@ export { StatCard } from './StatCard';
 export type { StatCardProps } from './StatCard';
 export { ContextMenu } from './ContextMenu';
 export type { ContextMenuProps, ContextMenuItem } from './ContextMenu';
+export { CollapsibleSection } from './CollapsibleSection';
+export type { CollapsibleSectionProps } from './CollapsibleSection';
+export { Popover } from './Popover';
+export type { PopoverProps, PopoverAlign } from './Popover';
+export { useFloatingPanel } from './useFloatingPanel';
+export type { UseFloatingPanelOptions, UseFloatingPanelResult } from './useFloatingPanel';

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Button, Chip, EmptyState } from '@nubit/ui';
 import { POSItem } from './POSItem';
 import type { Category, PosItem } from './types';
 
@@ -105,28 +106,20 @@ export function POSCatalogPanel({
         </div>
       )}
 
-      <nav className="pos-categories" role="tablist" aria-label="Filtrar por categoría">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeCategory === null}
-          className={`pos-chip ${activeCategory === null ? 'is-active' : ''}`}
+      <nav className="pos-categories" role="radiogroup" aria-label="Filtrar por categoría">
+        <Chip
+          label="Todos"
+          active={activeCategory === null}
+          count={filteredMenu.length}
           onClick={() => setActiveCategory(null)}
-        >
-          Todos
-          <span className="pos-chip__count">{filteredMenu.length}</span>
-        </button>
+        />
         {categories.map((category) => (
-          <button
+          <Chip
             key={category.id}
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === category.id}
-            className={`pos-chip ${activeCategory === category.id ? 'is-active' : ''}`}
+            label={category.name}
+            active={activeCategory === category.id}
             onClick={() => setActiveCategory(category.id)}
-          >
-            {category.name}
-          </button>
+          />
         ))}
       </nav>
 
@@ -143,32 +136,30 @@ export function POSCatalogPanel({
             ))}
           </div>
         ) : loadError ? (
-          <div className="pos-state is-error">
-            <p>{loadError}</p>
-          </div>
+          <EmptyState
+            variant="danger"
+            title="Error al cargar"
+            description={loadError}
+            className="pos-state"
+          />
         ) : filteredMenu.length === 0 ? (
-          <div className="pos-state">
-            <i
-              className="ph ph-package-search"
-              aria-hidden="true"
-              style={{ fontSize: '2.25rem' }}
-            />
-            <p>{searchQuery ? 'Sin resultados' : 'Catálogo vacío'}</p>
-            <span>
-              {searchQuery
+          <EmptyState
+            icon="package-search"
+            title={searchQuery ? 'Sin resultados' : 'Catálogo vacío'}
+            description={
+              searchQuery
                 ? 'Prueba con otro nombre, SKU o código de barras.'
-                : 'No hay productos disponibles en este almacén.'}
-            </span>
-            {searchQuery && (
-              <button
-                type="button"
-                className="pos-state__action-btn"
-                onClick={() => setSearchQuery('')}
-              >
-                Limpiar búsqueda
-              </button>
-            )}
-          </div>
+                : 'No hay productos disponibles en este almacén.'
+            }
+            action={
+              searchQuery ? (
+                <Button variant="secondary" size="sm" onClick={() => setSearchQuery('')}>
+                  Limpiar búsqueda
+                </Button>
+              ) : undefined
+            }
+            className="pos-state"
+          />
         ) : (
           <div className="pos-grid">
             {filteredMenu.map((item) => {

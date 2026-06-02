@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Badge, IconButton } from '@nubit/ui';
 import { useFeature } from '../hooks/useFeature';
 import './FeatureGate.scss';
 
@@ -118,7 +119,7 @@ interface UpgradeGateProps {
 
 function UpgradeGate({ planBadge, upgradeMessage, children }: UpgradeGateProps) {
   const [open, setOpen] = useState(false);
-  const badgeRef = useRef<HTMLButtonElement>(null);
+  const badgeRef = useRef<HTMLSpanElement>(null);
 
   const message =
     upgradeMessage ??
@@ -145,27 +146,30 @@ function UpgradeGate({ planBadge, upgradeMessage, children }: UpgradeGateProps) 
     <div className="feature-gate--upgrade" onBlur={handleBlur}>
       {children}
 
-      <button
-        ref={badgeRef}
-        type="button"
+      {/* Badge acts as a trigger — rendered as a button via onClick */}
+      <span
+        ref={badgeRef as React.RefObject<HTMLSpanElement>}
+        role="button"
+        tabIndex={0}
         className="feature-gate__badge"
         aria-expanded={open}
         aria-label={`Requiere plan ${planBadge}`}
         onClick={handleBadgeClick}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBadgeClick(e as unknown as React.MouseEvent); } }}
       >
-        🔒 {planBadge}
-      </button>
+        <Badge variant="primary" size="sm" pill>
+          🔒 {planBadge}
+        </Badge>
+      </span>
 
       {open && (
         <div className="feature-gate__prompt" role="dialog" aria-label="Información de upgrade">
-          <button
-            type="button"
-            className="feature-gate__prompt__close"
-            aria-label="Cerrar"
+          <IconButton
+            icon="ph ph-x"
+            label="Cerrar"
             onClick={handleClose}
-          >
-            ✕
-          </button>
+            className="feature-gate__prompt__close"
+          />
           <p className="feature-gate__prompt__message">{message}</p>
           <a
             href={PRICING_URL}

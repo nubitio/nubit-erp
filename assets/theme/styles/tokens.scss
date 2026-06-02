@@ -74,6 +74,11 @@
   --header-toolbar-vertical-padding: 10px;
   --toolbar-vertical-padding:        16px;
 
+  // ── Overlays ────────────────────────────────────────────────────────────────
+  // Semi-transparent scrim used for modal/sidebar overlays.
+  // Intentionally theme-independent: dark tint works on both light and dark surfaces.
+  --overlay-bg: rgb(0 0 0 / 42%);
+
   // ── Motion ──────────────────────────────────────────────────────────────────
   --transition-fast: 100ms ease;
   --transition-base: 150ms ease;

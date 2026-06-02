@@ -16,32 +16,21 @@
   border-radius: 999px;
   cursor: pointer;
   display: inline-flex;
-  height: 36px;
+  height: var(--toolbar-height);
   justify-content: center;
-  margin-left: 5px;
-  padding: 2px;
-  width: 36px;
+  margin-left: var(--space-1);
+  padding: var(--space-1);
+  width: var(--toolbar-height);
 
-  img {
-    aspect-ratio: 1 / 1;
-    background: #fff;
-    background-clip: padding-box;
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    box-sizing: border-box;
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
-    width: 100%;
+  // Avatar ring on hover/focus — accent ring indicates interactive state
+  &:hover .app-avatar,
+  &:focus-visible .app-avatar {
+    box-shadow: 0 0 0 2px var(--accent-color);
+    outline: none;
   }
 
-  &:hover,
   &:focus-visible {
     outline: none;
-
-    img {
-      border-color: var(--accent-color);
-    }
   }
 }
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Avatar } from '@nubit/ui';
 import { useAuth } from '@app/contexts/auth';
 import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@app/types';
-import { UserAvatar } from './UserAvatar';
 
 import './UserMenuSection.scss';
 
@@ -86,7 +86,7 @@ export const UserMenuSection = ({
       <div className="user-info">
         {showAvatar && (
           <div className="image-container">
-            <UserAvatar owner={user?.username} size={28} />
+            <Avatar owner={user?.username ?? ''} size={28} />
           </div>
         )}
         <div className="user-name">{user?.username}</div>
