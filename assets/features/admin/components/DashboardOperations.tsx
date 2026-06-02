@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CardAnalytics } from '@shared/ui/card-analytics/CardAnalytics';
+import { StatCard } from '@nubit/ui';
 import { CashRegisterStatus, LowStockProduct } from '../types';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
 
@@ -32,9 +32,9 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
     <section className="dash-ops-section">
       <SectionHeader title="Estado operacional" />
       <div className="dash-ops-grid">
-        <CardAnalytics
+        <StatCard
           title="Cajas"
-          contentClass="list-card"
+          className=" list-card"
           menuVisible={false}
           isLoading={cashboxLoading}
         >
@@ -56,9 +56,9 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
               <div className="empty">Sin cajas registradas</div>
             )}
           </ul>
-        </CardAnalytics>
+        </StatCard>
 
-        <CardAnalytics title="Stock crítico" contentClass="list-card" menuVisible={false}>
+        <StatCard title="Stock crítico" className=" list-card" menuVisible={false}>
           <ul className="ranked-list stock-alert">
             {lowStockProducts.map((item, idx) => (
               <li
@@ -95,7 +95,7 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
               <div className="empty">✓ Stock en niveles óptimos</div>
             )}
           </ul>
-        </CardAnalytics>
+        </StatCard>
       </div>
     </section>
   );

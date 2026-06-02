@@ -12,7 +12,7 @@ import {
   type Field,
   type DataRecord,
 } from '@nubit/crud';
-import { Badge } from '../../shared/components/Badge';
+import { Badge } from '@nubit/ui';
 
 const BASE_URL = API + 'stock-movements';
 
