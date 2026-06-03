@@ -29,6 +29,9 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  // The brand panel always has a dark gradient background regardless of app theme.
+  // Override --on-accent-color locally so all color-mix() references use light text.
+  --on-accent-color: #ffffff;
   background: linear-gradient(
     145deg,
     color-mix(in srgb, var(--accent-color) 18%, #000) 0%,
