@@ -436,11 +436,11 @@
 
   &.is-active {
     background: var(--pos-primary);
-    // White-on-accent: acceptable for filled primary button (always dark bg in both themes)
-    color: rgba(255, 255, 255, 0.95);
+    // On-accent text for filled primary (uses the Fluent on-accent token)
+    color: var(--on-accent-color);
     border-color: var(--pos-primary);
 
-    svg { color: rgba(255, 255, 255, 0.95); }
+    svg { color: var(--on-accent-color); }
   }
 }
 
@@ -799,20 +799,20 @@
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 800;
-  // White text over the colored background — acceptable hardcode on intentionally colored bg
-  color: rgba(255, 255, 255, 0.92);
+  // White text over the colored background — use on-accent for consistency with Fluent colored fills
+  color: var(--on-accent-color);
   letter-spacing: -0.02em;
   user-select: none;
 }
 
 // In-cart quantity badge — top-right corner of image (informational, not dominant)
-// Dark overlay with white text: intentional frosted glass — not a semantic surface
+// Dark overlay with text: use overlay token + text-primary for frosted glass effect (Fluent aligned)
 .pos-product-card__qty-badge {
   position: absolute;
   top: var(--space-1);
   right: var(--space-1);
-  background: rgba(0, 0, 0, 0.55);
-  color: rgba(255, 255, 255, 0.92);
+  background: var(--overlay-bg-subtle);
+  color: var(--text-primary);
   font-size: var(--font-size-xxs);
   font-weight: 700;
   min-width: 1.1rem;
@@ -849,9 +849,9 @@
 .pos-product-card__out-badge {
   position: absolute;
   inset: 0;
-  // Dark overlay over image — intentional, not a semantic surface color
-  background: rgba(0, 0, 0, 0.42);
-  color: rgba(255, 255, 255, 0.92);
+  // Dark overlay over image — use subtle overlay token + primary text (Fluent)
+  background: var(--overlay-bg-subtle);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -923,7 +923,7 @@
   height: 1.85rem;
   border-radius: 50%;
   background: var(--pos-primary);
-  color: #fff;
+  color: var(--on-accent-color);
   font-size: 1.4rem;
   font-weight: 300;
   line-height: 1;
@@ -1641,12 +1641,12 @@
   border-radius: var(--pos-radius);
   padding: 0.9rem 1.1rem;
   background: linear-gradient(145deg, var(--pos-success) 0%, color-mix(in srgb, var(--pos-success) 75%, black) 100%);
-  color: #fff;
+  color: var(--on-success-color);
   font-weight: 800;
   cursor: pointer;
   box-shadow:
     0 4px 14px color-mix(in srgb, var(--pos-success) 38%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 14%, transparent);
   transition:
     box-shadow 220ms ease,
     transform 160ms ease,
@@ -1680,7 +1680,7 @@
   &:hover:not(:disabled) {
     box-shadow:
       0 8px 28px color-mix(in srgb, var(--pos-success) 52%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      inset 0 1px 0 color-mix(in srgb, var(--text-primary) 18%, transparent);
     transform: translateY(-1px);
   }
 
@@ -1715,16 +1715,16 @@
 .pos-shell[data-theme='dark'] {
   // Cobrar: deeper, richer; glow on hover feels premium on dark canvas
   .pos-checkout {
-    background: linear-gradient(145deg, color-mix(in srgb, var(--pos-success) 90%, white) 0%, var(--pos-success) 100%);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--pos-success) 90%, var(--text-primary)) 0%, var(--pos-success) 100%);
     box-shadow:
       0 4px 18px color-mix(in srgb, var(--pos-success) 30%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
 
     &:hover:not(:disabled) {
       box-shadow:
         0 6px 32px color-mix(in srgb, var(--pos-success) 55%, transparent),
-        0 0 0 1px rgba(255, 255, 255, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        0 0 0 1px color-mix(in srgb, var(--text-primary) 6%, transparent),
+        inset 0 1px 0 color-mix(in srgb, var(--text-primary) 14%, transparent);
     }
   }
 
@@ -1733,10 +1733,10 @@
     filter: saturate(0.55) brightness(0.82);
   }
 
-  // Qty badge: near-invisible frosted glass — informs without dominating
+  // Qty badge: near-invisible frosted glass using text-primary tint (Fluent aligned, no raw white)
   .pos-product-card__qty-badge {
-    background: rgba(255, 255, 255, 0.13);
-    color: rgba(255, 255, 255, 0.82);
+    background: color-mix(in srgb, var(--text-primary) 13%, transparent);
+    color: color-mix(in srgb, var(--text-primary) 82%, transparent);
     backdrop-filter: blur(6px);
     box-shadow: none;
   }
@@ -1826,7 +1826,7 @@
       padding: 0 var(--space-1);
       border-radius: var(--pos-radius-pill);
       background: var(--pos-primary);
-      color: rgba(255, 255, 255, 0.95);
+      color: var(--on-accent-color);
       font-size: var(--font-size-xxs);
       font-weight: 800;
     }
@@ -2029,7 +2029,7 @@
 
   &__card {
     text-align: center;
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--on-success-color);
     padding: var(--space-7) var(--space-8);
     display: flex;
     flex-direction: column;
@@ -2061,9 +2061,9 @@
 
   &__change {
     margin-top: var(--space-1);
-    // Semi-transparent glass on colored bg — acceptable non-token usage
-    background: rgba(255, 255, 255, 0.18);
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    // Semi-transparent glass on colored bg — use text-primary tint for Fluent alignment (no raw white)
+    background: color-mix(in srgb, var(--text-primary) 18%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--text-primary) 35%, transparent);
     border-radius: var(--pos-radius);
     padding: var(--space-2) var(--space-6);
     display: flex;
@@ -2105,20 +2105,20 @@
     &:active { transform: scale(0.97); }
 
     &--primary {
-      // White-on-success reverse: button inverts the overlay colors
-      background: rgba(255, 255, 255, 0.95);
+      // Bright action button on success overlay — use text-primary tint for high contrast (Fluent aligned)
+      background: color-mix(in srgb, var(--text-primary) 95%, transparent);
       color: var(--pos-success);
-      border-color: rgba(255, 255, 255, 0.95);
+      border-color: color-mix(in srgb, var(--text-primary) 95%, transparent);
 
       &:hover { opacity: 0.9; }
     }
 
     &--secondary {
       background: transparent;
-      color: rgba(255, 255, 255, 0.95);
-      border-color: rgba(255, 255, 255, 0.55);
+      color: var(--text-primary);
+      border-color: color-mix(in srgb, var(--text-primary) 55%, transparent);
 
-      &:hover { background: rgba(255, 255, 255, 0.12); }
+      &:hover { background: color-mix(in srgb, var(--text-primary) 12%, transparent); }
     }
   }
 }
@@ -2226,7 +2226,7 @@
     background: linear-gradient(
       90deg,
       var(--pos-card-alt) 25%,
-      rgba(255,255,255,0.04) 50%,
+      color-mix(in srgb, var(--text-primary) 4%, transparent) 50%,
       var(--pos-card-alt) 75%
     );
     background-size: 200% 100%;
