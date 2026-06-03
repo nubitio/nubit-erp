@@ -51,6 +51,20 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
       closeOnEscape
       onClose={handleCancel}
       className="void-dialog"
+      footer={
+        <>
+          <Button variant="secondary" onClick={handleCancel}>
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            disabled={!reason.trim()}
+            onClick={handleConfirm}
+          >
+            Confirmar
+          </Button>
+        </>
+      }
     >
       <div className="void-dialog__body">
         {/* Motivo */}
@@ -92,19 +106,6 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
           />
           <span>Restaurar stock al anular</span>
         </label>
-      </div>
-
-      <div className="form-popup-buttons-container">
-        <Button variant="secondary" onClick={handleCancel}>
-          Cancelar
-        </Button>
-        <Button
-          variant="primary"
-          disabled={!reason.trim()}
-          onClick={handleConfirm}
-        >
-          Confirmar
-        </Button>
       </div>
     </AppDialog>
   );

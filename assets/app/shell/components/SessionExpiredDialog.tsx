@@ -40,6 +40,11 @@ export const SessionExpiredDialog = () => {
       closeOnOutsideClick={false}
       onClose={() => undefined}
       className="session-expired-dialog"
+      footer={
+        <Button variant="primary" onClick={handleConfirm}>
+          Ir al login
+        </Button>
+      }
     >
       <div className="session-expired-dialog__content">
         <div className="session-expired-dialog__icon" aria-hidden="true">
@@ -51,11 +56,6 @@ export const SessionExpiredDialog = () => {
             Vuelve a iniciar sesión para seleccionar tu local y continuar trabajando.
           </p>
         </div>
-      </div>
-      <div className="session-expired-dialog__actions">
-        <Button variant="primary" onClick={handleConfirm}>
-          Ir al login
-        </Button>
       </div>
     </AppDialog>
   );

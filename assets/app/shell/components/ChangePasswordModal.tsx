@@ -146,6 +146,24 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
       closeOnEscape={!loading}
       onClose={handleClose}
       className="change-password-modal"
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            disabled={loading}
+            onClick={handleClose}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            loading={loading}
+            onClick={handleSubmit}
+          >
+            Guardar
+          </Button>
+        </>
+      }
     >
       <div className="change-password-modal__content">
         <div className="change-password-modal__form">
@@ -170,23 +188,6 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
             showConfirm,
             () => setShowConfirm((prev) => !prev),
           )}
-        </div>
-
-        <div className="change-password-modal__actions">
-          <Button
-            variant="secondary"
-            disabled={loading}
-            onClick={handleClose}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="primary"
-            loading={loading}
-            onClick={handleSubmit}
-          >
-            Guardar
-          </Button>
         </div>
       </div>
     </AppDialog>

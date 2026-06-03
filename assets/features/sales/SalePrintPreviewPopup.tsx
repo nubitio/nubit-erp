@@ -26,6 +26,19 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
       closeOnEscape={false}
       onClose={props.onNegative}
       className="sale-print-preview-popup"
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            onClick={props.onNegative}
+          >
+            Cerrar
+          </Button>
+          <Button variant="primary" onClick={props.onPositive}>
+            Ver PDF
+          </Button>
+        </>
+      }
     >
       <div className="sale-print-preview-body">
         <iframe
@@ -35,17 +48,6 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
           style={{ border: 'none', display: 'block' }}
           title="Vista previa de comprobante"
         />
-      </div>
-      <div className="form-popup-buttons-container">
-        <Button
-          variant="secondary"
-          onClick={props.onNegative}
-        >
-          Cerrar
-        </Button>
-        <Button variant="primary" onClick={props.onPositive}>
-          Ver PDF
-        </Button>
       </div>
     </AppDialog>
   );
