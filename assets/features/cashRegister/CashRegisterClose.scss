@@ -131,11 +131,11 @@
 }
 
 .cash-close__diff--positive {
-  color: #15803d;
+  color: var(--success-color);
 }
 
 .cash-close__diff--negative {
-  color: #dc2626;
+  color: var(--error-color);
 }
 
 .cash-close__diff--empty {

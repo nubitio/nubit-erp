@@ -39,6 +39,7 @@
   // ── Borders ─────────────────────────────────────────────────────────────────
   --border-color:  #2c3241;   // structural
   --border-subtle: #242937;   // subtle
+  --base-border-color: var(--border-color);  // legacy alias — do not use in new code
 
   // ── Text ────────────────────────────────────────────────────────────────────
   --text-primary:           var(--base-text-color);
