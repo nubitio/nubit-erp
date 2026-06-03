@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 import { ThemeProvider, DensityProvider, useAccentColor } from '@nubit/ui';
 import { AuthProvider } from '@app/contexts/auth';
@@ -10,6 +9,8 @@ import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubit/core';
 // Single source of truth for this efact deployment's API base URL.
 // Everything else in the app should go through getCoreApiBaseUrl() from @nubit/core.
 const EFECT_API_BASE_URL = '/api/';
+const EFACT_BUSINESS_LOCALE = 'es-PE';
+const EFACT_BUSINESS_TIMEZONE = 'America/Lima';
 import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
@@ -27,9 +28,6 @@ interface AppProvidersProps {
 }
 
 export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => {
-  const { i18n } = useTranslation();
-  const locale = i18n.language?.split('-')[0] || 'es';
-
   const httpConfig = useMemo(() => ({
     // baseUrl is now optional — it falls back to the one configured in CoreConfigProvider.
     // We still pass it here for explicitness / backward compat with advanced use cases.
@@ -54,8 +52,8 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
           runtime={runtimeConfig}
         >
           <CoreConfigProvider
-            locale={locale}
-            timezone="America/Lima"
+            locale={EFACT_BUSINESS_LOCALE}
+            timezone={EFACT_BUSINESS_TIMEZONE}
             apiBaseUrl={EFECT_API_BASE_URL}
           >
             <AuthProvider>

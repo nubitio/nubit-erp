@@ -32,19 +32,25 @@
   --warning-color:      #fbbf24;   // amber-400
   --dark-warning-color: #f59e0b;   // amber-500
   --error-color:        #f87171;   // red-400 — softened for dark bg readability
+  --on-accent-color:    #061529;
+  --on-success-color:   #04130a;
+  --on-error-color:     #1f0707;
 
   // ── Borders ─────────────────────────────────────────────────────────────────
   --border-color:  #2c3241;   // structural
   --border-subtle: #242937;   // subtle
 
   // ── Text ────────────────────────────────────────────────────────────────────
-  --texteditor-edit-color:  #e8ecf3;
-  --texteditor-label-color: #8b96aa;
-  --subtitle-text-color:    var(--texteditor-label-color);
   --text-primary:           var(--base-text-color);
   --text-secondary:         #8b96aa;
   --text-tertiary:          #5c6880;
   --text-disabled:          #3a4155;
+  --text-on-accent:         var(--on-accent-color);
+
+  // Legacy aliases — keep existing consumers stable while new code uses --text-*.
+  --texteditor-edit-color:  var(--text-primary);
+  --texteditor-label-color: var(--text-secondary);
+  --subtitle-text-color:    var(--text-secondary);
 
   // ── Surfaces (4-level elevation) ────────────────────────────────────────────
   // Dark mode inverts Fluent's model — lower numbers = darker (deeper, further away).
@@ -52,8 +58,18 @@
   --surface-1:  #1e2128;   // cards, panels, toolbar
   --surface-2:  color-mix(in srgb, var(--accent-color) 15%, var(--surface-0));  // hover / selected
   --surface-3:  color-mix(in srgb, var(--accent-color) 24%, var(--surface-0));  // active / pressed
+  --surface-canvas:    var(--surface-0);
+  --surface-card:      var(--surface-1);
+  --surface-elevated:  #242936;
+  --surface-subtle:    var(--surface-2);
+  --surface-selected:  var(--surface-3);
   --card-background:       var(--surface-1);
   --side-panel-background: #181c23;
+
+  // Fluent control model: neutral fill, clear border, accent only for active state.
+  --control-bg:       var(--surface-1);
+  --control-bg-hover: color-mix(in srgb, var(--surface-2) 42%, var(--surface-1));
+  --control-border:   var(--border-color);
 
   // ── Shadows ─────────────────────────────────────────────────────────────────
   // Dark mode shadows use inner border highlights instead of outer drop shadows.
@@ -66,6 +82,8 @@
 
   // ── Effects ─────────────────────────────────────────────────────────────────
   --focus-ring-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+  --overlay-bg: rgb(0 0 0 / 54%);
+  --overlay-bg-subtle: rgb(0 0 0 / 28%);
   --tooltip-danger-button-color:  rgba(248, 113, 113, 0.12);
   --tooltip-success-button-color: rgba(34, 197, 94, 0.12);
 }

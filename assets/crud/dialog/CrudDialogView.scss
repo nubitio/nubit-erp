@@ -75,7 +75,7 @@
 
 .crud-dialog__loading {
   align-items: center;
-  background: rgb(0 0 0 / 24%);
+  background: var(--overlay-bg-subtle);
   display: flex;
   inset: 0;
   justify-content: center;

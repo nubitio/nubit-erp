@@ -33,6 +33,9 @@
   --warning-color:      #f59e0b;   // amber-500
   --dark-warning-color: #d97706;   // amber-600
   --error-color:        #dc2626;   // red-600
+  --on-accent-color:    #ffffff;
+  --on-success-color:   #ffffff;
+  --on-error-color:     #ffffff;
 
   // ── Borders ─────────────────────────────────────────────────────────────────
   // Two levels: structural (visible dividers) and subtle (internal hairlines).
@@ -40,13 +43,16 @@
   --border-subtle:       #d8e2f0;  // subtle — internal card dividers, table headers
 
   // ── Text ────────────────────────────────────────────────────────────────────
-  --texteditor-edit-color:  #111827;
-  --texteditor-label-color: #6b7280;  // gray-500
-  --subtitle-text-color:    var(--texteditor-label-color);
   --text-primary:           var(--base-text-color);
   --text-secondary:         #6b7280;
   --text-tertiary:          #9ca3af;  // gray-400 — timestamps, minor labels
   --text-disabled:          #d1d5db;  // gray-300
+  --text-on-accent:         var(--on-accent-color);
+
+  // Legacy aliases — keep existing consumers stable while new code uses --text-*.
+  --texteditor-edit-color:  var(--text-primary);
+  --texteditor-label-color: var(--text-secondary);
+  --subtitle-text-color:    var(--text-secondary);
 
   // ── Surfaces (4-level elevation) ────────────────────────────────────────────
   // Fluent's layered model: each level sits on the one below.
@@ -56,8 +62,18 @@
   --surface-1:  #ffffff;   // cards, panels, dialogs, toolbar
   --surface-2:  #eaeff8;   // hover / selected / list items inside cards
   --surface-3:  color-mix(in srgb, var(--accent-color) 18%, #e4ecff);  // active / pressed
+  --surface-canvas:    var(--surface-0);
+  --surface-card:      var(--surface-1);
+  --surface-elevated:  var(--surface-1);
+  --surface-subtle:    var(--surface-2);
+  --surface-selected:  var(--surface-3);
   --card-background:        var(--surface-1);
   --side-panel-background:  var(--surface-1);
+
+  // Fluent control model: neutral fill, clear border, accent only for active state.
+  --control-bg:       var(--surface-1);
+  --control-bg-hover: color-mix(in srgb, var(--surface-2) 66%, var(--surface-1));
+  --control-border:   var(--border-color);
 
   // ── Shadows (structural — communicate elevation, not decoration) ─────────────
   // Each level adds an outline ring + blur, like Fluent UI's depth system.
@@ -70,6 +86,8 @@
 
   // ── Effects ─────────────────────────────────────────────────────────────────
   --focus-ring-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  --overlay-bg: rgb(0 0 0 / 42%);
+  --overlay-bg-subtle: rgb(0 0 0 / 18%);
   --tooltip-danger-button-color:  rgba(220, 38, 38, 0.10);
   --tooltip-success-button-color: rgba(22, 163, 74, 0.10);
 }

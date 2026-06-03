@@ -26,14 +26,19 @@ export interface ThemeProviderProps {
 }
 
 const themeModes: ThemeMode[] = ['light', 'dark', 'auto'];
+const themeValues: Theme[] = ['light', 'dark'];
 
 function getNextThemeMode(mode: ThemeMode): ThemeMode {
   return themeModes[(themeModes.indexOf(mode) + 1) % themeModes.length];
 }
 
-function resolveTheme(mode: ThemeMode): Theme {
-  if (mode !== 'auto') return mode;
+function getSystemTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function resolveTheme(mode: ThemeMode, systemTheme = getSystemTheme()): Theme {
+  if (mode !== 'auto') return mode;
+  return systemTheme;
 }
 
 // Append build-time cache-bust so hard-refreshes always get the latest CSS.
@@ -63,6 +68,13 @@ function setThemeToDOM(href: string): Promise<void> {
   });
 }
 
+function applyThemeAttributes(theme: Theme): void {
+  const root = document.documentElement;
+  root.dataset.theme = theme;
+  themeValues.forEach((value) => root.classList.remove(`app-theme-${value}`));
+  root.classList.add(`app-theme-${theme}`);
+}
+
 export const ThemeProvider = ({
   storageKey = 'app-theme',
   themePrefix = 'app-theme-',
@@ -75,10 +87,12 @@ export const ThemeProvider = ({
   };
 
   const [mode, setMode] = useState<ThemeMode>(getPersistedMode);
+  const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme);
   const [isLoaded, setIsLoaded] = useState(false);
-  const theme = useMemo(() => resolveTheme(mode), [mode]);
+  const theme = useMemo(() => resolveTheme(mode, systemTheme), [mode, systemTheme]);
 
   useEffect(() => {
+    applyThemeAttributes(theme);
     void setThemeToDOM(`${basePath}${themePrefix}${theme}.css`).then(() => setIsLoaded(true));
   }, [theme, basePath, themePrefix]);
 
@@ -93,12 +107,10 @@ export const ThemeProvider = ({
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const apply = () => {
-      if (mode === 'auto') void setThemeToDOM(`${basePath}${themePrefix}${resolveTheme('auto')}.css`);
-    };
+    const apply = () => setSystemTheme(mq.matches ? 'dark' : 'light');
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
-  }, [mode, basePath, themePrefix]);
+  }, []);
 
   const switchTheme = useCallback(() => {
     setMode((prev) => {

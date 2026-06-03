@@ -11,6 +11,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  delete document.documentElement.dataset.theme;
+  document.documentElement.classList.remove('app-theme-light', 'app-theme-dark');
   localStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -25,7 +27,10 @@ function stubMatchMedia(preferssDark = false) {
     media: '',
     onchange: null,
     addEventListener: vi.fn((_, cb) => listeners.push(cb as (e: MediaQueryListEvent) => void)),
-    removeEventListener: vi.fn(),
+    removeEventListener: vi.fn((_, cb) => {
+      const index = listeners.indexOf(cb as (e: MediaQueryListEvent) => void);
+      if (index >= 0) listeners.splice(index, 1);
+    }),
     dispatchEvent: vi.fn(),
     addListener: vi.fn(),
     removeListener: vi.fn(),
@@ -41,6 +46,10 @@ function CurrentMode() {
   return <span data-testid="mode">{mode}:{theme}</span>;
 }
 
+function TestThemeProvider(props: Omit<React.ComponentProps<typeof ThemeProvider>, 'basePath'>) {
+  return <ThemeProvider {...props} basePath="data:text/css," />;
+}
+
 function SwitchButton() {
   const { switchTheme } = useTheme();
   return <button type="button" onClick={switchTheme}>switch</button>;
@@ -52,9 +61,9 @@ describe('ThemeProvider initial state', () => {
   it('defaults to auto mode when no localStorage key', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toMatch(/^auto:/);
   });
@@ -62,9 +71,9 @@ describe('ThemeProvider initial state', () => {
   it('resolves auto+light system preference to light theme', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toBe('auto:light');
   });
@@ -72,9 +81,9 @@ describe('ThemeProvider initial state', () => {
   it('resolves auto+dark system preference to dark theme', () => {
     stubMatchMedia(true);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toBe('auto:dark');
   });
@@ -83,9 +92,9 @@ describe('ThemeProvider initial state', () => {
     stubMatchMedia(false);
     localStorage.setItem('app-theme', 'dark');
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toBe('dark:dark');
   });
@@ -94,9 +103,9 @@ describe('ThemeProvider initial state', () => {
     stubMatchMedia(false);
     localStorage.setItem('my-theme', 'dark');
     render(
-      <ThemeProvider storageKey="my-theme">
+      <TestThemeProvider storageKey="my-theme">
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toBe('dark:dark');
   });
@@ -105,11 +114,32 @@ describe('ThemeProvider initial state', () => {
     stubMatchMedia(false);
     localStorage.setItem('app-theme', 'invalid-mode');
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByTestId('mode').textContent).toMatch(/^auto:/);
+  });
+
+  it('updates auto mode and DOM attributes when system preference changes', () => {
+    const { mq, listeners } = stubMatchMedia(false);
+    render(
+      <TestThemeProvider>
+        <CurrentMode />
+      </TestThemeProvider>,
+    );
+
+    expect(screen.getByTestId('mode').textContent).toBe('auto:light');
+    expect(document.documentElement.dataset.theme).toBe('light');
+
+    act(() => {
+      Object.defineProperty(mq, 'matches', { value: true, configurable: true });
+      listeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent));
+    });
+
+    expect(screen.getByTestId('mode').textContent).toBe('auto:dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.classList.contains('app-theme-dark')).toBe(true);
   });
 });
 
@@ -119,10 +149,10 @@ describe('ThemeProvider switchTheme', () => {
   it('cycles through auto → light → dark → auto', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <CurrentMode />
         <SwitchButton />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     const modeEl = screen.getByTestId('mode');
     const btn = screen.getByText('switch');
@@ -142,9 +172,9 @@ describe('ThemeProvider switchTheme', () => {
   it('persists the new mode to localStorage', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider storageKey="app-theme">
+      <TestThemeProvider storageKey="app-theme">
         <SwitchButton />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     act(() => fireEvent.click(screen.getByText('switch')));
     expect(localStorage.getItem('app-theme')).toBe('light');
@@ -167,9 +197,9 @@ describe('ThemeSwitcher', () => {
   it('renders a button', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <ThemeSwitcher />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByRole('button')).toBeDefined();
   });
@@ -177,10 +207,10 @@ describe('ThemeSwitcher', () => {
   it('calls switchTheme when clicked', () => {
     stubMatchMedia(false);
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <ThemeSwitcher />
         <CurrentMode />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     const before = screen.getByTestId('mode').textContent;
     act(() => fireEvent.click(screen.getByRole('button')));
@@ -191,9 +221,9 @@ describe('ThemeSwitcher', () => {
     stubMatchMedia(false);
     localStorage.setItem('app-theme', 'light');
     render(
-      <ThemeProvider>
+      <TestThemeProvider>
         <ThemeSwitcher labelByMode={{ light: 'Tema: Claro' }} />
-      </ThemeProvider>,
+      </TestThemeProvider>,
     );
     expect(screen.getByRole('button').getAttribute('aria-label')).toBe('Tema: Claro');
   });

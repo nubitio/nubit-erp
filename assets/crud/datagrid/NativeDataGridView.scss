@@ -28,6 +28,8 @@
 }
 
 .native-datagrid {
+  --native-datagrid-header-height: 32px;
+
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -125,7 +127,7 @@
   display: flex;
   font-size: var(--font-size-sm);
   gap: var(--space-2);
-  min-height: 30px;
+  min-height: var(--control-height, 30px);
   padding: var(--space-1) var(--space-2);
   text-align: left;
   width: 100%;
@@ -201,19 +203,19 @@
 // Neutral surface — do NOT use accent tint here; blue headers in Fluent are
 // reserved for selected-column indicators, not the baseline header row.
 
-.native-datagrid__table th {
+.native-datagrid__table > thead > tr > th {
   background: var(--surface-0);
   border-bottom: 1px solid var(--border-color); // stronger than cell borders
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  height: 32px;
+  height: var(--native-datagrid-header-height);
   letter-spacing: 0.02em;
   position: sticky;
   text-align: left;
   text-transform: uppercase;
   top: 0;
-  z-index: 1;
+  z-index: 3;
 }
 
 .native-datagrid__col-resize {
@@ -232,7 +234,7 @@
   }
 }
 
-.native-datagrid__table thead tr:first-child th {
+.native-datagrid__table > thead > tr:first-child > th {
   // top rounding clips to container border radius
   &:first-child { border-top-left-radius: calc(var(--radius-lg) - 1px); }
   &:last-child  { border-top-right-radius: calc(var(--radius-lg) - 1px); }
@@ -324,11 +326,14 @@
 
 // ── Filter row ─────────────────────────────────────────────────────────────────
 
-.native-datagrid__filter-row td {
+.native-datagrid__filter-row > td {
   background: color-mix(in srgb, var(--surface-0) 70%, var(--surface-1));
   border-bottom: 2px solid var(--border-color);
   overflow: visible;
   padding: 0;
+  position: sticky;
+  top: var(--native-datagrid-header-height);
+  z-index: 2;
 }
 
 .native-datagrid__filter-row {
@@ -336,12 +341,12 @@
     width: 100%;
 
     .native-datagrid__filter-select {
-      padding-right: 30px;
+      padding-right: var(--control-height, 30px);
       transition: padding-right var(--transition-fast);
     }
 
     &.has-value .native-datagrid__filter-select {
-      padding-right: 54px;
+      padding-right: calc(var(--control-height, 30px) + var(--control-icon-size, 20px) + var(--space-1));
     }
   }
 }
@@ -390,6 +395,35 @@
   }
 }
 
+.native-datagrid__filter-date {
+  .app-date-picker__trigger {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: var(--font-size-xs);
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 22px 4px 6px;
+
+    &:hover:not(:disabled) {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    &:focus-visible,
+    &[aria-expanded='true'] {
+      background: color-mix(in srgb, var(--accent-color) 6%, var(--surface-1));
+      border-color: transparent;
+      box-shadow: inset 0 -2px 0 var(--accent-color);
+    }
+  }
+
+  .app-date-picker__icon {
+    font-size: var(--font-size-xs);
+  }
+}
+
 .native-datagrid__filter-operator {
   appearance: none;
   background: color-mix(in srgb, var(--accent-color) 10%, transparent);
@@ -413,6 +447,10 @@
   padding-left: 42px;
 }
 
+.native-datagrid__filter-operator + .native-datagrid__filter-date .app-date-picker__trigger {
+  padding-left: 42px;
+}
+
 .native-datagrid__filter-between-inputs {
   display: grid;
   gap: 2px;
@@ -421,6 +459,10 @@
   width: 100%;
 
   .native-datagrid__filter-input {
+    min-width: 0;
+  }
+
+  .native-datagrid__filter-date .app-date-picker__trigger {
     min-width: 0;
   }
 }
@@ -803,7 +845,7 @@
   &.is-current {
     background: var(--accent-color);
     border-color: var(--accent-color);
-    color: #fff;
+    color: var(--on-accent-color);
     font-weight: var(--font-weight-semibold);
   }
 
@@ -900,7 +942,7 @@
 
 .native-datagrid__confirm-overlay {
   align-items: center;
-  background: rgb(0 0 0 / 28%);
+  background: var(--overlay-bg-subtle);
   border-radius: var(--radius-lg);
   display: flex;
   inset: 0;
@@ -946,7 +988,7 @@
 
 .native-datagrid__loading-overlay {
   align-items: center;
-  background: rgb(0 0 0 / 15%);
+  background: color-mix(in srgb, var(--overlay-bg-subtle) 60%, transparent);
   display: flex;
   inset: 0;
   justify-content: center;

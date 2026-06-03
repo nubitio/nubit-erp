@@ -12,9 +12,9 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { IconButton } from '@nubit/ui';
+import { DatePicker, IconButton } from '@nubit/ui';
 
-import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreTimezone, useCoreTranslation, type CoreHttpClient, type CoreTranslationKeys } from '@nubit/core';
+import { useCoreHttpClient, useCoreRuntime, useEvents, getCoreLocale, getCoreTimezone, useCoreTranslation, type CoreHttpClient, type CoreTranslationKeys } from '@nubit/core';
 import { Field, type FieldButton } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import type { DataRecord } from '@nubit/core';
@@ -1224,8 +1224,23 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       control = <input {...commonProps} type="file" accept={field.accept ?? undefined} readOnly={undefined} onChange={(event) => {
         setFieldValue(field.name, event.target.files ?? null);
       }} />;
+    } else if (field.type === FieldType.DATE) {
+      control = (
+        <DatePicker
+          className={`native-form__date-control${errorClass}`}
+          disabled={disabled}
+          id={`native-form-${field.name}`}
+          invalid={!!error}
+          locale={getCoreLocale()}
+          name={field.name}
+          readOnly={readOnly}
+          required={field.required}
+          value={String(inputValue(value) ?? '')}
+          onChange={(nextValue) => setFieldValue(field.name, nextValue)}
+        />
+      );
     } else {
-      const type = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : field.type === FieldType.DATE ? 'date' : field.type === FieldType.DATETIME ? 'datetime-local' : field.type === FieldType.PASSWORD ? 'password' : 'text';
+      const type = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : field.type === FieldType.DATETIME ? 'datetime-local' : field.type === FieldType.PASSWORD ? 'password' : 'text';
       const inputControl = <input {...commonProps} type={type} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
       const fieldButtons = Array.isArray(field.buttons) ? field.buttons : [];
       if (fieldButtons.length > 0) {

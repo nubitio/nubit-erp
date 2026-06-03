@@ -54,6 +54,9 @@
 
   // ── Layout / shell dimensions ───────────────────────────────────────────────
   --toolbar-height:        36px;
+  --row-height:            34px;   // single-line input / calendar day cell height
+  --control-height:        30px;   // native form controls / compact inputs
+  --control-icon-size:     20px;   // inline clear/toggle icons inside controls
   --footer-height:         48px;
   --side-panel-min-width:  48px;
   --content-padding:       16px;
@@ -102,6 +105,8 @@
 
   // Tier 3 — full-screen overlays (dialogs, loading screens)
   --z-dialog:         2000;
+  // Picker panels (DatePicker, DateRangePicker) must float above crud-dialog-root (2500)
+  --z-picker-panel:   3000;
 }
 
 // ── Compact density mode ───────────────────────────────────────────────────────
@@ -122,6 +127,9 @@ html[data-density="compact"] {
   --space-6:  20px;   // 24 → 20
 
   --toolbar-height:   30px;   // 36 → 30
+  --row-height:       28px;   // 34 → 28
+  --control-height:   28px;   // 30 → 28
+  --control-icon-size: 18px;  // 20 → 18
   --content-padding:  12px;   // 16 → 12
   --page-padding:     16px;   // 24 → 16
 }

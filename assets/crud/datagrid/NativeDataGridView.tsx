@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Button, IconButton } from '@nubit/ui';
+import { Button, DatePicker, IconButton } from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
@@ -516,9 +516,7 @@ function FilterCell({
   }
 
   const operators = getFilterOperators(field);
-  const inputType =
-    field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' :
-    isDateLikeField(field) ? 'date' : 'text';
+  const inputType = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : 'text';
   const [betweenStart, betweenEnd] = splitBetweenValue(value);
   const isBetween = isDateLikeField(field) && operator === 'between';
 
@@ -540,21 +538,32 @@ function FilterCell({
       )}
       {isBetween ? (
         <div className="native-datagrid__filter-between-inputs">
-          <input
-            type="date"
-            className="native-datagrid__filter-input"
+          <DatePicker
+            className="native-datagrid__filter-date"
+            clearable={false}
+            locale={getCoreLocale()}
             value={betweenStart}
-            aria-label={`Filtrar ${field.label} desde`}
-            onChange={(e) => onBetweenInputChange(e.target.value, betweenEnd)}
+            ariaLabel={`Filtrar ${field.label} desde`}
+            onChange={(nextValue) => onBetweenInputChange(nextValue, betweenEnd)}
           />
-          <input
-            type="date"
-            className="native-datagrid__filter-input"
+          <DatePicker
+            className="native-datagrid__filter-date"
+            clearable={false}
+            locale={getCoreLocale()}
             value={betweenEnd}
-            aria-label={`Filtrar ${field.label} hasta`}
-            onChange={(e) => onBetweenInputChange(betweenStart, e.target.value)}
+            ariaLabel={`Filtrar ${field.label} hasta`}
+            onChange={(nextValue) => onBetweenInputChange(betweenStart, nextValue)}
           />
         </div>
+      ) : isDateLikeField(field) ? (
+        <DatePicker
+          className="native-datagrid__filter-date"
+          clearable={false}
+          locale={getCoreLocale()}
+          value={value}
+          ariaLabel={`Filtrar ${field.label}`}
+          onChange={onInputChange}
+        />
       ) : (
         <input
           type={inputType}

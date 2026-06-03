@@ -29,7 +29,7 @@
 
 .app-dialog__scrim {
   animation: scrim-enter var(--transition-slow) both;
-  background: rgb(0 0 0 / 45%);
+  background: var(--overlay-bg);
   border: 0;
   cursor: default;
   inset: 0;

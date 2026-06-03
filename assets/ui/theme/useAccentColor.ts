@@ -34,9 +34,10 @@ export function useAccentColor() {
     return localStorage.getItem(STORAGE_KEY) ?? DEFAULT_ACCENT;
   });
 
-  // Apply on mount and whenever the value changes.
+  // Apply only persisted user choices. Without a custom choice, each theme keeps
+  // its own Fluent-tuned accent ramp (light blue-600, dark blue-500).
   useEffect(() => {
-    applyAccent(accent);
+    if (localStorage.getItem(STORAGE_KEY)) applyAccent(accent);
   }, [accent]);
 
   const changeAccent = useCallback((color: string) => {

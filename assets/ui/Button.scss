@@ -47,7 +47,7 @@
 .app-button--primary {
   background: var(--accent-color);
   border: 1px solid var(--accent-color);
-  color: #fff;
+  color: var(--on-accent-color);
 
   &:not(:disabled):hover,
   &:not(:disabled):focus-visible {
@@ -58,7 +58,7 @@
 .app-button--success {
   background: var(--success-color);
   border: 1px solid var(--success-color);
-  color: #fff;
+  color: var(--on-success-color);
 
   &:not(:disabled):hover,
   &:not(:disabled):focus-visible {
@@ -69,7 +69,7 @@
 .app-button--danger {
   background: var(--error-color);
   border: 1px solid var(--error-color);
-  color: #fff;
+  color: var(--on-error-color);
 
   &:not(:disabled):hover,
   &:not(:disabled):focus-visible {
@@ -129,9 +129,9 @@
 
 .app-button-spinner {
   animation: app-spinner-rotate 700ms linear infinite;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid color-mix(in srgb, var(--on-accent-color) 35%, transparent);
   border-radius: 50%;
-  border-top-color: #fff;
+  border-top-color: var(--on-accent-color);
   display: inline-block;
   height: 14px;
   width: 14px;
