@@ -43,7 +43,7 @@ export const LoginPage = () => {
           </div>
 
           <div className="brand-illustration">
-            <img src="assets/images/illustration.svg" alt="" />
+            <img src="/assets/images/illustration.svg" alt="" />
           </div>
 
           <div className="brand-text">

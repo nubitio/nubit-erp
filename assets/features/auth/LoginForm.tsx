@@ -16,6 +16,12 @@ interface BranchOption {
   name: string;
 }
 
+/** Extract a user-facing message from an API error response. */
+function extractApiError(err: unknown, fallback: string): string {
+  const anyErr = err as { data?: { detail?: string; message?: string } };
+  return anyErr?.data?.detail ?? anyErr?.data?.message ?? fallback;
+}
+
 export const LoginForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,25 +50,20 @@ export const LoginForm = () => {
   }, [submitError]);
 
   const applyBranchAndRedirect = useCallback(
-    (branch: BranchOption) => {
-      authService
-        .selectBranch(branch.id)
-        .then(() => {
-          branchService.setSelectedBranchId(branch.id);
-          branchService.setSelectedBranchName(branch.name);
-          const nextPath = resolvePostLoginRedirect(redirectPath);
-          requestAuthSessionSync();
-          navigate(nextPath, { replace: true });
-        })
-        .catch((err: unknown) => {
-          const anyErr = err as { data?: { detail?: string; message?: string } };
-          const message =
-            anyErr?.data?.detail ||
-            anyErr?.data?.message ||
-            'No se pudo seleccionar el local. Inténtalo nuevamente.';
-          setSubmitError(message);
-          setLoading(false);
-        });
+    async (branch: BranchOption) => {
+      try {
+        await authService.selectBranch(branch.id);
+        branchService.setSelectedBranchId(branch.id);
+        branchService.setSelectedBranchName(branch.name);
+        const nextPath = resolvePostLoginRedirect(redirectPath);
+        requestAuthSessionSync();
+        navigate(nextPath, { replace: true });
+      } catch (err) {
+        setSubmitError(
+          extractApiError(err, 'No se pudo seleccionar el local. Inténtalo nuevamente.'),
+        );
+        setLoading(false);
+      }
     },
     [navigate, redirectPath],
   );
@@ -93,77 +94,65 @@ export const LoginForm = () => {
       setBranchOptions([]);
       setLoading(true);
 
-      authService
-        .login(username.trim(), password)
-        .then(async (response) => {
-          if (response.data.user) {
-            StorageUtils.setItem('user', response.data.user);
-          }
+      try {
+        const response = await authService.login(username.trim(), password);
 
-          const selectedBranch = response.data.branch;
-          if (selectedBranch?.id) {
-            applyBranchAndRedirect({
-              id: selectedBranch.id,
-              name: selectedBranch.name ?? 'Local',
-            });
+        if (response.data.user) {
+          StorageUtils.setItem('user', response.data.user);
+        }
+
+        const selectedBranch = response.data.branch;
+        if (selectedBranch?.id) {
+          await applyBranchAndRedirect({ id: selectedBranch.id, name: selectedBranch.name ?? 'Local' });
+          return;
+        }
+
+        try {
+          const branchesResponse = await branchService.getAll();
+          const branches: BranchOption[] = branchesResponse?.data ?? [];
+
+          if (branches.length === 0) {
+            setSubmitError('No hay locales disponibles para este usuario.');
+            setLoading(false);
             return;
           }
 
-          try {
-            const branchesResponse = await branchService.getAll();
-            const branches: BranchOption[] = branchesResponse?.data ?? [];
-
-            if (branches.length === 0) {
-              setSubmitError('No hay locales disponibles para este usuario.');
-              setLoading(false);
-              return;
-            }
-
-            if (branches.length === 1) {
-              applyBranchAndRedirect(branches[0]);
-              return;
-            }
-
-            setBranchOptions(branches);
-            setShowLocalPicker(true);
-            setLoading(false);
-          } catch (err: unknown) {
-            const anyErr = err as { data?: { detail?: string; message?: string } };
-            const message =
-              anyErr?.data?.detail ||
-              anyErr?.data?.message ||
-              'No se pudo cargar la lista de locales.';
-            setSubmitError(message);
-            setLoading(false);
+          if (branches.length === 1) {
+            await applyBranchAndRedirect(branches[0]);
+            return;
           }
-        })
-        .catch((err: unknown) => {
-          const anyErr = err as { data?: { detail?: string; message?: string } };
-          const message =
-            anyErr?.data?.detail ||
-            anyErr?.data?.message ||
-            'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.';
-          setSubmitError(message);
+
+          setBranchOptions(branches);
+          setShowLocalPicker(true);
           setLoading(false);
-        });
+        } catch (err) {
+          setSubmitError(extractApiError(err, 'No se pudo cargar la lista de locales.'));
+          setLoading(false);
+        }
+      } catch (err) {
+        setSubmitError(
+          extractApiError(err, 'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.'),
+        );
+        setLoading(false);
+      }
     },
     [loading, username, password, applyBranchAndRedirect],
   );
 
   return (
-    <form className="login-form" onSubmit={onSubmit} autoComplete="off" noValidate>
+    <form className="login-form" onSubmit={onSubmit} noValidate>
       {/* Username */}
       <div className={`login-field${usernameError ? ' login-field--error' : ''}`}>
-          <TextField
-            ref={usernameRef}
-            id="login-username"
-            className="login-input"
+        <TextField
+          ref={usernameRef}
+          id="login-username"
+          className="login-input"
           type="text"
           placeholder="Usuario"
           autoComplete="username"
-            aria-label="Usuario"
-            invalid={!!usernameError}
-            aria-invalid={!!usernameError}
+          aria-label="Usuario"
+          invalid={!!usernameError}
+          aria-invalid={!!usernameError}
           aria-describedby={usernameError ? 'login-username-error' : undefined}
           disabled={loading}
           value={username}
