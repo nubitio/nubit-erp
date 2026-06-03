@@ -13,8 +13,8 @@
   justify-content: center;
   border-radius: 50%;
   background: oklch(50% 0.14 calc(var(--avatar-hue, 218) * 1deg));
-  // Ensure white text is always readable against the medium-dark background
-  color: rgba(255, 255, 255, 0.92);
+  // Ensure text is always readable against the medium-dark background (Fluent: on-accent)
+  color: var(--on-accent-color);
   font-family: var(--font-family-sans);
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
@@ -22,7 +22,7 @@
   flex-shrink: 0;
   user-select: none;
   // Subtle ring to separate avatar from adjacent surfaces
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--on-accent-color) 18%, transparent);
 
   // Square variant (rounded rectangle instead of circle)
   &--square {

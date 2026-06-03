@@ -24,7 +24,7 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border-color);
   border-radius: 8px;
 
   &__badge {
@@ -32,7 +32,7 @@
     height: 28px;
     border-radius: 50%;
     background: var(--accent-color, #1e40af);
-    color: var(--base-bg, #fff);
+    color: var(--on-accent-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -107,7 +107,7 @@
     align-items: center;
     padding: 12px 8px;
     gap: 4px;
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+    border: 1px solid var(--border-color);
     border-radius: 8px;
 
     &--created .product-import-result__value { color: var(--success-color, #16a34a); }
@@ -129,7 +129,7 @@
     max-height: 200px;
     overflow-y: auto;
     padding: 10px 12px;
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+    border: 1px solid var(--border-color);
     border-left: 3px solid var(--error-color, #dc2626);
     border-radius: 6px;
   }
@@ -156,7 +156,7 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 16px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border-color);
   border-left: 3px solid var(--error-color, #dc2626);
   border-radius: 6px;
 
@@ -185,7 +185,7 @@
   width: 100%;
   min-height: 64px;
   padding: 12px 16px;
-  border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.2));
+  border: 2px dashed var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
@@ -226,7 +226,7 @@
   border: none;
 
   &::-webkit-progress-bar {
-    background: var(--border-color, rgba(255, 255, 255, 0.12));
+    background: var(--border-color);
     border-radius: 4px;
   }
 

@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.15);
+  background: color-mix(in srgb, var(--text-primary) 15%, transparent);
   z-index: 10;
   pointer-events: none;
 }
@@ -32,8 +32,8 @@
   display: inline-block;
   width: 36px;
   height: 36px;
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  border-top-color: var(--accent-color, #fff);
+  border: 3px solid color-mix(in srgb, var(--on-accent-color) 35%, transparent);
+  border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: dashboard-spin 0.7s linear infinite;
 }
@@ -57,8 +57,8 @@
   .dash-charts-2col > .card,
   .dash-charts-2col > .stat-card {
     box-shadow:
-      0 1px 3px rgba(17, 24, 39, 0.08),
-      0 4px 16px rgba(17, 24, 39, 0.07);
+      0 1px 3px color-mix(in srgb, var(--text-primary) 8%, transparent),
+      0 4px 16px color-mix(in srgb, var(--text-primary) 7%, transparent);
     border-top: 3px solid var(--accent-color);
   }
 }
@@ -138,7 +138,7 @@
   background: var(--card-background);
   border: 1px solid var(--border-color);
   border-top: 3px solid var(--accent-color);
-  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.08), 0 4px 16px rgba(17, 24, 39, 0.07);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 8%, transparent), 0 4px 16px color-mix(in srgb, var(--text-primary) 7%, transparent);
   margin-bottom: 0;
 
   @media (max-width: 860px) {

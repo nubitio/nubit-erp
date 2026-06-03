@@ -41,7 +41,7 @@ html, body {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-image: radial-gradient(circle, color-mix(in srgb, var(--on-accent-color) 7%, transparent) 1px, transparent 1px);
     background-size: 24px 24px;
     pointer-events: none;
   }
@@ -141,13 +141,13 @@ html, body {
     width: 100%;
     max-width: 300px;
     height: auto;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3)) brightness(1.1);
+    filter: drop-shadow(0 20px 40px color-mix(in srgb, var(--text-primary) 30%, transparent)) brightness(1.1);
   }
 }
 
 .brand-text {
-  // text inside the brand panel is always white (dark background)
-  color: #fff;
+  // text inside the brand panel is always on a dark accent bg — use Fluent on-accent token
+  color: var(--on-accent-color);
 
   h1 {
     margin: 0 0 14px;
@@ -160,7 +160,7 @@ html, body {
   p {
     margin: 0;
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.55);
+    color: color-mix(in srgb, var(--on-accent-color) 55%, transparent);
     line-height: 1.65;
     max-width: 360px;
   }
@@ -174,7 +174,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid color-mix(in srgb, var(--on-accent-color) 10%, transparent);
   padding-top: 24px;
 
   li {
@@ -182,7 +182,7 @@ html, body {
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.75);
+    color: color-mix(in srgb, var(--on-accent-color) 75%, transparent);
     font-weight: 500;
 
     i {
@@ -195,7 +195,7 @@ html, body {
 
 .brand-version {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: color-mix(in srgb, var(--on-accent-color) 30%, transparent);
   letter-spacing: 0.5px;
   font-family: var(--font-family-mono, monospace);
 }
@@ -275,5 +275,5 @@ html, body {
   font-size: 21px;
   letter-spacing: 0.1em;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.88);
+  color: color-mix(in srgb, var(--on-accent-color) 88%, transparent);
 }
