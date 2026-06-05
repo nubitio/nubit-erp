@@ -515,6 +515,28 @@
   width: 36px;
 }
 
+.native-datagrid__detail-cell {
+  background: var(--surface-1);
+  left: 0;
+  min-width: 36px;
+  position: sticky;
+  z-index: 2;
+}
+
+.native-datagrid__table > thead > tr > .native-datagrid__detail-cell {
+  background: var(--grid-header-bg, var(--surface-0));
+  z-index: 5;
+}
+
+.native-datagrid__filter-row > .native-datagrid__detail-cell {
+  background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
+  z-index: 4;
+}
+
+.native-datagrid__summary-footer .native-datagrid__detail-cell {
+  z-index: 4;
+}
+
 .native-datagrid__table td.native-datagrid__detail-cell,
 .native-datagrid__table td.native-datagrid__select-cell {
   text-overflow: clip;
@@ -619,9 +641,34 @@
   padding: 0.2em 0.5em;
 }
 
+html[data-density=compact] .native-datagrid .app-badge {
+  font-size: 9px;
+  min-height: 14px;
+  padding: 0 5px;
+}
+
 .native-datagrid__actions-cell {
+  background: var(--surface-1);
+  min-width: 44px;
+  position: sticky;
+  right: 0;
   text-align: center;
-  width: 40px;
+  width: 44px;
+  z-index: 2;
+}
+
+.native-datagrid__table > thead > tr > .native-datagrid__actions-cell {
+  background: var(--grid-header-bg, var(--surface-0));
+  z-index: 5;
+}
+
+.native-datagrid__filter-row > .native-datagrid__actions-cell {
+  background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
+  z-index: 4;
+}
+
+.native-datagrid__summary-footer .native-datagrid__actions-cell {
+  z-index: 4;
 }
 
 .native-datagrid__row-actions {
@@ -629,17 +676,6 @@
   display: flex;
   gap: 2px;
   justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.native-datagrid__row:hover .native-datagrid__row-actions,
-.native-datagrid__row--selected .native-datagrid__row-actions {
-  opacity: 1;
-}
-
-.native-datagrid--always-show-actions .native-datagrid__row-actions {
-  opacity: 1;
 }
 
 .native-datagrid__row-actions-menu {
@@ -846,50 +882,6 @@
 .native-datagrid__pager-size-select:focus {
   border-color: var(--accent-color);
   outline: none;
-}
-
-.native-datagrid__confirm-overlay {
-  align-items: center;
-  background: var(--overlay-bg-subtle);
-  border-radius: var(--radius-lg);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  position: absolute;
-  z-index: 5;
-}
-
-.native-datagrid__confirm-card {
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-width: 380px;
-  padding: var(--space-4) var(--space-5) var(--space-3);
-  width: 90%;
-}
-
-.native-datagrid__confirm-title {
-  color: var(--text-primary);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  margin: 0;
-}
-
-.native-datagrid__confirm-body {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  margin: 0;
-}
-
-.native-datagrid__confirm-actions {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: flex-end;
-  margin-top: var(--space-1);
 }
 
 .native-datagrid__loading-overlay {
