@@ -192,7 +192,7 @@ Mecanismos de seguridad fiscal:
 - **Offline-first en POS:** ventas y catalogo deben tolerar desconexion mediante IndexedDB/Room y outbox.
 - **Asincrono para trabajo pesado:** facturacion, backups, provisioning, auditoria y exportes no deben bloquear requests.
 - **Observabilidad obligatoria:** operaciones criticas deben emitir logs/spans rastreables.
-- **Platform boundary:** `src/Platform` y `src/Core` no deben depender de dominios concretos eFact; ver `docs/architecture/platform-boundary-map.md`.
+- **Platform boundary:** `src/Platform` y `src/Core` no deben depender de dominios concretos eFact; ver `docs/architecture/platform-boundary-map.md` y el plan de extracción `docs/architecture/nubit-backend-extraction-plan.md`.
 
 ### Decisiones vigentes
 
