@@ -453,3 +453,25 @@
   from { opacity: 0; transform: translateY(-4px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+html[data-density="compact"] {
+  .app-date-picker__panel {
+    padding: var(--space-2);
+    width: var(--calendar-width, 260px);
+  }
+
+  .app-date-picker__header {
+    grid-template-columns: var(--control-height-form) 1fr var(--control-height-form);
+    margin-bottom: var(--space-2);
+  }
+
+  .app-date-picker__nav {
+    height: var(--control-height-form);
+    width: var(--control-height-form);
+  }
+
+  .app-date-picker__month-cell,
+  .app-date-picker__year-cell {
+    height: var(--row-height);
+  }
+}

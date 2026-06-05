@@ -80,3 +80,34 @@
   padding: var(--space-4);
   text-align: center;
 }
+
+html[data-density="compact"] {
+  .picker-popup {
+    max-height: min(320px, calc(100dvh - var(--space-5)));
+  }
+
+  .branch-picker__list {
+    gap: var(--space-1);
+    padding-bottom: var(--space-1);
+  }
+
+  .branch-picker__option {
+    gap: var(--space-2);
+    min-height: var(--row-height);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .branch-picker__radio {
+    flex-basis: 14px;
+    height: 14px;
+    width: 14px;
+
+    .branch-picker__option.is-selected &::after {
+      inset: 3px;
+    }
+  }
+
+  .branch-picker__empty {
+    padding: var(--space-3);
+  }
+}

@@ -1,3 +1,35 @@
 .discount-dialog-root {
   z-index: 3200;
 }
+
+.discount-dialog__total {
+  font-size: var(--font-size-xl, 18px);
+  margin: 0 0 var(--space-1);
+  text-align: center;
+}
+
+.discount-dialog__previous-total {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-3);
+  text-align: center;
+  text-decoration: line-through;
+}
+
+.discount-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2);
+}
+
+html[data-density="compact"] {
+  .discount-dialog__previous-total {
+    margin-bottom: var(--space-2);
+  }
+
+  .discount-dialog__form {
+    gap: var(--space-2);
+    padding: var(--space-1);
+  }
+}

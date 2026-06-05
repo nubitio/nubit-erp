@@ -84,6 +84,19 @@
   }
 }
 
+html[data-density="compact"] .app-context-menu {
+  &__dropdown {
+    min-width: 170px;
+    padding: var(--space-1);
+  }
+
+  &__item {
+    border-radius: var(--radius-sm);
+    min-height: 26px;
+    padding: 0 var(--space-2);
+  }
+}
+
 @keyframes app-context-menu-enter {
   from {
     opacity: 0;

@@ -46,3 +46,14 @@
     cursor: pointer;
   }
 }
+
+html[data-density="compact"] {
+  .void-dialog__body {
+    gap: var(--space-2);
+  }
+
+  .void-checkbox input[type='checkbox'] {
+    height: 14px;
+    width: 14px;
+  }
+}
