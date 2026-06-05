@@ -15,7 +15,7 @@ import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/Resou
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { useEvents, useCoreRuntime, useCoreHttpClient, getCoreLocale, getCoreTimezone, useCoreTranslation } from '@nubit/core';
+import { useEvents, useCoreHttpClient, getCoreLocale, getCoreTimezone, useCoreTranslation } from '@nubit/core';
 import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
@@ -271,7 +271,6 @@ function SelectionActionsMenu({
     <div ref={containerRef} className="native-datagrid__actions-menu">
       <Button
         variant="secondary"
-        size="sm"
         aria-disabled={disabled}
         aria-expanded={open}
         onClick={handleToggle}
@@ -306,18 +305,7 @@ function buildToolbar(
   options: DataGridViewOptions,
   t: ReturnType<typeof useCoreTranslation>['t'],
   onAddClick: () => void,
-  onEditClick: () => void,
-  onDeleteClick: () => void,
 ): ResourceToolbarItems {
-  const actions: ResourceToolbarAction[] = [];
-
-  if (options.allowEdit) {
-    actions.push({ text: t('grid.buttonEdit'), group: 'edit', groupLabel: t('grid.buttonEdit'), onClick: onEditClick, disabled: options.editDisabled });
-  }
-  if (options.allowDelete) {
-    actions.push({ text: t('grid.buttonDelete'), type: 'danger', group: 'danger', groupLabel: t('grid.buttonDelete'), onClick: onDeleteClick, disabled: options.deleteDisabled });
-  }
-
   return {
     primary: options.toolbar?.primary ?? (options.allowAdd
       ? [{
@@ -328,7 +316,7 @@ function buildToolbar(
           disabled: options.addDisabled,
         }]
       : undefined),
-    selection: [...actions, ...(options.toolbar?.selection ?? [])],
+    selection: options.toolbar?.selection,
     utility: options.toolbar?.utility,
     showRefresh: options.toolbar?.showRefresh ?? true,
   };
@@ -678,7 +666,6 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
 
 export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((options, ref) => {
   const { t } = useCoreTranslation();
-  const { notify } = useCoreRuntime();
   const httpClient = useCoreHttpClient();
   const resourceStoreFactory = useResourceStoreFactory();
   const toolbarPermissions = useSmartCrudRoles();
@@ -905,27 +892,6 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     }
     if (options.events?.ADD) emit(options.events.ADD);
   };
-  const onEditClick = () => {
-    const row = selectedRows[0];
-    if (row) {
-      if (options.onEdit) {
-        options.onEdit(row);
-        return;
-      }
-      if (options.events?.EDIT) emit(options.events.EDIT, { row });
-    } else {
-      notify(t('grid.selectRequired'), 'warning', 2000);
-    }
-  };
-  const onDeleteClick = () => {
-    const row = selectedRows[0];
-    if (row) {
-      setConfirmRow(row);
-    } else {
-      notify(t('grid.selectRequired'), 'warning', 2000);
-    }
-  };
-
   const confirmDelete = () => {
     if (confirmRow) {
       if (options.onDelete) {
@@ -982,14 +948,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const hasCheckbox = options.selectionMode === 'multiple';
+  const hasBuiltInRowActions = Boolean(
+    (options.allowEdit && (options.onEdit || options.events?.EDIT)) ||
+    (options.allowDelete && (options.onDelete || options.events?.DELETE)),
+  );
   const hasRowActions = Boolean(
     options.mode !== 'minimal' && (
-      (options.inlineActions && (options.allowEdit || options.allowDelete)) ||
+      hasBuiltInRowActions ||
       options.rowActions
     ),
   );
   const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
-  const toolbar = buildToolbar(options, t, onAddClick, onEditClick, onDeleteClick);
+  const toolbar = buildToolbar(options, t, onAddClick);
 
   return (
     <div className="view datagrid-list">
@@ -1051,7 +1021,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </tr>
                 {(options.filterRow ?? true) && (
                   <tr className="native-datagrid__filter-row">
-                    {options.detailFields && <td />}
+                    {options.detailFields && <td className="native-datagrid__detail-cell" />}
                     {hasCheckbox && <td className="native-datagrid__select-cell" />}
                     {visibleFields.map((field) => {
                       const applyImmediate = (nextInputs: Record<string, string>) => {
@@ -1115,7 +1085,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       </td>
                     );
                     })}
-                    {hasRowActions && <td />}
+                    {hasRowActions && <td className="native-datagrid__actions-cell" />}
                   </tr>
                 )}
                 {options.errorMessage && (
@@ -1143,12 +1113,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 {rows.length === 0 && isGridLoading ? (
                   Array.from({ length: 7 }, (_, i) => (
                     <tr key={`skeleton-${i}`} className="native-datagrid__skeleton-row">
-                      {options.detailFields && <td />}
+                      {options.detailFields && <td className="native-datagrid__detail-cell" />}
                       {hasCheckbox && <td className="native-datagrid__select-cell"><div className="native-datagrid__skeleton-cell" style={{ width: 16, height: 16 }} /></td>}
                       {visibleFields.map((field) => (
                         <td key={field.name}><div className="native-datagrid__skeleton-cell" /></td>
                       ))}
-                      {hasRowActions && <td />}
+                      {hasRowActions && <td className="native-datagrid__actions-cell" />}
                     </tr>
                   ))
                 ) : rows.length === 0 ? (
@@ -1165,10 +1135,11 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     const detailUrl = options.detailUrl?.replace('{id}', String(key));
                     const expanded = expandedKeys.has(key);
                     const rowActions: ResourceToolbarAction[] = [
-                      ...(options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT)
+                      ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
                         ? [{
                             text: t('grid.buttonEdit'),
                             icon: 'ph-pencil-simple',
+                            disabled: options.editDisabled,
                             onClick: () => {
                               if (options.onEdit) options.onEdit(row);
                               else emit(options.events!.EDIT!, { row });
@@ -1176,11 +1147,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           }]
                         : []),
                       ...getResolvedRowActions(row, options.rowActions),
-                      ...(options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE)
+                      ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
                         ? [{
                             text: t('grid.buttonDelete'),
                             icon: 'ph-trash',
                             type: 'danger',
+                            disabled: options.deleteDisabled,
                             onClick: () => setConfirmRow(row),
                           }]
                         : []),
@@ -1257,27 +1229,29 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                        const rowKey = key;
 
-                                       // Resolve actions at click time (avoids fragile re-lookup later)
-                                       const actionsAtOpen: ResourceToolbarAction[] = [
-                                         ...(options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT)
-                                           ? [{
-                                               text: t('grid.buttonEdit'),
-                                               icon: 'ph-pencil-simple',
-                                               onClick: () => {
-                                                 if (options.onEdit) options.onEdit(row);
-                                                 else emit(options.events!.EDIT!, { row });
-                                               },
+                                        // Resolve actions at click time (avoids fragile re-lookup later)
+                                        const actionsAtOpen: ResourceToolbarAction[] = [
+                                          ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
+                                            ? [{
+                                                text: t('grid.buttonEdit'),
+                                                icon: 'ph-pencil-simple',
+                                                disabled: options.editDisabled,
+                                                onClick: () => {
+                                                  if (options.onEdit) options.onEdit(row);
+                                                  else emit(options.events!.EDIT!, { row });
+                                                },
                                              }]
-                                           : []),
-                                         ...getResolvedRowActions(row, options.rowActions),
-                                         ...(options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE)
-                                           ? [{
-                                               text: t('grid.buttonDelete'),
-                                               icon: 'ph-trash',
-                                               type: 'danger' as const,
-                                               onClick: () => setConfirmRow(row),
-                                             }]
-                                           : []),
+                                            : []),
+                                          ...getResolvedRowActions(row, options.rowActions),
+                                          ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
+                                            ? [{
+                                                text: t('grid.buttonDelete'),
+                                                icon: 'ph-trash',
+                                                type: 'danger' as const,
+                                                disabled: options.deleteDisabled,
+                                                onClick: () => setConfirmRow(row),
+                                              }]
+                                            : []),
                                        ].filter((a) => isToolbarActionVisible(a, toolbarPermissions));
 
                                        setOpenRowMenu((current) =>

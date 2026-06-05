@@ -1,6 +1,6 @@
 // ─── Brand panel tokens — derived from --accent-color at runtime ─────────────
 // Hardcoded green values removed: panel now follows the selected accent color.
-$radius-card: 20px;
+$radius-card: var(--radius-xl);
 
 // ─── Root ────────────────────────────────────────────────────────────────────
 html, body {
@@ -242,14 +242,13 @@ html, body {
   border-radius: $radius-card;
   box-shadow: var(--shadow-md);
   border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
-  border-top: 3px solid var(--accent-color);
-  padding: 40px 40px 36px;
+  padding: var(--space-8) var(--space-8) var(--space-7);
   width: 100%;
   max-width: 440px;
 
   @media (max-width: 480px) {
-    padding: 36px 24px 28px;
-    border-radius: 16px;
+    padding: var(--space-7) var(--space-6) var(--space-6);
+    border-radius: var(--radius-lg);
   }
 }
 

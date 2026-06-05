@@ -7,7 +7,7 @@
 
   // ── Field wrapper ────────────────────────────────────────────────────────
   .login-field {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
 
     &--error .login-input {
       border-color: var(--error-color) !important;
@@ -16,9 +16,9 @@
 
     &__error {
       display: block;
-      margin-top: 4px;
-      padding: 0 2px;
-      font-size: 12px;
+      margin-top: var(--space-1);
+      padding: 0 var(--space-1);
+      font-size: var(--font-size-xs);
       color: var(--error-color);
       line-height: 1.3;
     }
@@ -31,7 +31,7 @@
     align-items: center;
 
     .login-input {
-      padding-right: 48px !important;
+      padding-right: calc(var(--control-height-form) + var(--space-3)) !important;
     }
   }
 
@@ -40,16 +40,19 @@
     display: block;
     width: 100%;
     box-sizing: border-box;
-    min-height: 48px;
-    padding: 14px 15px;
-    font-size: 14px;
+    min-height: var(--control-height-form);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-md);
     font-family: inherit;
     color: var(--text-primary);
     background: color-mix(in srgb, var(--surface-2) 70%, var(--card-background));
     border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      background var(--transition-base);
     appearance: none;
 
     &::placeholder {
@@ -60,7 +63,7 @@
     &:focus {
       border-color: var(--accent-color);
       background: var(--card-background);
-      box-shadow: 0 0 0 3px var(--focus-ring-color);
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
     }
 
     &:hover:not(:focus) {
@@ -77,27 +80,28 @@
   // ── Password toggle ───────────────────────────────────────────────────────
   .login-password-toggle {
     position: absolute;
-    right: 6px;
+    right: var(--space-1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: var(--control-height-form);
+    height: var(--control-height-form);
     padding: 0;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     background: transparent;
     cursor: pointer;
     opacity: 0.5;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--transition-base), background var(--transition-base);
     color: var(--text-secondary);
 
     &:hover {
+      background: color-mix(in srgb, var(--accent-color) 8%, transparent);
       opacity: 1;
     }
 
     i {
-      font-size: 17px;
+      font-size: var(--font-size-lg);
       line-height: 1;
     }
   }
@@ -108,34 +112,31 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 48px;
+    min-height: var(--control-height-form);
     padding: 0;
     font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
     color: var(--on-accent-color);
-    background: linear-gradient(
-      135deg,
-      var(--accent-color) 0%,
-      color-mix(in srgb, var(--accent-color) 80%, #000) 100%
-    );
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--focus-ring-color) 85%, transparent);
+    background: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--radius-md);
+    box-shadow: none;
     cursor: pointer;
-    transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-    margin-top: 4px;
+    transition:
+      background var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+    margin-top: var(--space-1);
 
     &:hover:not(:disabled) {
-      opacity: 0.93;
-      box-shadow: 0 6px 20px var(--focus-ring-color);
-      transform: translateY(-1px);
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
     }
 
     &:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px var(--focus-ring-color);
+      box-shadow: 0 0 0 2px var(--focus-ring-color);
     }
 
     &:disabled {
@@ -161,13 +162,13 @@
 
   // ── Error box ─────────────────────────────────────────────────────────────
   .login-error {
-    margin-top: 12px;
-    padding: 10px 12px;
+    margin-top: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border: 1px solid var(--error-color);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--error-color) 8%, transparent);
     color: var(--error-color);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     line-height: 1.4;
   }
 }

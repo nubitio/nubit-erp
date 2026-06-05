@@ -1,91 +1,106 @@
 // ── Badge ──────────────────────────────────────────────────────────────────────
-// Token-native badge component.
-// All colors reference CSS custom properties so they respond correctly to
-// theme switching, accent color overrides, and dark mode.
+// Token-native badge component. Two visual modes:
+//
+//   Status badge  — uppercase, 0.05em tracking.
+//     Reads as a STATE indicator. Used for: ACEPTADO, ANULADO, PENDIENTE, PROCESANDO.
+//     Product convention keeps badges pill-shaped for faster scanning in dense grids.
+//
+//   Tag / pill badge (--pill) — 12px radius, for categories, filters, attribute labels.
+//
+// All colors reference CSS custom properties — theme-aware in light/dark mode.
 
 .app-badge {
-  display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-xxs);
-  font-weight: var(--font-weight-semibold);
-  line-height: 1.4;
-  white-space: nowrap;
-  border-radius: var(--radius-sm);
   border: 1px solid transparent;
+  border-radius: var(--radius-xs);   // 2px — rectangular, reads as a state indicator
+  display: inline-flex;
+  font-size: var(--font-size-xxs);   // 11px — compact for dense tables
+  font-weight: var(--font-weight-semibold);
+  gap: var(--space-1);
+  letter-spacing: 0.05em;            // essential for legibility of uppercase at 11px
+  line-height: 1.2;
+  min-height: 20px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+  white-space: nowrap;
 
   // ── Sizes ──────────────────────────────────────────────────────────────────
   &--sm {
-    font-size: 9px;
-    padding: 1px var(--space-1);
+    font-size: 10px;
+    min-height: 18px;
+    padding: 1px var(--space-2);
   }
 
-  // ── Pill ───────────────────────────────────────────────────────────────────
+  // ── Pill — for tags, categories, non-state labels ──────────────────────────
+  // Override border-radius only. Keep all other rules intact.
   &--pill {
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-xl);   // 12px
+    letter-spacing: 0.02em;            // less tracking needed for mixed-case tags
+    text-transform: none;
   }
 
   // ── Dot-only ───────────────────────────────────────────────────────────────
   &--dot {
-    width: 8px;
+    border: none;
+    border-radius: 50%;
     height: 8px;
+    min-height: 8px;
     min-width: 8px;
     padding: 0;
-    border-radius: 50%;
-    border: none;
+    width: 8px;
   }
 
   // ── Variants — filled (default) ────────────────────────────────────────────
+
   &--primary {
     background: color-mix(in srgb, var(--accent-color) 15%, transparent);
-    color: var(--accent-color);
     border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+    color: var(--accent-color);
   }
 
   &--success {
-    background: color-mix(in srgb, var(--success-color) 15%, transparent);
-    color: var(--success-color);
-    border-color: color-mix(in srgb, var(--success-color) 30%, transparent);
+    background: var(--status-success-bg, color-mix(in srgb, var(--success-color) 15%, transparent));
+    border-color: var(--status-success-border, color-mix(in srgb, var(--success-color) 30%, transparent));
+    color: var(--status-success-text, var(--success-color));
   }
 
   &--danger {
-    background: color-mix(in srgb, var(--error-color) 15%, transparent);
-    color: var(--error-color);
-    border-color: color-mix(in srgb, var(--error-color) 30%, transparent);
+    background: var(--status-danger-bg, color-mix(in srgb, var(--error-color) 15%, transparent));
+    border-color: var(--status-danger-border, color-mix(in srgb, var(--error-color) 30%, transparent));
+    color: var(--status-danger-text, var(--error-color));
   }
 
   &--warning {
-    background: color-mix(in srgb, var(--warning-color) 18%, transparent);
-    color: color-mix(in srgb, var(--warning-color) 90%, #000);
-    border-color: color-mix(in srgb, var(--warning-color) 40%, transparent);
+    background: var(--status-warning-bg, color-mix(in srgb, var(--warning-color) 18%, transparent));
+    border-color: var(--status-warning-border, color-mix(in srgb, var(--warning-color) 40%, transparent));
+    color: var(--status-warning-text, color-mix(in srgb, var(--warning-color) 90%, #000));
   }
 
   &--info {
-    background: color-mix(in srgb, var(--info-color) 15%, transparent);
-    color: var(--info-color);
-    border-color: color-mix(in srgb, var(--info-color) 30%, transparent);
+    background: var(--status-info-bg, color-mix(in srgb, var(--info-color) 15%, transparent));
+    border-color: var(--status-info-border, color-mix(in srgb, var(--info-color) 30%, transparent));
+    color: var(--status-info-text, var(--info-color));
   }
 
   &--secondary {
     background: var(--surface-2);
-    color: var(--text-secondary);
     border-color: var(--border-subtle);
+    color: var(--text-secondary);
   }
 
   &--light {
     background: var(--surface-2);
-    color: var(--text-primary);
     border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   &--dark {
     background: color-mix(in srgb, var(--text-primary) 15%, transparent);
-    color: var(--text-primary);
     border-color: color-mix(in srgb, var(--text-primary) 25%, transparent);
+    color: var(--text-primary);
   }
 
-  // Dot variants — explicit class names because & mid-selector is invalid in Sass
+  // Dot variants — explicit selectors because & mid-selector is invalid in Sass
   &--dot.app-badge--primary   { background: var(--accent-color); }
   &--dot.app-badge--success   { background: var(--success-color); }
   &--dot.app-badge--danger    { background: var(--error-color); }
@@ -95,13 +110,25 @@
 
   // ── Outlined variant — transparent bg, colored border + text ───────────────
   &--outlined {
-    &.app-badge--primary   { background: transparent; color: var(--accent-color); border-color: var(--accent-color); }
-    &.app-badge--success   { background: transparent; color: var(--success-color); border-color: var(--success-color); }
-    &.app-badge--danger    { background: transparent; color: var(--error-color); border-color: var(--error-color); }
-    &.app-badge--warning   { background: transparent; color: color-mix(in srgb, var(--warning-color) 90%, #000); border-color: var(--warning-color); }
-    &.app-badge--info      { background: transparent; color: var(--info-color); border-color: var(--info-color); }
-    &.app-badge--secondary { background: transparent; color: var(--text-secondary); border-color: var(--text-secondary); }
-    &.app-badge--light     { background: transparent; color: var(--text-primary); border-color: var(--border-color); }
-    &.app-badge--dark      { background: transparent; color: var(--text-primary); border-color: var(--text-primary); }
+    &.app-badge--primary   { background: transparent; border-color: var(--accent-color);   color: var(--accent-color); }
+    &.app-badge--success   { background: transparent; border-color: var(--success-color);  color: var(--success-color); }
+    &.app-badge--danger    { background: transparent; border-color: var(--error-color);    color: var(--error-color); }
+    &.app-badge--warning   { background: transparent; border-color: var(--warning-color);  color: color-mix(in srgb, var(--warning-color) 90%, #000); }
+    &.app-badge--info      { background: transparent; border-color: var(--info-color);     color: var(--info-color); }
+    &.app-badge--secondary { background: transparent; border-color: var(--text-secondary); color: var(--text-secondary); }
+    &.app-badge--light     { background: transparent; border-color: var(--border-color);   color: var(--text-primary); }
+    &.app-badge--dark      { background: transparent; border-color: var(--text-primary);   color: var(--text-primary); }
+  }
+}
+
+html[data-density="compact"] .app-badge {
+  font-size: 10px;
+  min-height: 16px;
+  padding: 1px var(--space-1);
+
+  &--sm {
+    font-size: 9px;
+    min-height: 14px;
+    padding: 0 var(--space-1);
   }
 }

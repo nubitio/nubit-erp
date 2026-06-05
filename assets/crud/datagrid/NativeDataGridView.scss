@@ -2,7 +2,7 @@
 // Native DataGrid — enterprise-grade table styling.
 //
 // Design reference: Fluent UI DataGrid / DevExtreme grid density.
-// Row height is kept compact (32px) for information density.
+// Row height: 34px normal / 28px compact / 40px comfortable (via --row-height).
 // All colours reference design tokens — no hardcoded hex.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@
 }
 
 .native-datagrid {
-  --native-datagrid-header-height: 32px;
+  --native-datagrid-header-height: var(--grid-header-height, 34px);
 
   display: flex;
   flex-direction: column;
@@ -49,20 +49,20 @@
 .native-datagrid__toolbar {
   align-items: center;
   background: var(--surface-1);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   display: flex;
   flex: 0 0 auto;
   gap: var(--space-2);
   margin-bottom: var(--toolbar-margin-bottom);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-4);
+  min-height: var(--toolbar-height);
+  padding: 4px 10px;   // 4px vertical: toolbar(36) − 4−4 = 28px inner = --control-height
 }
 
 .native-datagrid__toolbar .grid-header {
   color: var(--text-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.01em;
 }
@@ -90,12 +90,12 @@
 }
 
 .native-datagrid__actions-popover {
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 220px;
-  padding: var(--space-2);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  min-width: 190px;
+  padding: var(--space-1);
   position: absolute;
   right: 0;
   top: calc(100% + var(--space-2));
@@ -121,19 +121,19 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   font-size: var(--font-size-sm);
   gap: var(--space-2);
-  min-height: var(--control-height, 30px);
-  padding: var(--space-1) var(--space-2);
+  min-height: 32px;
+  padding: 0 10px;
   text-align: left;
   width: 100%;
 
   &:hover:not(:disabled) {
-    background: var(--surface-2);
+    background: var(--control-bg-hover);
   }
 
   &:disabled {
@@ -143,7 +143,11 @@
 }
 
 .native-datagrid__actions-item--danger {
-  color: var(--error-color);
+  color: var(--status-danger-text, var(--error-color));
+
+  &:hover:not(:disabled) {
+    background: var(--status-danger-bg, color-mix(in srgb, var(--error-color) 8%, transparent));
+  }
 }
 
 .native-datagrid__actions-danger-group {
@@ -161,7 +165,7 @@
 
 .native-datagrid__table-wrap {
   background: var(--surface-1);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   flex: 1 1 auto;
   min-height: 0;
@@ -183,14 +187,15 @@
 .native-datagrid__table td {
   border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
-  padding: 0 var(--space-3);
+  padding: var(--grid-cell-padding-y, 0) var(--grid-cell-padding-x, var(--space-3));
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
 }
 
 .native-datagrid__table td {
-  height: 34px; // explicit height (not min-height) enforces row density
+  height: var(--row-height);   // explicit height (not min-height) enforces row density
+  line-height: 1;              // prevents line-height from fighting with cell height
 }
 
 .native-datagrid__table td .app-badge {
@@ -204,8 +209,8 @@
 // reserved for selected-column indicators, not the baseline header row.
 
 .native-datagrid__table > thead > tr > th {
-  background: var(--surface-0);
-  border-bottom: 1px solid var(--border-color); // stronger than cell borders
+  background: var(--grid-header-bg, var(--surface-0));
+  border-bottom: 1px solid var(--border-subtle); // stronger than cell borders
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -248,16 +253,22 @@
   outline: 0;
   transition: background var(--transition-fast);
 
-  // Subtle alternating: even rows sit on surface-0 (the app shell bg).
-  // This is lighter than the white surface-1, creating a readable stripe
-  // without heavy contrast.
   &:nth-child(even) td {
-    background: var(--surface-0);
+    // Use the explicit zebra token — ~3.5% darker than white, clearly visible at 13px.
+    // The old inline color-mix formula produced ~#fbfbfc which was imperceptible.
+    background: var(--grid-row-alt-bg);
   }
 
-  &:hover td,
+  &:hover td {
+    background: var(--grid-row-hover-bg, var(--surface-2));
+  }
+
   &.native-datagrid__row--selected td {
-    background: var(--surface-2);
+    background: var(--grid-row-selected-bg, var(--surface-2));
+  }
+
+  &.native-datagrid__row--selected td:first-child {
+    box-shadow: inset 2px 0 0 var(--grid-row-selected-border, var(--accent-color));
   }
 
   &.native-datagrid__row--expanded td {
@@ -327,8 +338,8 @@
 // ── Filter row ─────────────────────────────────────────────────────────────────
 
 .native-datagrid__filter-row > td {
-  background: color-mix(in srgb, var(--surface-0) 70%, var(--surface-1));
-  border-bottom: 2px solid var(--border-color);
+  background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
+  border-bottom: 1px solid var(--border-subtle);
   overflow: visible;
   padding: 0;
   position: sticky;
@@ -380,7 +391,7 @@
   color: var(--text-primary);
   font: inherit;
   font-size: var(--font-size-xs);
-  height: 32px;
+  height: var(--grid-filter-height, 32px);
   min-width: 60px;
   outline: none;
   padding: 4px 22px 4px 6px;
@@ -402,8 +413,8 @@
     border-radius: 0;
     box-shadow: none;
     font-size: var(--font-size-xs);
-    height: 32px;
-    min-height: 32px;
+    height: var(--grid-filter-height, 32px);
+    min-height: var(--grid-filter-height, 32px);
     padding: 4px 22px 4px 6px;
 
     &:hover:not(:disabled) {
@@ -479,7 +490,7 @@
   color: var(--text-primary);
   font: inherit;
   font-size: var(--font-size-xs);
-  height: 32px;
+  height: var(--grid-filter-height, 32px);
   outline: none;
   padding: 4px var(--space-2);
   width: 100%;
@@ -575,6 +586,28 @@
   width: 36px;
 }
 
+.native-datagrid__detail-cell {
+  background: var(--surface-1);
+  left: 0;
+  min-width: 36px;
+  position: sticky;
+  z-index: 2;
+}
+
+.native-datagrid__table > thead > tr > .native-datagrid__detail-cell {
+  background: var(--grid-header-bg, var(--surface-0));
+  z-index: 5;
+}
+
+.native-datagrid__filter-row > .native-datagrid__detail-cell {
+  background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
+  z-index: 4;
+}
+
+.native-datagrid__summary-footer .native-datagrid__detail-cell {
+  z-index: 4;
+}
+
 .native-datagrid__table td.native-datagrid__detail-cell,
 .native-datagrid__table td.native-datagrid__select-cell {
   text-overflow: clip;
@@ -617,12 +650,12 @@
 
 .native-datagrid__detail-row td {
   background: var(--surface-0);
-  border-bottom-color: var(--border-color);
+  border-bottom-color: var(--border-subtle);
   padding: var(--space-3) var(--space-4);
 }
 
 .native-datagrid__detail-content {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -677,22 +710,49 @@
 }
 
 // ── Badges in grid ─────────────────────────────────────────────────────────────
+// Status badges in grid cells use the base .app-badge letter-spacing (0.05em).
+// No override needed — the base component is already correct for grid usage.
 
 .native-datagrid .app-badge {
   border-width: 1px;
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.03em;
   line-height: 1;
   padding: 0.2em 0.5em;
 }
 
+html[data-density="compact"] .native-datagrid .app-badge {
+  font-size: 9px;
+  min-height: 14px;
+  padding: 0 5px;
+}
+
 // ── Row actions ────────────────────────────────────────────────────────────────
-// Hidden until row is hovered or selected — reduces visual noise.
+// Always visible and sticky on the right so actions remain reachable in wide
+// tables with horizontal scrolling.
 
 .native-datagrid__actions-cell {
+  background: var(--surface-1);
+  min-width: 44px;
+  position: sticky;
+  right: 0;
   text-align: center;
-  width: 64px;
+  width: 44px;
+  z-index: 2;
+}
+
+.native-datagrid__table > thead > tr > .native-datagrid__actions-cell {
+  background: var(--grid-header-bg, var(--surface-0));
+  z-index: 5;
+}
+
+.native-datagrid__filter-row > .native-datagrid__actions-cell {
+  background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
+  z-index: 4;
+}
+
+.native-datagrid__summary-footer .native-datagrid__actions-cell {
+  z-index: 4;
 }
 
 .native-datagrid__row-actions {
@@ -700,13 +760,6 @@
   display: flex;
   gap: 2px;
   justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.native-datagrid__row:hover .native-datagrid__row-actions,
-.native-datagrid__row--selected .native-datagrid__row-actions {
-  opacity: 1;
 }
 
 .native-datagrid__row-actions-menu {
@@ -723,13 +776,13 @@
 }
 
 .native-datagrid__row-actions-popover {
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 210px;
-  padding: var(--space-2);
-  z-index: 9999;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  min-width: 190px;
+  padding: var(--space-1);
+  z-index: var(--z-popover);   // was 9999 — must respect the z-index scale
 }
 
 // ── Empty / loading states ─────────────────────────────────────────────────────

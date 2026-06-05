@@ -60,3 +60,33 @@
     }
   }
 }
+
+html[data-density="compact"] {
+  .user-info {
+    padding: var(--space-1) var(--space-2);
+
+    .user-name {
+      font-size: var(--font-size-xs);
+    }
+
+    .image-container {
+      margin-right: var(--space-2);
+    }
+  }
+
+  .user-info-list {
+    padding: var(--space-1) 0;
+  }
+
+  .user-info-list__item {
+    gap: var(--space-2);
+    min-height: var(--control-height-form);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-sm);
+
+    i {
+      font-size: var(--font-size-md);
+      width: var(--space-4);
+    }
+  }
+}

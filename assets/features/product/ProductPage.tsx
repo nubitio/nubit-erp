@@ -13,6 +13,7 @@ import { getCoreApiBaseUrl } from '@nubit/core';
 const API = getCoreApiBaseUrl();
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
+import './ProductPage.scss';
 
 interface ProductRecord extends DataRecord {
   id: string;
@@ -46,23 +47,14 @@ function toPatch(field: Field): SmartCrudFieldPatch<ProductRecord> {
 }
 
 function renderProductPhoto(photo: { path?: string } | null | undefined, name: string) {
-  const size = 36;
-
   if (photo?.path) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+      <div className="product-photo-cell">
         <a href={photo.path} target="_blank" rel="noreferrer">
           <img
             src={photo.path}
             alt={name}
-            style={{
-              width: size,
-              height: size,
-              borderRadius: '50%',
-              objectFit: 'cover',
-              display: 'block',
-              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.18)',
-            }}
+            className="product-photo-cell__image"
           />
         </a>
       </div>
@@ -79,23 +71,11 @@ function renderProductPhoto(photo: { path?: string } | null | undefined, name: s
       .join('') || 'PR';
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+    <div className="product-photo-cell">
       <div
         title={name}
         aria-label={name}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-          color: '#1e3a8a',
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: '-0.02em',
-        }}
+        className="product-photo-cell__fallback"
       >
         {initials}
       </div>
@@ -130,11 +110,11 @@ function renderDetractionOption(item: unknown) {
   const percentage = detraction?.percentage;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.2 }}>
-      {code ? <strong style={{ color: '#1e3a8a' }}>{code}</strong> : null}
+    <div className="product-detraction-option">
+      {code ? <strong className="product-detraction-option__code">{code}</strong> : null}
       <span>{description ?? code ?? ''}</span>
       {typeof percentage === 'number' ? (
-        <span style={{ color: '#475569', fontSize: 12 }}>{percentage}%</span>
+        <span className="product-detraction-option__percentage">{percentage}%</span>
       ) : null}
     </div>
   );
