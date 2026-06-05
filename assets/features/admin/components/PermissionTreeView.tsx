@@ -44,13 +44,7 @@ export const PermissionTreeView = forwardRef<PermissionTreeHandle>((_props, ref)
   useImperativeHandle(ref, () => ({
     setItems: (nextItems) => {
       setItemsState(nextItems);
-      setExpandedIds(
-        new Set(
-          nextItems
-            .filter((menu, index) => index <= 1 && menu.items.length > 0)
-            .map((menu) => menu.id),
-        ),
-      );
+      setExpandedIds(new Set());
       setSelectedIds(
         new Set(
           nextItems.flatMap((menu) => [

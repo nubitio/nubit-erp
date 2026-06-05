@@ -138,15 +138,15 @@ export const DiscountDialog = () => {
         </Button>
       }
     >
-      <h3 style={{ textAlign: 'center', margin: '0 0 var(--space-1)' }}>
+      <h3 className="discount-dialog__total">
         {NumberUtils.formatCurrency(total - discountAmount)}
       </h3>
       {discountAmount > 0 && (
-        <p style={{ textAlign: 'center', textDecoration: 'line-through', color: 'var(--text-secondary)', margin: '0 0 var(--space-3)', fontSize: 'var(--font-size-sm)' }}>
+        <p className="discount-dialog__previous-total">
           {NumberUtils.formatCurrency(total)}
         </p>
       )}
-      <div style={{ padding: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="discount-dialog__form">
         <FormField label="Descuento %" htmlFor="discount-percent">
           <TextField
             id="discount-percent"
