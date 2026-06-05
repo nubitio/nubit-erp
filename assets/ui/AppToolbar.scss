@@ -24,21 +24,26 @@
 }
 
 // ── App toolbar ────────────────────────────────────────────────────────────────
-// Fluent pattern: flat card sitting on surface-0, with a structural border
-// and a single-tier shadow to lift it off the page background.
-// No backdrop-filter — keeps rendering fast and avoids the "glassy app" look
-// that feels out of place in dense enterprise UIs.
+// Fluent pattern: flat card sitting on surface-0, with a structural border.
+// No backdrop-filter — keeps rendering fast, avoids "glassy app" look.
+//
+// Vertical sizing:
+//   min-height: --toolbar-height (36px)
+//   padding: 4px top/bottom — leaves 28px inner = --control-height for buttons.
+//
+// This means buttons at --control-height (28px) sit flush in the toolbar
+// with 4px breathing room above and below, matching Fluent CommandBar precision.
 
 .app-toolbar {
   align-items: center;
   background: var(--surface-1);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   display: flex;
   gap: var(--space-2);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-3);
+  min-height: var(--toolbar-height);
+  padding: 4px 10px;          // 4px vertical gives 28px inner at 36px toolbar height
 
   @media only screen and (max-width: 900px) {
     border-radius: var(--radius-md);
@@ -71,13 +76,14 @@
     gap: var(--space-1);
   }
 
-  // Page title — heavier than body text, lighter than the app shell title.
+  // Page title — sits in the toolbar start slot.
+  // Inter semibold at md size. No Syne — display font is reserved for the logo.
   .toolbar-header {
     color: var(--text-primary);
     font-family: var(--font-family-sans);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     line-height: var(--line-height-tight);
   }
 }

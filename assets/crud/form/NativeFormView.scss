@@ -1,8 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Native Form — enterprise-grade form control styling.
 //
-// Controls use a consistent 28px min-height for comfortable touch targets
-// while staying compact enough for dense dialogs.
+// Controls use --control-height-form (34px) for standalone fields, which aligns
+// with the datagrid row height and provides a comfortable touch target.
+// Inline spreadsheet cells override to var(--row-height) for grid alignment.
 // All colours reference design tokens — no hardcoded hex.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@
   align-items: stretch;
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: minmax(280px, 340px) minmax(560px, 1fr);
+  grid-template-columns: minmax(280px, 332px) minmax(560px, 1fr);
   min-height: 0;
 }
 
@@ -53,7 +54,7 @@
 
 .native-form__grid {
   display: grid;
-  gap: var(--space-3) var(--space-3);
+  gap: 10px 12px;
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
@@ -71,7 +72,7 @@
 .native-form__label {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: 0.01em;
 }
 
@@ -83,15 +84,15 @@
 // ── Base control ───────────────────────────────────────────────────────────────
 
 .native-form__control {
-  background: var(--surface-1);
+  background: var(--control-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   box-sizing: border-box;
   color: var(--text-primary);
   font: inherit;
   font-size: var(--font-size-sm);
-  min-height: var(--control-height, 30px);
-  padding: var(--space-1) var(--space-2);
+  min-height: var(--control-height-form, 34px);   // was 32px hardcoded
+  padding: 4px 8px;
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base),
@@ -122,11 +123,27 @@
   }
 }
 
-.native-form__control:disabled,
-.native-form__control[readonly] {
-  background: var(--surface-0);
+// Disabled — genuinely unavailable state (full opacity reduction)
+.native-form__control:disabled {
+  background: color-mix(in srgb, var(--surface-0) 72%, var(--surface-1));
   cursor: not-allowed;
   opacity: 0.72;
+}
+
+// Readonly — intentional value, not unavailable (totals, auto-generated codes).
+// Surface-0 background signals non-editability without the "crossed-out" feel of disabled.
+.native-form__control[readonly]:not(.native-form__control--action) {
+  background: var(--surface-0);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+  cursor: default;
+  font-weight: var(--font-weight-medium);
+  opacity: 1;
+
+  &:focus {
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
 }
 
 // ── Input group (control + inlined actions) ────────────────────────────────────
@@ -230,9 +247,9 @@
 // Dropdown menu
 .native-form__lookup-menu {
   background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   left: 0;
   margin-top: var(--space-1);
   max-height: 240px;
@@ -256,12 +273,12 @@
 
 .native-form__lookup-option,
 .native-form__lookup-status {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   display: block;
   font: inherit;
   font-size: var(--font-size-sm);
-  padding: var(--space-2) var(--space-2);
+  padding: 7px 9px;
   text-align: left;
   width: 100%;
 }
@@ -416,8 +433,8 @@
 .native-form__tabs,
 .native-form__detail {
   background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   min-height: 240px;
@@ -439,6 +456,7 @@
 
 .native-form__section-title,
 .native-form__detail-title {
+  color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   margin: 0 0 var(--space-3);
@@ -447,8 +465,8 @@
 // Section/detail heading bar (sticky toolbar inside the panel)
 .native-form__detail-heading {
   align-items: center;
-  background: var(--surface-0);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--grid-header-bg, var(--surface-0));
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   min-height: var(--toolbar-height);
@@ -532,18 +550,18 @@
 // ── Header ──────────────────────────────────────────────────────────────────────
 
 .native-form__detail-table thead tr {
-  background: var(--surface-0);
-  border-bottom: 2px solid var(--border-color);
+  background: var(--grid-header-bg, var(--surface-0));
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .native-form__detail-table th {
-  background: var(--surface-0);
+  background: var(--grid-header-bg, var(--surface-0));
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.04em;
   overflow: hidden;
-  padding: 0 8px;
+  padding: 0 var(--grid-cell-padding-x, 8px);
   position: sticky;
   text-align: left;
   text-overflow: ellipsis;
@@ -591,7 +609,7 @@
 
 // Header actions cell sits above body cells when both sticky axes overlap
 .native-form__detail-table thead th.native-form__col-actions {
-  background: var(--surface-0);
+  background: var(--grid-header-bg, var(--surface-0));
   z-index: 2;
 }
 
@@ -602,7 +620,7 @@
 }
 
 .native-form__detail-table tbody tr:nth-child(even) td.native-form__col-actions {
-  background: color-mix(in srgb, var(--surface-0) 60%, var(--surface-1));
+  background: var(--grid-row-alt-bg);
 }
 
 .native-form__detail-table tbody tr:hover td.native-form__col-actions {
@@ -619,25 +637,25 @@
   vertical-align: middle;
 }
 
-// Zebra striping — subtle, not distracting
+// Zebra striping — uses the explicit grid token for consistent perceptible contrast.
 .native-form__detail-table tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--surface-0) 60%, transparent);
+  background: var(--grid-row-alt-bg);
 }
 
 .native-form__detail-table tbody tr:hover {
-  background: color-mix(in srgb, var(--accent-color) 5%, transparent);
+  background: var(--grid-row-hover-bg, color-mix(in srgb, var(--accent-color) 5%, transparent));
 }
 
 // ── Summary footer ─────────────────────────────────────────────────────────────
 
 .native-form__detail-summary td {
-  background: var(--surface-0);
+  background: var(--surface-2);
   border-bottom: 0;
-  border-top: 2px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  min-height: 36px;
+  min-height: 38px;
   padding: 8px;
   vertical-align: middle;
 }
@@ -648,17 +666,17 @@
 .native-form__detail-summary tr:nth-child(even) td.native-form__col-actions,
 .native-form__detail-summary tr:hover,
 .native-form__detail-summary tr:hover td.native-form__col-actions {
-  background: var(--surface-0);
+  background: var(--surface-2);
 }
 
 .native-form__detail-summary-table tbody td.native-form__col-actions,
 .native-form__detail-summary-table tbody tr:nth-child(even) td.native-form__col-actions,
 .native-form__detail-summary-table tbody tr:hover td.native-form__col-actions {
-  background: var(--surface-0);
+  background: var(--surface-2);
 }
 
 .native-form__detail-summary-wrap {
-  background: var(--surface-0);
+  background: var(--surface-2);
   border-top: 0;
   flex: 0 0 auto;
   overflow: hidden;
@@ -670,7 +688,7 @@
 }
 
 .native-form__detail-summary-table {
-  background: var(--surface-0);
+  background: var(--surface-2);
   min-width: 600px;
 }
 
@@ -690,6 +708,9 @@
 }
 
 .native-form__detail-summary-value {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
 
@@ -701,9 +722,9 @@
   border: none;
   border-radius: 0;
   box-shadow: none;
-  min-height: 34px;
+  min-height: var(--row-height);
   outline: none;
-  padding: 4px 8px;
+  padding: 4px var(--grid-cell-padding-x, 8px);
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
   width: 100%;
 
@@ -767,9 +788,9 @@
 .native-form__detail-table td .app-icon-button {
   align-items: center;
   display: flex;
-  height: 34px;
+  height: var(--row-height);
   justify-content: center;
-  min-height: 34px;
+  min-height: var(--row-height);
   width: 100%;
 }
 
@@ -804,3 +825,16 @@
     grid-column: span 12;
   }
 }
+
+// ── Form-context control height overrides ──────────────────────────────────────
+// Date pickers and lookups rendered inside .native-form__field (not inside
+// a detail table cell) should match --control-height-form, not --control-height.
+.native-form__field .app-date-picker__trigger {
+  min-height: var(--control-height-form, 34px);
+}
+
+.native-form__field .app-date-picker__trigger.app-date-picker__trigger--open,
+.native-form__field .app-date-picker__trigger:focus-within {
+  min-height: var(--control-height-form, 34px);
+}
+

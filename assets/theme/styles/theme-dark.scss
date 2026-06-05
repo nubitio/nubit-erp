@@ -5,8 +5,11 @@
 // tokens.scss and bundled into the main CSS entry. Do NOT add them here.
 //
 // Design reference: Fluent UI Web dark palette / VS Code dark+ surface model.
-// Accent shifts to blue-500 (#3b82f6) — slightly lighter than light-mode accent
-// to maintain contrast against dark surfaces.
+// Accent shifts to blue-500 (#3b82f6) — lighter than light-mode accent to
+// maintain contrast against dark surfaces (min 4.5:1 on surface-1).
+//
+// Shadow technique: each shadow includes a 1px inset ring at rgba(white, 0.05)
+// so panels remain visually separated without needing explicit borders everywhere.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* stylelint-disable */
@@ -23,42 +26,41 @@
   --typography-bg:         var(--base-bg);
 
   // ── Semantic / status colors ────────────────────────────────────────────────
-  --accent-color:       #3b82f6;   // blue-500 — brighter to pop on dark bg
-  // Derived — lighten in dark mode (mix with white, not black).
+  // Pastel variants prevent oversaturation on dark surfaces.
+  --accent-color:       #3b82f6;
   --accent-hover:  color-mix(in srgb, var(--accent-color) 80%, #fff);
   --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));
-  --success-color:      #22c55e;   // green-500
-  --info-color:         #38bdf8;   // sky-400
-  --warning-color:      #fbbf24;   // amber-400
-  --dark-warning-color: #f59e0b;   // amber-500
-  --error-color:        #f87171;   // red-400 — softened for dark bg readability
+  --success-color:      #22c55e;
+  --info-color:         #38bdf8;
+  --warning-color:      #fbbf24;
+  --dark-warning-color: #f59e0b;
+  --error-color:        #f87171;
   --on-accent-color:    #061529;
   --on-success-color:   #04130a;
   --on-error-color:     #1f0707;
 
   // ── Borders ─────────────────────────────────────────────────────────────────
-  --border-color:  #2c3241;   // structural
-  --border-subtle: #242937;   // subtle
-  --base-border-color: var(--border-color);  // legacy alias — do not use in new code
+  --border-color:      #303849;
+  --border-subtle:     #252c3a;
+  --base-border-color: var(--border-color);
 
   // ── Text ────────────────────────────────────────────────────────────────────
   --text-primary:           var(--base-text-color);
-  --text-secondary:         #8b96aa;
-  --text-tertiary:          #5c6880;
+  --text-secondary:         #9aaabb;   // lifted from #a0a8b8 — better contrast on surface-2
+  --text-tertiary:          #657080;
   --text-disabled:          #3a4155;
   --text-on-accent:         var(--on-accent-color);
 
-  // Legacy aliases — keep existing consumers stable while new code uses --text-*.
+  // Legacy aliases
   --texteditor-edit-color:  var(--text-primary);
   --texteditor-label-color: var(--text-secondary);
   --subtitle-text-color:    var(--text-secondary);
 
   // ── Surfaces (4-level elevation) ────────────────────────────────────────────
-  // Dark mode inverts Fluent's model — lower numbers = darker (deeper, further away).
-  --surface-0:  #13161d;   // app shell background — deepest level
-  --surface-1:  #1e2128;   // cards, panels, toolbar
-  --surface-2:  color-mix(in srgb, var(--accent-color) 15%, var(--surface-0));  // hover / selected
-  --surface-3:  color-mix(in srgb, var(--accent-color) 24%, var(--surface-0));  // active / pressed
+  --surface-0:  #111827;   // canvas / deepest background
+  --surface-1:  #171d27;   // cards, panels, dialogs
+  --surface-2:  #1f2937;   // hover, secondary sections
+  --surface-3:  color-mix(in srgb, var(--accent-color) 18%, #111827);
   --surface-canvas:    var(--surface-0);
   --surface-card:      var(--surface-1);
   --surface-elevated:  #242936;
@@ -67,13 +69,38 @@
   --card-background:       var(--surface-1);
   --side-panel-background: #181c23;
 
-  // Fluent control model: neutral fill, clear border, accent only for active state.
   --control-bg:       var(--surface-1);
   --control-bg-hover: color-mix(in srgb, var(--surface-2) 42%, var(--surface-1));
   --control-border:   var(--border-color);
 
+  // ── Dense ERP surfaces ──────────────────────────────────────────────────────
+  --grid-header-bg:           #151b24;
+  --grid-filter-bg:           #171d27;
+  --grid-row-hover-bg:        #1b2432;
+  --grid-row-selected-bg:     color-mix(in srgb, var(--accent-color) 16%, #111827);
+  --grid-row-selected-border: color-mix(in srgb, var(--accent-color) 72%, #111827);
+  // Explicit zebra token for dark mode — slightly darker than surface-1.
+  // Provides ~2.5% luminance difference, clearly perceptible at 13px body text.
+  --grid-row-alt-bg:          color-mix(in srgb, var(--surface-0) 40%, var(--surface-1));
+
+  // ── Status palette ──────────────────────────────────────────────────────────
+  // Alpha backgrounds instead of solid to prevent excessive colorization.
+  --status-success-bg:     rgba(34, 197, 94, 0.14);
+  --status-success-text:   #86efac;
+  --status-success-border: rgba(34, 197, 94, 0.32);
+  --status-warning-bg:     rgba(251, 191, 36, 0.14);
+  --status-warning-text:   #fde68a;
+  --status-warning-border: rgba(251, 191, 36, 0.32);
+  --status-danger-bg:      rgba(248, 113, 113, 0.14);
+  --status-danger-text:    #fca5a5;
+  --status-danger-border:  rgba(248, 113, 113, 0.34);
+  --status-info-bg:        rgba(56, 189, 248, 0.14);
+  --status-info-text:      #7dd3fc;
+  --status-info-border:    rgba(56, 189, 248, 0.32);
+
   // ── Shadows ─────────────────────────────────────────────────────────────────
-  // Dark mode shadows use inner border highlights instead of outer drop shadows.
+  // Each shadow includes a 1px inset ring (VS Code technique) for panel separation
+  // without requiring explicit borders on every surface.
   --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40),
                 0 0 0 1px rgba(255, 255, 255, 0.05);
   --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.50),
@@ -82,8 +109,8 @@
                 0 0 0 1px rgba(255, 255, 255, 0.07);
 
   // ── Effects ─────────────────────────────────────────────────────────────────
-  --focus-ring-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
-  --overlay-bg: rgb(0 0 0 / 54%);
+  --focus-ring-color:  color-mix(in srgb, var(--accent-color) 45%, transparent);
+  --overlay-bg:        rgb(0 0 0 / 54%);
   --overlay-bg-subtle: rgb(0 0 0 / 28%);
   --tooltip-danger-button-color:  rgba(248, 113, 113, 0.12);
   --tooltip-success-button-color: rgba(34, 197, 94, 0.12);

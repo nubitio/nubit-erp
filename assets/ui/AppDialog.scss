@@ -132,3 +132,7 @@
   position: relative;
   z-index: 1;
 }
+
+.app-dialog__footer .app-button {
+  min-height: var(--control-height-form);
+}

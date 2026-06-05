@@ -1,5 +1,14 @@
 // ── Form controls ─────────────────────────────────────────────────────────────
-// Reusable token-native inputs for product forms, dialogs and auth screens.
+// Reusable token-native inputs for auth screens, settings dialogs, and
+// standalone form layouts (NOT for the inline CRUD datagrid — see NativeFormView).
+//
+// Height: --control-height-form (34px) — taller than toolbar controls to provide
+// a comfortable touch target for standalone form contexts.
+//
+// Background: --surface-1 (white) — clean Fluent pattern. Disabled/readonly
+// fields use --surface-0 to visually communicate non-editability.
+//
+// Border-radius: --radius-md (6px) — unified with buttons for visual harmony.
 
 .app-form-field {
   color: var(--text-primary);
@@ -13,6 +22,12 @@
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
+  letter-spacing: 0.01em;
+}
+
+.app-form-field__label--required::after {
+  color: var(--error-color);
+  content: ' *';
 }
 
 .app-form-field__error,
@@ -29,56 +44,90 @@
   color: var(--text-tertiary);
 }
 
+// ── Input ──────────────────────────────────────────────────────────────────────
+
 .app-input {
   appearance: none;
-  background: color-mix(in srgb, var(--surface-2) 70%, var(--surface-1));
-  border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent);
-  border-radius: var(--radius-lg);
+  background: var(--surface-1);   // clean white — Fluent pattern (not gray fill)
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md); // 6px — unified with buttons
   box-sizing: border-box;
   color: var(--text-primary);
   display: block;
   font: inherit;
   font-size: var(--font-size-md);
-  min-height: 40px;
+  min-height: var(--control-height-form);   // 34px (was 40px — too tall for ERP)
   outline: none;
-  padding: 0.65rem 0.75rem;
-  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  padding: 0 var(--space-3);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
   width: 100%;
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
     opacity: 1;
   }
 
-  &:hover:not(:disabled):not(:focus) {
-    background: var(--surface-1);
-    border-color: var(--text-secondary);
+  // Hover: subtle border darkening, not accent (accent is reserved for focus)
+  &:hover:not(:disabled):not(:focus):not([readonly]) {
+    border-color: var(--text-tertiary);
   }
 
+  // Focus: accent border + focus ring — the user's current cursor position
   &:focus {
     background: var(--surface-1);
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px var(--focus-ring-color);
   }
 
+  // Readonly: lighter surface signals non-editability without full disable style.
+  // Used for calculated fields (totals, auto-generated codes).
+  // Different from :disabled — readonly values are intentional, not unavailable.
+  &[readonly] {
+    background: var(--surface-0);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+    cursor: default;
+    font-weight: var(--font-weight-medium);
+    opacity: 1;
+
+    &:focus {
+      border-color: var(--border-subtle);
+      box-shadow: none;
+    }
+  }
+
+  // Disabled: full opacity reduction signals genuinely unavailable state
   &:disabled {
+    background: var(--surface-0);
     cursor: not-allowed;
     opacity: 0.55;
   }
 }
 
+// ── Validation states ──────────────────────────────────────────────────────────
+
 .app-input--invalid,
 .app-form-field--error .app-input {
-  background: color-mix(in srgb, var(--error-color) 4%, var(--surface-1));
   border-color: var(--error-color);
+
+  &:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--error-color) 22%, transparent);
+  }
 }
+
+// ── Variants ───────────────────────────────────────────────────────────────────
 
 .app-select {
   appearance: auto;
+  padding-right: var(--space-5);
 }
 
 .app-textarea {
   line-height: var(--line-height-normal);
   min-height: 96px;
+  padding: var(--space-2) var(--space-3);
   resize: vertical;
 }
