@@ -116,13 +116,9 @@ export const useFormSubmit = (
       .finally(finalize);
   };
 
-  /** Handle the DELETE event: confirm dialog → DELETE HTTP */
+  /** Handle the DELETE event: confirmation is handled by the DataGrid's ConfirmDialog before this fires */
   const handleDelete = (payload: DeletePayload): void => {
     const { LOADING: loadingEvent, SUCCESS: successEvent } = options.events ?? {};
-    const confirmed = confirm(
-      `${t('dialog.confirmDeleteTitle')}\n\n${t('dialog.confirmDelete')}`,
-    );
-    if (!confirmed) return;
 
     if (loadingEvent) emit(loadingEvent, true);
     options.onLoadingChange?.(true);

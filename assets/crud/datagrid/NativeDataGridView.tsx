@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Button, DatePicker, IconButton } from '@nubit/ui';
+import { Button, ConfirmDialog, DatePicker, IconButton } from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
@@ -169,6 +169,7 @@ function renderSelectionActionItem(
   action: ResourceToolbarAction,
   index: number,
   disabled: boolean,
+  onBeforeClick?: () => void,
 ) {
   const icon = normalizeIcon(action.icon);
   return (
@@ -176,7 +177,10 @@ function renderSelectionActionItem(
       key={getToolbarKey(action, index)}
       type="button"
       className={`native-datagrid__actions-item${action.type === 'danger' ? ' native-datagrid__actions-item--danger' : ''}`}
-      onClick={action.onClick}
+      onClick={() => {
+        onBeforeClick?.();
+        action.onClick?.();
+      }}
       disabled={disabled || action.disabled}
       role="menuitem"
     >
@@ -198,9 +202,10 @@ function renderRowActionItem(
   action: ResourceToolbarAction,
   index: number,
   permissions: string[],
+  onBeforeClick?: () => void,
 ) {
   if (!isToolbarActionVisible(action, permissions)) return null;
-  return renderSelectionActionItem(action, index, false);
+  return renderSelectionActionItem(action, index, false, onBeforeClick);
 }
 
 // Shared event name with NativeFormView so lookup dropdowns and the actions
@@ -287,12 +292,12 @@ function SelectionActionsMenu({
                   {items[0].groupLabel}
                 </div>
               )}
-              {items.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+              {items.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))}
             </div>
           ))}
           {dangerActions.length > 0 && (
             <div className="native-datagrid__actions-danger-group">
-              {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled))}
+              {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))}
             </div>
           )}
         </div>
@@ -307,15 +312,18 @@ function buildToolbar(
   onAddClick: () => void,
 ): ResourceToolbarItems {
   return {
-    primary: options.toolbar?.primary ?? (options.allowAdd
-      ? [{
-          text: t('grid.buttonNew'),
-          icon: 'ph-plus',
-          type: 'primary',
-          onClick: onAddClick,
-          disabled: options.addDisabled,
-        }]
-      : undefined),
+    primary: [
+      ...(options.allowAdd
+        ? [{
+            text: t('grid.buttonNew'),
+            icon: 'ph-plus',
+            type: 'primary' as const,
+            onClick: onAddClick,
+            disabled: options.addDisabled,
+          }]
+        : []),
+      ...(options.toolbar?.primary ?? []),
+    ],
     selection: options.toolbar?.selection,
     utility: options.toolbar?.utility,
     showRefresh: options.toolbar?.showRefresh ?? true,
@@ -704,6 +712,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const onContentReadyRef = useRef(options.onContentReady);
   const onRowPreparedRef = useRef(options.onRowPrepared);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
   const [tableWidth, setTableWidth] = useState<number | undefined>();
   const resizingRef = useRef<{ name: string; startX: number; startWidth: number; startTableWidth: number } | null>(null);
@@ -740,14 +749,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('pointerdown', onPointerDown);
 
-    // Close on scroll of the table (very common when user scrolls while menu is open)
-    const wrap = tableWrapRef.current;
-    wrap?.addEventListener('scroll', onScroll, { passive: true });
+    // Close on scroll of the tbody (scroll now happens on tbody, not table-wrap)
+    const tbody = tbodyRef.current;
+    tbody?.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('pointerdown', onPointerDown);
-      wrap?.removeEventListener('scroll', onScroll);
+      tbody?.removeEventListener('scroll', onScroll);
     };
   }, [openRowMenu, closeRowMenu]);
 
@@ -960,7 +969,6 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   );
   const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
   const toolbar = buildToolbar(options, t, onAddClick);
-
   return (
     <div className="view datagrid-list">
       <div className={`view-wrapper ${options.mode === 'full' || !options.mode ? 'view-wrapper-datagrid-list list-page' : ''}`}>
@@ -1109,7 +1117,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   </tr>
                 )}
               </thead>
-              <tbody>
+              <tbody ref={tbodyRef}>
                 {rows.length === 0 && isGridLoading ? (
                   Array.from({ length: 7 }, (_, i) => (
                     <tr key={`skeleton-${i}`} className="native-datagrid__skeleton-row">
@@ -1212,11 +1220,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               />
                             </td>
                           )}
-                          {visibleFields.map((field, columnIndex) => (
-                            <td key={field.name} style={{ textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
-                              {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
-                            </td>
-                          ))}
+                          {visibleFields.map((field, columnIndex) => {
+                            const width = colWidths[field.name] ?? field.width;
+                            return (
+                              <td key={field.name} style={{ width, minWidth: field.minWidth, textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
+                                {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
+                              </td>
+                            );
+                          })}
                            {hasRowActions && (
                              <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
                                <div className="native-datagrid__row-actions">
@@ -1341,22 +1352,16 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               </div>
             </div>
           )}
-           {confirmRow && (
-            <div className="native-datagrid__confirm-overlay" role="alertdialog" aria-modal="true">
-              <div className="native-datagrid__confirm-card">
-                <p className="native-datagrid__confirm-title">{t('dialog.confirmDeleteTitle')}</p>
-                <p className="native-datagrid__confirm-body">{t('dialog.confirmDelete')}</p>
-                <div className="native-datagrid__confirm-actions">
-                  <Button variant="secondary" size="sm" onClick={() => setConfirmRow(null)}>
-                    {t('dialog.buttonCancel')}
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={confirmDelete}>
-                    {t('grid.buttonDelete')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ConfirmDialog
+            open={Boolean(confirmRow)}
+            title={t('dialog.confirmDeleteTitle')}
+            message={t('dialog.confirmDelete')}
+            variant="danger"
+            cancelLabel={t('dialog.buttonCancel')}
+            confirmLabel={t('grid.buttonDelete')}
+            onCancel={() => setConfirmRow(null)}
+            onConfirm={confirmDelete}
+          />
            {isGridLoading && rows.length > 0 && (
              <div className="native-datagrid__loading-overlay" aria-live="polite">
                <div className="native-datagrid__loading-card">{loadingMessage || t('grid.loading')}</div>
@@ -1385,18 +1390,23 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                  }}
                 onClick={(e) => e.stopPropagation()}
               >
-               {(() => {
-                 const regular = openRowMenu.actions.filter((a) => a.type !== 'danger');
-                 const danger = openRowMenu.actions.filter((a) => a.type === 'danger');
+                {(() => {
+                  const regular = openRowMenu.actions.filter((a) => a.type !== 'danger');
+                  const danger = openRowMenu.actions.filter((a) => a.type === 'danger');
+                  const closeCurrentRowMenu = () => setOpenRowMenu(null);
 
-                 return (
-                   <>
-                     {regular.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions))}
-                     {danger.length > 0 && (
-                       <div className="native-datagrid__actions-danger-group">
-                         {danger.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions))}
-                       </div>
-                     )}
+                  return (
+                    <>
+                      {regular.map((action, idx) =>
+                        renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
+                      )}
+                      {danger.length > 0 && (
+                        <div className="native-datagrid__actions-danger-group">
+                          {danger.map((action, idx) =>
+                            renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
+                          )}
+                        </div>
+                      )}
                    </>
                  );
                })()}

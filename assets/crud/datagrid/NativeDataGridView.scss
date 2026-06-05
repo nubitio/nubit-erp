@@ -39,6 +39,10 @@
 }
 
 .view-wrapper.view-wrapper-datagrid-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   padding-bottom: var(--content-padding);
   padding-top: var(--content-padding);
 }
@@ -167,16 +171,54 @@
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   position: relative; // anchors the empty-state overlay
 }
 
+// Single table that fills the wrap and acts as a flex column:
+// thead + tfoot are fixed (flex: 0), tbody scrolls (flex: 1).
 .native-datagrid__table {
   border-collapse: separate;
   border-spacing: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   min-width: min(980px, 100%);
+  table-layout: fixed;
+  width: 100%;
+}
+
+.native-datagrid__table > thead {
+  display: table;
+  flex: 0 0 auto;
+  table-layout: fixed;
+  width: 100%;
+}
+
+// tbody scrolls independently — rows use display:table so cells stay aligned.
+.native-datagrid__table > tbody {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.native-datagrid__table > tbody > tr {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+// tfoot is always visible at the bottom of the wrap (outside the scroll).
+.native-datagrid__table > tfoot {
+  display: table;
+  flex: 0 0 auto;
   table-layout: fixed;
   width: 100%;
 }
@@ -929,9 +971,6 @@ html[data-density="compact"] .native-datagrid .app-badge {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   height: 36px;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
 }
 
 .native-datagrid__summary-footer tr,
@@ -989,52 +1028,6 @@ html[data-density="compact"] .native-datagrid .app-badge {
     border-color: var(--accent-color);
     outline: none;
   }
-}
-
-// ── Inline confirm overlay ─────────────────────────────────────────────────────
-
-.native-datagrid__confirm-overlay {
-  align-items: center;
-  background: var(--overlay-bg-subtle);
-  border-radius: var(--radius-lg);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  position: absolute;
-  z-index: 5;
-}
-
-.native-datagrid__confirm-card {
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-width: 380px;
-  padding: var(--space-4) var(--space-5) var(--space-3);
-  width: 90%;
-}
-
-.native-datagrid__confirm-title {
-  color: var(--text-primary);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  margin: 0;
-}
-
-.native-datagrid__confirm-body {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  margin: 0;
-}
-
-.native-datagrid__confirm-actions {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: flex-end;
-  margin-top: var(--space-1);
 }
 
 // ── Loading overlay ────────────────────────────────────────────────────────────

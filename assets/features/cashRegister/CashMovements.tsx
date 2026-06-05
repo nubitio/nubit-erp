@@ -33,12 +33,11 @@ export const CashMovements = () => {
   };
 
   const toolbar = {
-    utility: [
+    primary: [
       {
         text: 'Cerrar Caja',
-        type: 'info' as const,
-        group: 'workflow',
-        groupLabel: 'Flujo',
+        icon: 'ph-lock-simple',
+        type: 'secondary' as const,
         onClick: () => {
           navigate(`/cash-register/${id}/close`);
         },
