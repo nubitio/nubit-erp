@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { DataGridView, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
+import { DataGridView, ToolbarSelect, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
 import { getCoreApiBaseUrl } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { SaleFields } from './SaleFields';
@@ -157,19 +157,19 @@ export const SaleConsultPage = () => {
   }), [canGenerate, handleClear, handleGenerateReport, loading]);
 
   const beforeToolbar = useCallback(() => (
-    <label className="sale-consult-page__report-filter">
-      <span>Reporte</span>
-      <select
-        className="sale-consult-page__report-select"
-        value={selectedReport}
-        onChange={(e) => { setSelectedReport(e.target.value); setError(null); }}
-      >
-        {reportTypes.map((report) => (
-          <option key={report.value} value={report.value}>{report.text}</option>
-        ))}
-      </select>
-    </label>
-  ), [selectedReport]);
+    <ToolbarSelect
+      id="sales-consult-report"
+      label="Reporte"
+      icon="ph-chart-bar"
+      value={selectedReport}
+      options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
+      disabled={loading}
+      onChange={(value) => {
+        setSelectedReport(value);
+        setError(null);
+      }}
+    />
+  ), [loading, selectedReport]);
 
   return (
     <div className="sale-consult-page">

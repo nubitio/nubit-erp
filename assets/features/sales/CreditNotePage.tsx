@@ -27,6 +27,29 @@ import {
 const API_URL = API + 'tax-documents';
 const fields = CreditNoteFields();
 
+const CREDIT_NOTE_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['issueDate', 'customer', 'series', 'number', 'sunatStatus'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'issueDate',
+      'customer',
+      'documentType',
+      'series',
+      'number',
+      'reasonCode',
+      'affectedDocument',
+      'sunatStatus',
+      'sunatMessage',
+    ],
+  },
+];
+
 export const CreditNotePage = () => {
   const [on] = useEvents();
   const gridRef = useRef<GridHandle | null>(null);
@@ -59,6 +82,9 @@ export const CreditNotePage = () => {
         id: 'creditNote',
         title: 'Notas de crédito',
         fields,
+        defaultPreset: 'basic',
+        columnPresets: CREDIT_NOTE_COLUMN_PRESETS,
+        viewMode: { mode: 'drawer', drawerWidth: 1200 },
         gridDetail: {
           url: API_URL + '/{id}/lines',
           fields: (parentRow: DataRecord) =>
@@ -73,8 +99,6 @@ export const CreditNotePage = () => {
           allowUpdating: true,
           required: true,
         },
-        dialogWidth: 1200,
-        dialogHeight: 720,
         permissions: { canAdd: true, canEdit: true, canDelete: true },
         toolbar: {
           selection: [

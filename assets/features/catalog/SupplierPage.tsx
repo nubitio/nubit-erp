@@ -20,17 +20,53 @@ interface SupplierRecord extends DataRecord {
 
 type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
+const SUPPLIER_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['ruc', 'businessName', 'phone'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: ['ruc', 'businessName', 'fiscalAddress', 'phone'],
+  },
+];
+
 const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   id: 'supplier',
   title: 'Proveedores',
+  defaultPreset: 'basic',
+  columnPresets: SUPPLIER_COLUMN_PRESETS,
+  viewMode: { mode: 'drawer', drawerWidth: 720 },
+  formLayout: {
+    type: 'tabs',
+    tabs: [
+      {
+        label: 'General',
+        icon: 'ph-identification-card',
+        fields: ['ruc', 'businessName', 'fiscalAddress'],
+      },
+      {
+        label: 'Contacto',
+        icon: 'ph-phone',
+        fields: ['phone'],
+      },
+    ],
+  },
   fieldContract: defineFields<SupplierRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
+      { kind: 'override', key: 'businessName', patch: { order: 1, width: 260, label: 'Razón social' } },
+      { kind: 'override', key: 'phone', patch: { order: 3, width: 160, label: 'Teléfono' } },
       {
         kind: 'override',
         key: 'ruc',
         patch: {
+          order: 0,
+          width: 140,
+          label: 'RUC',
           maxLength: 11,
           validators: [
             {
@@ -87,7 +123,7 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
       {
         kind: 'override',
         key: 'fiscalAddress',
-        patch: { type: FieldType.TEXTAREA },
+        patch: { order: 2, type: FieldType.TEXTAREA, col: 12, label: 'Domicilio fiscal' },
       },
     ],
   }),

@@ -15,6 +15,7 @@ const baseResource = defineResource(priceListEndpoints.list(), {
   id: 'price-list',
   title: 'Tarifas',
   fields: PriceListFields(),
+  viewMode: { mode: 'drawer', drawerWidth: 560 },
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

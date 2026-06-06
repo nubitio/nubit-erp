@@ -14,8 +14,8 @@ export const SettingsPanel = ({ onClose: _onClose }: SettingsPanelProps) => {
   return (
     <div className="settings-panel" role="menu" aria-label="Display settings">
       {/* ── Accent color ─────────────────────────────── */}
-      <p className="settings-panel__heading">Accent color</p>
-      <div className="settings-panel__swatches" role="group" aria-label="Accent color presets">
+      <p className="settings-panel__heading">Color de acento</p>
+      <div className="settings-panel__swatches" role="group" aria-label="Colores de acento">
         {presets.map((preset) => (
           <button
             key={preset.value}
@@ -33,8 +33,8 @@ export const SettingsPanel = ({ onClose: _onClose }: SettingsPanelProps) => {
       <hr className="settings-panel__divider" />
 
       {/* ── Density ──────────────────────────────────── */}
-      <p className="settings-panel__heading">Density</p>
-      <div className="settings-panel__density" role="group" aria-label="UI density">
+      <p className="settings-panel__heading">Densidad</p>
+      <div className="settings-panel__density" role="group" aria-label="Densidad de interfaz">
         <button
           className="settings-panel__density-btn"
           type="button"

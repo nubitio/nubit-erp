@@ -141,14 +141,30 @@ const referencePatch = toPatch(
     .build(),
 );
 
+const UNIT_OF_MEASURE_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['name', 'code', 'type'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: ['name', 'code', 'type', 'ratio', 'reference'],
+  },
+];
+
 const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list(), {
   id: 'unitOfMeasure',
   title: 'Unidades de medida',
+  defaultPreset: 'basic',
+  columnPresets: UNIT_OF_MEASURE_COLUMN_PRESETS,
+  viewMode: { mode: 'drawer', drawerWidth: 640 },
   fieldContract: defineFields<UnitOfMeasureRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { width: '100%' } },
+      { kind: 'override', key: 'name', patch: { order: 0, width: 260, label: 'Nombre' } },
       { kind: 'override', key: 'code', patch: codePatch },
       { kind: 'override', key: 'type', patch: typePatch },
       {

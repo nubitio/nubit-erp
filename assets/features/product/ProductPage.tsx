@@ -203,7 +203,12 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
   id: 'product',
   title: 'Productos',
   defaultPreset: 'basic',
-  columnPresets: [...PRODUCT_COLUMN_PRESETS],
+  columnPresets: PRODUCT_COLUMN_PRESETS.map((preset) => ({
+    key: preset.key,
+    label: preset.label,
+    columns: [...preset.columns],
+  })),
+  viewMode: { mode: 'drawer', drawerWidth: 880 },
   formLayout: {
     type: 'tabs',
     tabs: [

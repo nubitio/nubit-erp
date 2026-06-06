@@ -17,18 +17,43 @@ import toast from '@shared/lib/SharedUtils';
 const API_URL = API + 'tax-documents';
 const fields = InvoiceFields();
 
+const INVOICE_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['issueDate', 'customer', 'series', 'number', 'total', 'sunatStatus'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'issueDate',
+      'ruc',
+      'customer',
+      'documentType',
+      'series',
+      'number',
+      'total',
+      'voided',
+      'sunatStatus',
+      'sunatMessage',
+    ],
+  },
+];
+
 const baseResource = defineResource(API_URL + '?type=invoice', {
   id: 'invoice',
   title: 'Comprobantes',
   fields,
+  defaultPreset: 'basic',
+  columnPresets: INVOICE_COLUMN_PRESETS,
+  viewMode: { mode: 'drawer', drawerWidth: 960 },
   gridDetail: {
     url: API_URL + '/{id}/lines',
     fields: (parentRow: DataRecord) =>
       InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
   },
   sort: [{ selector: 'createdAt', desc: true }],
-  dialogWidth: 900,
-  dialogHeight: 720,
   permissions: { canAdd: false, canEdit: false, canDelete: false },
 });
 

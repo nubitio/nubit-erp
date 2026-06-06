@@ -101,6 +101,8 @@ export {
 export type { CrudFormShellProps } from './view';
 export type { ResolvedViewMode } from './view';
 export type { CrudViewMode, CrudViewModeConfig } from './crud/ResourceConfig';
+export { ToolbarSelect } from './crud/ToolbarSelect';
+export type { ToolbarSelectOption, ToolbarSelectProps } from './crud/ToolbarSelect';
 
 // ── Handles & options ─────────────────────────────────────────────────────────
 export type { FormHandle } from './form/FormHandle';

@@ -320,7 +320,7 @@ describe('Field factory functions (public DSL)', () => {
     const f = fileField('https://api.example.com/').name('attachment').label('Adjunto').build();
     expect(f.type).toBe(FieldType.FILE);
     expect(f.url).toContain('media');
-    expect(f.accept).toBeUndefined();
+    expect(f.accept).toBeNull();
   });
 
   it('imageField() sets FILE type + image defaults', () => {

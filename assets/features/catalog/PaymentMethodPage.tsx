@@ -1,8 +1,22 @@
-import { SmartCrudPage, defineResource } from '@nubit/crud';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
 import { paymentMethodEndpoints } from './api/catalogEndpoints';
 
-const resource = defineResource(paymentMethodEndpoints.list(), {
+interface PaymentMethodRecord extends DataRecord {
+  id: string;
+  name: string;
+}
+
+const resource = defineResource<PaymentMethodRecord>(paymentMethodEndpoints.list(), {
   id: 'payment-methods',
   title: 'Medios de pago',
+  viewMode: { mode: 'drawer', drawerWidth: 520 },
+  fieldContract: defineFields<PaymentMethodRecord>({
+    source: 'hydra',
+    strategy: 'augment',
+    directives: [
+      { kind: 'override', key: 'name', patch: { order: 0, width: 320, label: 'Nombre' } },
+    ],
+  }),
 });
+
 export const PaymentMethodPage = () => <SmartCrudPage resource={resource} />;

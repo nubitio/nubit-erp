@@ -50,12 +50,13 @@ const typePatch = toPatch(
 const resource = defineResource<OperationRecord>(operationEndpoints.list(), {
   id: 'operation',
   title: 'Operaciones',
+  viewMode: { mode: 'drawer', drawerWidth: 560 },
   fieldContract: defineFields<OperationRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { width: '100%' } },
-      { kind: 'override', key: 'type', patch: typePatch },
+      { kind: 'override', key: 'name', patch: { order: 0, width: 280, label: 'Nombre' } },
+      { kind: 'override', key: 'type', patch: { ...typePatch, order: 1, width: 140 } },
     ],
   }),
 });

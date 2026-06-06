@@ -65,7 +65,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           {
             id: 'display-settings',
             icon: 'ph ph-sliders-horizontal',
-            label: 'Display settings',
+            label: 'Apariencia',
             renderPanel: ({ close }) => <SettingsPanel onClose={close} />,
           },
         ]}

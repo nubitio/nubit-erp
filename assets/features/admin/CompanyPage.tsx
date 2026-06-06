@@ -34,6 +34,7 @@ export const CompanyPage = () => {
             },
           ],
         },
+        viewMode: { mode: 'drawer', drawerWidth: 760 },
         permissions: { canAdd: true, canEdit: true, canDelete: true },
       }),
     [],
