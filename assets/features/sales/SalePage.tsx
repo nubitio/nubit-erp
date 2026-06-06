@@ -389,6 +389,11 @@ export const SalePage = () => {
         sort={[{ selector: 'createdAt', desc: true }]}
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
+        emptyState={{
+          title: 'Sin ventas registradas',
+          description: 'Crea una venta con el botón Nuevo.',
+          icon: 'receipt',
+        }}
       />
       <DrawerView drawerWidth={1200} events={saleEvents}>
         <FormView

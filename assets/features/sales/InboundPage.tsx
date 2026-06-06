@@ -35,6 +35,11 @@ export const PurchasesPage = () => {
         },
       ],
       defaultPreset: 'basic',
+      emptyState: {
+        title: 'Sin compras registradas',
+        description: 'Registra tu primera compra con el botón Nuevo.',
+        icon: 'shopping-cart',
+      },
       formLayout: {
         type: 'tabs',
         tabs: [

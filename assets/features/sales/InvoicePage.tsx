@@ -48,6 +48,11 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
   defaultPreset: 'basic',
   columnPresets: INVOICE_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerWidth: 960 },
+  emptyState: {
+    title: 'Sin comprobantes',
+    description: 'Los comprobantes electrónicos emitidos aparecerán aquí.',
+    icon: 'receipt',
+  },
   gridDetail: {
     url: API_URL + '/{id}/lines',
     fields: (parentRow: DataRecord) =>

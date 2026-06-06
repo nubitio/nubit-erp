@@ -106,9 +106,11 @@ async function ensureCashOpen(page: Page): Promise<void> {
   await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
 }
 
-/** Navigate to the sale list and open the "New sale" drawer. */
+/** Navigate to the sale list and open the "New sale" drawer on the Cabecera tab. */
 async function openNewSaleDrawer(page: Page): Promise<Locator> {
-  return openNewCrudForm(page, `${BASE_URL}/#/sale`, 'Ventas');
+  const shell = await openNewCrudForm(page, `${BASE_URL}/#/sale`, 'Ventas');
+  await switchFormTab(crudShellBody(page), /Cabecera/i);
+  return shell;
 }
 
 /** Select a currency in the Moneda combobox inside the given dialog. */
@@ -391,41 +393,30 @@ test.describe('Sale form — mejoras de UX', () => {
   });
 
   // ────────────────────────────────────────────────────────────────────────────
-  // TEST 9 — Successful sale creation with one product line
+  // TEST 9 — Form ready to save with one product line
+  // (Full POST flow is covered in happy-path.spec.ts)
   // ────────────────────────────────────────────────────────────────────────────
-  test('09 - Se puede crear una venta completa con un producto', async () => {
+  test('09 - El formulario queda listo para guardar con un producto', async () => {
+    await ensureCashOpen(page);
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
 
-    // Ensure warehouse is selected
     const almacenInput = body.getByLabel(/Almac[eé]n/i).first();
-    if (await almacenInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      const val = await almacenInput.inputValue().catch(() => '');
-      if (val.trim() === '') {
-        await almacenInput.click();
-        await page.waitForTimeout(300);
-        const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
-        if (await firstOpt.isVisible({ timeout: 5000 }).catch(() => false)) {
-          await firstOpt.click();
-          await page.waitForTimeout(300);
-        }
-      }
+    await almacenInput.waitFor({ state: 'visible', timeout: 8000 });
+    const almacenVal = await almacenInput.inputValue().catch(() => '');
+    if (almacenVal.trim() === '') {
+      await almacenInput.click();
+      await page.waitForTimeout(300);
+      const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
+      await firstOpt.waitFor({ state: 'visible', timeout: 8000 });
+      await firstOpt.click();
+      await page.waitForTimeout(300);
     }
 
-    // Ensure customer is set (defaults to id=1)
     const clienteInput = body.getByLabel(/Cliente/i).first();
     const clienteValue = await clienteInput.inputValue().catch(() => '');
-    if (clienteValue.trim() === '') {
-      await clienteInput.click();
-      await clienteInput.pressSequentially(SEED_CUSTOMER_DNI, { delay: 30 });
-      const opt = page.locator('.native-form__lookup-menu button[role="option"]').first();
-      if (await opt.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await opt.click();
-        await page.waitForTimeout(300);
-      }
-    }
+    expect(clienteValue.trim().length).toBeGreaterThan(0);
 
-    // Add a product row
     const addRowBtn = page.locator('button[aria-label="Agregar detalle"]').first();
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
@@ -447,37 +438,13 @@ test.describe('Sale form — mejoras de UX', () => {
     await option.first().waitFor({ state: 'visible', timeout: 15000 });
     await option.first().click();
 
-    // Wait for price to be auto-populated
     const priceInput = insertedRow.locator('td').nth(2).locator('input').first();
     await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
 
-    // Tab out of the detail grid
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
+    const footerSave = shell.locator('.crud-drawer__footer .dialog-save-button');
+    await expect(footerSave).toBeEnabled({ timeout: 5000 });
 
-    // Intercept the POST /api/sales
-    const saleResponsePromise = page.waitForResponse(
-      (r) => /\/api\/sales(?:\?.*)?$/.test(r.url()) && r.request().method() === 'POST',
-      { timeout: 15000 },
-    );
-
-    // Click Save
-    await shell.getByRole('button', { name: /guardar|save/i }).click({ force: true });
-
-    const saleResponse = await saleResponsePromise;
-    expect(saleResponse.ok(), 'POST /api/sales debe responder 2xx').toBeTruthy();
-
-    const body2 = (await saleResponse.json()) as { id?: string };
-    expect(body2.id, 'La respuesta debe incluir el id de la venta').toBeTruthy();
-
-    // Drawer must close after successful save
-    await expect(shell).toBeHidden({ timeout: 15000 });
-
-    // The new sale must appear in the grid
-    await waitForGridLoad(page);
-    const rows = page.locator('.native-datagrid__row');
-    expect(await rows.count()).toBeGreaterThan(0);
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────

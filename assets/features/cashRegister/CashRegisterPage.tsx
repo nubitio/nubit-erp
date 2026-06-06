@@ -6,10 +6,36 @@ import { getCoreApiBaseUrl } from '@nubit/core';
 const API = getCoreApiBaseUrl();
 import { CashRegisterFields } from './CashRegisterFields';
 
+const CASH_REGISTER_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['name', 'branch'],
+  },
+];
+
 const baseResource = defineResource(`${API}cash-registers`, {
   id: 'cash-register',
   title: 'Cajas',
   fields: CashRegisterFields(),
+  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  defaultPreset: 'basic',
+  columnPresets: CASH_REGISTER_COLUMN_PRESETS,
+  formLayout: {
+    type: 'tabs',
+    tabs: [
+      {
+        label: 'General',
+        icon: 'ph-cash-register',
+        fields: ['name', 'branch'],
+      },
+    ],
+  },
+  emptyState: {
+    title: 'Sin cajas registradas',
+    description: 'Crea una caja para operar el punto de venta.',
+    icon: 'cash-register',
+  },
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

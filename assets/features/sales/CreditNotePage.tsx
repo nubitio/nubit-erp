@@ -85,6 +85,26 @@ export const CreditNotePage = () => {
         defaultPreset: 'basic',
         columnPresets: CREDIT_NOTE_COLUMN_PRESETS,
         viewMode: { mode: 'drawer', drawerWidth: 1200 },
+        formLayout: {
+          type: 'tabs',
+          tabs: [
+            {
+              label: 'Documento',
+              icon: 'ph-receipt',
+              fields: ['relatedTaxDocument', 'issueDate'],
+            },
+            {
+              label: 'Motivo',
+              icon: 'ph-note',
+              fields: ['reasonCode', 'reasonDescription'],
+            },
+          ],
+        },
+        emptyState: {
+          title: 'Sin notas de crédito',
+          description: 'Las notas de crédito emitidas aparecerán aquí.',
+          icon: 'file-text',
+        },
         gridDetail: {
           url: API_URL + '/{id}/lines',
           fields: (parentRow: DataRecord) =>

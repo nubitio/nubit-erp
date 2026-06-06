@@ -113,6 +113,27 @@ const actionBtnStyle: React.CSSProperties = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const STOCK_ITEM_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['warehouse', 'product', 'qtyOnHand', 'qtyAvailable', '_actions'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'warehouse',
+      'product',
+      'qtyOnHand',
+      'qtyReserved',
+      'qtyAvailable',
+      'updatedAt',
+      '_actions',
+    ],
+  },
+];
+
 export const StockItemPage = () => {
   const navigate = useNavigate();
 
@@ -182,6 +203,13 @@ export const StockItemPage = () => {
       ],
     }),
     sort: [{ selector: 'updatedAt', desc: true }],
+    defaultPreset: 'basic',
+    columnPresets: STOCK_ITEM_COLUMN_PRESETS,
+    emptyState: {
+      title: 'Sin existencias',
+      description: 'No hay stock registrado en ningún almacén.',
+      icon: 'package',
+    },
     permissions: {
       canAdd: false,
       canEdit: false,

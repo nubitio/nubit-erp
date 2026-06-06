@@ -21,7 +21,7 @@
 
 import { expect, test, type Page } from '@playwright/test';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
-import { crudShell, waitForGridLoad } from './helpers/crud';
+import { crudShell, crudShellBody, switchFormTab, waitForGridLoad } from './helpers/crud';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
 const BASE_URL = getE2EBaseUrl();
@@ -294,6 +294,22 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     console.log(
       `[E2E] Stock inicial de "${SEED_PRODUCT_NAME}" (${seedData.productCode ?? seedData.productId}) en almacén ${seedData.warehouseName} (${seedData.warehouseId}): ${seedData.stockBefore}`,
     );
+  });
+
+  test('02b - El formulario de compra tiene pestañas Cabecera y Notas', async () => {
+    await gotoProtectedRoute(page, 'purchases');
+    await waitForGridLoad(page);
+    await clickGridToolbarButton(page, 'Nuevo');
+    await expect(crudShell(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
+
+    const body = crudShellBody(page);
+    await switchFormTab(body, /Cabecera/i);
+    await expect(body.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 8000 });
+
+    await switchFormTab(body, /Notas/i);
+    await expect(body.getByLabel(/Glosa/i).first()).toBeVisible({ timeout: 8000 });
+
+    await crudShell(page).getByRole('button', { name: /cancel|cerrar/i }).first().click();
   });
 
   // ───────────────────────────────────────────────────────────────────────────
