@@ -1,7 +1,7 @@
 import './SalePage.scss';
 import {
   DataGridView,
-  DialogView,
+  DrawerView,
   FormView,
   FORM_EVENTS,
   type DetailSummaryOptions,
@@ -329,7 +329,7 @@ export const SalePage = () => {
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
       />
-      <DialogView width={1200} events={saleEvents}>
+      <DrawerView drawerWidth={1200} events={saleEvents}>
         <FormView
           ref={formRef}
           url={API_URL}
@@ -339,7 +339,7 @@ export const SalePage = () => {
           detailPropertyName="writeItems"
           events={saleEvents}
         />
-      </DialogView>
+      </DrawerView>
       <DiscountDialog />
       <DialogView events={CustomerPage.EVENTS}>
         <FormView

@@ -542,6 +542,151 @@ html[data-density=compact] .app-dialog__footer {
   padding: var(--space-2) var(--space-3);
   resize: vertical;
 }
+.app-dropdown {
+  min-width: 0;
+  position: relative;
+}
+
+.app-dropdown--form {
+  width: 100%;
+}
+
+.app-dropdown--toolbar {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 1 auto;
+  gap: var(--space-2);
+  margin-left: var(--space-2);
+}
+
+.app-dropdown__toolbar-label {
+  align-items: center;
+  color: var(--text-secondary);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+.app-dropdown__toolbar-label i {
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.app-dropdown__trigger {
+  align-items: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: var(--space-2);
+  justify-content: space-between;
+  min-width: 0;
+  outline: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  width: 100%;
+}
+.app-dropdown__trigger:hover:not(:disabled) {
+  border-color: var(--text-tertiary);
+}
+.app-dropdown__trigger:focus-visible, .app-dropdown--open .app-dropdown__trigger {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+.app-dropdown__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.app-dropdown--form .app-dropdown__trigger {
+  font-size: var(--font-size-md);
+  min-height: var(--control-height-form);
+  padding: 0 var(--space-3);
+}
+
+.app-dropdown--toolbar .app-dropdown__trigger {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  max-width: min(280px, 42vw);
+  min-height: var(--control-height);
+  min-width: 180px;
+  padding: 0 var(--space-2);
+}
+
+.app-dropdown__value {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-dropdown__caret {
+  flex: 0 0 auto;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.app-dropdown__menu {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  left: 0;
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  max-height: 280px;
+  max-width: min(360px, 80vw);
+  min-width: 100%;
+  overflow: auto;
+  padding: var(--space-1);
+  position: absolute;
+  top: 100%;
+  z-index: 25;
+}
+
+.app-dropdown__option {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+.app-dropdown__option:hover:not(:disabled) {
+  background: var(--control-bg-hover);
+}
+.app-dropdown__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.app-dropdown__option--active {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-color);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 720px) {
+  .app-dropdown--toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    margin-left: 0;
+    width: 100%;
+  }
+  .app-dropdown--toolbar .app-dropdown__trigger {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+  }
+}
 .settings-panel {
   padding: var(--space-4);
   width: 236px;
@@ -4515,9 +4660,11 @@ html[data-density=compact] .native-datagrid .app-badge {
 .crud-drawer-root--open {
   visibility: visible;
 }
+.crud-drawer-root--open .crud-drawer__scrim {
+  animation: crud-drawer-scrim-enter var(--transition-slow) both;
+}
 
 .crud-drawer__scrim {
-  animation: crud-drawer-scrim-enter var(--transition-slow) both;
   background: var(--overlay-bg-subtle);
   border: 0;
   cursor: default;
@@ -4540,12 +4687,12 @@ html[data-density=compact] .native-datagrid .app-badge {
   z-index: 2;
 }
 
-.crud-drawer-root--right .crud-drawer {
+.crud-drawer-root--open.crud-drawer-root--right .crud-drawer {
   animation: crud-drawer-slide-right var(--transition-slow) both;
   right: 0;
 }
 
-.crud-drawer-root--left .crud-drawer {
+.crud-drawer-root--open.crud-drawer-root--left .crud-drawer {
   animation: crud-drawer-slide-left var(--transition-slow) both;
   border-left: 0;
   border-right: 1px solid var(--border-color);

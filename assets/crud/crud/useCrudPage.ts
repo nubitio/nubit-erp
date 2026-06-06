@@ -18,6 +18,7 @@ export function useCrudPage<T extends DataRecord = DataRecord>(
   events: FormEventNames;
   resource: ResolvedCrudResource<T>;
   fields: Field[];
+  formFields: Field[];
   formRef: React.RefObject<FormHandle | null>;
   permissions: ResolvedPermissions;
   selectionState: SelectionState & {
@@ -33,6 +34,11 @@ export function useCrudPage<T extends DataRecord = DataRecord>(
   const fields = useMemo(
     () => (resolvedResource.fields ?? []) as Field[],
     [resolvedResource.fields],
+  );
+
+  const formFields = useMemo(
+    () => (resolvedResource.formFields ?? fields) as Field[],
+    [fields, resolvedResource.formFields],
   );
 
   const permissions = usePermissions(
@@ -52,6 +58,7 @@ export function useCrudPage<T extends DataRecord = DataRecord>(
     events,
     resource: resolvedResource,
     fields,
+    formFields,
     formRef,
     permissions,
     selectionState,

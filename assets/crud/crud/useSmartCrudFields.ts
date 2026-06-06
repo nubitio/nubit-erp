@@ -15,6 +15,9 @@ type SmartCrudRuntimeField = Field & {
 };
 
 export interface SmartCrudFieldsResult {
+  /** Stable field set for the grid — RBAC + operation semantics only. */
+  gridFields: Field[];
+  /** Reactive field set for the form — includes conditional rules. */
   processedFields: Field[];
   computedValues: FormDataRecord;
 }
@@ -74,12 +77,8 @@ export function useSmartCrudFields(
 
       const updated: Field = { ...field };
 
-      // Conditional visibility affects the dialog form only — grid column
-      // visibility stays controlled by the static field definition.
+      // Conditional visibility affects the form only — never the grid columns.
       updated.visibleOnForm = state.visible;
-      if (activeOperation) {
-        updated.hidden = !state.visible;
-      }
 
       if (state.disabled) {
         updated.disabled = true;
@@ -107,5 +106,9 @@ export function useSmartCrudFields(
     [fieldStates],
   );
 
-  return { processedFields, computedValues };
+  return {
+    gridFields: permissionFilteredFields,
+    processedFields,
+    computedValues,
+  };
 }

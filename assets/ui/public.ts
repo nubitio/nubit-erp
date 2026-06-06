@@ -13,6 +13,8 @@ export { Card } from './Card';
 export type { CardProps } from './Card';
 export { FormField, SelectField, TextAreaField, TextField } from './FormControls';
 export type { FormFieldProps, SelectFieldProps, TextAreaFieldProps, TextFieldProps } from './FormControls';
+export { AppDropdown } from './AppDropdown';
+export type { AppDropdownOption, AppDropdownProps, AppDropdownVariant } from './AppDropdown';
 export { ThemeProvider, ThemeContext, useTheme } from './theme/ThemeProvider';
 export type { ThemeProviderProps, ThemeContextValue, Theme, ThemeMode } from './theme/ThemeProvider';
 export { ThemeSwitcher } from './theme/ThemeSwitcher';

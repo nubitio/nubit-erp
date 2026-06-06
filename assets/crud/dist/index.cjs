@@ -3031,11 +3031,13 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 		resourceStoreFactory,
 		sort
 	]);
+	const fieldsRef = (0, react.useRef)(options.fields);
+	fieldsRef.current = options.fields;
 	const loadRows = (0, react.useCallback)(async () => {
 		if (options.manualLoad) return rowsRef.current;
 		setIsGridLoading(true);
 		const loadOptions = {
-			filter: buildFilterExpression(filters, filterOperators, options.fields),
+			filter: buildFilterExpression(filters, filterOperators, fieldsRef.current),
 			sort
 		};
 		if (options.paging ?? true) {
@@ -3052,7 +3054,6 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 	}, [
 		filterOperators,
 		filters,
-		options.fields,
 		options.manualLoad,
 		options.paging,
 		page,
@@ -4197,6 +4198,7 @@ function useCrudPage(resource, externalFormRef) {
 		events,
 		resource: resolvedResource,
 		fields,
+		formFields: (0, react.useMemo)(() => resolvedResource.formFields ?? fields, [fields, resolvedResource.formFields]),
 		formRef,
 		permissions: usePermissions(resolvedResource, resolvedResource._supportedOperations ?? []),
 		selectionState: useSelectionState((0, react.useMemo)(() => {
@@ -4557,7 +4559,7 @@ const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, c
 }) });
 const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange, formRef: externalFormRef, onSelectionChanged: externalOnSelectionChanged, editDisabled, deleteDisabled, gridRef: externalGridRef, onOperationChange }) => {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
-	const { events, resource: resolvedResource, fields, formRef, permissions, selectionState, presetState } = useCrudPage((0, react.useMemo)(() => resolveCrudResource(resource), [resource]), externalFormRef);
+	const { events, resource: resolvedResource, fields, formFields, formRef, permissions, selectionState, presetState } = useCrudPage((0, react.useMemo)(() => resolveCrudResource(resource), [resource]), externalFormRef);
 	const datagridFields = (0, react.useMemo)(() => fields.filter((field) => field.isIdentity || field.visible !== false), [fields]);
 	const routeAwareGridFields = (0, react.useMemo)(() => datagridFields.map((field) => {
 		const routeFilterValue = initialFilters[field.name];
@@ -4833,7 +4835,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(NativeFormView, {
 					ref: formRef,
 					url: resolvedResource.apiUrl,
-					fields,
+					fields: formFields,
 					events,
 					detailFields: formDetail?.fields,
 					detailUrl: formDetail?.url,
@@ -5405,6 +5407,7 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 	const fieldStates = useConditionalRules(permissionFilteredFields, formData);
 	useDependsOn(permissionFilteredFields, formData);
 	return {
+		gridFields: permissionFilteredFields,
 		processedFields: (0, react.useMemo)(() => {
 			const stateByName = new Map(fieldStates.map((s) => [s.name, s]));
 			return permissionFilteredFields.map((field) => {
@@ -5413,7 +5416,6 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 				if (!state) return field;
 				const updated = { ...field };
 				updated.visibleOnForm = state.visible;
-				if (activeOperation) updated.hidden = !state.visible;
 				if (state.disabled) updated.disabled = true;
 				updated.required = state.required;
 				if (state.computedValue !== void 0) updated.readonly = true;
@@ -5855,23 +5857,26 @@ function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, 
 	const routingState = useRouting(resource.routing);
 	const { activeOperation, formData, handleFormDataChange, startCreate, startEdit, resetOperation } = useSmartCrudOperation(void 0, routingState);
 	const roles = useSmartCrudRoles();
-	const { processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, (0, react.useMemo)(() => roles ?? [], [roles]));
+	const { gridFields, processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, (0, react.useMemo)(() => roles ?? [], [roles]));
 	(0, _nubit_core.useMercureSubscription)(resource.apiUrl, () => {
 		effectiveGridRef.current?.refresh();
 	}, resolvedBaseResource.mercure !== false);
 	const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith("/") ? resolvedBaseResource.apiUrl : `/${resolvedBaseResource.apiUrl}`;
 	const resolvedResource = (0, react.useMemo)(() => ({
 		...resolvedBaseResource,
-		...!hasManualFields ? { fields } : {},
+		...!hasManualFields ? { fields: gridFields } : {},
 		apiUrl: normalizedApiUrl,
-		fields: processedFields,
+		fields: hasManualFields ? resource.fields : gridFields,
+		formFields: processedFields,
 		_supportedOperations: supportedOperations
 	}), [
 		fields,
+		gridFields,
 		hasManualFields,
 		normalizedApiUrl,
 		processedFields,
 		resolvedBaseResource,
+		resource.fields,
 		supportedOperations
 	]);
 	if (!hasManualFields && isLoading) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudSkeleton, {});
@@ -6790,6 +6795,98 @@ var FieldBuilder = class {
 	}
 };
 //#endregion
+//#region assets/crud/view/CrudDrawerView.tsx
+/**
+* Event-driven drawer shell for legacy pages (SalePage, PriceListPage, etc.).
+* Mirrors `DialogView` API but slides in from the side so the grid stays visible.
+*/
+const CrudDrawerView = (0, react.forwardRef)((options, ref) => {
+	const { t } = (0, _nubit_core.useCoreTranslation)();
+	const [title, setTitle] = (0, react.useState)(options.title ?? t("crudPage.dialogTitleAdd"));
+	const isControlled = options.isOpen !== void 0;
+	const [internalVisible, setInternalVisible] = (0, react.useState)(options.visible ?? false);
+	const visible = isControlled ? options.isOpen ?? false : internalVisible;
+	const [isProcessing, setIsProcessing] = (0, react.useState)(false);
+	const [on, emit] = (0, _nubit_core.useEvents)();
+	(0, react.useEffect)(() => {
+		if (options.title) setTitle(options.title);
+	}, [options.title]);
+	const open = (nextTitle) => {
+		if (!isControlled) setInternalVisible(true);
+		if (nextTitle) setTitle(nextTitle);
+	};
+	const close = () => {
+		if (isProcessing) return;
+		if (!isControlled) setInternalVisible(false);
+	};
+	const handleClose = () => {
+		if (isProcessing) return;
+		close();
+		options.onClose?.();
+	};
+	const onCancelClick = () => {
+		handleClose();
+		if (options.onCancel) {
+			options.onCancel();
+			return;
+		}
+		if (options.events?.CANCEL) emit(options.events.CANCEL);
+	};
+	const onSaveClick = () => {
+		if (options.onSave) {
+			options.onSave();
+			return;
+		}
+		if (options.events?.SAVE) emit(options.events.SAVE);
+	};
+	const setupObservers = () => {
+		if (options.events?.ADD) on(options.events.ADD, (payload) => open(payload?.title ?? t("crudPage.dialogTitleAdd")));
+		if (options.events?.EDIT) on(options.events.EDIT, () => open(t("crudPage.dialogTitleEdit")));
+		if (options.events?.LOADING) on(options.events.LOADING, (isLoading) => setIsProcessing(isLoading));
+		if (options.events?.SUCCESS) on(options.events.SUCCESS, () => close());
+	};
+	const setupObserversRef = (0, react.useRef)(setupObservers);
+	setupObserversRef.current = setupObservers;
+	(0, react.useEffect)(() => {
+		setupObserversRef.current();
+	}, []);
+	(0, react.useImperativeHandle)(ref, () => ({
+		open,
+		close
+	}));
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(CrudDrawerShell, {
+		isOpen: visible,
+		title,
+		drawerWidth: options.drawerWidth ?? 1200,
+		drawerSide: options.drawerSide ?? "right",
+		onClose: handleClose,
+		onCancel: onCancelClick,
+		onSave: onSaveClick,
+		children: [options.children, isProcessing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			className: "crud-dialog__loading",
+			"aria-hidden": "true",
+			children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: "crud-dialog__loading-indicator" })
+		})]
+	});
+});
+CrudDrawerView.displayName = "CrudDrawerView";
+//#endregion
+//#region assets/crud/crud/ToolbarSelect.tsx
+/** @deprecated Use `AppDropdown` with `variant="toolbar"` from `@nubit/ui`. */
+function ToolbarSelect({ id, label, icon = "ph-funnel", value, options, onChange, disabled = false }) {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.AppDropdown, {
+		id,
+		label,
+		icon,
+		value,
+		options,
+		onChange,
+		disabled,
+		variant: "toolbar",
+		showFieldLabel: false
+	});
+}
+//#endregion
 //#region assets/crud/adapter/RestAdapter.ts
 /**
 * Backend adapter for plain OpenAPI / REST backends.
@@ -6866,6 +6963,7 @@ exports.CrudPageShell = CrudPageShell;
 exports.DATA_GRID_EVENTS = DATA_GRID_EVENTS;
 exports.DataGridView = NativeDataGridView;
 exports.DialogView = CrudDialogView;
+exports.DrawerView = CrudDrawerView;
 exports.FORM_EVENTS = FORM_EVENTS;
 exports.FieldBuilder = FieldBuilder;
 exports.FieldType = FieldType;
@@ -6876,6 +6974,7 @@ exports.ResourceStoreProvider = ResourceStoreProvider;
 exports.RestAdapter = RestAdapter;
 exports.SmartCrudPage = SmartCrudPage;
 exports.SmartCrudRolesProvider = SmartCrudRolesProvider;
+exports.ToolbarSelect = ToolbarSelect;
 exports.checkboxField = checkboxField;
 exports.computeSummaryValue = computeSummaryValue;
 Object.defineProperty(exports, "createCrudEvents", {

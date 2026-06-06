@@ -917,11 +917,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     [httpClient, idField, options.filter, options.url, resourceStoreFactory, sort],
   );
 
+  const fieldsRef = useRef(options.fields);
+  fieldsRef.current = options.fields;
+
   const loadRows = useCallback(async () => {
     if (options.manualLoad) return rowsRef.current;
     setIsGridLoading(true);
     const loadOptions: ResourceLoadOptions = {
-      filter: buildFilterExpression(filters, filterOperators, options.fields),
+      filter: buildFilterExpression(filters, filterOperators, fieldsRef.current),
       sort,
     };
     if (options.paging ?? true) {
@@ -936,7 +939,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     setIsGridLoading(false);
     onContentReadyRef.current?.();
     return result.data;
-  }, [filterOperators, filters, options.fields, options.manualLoad, options.paging, page, pageSize, sort, source]);
+  }, [filterOperators, filters, options.manualLoad, options.paging, page, pageSize, sort, source]);
 
   useEffect(() => {
     void loadRows();

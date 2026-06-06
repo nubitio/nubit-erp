@@ -26,13 +26,15 @@ describe('useSmartCrudFields', () => {
     expect(result.current.processedFields[0].visibleOnForm).toBe(false);
   });
 
-  it('still hides fields from active forms when form visibility is false', () => {
+  it('keeps grid columns visible while hiding fields from active forms', () => {
     const field = textField().name('warehouse').label('Almacen').visibleOnForm(false).build();
 
     const { result } = renderHook(() => useSmartCrudFields([field], 'create', {}, []), {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.processedFields[0].hidden).toBe(true);
+    expect(result.current.gridFields[0].hidden).toBe(false);
+    expect(result.current.processedFields[0].hidden).toBe(false);
+    expect(result.current.processedFields[0].visibleOnForm).toBe(false);
   });
 });

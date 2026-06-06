@@ -84,13 +84,13 @@ const Avatar = ({ owner = "", size, variant = "md", shape = "circle", alt, class
 };
 //#endregion
 //#region assets/ui/Button.tsx
-const cx$3 = (...values) => values.filter(Boolean).join(" ");
+const cx$4 = (...values) => values.filter(Boolean).join(" ");
 const Button = ({ variant = "secondary", size = "md", fullWidth = false, icon, loading = false, className, children, disabled, ...props }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 	...props,
 	type: props.type ?? "button",
 	disabled: disabled || loading,
 	"aria-busy": loading || void 0,
-	className: cx$3("app-button", `app-button--${variant}`, size === "sm" && "app-button--sm", fullWidth && "app-button--full", className),
+	className: cx$4("app-button", `app-button--${variant}`, size === "sm" && "app-button--sm", fullWidth && "app-button--full", className),
 	children: [loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 		className: "app-button-spinner",
 		"aria-hidden": "true"
@@ -104,7 +104,7 @@ const IconButton = ({ icon, label, variant = "default", className, ...props }) =
 	type: props.type ?? "button",
 	"aria-label": props["aria-label"] ?? label,
 	title: props.title ?? label,
-	className: cx$3("app-icon-button", variant === "danger" && "app-icon-button--danger", className),
+	className: cx$4("app-icon-button", variant === "danger" && "app-icon-button--danger", className),
 	children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 		className: icon,
 		"aria-hidden": "true"
@@ -290,10 +290,10 @@ const Card = ({ title, description, children }) => {
 };
 //#endregion
 //#region assets/ui/FormControls.tsx
-const cx$2 = (...values) => values.filter(Boolean).join(" ");
+const cx$3 = (...values) => values.filter(Boolean).join(" ");
 const FormField = ({ label, error, helpText, children, className, ...props }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 	...props,
-	className: cx$2("app-form-field", !!error && "app-form-field--error", className),
+	className: cx$3("app-form-field", !!error && "app-form-field--error", className),
 	children: [
 		label && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 			className: "app-form-field__label",
@@ -314,14 +314,14 @@ const TextField = (0, react.forwardRef)(function TextField({ className, invalid,
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 		...props,
 		ref,
-		className: cx$2("app-input", invalid && "app-input--invalid", className)
+		className: cx$3("app-input", invalid && "app-input--invalid", className)
 	});
 });
 const SelectField = (0, react.forwardRef)(function SelectField({ className, invalid, children, ...props }, ref) {
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
 		...props,
 		ref,
-		className: cx$2("app-input", "app-select", invalid && "app-input--invalid", className),
+		className: cx$3("app-input", "app-select", invalid && "app-input--invalid", className),
 		children
 	});
 });
@@ -329,9 +329,113 @@ const TextAreaField = (0, react.forwardRef)(function TextAreaField({ className, 
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 		...props,
 		ref,
-		className: cx$2("app-input", "app-textarea", invalid && "app-input--invalid", className)
+		className: cx$3("app-input", "app-textarea", invalid && "app-input--invalid", className)
 	});
 });
+//#endregion
+//#region assets/ui/AppDropdown.tsx
+function cx$2(...values) {
+	return values.filter(Boolean).join(" ");
+}
+function normalizeIcon(icon) {
+	if (!icon) return void 0;
+	if (icon.startsWith("ph ")) return icon;
+	if (icon.startsWith("ph-")) return `ph ${icon}`;
+	return `ph ph-${icon}`;
+}
+function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabled = false, placeholder = "Seleccionar…", variant = "form", className, showFieldLabel = variant === "form", error, helpText }) {
+	const generatedId = (0, react.useId)();
+	const id = idProp ?? generatedId;
+	const [open, setOpen] = (0, react.useState)(false);
+	const containerRef = (0, react.useRef)(null);
+	const selected = options.find((option) => option.value === value);
+	(0, react.useEffect)(() => {
+		if (!open) return;
+		const handler = (event) => {
+			if (!containerRef.current?.contains(event.target)) setOpen(false);
+		};
+		document.addEventListener("mousedown", handler);
+		return () => document.removeEventListener("mousedown", handler);
+	}, [open]);
+	const control = /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		ref: containerRef,
+		className: cx$2("app-dropdown", `app-dropdown--${variant}`, open && "app-dropdown--open", disabled && "app-dropdown--disabled", className),
+		role: "group",
+		"aria-labelledby": label ? `${id}-label` : void 0,
+		children: [
+			variant === "toolbar" && label && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+				className: "app-dropdown__toolbar-label",
+				id: `${id}-label`,
+				children: [icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+					className: normalizeIcon(icon),
+					"aria-hidden": "true"
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label })]
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+				type: "button",
+				className: "app-dropdown__trigger",
+				"aria-haspopup": "listbox",
+				"aria-expanded": open,
+				"aria-labelledby": label ? `${id}-label ${id}-value` : `${id}-value`,
+				disabled,
+				onClick: () => setOpen((current) => !current),
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					className: "app-dropdown__value",
+					id: `${id}-value`,
+					children: selected?.label ?? placeholder
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+					className: "ph ph-caret-down app-dropdown__caret",
+					"aria-hidden": "true"
+				})]
+			}),
+			open && !disabled && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
+				className: "app-dropdown__menu",
+				role: "listbox",
+				"aria-labelledby": label ? `${id}-label` : void 0,
+				children: options.map((option) => {
+					const isActive = option.value === value;
+					return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", {
+						role: "presentation",
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							type: "button",
+							role: "option",
+							"aria-selected": isActive,
+							disabled: option.disabled,
+							className: cx$2("app-dropdown__option", isActive && "app-dropdown__option--active"),
+							onClick: () => {
+								if (option.disabled) return;
+								onChange(option.value);
+								setOpen(false);
+							},
+							children: option.label
+						})
+					}, option.value);
+				})
+			})
+		]
+	});
+	if (!showFieldLabel || variant === "toolbar") return control;
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+		className: cx$2("app-form-field", !!error && "app-form-field--error"),
+		htmlFor: id,
+		children: [
+			label && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				className: "app-form-field__label",
+				id: `${id}-label`,
+				children: label
+			}),
+			control,
+			error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				className: "app-form-field__error",
+				role: "alert",
+				children: error
+			}) : helpText ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				className: "app-form-field__help",
+				children: helpText
+			}) : null
+		]
+	});
+}
 //#endregion
 //#region assets/ui/theme/ThemeProvider.tsx
 const ThemeContext = react.default.createContext(null);
@@ -559,12 +663,12 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 				className: "settings-panel__heading",
-				children: "Accent color"
+				children: "Color de acento"
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				className: "settings-panel__swatches",
 				role: "group",
-				"aria-label": "Accent color presets",
+				"aria-label": "Colores de acento",
 				children: presets.map((preset) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 					className: "settings-panel__swatch",
 					type: "button",
@@ -581,12 +685,12 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("hr", { className: "settings-panel__divider" }),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 				className: "settings-panel__heading",
-				children: "Density"
+				children: "Densidad"
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: "settings-panel__density",
 				role: "group",
-				"aria-label": "UI density",
+				"aria-label": "Densidad de interfaz",
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 					className: "settings-panel__density-btn",
 					type: "button",
@@ -2021,6 +2125,7 @@ const Popover = ({ trigger, panel, align = "end", ariaLabel, className }) => {
 //#endregion
 exports.ACCENT_PRESETS = ACCENT_PRESETS;
 exports.AppDialog = AppDialog;
+exports.AppDropdown = AppDropdown;
 exports.AppToolbar = AppToolbar;
 exports.Avatar = Avatar;
 exports.Badge = Badge;

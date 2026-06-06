@@ -198,6 +198,45 @@ interface TextAreaFieldProps extends TextareaHTMLAttributes<HTMLTextAreaElement>
 }
 declare const TextAreaField: import("react").ForwardRefExoticComponent<TextAreaFieldProps & import("react").RefAttributes<HTMLTextAreaElement>>;
 //#endregion
+//#region assets/ui/AppDropdown.d.ts
+interface AppDropdownOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+type AppDropdownVariant = 'form' | 'toolbar';
+interface AppDropdownProps {
+  id?: string;
+  label?: ReactNode;
+  icon?: string;
+  value: string;
+  options: AppDropdownOption[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  variant?: AppDropdownVariant;
+  className?: string;
+  /** When true, wraps the control in a form-field label (form variant only). */
+  showFieldLabel?: boolean;
+  error?: ReactNode;
+  helpText?: ReactNode;
+}
+declare function AppDropdown({
+  id: idProp,
+  label,
+  icon,
+  value,
+  options,
+  onChange,
+  disabled,
+  placeholder,
+  variant,
+  className,
+  showFieldLabel,
+  error,
+  helpText
+}: AppDropdownProps): import("react").JSX.Element;
+//#endregion
 //#region assets/ui/theme/ThemeProvider.d.ts
 type Theme = 'light' | 'dark';
 type ThemeMode = 'light' | 'dark' | 'auto';
@@ -633,4 +672,4 @@ interface UseFloatingPanelResult {
 }
 declare function useFloatingPanel(options?: UseFloatingPanelOptions): UseFloatingPanelResult;
 //#endregion
-export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };
+export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppDropdown, type AppDropdownOption, type AppDropdownProps, type AppDropdownVariant, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };

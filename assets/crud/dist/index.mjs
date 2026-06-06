@@ -1,7 +1,7 @@
 import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { AppDialog, Button, ConfirmDialog, DatePicker, IconButton } from "@nubit/ui";
+import { AppDialog, AppDropdown, Button, ConfirmDialog, DatePicker, IconButton } from "@nubit/ui";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { createCrudEvents, createScopedEventBus, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureSubscription } from "@nubit/core";
 import { useDropzone } from "react-dropzone";
@@ -3007,11 +3007,13 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		resourceStoreFactory,
 		sort
 	]);
+	const fieldsRef = useRef(options.fields);
+	fieldsRef.current = options.fields;
 	const loadRows = useCallback(async () => {
 		if (options.manualLoad) return rowsRef.current;
 		setIsGridLoading(true);
 		const loadOptions = {
-			filter: buildFilterExpression(filters, filterOperators, options.fields),
+			filter: buildFilterExpression(filters, filterOperators, fieldsRef.current),
 			sort
 		};
 		if (options.paging ?? true) {
@@ -3028,7 +3030,6 @@ const NativeDataGridView = forwardRef((options, ref) => {
 	}, [
 		filterOperators,
 		filters,
-		options.fields,
 		options.manualLoad,
 		options.paging,
 		page,
@@ -4173,6 +4174,7 @@ function useCrudPage(resource, externalFormRef) {
 		events,
 		resource: resolvedResource,
 		fields,
+		formFields: useMemo(() => resolvedResource.formFields ?? fields, [fields, resolvedResource.formFields]),
 		formRef,
 		permissions: usePermissions(resolvedResource, resolvedResource._supportedOperations ?? []),
 		selectionState: useSelectionState(useMemo(() => {
@@ -4533,7 +4535,7 @@ const CrudPage = ({ resource, onFormDataChange, initialRecordId, initialIsNew, c
 }) });
 const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, initialIsNew = false, computedValues = {}, initialFilters = {}, onFiltersChange, formRef: externalFormRef, onSelectionChanged: externalOnSelectionChanged, editDisabled, deleteDisabled, gridRef: externalGridRef, onOperationChange }) => {
 	const { t } = useCoreTranslation();
-	const { events, resource: resolvedResource, fields, formRef, permissions, selectionState, presetState } = useCrudPage(useMemo(() => resolveCrudResource(resource), [resource]), externalFormRef);
+	const { events, resource: resolvedResource, fields, formFields, formRef, permissions, selectionState, presetState } = useCrudPage(useMemo(() => resolveCrudResource(resource), [resource]), externalFormRef);
 	const datagridFields = useMemo(() => fields.filter((field) => field.isIdentity || field.visible !== false), [fields]);
 	const routeAwareGridFields = useMemo(() => datagridFields.map((field) => {
 		const routeFilterValue = initialFilters[field.name];
@@ -4809,7 +4811,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				children: /* @__PURE__ */ jsx(NativeFormView, {
 					ref: formRef,
 					url: resolvedResource.apiUrl,
-					fields,
+					fields: formFields,
 					events,
 					detailFields: formDetail?.fields,
 					detailUrl: formDetail?.url,
@@ -5381,6 +5383,7 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 	const fieldStates = useConditionalRules(permissionFilteredFields, formData);
 	useDependsOn(permissionFilteredFields, formData);
 	return {
+		gridFields: permissionFilteredFields,
 		processedFields: useMemo(() => {
 			const stateByName = new Map(fieldStates.map((s) => [s.name, s]));
 			return permissionFilteredFields.map((field) => {
@@ -5389,7 +5392,6 @@ function useSmartCrudFields(fields, activeOperation, formData, roles) {
 				if (!state) return field;
 				const updated = { ...field };
 				updated.visibleOnForm = state.visible;
-				if (activeOperation) updated.hidden = !state.visible;
 				if (state.disabled) updated.disabled = true;
 				updated.required = state.required;
 				if (state.computedValue !== void 0) updated.readonly = true;
@@ -5831,23 +5833,26 @@ function SmartCrudPage({ resource, fieldOverrides, formRef, onSelectionChanged, 
 	const routingState = useRouting(resource.routing);
 	const { activeOperation, formData, handleFormDataChange, startCreate, startEdit, resetOperation } = useSmartCrudOperation(void 0, routingState);
 	const roles = useSmartCrudRoles();
-	const { processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, useMemo(() => roles ?? [], [roles]));
+	const { gridFields, processedFields, computedValues } = useSmartCrudFields(fields, activeOperation, formData, useMemo(() => roles ?? [], [roles]));
 	useMercureSubscription(resource.apiUrl, () => {
 		effectiveGridRef.current?.refresh();
 	}, resolvedBaseResource.mercure !== false);
 	const normalizedApiUrl = resolvedBaseResource.apiUrl.startsWith("/") ? resolvedBaseResource.apiUrl : `/${resolvedBaseResource.apiUrl}`;
 	const resolvedResource = useMemo(() => ({
 		...resolvedBaseResource,
-		...!hasManualFields ? { fields } : {},
+		...!hasManualFields ? { fields: gridFields } : {},
 		apiUrl: normalizedApiUrl,
-		fields: processedFields,
+		fields: hasManualFields ? resource.fields : gridFields,
+		formFields: processedFields,
 		_supportedOperations: supportedOperations
 	}), [
 		fields,
+		gridFields,
 		hasManualFields,
 		normalizedApiUrl,
 		processedFields,
 		resolvedBaseResource,
+		resource.fields,
 		supportedOperations
 	]);
 	if (!hasManualFields && isLoading) return /* @__PURE__ */ jsx(CrudSkeleton, {});
@@ -6766,6 +6771,98 @@ var FieldBuilder = class {
 	}
 };
 //#endregion
+//#region assets/crud/view/CrudDrawerView.tsx
+/**
+* Event-driven drawer shell for legacy pages (SalePage, PriceListPage, etc.).
+* Mirrors `DialogView` API but slides in from the side so the grid stays visible.
+*/
+const CrudDrawerView = forwardRef((options, ref) => {
+	const { t } = useCoreTranslation();
+	const [title, setTitle] = useState(options.title ?? t("crudPage.dialogTitleAdd"));
+	const isControlled = options.isOpen !== void 0;
+	const [internalVisible, setInternalVisible] = useState(options.visible ?? false);
+	const visible = isControlled ? options.isOpen ?? false : internalVisible;
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [on, emit] = useEvents();
+	useEffect(() => {
+		if (options.title) setTitle(options.title);
+	}, [options.title]);
+	const open = (nextTitle) => {
+		if (!isControlled) setInternalVisible(true);
+		if (nextTitle) setTitle(nextTitle);
+	};
+	const close = () => {
+		if (isProcessing) return;
+		if (!isControlled) setInternalVisible(false);
+	};
+	const handleClose = () => {
+		if (isProcessing) return;
+		close();
+		options.onClose?.();
+	};
+	const onCancelClick = () => {
+		handleClose();
+		if (options.onCancel) {
+			options.onCancel();
+			return;
+		}
+		if (options.events?.CANCEL) emit(options.events.CANCEL);
+	};
+	const onSaveClick = () => {
+		if (options.onSave) {
+			options.onSave();
+			return;
+		}
+		if (options.events?.SAVE) emit(options.events.SAVE);
+	};
+	const setupObservers = () => {
+		if (options.events?.ADD) on(options.events.ADD, (payload) => open(payload?.title ?? t("crudPage.dialogTitleAdd")));
+		if (options.events?.EDIT) on(options.events.EDIT, () => open(t("crudPage.dialogTitleEdit")));
+		if (options.events?.LOADING) on(options.events.LOADING, (isLoading) => setIsProcessing(isLoading));
+		if (options.events?.SUCCESS) on(options.events.SUCCESS, () => close());
+	};
+	const setupObserversRef = useRef(setupObservers);
+	setupObserversRef.current = setupObservers;
+	useEffect(() => {
+		setupObserversRef.current();
+	}, []);
+	useImperativeHandle(ref, () => ({
+		open,
+		close
+	}));
+	return /* @__PURE__ */ jsxs(CrudDrawerShell, {
+		isOpen: visible,
+		title,
+		drawerWidth: options.drawerWidth ?? 1200,
+		drawerSide: options.drawerSide ?? "right",
+		onClose: handleClose,
+		onCancel: onCancelClick,
+		onSave: onSaveClick,
+		children: [options.children, isProcessing && /* @__PURE__ */ jsx("div", {
+			className: "crud-dialog__loading",
+			"aria-hidden": "true",
+			children: /* @__PURE__ */ jsx("span", { className: "crud-dialog__loading-indicator" })
+		})]
+	});
+});
+CrudDrawerView.displayName = "CrudDrawerView";
+//#endregion
+//#region assets/crud/crud/ToolbarSelect.tsx
+/** @deprecated Use `AppDropdown` with `variant="toolbar"` from `@nubit/ui`. */
+function ToolbarSelect({ id, label, icon = "ph-funnel", value, options, onChange, disabled = false }) {
+	return /* @__PURE__ */ jsx(AppDropdown, {
+		id,
+		label,
+		icon,
+		value,
+		options,
+		onChange,
+		disabled,
+		variant: "toolbar",
+		showFieldLabel: false
+	});
+}
+//#endregion
 //#region assets/crud/adapter/RestAdapter.ts
 /**
 * Backend adapter for plain OpenAPI / REST backends.
@@ -6833,4 +6930,4 @@ const RestAdapter = {
 	synthesizeEntityKey(_field, _entityValue) {}
 };
 //#endregion
-export { AuditTrailPanel, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { AuditTrailPanel, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, CrudDrawerView as DrawerView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, ToolbarSelect, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

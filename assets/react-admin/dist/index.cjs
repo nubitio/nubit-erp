@@ -28,6 +28,12 @@ Object.defineProperty(exports, "AppDialog", {
 		return _nubit_ui.AppDialog;
 	}
 });
+Object.defineProperty(exports, "AppDropdown", {
+	enumerable: true,
+	get: function() {
+		return _nubit_ui.AppDropdown;
+	}
+});
 Object.defineProperty(exports, "AppToolbar", {
 	enumerable: true,
 	get: function() {
@@ -92,6 +98,12 @@ Object.defineProperty(exports, "DialogView", {
 	enumerable: true,
 	get: function() {
 		return _nubit_crud.DialogView;
+	}
+});
+Object.defineProperty(exports, "DrawerView", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.DrawerView;
 	}
 });
 Object.defineProperty(exports, "FORM_EVENTS", {
@@ -170,6 +182,12 @@ Object.defineProperty(exports, "ThemeSwitcher", {
 	enumerable: true,
 	get: function() {
 		return _nubit_ui.ThemeSwitcher;
+	}
+});
+Object.defineProperty(exports, "ToolbarSelect", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.ToolbarSelect;
 	}
 });
 Object.defineProperty(exports, "checkboxField", {

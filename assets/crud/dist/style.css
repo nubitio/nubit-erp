@@ -2388,9 +2388,11 @@ html[data-density=compact] .native-datagrid .app-badge {
 .crud-drawer-root--open {
   visibility: visible;
 }
+.crud-drawer-root--open .crud-drawer__scrim {
+  animation: crud-drawer-scrim-enter var(--transition-slow) both;
+}
 
 .crud-drawer__scrim {
-  animation: crud-drawer-scrim-enter var(--transition-slow) both;
   background: var(--overlay-bg-subtle);
   border: 0;
   cursor: default;
@@ -2413,12 +2415,12 @@ html[data-density=compact] .native-datagrid .app-badge {
   z-index: 2;
 }
 
-.crud-drawer-root--right .crud-drawer {
+.crud-drawer-root--open.crud-drawer-root--right .crud-drawer {
   animation: crud-drawer-slide-right var(--transition-slow) both;
   right: 0;
 }
 
-.crud-drawer-root--left .crud-drawer {
+.crud-drawer-root--open.crud-drawer-root--left .crud-drawer {
   animation: crud-drawer-slide-left var(--transition-slow) both;
   border-left: 0;
   border-right: 1px solid var(--border-color);

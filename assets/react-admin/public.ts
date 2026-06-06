@@ -86,6 +86,7 @@ export {
   switchField,
   fileField,
   ToolbarSelect,
+  DrawerView,
   imageField,
   passwordField,
   identityField,
@@ -135,8 +136,8 @@ export { MercureProvider, useMercureHub, useMercureSubscription } from '@nubit/c
 export type { MercureProviderProps } from '@nubit/core';
 
 // ── UI primitives ─────────────────────────────────────────────────────────────
-export { AppDialog, ConfirmDialog, AppToolbar, Card, ThemeProvider, ThemeContext, useTheme, ThemeSwitcher } from '@nubit/ui';
-export type { AppDialogProps, ConfirmDialogProps, AppToolbarProps, CardProps, ThemeProviderProps, ThemeContextValue, Theme, ThemeMode, ThemeSwitcherProps } from '@nubit/ui';
+export { AppDialog, AppDropdown, ConfirmDialog, AppToolbar, Card, ThemeProvider, ThemeContext, useTheme, ThemeSwitcher } from '@nubit/ui';
+export type { AppDialogProps, AppDropdownOption, AppDropdownProps, AppDropdownVariant, ConfirmDialogProps, AppToolbarProps, CardProps, ThemeProviderProps, ThemeContextValue, Theme, ThemeMode, ThemeSwitcherProps } from '@nubit/ui';
 
 // ── Hydra/OpenAPI adapter ─────────────────────────────────────────────────────
 export {

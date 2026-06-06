@@ -90,6 +90,8 @@ export type { ValidationRule } from './field/ValidationRule';
 // ── Views ─────────────────────────────────────────────────────────────────────
 export { DataGridView, DATA_GRID_EVENTS } from './datagrid/DataGridView';
 export { DialogView } from './dialog/DialogView';
+export { DrawerView } from './view/DrawerView';
+export type { CrudDrawerViewEvents, CrudDrawerViewOptions } from './view/CrudDrawerView';
 export { FormView, FORM_EVENTS } from './form/FormView';
 export {
   CrudFormShell,

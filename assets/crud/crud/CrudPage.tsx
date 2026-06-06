@@ -161,6 +161,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     events,
     resource: resolvedResource,
     fields,
+    formFields,
     formRef,
     permissions,
     selectionState,
@@ -520,7 +521,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
           <FormView
             ref={formRef}
             url={resolvedResource.apiUrl}
-            fields={fields}
+            fields={formFields}
             events={events}
             detailFields={formDetail?.fields}
             detailUrl={formDetail?.url}

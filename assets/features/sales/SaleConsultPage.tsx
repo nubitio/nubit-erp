@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { DataGridView, ToolbarSelect, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
+import { AppDropdown } from '@nubit/ui';
+import { DataGridView, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
 import { getCoreApiBaseUrl } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { SaleFields } from './SaleFields';
@@ -157,13 +158,15 @@ export const SaleConsultPage = () => {
   }), [canGenerate, handleClear, handleGenerateReport, loading]);
 
   const beforeToolbar = useCallback(() => (
-    <ToolbarSelect
+    <AppDropdown
       id="sales-consult-report"
       label="Reporte"
       icon="ph-chart-bar"
       value={selectedReport}
       options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
       disabled={loading}
+      variant="toolbar"
+      showFieldLabel={false}
       onChange={(value) => {
         setSelectedReport(value);
         setError(null);

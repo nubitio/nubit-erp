@@ -163,7 +163,7 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
   const stableRoles = useMemo(() => roles ?? [], [roles]);
 
   // Declarative rules pipeline
-  const { processedFields, computedValues } = useSmartCrudFields(
+  const { gridFields, processedFields, computedValues } = useSmartCrudFields(
     fields,
     activeOperation,
     formData,
@@ -188,17 +188,20 @@ export function SmartCrudPage<T extends DataRecord = DataRecord>({
     () =>
       ({
         ...resolvedBaseResource,
-        ...(!hasManualFields ? { fields } : {}),
+        ...(!hasManualFields ? { fields: gridFields } : {}),
         apiUrl: normalizedApiUrl,
-        fields: processedFields,
+        fields: hasManualFields ? (resource.fields as Field[]) : gridFields,
+        formFields: processedFields,
         _supportedOperations: supportedOperations,
       }) as ResourceConfig<T>,
     [
       fields,
+      gridFields,
       hasManualFields,
       normalizedApiUrl,
       processedFields,
       resolvedBaseResource,
+      resource.fields,
       supportedOperations,
     ],
   );

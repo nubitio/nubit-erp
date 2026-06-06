@@ -134,6 +134,12 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
    */
   fields?: Field[] | FieldDef<T>[];
   /**
+   * Form-only field definitions. When set, the grid uses `fields` and the
+   * create/edit form uses `formFields` — avoids re-fetching the grid on every
+   * reactive form rule evaluation (e.g. visibleWhen while typing).
+   */
+  formFields?: Field[];
+  /**
    * Canonical production field contract for SmartCrud.
    * SmartCrud runtime treats this as authoritative over legacy
    * `fields` + `fieldOverrides` combinations whenever it is present.
