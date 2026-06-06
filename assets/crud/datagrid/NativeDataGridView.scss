@@ -971,28 +971,18 @@ html[data-density="compact"] .native-datagrid .app-badge {
 
 .native-datagrid__empty {
   align-items: center;
-  color: var(--text-tertiary);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   justify-content: center;
   // Fill the table-wrap height (minus the sticky header ~32px)
   min-height: 220px;
-  padding: var(--space-8) var(--space-5);
   // Sticky-header offset: keep content centered in the visible body area
   position: sticky;
   left: 0;
   width: 100%;
   box-sizing: border-box;
 
-  i {
-    font-size: 40px;
-    opacity: 0.25;
-  }
-
-  span {
-    font-size: var(--font-size-sm);
-    opacity: 0.6;
+  .app-empty-state {
+    padding-block: var(--space-5);
   }
 }
 

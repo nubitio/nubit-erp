@@ -1,3 +1,4 @@
+import { EmptyState } from '@nubit/ui';
 import { SummaryStats, PaymentMethodToday, RecentSaleToday } from '../types';
 import { DashboardMetrics } from '../hooks/useDashboardMetrics';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
@@ -113,7 +114,11 @@ export function DashboardHero({
               </li>
             );
           })}
-          {paymentMethodsToday.length === 0 && <div className="empty">Sin datos disponibles</div>}
+          {paymentMethodsToday.length === 0 && (
+            <li className="dash-list-empty">
+              <EmptyState size="sm" icon="credit-card" title="Sin datos disponibles" />
+            </li>
+          )}
         </ul>
 
         <SectionHeader title="Ultimas ventas" subtitle="Movimientos recientes" />
@@ -129,7 +134,16 @@ export function DashboardHero({
               </div>
             </li>
           ))}
-          {recentSalesToday.length === 0 && <div className="empty">Sin ventas registradas hoy</div>}
+          {recentSalesToday.length === 0 && (
+            <li className="dash-list-empty">
+              <EmptyState
+                size="sm"
+                icon="receipt"
+                title="Sin ventas registradas hoy"
+                description="Las ventas del día aparecerán aquí."
+              />
+            </li>
+          )}
         </ul>
       </>
     );

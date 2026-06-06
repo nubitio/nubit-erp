@@ -569,12 +569,16 @@
   }
 }
 
-// ─── Empty state ─────────────────────────────────────────────────────────────
-.empty {
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 13px;
+// ─── Empty state (list cards) ────────────────────────────────────────────────
+.dash-list-empty {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .app-empty-state {
+    padding-block: var(--space-5);
+    width: 100%;
+  }
 }
 
 // ─── Error banner ────────────────────────────────────────────────────────────

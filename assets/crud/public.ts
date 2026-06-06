@@ -38,6 +38,7 @@ export type {
   ResourcePermissions,
   ResourceRowActions,
   ResourceRouting,
+  ResourceEmptyState,
   ResourceToolbar,
   ResourceToolbarAction,
   ResourceToolbarActionVariant,

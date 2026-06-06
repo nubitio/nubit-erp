@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { StatCard } from '@nubit/ui';
+import { EmptyState, StatCard } from '@nubit/ui';
 import { CashRegisterStatus, LowStockProduct } from '../types';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
 
@@ -53,7 +53,14 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
               </li>
             ))}
             {cashRegisters.length === 0 && !cashboxLoading && (
-              <div className="empty">Sin cajas registradas</div>
+              <li className="dash-list-empty">
+                <EmptyState
+                  size="sm"
+                  icon="cash-register"
+                  title="Sin cajas registradas"
+                  description="Configura al menos una caja para operar el punto de venta."
+                />
+              </li>
             )}
           </ul>
         </StatCard>
@@ -92,7 +99,15 @@ export function DashboardOperations({ cashRegisters, cashboxLoading, lowStockPro
               </li>
             ))}
             {lowStockProducts.length === 0 && (
-              <div className="empty">✓ Stock en niveles óptimos</div>
+              <li className="dash-list-empty">
+                <EmptyState
+                  size="sm"
+                  variant="success"
+                  icon="check-circle"
+                  title="Stock en niveles óptimos"
+                  description="Ningún producto está por debajo del mínimo configurado."
+                />
+              </li>
             )}
           </ul>
         </StatCard>

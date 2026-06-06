@@ -5,7 +5,7 @@ import type { FilterRule } from '../field/FilterRule';
 import type { GridHandle } from './GridHandle';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
 import type { SummaryItem } from '../summary';
-import type { ResourceRowActions, ResourceToolbarItems } from '../crud/ResourceConfig';
+import type { ResourceEmptyState, ResourceRowActions, ResourceToolbarItems } from '../crud/ResourceConfig';
 
 export interface DataGridSelectionChangedEvent {
   selectedRowsData?: DataRecord[];
@@ -62,6 +62,8 @@ export interface DataGridViewOptions {
   onDismissError?: () => void;
   editMode?: 'popup' | 'row' | 'cell' | 'batch';
   visibleColumns?: string[] | null;
+  /** Custom empty state when the grid has no rows. */
+  emptyState?: ResourceEmptyState;
   /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */
   adapter?: BackendAdapter;
 }

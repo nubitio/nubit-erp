@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { AppDropdown, Button, ConfirmDialog, DatePicker, IconButton } from '@nubit/ui';
+import { AppDropdown, Button, ConfirmDialog, DatePicker, EmptyState, IconButton } from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
@@ -21,7 +21,7 @@ import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
 import type { FilterRule } from '../field/FilterRule';
-import type { ResourceToolbarAction, ResourceToolbarItems } from '../crud/ResourceConfig';
+import type { ResourceEmptyState, ResourceToolbarAction, ResourceToolbarItems } from '../crud/ResourceConfig';
 import { useSmartCrudRoles } from '../crud/SmartCrudRolesContext';
 import { NativeEntitySelect } from '../form/NativeFormView';
 import { resolveSummaryText } from '../summary';
@@ -102,6 +102,26 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 function getIdField(fields: Field[]): string {
   return fields.find((field) => field.isIdentity)?.name ?? 'id';
+}
+
+function GridEmptyStateView({
+  emptyState,
+  fallbackTitle,
+}: {
+  emptyState?: ResourceEmptyState;
+  fallbackTitle: string;
+}) {
+  return (
+    <div className="native-datagrid__empty" aria-live="polite">
+      <EmptyState
+        title={emptyState?.title ?? fallbackTitle}
+        description={emptyState?.description}
+        icon={emptyState?.icon ?? 'database'}
+        variant={emptyState?.variant ?? 'default'}
+        size="sm"
+      />
+    </div>
+  );
 }
 
 
@@ -711,7 +731,7 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
   }, [fields, httpClient, resourceStoreFactory, url]);
 
   if (loading) return <div className="native-datagrid__loading">{t('grid.loading')}</div>;
-  if (rows.length === 0) return <div className="native-datagrid__empty">{t('grid.noRecords')}</div>;
+  if (rows.length === 0) return <GridEmptyStateView fallbackTitle={t('grid.noRecords')} />;
 
   return (
     <div className="native-datagrid__detail-content">
@@ -1453,10 +1473,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               />
             </table>
             {rows.length === 0 && !isGridLoading && (
-              <div className="native-datagrid__empty" aria-live="polite">
-                <i className="ph ph-database" aria-hidden="true" />
-                <span>{t('grid.noRecords')}</span>
-              </div>
+              <GridEmptyStateView
+                emptyState={options.emptyState}
+                fallbackTitle={t('grid.noRecords')}
+              />
             )}
             <div
               ref={hScrollRef}

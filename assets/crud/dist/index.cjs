@@ -2351,6 +2351,19 @@ const PAGE_SIZE_OPTIONS = [
 function getIdField(fields) {
 	return fields.find((field) => field.isIdentity)?.name ?? "id";
 }
+function GridEmptyStateView({ emptyState, fallbackTitle }) {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+		className: "native-datagrid__empty",
+		"aria-live": "polite",
+		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.EmptyState, {
+			title: emptyState?.title ?? fallbackTitle,
+			description: emptyState?.description,
+			icon: emptyState?.icon ?? "database",
+			variant: emptyState?.variant ?? "default",
+			size: "sm"
+		})
+	});
+}
 function getPrimitiveDisplay(value, yesLabel = "Yes", noLabel = "No") {
 	if (value === null || value === void 0) return "";
 	if (value instanceof Date) return value.toLocaleDateString((0, _nubit_core.getCoreLocale)(), { timeZone: (0, _nubit_core.getCoreTimezone)() });
@@ -2870,10 +2883,7 @@ function DetailRows({ fields, url }) {
 		className: "native-datagrid__loading",
 		children: t("grid.loading")
 	});
-	if (rows.length === 0) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-		className: "native-datagrid__empty",
-		children: t("grid.noRecords")
-	});
+	if (rows.length === 0) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GridEmptyStateView, { fallbackTitle: t("grid.noRecords") });
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 		className: "native-datagrid__detail-content",
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
@@ -3602,13 +3612,9 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 									})
 								]
 							}),
-							rows.length === 0 && !isGridLoading && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: "native-datagrid__empty",
-								"aria-live": "polite",
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-									className: "ph ph-database",
-									"aria-hidden": "true"
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("grid.noRecords") })]
+							rows.length === 0 && !isGridLoading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GridEmptyStateView, {
+								emptyState: options.emptyState,
+								fallbackTitle: t("grid.noRecords")
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								ref: hScrollRef,
@@ -4822,7 +4828,8 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				detailUrl: gridDetail?.url,
 				detailFields: gridDetail?.fields,
 				onFilterChange: onFiltersChange,
-				adapter: resolvedResource.adapter
+				adapter: resolvedResource.adapter,
+				emptyState: resolvedResource.emptyState
 			}),
 			!isInlineEditMode && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudFormShell, {
 				viewMode,

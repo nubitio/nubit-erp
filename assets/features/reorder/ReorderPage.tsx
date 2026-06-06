@@ -85,6 +85,19 @@ function CoverageCell({ data }: GridCellContext) {
 
 const API_URL = `${API}stock-items?belowMin=1`;
 
+const REORDER_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['product', 'warehouse', 'qtyOnHand', 'minStock', '_coverage', '_actions'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: ['product', 'warehouse', 'qtyOnHand', 'minStock', '_coverage', 'updatedAt', '_actions'],
+  },
+];
+
 export const ReorderPage = () => {
   const navigate = useNavigate();
 
@@ -191,6 +204,14 @@ export const ReorderPage = () => {
         }),
         sort: [{ selector: 'qtyOnHand', desc: false }],
         permissions: { canAdd: false, canEdit: false, canDelete: false },
+        defaultPreset: 'basic',
+        columnPresets: REORDER_COLUMN_PRESETS,
+        emptyState: {
+          title: 'Sin alertas de reabastecimiento',
+          description: 'Todos los productos tienen stock por encima del mínimo configurado.',
+          icon: 'check-circle',
+          variant: 'success',
+        },
       }),
     [makeActionsCell],
   );

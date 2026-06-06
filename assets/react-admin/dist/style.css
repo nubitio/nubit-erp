@@ -3148,25 +3148,16 @@ html[data-density=compact] .native-datagrid .app-badge {
 
 .native-datagrid__empty {
   align-items: center;
-  color: var(--text-tertiary);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   justify-content: center;
   min-height: 220px;
-  padding: var(--space-8) var(--space-5);
   position: sticky;
   left: 0;
   width: 100%;
   box-sizing: border-box;
 }
-.native-datagrid__empty i {
-  font-size: 40px;
-  opacity: 0.25;
-}
-.native-datagrid__empty span {
-  font-size: var(--font-size-sm);
-  opacity: 0.6;
+.native-datagrid__empty .app-empty-state {
+  padding-block: var(--space-5);
 }
 
 .native-datagrid__loading {

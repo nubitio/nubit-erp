@@ -1,4 +1,4 @@
-import { StatCard } from '@nubit/ui';
+import { EmptyState, StatCard } from '@nubit/ui';
 import { TopProduct, TopCustomer, TopPurchasedProduct, PurchasesSummaryStats } from '../types';
 import { DashboardMetrics } from '../hooks/useDashboardMetrics';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
@@ -44,7 +44,11 @@ export function DashboardRankings({
                 </div>
               </li>
             ))}
-            {topProducts.length === 0 && <div className="empty">Sin datos disponibles</div>}
+            {topProducts.length === 0 && (
+              <li className="dash-list-empty">
+                <EmptyState size="sm" icon="chart-bar" title="Sin datos disponibles" />
+              </li>
+            )}
           </ul>
         </StatCard>
 
@@ -59,7 +63,11 @@ export function DashboardRankings({
                 </div>
               </li>
             ))}
-            {topCustomers.length === 0 && <div className="empty">Sin datos disponibles</div>}
+            {topCustomers.length === 0 && (
+              <li className="dash-list-empty">
+                <EmptyState size="sm" icon="users" title="Sin datos disponibles" />
+              </li>
+            )}
           </ul>
         </StatCard>
         <StatCard title="Resumen de compras" className="list-card" menuVisible={false}>
@@ -106,7 +114,9 @@ export function DashboardRankings({
               </li>
             ))}
             {topPurchasedProducts.length === 0 && (
-              <div className="empty">Sin datos disponibles</div>
+              <li className="dash-list-empty">
+                <EmptyState size="sm" icon="shopping-cart" title="Sin datos disponibles" />
+              </li>
             )}
           </ul>
         </StatCard>

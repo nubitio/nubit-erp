@@ -504,6 +504,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         detailFields={gridDetail?.fields}
         onFilterChange={onFiltersChange}
         adapter={resolvedResource.adapter}
+        emptyState={resolvedResource.emptyState}
       />
       {!isInlineEditMode && (
         <CrudFormShell

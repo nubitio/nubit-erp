@@ -14,6 +14,7 @@ export type {
   ResourceToolbarItems,
   ResourceGridDetail,
   ResourceFormDetail,
+  ResourceEmptyState,
 } from './ResourceConfig';
 export {
   defineFieldContract,

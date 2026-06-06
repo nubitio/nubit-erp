@@ -116,6 +116,15 @@ export interface CrudViewModeConfig {
   drawerSide?: 'right' | 'left';
 }
 
+/** Contextual empty state shown when the grid has no rows. */
+export interface ResourceEmptyState {
+  title?: string;
+  description?: string;
+  /** Phosphor icon name without the "ph-" prefix. */
+  icon?: string;
+  variant?: 'default' | 'danger' | 'warning' | 'success';
+}
+
 export interface ResourceConfig<T extends DataRecord = DataRecord> {
   id: string;
   title: string;
@@ -196,6 +205,8 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   columnPresets?: ColumnPreset[];
   /** Key of the preset to activate by default (overridden by any localStorage value). */
   defaultPreset?: string;
+  /** Custom empty state when the grid has no rows. Falls back to the generic no-records message. */
+  emptyState?: ResourceEmptyState;
   /** Optional audit trail configuration. When enabled, shows a "Historial" button and panel. */
   auditTrail?: AuditTrailConfig;
   /** Optional URL routing configuration — enables deep-linking and filter sync. */

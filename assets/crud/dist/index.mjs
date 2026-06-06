@@ -1,7 +1,7 @@
 import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { AppDialog, AppDropdown, Button, ConfirmDialog, DatePicker, IconButton } from "@nubit/ui";
+import { AppDialog, AppDropdown, Button, ConfirmDialog, DatePicker, EmptyState, IconButton } from "@nubit/ui";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { createCrudEvents, createScopedEventBus, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureSubscription } from "@nubit/core";
 import { useDropzone } from "react-dropzone";
@@ -2327,6 +2327,19 @@ const PAGE_SIZE_OPTIONS = [
 function getIdField(fields) {
 	return fields.find((field) => field.isIdentity)?.name ?? "id";
 }
+function GridEmptyStateView({ emptyState, fallbackTitle }) {
+	return /* @__PURE__ */ jsx("div", {
+		className: "native-datagrid__empty",
+		"aria-live": "polite",
+		children: /* @__PURE__ */ jsx(EmptyState, {
+			title: emptyState?.title ?? fallbackTitle,
+			description: emptyState?.description,
+			icon: emptyState?.icon ?? "database",
+			variant: emptyState?.variant ?? "default",
+			size: "sm"
+		})
+	});
+}
 function getPrimitiveDisplay(value, yesLabel = "Yes", noLabel = "No") {
 	if (value === null || value === void 0) return "";
 	if (value instanceof Date) return value.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
@@ -2846,10 +2859,7 @@ function DetailRows({ fields, url }) {
 		className: "native-datagrid__loading",
 		children: t("grid.loading")
 	});
-	if (rows.length === 0) return /* @__PURE__ */ jsx("div", {
-		className: "native-datagrid__empty",
-		children: t("grid.noRecords")
-	});
+	if (rows.length === 0) return /* @__PURE__ */ jsx(GridEmptyStateView, { fallbackTitle: t("grid.noRecords") });
 	return /* @__PURE__ */ jsx("div", {
 		className: "native-datagrid__detail-content",
 		children: /* @__PURE__ */ jsxs("table", {
@@ -3578,13 +3588,9 @@ const NativeDataGridView = forwardRef((options, ref) => {
 									})
 								]
 							}),
-							rows.length === 0 && !isGridLoading && /* @__PURE__ */ jsxs("div", {
-								className: "native-datagrid__empty",
-								"aria-live": "polite",
-								children: [/* @__PURE__ */ jsx("i", {
-									className: "ph ph-database",
-									"aria-hidden": "true"
-								}), /* @__PURE__ */ jsx("span", { children: t("grid.noRecords") })]
+							rows.length === 0 && !isGridLoading && /* @__PURE__ */ jsx(GridEmptyStateView, {
+								emptyState: options.emptyState,
+								fallbackTitle: t("grid.noRecords")
 							}),
 							/* @__PURE__ */ jsx("div", {
 								ref: hScrollRef,
@@ -4798,7 +4804,8 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				detailUrl: gridDetail?.url,
 				detailFields: gridDetail?.fields,
 				onFilterChange: onFiltersChange,
-				adapter: resolvedResource.adapter
+				adapter: resolvedResource.adapter,
+				emptyState: resolvedResource.emptyState
 			}),
 			!isInlineEditMode && /* @__PURE__ */ jsx(CrudFormShell, {
 				viewMode,
