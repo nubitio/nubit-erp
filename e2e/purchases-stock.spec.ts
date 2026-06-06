@@ -21,6 +21,7 @@
 
 import { expect, test, type Page } from '@playwright/test';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
+import { crudShell, waitForGridLoad } from './helpers/crud';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
 const BASE_URL = getE2EBaseUrl();
@@ -41,16 +42,6 @@ let resolvedProductId: string | null = null;
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers (copiados / adaptados de happy-path.spec.ts)
 // ─────────────────────────────────────────────────────────────────────────────
-
-async function waitForGridLoad(page: Page) {
-  const loadPanel = page.locator('.native-datagrid__loading-overlay').first();
-  try {
-    await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
-    await loadPanel.waitFor({ state: 'hidden', timeout: 15000 });
-  } catch {
-    // Panel no apareció — OK
-  }
-}
 
 async function fillDxInput(page: Page, ariaLabel: string | string[], value: string) {
   const labels = Array.isArray(ariaLabel) ? ariaLabel : [ariaLabel];
@@ -87,14 +78,6 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
   const btn = page.locator('.native-datagrid__toolbar .app-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
-}
-
-function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
-  return page.getByRole('dialog', { name }).last();
-}
-
-function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.app-dialog__body, .crud-dialog__body');
 }
 
 async function waitForPostLoginLanding(page: Page) {
@@ -338,7 +321,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     // ── Abrir formulario de nueva compra ─────────────────────────────────────
     await test.step('Abrir formulario de nueva compra', async () => {
       await clickGridToolbarButton(page, 'Nuevo');
-      await expect(crudDialog(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
+      await expect(crudShell(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
     });
 
     // ── Seleccionar almacén ───────────────────────────────────────────────────
@@ -408,7 +391,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await addRowBtn.click();
 
       // The new row appears immediately in the native detail table
-      const dialog = crudDialog(page, /nuevo|new/i);
+      const dialog = crudShell(page, /nuevo|new/i);
       const detailTable = dialog.locator('.native-form__detail-table').first();
       const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
@@ -470,7 +453,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       );
 
       // Click en el botón Guardar del footer del popup
-      await crudDialog(page, /nuevo|new/i).getByRole('button', { name: /guardar|save/i }).click({ force: true });
+      await crudShell(page, /nuevo|new/i).getByRole('button', { name: /guardar|save/i }).click({ force: true });
 
       const createPurchaseResponse = await createPurchaseResponsePromise.catch(async (err) => {
         // eslint-disable-next-line no-console
@@ -507,7 +490,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       // El popup debe cerrarse tras guardar exitosamente
       await expect(
-        crudDialog(page, /nuevo|new/i),
+        crudShell(page, /nuevo|new/i),
       ).toBeHidden({ timeout: 15000 });
 
       await waitForGridLoad(page);

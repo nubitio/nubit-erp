@@ -21,6 +21,13 @@
 
 import { expect, test, type Page, type Locator } from '@playwright/test';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
+import {
+  closeCrudShell,
+  crudShellBody,
+  openNewCrudForm,
+  switchFormTab,
+  waitForGridLoad,
+} from './helpers/crud';
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 const BASE_URL = getE2EBaseUrl();
@@ -31,16 +38,6 @@ const SEED_PRODUCT_NAME = 'Producto CI E2E';
 const SEED_CUSTOMER_DNI = '20100000001';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-async function waitForGridLoad(page: Page) {
-  const overlay = page.locator('.native-datagrid__loading-overlay').first();
-  try {
-    await overlay.waitFor({ state: 'visible', timeout: 2000 });
-    await overlay.waitFor({ state: 'hidden', timeout: 15000 });
-  } catch {
-    // Panel never appeared — grid already loaded
-  }
-}
 
 async function login(page: Page) {
   await page.goto(`${BASE_URL}/#/login`);
@@ -109,24 +106,9 @@ async function ensureCashOpen(page: Page): Promise<void> {
   await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
 }
 
-/** Navigate to the sale list and open the "New sale" dialog. Returns the dialog locator. */
-async function openNewSaleDialog(page: Page): Promise<Locator> {
-  await page.goto(`${BASE_URL}/#/sale`);
-  await waitForGridLoad(page);
-  await expect(
-    page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first(),
-  ).toBeVisible({ timeout: 15000 });
-
-  const newBtn = page
-    .locator('.native-datagrid__toolbar .app-button')
-    .filter({ hasText: /nuevo|new/i })
-    .first();
-  await newBtn.waitFor({ state: 'visible', timeout: 10000 });
-  await newBtn.click();
-
-  const dialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
-  await dialog.waitFor({ state: 'visible', timeout: 12000 });
-  return dialog;
+/** Navigate to the sale list and open the "New sale" drawer. */
+async function openNewSaleDrawer(page: Page): Promise<Locator> {
+  return openNewCrudForm(page, `${BASE_URL}/#/sale`, 'Ventas');
 }
 
 /** Select a currency in the Moneda combobox inside the given dialog. */
@@ -206,29 +188,30 @@ test.describe('Sale form — mejoras de UX', () => {
   // TEST 1 — Form opens with all required fields visible
   // ────────────────────────────────────────────────────────────────────────────
   test('01 - El formulario abre con todos los campos requeridos', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
 
-    // Required fields must be visible
+    // Cabecera tab — required header fields
     await expect(body.getByLabel(/Fecha/i).first()).toBeVisible({ timeout: 8000 });
     await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
     await expect(body.getByLabel(/Método de pago/i).first()).toBeVisible({ timeout: 8000 });
+
+    // Comercial tab — currency fields
+    await switchFormTab(body, /Comercial/i);
     await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
 
     // Detail section must be present
     await expect(body.locator('table, .native-form__detail-table').first()).toBeVisible({ timeout: 8000 });
 
-    // Close dialog
-    await dialog.locator('button[aria-label*="Cerrar"], button').filter({ hasText: /cerrar|cancel/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 2 — "Almacén" label has the correct accent mark
   // ────────────────────────────────────────────────────────────────────────────
   test('02 - El campo "Almacén" tiene el acento correcto', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
 
     // The label "Almacén" (with accent) must appear — not "Almacen"
     const labelWithAccent = body.locator('text=Almacén').first();
@@ -237,18 +220,16 @@ test.describe('Sale form — mejoras de UX', () => {
     await expect(labelWithAccent).toBeVisible({ timeout: 8000 });
     await expect(labelWithoutAccent).not.toBeVisible();
 
-    // Close
-    const cancelBtn = dialog.getByRole('button', { name: /cancel|cerrar/i }).first();
-    await cancelBtn.click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 3 — "Tipo de cambio" is hidden when currency is PEN (default)
   // ────────────────────────────────────────────────────────────────────────────
   test('03 - "Tipo de cambio" se oculta cuando la moneda es PEN', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
+    await switchFormTab(body, /Comercial/i);
 
     // Wait for the form to settle with default values
     await page.waitForTimeout(500);
@@ -263,17 +244,16 @@ test.describe('Sale form — mejoras de UX', () => {
     const exchangeRateField = body.getByLabel(/Tipo de cambio/i).first();
     await expect(exchangeRateField).not.toBeVisible({ timeout: 3000 });
 
-    // Close
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 4 — "Tipo de cambio" appears when currency changes to USD
   // ────────────────────────────────────────────────────────────────────────────
   test('04 - "Tipo de cambio" aparece al seleccionar USD', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
+    await switchFormTab(body, /Comercial/i);
 
     await page.waitForTimeout(500);
 
@@ -285,17 +265,16 @@ test.describe('Sale form — mejoras de UX', () => {
     const exchangeRateField = body.getByLabel(/Tipo de cambio/i).first();
     await expect(exchangeRateField).toBeVisible({ timeout: 5000 });
 
-    // Close
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 5 — Discount field opens the discount dialog on click
   // ────────────────────────────────────────────────────────────────────────────
   test('05 - El campo "Descuento %" abre el diálogo de descuento al hacer clic', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
+    await switchFormTab(body, /Comercial/i);
 
     // Locate the Descuento % field (it's a readonly currency input that triggers a dialog)
     const discountField = body.getByLabel(/Descuento %/i).first();
@@ -310,17 +289,15 @@ test.describe('Sale form — mejoras de UX', () => {
     await page.keyboard.press('Escape');
     await discountDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
 
-    // Close sale dialog
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 6 — Adding a product row auto-populates price
   // ────────────────────────────────────────────────────────────────────────────
   test('06 - Agregar un producto al detalle rellena el precio automáticamente', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
 
     // Select warehouse if empty (prerequisite for stock checks)
     const almacenInput = body.getByLabel(/Almac[eé]n/i).first();
@@ -342,7 +319,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const detailTable = dialog.locator('.native-form__detail-table').first();
+    const detailTable = shell.locator('.native-form__detail-table').first();
     const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -371,17 +348,16 @@ test.describe('Sale form — mejoras de UX', () => {
     const qtyValue = await qtyInput.inputValue().catch(() => '0');
     expect(Number(qtyValue)).toBe(1);
 
-    // Close without saving
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 7 — "Clic para aplicar descuento" help text (not "Click")
   // ────────────────────────────────────────────────────────────────────────────
   test('07 - El texto de ayuda del descuento usa "Clic" (no "Click")', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
+    await switchFormTab(body, /Comercial/i);
 
     // The help text "Clic para aplicar descuento" should be present (not "Click")
     await expect(body.locator('text=Clic para aplicar descuento').first()).toBeVisible({
@@ -389,17 +365,15 @@ test.describe('Sale form — mejoras de UX', () => {
     });
     await expect(body.locator('text=Click para aplicar descuento').first()).not.toBeVisible();
 
-    // Close
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 8 — Customer field defaults to a pre-selected customer
   // ────────────────────────────────────────────────────────────────────────────
   test('08 - El campo Cliente tiene un valor por defecto pre-seleccionado', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
 
     // Cliente field should have a default value (not empty) — defaultValue(1) in SaleFields.tsx
     const clienteInput = body.getByLabel(/Cliente/i).first();
@@ -413,17 +387,15 @@ test.describe('Sale form — mejoras de UX', () => {
     const metodoPagoValue = await metodoPagoInput.inputValue();
     expect(metodoPagoValue.trim().length).toBeGreaterThan(0);
 
-    // Close
-    await dialog.getByRole('button', { name: /cancel|cerrar/i }).first().click().catch(() => {});
-    await dialog.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+    await closeCrudShell(shell);
   });
 
   // ────────────────────────────────────────────────────────────────────────────
   // TEST 9 — Successful sale creation with one product line
   // ────────────────────────────────────────────────────────────────────────────
   test('09 - Se puede crear una venta completa con un producto', async () => {
-    const dialog = await openNewSaleDialog(page);
-    const body = dialog.locator('.app-dialog__body, .crud-dialog__body');
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
 
     // Ensure warehouse is selected
     const almacenInput = body.getByLabel(/Almac[eé]n/i).first();
@@ -458,7 +430,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const detailTable = dialog.locator('.native-form__detail-table').first();
+    const detailTable = shell.locator('.native-form__detail-table').first();
     const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -491,7 +463,7 @@ test.describe('Sale form — mejoras de UX', () => {
     );
 
     // Click Save
-    await dialog.getByRole('button', { name: /guardar|save/i }).click({ force: true });
+    await shell.getByRole('button', { name: /guardar|save/i }).click({ force: true });
 
     const saleResponse = await saleResponsePromise;
     expect(saleResponse.ok(), 'POST /api/sales debe responder 2xx').toBeTruthy();
@@ -499,12 +471,32 @@ test.describe('Sale form — mejoras de UX', () => {
     const body2 = (await saleResponse.json()) as { id?: string };
     expect(body2.id, 'La respuesta debe incluir el id de la venta').toBeTruthy();
 
-    // Dialog must close after successful save
-    await expect(dialog).toBeHidden({ timeout: 15000 });
+    // Drawer must close after successful save
+    await expect(shell).toBeHidden({ timeout: 15000 });
 
     // The new sale must appear in the grid
     await waitForGridLoad(page);
     const rows = page.locator('.native-datagrid__row');
     expect(await rows.count()).toBeGreaterThan(0);
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // TEST 10 — Form tabs navigate between sections
+  // ────────────────────────────────────────────────────────────────────────────
+  test('10 - Las pestañas del formulario muestran campos distintos', async () => {
+    const shell = await openNewSaleDrawer(page);
+    const body = crudShellBody(page);
+
+    await expect(body.getByRole('tab', { name: /Cabecera/i })).toBeVisible();
+    await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
+
+    await switchFormTab(body, /Comercial/i);
+    await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
+    await expect(body.getByLabel(/Cliente/i)).toHaveCount(0);
+
+    await switchFormTab(body, /Notas/i);
+    await expect(body.getByLabel(/Nota/i).first()).toBeVisible({ timeout: 8000 });
+
+    await closeCrudShell(shell);
   });
 });
