@@ -42,7 +42,7 @@ export const InboundFields = (branchId: string | number = '') => {
   fields.push(
     entityField(API + 'warehouses', 'id', 'name')
       .name('warehouse')
-      .label('Almacen')
+      .label('Almacén')
       .width(200)
       .filters([
         {

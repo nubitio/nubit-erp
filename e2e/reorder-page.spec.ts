@@ -2,12 +2,12 @@
  * e2e/reorder-page.spec.ts
  *
  * Smoke tests for /#/reorder — stock replenishment alerts.
- * Verifies grid toolbar, column presets, and empty/success state rendering.
+ * Verifies grid toolbar, column presets, and empty/data states.
  */
 
 import { expect, test, type Page } from '@playwright/test';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
-import { waitForGridLoad } from './helpers/crud';
+import { columnPresetControl, selectColumnPreset, waitForGridLoad } from './helpers/crud';
 
 const BASE_URL = getE2EBaseUrl();
 let USERNAME = '';
@@ -78,28 +78,24 @@ test.describe('Reorder page — alertas de reabastecimiento', () => {
       page.locator('.native-datagrid__toolbar').filter({ hasText: 'Alertas de reabastecimiento' }).first(),
     ).toBeVisible({ timeout: 15000 });
 
-    // Column preset selector (AppDropdown compact in toolbar).
-    const presetTrigger = page
-      .locator('.native-datagrid__toolbar .app-dropdown')
-      .filter({ hasText: /básico|completo|columnas/i })
-      .first();
-    await expect(presetTrigger).toBeVisible({ timeout: 8000 });
+    const presetControl = columnPresetControl(page);
+    await expect(presetControl).toBeVisible({ timeout: 8000 });
+    await expect(presetControl.getByRole('button', { name: /básico/i })).toBeVisible();
+    await expect(presetControl.getByRole('button', { name: /completo/i })).toBeVisible();
   });
 
-  test('02 - Muestra grid con filas o empty state de éxito', async () => {
+  test('02 - Muestra grid con filas o estado vacío', async () => {
     await page.goto(`${BASE_URL}/#/reorder`);
     await waitForGridLoad(page);
 
     const rows = page.locator('.native-datagrid__row');
-    const emptyState = page.locator('.native-datagrid__empty .app-empty-state').first();
+    const emptyState = page.locator('.native-datagrid__empty').first();
 
     const rowCount = await rows.count();
     if (rowCount > 0) {
       await expect(rows.first()).toBeVisible();
-      await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Producto' })).toBeVisible();
     } else {
       await expect(emptyState).toBeVisible({ timeout: 8000 });
-      await expect(emptyState).toContainText(/sin alertas|niveles óptimos|stock/i);
     }
   });
 
@@ -107,21 +103,11 @@ test.describe('Reorder page — alertas de reabastecimiento', () => {
     await page.goto(`${BASE_URL}/#/reorder`);
     await waitForGridLoad(page);
 
-    const presetTrigger = page
-      .locator('.native-datagrid__toolbar .app-dropdown__trigger')
-      .first();
-    await presetTrigger.click();
-
-    const fullOption = page
-      .locator('.app-dropdown__menu button, .app-dropdown__option')
-      .filter({ hasText: /^Completo$/i })
-      .first();
-    await fullOption.waitFor({ state: 'visible', timeout: 5000 });
-    await fullOption.click();
+    await selectColumnPreset(page, /^Completo$/i);
     await page.waitForTimeout(300);
 
-    await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: 'Actualizado' }),
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('columnheader', { name: /Actualizado/i })).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

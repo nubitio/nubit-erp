@@ -35,6 +35,21 @@ export const PurchasesPage = () => {
         },
       ],
       defaultPreset: 'basic',
+      formLayout: {
+        type: 'tabs',
+        tabs: [
+          {
+            label: 'Cabecera',
+            icon: 'ph-receipt',
+            fields: ['issuedAt', 'warehouse', 'supplier', 'grandTotal'],
+          },
+          {
+            label: 'Notas',
+            icon: 'ph-note',
+            fields: ['note'],
+          },
+        ],
+      },
       onDetailRowsChanged: (formRef: RefObject<FormHandle | null>) => {
         const rows = formRef.current?.getDetailData() ?? [];
         const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);

@@ -488,6 +488,7 @@ test.describe('Sale form — mejoras de UX', () => {
     const body = crudShellBody(page);
 
     await expect(body.getByRole('tab', { name: /Cabecera/i })).toBeVisible();
+    await switchFormTab(body, /Cabecera/i);
     await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
 
     await switchFormTab(body, /Comercial/i);

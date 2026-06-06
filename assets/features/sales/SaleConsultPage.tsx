@@ -1,6 +1,14 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { AppDropdown } from '@nubit/ui';
-import { DataGridView, type DataGridViewOptions, type GridHandle } from '@nubit/crud';
+import {
+  ColumnPresetSelector,
+  DataGridView,
+  useColumnPreset,
+  type DataGridViewOptions,
+  type GridHandle,
+  type ResourceConfig,
+} from '@nubit/crud';
+import { useCoreTranslation } from '@nubit/core';
 import { getCoreApiBaseUrl } from '@nubit/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { SaleFields } from './SaleFields';
@@ -20,15 +28,39 @@ const reportTypes = [
   { value: 'credit-notes', text: 'Notas de crédito' },
 ];
 
-const visibleColumns = [
-  'issuedDate',
-  'customer',
-  'invoiceFullNumber',
-  'paymentMethod',
-  'currency',
-  'grandTotal',
-  'status',
+const SALE_CONSULT_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['issuedDate', 'customer', 'paymentMethod', 'grandTotal', 'status'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'issuedDate',
+      'customer',
+      'invoiceFullNumber',
+      'paymentMethod',
+      'currency',
+      'grandTotal',
+      'status',
+    ],
+  },
+  {
+    key: 'accounting',
+    label: 'Contable',
+    columns: ['issuedDate', 'customer', 'invoiceFullNumber', 'currency', 'grandTotal', 'status'],
+  },
 ];
+
+const SALE_CONSULT_PRESET_RESOURCE: ResourceConfig = {
+  id: 'sales-consult',
+  title: 'Consulta ventas',
+  apiUrl: '',
+  defaultPreset: 'basic',
+  columnPresets: SALE_CONSULT_COLUMN_PRESETS,
+};
 
 function datePart(value: unknown): string {
   return String(value ?? '').slice(0, 10);
@@ -86,7 +118,9 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 export const SaleConsultPage = () => {
+  const { t } = useCoreTranslation();
   const gridRef = useRef<GridHandle>(null);
+  const presetState = useColumnPreset(SALE_CONSULT_PRESET_RESOURCE);
   const [selectedReport, setSelectedReport] = useState('detailed-sales');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -158,21 +192,31 @@ export const SaleConsultPage = () => {
   }), [canGenerate, handleClear, handleGenerateReport, loading]);
 
   const beforeToolbar = useCallback(() => (
-    <AppDropdown
-      id="sales-consult-report"
-      label="Reporte"
-      icon="ph-chart-bar"
-      value={selectedReport}
-      options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
-      disabled={loading}
-      variant="toolbar"
-      showFieldLabel={false}
-      onChange={(value) => {
-        setSelectedReport(value);
-        setError(null);
-      }}
-    />
-  ), [loading, selectedReport]);
+    <>
+      <AppDropdown
+        id="sales-consult-report"
+        label="Reporte"
+        icon="ph-chart-bar"
+        value={selectedReport}
+        options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
+        disabled={loading}
+        variant="toolbar"
+        showFieldLabel={false}
+        onChange={(value) => {
+          setSelectedReport(value);
+          setError(null);
+        }}
+      />
+      <ColumnPresetSelector
+        resourceId={SALE_CONSULT_PRESET_RESOURCE.id}
+        presets={SALE_CONSULT_COLUMN_PRESETS}
+        activePreset={presetState.activePreset}
+        onPresetChange={presetState.setPreset}
+        columnsLabel={t('crudPage.columnsLabel')}
+        allColumnsLabel={t('crudPage.allColumns')}
+      />
+    </>
+  ), [loading, presetState.activePreset, presetState.setPreset, selectedReport, t]);
 
   return (
     <div className="sale-consult-page">
@@ -189,7 +233,7 @@ export const SaleConsultPage = () => {
         allowEdit={false}
         allowDelete={false}
         selectionMode="single"
-        visibleColumns={visibleColumns}
+        visibleColumns={presetState.visibleColumns}
         errorMessage={error}
         onDismissError={() => setError(null)}
       />

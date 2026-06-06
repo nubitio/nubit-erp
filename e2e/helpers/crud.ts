@@ -73,3 +73,14 @@ export async function switchFormTab(body: Locator, tabName: RegExp | string) {
   await tab.waitFor({ state: 'visible', timeout: 8000 });
   await tab.click();
 }
+
+/** Column preset control rendered by ColumnPresetSelector (segment buttons). */
+export function columnPresetControl(page: Page) {
+  return page.locator('.native-datagrid__preset-control').first();
+}
+
+export async function selectColumnPreset(page: Page, presetLabel: RegExp | string) {
+  const control = columnPresetControl(page);
+  await control.waitFor({ state: 'visible', timeout: 8000 });
+  await control.getByRole('button', { name: presetLabel }).click();
+}
