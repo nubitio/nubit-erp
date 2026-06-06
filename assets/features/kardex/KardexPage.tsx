@@ -1,20 +1,56 @@
 import './KardexPage.scss';
+import { useCallback } from 'react';
 import { getCoreApiBaseUrl } from '@nubit/core';
-
-const API = getCoreApiBaseUrl();
 import {
+  ColumnPresetSelector,
   DataGridView,
   identityField,
   textField,
   datetimeField,
   entityField,
   enumField,
+  useColumnPreset,
   type Field,
   type DataRecord,
+  type ResourceConfig,
 } from '@nubit/crud';
+import { useCoreTranslation } from '@nubit/core';
 import { Badge } from '@nubit/ui';
 
+const API = getCoreApiBaseUrl();
+
 const BASE_URL = API + 'stock-movements';
+
+const KARDEX_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['occurredAt', 'warehouse', 'product', 'movementType', 'runningBalance'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'occurredAt',
+      'warehouse',
+      'product',
+      'movementType',
+      'sourceId',
+      'qtyIn',
+      'qtyOut',
+      'runningBalance',
+      'note',
+    ],
+  },
+];
+
+const KARDEX_PRESET_RESOURCE: ResourceConfig = {
+  id: 'kardex',
+  title: 'Kardex',
+  apiUrl: BASE_URL,
+  defaultPreset: 'basic',
+  columnPresets: KARDEX_COLUMN_PRESETS,
+};
 
 interface StockMovementRecord extends DataRecord {
   id: string;
@@ -130,20 +166,37 @@ const buildFields = (): Field[] => [
   identityField().build(),
 
   { ...textField().name('movementTypeLabel').label('').build(), visible: false, visibleOnForm: false },
-  { ...textField().name('sourceType').label('').build(),      visible: false, visibleOnForm: false },
+  { ...textField().name('sourceType').label('').build(), visible: false, visibleOnForm: false },
 
-  { ...datetimeField().name('occurredAt').label('Fecha').build(),   order: 0, width: 150, formatter: (e: any) => formatDate(e.value) },
+  { ...datetimeField().name('occurredAt').label('Fecha').build(), order: 0, width: 150, formatter: (e: any) => formatDate(e.value) },
   { ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(), order: 1, width: 160, formatter: (e: any) => formatWarehouse(e.value) },
-  { ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(),   order: 2, width: 220, formatter: (e: any) => formatProduct(e.value) },
+  { ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(), order: 2, width: 220, formatter: (e: any) => formatProduct(e.value) },
   { ...enumField(MOVEMENT_TYPES).name('movementType').label('Tipo').build(), order: 3, width: 160, formatter: (e: any) => formatMovementType(e.value) },
-  { ...textField().name('sourceId').label('Referencia').build(),          order: 4, width: 170, formatter: (e: any) => formatReference(e.data as StockMovementRecord) },
-  { ...textField().name('qtyIn').label('Entrada').build(),   order: 5, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
-  { ...textField().name('qtyOut').label('Salida').build(),    order: 6, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('sourceId').label('Referencia').build(), order: 4, width: 170, formatter: (e: any) => formatReference(e.data as StockMovementRecord) },
+  { ...textField().name('qtyIn').label('Entrada').build(), order: 5, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
+  { ...textField().name('qtyOut').label('Salida').build(), order: 6, width: 100, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
   { ...textField().name('runningBalance').label('Saldo').build(), order: 7, width: 110, align: 'right', filterable: false, formatter: (e: any) => formatQty(e.value) },
   { ...textField().name('note').label('Nota').build(), order: 8, width: 220, formatter: (e: any) => formatNote(e.value) },
 ];
 
 export const KardexPage = () => {
+  const { t } = useCoreTranslation();
+  const presetState = useColumnPreset(KARDEX_PRESET_RESOURCE);
+
+  const renderPresetSelector = useCallback(
+    () => (
+      <ColumnPresetSelector
+        resourceId={KARDEX_PRESET_RESOURCE.id}
+        presets={KARDEX_COLUMN_PRESETS}
+        activePreset={presetState.activePreset}
+        onPresetChange={presetState.setPreset}
+        columnsLabel={t('crudPage.columnsLabel')}
+        allColumnsLabel={t('crudPage.allColumns')}
+      />
+    ),
+    [presetState.activePreset, presetState.setPreset, t],
+  );
+
   return (
     <div className="view-wrapper-scroll kardex-page">
       <DataGridView
@@ -155,6 +208,8 @@ export const KardexPage = () => {
         allowAdd={false}
         allowEdit={false}
         allowDelete={false}
+        visibleColumns={presetState.visibleColumns}
+        beforeToolbar={renderPresetSelector}
       />
     </div>
   );

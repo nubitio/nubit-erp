@@ -1,1 +1,1 @@
-export { customerApiUrl, customerEvents } from './constants';
+export { customerApiUrl, customerEvents, customerFormLayout } from './constants';

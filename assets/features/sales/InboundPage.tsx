@@ -21,8 +21,20 @@ export const PurchasesPage = () => {
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: { url: detailUrl, fields: detailFields },
       sort: [{ selector: 'createdAt', desc: true }],
-      dialogWidth: 900,
-      dialogHeight: 600,
+      viewMode: { mode: 'drawer', drawerWidth: 960 },
+      columnPresets: [
+        {
+          key: 'basic',
+          label: 'Básico',
+          columns: ['issuedAt', 'supplier', 'warehouse', 'grandTotal'],
+        },
+        {
+          key: 'full',
+          label: 'Completo',
+          columns: ['issuedAt', 'supplier', 'warehouse', 'note', 'grandTotal'],
+        },
+      ],
+      defaultPreset: 'basic',
       onDetailRowsChanged: (formRef: RefObject<FormHandle | null>) => {
         const rows = formRef.current?.getDetailData() ?? [];
         const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);

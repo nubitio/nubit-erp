@@ -41,6 +41,20 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
     formDetail: { url: detailUrl, fields: detailFields },
     events,
     sort:      [{ selector: 'createdAt', desc: true }],
+    viewMode:  { mode: 'drawer', drawerWidth: 960 },
+    defaultPreset: 'basic',
+    columnPresets: [
+      {
+        key: 'basic',
+        label: 'Básico',
+        columns: ['createdAt', 'warehouse', 'typeLabel'],
+      },
+      {
+        key: 'full',
+        label: 'Completo',
+        columns: ['createdAt', 'warehouse', 'targetWarehouse', 'operation', 'typeLabel', 'note'],
+      },
+    ],
     permissions: {
       canAdd:    true,
       canEdit:   false,  // stock entries are immutable

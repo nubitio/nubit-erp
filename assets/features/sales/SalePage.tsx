@@ -25,7 +25,7 @@ import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './m
 import { Setting, settings } from '@app/Settings';
 import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
 import { createSaleToolbar, useSalePrintPreview } from './ui';
-import { CustomerPage, CustomerFields } from '@features/customer';
+import { CustomerPage, CustomerFields, customerFormLayout } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';
 import { useEvents } from '@nubit/core';
@@ -408,6 +408,7 @@ export const SalePage = () => {
           ref={customerFormRef}
           url={CustomerPage.API_URL}
           fields={customerFields}
+          formLayout={customerFormLayout}
           events={CustomerPage.EVENTS}
         />
       </DrawerView>

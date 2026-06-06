@@ -9,7 +9,7 @@ import {
 import { getCoreApiBaseUrl } from '@nubit/core';
 
 const API = getCoreApiBaseUrl();
-import { customerApiUrl, customerEvents } from './model/constants';
+import { customerApiUrl, customerEvents, customerFormLayout } from './model/constants';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
@@ -46,26 +46,7 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerWidth: 720 },
-  formLayout: {
-    type: 'tabs',
-    tabs: [
-      {
-        label: 'General',
-        icon: 'ph-identification-card',
-        fields: ['ruc', 'businessName', 'fiscalAddress'],
-      },
-      {
-        label: 'Contacto',
-        icon: 'ph-phone',
-        fields: ['phone', 'email'],
-      },
-      {
-        label: 'Comercial',
-        icon: 'ph-tag',
-        fields: ['priceList'],
-      },
-    ],
-  },
+  formLayout: customerFormLayout,
   fieldContract: defineFields<CustomerRecord>({
     source: 'hydra',
     strategy: 'augment',
