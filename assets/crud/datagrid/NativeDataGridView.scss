@@ -175,6 +175,7 @@
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   position: relative; // anchors the empty-state overlay
 }
@@ -188,39 +189,76 @@
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
-  min-width: min(980px, 100%);
+  min-width: 0;
   table-layout: fixed;
   width: 100%;
 }
 
+// thead/tfoot are block-level scroll containers synced to tbody.scrollLeft so
+// column headers stay aligned while the body scrolls horizontally.
 .native-datagrid__table > thead {
-  display: table;
+  display: block;
   flex: 0 0 auto;
-  table-layout: fixed;
-  width: 100%;
+  overflow: hidden;
 }
 
-// tbody scrolls independently — rows use display:table so cells stay aligned.
+.native-datagrid__table > thead > tr,
+.native-datagrid__table > tbody > tr,
+.native-datagrid__table > tfoot > tr {
+  display: table;
+  table-layout: fixed;
+  width: var(--native-datagrid-layout-width, 100%);
+}
+
+// tbody scrolls vertically; horizontal scroll syncs with the footer bar.
 .native-datagrid__table > tbody {
   display: block;
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: auto;
+  scrollbar-gutter: stable;
+
+  // Keep horizontal scrolling functional but hide the in-body horizontal bar.
+  &::-webkit-scrollbar:horizontal {
+    height: 0;
+  }
 }
 
-.native-datagrid__table > tbody > tr {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
+.native-datagrid__detail-col {
+  width: 36px;
 }
 
-// tfoot is always visible at the bottom of the wrap (outside the scroll).
+.native-datagrid__checkbox-col {
+  width: 36px;
+}
+
+.native-datagrid__actions-col {
+  width: 44px;
+}
+
+// tfoot is always visible at the bottom of the wrap (outside the vertical scroll).
 .native-datagrid__table > tfoot {
-  display: table;
+  display: block;
   flex: 0 0 auto;
-  table-layout: fixed;
-  width: 100%;
+  overflow: hidden;
+}
+
+// Shared horizontal scrollbar below the grid body (DevExtreme-style).
+.native-datagrid__hscroll {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+.native-datagrid__hscroll-inner {
+  height: 1px;
+  pointer-events: none;
+}
+
+.native-datagrid__hscroll--hidden {
+  display: none;
 }
 
 // ── Cells ──────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -26,6 +27,66 @@ import { NativeEntitySelect } from '../form/NativeFormView';
 import { resolveSummaryText } from '../summary';
 
 type SortRule = { selector: string; desc: boolean };
+
+const DETAIL_COL_WIDTH = 36;
+const CHECKBOX_COL_WIDTH = 36;
+const ACTIONS_COL_WIDTH = 44;
+const DEFAULT_COL_WIDTH = 120;
+const MIN_COL_WIDTH = 48;
+
+function getColumnWidth(field: Field, colWidths: Record<string, number>): number {
+  return colWidths[field.name] ?? field.width ?? field.minWidth ?? DEFAULT_COL_WIDTH;
+}
+
+function computeLayoutWidth({
+  visibleFields,
+  colWidths,
+  hasCheckbox,
+  hasDetail,
+  hasRowActions,
+  containerWidth,
+}: {
+  visibleFields: Field[];
+  colWidths: Record<string, number>;
+  hasCheckbox: boolean;
+  hasDetail: boolean;
+  hasRowActions: boolean;
+  containerWidth: number;
+}): number {
+  let total = 0;
+  if (hasDetail) total += DETAIL_COL_WIDTH;
+  if (hasCheckbox) total += CHECKBOX_COL_WIDTH;
+  visibleFields.forEach((field) => {
+    total += getColumnWidth(field, colWidths);
+  });
+  if (hasRowActions) total += ACTIONS_COL_WIDTH;
+  return Math.max(containerWidth, total);
+}
+
+function GridColumnGroup({
+  fields,
+  colWidths,
+  hasCheckbox,
+  hasDetail,
+  hasRowActions,
+}: {
+  fields: Field[];
+  colWidths: Record<string, number>;
+  hasCheckbox: boolean;
+  hasDetail: boolean;
+  hasRowActions: boolean;
+}) {
+  return (
+    <colgroup>
+      {hasDetail && <col className="native-datagrid__detail-col" />}
+      {hasCheckbox && <col className="native-datagrid__checkbox-col" />}
+      {fields.map((field) => (
+        <col key={field.name} style={{ width: getColumnWidth(field, colWidths) }} />
+      ))}
+      {hasRowActions && <col className="native-datagrid__actions-col" />}
+    </colgroup>
+  );
+}
 
 function getPageRange(current: number, total: number): (number | null)[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i);
@@ -589,6 +650,8 @@ function SummaryFooter({
   hasRowActions,
   rows,
   summaryFields,
+  footerRef,
+  colWidths,
 }: {
   fields: Field[];
   hasCheckbox: boolean;
@@ -596,6 +659,8 @@ function SummaryFooter({
   hasRowActions: boolean;
   rows: DataRecord[];
   summaryFields?: DataGridSummaryItem[];
+  footerRef?: React.Ref<HTMLTableSectionElement>;
+  colWidths: Record<string, number>;
 }) {
   if (!summaryFields?.length) return null;
 
@@ -604,7 +669,7 @@ function SummaryFooter({
   const fallbackFieldName = fields[fields.length - 1]?.name;
 
   return (
-    <tfoot className="native-datagrid__summary-footer">
+    <tfoot ref={footerRef} className="native-datagrid__summary-footer">
       <tr>
         {hasDetail && <td className="native-datagrid__detail-cell" />}
         {hasCheckbox && <td className="native-datagrid__select-cell" />}
@@ -613,7 +678,7 @@ function SummaryFooter({
           const align = item?.align ?? field.align;
           const justifyContent = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
           return (
-            <td key={field.name} style={align ? { textAlign: align } : undefined}>
+            <td key={field.name} style={{ width: getColumnWidth(field, colWidths), textAlign: align }}>
               {item && (
                 <div className="native-datagrid__summary-cell" style={{ justifyContent }}>
                   {item.label && <span className="native-datagrid__summary-label">{item.label}</span>}
@@ -712,10 +777,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const onContentReadyRef = useRef(options.onContentReady);
   const onRowPreparedRef = useRef(options.onRowPrepared);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const theadRef = useRef<HTMLTableSectionElement>(null);
   const tbodyRef = useRef<HTMLTableSectionElement>(null);
+  const tfootRef = useRef<HTMLTableSectionElement>(null);
+  const hScrollRef = useRef<HTMLDivElement>(null);
+  const syncHorizontalScrollRef = useRef<() => void>(() => {});
+  const [containerWidth, setContainerWidth] = useState(0);
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
-  const [tableWidth, setTableWidth] = useState<number | undefined>();
-  const resizingRef = useRef<{ name: string; startX: number; startWidth: number; startTableWidth: number } | null>(null);
+  const resizingRef = useRef<{ name: string; startX: number; startWidth: number } | null>(null);
 
   useEffect(() => {
     onContentReadyRef.current = options.onContentReady;
@@ -729,6 +798,69 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const closeRowMenu = useCallback(() => {
     setOpenRowMenu(null);
   }, []);
+
+  useLayoutEffect(() => {
+    const wrap = tableWrapRef.current;
+    if (!wrap) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    observer.observe(wrap);
+    setContainerWidth(wrap.clientWidth);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const tbody = tbodyRef.current;
+    const thead = theadRef.current;
+    const tfoot = tfootRef.current;
+    const hScroll = hScrollRef.current;
+    if (!tbody) return;
+
+    let syncing = false;
+
+    const applyScrollLeft = (scrollLeft: number) => {
+      syncing = true;
+      if (tbody.scrollLeft !== scrollLeft) tbody.scrollLeft = scrollLeft;
+      if (thead && thead.scrollLeft !== scrollLeft) thead.scrollLeft = scrollLeft;
+      if (tfoot && tfoot.scrollLeft !== scrollLeft) tfoot.scrollLeft = scrollLeft;
+      if (hScroll && hScroll.scrollLeft !== scrollLeft) hScroll.scrollLeft = scrollLeft;
+      syncing = false;
+    };
+
+    const clampAndSync = () => {
+      const maxScroll = Math.max(0, tbody.scrollWidth - tbody.clientWidth);
+      applyScrollLeft(Math.min(tbody.scrollLeft, maxScroll));
+    };
+
+    syncHorizontalScrollRef.current = clampAndSync;
+    clampAndSync();
+
+    const onBodyScroll = () => {
+      if (syncing) return;
+      applyScrollLeft(tbody.scrollLeft);
+    };
+
+    const onFooterScroll = () => {
+      if (syncing || !hScroll) return;
+      applyScrollLeft(hScroll.scrollLeft);
+    };
+
+    tbody.addEventListener('scroll', onBodyScroll, { passive: true });
+    hScroll?.addEventListener('scroll', onFooterScroll, { passive: true });
+
+    const layoutObserver = new ResizeObserver(() => clampAndSync());
+    layoutObserver.observe(tbody);
+    if (thead) layoutObserver.observe(thead);
+    if (tfoot) layoutObserver.observe(tfoot);
+
+    return () => {
+      tbody.removeEventListener('scroll', onBodyScroll);
+      hScroll?.removeEventListener('scroll', onFooterScroll);
+      layoutObserver.disconnect();
+    };
+  }, [rows.length, visibleFields.length, colWidths, containerWidth, options.summaryFields?.length]);
 
   useEffect(() => {
     if (!openRowMenu) return;
@@ -928,25 +1060,23 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     event.stopPropagation();
     const th = (event.currentTarget as HTMLElement).closest('th') as HTMLTableCellElement | null;
     if (!th) return;
-    const table = th.closest('table') as HTMLTableElement | null;
 
     resizingRef.current = {
       name: fieldName,
       startX: event.clientX,
       startWidth: th.offsetWidth,
-      startTableWidth: table?.offsetWidth ?? tableWrapRef.current?.clientWidth ?? th.offsetWidth,
     };
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!resizingRef.current) return;
       const resize = resizingRef.current;
-      const next = Math.max(48, resize.startWidth + (moveEvent.clientX - resize.startX));
-      const actualDelta = next - resize.startWidth;
+      const next = Math.max(MIN_COL_WIDTH, resize.startWidth + (moveEvent.clientX - resize.startX));
       setColWidths((current) => ({ ...current, [resize.name]: next }));
-      setTableWidth(Math.max(tableWrapRef.current?.clientWidth ?? 0, resize.startTableWidth + actualDelta));
+      requestAnimationFrame(() => syncHorizontalScrollRef.current());
     };
     const onMouseUp = () => {
       resizingRef.current = null;
+      syncHorizontalScrollRef.current();
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
@@ -968,6 +1098,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     ),
   );
   const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
+  const hasDetail = Boolean(options.detailFields);
+  const layoutWidth = computeLayoutWidth({
+    visibleFields,
+    colWidths,
+    hasCheckbox,
+    hasDetail,
+    hasRowActions,
+    containerWidth,
+  });
+  const tableLayoutStyle = {
+    '--native-datagrid-layout-width': `${layoutWidth}px`,
+  } as React.CSSProperties;
   const toolbar = buildToolbar(options, t, onAddClick);
   return (
     <div className="view datagrid-list">
@@ -994,16 +1136,23 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             </div>
           )}
            <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
-            <table className="native-datagrid__table" style={tableWidth ? { width: tableWidth } : undefined}>
-              <thead>
+            <table className="native-datagrid__table" style={tableLayoutStyle}>
+              <GridColumnGroup
+                fields={visibleFields}
+                colWidths={colWidths}
+                hasCheckbox={hasCheckbox}
+                hasDetail={hasDetail}
+                hasRowActions={hasRowActions}
+              />
+              <thead ref={theadRef}>
                 <tr>
-                  {options.detailFields && <th className="native-datagrid__detail-cell" style={{ width: 36 }} />}
+                  {options.detailFields && <th className="native-datagrid__detail-cell" />}
                   {hasCheckbox && <th className="native-datagrid__select-cell" />}
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
-                    const width = colWidths[field.name] ?? field.width;
+                    const width = getColumnWidth(field, colWidths);
                     return (
-                      <th key={field.name} title={field.label} style={{ width, minWidth: field.minWidth, textAlign: field.align }}>
+                      <th key={field.name} title={field.label} style={{ width, textAlign: field.align }}>
                         {field.sortable ? (
                           <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
                             <span>{field.label}</span>
@@ -1040,7 +1189,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         options.onFilterChange?.(nextInputs);
                       };
                       return (
-                      <td key={field.name} style={{ minWidth: field.minWidth }} className={field.filterable === false ? 'native-datagrid__filter-cell--noop' : undefined}>
+                      <td key={field.name} style={{ width: getColumnWidth(field, colWidths) }} className={field.filterable === false ? 'native-datagrid__filter-cell--noop' : undefined}>
                         {field.filterable ? (
                           <FilterCell
                             field={field}
@@ -1221,9 +1370,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             </td>
                           )}
                           {visibleFields.map((field, columnIndex) => {
-                            const width = colWidths[field.name] ?? field.width;
+                            const width = getColumnWidth(field, colWidths);
                             return (
-                              <td key={field.name} style={{ width, minWidth: field.minWidth, textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
+                              <td key={field.name} style={{ width, textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
                                 {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
                               </td>
                             );
@@ -1292,10 +1441,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               <SummaryFooter
                 fields={visibleFields}
                 hasCheckbox={hasCheckbox}
-                hasDetail={Boolean(options.detailFields)}
+                hasDetail={hasDetail}
                 hasRowActions={hasRowActions}
                 rows={rows}
                 summaryFields={options.summaryFields}
+                footerRef={tfootRef}
+                colWidths={colWidths}
               />
             </table>
             {rows.length === 0 && !isGridLoading && (
@@ -1304,6 +1455,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 <span>{t('grid.noRecords')}</span>
               </div>
             )}
+            <div
+              ref={hScrollRef}
+              className={`native-datagrid__hscroll${layoutWidth > containerWidth ? '' : ' native-datagrid__hscroll--hidden'}`}
+              aria-hidden="true"
+              tabIndex={-1}
+            >
+              <div className="native-datagrid__hscroll-inner" style={{ width: layoutWidth }} />
+            </div>
           </div>
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">
