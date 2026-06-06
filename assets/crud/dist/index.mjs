@@ -3666,22 +3666,25 @@ const NativeDataGridView = forwardRef((options, ref) => {
 							}),
 							/* @__PURE__ */ jsxs("div", {
 								className: "native-datagrid__pager-size",
-								children: [/* @__PURE__ */ jsx("label", {
+								role: "group",
+								"aria-labelledby": "native-datagrid-page-size-label",
+								children: [/* @__PURE__ */ jsx("span", {
 									className: "native-datagrid__pager-size-label",
-									htmlFor: "native-datagrid-page-size",
+									id: "native-datagrid-page-size-label",
 									children: t("grid.rowsPerPage")
-								}), /* @__PURE__ */ jsx("select", {
+								}), /* @__PURE__ */ jsx(AppDropdown, {
 									id: "native-datagrid-page-size",
-									className: "native-datagrid__pager-size-select",
-									value: pageSize,
-									onChange: (e) => {
-										setPageSize(Number(e.target.value));
+									value: String(pageSize),
+									options: PAGE_SIZE_OPTIONS.map((n) => ({
+										value: String(n),
+										label: String(n)
+									})),
+									onChange: (value) => {
+										setPageSize(Number(value));
 										setPage(0);
 									},
-									children: PAGE_SIZE_OPTIONS.map((n) => /* @__PURE__ */ jsx("option", {
-										value: n,
-										children: n
-									}, n))
+									variant: "compact",
+									showFieldLabel: false
 								})]
 							})
 						]
@@ -6930,4 +6933,4 @@ const RestAdapter = {
 	synthesizeEntityKey(_field, _entityValue) {}
 };
 //#endregion
-export { AuditTrailPanel, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, CrudDrawerView as DrawerView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, ToolbarSelect, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { AuditTrailPanel, ColumnPresetSelector, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, CrudDrawerView as DrawerView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, ToolbarSelect, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

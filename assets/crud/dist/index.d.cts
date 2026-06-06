@@ -1602,6 +1602,32 @@ declare function ToolbarSelect({
   disabled
 }: ToolbarSelectProps): import("react").JSX.Element;
 //#endregion
+//#region assets/crud/crud/ColumnPresetSelector.d.ts
+interface ColumnPresetSelectorProps {
+  resourceId: string;
+  presets: ColumnPreset[];
+  activePreset: string | null;
+  onPresetChange: (key: string | null) => void;
+  columnsLabel: string;
+  allColumnsLabel: string;
+}
+declare function ColumnPresetSelector({
+  resourceId,
+  presets,
+  activePreset,
+  onPresetChange,
+  columnsLabel,
+  allColumnsLabel
+}: ColumnPresetSelectorProps): import("react").JSX.Element;
+//#endregion
+//#region assets/crud/crud/useColumnPreset.d.ts
+interface ColumnPresetState {
+  activePreset: string | null;
+  setPreset: (key: string | null) => void;
+  visibleColumns: string[] | null;
+}
+declare function useColumnPreset(resource: ResourceConfig): ColumnPresetState;
+//#endregion
 //#region assets/crud/adapter/HydraAdapter.d.ts
 /**
  * Default backend adapter for API Platform / JSON-LD + Hydra backends.
@@ -1695,4 +1721,4 @@ declare function ResourceStoreProvider({
 }: ResourceStoreProviderProps): React.JSX.Element;
 declare function useResourceStoreFactory(): ResourceStoreFactory;
 //#endregion
-export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudDialogShell, CrudDrawerShell, type CrudDrawerViewEvents, type CrudDrawerViewOptions, CrudFormShell, type CrudFormShellProps, CrudPage, CrudPageShell, type CrudViewMode, type CrudViewModeConfig, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, CrudDrawerView as DrawerView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResolvedViewMode, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, ToolbarSelect, type ToolbarSelectOption, type ToolbarSelectProps, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, ColumnPresetSelector, type ColumnPresetState, CrudDialogShell, CrudDrawerShell, type CrudDrawerViewEvents, type CrudDrawerViewOptions, CrudFormShell, type CrudFormShellProps, CrudPage, CrudPageShell, type CrudViewMode, type CrudViewModeConfig, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, CrudDrawerView as DrawerView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResolvedViewMode, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, ToolbarSelect, type ToolbarSelectOption, type ToolbarSelectProps, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

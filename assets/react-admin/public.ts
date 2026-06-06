@@ -87,6 +87,8 @@ export {
   fileField,
   ToolbarSelect,
   DrawerView,
+  ColumnPresetSelector,
+  useColumnPreset,
   imageField,
   passwordField,
   identityField,

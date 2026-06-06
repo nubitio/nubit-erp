@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Button, ConfirmDialog, DatePicker, IconButton } from '@nubit/ui';
+import { AppDropdown, Button, ConfirmDialog, DatePicker, IconButton } from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
@@ -1501,16 +1501,21 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   <i className="ph ph-caret-double-right" aria-hidden="true" />
                 </button>
               </div>
-              <div className="native-datagrid__pager-size">
-                <label className="native-datagrid__pager-size-label" htmlFor="native-datagrid-page-size">{t('grid.rowsPerPage')}</label>
-                <select
+              <div className="native-datagrid__pager-size" role="group" aria-labelledby="native-datagrid-page-size-label">
+                <span className="native-datagrid__pager-size-label" id="native-datagrid-page-size-label">
+                  {t('grid.rowsPerPage')}
+                </span>
+                <AppDropdown
                   id="native-datagrid-page-size"
-                  className="native-datagrid__pager-size-select"
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
-                >
-                  {PAGE_SIZE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
+                  value={String(pageSize)}
+                  options={PAGE_SIZE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))}
+                  onChange={(value) => {
+                    setPageSize(Number(value));
+                    setPage(0);
+                  }}
+                  variant="compact"
+                  showFieldLabel={false}
+                />
               </div>
             </div>
           )}

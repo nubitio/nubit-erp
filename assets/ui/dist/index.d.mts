@@ -204,7 +204,7 @@ interface AppDropdownOption {
   label: string;
   disabled?: boolean;
 }
-type AppDropdownVariant = 'form' | 'toolbar';
+type AppDropdownVariant = 'form' | 'toolbar' | 'compact';
 interface AppDropdownProps {
   id?: string;
   label?: ReactNode;

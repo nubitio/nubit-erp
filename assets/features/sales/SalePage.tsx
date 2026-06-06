@@ -1,17 +1,21 @@
 import './SalePage.scss';
 import {
+  ColumnPresetSelector,
   DataGridView,
   DrawerView,
   FormView,
   FORM_EVENTS,
+  useColumnPreset,
   type DetailSummaryOptions,
   type FormHandle,
   type GridHandle,
+  type ResourceConfig,
 } from '@nubit/crud';
+import { useCoreTranslation } from '@nubit/core';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, SaleFieldStateRef, setTotal } from './SaleFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DiscountDialog,
   DiscountDialogApplyPayload,
@@ -29,16 +33,66 @@ import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import type { DataRecord } from '@nubit/crud';
 
+const SALE_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['issuedDate', 'customer', 'paymentMethod', 'grandTotal', 'status'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'issuedDate',
+      'customer',
+      'paymentMethod',
+      'invoiceFullNumber',
+      'discountPercent',
+      'grandTotal',
+      'status',
+    ],
+  },
+];
+
+const SALE_PRESET_RESOURCE: ResourceConfig = {
+  id: 'sales',
+  title: 'Ventas',
+  apiUrl: '',
+  defaultPreset: 'basic',
+  columnPresets: SALE_COLUMN_PRESETS,
+};
+
+const SALE_FORM_LAYOUT = {
+  type: 'tabs' as const,
+  tabs: [
+    {
+      label: 'Cabecera',
+      icon: 'ph-receipt',
+      fields: ['issuedDate', 'warehouse', 'customer', 'paymentMethod'],
+    },
+    {
+      label: 'Comercial',
+      icon: 'ph-currency-circle-dollar',
+      fields: ['currency', 'exchangeRate', 'price_list', 'discountPercent'],
+    },
+    {
+      label: 'Notas',
+      icon: 'ph-note',
+      fields: ['note'],
+    },
+  ],
+};
+
 export const SalePage = () => {
+  const { t } = useCoreTranslation();
   const [on, emit] = useEvents();
   const gridRef = useRef<GridHandle>(null);
   const formRef = useRef<FormHandle>(null);
   const customerFormRef = useRef<FormHandle>(null);
   const invoicePrinterRef = useRef(createInvoicePrinter());
-  // Shared mutable state threaded between SaleFields (header) and SaleDetailFields (lines).
-  // Holds the currently selected warehouse ID (for stock checks) and fetched price list items.
   const saleFieldStateRef = useRef<SaleFieldStateRef>({ priceList: [], warehouseId: '' });
   const salePrintPreview = useSalePrintPreview();
+  const presetState = useColumnPreset(SALE_PRESET_RESOURCE);
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
   const [replaceEnabled, setReplaceEnabled] = useState<boolean>(false);
@@ -84,7 +138,6 @@ export const SalePage = () => {
             (sum, row) => sum + Number(row.netAmount ?? 0),
             0,
           );
-          // discountPercent is already 0–100 (both from the form field and from SaleFields callback).
           const currentDiscountPercent = Number(
             formRef.current?.getFieldValue('discountPercent') ?? discountPercent,
           );
@@ -99,7 +152,6 @@ export const SalePage = () => {
     [formHandleProxy],
   );
 
-  /** Callbacks for item-level discount icon in the detail grid. */
   const itemDiscountCallbacks = useMemo(
     () => ({
       onOpenItemDiscount: ({
@@ -116,7 +168,6 @@ export const SalePage = () => {
         emit(DiscountDialogEvent.OPEN, {
           title: 'Descuento por ítem',
           total: baseValue,
-          // discountPercent from the row is already 0–100 — pass directly.
           discountPercent: discountPercent,
           context: { rowIndex },
         });
@@ -177,8 +228,6 @@ export const SalePage = () => {
       const { discountPercent, discountAmount, context } = payload;
 
       if (context != null && typeof context === 'object' && 'rowIndex' in context) {
-        // Item-level discount: update the specific detail row.
-        // discountPercent from the dialog is already 0–100 — store directly.
         const { rowIndex } = context as { rowIndex: number };
         const rows = formRef.current?.getDetailData() ?? [];
         const row = rows[rowIndex] as DataRecord | undefined;
@@ -192,8 +241,6 @@ export const SalePage = () => {
           setTotal(formRef.current);
         }
       } else {
-        // Global discount: apply to the sale header.
-        // discountPercent from the dialog is already 0–100 — store directly.
         formRef.current?.setFieldValue('discountPercent', Number(discountPercent.toFixed(2)));
         setTotal(formRef.current);
       }
@@ -205,8 +252,6 @@ export const SalePage = () => {
       formRef.current?.setFieldValue('customer', payload.data);
     },
     onSaleAdd: async () => {
-      // Hide exchange rate by default when currency is PEN (the default).
-      // The currency field's onChange will show it again if the user switches to a foreign currency.
       const defaultCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN';
       const currency = (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
       if (currency === 'PEN' || !currency) {
@@ -313,6 +358,20 @@ export const SalePage = () => {
     ];
   };
 
+  const renderPresetSelector = useCallback(
+    () => (
+      <ColumnPresetSelector
+        resourceId={SALE_PRESET_RESOURCE.id}
+        presets={SALE_COLUMN_PRESETS}
+        activePreset={presetState.activePreset}
+        onPresetChange={presetState.setPreset}
+        columnsLabel={t('crudPage.columnsLabel')}
+        allColumnsLabel={t('crudPage.allColumns')}
+      />
+    ),
+    [presetState.activePreset, presetState.setPreset, t],
+  );
+
   return (
     <div id={container}>
       <DataGridView
@@ -328,6 +387,8 @@ export const SalePage = () => {
         detailFields={gridDetailFields}
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
+        visibleColumns={presetState.visibleColumns}
+        beforeToolbar={renderPresetSelector}
       />
       <DrawerView drawerWidth={1200} events={saleEvents}>
         <FormView
@@ -337,18 +398,19 @@ export const SalePage = () => {
           detailFields={detailFields}
           detailSummary={detailSummary}
           detailPropertyName="writeItems"
+          formLayout={SALE_FORM_LAYOUT}
           events={saleEvents}
         />
       </DrawerView>
       <DiscountDialog />
-      <DialogView events={CustomerPage.EVENTS}>
+      <DrawerView drawerWidth={720} events={CustomerPage.EVENTS}>
         <FormView
           ref={customerFormRef}
           url={CustomerPage.API_URL}
           fields={customerFields}
           events={CustomerPage.EVENTS}
         />
-      </DialogView>
+      </DrawerView>
       <SalePrintPreviewPopup
         saleId={salePrintPreview.selectedSaleIdRef.current}
         visible={salePrintPreview.isPreviewVisible}

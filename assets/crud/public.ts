@@ -105,6 +105,10 @@ export type { ResolvedViewMode } from './view';
 export type { CrudViewMode, CrudViewModeConfig } from './crud/ResourceConfig';
 export { ToolbarSelect } from './crud/ToolbarSelect';
 export type { ToolbarSelectOption, ToolbarSelectProps } from './crud/ToolbarSelect';
+export { ColumnPresetSelector } from './crud/ColumnPresetSelector';
+export { useColumnPreset } from './crud/useColumnPreset';
+export type { ColumnPreset } from './crud/ColumnPreset';
+export type { ColumnPresetState } from './crud/useColumnPreset';
 
 // ── Handles & options ─────────────────────────────────────────────────────────
 export type { FormHandle } from './form/FormHandle';

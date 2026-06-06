@@ -1018,22 +1018,6 @@ html[data-density=compact] .native-datagrid .app-badge {
   white-space: nowrap;
 }
 
-.native-datagrid__pager-size-select {
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: var(--font-size-xs);
-  height: 26px;
-  padding: 0 var(--space-1);
-}
-.native-datagrid__pager-size-select:focus {
-  border-color: var(--accent-color);
-  outline: none;
-}
-
 .native-datagrid__loading-overlay {
   align-items: center;
   background: color-mix(in srgb, var(--overlay-bg-subtle) 60%, transparent);

@@ -82,6 +82,23 @@
   padding: 0 var(--space-2);
 }
 
+.app-dropdown--compact {
+  display: inline-flex;
+  width: auto;
+}
+
+.app-dropdown--compact .app-dropdown__trigger {
+  font-size: var(--font-size-xs);
+  min-height: 26px;
+  min-width: 56px;
+  padding: 0 var(--space-2);
+  width: auto;
+}
+
+.app-dropdown--compact .app-dropdown__menu {
+  min-width: 72px;
+}
+
 .app-dropdown__value {
   overflow: hidden;
   text-align: left;

@@ -3690,22 +3690,25 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: "native-datagrid__pager-size",
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+								role: "group",
+								"aria-labelledby": "native-datagrid-page-size-label",
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 									className: "native-datagrid__pager-size-label",
-									htmlFor: "native-datagrid-page-size",
+									id: "native-datagrid-page-size-label",
 									children: t("grid.rowsPerPage")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.AppDropdown, {
 									id: "native-datagrid-page-size",
-									className: "native-datagrid__pager-size-select",
-									value: pageSize,
-									onChange: (e) => {
-										setPageSize(Number(e.target.value));
+									value: String(pageSize),
+									options: PAGE_SIZE_OPTIONS.map((n) => ({
+										value: String(n),
+										label: String(n)
+									})),
+									onChange: (value) => {
+										setPageSize(Number(value));
 										setPage(0);
 									},
-									children: PAGE_SIZE_OPTIONS.map((n) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-										value: n,
-										children: n
-									}, n))
+									variant: "compact",
+									showFieldLabel: false
 								})]
 							})
 						]
@@ -6955,6 +6958,7 @@ const RestAdapter = {
 };
 //#endregion
 exports.AuditTrailPanel = AuditTrailPanel;
+exports.ColumnPresetSelector = ColumnPresetSelector;
 exports.CrudDialogShell = CrudDialogShell;
 exports.CrudDrawerShell = CrudDrawerShell;
 exports.CrudFormShell = CrudFormShell;
@@ -7004,6 +7008,7 @@ exports.selectField = selectField;
 exports.switchField = switchField;
 exports.textField = textField;
 exports.textareaField = textareaField;
+exports.useColumnPreset = useColumnPreset;
 exports.useResourceStoreFactory = useResourceStoreFactory;
 exports.useSmartCrudRoles = useSmartCrudRoles;
 exports.validateFieldContract = validateFieldContract;

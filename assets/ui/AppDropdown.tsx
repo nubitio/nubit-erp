@@ -8,7 +8,7 @@ export interface AppDropdownOption {
   disabled?: boolean;
 }
 
-export type AppDropdownVariant = 'form' | 'toolbar';
+export type AppDropdownVariant = 'form' | 'toolbar' | 'compact';
 
 export interface AppDropdownProps {
   id?: string;
