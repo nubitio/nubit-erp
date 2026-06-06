@@ -95,6 +95,27 @@ export interface ResourceFormDetail {
   required?: boolean;
 }
 
+/**
+ * Where the create/edit form is rendered.
+ *
+ * - `'dialog'` (default) — modal centred over the grid. Best for short forms.
+ * - `'drawer'` — slide-in panel from the right (full-screen sheet on mobile).
+ *   Grid stays visible — user can reference other rows while editing.
+ * - `'page'`   — full route. The grid is replaced by the form; Save/Cancel
+ *   navigate back to the list URL. Requires the route to accept `:id?`.
+ *   Use the `crudRoute()` helper to wire `/<resource>` and `/<resource>/:id?`
+ *   in one call.
+ */
+export type CrudViewMode = 'dialog' | 'drawer' | 'page';
+
+export interface CrudViewModeConfig {
+  mode: CrudViewMode;
+  /** Drawer width. Default: `min(720px, 60vw)`. */
+  drawerWidth?: number | string;
+  /** Side the drawer slides in from. Default: `'right'`. */
+  drawerSide?: 'right' | 'left';
+}
+
 export interface ResourceConfig<T extends DataRecord = DataRecord> {
   id: string;
   title: string;
@@ -139,6 +160,15 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
   permissions?: ResourcePermissions;
   dialogWidth?: number;
   dialogHeight?: number;
+  /**
+   * Where the create/edit form is rendered. Defaults to `'dialog'`.
+   *
+   * Examples:
+   *   viewMode: 'drawer'
+   *   viewMode: { mode: 'drawer', drawerWidth: 880 }
+   *   viewMode: 'page'
+   */
+  viewMode?: CrudViewMode | CrudViewModeConfig;
   format?: 'json' | 'multipart';
   toolbar?: ResourceToolbar<T>;
   rowActions?: ResourceRowActions<T>;

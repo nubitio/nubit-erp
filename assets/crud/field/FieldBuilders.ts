@@ -86,22 +86,37 @@ export function currencyField<TRecord extends DataRecord = DataRecord>(): Curren
 }
 
 /**
- * Factory for image upload fields (FILE type).
+ * Factory for generic file upload fields (FILE type).
  *
- * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
- * Formatter must be provided by the caller since it depends on the data shape.
+ * Uploads immediately to apiBaseUrl+'media' and submits the returned Media IRI.
+ * Use `.accept()` to restrict mime types or extensions.
  *
  * Usage:
- *   imageField('/api/')
- *     .name('photo')
- *     .label('Imagen')
- *     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
+ *   fileField('/api/')
+ *     .name('attachment')
+ *     .label('Adjunto')
+ *     .accept('application/pdf')
  *     .build()
  */
-class ImageFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
+class FileFieldBuilder<TRecord extends DataRecord = DataRecord> extends BaseFieldBuilder<TRecord> {
   constructor(apiBaseUrl: string) {
     super(FieldType.FILE);
     this._field.url = apiBaseUrl + 'media';
+  }
+}
+
+export function fileField<TRecord extends DataRecord = DataRecord>(apiBaseUrl: string): FileFieldBuilder<TRecord> {
+  return new FileFieldBuilder<TRecord>(apiBaseUrl);
+}
+
+/**
+ * Preset for image uploads — shorthand over fileField with image defaults.
+ *
+ * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
+ */
+class ImageFieldBuilder<TRecord extends DataRecord = DataRecord> extends FileFieldBuilder<TRecord> {
+  constructor(apiBaseUrl: string) {
+    super(apiBaseUrl);
     this._field.accept = 'image/*';
     this._field.align = 'center';
   }

@@ -53,5 +53,16 @@ export interface CoreTranslationKeys {
   'form.stringTooShort': string;
   'form.stringTooLong': string;
   'form.outOfRange': string;
+  'form.fileUploadPrompt': string;
+  'form.fileUploadDrop': string;
+  'form.fileUploadHint': string;
+  'form.fileUploading': string;
+  'form.fileUploadReplace': string;
+  'form.fileUploadRemove': string;
+  'form.fileUploadOpen': string;
+  'form.fileUploadFailed': string;
+  'form.fileUploadInvalidResponse': string;
+  'form.imageUploadPrompt': string;
+  'form.imageUploadHint': string;
   'crudPage.confirmActionTitle': string;
 }

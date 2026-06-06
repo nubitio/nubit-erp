@@ -84,6 +84,7 @@ export {
   selectField,
   checkboxField,
   switchField,
+  fileField,
   imageField,
   passwordField,
   identityField,

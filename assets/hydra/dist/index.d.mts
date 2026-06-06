@@ -26,7 +26,7 @@ interface HydraResourceStoreProviderProps {
 }
 declare function HydraResourceStoreProvider({
   children
-}: HydraResourceStoreProviderProps): import("react/jsx-runtime").JSX.Element;
+}: HydraResourceStoreProviderProps): React.JSX.Element;
 //#endregion
 //#region assets/hydra/HydraResourceSchemaProvider.d.ts
 interface HydraResourceSchemaProviderProps {
@@ -34,7 +34,7 @@ interface HydraResourceSchemaProviderProps {
 }
 declare function HydraResourceSchemaProvider({
   children
-}: HydraResourceSchemaProviderProps): import("react/jsx-runtime").JSX.Element;
+}: HydraResourceSchemaProviderProps): React.JSX.Element;
 //#endregion
 //#region assets/hydra/types.d.ts
 /**
@@ -317,7 +317,7 @@ interface SchemaProviderProps {
  */
 declare function SchemaProvider({
   children
-}: SchemaProviderProps): import("react/jsx-runtime").JSX.Element;
+}: SchemaProviderProps): React.JSX.Element;
 interface UseSchemaContextResult {
   data: UseHydraMetadataResult['data'];
   isLoading: boolean;

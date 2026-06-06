@@ -268,6 +268,12 @@ Object.defineProperty(exports, "enumField", {
 		return _nubit_crud.enumField;
 	}
 });
+Object.defineProperty(exports, "fileField", {
+	enumerable: true,
+	get: function() {
+		return _nubit_crud.fileField;
+	}
+});
 Object.defineProperty(exports, "getCoreApiBaseUrl", {
 	enumerable: true,
 	get: function() {

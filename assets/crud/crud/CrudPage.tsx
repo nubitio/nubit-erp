@@ -1,7 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DataGridView } from '../datagrid/DataGridView';
-import { DialogView } from '../dialog/DialogView';
 import { FormView, FORM_EVENTS } from '../form/FormView';
+import { CrudFormShell } from '../view/CrudFormShell';
+import { resolveViewMode } from '../view/viewMode';
 import { useCrudPage } from './useCrudPage';
 import { useCoreTranslation, useEvents } from '@nubit/core';
 import type { ResourceConfig, ResourceRowActions } from './ResourceConfig';
@@ -20,6 +22,7 @@ import type { GridHandle } from '../datagrid/GridHandle';
 import { resolveResourceDetails } from './resolveResourceDetails';
 import { resolveResourceToolbar } from './resolveResourceToolbar';
 import type { SmartCrudOperation } from './fieldOperationSemantics';
+import { ColumnPresetSelector } from './ColumnPresetSelector';
 
 type GridSelectionChange = {
   selectedRowsData?: unknown[];
@@ -200,6 +203,13 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     resolvedResource.editMode === 'cell' ||
     resolvedResource.editMode === 'batch';
 
+  const viewMode = useMemo(
+    () => resolveViewMode(resolvedResource.viewMode),
+    [resolvedResource.viewMode],
+  );
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
   const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
   const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
@@ -236,17 +246,72 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     onOperationChange?.(null);
   }, [closeDialog, onOperationChange]);
 
-  const openAddDialog = useCallback((rowData: DataRecord | null = null) => {
-    setOperationVersion((current) => current + 1);
-    openDialog('add', rowData);
-    onOperationChange?.('create');
-  }, [onOperationChange, openDialog]);
+  const openAddDialog = useCallback(
+    (rowData: DataRecord | null = null) => {
+      setOperationVersion((current) => current + 1);
+      openDialog('add', rowData);
+      onOperationChange?.('create');
+    },
+    [onOperationChange, openDialog],
+  );
 
-  const openEditDialog = useCallback((row: DataRecord) => {
-    setOperationVersion((current) => current + 1);
-    openDialog('edit', row);
-    onOperationChange?.('edit');
-  }, [onOperationChange, openDialog]);
+  const openEditDialog = useCallback(
+    (row: DataRecord) => {
+      setOperationVersion((current) => current + 1);
+      openDialog('edit', row);
+      onOperationChange?.('edit');
+    },
+    [onOperationChange, openDialog],
+  );
+
+  // Page-mode: derive the bare list URL by stripping the trailing /:id or /new
+  // segment from the current path. Used as the navigation target for the
+  // shell's Back/Cancel/Save buttons and the grid's New/Edit row actions.
+  const listUrl = useMemo(() => {
+    const path = location.pathname;
+    if (initialRecordId != null) {
+      return path.replace(new RegExp(`/${initialRecordId}$`), '') || path;
+    }
+    if (initialIsNew) {
+      return path.replace(/\/new$/, '') || path;
+    }
+    return path;
+  }, [location.pathname, initialRecordId, initialIsNew]);
+
+  // User-initiated open/close requests. In dialog/drawer modes they dispatch
+  // directly to the store; in page mode they navigate and the deep-link
+  // effect below handles the store update.
+  const requestNew = useCallback(() => {
+    if (viewMode.mode === 'page') {
+      navigate(`${listUrl}/new`);
+    } else {
+      openAddDialog(null);
+    }
+  }, [viewMode.mode, navigate, listUrl, openAddDialog]);
+
+  const requestEdit = useCallback(
+    (row: DataRecord) => {
+      if (viewMode.mode === 'page') {
+        const id = row['id'] ?? row['ID'];
+        if (id == null) {
+          openEditDialog(row);
+          return;
+        }
+        navigate(`${listUrl}/${id}`);
+      } else {
+        openEditDialog(row);
+      }
+    },
+    [viewMode.mode, navigate, listUrl, openEditDialog],
+  );
+
+  const requestClose = useCallback(() => {
+    if (viewMode.mode === 'page') {
+      navigate(listUrl);
+    } else {
+      resetDialogOperation();
+    }
+  }, [viewMode.mode, navigate, listUrl, resetDialogOperation]);
 
   const routingActionsRef = React.useRef({ openAddDialog, openEditDialog, resetDialogOperation });
   routingActionsRef.current = { openAddDialog, openEditDialog, resetDialogOperation }; // eslint-disable-line react-hooks/refs
@@ -352,33 +417,29 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   /** Preset selector rendered as a toolbar slot via `beforeToolbar`. */
   const renderPresetSelector = hasPresets
     ? () => (
-        <div
-          className="column-preset-selector"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-        >
-          <label htmlFor={`preset-${resolvedResource.id}`} style={{ fontSize: 13 }}>
-            {t('crudPage.columnsLabel')}
-          </label>
-          <select
-            id={`preset-${resolvedResource.id}`}
-            aria-label="Seleccionar preset de columnas"
-            value={presetState.activePreset ?? ''}
-            onChange={(e) => presetState.setPreset(e.target.value || null)}
-            style={{ fontSize: 13 }}
-          >
-            <option value="">{t('crudPage.allColumns')}</option>
-            {resolvedResource.columnPresets!.map((p) => (
-              <option key={p.key} value={p.key}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <ColumnPresetSelector
+          resourceId={resolvedResource.id}
+          presets={resolvedResource.columnPresets!}
+          activePreset={presetState.activePreset}
+          onPresetChange={presetState.setPreset}
+          columnsLabel={t('crudPage.columnsLabel')}
+          allColumnsLabel={t('crudPage.allColumns')}
+        />
       )
     : undefined;
 
   return (
-    <div id="wrapper" className={auditOpen ? 'wrapper--with-audit' : undefined}>
+    <div
+      id="wrapper"
+      className={
+        [
+          auditOpen && 'wrapper--with-audit',
+          viewMode.mode === 'page' && dialogIsOpen && 'wrapper--with-page',
+        ]
+          .filter(Boolean)
+          .join(' ') || undefined
+      }
+    >
       {(resolvedResource.bulkActions?.length ?? 0) > 0 && selectionState.hasSelection && (
         <div className="bulk-toolbar" role="toolbar" aria-label="Acciones en lote">
           <span className="bulk-toolbar__count">
@@ -430,8 +491,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         stateStoringEnabled={resolvedResource.stateStoring}
         toolbar={toolbar}
         rowActions={resolvedResource.rowActions as ResourceRowActions | undefined}
-        onAdd={() => openAddDialog(null)}
-        onEdit={openEditDialog}
+        onAdd={requestNew}
+        onEdit={requestEdit}
         onDelete={(row) => formRef.current?.deleteRow(row)}
         selectionMode={hasMultipleSelection ? 'multiple' : 'single'}
         onSelectionChanged={handleSelectionChanged}
@@ -444,14 +505,16 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         adapter={resolvedResource.adapter}
       />
       {!isInlineEditMode && (
-        <DialogView
+        <CrudFormShell
+          viewMode={viewMode}
           events={events}
           width={resolvedResource.dialogWidth}
           height={resolvedResource.dialogHeight}
           title={dialogTitle}
           isOpen={dialogIsOpen}
-          onClose={resetDialogOperation}
-          onCancel={resetDialogOperation}
+          mode={dialogMode}
+          onClose={requestClose}
+          onCancel={requestClose}
           onSave={() => formRef.current?.save()}
         >
           <FormView
@@ -467,20 +530,16 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             allowUpdating={formDetail?.allowUpdating}
             requiredDetail={formDetail?.required}
             format={resolvedResource.format}
-            onSaveSuccess={
-              (response) => {
-                resolvedResource.onSaveSuccess?.(response as T);
-                resetDialogOperation();
-                refreshGrid();
-              }
-            }
+            onSaveSuccess={(response) => {
+              resolvedResource.onSaveSuccess?.(response as T);
+              requestClose();
+              refreshGrid();
+            }}
             onSaveError={resolvedResource.onSaveError}
-            onDeleteSuccess={
-              (response) => {
-                resolvedResource.onDeleteSuccess?.(response as T);
-                refreshGrid();
-              }
-            }
+            onDeleteSuccess={(response) => {
+              resolvedResource.onDeleteSuccess?.(response as T);
+              refreshGrid();
+            }}
             onDeleteError={resolvedResource.onDeleteError}
             formLayout={resolvedResource.formLayout}
             computedValues={computedValues}
@@ -490,7 +549,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             rowData={dialogRowData}
             operationVersion={operationVersion}
           />
-        </DialogView>
+        </CrudFormShell>
       )}
       {hasAuditTrail && (
         <AuditTrailPanel

@@ -1,0 +1,176 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CRUD Drawer Shell — side panel for create/edit forms.
+//
+// Sits at z-index 2400 — below CrudDialogView (2500) so nested lookup
+// dialogs always float on top, and above AppDialog (2000) so the drawer
+// covers other page chrome.
+//
+// Grid stays interactive behind the scrim on desktop; on mobile the drawer
+// becomes a full-screen sheet.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@keyframes crud-drawer-slide-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes crud-drawer-slide-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes crud-drawer-scrim-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ── Root portal ──────────────────────────────────────────────────────────────
+
+.crud-drawer-root {
+  inset: 0;
+  position: fixed;
+  visibility: hidden;
+  z-index: 2400;
+
+  &--open {
+    visibility: visible;
+  }
+}
+
+// ── Scrim (backdrop) ─────────────────────────────────────────────────────────
+// Subtle so the grid behind stays legible — the drawer is a side-panel, not
+// a modal. On mobile the sheet covers the whole viewport so the scrim is
+// effectively hidden.
+
+.crud-drawer__scrim {
+  animation: crud-drawer-scrim-enter var(--transition-slow) both;
+  background: var(--overlay-bg-subtle);
+  border: 0;
+  cursor: default;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+// ── Panel ────────────────────────────────────────────────────────────────────
+
+.crud-drawer {
+  background: var(--surface-1);
+  border-left: 1px solid var(--border-color);
+  bottom: 0;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+}
+
+.crud-drawer-root--right .crud-drawer {
+  animation: crud-drawer-slide-right var(--transition-slow) both;
+  right: 0;
+}
+
+.crud-drawer-root--left .crud-drawer {
+  animation: crud-drawer-slide-left var(--transition-slow) both;
+  border-left: 0;
+  border-right: 1px solid var(--border-color);
+  left: 0;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+
+.crud-drawer__header {
+  align-items: center;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-2);
+  min-height: var(--toolbar-height);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+}
+
+.crud-drawer__title {
+  color: var(--text-primary);
+  flex: 1;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
+  line-height: var(--line-height-tight);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crud-drawer__close {
+  flex: 0 0 auto;
+}
+
+// ── Body ─────────────────────────────────────────────────────────────────────
+
+.crud-drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4);
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────────
+
+.crud-drawer__footer {
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-4);
+}
+
+.crud-drawer__footer .app-button {
+  min-height: var(--control-height-form);
+}
+
+// ── Compact density ──────────────────────────────────────────────────────────
+
+html[data-density='compact'] {
+  .crud-drawer__header {
+    min-height: var(--toolbar-height);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  }
+
+  .crud-drawer__body {
+    padding: var(--space-3);
+  }
+  .crud-drawer__footer {
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+// ── Mobile sheet ─────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .crud-drawer {
+    animation: none;
+    border: 0;
+    inset: 0;
+    width: 100vw !important;
+  }
+}

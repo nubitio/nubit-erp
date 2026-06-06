@@ -29,6 +29,7 @@ import type { FormViewOptions } from './FormViewOptions';
 import { useFormSubmit } from './useFormSubmit';
 import { useFormValidation } from './useFormValidation';
 import type { UploadedFile } from './UploadedFile';
+import { FileUploadField, isUploadableFileField } from './FileUploadField';
 import { type DetailFieldErrors, mapApiViolations } from './FormApiViolations';
 import { resolveSummaryText, type DetailSummaryOptions } from '../summary';
 
@@ -102,6 +103,13 @@ function resolveButtonIcon(icon?: string): string {
   if (icon.startsWith('ph ')) return icon;
   if (icon.startsWith('ph-')) return `ph ${icon}`;
   return FIELD_BUTTON_ICONS[icon] ?? 'ph ph-magnifying-glass';
+}
+
+function resolveTabIcon(icon?: string): string | undefined {
+  if (!icon) return undefined;
+  if (icon.startsWith('ph ')) return icon;
+  if (icon.startsWith('ph-')) return `ph ${icon}`;
+  return `ph ph-${icon}`;
 }
 
 // ─── Shared lookup dropdown primitive ────────────────────────────────────────
@@ -866,6 +874,15 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const scopedFormErrorsEvent = `${FORM_ERRORS_EVENT}:${instanceId}`;
   const isEdit = useRef(false);
   const uploadedFiles = useRef<UploadedFile[]>([]);
+  const existingMediaByField = useRef<Record<string, FormDataRecord>>({});
+
+  const upsertUploadedFile = useCallback((entry: UploadedFile) => {
+    uploadedFiles.current = [
+      ...uploadedFiles.current.filter((file) => file.name !== entry.name),
+      entry,
+    ];
+  }, []);
+
   const [formData, setFormData] = useState<FormDataRecord>(() => buildEmptyRow(options.fields));
   const formDataRef = useRef(formData);
   const [detailRows, setDetailRows] = useState<FormDataRecord[]>([]);
@@ -964,7 +981,17 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     options.fields.forEach((field) => {
       const state = fieldState[field.name];
       if (field.isIdentity || state?.validationEnabled === false || state?.hidden === true || field.hidden || field.visibleOnForm === false) return;
-      const error = validateField(field, formDataRef.current[field.name], formDataRef.current, t);
+
+      let value = formDataRef.current[field.name];
+      if (field.type === FieldType.FILE) {
+        const uploaded = uploadedFiles.current.find((file) => file.name === field.name);
+        const hasExisting = !!existingMediaByField.current[field.name];
+        value = uploaded?.iri != null || (hasExisting && uploaded === undefined)
+          ? 'present'
+          : null;
+      }
+
+      const error = validateField(field, value, formDataRef.current, t);
       if (error) nextErrors[field.name] = error;
     });
     setErrors(nextErrors);
@@ -1016,8 +1043,21 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const handleDeleteRef = useRef(handleDelete);
   handleDeleteRef.current = handleDelete;
 
+  const captureExistingMedia = useCallback((row: FormDataRecord) => {
+    const nextMedia: Record<string, FormDataRecord> = {};
+    options.fields.forEach((field) => {
+      if (field.type !== FieldType.FILE) return;
+      const raw = row[field.name];
+      if (raw && typeof raw === 'object') {
+        nextMedia[field.name] = raw as FormDataRecord;
+      }
+    });
+    existingMediaByField.current = nextMedia;
+  }, [options.fields]);
+
   const applyAddPayload = useCallback((payload: EventRowPayload | undefined) => {
     uploadedFiles.current = [];
+    existingMediaByField.current = {};
     setErrors({});
     setDetailErrors({});
     setNextDetailRows([]);
@@ -1032,6 +1072,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
 
   const applyEditPayload = useCallback((payload: { row: FormDataRecord }) => {
     prependDataRef.current = new Map();
+    captureExistingMedia(payload.row);
     const row = normalizeFormData(payload.row, options.fields, options.adapter, prependDataRef.current);
     uploadedFiles.current = [];
     setErrors({});
@@ -1049,7 +1090,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       .get<FormDataRecord[]>(detailUrl)
       .then((response) => setNextDetailRows(response.data))
       .finally(() => emit(FORM_EVENTS.LOADING, false));
-  }, [emit, httpClient, options.adapter, options.detailUrl, options.fields, setNextDetailRows, setNextFormData]);
+  }, [captureExistingMedia, emit, httpClient, options.adapter, options.detailUrl, options.fields, setNextDetailRows, setNextFormData]);
 
   useEffect(() => {
     if (!options.operation) {
@@ -1220,6 +1261,24 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           })}
         </select>
       );
+    } else if (isUploadableFileField(field)) {
+      control = (
+        <FileUploadField
+          field={field}
+          disabled={disabled}
+          readOnly={readOnly}
+          invalid={!!error}
+          existingMedia={existingMediaByField.current[field.name] ?? null}
+          uploadUrl={field.url}
+          httpClient={httpClient}
+          t={t}
+          onUploaded={upsertUploadedFile}
+          onCleared={(fieldName) => {
+            delete existingMediaByField.current[fieldName];
+            upsertUploadedFile({ name: fieldName, iri: null });
+          }}
+        />
+      );
     } else if (field.type === FieldType.FILE) {
       control = <input {...commonProps} type="file" accept={field.accept ?? undefined} readOnly={undefined} onChange={(event) => {
         setFieldValue(field.name, event.target.files ?? null);
@@ -1300,12 +1359,42 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     if (layout.type === 'tabs') {
       const groups = [...layout.tabs, ...(layout.overflow ? [layout.overflow] : [])];
       const current = groups[activeTab] ?? groups[0];
+      const tabPanelId = current ? `native-form-tabpanel-${current.label}` : undefined;
+
       return (
         <div className="native-form__tabs">
-          <div className="native-form__tabs-nav">
-            {groups.map((group, index) => <button key={group.label} type="button" className={`native-form__tab-button${index === activeTab ? ' native-form__tab-button--active' : ''}`} onClick={() => setActiveTab(index)}>{group.label}</button>)}
+          <div className="native-form__tabs-nav" role="tablist" aria-label="Secciones del formulario">
+            {groups.map((group, index) => {
+              const tabIcon = resolveTabIcon(group.icon);
+              const isActive = index === activeTab;
+
+              return (
+                <button
+                  key={group.label}
+                  type="button"
+                  role="tab"
+                  id={`native-form-tab-${group.label}`}
+                  aria-selected={isActive}
+                  aria-controls={isActive ? tabPanelId : undefined}
+                  className={`native-form__tab-button${isActive ? ' native-form__tab-button--active' : ''}`}
+                  onClick={() => setActiveTab(index)}
+                >
+                  {tabIcon && <i className={tabIcon} aria-hidden="true" />}
+                  <span>{group.label}</span>
+                </button>
+              );
+            })}
           </div>
-          {current && renderFields(current.fields)}
+          {current && (
+            <div
+              className="native-form__tabs-body"
+              role="tabpanel"
+              id={tabPanelId}
+              aria-labelledby={`native-form-tab-${current.label}`}
+            >
+              {renderFields(current.fields)}
+            </div>
+          )}
         </div>
       );
     }

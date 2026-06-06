@@ -57,7 +57,7 @@ declare const CoreConfigProvider: ({
   timezone,
   apiBaseUrl,
   children
-}: CoreConfigProviderProps) => import("react/jsx-runtime").JSX.Element;
+}: CoreConfigProviderProps) => React.JSX.Element;
 declare function useCoreConfig(): CoreConfig;
 //#endregion
 //#region assets/core/event/EventHook.d.ts
@@ -218,6 +218,17 @@ interface CoreTranslationKeys {
   'form.stringTooShort': string;
   'form.stringTooLong': string;
   'form.outOfRange': string;
+  'form.fileUploadPrompt': string;
+  'form.fileUploadDrop': string;
+  'form.fileUploadHint': string;
+  'form.fileUploading': string;
+  'form.fileUploadReplace': string;
+  'form.fileUploadRemove': string;
+  'form.fileUploadOpen': string;
+  'form.fileUploadFailed': string;
+  'form.fileUploadInvalidResponse': string;
+  'form.imageUploadPrompt': string;
+  'form.imageUploadHint': string;
   'crudPage.confirmActionTitle': string;
 }
 //#endregion
@@ -325,7 +336,7 @@ declare function CoreHttpProvider({
   children,
   client,
   config
-}: CoreHttpProviderProps): import("react/jsx-runtime").JSX.Element;
+}: CoreHttpProviderProps): React.JSX.Element;
 declare function useCoreHttpClient(): CoreHttpClient;
 //#endregion
 //#region assets/core/runtime/CoreRuntimeContext.d.ts
@@ -341,7 +352,7 @@ interface CoreRuntimeProviderProps {
 declare function CoreRuntimeProvider({
   children,
   runtime
-}: CoreRuntimeProviderProps): import("react/jsx-runtime").JSX.Element;
+}: CoreRuntimeProviderProps): React.JSX.Element;
 declare function useCoreRuntime(): CoreRuntime;
 //#endregion
 //#region assets/core/provider/CoreProvider.d.ts
@@ -356,7 +367,7 @@ declare function CoreProvider({
   http,
   httpClient,
   runtime
-}: CoreProviderProps): import("react/jsx-runtime").JSX.Element;
+}: CoreProviderProps): React.JSX.Element;
 //#endregion
 //#region assets/core/mercure/MercureProvider.d.ts
 interface MercureProviderProps {
@@ -371,7 +382,7 @@ interface MercureProviderProps {
 declare function MercureProvider({
   hubUrl,
   children
-}: MercureProviderProps): import("react/jsx-runtime").JSX.Element;
+}: MercureProviderProps): React.JSX.Element;
 //#endregion
 //#region assets/core/mercure/useMercureHub.d.ts
 /**

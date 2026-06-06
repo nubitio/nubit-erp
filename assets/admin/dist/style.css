@@ -34,7 +34,7 @@
 }
 
 .side-nav-outer-toolbar__scrim {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay-bg);
   border: 0;
   cursor: pointer;
   inset: 0;

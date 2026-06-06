@@ -27,6 +27,11 @@
     position: relative;
   }
 
+  // Tabbed forms carry their own panel chrome — slightly tighter dialog padding.
+  .app-dialog__body:has(.native-form__tabs) {
+    padding: var(--space-3);
+  }
+
   // fit-content variant — used when the body is a self-contained view
   // (e.g. a datagrid lookup). Remove padding so the view fills edge-to-edge.
   &.fit-content {

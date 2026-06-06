@@ -9,6 +9,7 @@ import {
   entityField,
   enumField,
   identityField,
+  fileField,
   imageField,
   noneField,
   numberField,
@@ -313,6 +314,13 @@ describe('Field factory functions (public DSL)', () => {
     expect(f.url).toBe('/api/customers');
     expect(f.valueField).toBe('id');
     expect(f.textField).toBe('businessName');
+  });
+
+  it('fileField() sets FILE type + media upload defaults', () => {
+    const f = fileField('https://api.example.com/').name('attachment').label('Adjunto').build();
+    expect(f.type).toBe(FieldType.FILE);
+    expect(f.url).toContain('media');
+    expect(f.accept).toBeUndefined();
   });
 
   it('imageField() sets FILE type + image defaults', () => {

@@ -29,7 +29,7 @@ declare const AdminHeader: ({
   actions,
   renderUserMenu,
   renderThemeSwitcher
-}: AdminHeaderProps) => import("react/jsx-runtime").JSX.Element;
+}: AdminHeaderProps) => React.JSX.Element;
 //#endregion
 //#region assets/admin/AdminSidebarMenu.d.ts
 interface AdminMenuSubItem {
@@ -60,7 +60,7 @@ declare const AdminSidebarMenu: ({
   selectedItemChanged,
   openMenu,
   footer
-}: AdminSidebarMenuProps) => import("react/jsx-runtime").JSX.Element;
+}: AdminSidebarMenuProps) => React.JSX.Element;
 //#endregion
 //#region assets/admin/AdminShell.d.ts
 interface AdminShellProps {
@@ -82,7 +82,7 @@ declare const AdminShell: ({
   renderThemeSwitcher,
   footer,
   children
-}: AdminShellProps) => import("react/jsx-runtime").JSX.Element;
+}: AdminShellProps) => React.JSX.Element;
 //#endregion
 //#region assets/admin/useScreenSize.d.ts
 declare const useScreenSize: () => {

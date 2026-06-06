@@ -27,101 +27,78 @@ let react_router_dom = require("react-router-dom");
 let _nubit_ui = require("@nubit/ui");
 let react_jsx_runtime = require("react/jsx-runtime");
 //#region assets/admin/AdminHeader.tsx
-const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => {
-	const [openPanelId, setOpenPanelId] = (0, react.useState)(null);
-	const [userMenuOpen, setUserMenuOpen] = (0, react.useState)(false);
-	const panelRefs = (0, react.useRef)(/* @__PURE__ */ new Map());
-	const userMenuRef = (0, react.useRef)(null);
-	(0, react.useEffect)(() => {
-		if (!openPanelId && !userMenuOpen) return;
-		const handlePointerDown = (event) => {
-			const target = event.target;
-			if (openPanelId) {
-				if (!panelRefs.current.get(openPanelId)?.contains(target)) setOpenPanelId(null);
-			}
-			if (userMenuOpen && !userMenuRef.current?.contains(target)) setUserMenuOpen(false);
-		};
-		const handleKeyDown = (event) => {
-			if (event.key === "Escape") {
-				setOpenPanelId(null);
-				setUserMenuOpen(false);
-			}
-		};
-		document.addEventListener("pointerdown", handlePointerDown);
-		document.addEventListener("keydown", handleKeyDown);
-		return () => {
-			document.removeEventListener("pointerdown", handlePointerDown);
-			document.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [openPanelId, userMenuOpen]);
-	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("header", {
-		className: ["header-component", className].filter(Boolean).join(" "),
-		children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: "header-toolbar",
-			role: "toolbar",
-			"aria-label": "Main toolbar",
-			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: "header-toolbar__before",
-				children: [menuToggleEnabled && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
-					className: "menu-button",
-					icon: "ph ph-list",
-					label: "Toggle menu",
-					onClick: toggleMenu
-				}), title && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: "header-title",
-					children: title
-				})]
-			}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: "header-toolbar__after",
-				children: [
-					renderThemeSwitcher?.(),
-					actions.map((action) => {
-						const isOpen = openPanelId === action.id;
-						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "header-popover",
-							ref: (el) => {
-								panelRefs.current.set(action.id, el);
-							},
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: "messages",
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
-									icon: action.icon,
-									label: action.label,
-									"aria-expanded": isOpen,
-									onClick: () => setOpenPanelId(isOpen ? null : action.id)
-								}), !!action.badge && action.badge > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: "app-badge",
-									"aria-label": `${action.badge} ${action.label}`,
-									children: action.badge > 99 ? "99+" : action.badge
-								})]
-							}), isOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: "header-popover__panel",
-								role: "dialog",
-								"aria-label": action.label,
-								children: action.renderPanel({ close: () => setOpenPanelId(null) })
-							})]
-						}, action.id);
-					}),
-					renderUserMenu && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: "header-popover",
-						ref: userMenuRef,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
-							icon: "ph ph-user-circle",
-							label: "User menu",
-							"aria-expanded": userMenuOpen,
-							onClick: () => setUserMenuOpen((prev) => !prev)
-						}), userMenuOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "header-popover__panel",
-							role: "dialog",
-							"aria-label": "User menu",
-							children: renderUserMenu({ close: () => setUserMenuOpen(false) })
-						})]
-					})
-				]
+function ActionPopover({ action }) {
+	const { open, toggle, setOpen, containerRef } = (0, _nubit_ui.useFloatingPanel)();
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: "header-popover",
+		ref: containerRef,
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			className: "messages",
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+				icon: action.icon,
+				label: action.label,
+				"aria-expanded": open,
+				onClick: toggle
+			}), !!action.badge && action.badge > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Badge, {
+				variant: "danger",
+				size: "sm",
+				pill: true,
+				"aria-label": `${action.badge} ${action.label}`,
+				children: action.badge > 99 ? "99+" : action.badge
 			})]
-		})
+		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			className: "header-popover__panel",
+			role: "dialog",
+			"aria-label": action.label,
+			children: action.renderPanel({ close: () => setOpen(false) })
+		})]
 	});
-};
+}
+function UserMenuPopover({ renderUserMenu }) {
+	const { open, toggle, setOpen, containerRef } = (0, _nubit_ui.useFloatingPanel)();
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: "header-popover",
+		ref: containerRef,
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+			icon: "ph ph-user-circle",
+			label: "User menu",
+			"aria-expanded": open,
+			onClick: toggle
+		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+			className: "header-popover__panel",
+			role: "dialog",
+			"aria-label": "User menu",
+			children: renderUserMenu({ close: () => setOpen(false) })
+		})]
+	});
+}
+const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("header", {
+	className: ["header-component", className].filter(Boolean).join(" "),
+	children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: "header-toolbar",
+		role: "toolbar",
+		"aria-label": "Main toolbar",
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			className: "header-toolbar__before",
+			children: [menuToggleEnabled && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+				className: "menu-button",
+				icon: "ph ph-list",
+				label: "Toggle menu",
+				onClick: toggleMenu
+			}), title && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: "header-title",
+				children: title
+			})]
+		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			className: "header-toolbar__after",
+			children: [
+				renderThemeSwitcher?.(),
+				actions.map((action) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ActionPopover, { action }, action.id)),
+				renderUserMenu && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(UserMenuPopover, { renderUserMenu })
+			]
+		})]
+	})
+});
 //#endregion
 //#region assets/admin/useScreenSize.ts
 let handlers = [];

@@ -75,9 +75,9 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
       ])
       .build(),
   );
-  fields.push(textField().name('businessName').label('Razon social').required(true).build());
+  fields.push(textField().name('businessName').label('Razón social').required(true).build());
   fields.push(textField().name('tradeName').label('Nombre comercial').build());
-  fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
+  fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).col(12).build());
   fields.push(
     entityField(`${API}ubigeos`, 'code', 'name')
       .name('ubigeo')
@@ -93,11 +93,18 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
       .visible(false)
       .build(),
   );
-  fields.push(textField().name('ubigeoCode').label('Ubigeo (INEI)').hidden(true).build());
-  fields.push(textField().name('department').label('Departmento').readonly(true).build());
+  fields.push(
+    textField()
+      .name('ubigeoCode')
+      .label('Ubigeo (INEI)')
+      .hidden(true)
+      .visibleOnForm(false)
+      .build(),
+  );
+  fields.push(textField().name('department').label('Departamento').readonly(true).build());
   fields.push(textField().name('province').label('Provincia').readonly(true).build());
   fields.push(textField().name('district').label('Distrito').readonly(true).build());
-  fields.push(textField().name('phone').label('Telefono').build());
+  fields.push(textField().name('phone').label('Teléfono').build());
   fields.push(
     enumField([
       { value: 'BCP', text: 'BCP' },
@@ -116,10 +123,11 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
     imageField(API)
       .name('logo')
       .label('Logo')
+      .col(12)
       .formatter((e: GridCellContext) => {
         return SharedUtils.imageFormatter(
           (e.data.logo as { path?: string } | undefined)?.path,
-          e.data.nombre_comercial as string | undefined,
+          (e.data.tradeName as string | undefined) ?? (e.data.businessName as string | undefined),
         );
       })
       .build(),

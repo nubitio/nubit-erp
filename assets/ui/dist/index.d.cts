@@ -1,13 +1,46 @@
-import React, { ButtonHTMLAttributes, InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import React$1, { ButtonHTMLAttributes, InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
+//#region assets/ui/Avatar.d.ts
+type AvatarShape = 'circle' | 'square';
+type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+interface AvatarProps {
+  /**
+   * The name used to derive initials and background color.
+   * Initials are extracted from up to the first two words.
+   */
+  owner?: string;
+  /**
+   * Explicit size in px. If not provided, uses one of the named sizes.
+   * Named sizes: xs=20, sm=24, md=32, lg=40, xl=48.
+   */
+  size?: number;
+  /** Named size variant — overridden by explicit `size` prop. */
+  variant?: AvatarSize;
+  /** Circle (default) or rounded-square. */
+  shape?: AvatarShape;
+  /** Optional alt text. Defaults to owner name or "Avatar". */
+  alt?: string;
+  className?: string;
+}
+declare function getAvatarInitials(owner?: string): string;
+declare function getAvatarHue(owner?: string): number;
+declare const Avatar: ({
+  owner,
+  size,
+  variant,
+  shape,
+  alt,
+  className
+}: AvatarProps) => React$1.JSX.Element;
+//#endregion
 //#region assets/ui/AppDialog.d.ts
 interface AppDialogProps {
   visible?: boolean;
   open?: boolean;
   title: string;
   onClose: () => void;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
+  children: React$1.ReactNode;
+  footer?: React$1.ReactNode;
   width?: number | string;
   maxWidth?: number | string;
   height?: number | string;
@@ -48,7 +81,7 @@ declare const AppDialog: ({
   bodyClassName,
   footerClassName,
   role
-}: AppDialogProps) => React.ReactPortal | null;
+}: AppDialogProps) => React$1.ReactPortal | null;
 //#endregion
 //#region assets/ui/ConfirmDialog.d.ts
 interface ConfirmDialogProps {
@@ -70,7 +103,7 @@ declare function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   variant
-}: ConfirmDialogProps): import("react/jsx-runtime").JSX.Element;
+}: ConfirmDialogProps): import("react").JSX.Element;
 //#endregion
 //#region assets/ui/AppToolbar.d.ts
 interface AppToolbarProps {
@@ -89,7 +122,7 @@ declare const AppToolbar: ({
   icon,
   refreshLabel,
   children
-}: AppToolbarProps & React.PropsWithChildren) => import("react/jsx-runtime").JSX.Element;
+}: AppToolbarProps & React$1.PropsWithChildren) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/Button.d.ts
 type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
@@ -112,7 +145,7 @@ declare const Button: ({
   children,
   disabled,
   ...props
-}: ButtonProps) => import("react/jsx-runtime").JSX.Element;
+}: ButtonProps) => import("react").JSX.Element;
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: string;
   label: string;
@@ -124,7 +157,7 @@ declare const IconButton: ({
   variant,
   className,
   ...props
-}: IconButtonProps) => import("react/jsx-runtime").JSX.Element;
+}: IconButtonProps) => import("react").JSX.Element;
 //#endregion
 //#region assets/ui/Card.d.ts
 interface CardProps {
@@ -135,7 +168,7 @@ declare const Card: ({
   title,
   description,
   children
-}: React.PropsWithChildren<CardProps>) => import("react/jsx-runtime").JSX.Element;
+}: React$1.PropsWithChildren<CardProps>) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/FormControls.d.ts
 interface FormFieldProps extends LabelHTMLAttributes<HTMLLabelElement> {
@@ -151,7 +184,7 @@ declare const FormField: ({
   children,
   className,
   ...props
-}: FormFieldProps) => import("react/jsx-runtime").JSX.Element;
+}: FormFieldProps) => import("react").JSX.Element;
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean;
 }
@@ -174,20 +207,20 @@ interface ThemeContextValue {
   switchTheme: () => void;
   isLoaded: boolean;
 }
-declare const ThemeContext: React.Context<ThemeContextValue | null>;
+declare const ThemeContext: React$1.Context<ThemeContextValue | null>;
 declare function useTheme(): ThemeContextValue;
 interface ThemeProviderProps {
   storageKey?: string;
   themePrefix?: string;
   basePath?: string;
-  children: React.ReactNode;
+  children: React$1.ReactNode;
 }
 declare const ThemeProvider: ({
   storageKey,
   themePrefix,
   basePath,
   children
-}: ThemeProviderProps) => import("react/jsx-runtime").JSX.Element;
+}: ThemeProviderProps) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/theme/ThemeSwitcher.d.ts
 declare const labelByMode: {
@@ -200,7 +233,7 @@ interface ThemeSwitcherProps {
 }
 declare const ThemeSwitcher: ({
   labelByMode: overrides
-}?: ThemeSwitcherProps) => import("react/jsx-runtime").JSX.Element;
+}?: ThemeSwitcherProps) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/theme/DensityProvider.d.ts
 type Density = 'normal' | 'compact';
@@ -208,13 +241,13 @@ interface DensityContextValue {
   density: Density;
   toggleDensity: () => void;
 }
-declare const DensityContext: React.Context<DensityContextValue | null>;
+declare const DensityContext: React$1.Context<DensityContextValue | null>;
 declare function useDensity(): DensityContextValue;
 declare const DensityProvider: ({
   children
 }: {
-  children: React.ReactNode;
-}) => import("react/jsx-runtime").JSX.Element;
+  children: React$1.ReactNode;
+}) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/theme/useAccentColor.d.ts
 interface AccentPreset {
@@ -234,7 +267,7 @@ interface SettingsPanelProps {
 }
 declare const SettingsPanel: ({
   onClose: _onClose
-}: SettingsPanelProps) => import("react/jsx-runtime").JSX.Element;
+}: SettingsPanelProps) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/Badge.d.ts
 type BadgeVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
@@ -261,7 +294,7 @@ declare const Badge: ({
   dot,
   children,
   className
-}: BadgeProps) => import("react/jsx-runtime").JSX.Element;
+}: BadgeProps) => import("react").JSX.Element;
 //#endregion
 //#region assets/ui/Skeleton.d.ts
 interface SkeletonProps {
@@ -281,7 +314,7 @@ declare const Skeleton: ({
   height,
   lines,
   className
-}: SkeletonProps) => import("react/jsx-runtime").JSX.Element;
+}: SkeletonProps) => import("react").JSX.Element;
 //#endregion
 //#region assets/ui/EmptyState.d.ts
 type EmptyStateVariant = 'default' | 'danger' | 'warning' | 'success';
@@ -312,7 +345,7 @@ declare const EmptyState: ({
   size,
   fill,
   className
-}: EmptyStateProps) => import("react/jsx-runtime").JSX.Element;
+}: EmptyStateProps) => import("react").JSX.Element;
 //#endregion
 //#region assets/ui/Chip.d.ts
 interface ChipProps {
@@ -344,7 +377,7 @@ declare const Chip: ({
   disabled,
   onClick,
   className
-}: ChipProps) => import("react/jsx-runtime").JSX.Element;
+}: ChipProps) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/Toggle.d.ts
 interface ToggleProps {
@@ -352,7 +385,7 @@ interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   /** Optional label rendered in a flex row alongside the toggle */
-  label?: React.ReactNode;
+  label?: React$1.ReactNode;
   /** Size variant */
   size?: 'sm' | 'md';
   disabled?: boolean;
@@ -375,7 +408,7 @@ declare const Toggle: ({
   disabled,
   "aria-label": ariaLabel,
   className
-}: ToggleProps) => import("react/jsx-runtime").JSX.Element;
+}: ToggleProps) => React$1.JSX.Element;
 //#endregion
 //#region assets/ui/ContextMenu.d.ts
 interface ContextMenuItem {
@@ -419,7 +452,7 @@ declare const ContextMenu: ({
   triggerLabel,
   align,
   className
-}: ContextMenuProps) => import("react/jsx-runtime").JSX.Element | null;
+}: ContextMenuProps) => React$1.JSX.Element | null;
 //#endregion
 //#region assets/ui/StatCard.d.ts
 interface StatCardProps {
@@ -448,6 +481,156 @@ declare const StatCard: ({
   isLoading,
   className,
   children
-}: StatCardProps) => import("react/jsx-runtime").JSX.Element;
+}: StatCardProps) => React$1.JSX.Element;
 //#endregion
-export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppToolbar, type AppToolbarProps, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, type Density, DensityContext, type DensityContextValue, DensityProvider, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, useAccentColor, useDensity, useTheme };
+//#region assets/ui/CollapsibleSection.d.ts
+interface CollapsibleSectionProps {
+  /** Section heading text. */
+  label: React$1.ReactNode;
+  /** Optional Phosphor icon class string, e.g. "ph ph-chat-circle". */
+  icon?: string;
+  /** Controlled open state. */
+  open: boolean;
+  /** Called when the header trigger is clicked. */
+  onToggle: () => void;
+  /** Body content — always mounted, hidden via CSS when collapsed. */
+  children: React$1.ReactNode;
+  /**
+   * Optional trailing slot rendered to the right of the label.
+   * Useful for a clear button or indicator badge.
+   */
+  trailing?: React$1.ReactNode;
+  className?: string;
+  /** Additional class applied to the body container. */
+  bodyClassName?: string;
+  /** Forwarded to the root element for testing. */
+  'data-testid'?: string;
+}
+/**
+ * Accessible collapsible section with a labelled header trigger.
+ *
+ * - Uses `aria-expanded` and `aria-controls` for screen reader support.
+ * - The body is conditionally rendered (not just hidden) to avoid mounting
+ *   heavy children before they are needed. Pass `keepMounted` if you need
+ *   the body always in the DOM.
+ */
+declare const CollapsibleSection: ({
+  label,
+  icon,
+  open,
+  onToggle,
+  children,
+  trailing,
+  className,
+  bodyClassName,
+  "data-testid": testId
+}: CollapsibleSectionProps) => React$1.JSX.Element;
+//#endregion
+//#region assets/ui/DatePicker.d.ts
+interface DatePickerProps {
+  id?: string;
+  name?: string;
+  value?: string | null;
+  placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean;
+  locale?: string;
+  /** Show the inline ✕ clear button when a value is present. Default: true.
+   *  Set to false when the parent (e.g. datagrid filter row) already provides its own clear action. */
+  clearable?: boolean;
+  min?: string;
+  max?: string;
+  className?: string;
+  ariaLabel?: string;
+  onChange?: (value: string) => void;
+  onBlur?: React$1.FocusEventHandler<HTMLElement>;
+}
+declare const DatePicker: React$1.ForwardRefExoticComponent<DatePickerProps & React$1.RefAttributes<HTMLInputElement>>;
+//#endregion
+//#region assets/ui/DateRangePicker.d.ts
+interface DateRangePickerProps {
+  startValue?: string | null;
+  endValue?: string | null;
+  placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean;
+  locale?: string;
+  min?: string;
+  max?: string;
+  className?: string;
+  ariaLabel?: string;
+  onChange?: (startValue: string, endValue: string) => void;
+  onBlur?: React$1.FocusEventHandler<HTMLElement>;
+}
+declare function DateRangePicker({
+  startValue,
+  endValue,
+  placeholder,
+  disabled,
+  readOnly,
+  required,
+  invalid,
+  locale,
+  min,
+  max,
+  className,
+  ariaLabel,
+  onChange,
+  onBlur
+}: DateRangePickerProps): React$1.JSX.Element;
+//#endregion
+//#region assets/ui/Popover.d.ts
+type PopoverAlign = 'start' | 'end';
+interface PopoverProps {
+  /**
+   * Render prop for the trigger element.
+   * The open state is passed so the trigger can reflect aria-expanded.
+   */
+  trigger: (props: {
+    open: boolean;
+    toggle: () => void;
+  }) => React$1.ReactNode;
+  /**
+   * Render prop for the panel content.
+   * `close` is a callback to close the popover.
+   */
+  panel: (props: {
+    close: () => void;
+  }) => React$1.ReactNode;
+  /**
+   * Horizontal alignment of the panel relative to the container.
+   * - 'end' (default): right-aligns the panel (panel right = container right)
+   * - 'start': left-aligns the panel (panel left = container left)
+   */
+  align?: PopoverAlign;
+  /** Accessible label for the panel dialog wrapper. */
+  ariaLabel?: string;
+  className?: string;
+}
+declare const Popover: ({
+  trigger,
+  panel,
+  align,
+  ariaLabel,
+  className
+}: PopoverProps) => React$1.JSX.Element;
+//#endregion
+//#region assets/ui/useFloatingPanel.d.ts
+interface UseFloatingPanelOptions {
+  /** Called when the panel is closed by click-outside or Escape. */
+  onClose?: () => void;
+}
+interface UseFloatingPanelResult {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  toggle: () => void;
+  /** Attach this ref to the element that contains both trigger and panel. */
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}
+declare function useFloatingPanel(options?: UseFloatingPanelOptions): UseFloatingPanelResult;
+//#endregion
+export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };

@@ -46,12 +46,34 @@ export const SalePage = () => {
   const [documentsDialogSaleId, setDocumentsDialogSaleId] = useState<string | null>(null);
   const { currentBranchId, currentUserId } = useSessionInfo();
 
+  const formHandleProxy = useMemo<FormHandle>(() => ({
+    getFormData: () => formRef.current?.getFormData(),
+    getFieldValue: (name) => formRef.current?.getFieldValue(name),
+    setFieldValue: (name, value) => formRef.current?.setFieldValue(name, value),
+    getDetailData: () => formRef.current?.getDetailData(),
+    setDetailData: (data) => formRef.current?.setDetailData(data),
+    saveDetailData: () => formRef.current?.saveDetailData(),
+    reloadDetailData: () => formRef.current?.reloadDetailData(),
+    setValues: (data) => formRef.current?.setValues(data),
+    save: () => formRef.current?.save(),
+    deleteRow: (row) => formRef.current?.deleteRow(row),
+    setReadonly: (field, value) => formRef.current?.setReadonly(field, value),
+    setDisabled: (field, value) => formRef.current?.setDisabled(field, value),
+    enableValidation: (field) => formRef.current?.enableValidation(field),
+    disableValidation: (field) => formRef.current?.disableValidation(field),
+    setError: (field, message) => formRef.current?.setError(field, message),
+    showField: (field) => formRef.current?.showField(field),
+    hideField: (field) => formRef.current?.hideField(field),
+    validate: () => formRef.current?.validate() ?? false,
+    setIsEdit: (value) => formRef.current?.setIsEdit(value),
+  }), []);
+
   const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
 
   const container = 'wrapper';
   const fields = useMemo(
     () =>
-      SaleFields(formRef.current, {
+      SaleFields(formHandleProxy, {
         branchId: currentBranchId,
         userId: currentUserId ?? undefined,
         onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
@@ -74,7 +96,7 @@ export const SalePage = () => {
         stateRef: saleFieldStateRef,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [formHandleProxy],
   );
 
   /** Callbacks for item-level discount icon in the detail grid. */
@@ -105,9 +127,9 @@ export const SalePage = () => {
   );
 
   const detailFields = useMemo(
-    () => SaleDetailFields(formRef.current, 'PEN', { ...itemDiscountCallbacks, stateRef: saleFieldStateRef }),
+    () => SaleDetailFields(formHandleProxy, 'PEN', { ...itemDiscountCallbacks, stateRef: saleFieldStateRef }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [formHandleProxy, itemDiscountCallbacks],
   );
   const detailSummary = useMemo<DetailSummaryOptions>(
     () => ({

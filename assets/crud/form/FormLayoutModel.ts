@@ -19,9 +19,18 @@ export function buildFormLayoutModel(
   formLayout: FormLayout | undefined,
   overflowLabel: string,
 ): FormLayoutModel {
-  const pickFields = (names: string[]): Field[] => fields.filter((field) => names.includes(field.name));
+  const pickFields = (names: string[]): Field[] => {
+    const byName = new Map(fields.map((field) => [field.name, field]));
+    return names.map((name) => byName.get(name)).filter((field): field is Field => field != null);
+  };
   const remainingFields = (assignedNames: string[]): Field[] =>
-    fields.filter((field) => !assignedNames.includes(field.name));
+    fields.filter(
+      (field) =>
+        !assignedNames.includes(field.name) &&
+        !field.isIdentity &&
+        field.visibleOnForm !== false &&
+        !field.hidden,
+    );
 
   if (formLayout?.type === 'tabs') {
     const allAssigned = formLayout.tabs.flatMap((tab) => tab.fields);

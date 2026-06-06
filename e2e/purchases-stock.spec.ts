@@ -94,7 +94,7 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-dialog__body');
+  return crudDialog(page, name).locator('.app-dialog__body, .crud-dialog__body');
 }
 
 async function waitForPostLoginLanding(page: Page) {
@@ -143,7 +143,9 @@ async function ensureLoggedIn(page: Page) {
       (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
     await targetOption.click();
     await page.waitForTimeout(300);
-    const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
+    const acceptBtn = page
+      .getByRole('dialog', { name: 'Seleccionar local' })
+      .getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
     await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
@@ -228,7 +230,9 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
       await targetOption.click();
       await page.waitForTimeout(300);
-      const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
+      const acceptBtn = page
+        .getByRole('dialog', { name: 'Seleccionar local' })
+        .getByRole('button', { name: /aceptar/i });
       await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
       await acceptBtn.click();
       await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
@@ -390,8 +394,8 @@ test.describe('Compras — crear compra e incremento de stock', () => {
           await firstOption.click();
           await page.waitForTimeout(300);
         } else {
-          // No hay proveedores — cerrar y continuar (campo opcional)
-          await page.keyboard.press('Escape');
+          // No hay proveedores — continuar sin cerrar el modal (Escape cerraría AppDialog).
+          await supplierInput.blur();
         }
       }
     });
@@ -404,12 +408,16 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await addRowBtn.click();
 
       // The new row appears immediately in the native detail table
-      const insertedRow = page.locator('.native-form__detail-table tbody tr').last();
+      const dialog = crudDialog(page, /nuevo|new/i);
+      const detailTable = dialog.locator('.native-form__detail-table').first();
+      const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
       // Columna 0 = Producto — NativeEntitySelect combobox
-      const productInput = insertedRow.locator('td').nth(0).locator('input[role="combobox"]').first();
-      await productInput.waitFor({ state: 'visible', timeout: 5000 });
+      const productCell = insertedRow.locator('td').nth(0);
+      await productCell.click();
+      const productInput = productCell.locator('input[role="combobox"], input').first();
+      await productInput.waitFor({ state: 'attached', timeout: 5000 });
       await productInput.click();
       await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 50 });
 
@@ -437,12 +445,13 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await costInput.fill(PURCHASE_UNIT_COST);
       await page.keyboard.press('Tab');
 
-      // Move focus out of the detail grid
-      await crudDialog(page, /nuevo|new/i).locator('.crud-dialog__body').click({ force: true });
+      // Move focus out of the detail grid without clicking outside the dialog.
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
       await page.waitForTimeout(300);
 
       // Verify the row is present in the native detail table
-      const committedRow = page.locator('.native-form__detail-table tbody tr').first();
+      const committedRow = detailTable.locator('tbody tr').first();
       await committedRow.waitFor({ state: 'visible', timeout: 8000 });
     });
 
@@ -460,12 +469,8 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         { timeout: 20000 },
       );
 
-      // Cancelar cualquier edición pendiente en el grid antes de guardar
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
-
       // Click en el botón Guardar del footer del popup
-      await crudDialog(page, /nuevo|new/i).locator('button.dialog-save-button').click({ force: true });
+      await crudDialog(page, /nuevo|new/i).getByRole('button', { name: /guardar|save/i }).click({ force: true });
 
       const createPurchaseResponse = await createPurchaseResponsePromise.catch(async (err) => {
         // eslint-disable-next-line no-console

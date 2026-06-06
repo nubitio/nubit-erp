@@ -62,6 +62,7 @@ export {
   enumField,
   checkboxField,
   identityField,
+  fileField,
   imageField,
   noneField,
   numberField,
@@ -90,6 +91,16 @@ export type { ValidationRule } from './field/ValidationRule';
 export { DataGridView, DATA_GRID_EVENTS } from './datagrid/DataGridView';
 export { DialogView } from './dialog/DialogView';
 export { FormView, FORM_EVENTS } from './form/FormView';
+export {
+  CrudFormShell,
+  CrudDialogShell,
+  CrudDrawerShell,
+  CrudPageShell,
+  resolveViewMode,
+} from './view';
+export type { CrudFormShellProps } from './view';
+export type { ResolvedViewMode } from './view';
+export type { CrudViewMode, CrudViewModeConfig } from './crud/ResourceConfig';
 
 // ── Handles & options ─────────────────────────────────────────────────────────
 export type { FormHandle } from './form/FormHandle';
@@ -108,11 +119,7 @@ export type {
   SummaryTextContext,
   SummaryType,
 } from './summary';
-export {
-  computeSummaryValue,
-  formatSummaryValue,
-  resolveSummaryText,
-} from './summary';
+export { computeSummaryValue, formatSummaryValue, resolveSummaryText } from './summary';
 
 // ── Backend adapters ──────────────────────────────────────────────────────────
 export type { BackendAdapter } from './adapter/BackendAdapter';
@@ -120,21 +127,15 @@ export { HydraAdapter } from './adapter/HydraAdapter';
 export { RestAdapter } from './adapter/RestAdapter';
 
 // ── Extension points (for @nubit/hydra and adapter implementors) ──────────────
-export {
-  ResourceSchemaProvider,
-} from './schema/ResourceSchema';
+export { ResourceSchemaProvider } from './schema/ResourceSchema';
 export type {
   ResourceSchemaProviderProps,
   ResourceSchemaResolution,
   ResourceSchemaResolver,
 } from './schema/ResourceSchema';
-export {
-  ResourceStoreProvider,
-} from './data/ResourceStore';
+export { ResourceStoreProvider } from './data/ResourceStore';
 export type { FieldOverride } from './crud/resolveSmartCrudFields';
-export {
-  useResourceStoreFactory,
-} from './data/ResourceStore';
+export { useResourceStoreFactory } from './data/ResourceStore';
 export type {
   ResourceFilterDescriptor,
   ResourceFilterRule,

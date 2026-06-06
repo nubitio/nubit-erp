@@ -171,21 +171,79 @@ const photoPatch = toPatch(
     .build(),
 );
 
+const PRODUCT_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['code', 'name', 'category', 'salePrice'],
+  },
+  {
+    key: 'inventory',
+    label: 'Inventario',
+    columns: ['code', 'name', 'category', 'sku', 'barcode', 'salePrice', 'minStock'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: [
+      'code',
+      'name',
+      'category',
+      'productKind',
+      'sku',
+      'barcode',
+      'unitOfMeasure',
+      'salePrice',
+      'minStock',
+    ],
+  },
+] as const;
+
 const productResource = defineResource<ProductRecord>(API + 'products', {
   id: 'product',
   title: 'Productos',
+  defaultPreset: 'basic',
+  columnPresets: [...PRODUCT_COLUMN_PRESETS],
+  formLayout: {
+    type: 'tabs',
+    tabs: [
+      {
+        label: 'General',
+        icon: 'ph-package',
+        fields: ['name', 'code', 'category', 'productKind', 'salePrice', 'photo'],
+      },
+      {
+        label: 'Inventario',
+        icon: 'ph-warehouse',
+        fields: [
+          'inventoryBehavior',
+          'sku',
+          'barcode',
+          'unitOfMeasure',
+          'lotTrackingStrategy',
+          'minStock',
+        ],
+      },
+      {
+        label: 'SUNAT',
+        icon: 'ph-scales',
+        fields: ['detractionCatalog'],
+      },
+    ],
+  },
   fieldContract: defineFields<ProductRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'code', patch: { order: 0, width: 140 } },
-      { kind: 'override', key: 'name', patch: { order: 1, width: 260 } },
+      { kind: 'override', key: 'name', patch: { order: 0, width: 260 } },
+      { kind: 'override', key: 'code', patch: { order: 1, width: 140 } },
       { kind: 'override', key: 'category', patch: { order: 2, width: 180 } },
+      { kind: 'override', key: 'salePrice', patch: { order: 3, width: 130, align: 'right' } },
       {
         kind: 'override',
         key: 'type',
         patch: {
-          order: 3,
+          order: 4,
           visible: false,
           visibleOnForm: false,
           required: true,
@@ -195,62 +253,80 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
       {
         kind: 'override',
         key: 'productKind',
-        patch: { ...productKindPatch, order: 3, width: 170, defaultValue: 'GOOD' },
+        patch: {
+          ...productKindPatch,
+          order: 4,
+          width: 140,
+          defaultValue: 'GOOD',
+          filterable: false,
+        },
       },
       {
         kind: 'override',
         key: 'inventoryBehavior',
         patch: {
           ...inventoryBehaviorPatch,
-          order: 4,
-          width: 220,
+          order: 10,
+          visible: false,
           defaultValue: 'TRACKED',
+          filterable: false,
           visibleWhen: (formData) => formData.productKind === 'GOOD',
         },
       },
-      { kind: 'override', key: 'sku', patch: { order: 5, width: 140 } },
-      { kind: 'override', key: 'barcode', patch: { order: 6, width: 160 } },
+      { kind: 'override', key: 'sku', patch: { order: 11, width: 140 } },
+      { kind: 'override', key: 'barcode', patch: { order: 12, width: 160 } },
+      {
+        kind: 'override',
+        key: 'unitOfMeasure',
+        patch: {
+          order: 13,
+          width: 160,
+          defaultValue: '/api/unit-of-measures/1',
+          filterable: false,
+        },
+      },
       {
         kind: 'override',
         key: 'lotTrackingStrategy',
         patch: {
           ...lotTrackingStrategyPatch,
-          order: 7,
-          width: 150,
+          order: 14,
+          visible: false,
           defaultValue: 'NONE',
+          filterable: false,
           visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
         },
       },
-      {
-        kind: 'override',
-        key: 'unitOfMeasure',
-        patch: { order: 8, width: 160, defaultValue: '/api/unit-of-measures/1' },
-      },
-      {
-        kind: 'override',
-        key: 'purchasePrice',
-        patch: { order: 9, width: 130, visibleOnForm: false },
-      },
-      { kind: 'override', key: 'salePrice', patch: { order: 10, width: 130 } },
       {
         kind: 'override',
         key: 'minStock',
         patch: {
-          order: 12,
-          width: 130,
-          label: 'Stock mínimo (alerta reposición)',
+          order: 15,
+          width: 120,
+          align: 'right',
+          label: 'Stock mínimo',
+          filterable: false,
           visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
         },
       },
-      { kind: 'override', key: 'photo', patch: { ...photoPatch, order: 13 } },
+      {
+        kind: 'override',
+        key: 'purchasePrice',
+        patch: { order: 16, visible: false, visibleOnForm: false, filterable: false },
+      },
+      {
+        kind: 'override',
+        key: 'photo',
+        patch: { ...photoPatch, order: 5, visible: false, filterable: false },
+      },
       {
         kind: 'override',
         key: 'detractionCatalog',
         patch: {
-          order: 14,
-          width: 280,
-          visible: true,
+          order: 20,
+          visible: false,
           visibleOnForm: true,
+          filterable: false,
           visibleWhen: (formData) => formData.productKind === 'GOOD',
           textField: 'description',
           filters: [{ field: 'catalog', operator: '=', value: 54 }],

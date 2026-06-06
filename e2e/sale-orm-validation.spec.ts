@@ -62,7 +62,7 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-dialog__body');
+  return crudDialog(page, name).locator('.app-dialog__body, .crud-dialog__body');
 }
 
 async function login(page: Page) {
@@ -82,7 +82,9 @@ async function login(page: Page) {
     const target = (await e2eBranch.count()) > 0 ? e2eBranch.first() : firstBranchOption;
     await target.click();
     await page.waitForTimeout(300);
-    const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
+    const acceptBtn = page
+      .getByRole('dialog', { name: 'Seleccionar local' })
+      .getByRole('button', { name: /aceptar/i });
     await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
     await acceptBtn.click();
     await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
@@ -227,9 +229,9 @@ async function createSaleViaPOS(page: Page, opts: { withDiscount?: boolean } = {
     .first();
   await firstPayBtn.waitFor({ state: 'visible', timeout: 15000 });
   await firstPayBtn.click();
-  const exactoBtn = page.getByTestId('pos-cash-preset-exacto');
-  if (await exactoBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await exactoBtn.click();
+  const amountReceivedInput = page.getByLabel('Monto recibido');
+  if (await amountReceivedInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await amountReceivedInput.fill('10');
   }
 
   const cobrarBtn = page.getByTestId('pos-checkout-btn');
@@ -571,6 +573,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await newBtn.waitFor({ state: 'visible', timeout: 10000 });
     await newBtn.click();
     await expect(page.getByRole('dialog', { name: /nuevo|new/i })).toBeVisible({ timeout: 12000 });
+    const saleDialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
 
     // Select warehouse if visible
     const dialogBody = crudDialogBody(page, /nuevo|new/i);
@@ -602,11 +605,14 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const insertedRow = page.locator('.native-form__detail-table tbody tr').last();
+    const detailTable = saleDialog.locator('.native-form__detail-table').first();
+    const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
-    const productInput = insertedRow.locator('td').nth(0).locator('input[role="combobox"]').first();
-    await productInput.waitFor({ state: 'visible', timeout: 5000 });
+    const productCell = insertedRow.locator('td').nth(0);
+    await productCell.click();
+    const productInput = productCell.locator('input[role="combobox"], input').first();
+    await productInput.waitFor({ state: 'attached', timeout: 5000 });
     await productInput.click();
     await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
 
@@ -626,8 +632,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
       (r) => /\/api\/sales(?:\?.*)?$/.test(r.url()) && r.request().method() === 'POST',
       { timeout: 15000 },
     );
-    const saleDialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
-    await saleDialog.locator('button.dialog-save-button').click({ force: true });
+    await saleDialog.getByRole('button', { name: /guardar|save/i }).click({ force: true });
 
     const saleResponse = await saleResponsePromise;
     expect(saleResponse.ok(), 'POST /api/sales must return 2xx').toBeTruthy();

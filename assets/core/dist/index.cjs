@@ -305,6 +305,17 @@ const coreTranslationsEs = {
 	"form.stringTooShort": "Texto demasiado corto",
 	"form.stringTooLong": "Texto demasiado largo",
 	"form.outOfRange": "Valor fuera de rango",
+	"form.fileUploadPrompt": "Arrastra un archivo o haz clic para seleccionar",
+	"form.fileUploadDrop": "Suelta el archivo aquí",
+	"form.fileUploadHint": "Se sube automáticamente al seleccionar.",
+	"form.fileUploading": "Subiendo archivo…",
+	"form.fileUploadReplace": "Cambiar",
+	"form.fileUploadRemove": "Quitar",
+	"form.fileUploadOpen": "Ver archivo",
+	"form.fileUploadFailed": "No se pudo subir el archivo",
+	"form.fileUploadInvalidResponse": "La respuesta del servidor no incluye el identificador del archivo",
+	"form.imageUploadPrompt": "Arrastra una imagen o haz clic para seleccionar",
+	"form.imageUploadHint": "PNG, JPG, WEBP o GIF. Se sube automáticamente al seleccionar.",
 	"crudPage.confirmActionTitle": "Confirmar acción"
 };
 const coreTranslationsEn = {
@@ -362,6 +373,17 @@ const coreTranslationsEn = {
 	"form.stringTooShort": "Text too short",
 	"form.stringTooLong": "Text too long",
 	"form.outOfRange": "Value out of range",
+	"form.fileUploadPrompt": "Drag a file here or click to browse",
+	"form.fileUploadDrop": "Drop the file here",
+	"form.fileUploadHint": "Uploads automatically on selection.",
+	"form.fileUploading": "Uploading file…",
+	"form.fileUploadReplace": "Replace",
+	"form.fileUploadRemove": "Remove",
+	"form.fileUploadOpen": "Open file",
+	"form.fileUploadFailed": "Could not upload the file",
+	"form.fileUploadInvalidResponse": "Server response did not include the file identifier",
+	"form.imageUploadPrompt": "Drag an image here or click to browse",
+	"form.imageUploadHint": "PNG, JPG, WEBP or GIF. Uploads automatically on selection.",
 	"crudPage.confirmActionTitle": "Confirm action"
 };
 //#endregion

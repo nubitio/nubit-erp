@@ -23,11 +23,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 //#endregion
 let react = require("react");
 react = __toESM(react, 1);
-let react_dom = require("react-dom");
 let react_router_dom = require("react-router-dom");
+let react_dom = require("react-dom");
 let _nubit_ui = require("@nubit/ui");
 let react_jsx_runtime = require("react/jsx-runtime");
 let _nubit_core = require("@nubit/core");
+let react_dropzone = require("react-dropzone");
 let _tanstack_react_query = require("@tanstack/react-query");
 //#region assets/crud/crud/defineResource.ts
 const stringResourceCache = /* @__PURE__ */ new Map();
@@ -302,8 +303,11 @@ function safeRandomId() {
 //#endregion
 //#region assets/crud/form/FormLayoutModel.ts
 function buildFormLayoutModel(fields, formLayout, overflowLabel) {
-	const pickFields = (names) => fields.filter((field) => names.includes(field.name));
-	const remainingFields = (assignedNames) => fields.filter((field) => !assignedNames.includes(field.name));
+	const pickFields = (names) => {
+		const byName = new Map(fields.map((field) => [field.name, field]));
+		return names.map((name) => byName.get(name)).filter((field) => field != null);
+	};
+	const remainingFields = (assignedNames) => fields.filter((field) => !assignedNames.includes(field.name) && !field.isIdentity && field.visibleOnForm !== false && !field.hidden);
 	if (formLayout?.type === "tabs") {
 		const overflow = remainingFields(formLayout.tabs.flatMap((tab) => tab.fields));
 		return {
@@ -517,10 +521,9 @@ const useFormSubmit = (options, accessors, emit, validateFn) => {
 			options.onSaveError?.(err);
 		}).finally(finalize);
 	};
-	/** Handle the DELETE event: confirm dialog → DELETE HTTP */
+	/** Handle the DELETE event: confirmation is handled by the DataGrid's ConfirmDialog before this fires */
 	const handleDelete = (payload) => {
 		const { LOADING: loadingEvent, SUCCESS: successEvent } = options.events ?? {};
-		if (!confirm(`${t("dialog.confirmDeleteTitle")}\n\n${t("dialog.confirmDelete")}`)) return;
 		if (loadingEvent) emit(loadingEvent, true);
 		options.onLoadingChange?.(true);
 		const finalize = () => {
@@ -578,6 +581,264 @@ function useFormValidation({ accessors, detailFields, detailNoDataText, required
 		if (!formValid || !gridValid || !detailRowsValid) notify(detailRequiredMissing && formValid ? detailNoDataText : validationErrorText, detailRequiredMissing && formValid ? "warning" : "error");
 		return formValid && gridValid && detailRowsValid;
 	};
+}
+//#endregion
+//#region assets/crud/form/FileUploadField.tsx
+function cx$1(...values) {
+	return values.filter(Boolean).join(" ");
+}
+function resolveMediaPath(media) {
+	if (!media) return null;
+	const path = media["path"];
+	return typeof path === "string" && path.trim() !== "" ? path : null;
+}
+function resolveMediaFileName(media, fallbackPath) {
+	if (!media && !fallbackPath) return null;
+	const explicitName = media?.["originalName"] ?? media?.["filename"] ?? media?.["name"];
+	if (typeof explicitName === "string" && explicitName.trim() !== "") return explicitName;
+	const path = fallbackPath ?? resolveMediaPath(media);
+	if (!path) return null;
+	const segments = path.split("/");
+	const last = segments[segments.length - 1];
+	return last?.trim() ? decodeURIComponent(last.split("?")[0] ?? last) : null;
+}
+function resolveMediaIri(uploadUrl, media) {
+	const atId = media["@id"];
+	if (typeof atId === "string" && atId.trim() !== "") return atId;
+	const id = media["id"];
+	if (typeof id === "string" && id.trim() !== "") return `${uploadUrl.replace(/\/+$/, "")}/${id}`;
+	return null;
+}
+function isImageMimeType(mimeType) {
+	return !!mimeType && mimeType.startsWith("image/");
+}
+function buildDropzoneAccept(accept) {
+	if (!accept || accept === "*/*" || accept === "*") return void 0;
+	if (accept === "image/*") return {
+		"image/png": [".png"],
+		"image/jpeg": [".jpg", ".jpeg"],
+		"image/webp": [".webp"],
+		"image/gif": [".gif"]
+	};
+	if (accept.includes(",")) return accept.split(",").reduce((acc, token) => {
+		const trimmed = token.trim();
+		if (!trimmed) return acc;
+		if (trimmed.startsWith(".")) {
+			acc["application/octet-stream"] = [...acc["application/octet-stream"] ?? [], trimmed];
+			return acc;
+		}
+		acc[trimmed] = [];
+		return acc;
+	}, {});
+	if (accept.startsWith(".")) return { "application/octet-stream": [accept] };
+	return { [accept]: [] };
+}
+async function uploadMediaFile(file, uploadUrl, httpClient) {
+	const body = new FormData();
+	body.append("file", file);
+	return (await httpClient.post(uploadUrl, body)).data;
+}
+function FileUploadField({ field, disabled = false, readOnly = false, invalid = false, existingMedia = null, uploadUrl, httpClient, onUploaded, onCleared, t }) {
+	const imageMode = isImageFileField(field);
+	const existingPath = resolveMediaPath(existingMedia);
+	const [previewUrl, setPreviewUrl] = (0, react.useState)(() => imageMode ? existingPath : null);
+	const [fileName, setFileName] = (0, react.useState)(() => resolveMediaFileName(existingMedia, existingPath));
+	const [fileUrl, setFileUrl] = (0, react.useState)(() => existingPath);
+	const [status, setStatus] = (0, react.useState)("idle");
+	const [errorMessage, setErrorMessage] = (0, react.useState)(null);
+	const localPreviewRef = (0, react.useRef)(null);
+	const revokeLocalPreview = (0, react.useCallback)(() => {
+		if (localPreviewRef.current) {
+			URL.revokeObjectURL(localPreviewRef.current);
+			localPreviewRef.current = null;
+		}
+	}, []);
+	(0, react.useEffect)(() => {
+		revokeLocalPreview();
+		const path = resolveMediaPath(existingMedia);
+		setPreviewUrl(imageMode ? path : null);
+		setFileName(resolveMediaFileName(existingMedia, path));
+		setFileUrl(path);
+		setStatus("idle");
+		setErrorMessage(null);
+	}, [
+		existingMedia,
+		field.name,
+		imageMode,
+		revokeLocalPreview
+	]);
+	(0, react.useEffect)(() => () => revokeLocalPreview(), [revokeLocalPreview]);
+	const uploadFile = (0, react.useCallback)(async (file) => {
+		revokeLocalPreview();
+		const localUrl = isImageMimeType(file.type) ? URL.createObjectURL(file) : null;
+		if (localUrl) {
+			localPreviewRef.current = localUrl;
+			setPreviewUrl(localUrl);
+		} else setPreviewUrl(null);
+		setFileName(file.name);
+		setFileUrl(localUrl);
+		setStatus("uploading");
+		setErrorMessage(null);
+		try {
+			const media = await uploadMediaFile(file, uploadUrl, httpClient);
+			const iri = resolveMediaIri(uploadUrl, media);
+			if (!iri) throw new Error(t("form.fileUploadInvalidResponse"));
+			revokeLocalPreview();
+			const remotePath = resolveMediaPath(media);
+			setFileName(resolveMediaFileName(media, remotePath) ?? file.name);
+			setFileUrl(remotePath ?? localUrl);
+			setPreviewUrl(imageMode && (remotePath || localUrl) ? remotePath ?? localUrl : null);
+			setStatus("idle");
+			onUploaded({
+				name: field.name,
+				iri
+			});
+		} catch (error) {
+			revokeLocalPreview();
+			const path = resolveMediaPath(existingMedia);
+			setPreviewUrl(imageMode ? path : null);
+			setFileName(resolveMediaFileName(existingMedia, path));
+			setFileUrl(path);
+			setStatus("error");
+			setErrorMessage(error instanceof Error ? error.message : t("form.fileUploadFailed"));
+		}
+	}, [
+		existingMedia,
+		field.name,
+		httpClient,
+		imageMode,
+		onUploaded,
+		revokeLocalPreview,
+		t,
+		uploadUrl
+	]);
+	const { getRootProps, getInputProps, isDragActive, open } = (0, react_dropzone.useDropzone)({
+		accept: buildDropzoneAccept(field.accept),
+		disabled: disabled || readOnly || status === "uploading",
+		multiple: false,
+		noClick: !!(previewUrl || fileName),
+		noKeyboard: !!(previewUrl || fileName),
+		onDrop: (acceptedFiles) => {
+			const file = acceptedFiles[0];
+			if (file) uploadFile(file);
+		}
+	});
+	const handleClear = () => {
+		revokeLocalPreview();
+		setPreviewUrl(null);
+		setFileName(null);
+		setFileUrl(null);
+		setStatus("idle");
+		setErrorMessage(null);
+		onCleared(field.name);
+	};
+	const isInteractive = !disabled && !readOnly;
+	const hasContent = !!(previewUrl || fileName);
+	const placeholderIcon = imageMode ? "ph-image" : "ph-file-arrow-up";
+	const placeholderTitle = isDragActive ? t("form.fileUploadDrop") : imageMode ? t("form.imageUploadPrompt") : t("form.fileUploadPrompt");
+	const placeholderHint = imageMode ? t("form.imageUploadHint") : t("form.fileUploadHint");
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: cx$1("native-form__file-upload", imageMode && "native-form__file-upload--image", invalid && "native-form__file-upload--invalid"),
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			...getRootProps({ className: cx$1("native-form__file-upload-zone", isDragActive && "native-form__file-upload-zone--active", hasContent && "native-form__file-upload-zone--filled", status === "uploading" && "native-form__file-upload-zone--uploading", !isInteractive && "native-form__file-upload-zone--disabled") }),
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", { ...getInputProps({
+				id: `native-form-${field.name}`,
+				"aria-label": field.label
+			}) }), hasContent ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+				previewUrl ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("img", {
+					className: "native-form__file-upload-preview",
+					src: previewUrl,
+					alt: field.label
+				}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: "native-form__file-upload-file",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: "native-form__file-upload-file-icon",
+						"aria-hidden": "true",
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", { className: "ph ph-file" })
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: "native-form__file-upload-file-meta",
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							className: "native-form__file-upload-file-name",
+							children: fileName
+						}), fileUrl && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("a", {
+							className: "native-form__file-upload-file-link",
+							href: fileUrl,
+							target: "_blank",
+							rel: "noreferrer",
+							onClick: (event) => event.stopPropagation(),
+							children: t("form.fileUploadOpen")
+						})]
+					})]
+				}),
+				status === "uploading" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: "native-form__file-upload-overlay",
+					"aria-live": "polite",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: "native-form__file-upload-spinner",
+						"aria-hidden": "true"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("form.fileUploading") })]
+				}),
+				isInteractive && status !== "uploading" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: "native-form__file-upload-actions",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+						type: "button",
+						className: "native-form__file-upload-action",
+						onClick: (event) => {
+							event.stopPropagation();
+							open();
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+							className: "ph ph-arrows-clockwise",
+							"aria-hidden": "true"
+						}), t("form.fileUploadReplace")]
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+						type: "button",
+						className: "native-form__file-upload-action native-form__file-upload-action--danger",
+						onClick: (event) => {
+							event.stopPropagation();
+							handleClear();
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+							className: "ph ph-trash",
+							"aria-hidden": "true"
+						}), t("form.fileUploadRemove")]
+					})]
+				})
+			] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: "native-form__file-upload-placeholder",
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: "native-form__file-upload-icon",
+						"aria-hidden": "true",
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", { className: `ph ${placeholderIcon}` })
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: "native-form__file-upload-title",
+						children: placeholderTitle
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: "native-form__file-upload-hint",
+						children: placeholderHint
+					})
+				]
+			})]
+		}), errorMessage && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+			className: "native-form__file-upload-error",
+			role: "alert",
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+				className: "ph ph-warning-circle",
+				"aria-hidden": "true"
+			}), errorMessage]
+		})]
+	});
+}
+function isImageFileField(field) {
+	if (field.type !== "file") return false;
+	const accept = field.accept ?? "";
+	return accept === "" || accept.includes("image");
+}
+function isUploadableFileField(field) {
+	return field.type === "file" && !!field.url;
 }
 //#endregion
 //#region assets/crud/form/FormApiViolations.ts
@@ -747,6 +1008,12 @@ function resolveButtonIcon(icon) {
 	if (icon.startsWith("ph ")) return icon;
 	if (icon.startsWith("ph-")) return `ph ${icon}`;
 	return FIELD_BUTTON_ICONS[icon] ?? "ph ph-magnifying-glass";
+}
+function resolveTabIcon(icon) {
+	if (!icon) return void 0;
+	if (icon.startsWith("ph ")) return icon;
+	if (icon.startsWith("ph-")) return `ph ${icon}`;
+	return `ph ph-${icon}`;
 }
 const LOOKUP_OPENED_EVENT = "lookup:opened";
 function useLookupDropdown() {
@@ -1403,6 +1670,10 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 	const scopedFormErrorsEvent = `${FORM_ERRORS_EVENT}:${(0, react.useId)()}`;
 	const isEdit = (0, react.useRef)(false);
 	const uploadedFiles = (0, react.useRef)([]);
+	const existingMediaByField = (0, react.useRef)({});
+	const upsertUploadedFile = (0, react.useCallback)((entry) => {
+		uploadedFiles.current = [...uploadedFiles.current.filter((file) => file.name !== entry.name), entry];
+	}, []);
 	const [formData, setFormData] = (0, react.useState)(() => buildEmptyRow(options.fields));
 	const formDataRef = (0, react.useRef)(formData);
 	const [detailRows, setDetailRows] = (0, react.useState)([]);
@@ -1520,7 +1791,13 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 				options.fields.forEach((field) => {
 					const state = fieldState[field.name];
 					if (field.isIdentity || state?.validationEnabled === false || state?.hidden === true || field.hidden || field.visibleOnForm === false) return;
-					const error = validateField(field, formDataRef.current[field.name], formDataRef.current, t);
+					let value = formDataRef.current[field.name];
+					if (field.type === "file") {
+						const uploaded = uploadedFiles.current.find((file) => file.name === field.name);
+						const hasExisting = !!existingMediaByField.current[field.name];
+						value = uploaded?.iri != null || hasExisting && uploaded === void 0 ? "present" : null;
+					}
+					const error = validateField(field, value, formDataRef.current, t);
 					if (error) nextErrors[field.name] = error;
 				});
 				setErrors(nextErrors);
@@ -1565,8 +1842,18 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 	handleSaveRef.current = handleSave;
 	const handleDeleteRef = (0, react.useRef)(handleDelete);
 	handleDeleteRef.current = handleDelete;
+	const captureExistingMedia = (0, react.useCallback)((row) => {
+		const nextMedia = {};
+		options.fields.forEach((field) => {
+			if (field.type !== "file") return;
+			const raw = row[field.name];
+			if (raw && typeof raw === "object") nextMedia[field.name] = raw;
+		});
+		existingMediaByField.current = nextMedia;
+	}, [options.fields]);
 	const applyAddPayload = (0, react.useCallback)((payload) => {
 		uploadedFiles.current = [];
+		existingMediaByField.current = {};
 		setErrors({});
 		setDetailErrors({});
 		setNextDetailRows([]);
@@ -1583,6 +1870,7 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 	]);
 	const applyEditPayload = (0, react.useCallback)((payload) => {
 		prependDataRef.current = /* @__PURE__ */ new Map();
+		captureExistingMedia(payload.row);
 		const row = normalizeFormData(payload.row, options.fields, options.adapter, prependDataRef.current);
 		uploadedFiles.current = [];
 		setErrors({});
@@ -1595,6 +1883,7 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 		emit(FORM_EVENTS.LOADING, true);
 		httpClient.get(detailUrl).then((response) => setNextDetailRows(response.data)).finally(() => emit(FORM_EVENTS.LOADING, false));
 	}, [
+		captureExistingMedia,
 		emit,
 		httpClient,
 		options.adapter,
@@ -1835,7 +2124,25 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 					}, String(itemValue));
 				})
 			});
-		} else if (field.type === "file") control = /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+		} else if (isUploadableFileField(field)) control = /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FileUploadField, {
+			field,
+			disabled,
+			readOnly,
+			invalid: !!error,
+			existingMedia: existingMediaByField.current[field.name] ?? null,
+			uploadUrl: field.url,
+			httpClient,
+			t,
+			onUploaded: upsertUploadedFile,
+			onCleared: (fieldName) => {
+				delete existingMediaByField.current[fieldName];
+				upsertUploadedFile({
+					name: fieldName,
+					iri: null
+				});
+			}
+		});
+		else if (field.type === "file") control = /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 			...commonProps,
 			type: "file",
 			accept: field.accept ?? void 0,
@@ -1844,8 +2151,20 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 				setFieldValue(field.name, event.target.files ?? null);
 			}
 		});
+		else if (field.type === "date") control = /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.DatePicker, {
+			className: `native-form__date-control${errorClass}`,
+			disabled,
+			id: `native-form-${field.name}`,
+			invalid: !!error,
+			locale: (0, _nubit_core.getCoreLocale)(),
+			name: field.name,
+			readOnly,
+			required: field.required,
+			value: String(inputValue(value) ?? ""),
+			onChange: (nextValue) => setFieldValue(field.name, nextValue)
+		});
 		else {
-			const type = field.type === "number" || field.type === "currency" ? "number" : field.type === "date" ? "date" : field.type === "datetime" ? "datetime-local" : field.type === "password" ? "password" : "text";
+			const type = field.type === "number" || field.type === "currency" ? "number" : field.type === "datetime" ? "datetime-local" : field.type === "password" ? "password" : "text";
 			const inputControl = /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 				...commonProps,
 				type,
@@ -1921,17 +2240,37 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 		if (layout.type === "tabs") {
 			const groups = [...layout.tabs, ...layout.overflow ? [layout.overflow] : []];
 			const current = groups[activeTab] ?? groups[0];
+			const tabPanelId = current ? `native-form-tabpanel-${current.label}` : void 0;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: "native-form__tabs",
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: "native-form__tabs-nav",
-					children: groups.map((group, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-						type: "button",
-						className: `native-form__tab-button${index === activeTab ? " native-form__tab-button--active" : ""}`,
-						onClick: () => setActiveTab(index),
-						children: group.label
-					}, group.label))
-				}), current && renderFields(current.fields)]
+					role: "tablist",
+					"aria-label": "Secciones del formulario",
+					children: groups.map((group, index) => {
+						const tabIcon = resolveTabIcon(group.icon);
+						const isActive = index === activeTab;
+						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							type: "button",
+							role: "tab",
+							id: `native-form-tab-${group.label}`,
+							"aria-selected": isActive,
+							"aria-controls": isActive ? tabPanelId : void 0,
+							className: `native-form__tab-button${isActive ? " native-form__tab-button--active" : ""}`,
+							onClick: () => setActiveTab(index),
+							children: [tabIcon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+								className: tabIcon,
+								"aria-hidden": "true"
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: group.label })]
+						}, group.label);
+					})
+				}), current && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: "native-form__tabs-body",
+					role: "tabpanel",
+					id: tabPanelId,
+					"aria-labelledby": `native-form-tab-${current.label}`,
+					children: renderFields(current.fields)
+				})]
 			});
 		}
 		if (layout.type === "sections") return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [layout.sections.map(renderGroup), layout.overflow && renderGroup(layout.overflow)] });
@@ -1969,6 +2308,32 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 NativeFormView.displayName = "NativeFormView";
 //#endregion
 //#region assets/crud/datagrid/NativeDataGridView.tsx
+const DETAIL_COL_WIDTH = 36;
+const CHECKBOX_COL_WIDTH = 36;
+const ACTIONS_COL_WIDTH = 44;
+const DEFAULT_COL_WIDTH = 120;
+const MIN_COL_WIDTH = 48;
+function getColumnWidth(field, colWidths) {
+	return colWidths[field.name] ?? field.width ?? field.minWidth ?? DEFAULT_COL_WIDTH;
+}
+function computeLayoutWidth({ visibleFields, colWidths, hasCheckbox, hasDetail, hasRowActions, containerWidth }) {
+	let total = 0;
+	if (hasDetail) total += DETAIL_COL_WIDTH;
+	if (hasCheckbox) total += CHECKBOX_COL_WIDTH;
+	visibleFields.forEach((field) => {
+		total += getColumnWidth(field, colWidths);
+	});
+	if (hasRowActions) total += ACTIONS_COL_WIDTH;
+	return Math.max(containerWidth, total);
+}
+function GridColumnGroup({ fields, colWidths, hasCheckbox, hasDetail, hasRowActions }) {
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("colgroup", { children: [
+		hasDetail && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("col", { className: "native-datagrid__detail-col" }),
+		hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("col", { className: "native-datagrid__checkbox-col" }),
+		fields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("col", { style: { width: getColumnWidth(field, colWidths) } }, field.name)),
+		hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("col", { className: "native-datagrid__actions-col" })
+	] });
+}
 function getPageRange(current, total) {
 	if (total <= 7) return Array.from({ length: total }, (_, i) => i);
 	const result = [0];
@@ -2050,7 +2415,7 @@ function renderCell(field, row, rowIndex, columnIndex, entityOptions, yesLabel =
 	if (field.type === "datetime") return getDateTimeDisplay(value);
 	return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
-function normalizeIcon(icon) {
+function normalizeIcon$1(icon) {
 	if (!icon) return void 0;
 	return icon.includes("ph ") || icon.startsWith("ph-") ? icon : `ph-${icon}`;
 }
@@ -2059,7 +2424,7 @@ function getToolbarKey(action, index) {
 }
 function renderToolbarButton(action, index, iconOnly = false) {
 	if (action.visible === false) return null;
-	const icon = normalizeIcon(action.icon);
+	const icon = normalizeIcon$1(action.icon);
 	const variant = action.type === "danger" ? "danger" : action.type === "primary" ? "primary" : "secondary";
 	if (iconOnly) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
 		className: "native-datagrid__toolbar-icon-action",
@@ -2084,12 +2449,15 @@ function isToolbarActionVisible(action, permissions) {
 	if (!action.permission) return true;
 	return permissions.includes(action.permission);
 }
-function renderSelectionActionItem(action, index, disabled) {
-	const icon = normalizeIcon(action.icon);
+function renderSelectionActionItem(action, index, disabled, onBeforeClick) {
+	const icon = normalizeIcon$1(action.icon);
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 		type: "button",
 		className: `native-datagrid__actions-item${action.type === "danger" ? " native-datagrid__actions-item--danger" : ""}`,
-		onClick: action.onClick,
+		onClick: () => {
+			onBeforeClick?.();
+			action.onClick?.();
+		},
 		disabled: disabled || action.disabled,
 		role: "menuitem",
 		children: [icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
@@ -2102,9 +2470,9 @@ function getResolvedRowActions(row, rowActions) {
 	if (!rowActions) return [];
 	return typeof rowActions === "function" ? rowActions(row) : rowActions;
 }
-function renderRowActionItem(action, index, permissions) {
+function renderRowActionItem(action, index, permissions, onBeforeClick) {
 	if (!isToolbarActionVisible(action, permissions)) return null;
-	return renderSelectionActionItem(action, index, false);
+	return renderSelectionActionItem(action, index, false, onBeforeClick);
 }
 const DROPDOWN_OPENED_EVENT = "lookup:opened";
 function SelectionActionsMenu({ actionsLabel, selectedCount, actions = [], permissions }) {
@@ -2149,7 +2517,6 @@ function SelectionActionsMenu({ actionsLabel, selectedCount, actions = [], permi
 		className: "native-datagrid__actions-menu",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_nubit_ui.Button, {
 			variant: "secondary",
-			size: "sm",
 			"aria-disabled": disabled,
 			"aria-expanded": open,
 			onClick: handleToggle,
@@ -2165,40 +2532,24 @@ function SelectionActionsMenu({ actionsLabel, selectedCount, actions = [], permi
 				children: [items.length > 1 && items[0]?.groupLabel && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: "native-datagrid__actions-group-label",
 					children: items[0].groupLabel
-				}), items.map((action, index) => renderSelectionActionItem(action, index, disabled))]
+				}), items.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))]
 			}, group)), dangerActions.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				className: "native-datagrid__actions-danger-group",
-				children: dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled))
+				children: dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))
 			})]
 		})]
 	});
 }
-function buildToolbar(options, t, onAddClick, onEditClick, onDeleteClick) {
-	const actions = [];
-	if (options.allowEdit) actions.push({
-		text: t("grid.buttonEdit"),
-		group: "edit",
-		groupLabel: t("grid.buttonEdit"),
-		onClick: onEditClick,
-		disabled: options.editDisabled
-	});
-	if (options.allowDelete) actions.push({
-		text: t("grid.buttonDelete"),
-		type: "danger",
-		group: "danger",
-		groupLabel: t("grid.buttonDelete"),
-		onClick: onDeleteClick,
-		disabled: options.deleteDisabled
-	});
+function buildToolbar(options, t, onAddClick) {
 	return {
-		primary: options.toolbar?.primary ?? (options.allowAdd ? [{
+		primary: [...options.allowAdd ? [{
 			text: t("grid.buttonNew"),
 			icon: "ph-plus",
 			type: "primary",
 			onClick: onAddClick,
 			disabled: options.addDisabled
-		}] : void 0),
-		selection: [...actions, ...options.toolbar?.selection ?? []],
+		}] : [], ...options.toolbar?.primary ?? []],
+		selection: options.toolbar?.selection,
 		utility: options.toolbar?.utility,
 		showRefresh: options.toolbar?.showRefresh ?? true
 	};
@@ -2394,7 +2745,7 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 		});
 	}
 	const operators = getFilterOperators(field);
-	const inputType = field.type === "number" || field.type === "currency" ? "number" : isDateLikeField(field) ? "date" : "text";
+	const inputType = field.type === "number" || field.type === "currency" ? "number" : "text";
 	const [betweenStart, betweenEnd] = splitBetweenValue(value);
 	const isBetween = isDateLikeField(field) && operator === "between";
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -2415,19 +2766,28 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 			}),
 			isBetween ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: "native-datagrid__filter-between-inputs",
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-					type: "date",
-					className: "native-datagrid__filter-input",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.DatePicker, {
+					className: "native-datagrid__filter-date",
+					clearable: false,
+					locale: (0, _nubit_core.getCoreLocale)(),
 					value: betweenStart,
-					"aria-label": `Filtrar ${field.label} desde`,
-					onChange: (e) => onBetweenInputChange(e.target.value, betweenEnd)
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-					type: "date",
-					className: "native-datagrid__filter-input",
+					ariaLabel: `Filtrar ${field.label} desde`,
+					onChange: (nextValue) => onBetweenInputChange(nextValue, betweenEnd)
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.DatePicker, {
+					className: "native-datagrid__filter-date",
+					clearable: false,
+					locale: (0, _nubit_core.getCoreLocale)(),
 					value: betweenEnd,
-					"aria-label": `Filtrar ${field.label} hasta`,
-					onChange: (e) => onBetweenInputChange(betweenStart, e.target.value)
+					ariaLabel: `Filtrar ${field.label} hasta`,
+					onChange: (nextValue) => onBetweenInputChange(betweenStart, nextValue)
 				})]
+			}) : isDateLikeField(field) ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.DatePicker, {
+				className: "native-datagrid__filter-date",
+				clearable: false,
+				locale: (0, _nubit_core.getCoreLocale)(),
+				value,
+				ariaLabel: `Filtrar ${field.label}`,
+				onChange: onInputChange
 			}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 				type: inputType,
 				className: "native-datagrid__filter-input",
@@ -2449,12 +2809,13 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 		]
 	});
 }
-function SummaryFooter({ fields, hasCheckbox, hasDetail, hasRowActions, rows, summaryFields }) {
+function SummaryFooter({ fields, hasCheckbox, hasDetail, hasRowActions, rows, summaryFields, footerRef, colWidths }) {
 	if (!summaryFields?.length) return null;
 	const itemsByColumn = new Map(summaryFields.filter((item) => item.column).map((item) => [item.column, item]));
 	const unboundItems = summaryFields.filter((item) => !item.column);
 	const fallbackFieldName = fields[fields.length - 1]?.name;
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tfoot", {
+		ref: footerRef,
 		className: "native-datagrid__summary-footer",
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
 			hasDetail && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__detail-cell" }),
@@ -2462,11 +2823,15 @@ function SummaryFooter({ fields, hasCheckbox, hasDetail, hasRowActions, rows, su
 			fields.map((field) => {
 				const item = itemsByColumn.get(field.name) ?? (field.name === fallbackFieldName ? unboundItems[0] : void 0);
 				const align = item?.align ?? field.align;
+				const justifyContent = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
 				return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-					style: align ? { textAlign: align } : void 0,
+					style: {
+						width: getColumnWidth(field, colWidths),
+						textAlign: align
+					},
 					children: item && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "native-datagrid__summary-cell",
-						style: { justifyContent: align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start" },
+						style: { justifyContent },
 						children: [item.label && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: "native-datagrid__summary-label",
 							children: item.label
@@ -2519,7 +2884,6 @@ function DetailRows({ fields, url }) {
 }
 const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
-	const { notify } = (0, _nubit_core.useCoreRuntime)();
 	const httpClient = (0, _nubit_core.useCoreHttpClient)();
 	const resourceStoreFactory = useResourceStoreFactory();
 	const toolbarPermissions = useSmartCrudRoles();
@@ -2548,8 +2912,13 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 	const onContentReadyRef = (0, react.useRef)(options.onContentReady);
 	const onRowPreparedRef = (0, react.useRef)(options.onRowPrepared);
 	const tableWrapRef = (0, react.useRef)(null);
+	const theadRef = (0, react.useRef)(null);
+	const tbodyRef = (0, react.useRef)(null);
+	const tfootRef = (0, react.useRef)(null);
+	const hScrollRef = (0, react.useRef)(null);
+	const syncHorizontalScrollRef = (0, react.useRef)(() => {});
+	const [containerWidth, setContainerWidth] = (0, react.useState)(0);
 	const [colWidths, setColWidths] = (0, react.useState)({});
-	const [tableWidth, setTableWidth] = (0, react.useState)();
 	const resizingRef = (0, react.useRef)(null);
 	(0, react.useEffect)(() => {
 		onContentReadyRef.current = options.onContentReady;
@@ -2560,6 +2929,63 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 	const closeRowMenu = (0, react.useCallback)(() => {
 		setOpenRowMenu(null);
 	}, []);
+	(0, react.useLayoutEffect)(() => {
+		const wrap = tableWrapRef.current;
+		if (!wrap) return;
+		const observer = new ResizeObserver(([entry]) => {
+			setContainerWidth(entry.contentRect.width);
+		});
+		observer.observe(wrap);
+		setContainerWidth(wrap.clientWidth);
+		return () => observer.disconnect();
+	}, []);
+	(0, react.useLayoutEffect)(() => {
+		const tbody = tbodyRef.current;
+		const thead = theadRef.current;
+		const tfoot = tfootRef.current;
+		const hScroll = hScrollRef.current;
+		if (!tbody) return;
+		let syncing = false;
+		const applyScrollLeft = (scrollLeft) => {
+			syncing = true;
+			if (tbody.scrollLeft !== scrollLeft) tbody.scrollLeft = scrollLeft;
+			if (thead && thead.scrollLeft !== scrollLeft) thead.scrollLeft = scrollLeft;
+			if (tfoot && tfoot.scrollLeft !== scrollLeft) tfoot.scrollLeft = scrollLeft;
+			if (hScroll && hScroll.scrollLeft !== scrollLeft) hScroll.scrollLeft = scrollLeft;
+			syncing = false;
+		};
+		const clampAndSync = () => {
+			const maxScroll = Math.max(0, tbody.scrollWidth - tbody.clientWidth);
+			applyScrollLeft(Math.min(tbody.scrollLeft, maxScroll));
+		};
+		syncHorizontalScrollRef.current = clampAndSync;
+		clampAndSync();
+		const onBodyScroll = () => {
+			if (syncing) return;
+			applyScrollLeft(tbody.scrollLeft);
+		};
+		const onFooterScroll = () => {
+			if (syncing || !hScroll) return;
+			applyScrollLeft(hScroll.scrollLeft);
+		};
+		tbody.addEventListener("scroll", onBodyScroll, { passive: true });
+		hScroll?.addEventListener("scroll", onFooterScroll, { passive: true });
+		const layoutObserver = new ResizeObserver(() => clampAndSync());
+		layoutObserver.observe(tbody);
+		if (thead) layoutObserver.observe(thead);
+		if (tfoot) layoutObserver.observe(tfoot);
+		return () => {
+			tbody.removeEventListener("scroll", onBodyScroll);
+			hScroll?.removeEventListener("scroll", onFooterScroll);
+			layoutObserver.disconnect();
+		};
+	}, [
+		rows.length,
+		visibleFields.length,
+		colWidths,
+		containerWidth,
+		options.summaryFields?.length
+	]);
 	(0, react.useEffect)(() => {
 		if (!openRowMenu) return;
 		const onKeyDown = (e) => {
@@ -2573,12 +2999,12 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 		};
 		document.addEventListener("keydown", onKeyDown);
 		document.addEventListener("pointerdown", onPointerDown);
-		const wrap = tableWrapRef.current;
-		wrap?.addEventListener("scroll", onScroll, { passive: true });
+		const tbody = tbodyRef.current;
+		tbody?.addEventListener("scroll", onScroll, { passive: true });
 		return () => {
 			document.removeEventListener("keydown", onKeyDown);
 			document.removeEventListener("pointerdown", onPointerDown);
-			wrap?.removeEventListener("scroll", onScroll);
+			tbody?.removeEventListener("scroll", onScroll);
 		};
 	}, [openRowMenu, closeRowMenu]);
 	(0, react.useEffect)(() => {
@@ -2740,21 +3166,6 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 		}
 		if (options.events?.ADD) emit(options.events.ADD);
 	};
-	const onEditClick = () => {
-		const row = selectedRows[0];
-		if (row) {
-			if (options.onEdit) {
-				options.onEdit(row);
-				return;
-			}
-			if (options.events?.EDIT) emit(options.events.EDIT, { row });
-		} else notify(t("grid.selectRequired"), "warning", 2e3);
-	};
-	const onDeleteClick = () => {
-		const row = selectedRows[0];
-		if (row) setConfirmRow(row);
-		else notify(t("grid.selectRequired"), "warning", 2e3);
-	};
 	const confirmDelete = () => {
 		if (confirmRow) {
 			if (options.onDelete) options.onDelete(confirmRow);
@@ -2783,26 +3194,24 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 		event.stopPropagation();
 		const th = event.currentTarget.closest("th");
 		if (!th) return;
-		const table = th.closest("table");
 		resizingRef.current = {
 			name: fieldName,
 			startX: event.clientX,
-			startWidth: th.offsetWidth,
-			startTableWidth: table?.offsetWidth ?? tableWrapRef.current?.clientWidth ?? th.offsetWidth
+			startWidth: th.offsetWidth
 		};
 		const onMouseMove = (moveEvent) => {
 			if (!resizingRef.current) return;
 			const resize = resizingRef.current;
-			const next = Math.max(48, resize.startWidth + (moveEvent.clientX - resize.startX));
-			const actualDelta = next - resize.startWidth;
+			const next = Math.max(MIN_COL_WIDTH, resize.startWidth + (moveEvent.clientX - resize.startX));
 			setColWidths((current) => ({
 				...current,
 				[resize.name]: next
 			}));
-			setTableWidth(Math.max(tableWrapRef.current?.clientWidth ?? 0, resize.startTableWidth + actualDelta));
+			requestAnimationFrame(() => syncHorizontalScrollRef.current());
 		};
 		const onMouseUp = () => {
 			resizingRef.current = null;
+			syncHorizontalScrollRef.current();
 			window.removeEventListener("mousemove", onMouseMove);
 			window.removeEventListener("mouseup", onMouseUp);
 		};
@@ -2811,9 +3220,20 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 	};
 	const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 	const hasCheckbox = options.selectionMode === "multiple";
-	const hasRowActions = Boolean(options.mode !== "minimal" && (options.inlineActions && (options.allowEdit || options.allowDelete) || options.rowActions));
+	const hasBuiltInRowActions = Boolean(options.allowEdit && (options.onEdit || options.events?.EDIT) || options.allowDelete && (options.onDelete || options.events?.DELETE));
+	const hasRowActions = Boolean(options.mode !== "minimal" && (hasBuiltInRowActions || options.rowActions));
 	const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
-	const toolbar = buildToolbar(options, t, onAddClick, onEditClick, onDeleteClick);
+	const hasDetail = Boolean(options.detailFields);
+	const layoutWidth = computeLayoutWidth({
+		visibleFields,
+		colWidths,
+		hasCheckbox,
+		hasDetail,
+		hasRowActions,
+		containerWidth
+	});
+	const tableLayoutStyle = { "--native-datagrid-layout-width": `${layoutWidth}px` };
+	const toolbar = buildToolbar(options, t, onAddClick);
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 		className: "view datagrid-list",
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -2853,320 +3273,353 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "native-datagrid__table-wrap",
 						ref: tableWrapRef,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
-							className: "native-datagrid__table",
-							style: tableWidth ? { width: tableWidth } : void 0,
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("thead", { children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
-										options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", {
-											className: "native-datagrid__detail-cell",
-											style: { width: 36 }
-										}),
-										hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-datagrid__select-cell" }),
-										visibleFields.map((field) => {
-											const sortRule = sort.find((rule) => rule.selector === field.name);
-											const width = colWidths[field.name] ?? field.width;
-											return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("th", {
-												title: field.label,
-												style: {
-													width,
-													minWidth: field.minWidth,
-													textAlign: field.align
-												},
-												children: [field.sortable ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-													type: "button",
-													className: "native-datagrid__sort-button",
-													onClick: () => toggleSort(field),
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: field.label }), sortRule ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-														className: `ph ${sortRule.desc ? "ph-caret-down" : "ph-caret-up"} native-datagrid__sort-icon`,
-														"aria-hidden": "true"
-													}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-														className: "ph ph-caret-up-down native-datagrid__sort-hint",
-														"aria-hidden": "true"
-													})]
-												}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: "native-datagrid__column-label",
-													children: field.label
-												}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-													className: "native-datagrid__col-resize",
-													onMouseDown: handleResizeMouseDown(field.name),
-													onClick: (event) => event.stopPropagation(),
-													title: "Arrastrar para redimensionar"
-												})]
-											}, field.name);
-										}),
-										hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-datagrid__actions-cell" })
-									] }),
-									(options.filterRow ?? true) && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
-										className: "native-datagrid__filter-row",
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
+								className: "native-datagrid__table",
+								style: tableLayoutStyle,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(GridColumnGroup, {
+										fields: visibleFields,
+										colWidths,
+										hasCheckbox,
+										hasDetail,
+										hasRowActions
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("thead", {
+										ref: theadRef,
 										children: [
-											options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {}),
-											hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__select-cell" }),
-											visibleFields.map((field) => {
-												const applyImmediate = (nextInputs) => {
-													clearTimeout(filterDebounceRef.current);
-													setFilterInputs(nextInputs);
-													setFilters(nextInputs);
-													setPage(0);
-													options.onFilterChange?.(nextInputs);
-												};
-												return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-													style: { minWidth: field.minWidth },
-													className: field.filterable === false ? "native-datagrid__filter-cell--noop" : void 0,
-													children: field.filterable ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FilterCell, {
-														field,
-														operator: filterOperators[field.name] ?? getDefaultFilterOperator(field),
-														remoteOptions: filterRemoteOptions[field.name] ?? [],
-														value: filterInputs[field.name] ?? "",
-														onInputChange: (nextValue) => {
-															const nextInputs = {
-																...filterInputs,
-																[field.name]: nextValue
-															};
-															if (nextValue === "") delete nextInputs[field.name];
-															setFilterInputs(nextInputs);
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+												options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-datagrid__detail-cell" }),
+												hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-datagrid__select-cell" }),
+												visibleFields.map((field) => {
+													const sortRule = sort.find((rule) => rule.selector === field.name);
+													const width = getColumnWidth(field, colWidths);
+													return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("th", {
+														title: field.label,
+														style: {
+															width,
+															textAlign: field.align
+														},
+														children: [field.sortable ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+															type: "button",
+															className: "native-datagrid__sort-button",
+															onClick: () => toggleSort(field),
+															children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: field.label }), sortRule ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																className: `ph ${sortRule.desc ? "ph-caret-down" : "ph-caret-up"} native-datagrid__sort-icon`,
+																"aria-hidden": "true"
+															}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																className: "ph ph-caret-up-down native-datagrid__sort-hint",
+																"aria-hidden": "true"
+															})]
+														}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: "native-datagrid__column-label",
+															children: field.label
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: "native-datagrid__col-resize",
+															onMouseDown: handleResizeMouseDown(field.name),
+															onClick: (event) => event.stopPropagation(),
+															title: "Arrastrar para redimensionar"
+														})]
+													}, field.name);
+												}),
+												hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-datagrid__actions-cell" })
+											] }),
+											(options.filterRow ?? true) && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
+												className: "native-datagrid__filter-row",
+												children: [
+													options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__detail-cell" }),
+													hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__select-cell" }),
+													visibleFields.map((field) => {
+														const applyImmediate = (nextInputs) => {
 															clearTimeout(filterDebounceRef.current);
-															filterDebounceRef.current = setTimeout(() => {
-																setFilters(nextInputs);
-																setPage(0);
-																options.onFilterChange?.(nextInputs);
-															}, 300);
-														},
-														onBetweenInputChange: (start, end) => {
-															const nextValue = joinBetweenValue(start, end);
-															const nextInputs = {
-																...filterInputs,
-																[field.name]: nextValue
-															};
-															if (nextValue === "") delete nextInputs[field.name];
-															applyImmediate(nextInputs);
-														},
-														onSelectChange: (nextValue) => {
-															const nextInputs = {
-																...filterInputs,
-																[field.name]: nextValue
-															};
-															if (nextValue === "") delete nextInputs[field.name];
-															applyImmediate(nextInputs);
-														},
-														onOperatorChange: (nextOperator) => {
-															setFilterOperators((prev) => ({
-																...prev,
-																[field.name]: nextOperator
-															}));
-															const currentValue = filterInputs[field.name];
-															if (currentValue) {
-																const nextInputs = { ...filterInputs };
-																if (nextOperator === "between" && !currentValue.includes(BETWEEN_VALUE_SEPARATOR)) nextInputs[field.name] = joinBetweenValue(currentValue, "");
-																if (nextOperator !== "between" && currentValue.includes(BETWEEN_VALUE_SEPARATOR)) nextInputs[field.name] = splitBetweenValue(currentValue).find(Boolean) ?? "";
-																applyImmediate(nextInputs);
-															}
-														},
-														onClear: () => {
-															const nextInputs = { ...filterInputs };
-															delete nextInputs[field.name];
-															applyImmediate(nextInputs);
-														}
-													}) : null
-												}, field.name);
+															setFilterInputs(nextInputs);
+															setFilters(nextInputs);
+															setPage(0);
+															options.onFilterChange?.(nextInputs);
+														};
+														return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+															style: { width: getColumnWidth(field, colWidths) },
+															className: field.filterable === false ? "native-datagrid__filter-cell--noop" : void 0,
+															children: field.filterable ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FilterCell, {
+																field,
+																operator: filterOperators[field.name] ?? getDefaultFilterOperator(field),
+																remoteOptions: filterRemoteOptions[field.name] ?? [],
+																value: filterInputs[field.name] ?? "",
+																onInputChange: (nextValue) => {
+																	const nextInputs = {
+																		...filterInputs,
+																		[field.name]: nextValue
+																	};
+																	if (nextValue === "") delete nextInputs[field.name];
+																	setFilterInputs(nextInputs);
+																	clearTimeout(filterDebounceRef.current);
+																	filterDebounceRef.current = setTimeout(() => {
+																		setFilters(nextInputs);
+																		setPage(0);
+																		options.onFilterChange?.(nextInputs);
+																	}, 300);
+																},
+																onBetweenInputChange: (start, end) => {
+																	const nextValue = joinBetweenValue(start, end);
+																	const nextInputs = {
+																		...filterInputs,
+																		[field.name]: nextValue
+																	};
+																	if (nextValue === "") delete nextInputs[field.name];
+																	applyImmediate(nextInputs);
+																},
+																onSelectChange: (nextValue) => {
+																	const nextInputs = {
+																		...filterInputs,
+																		[field.name]: nextValue
+																	};
+																	if (nextValue === "") delete nextInputs[field.name];
+																	applyImmediate(nextInputs);
+																},
+																onOperatorChange: (nextOperator) => {
+																	setFilterOperators((prev) => ({
+																		...prev,
+																		[field.name]: nextOperator
+																	}));
+																	const currentValue = filterInputs[field.name];
+																	if (currentValue) {
+																		const nextInputs = { ...filterInputs };
+																		if (nextOperator === "between" && !currentValue.includes(BETWEEN_VALUE_SEPARATOR)) nextInputs[field.name] = joinBetweenValue(currentValue, "");
+																		if (nextOperator !== "between" && currentValue.includes(BETWEEN_VALUE_SEPARATOR)) nextInputs[field.name] = splitBetweenValue(currentValue).find(Boolean) ?? "";
+																		applyImmediate(nextInputs);
+																	}
+																},
+																onClear: () => {
+																	const nextInputs = { ...filterInputs };
+																	delete nextInputs[field.name];
+																	applyImmediate(nextInputs);
+																}
+															}) : null
+														}, field.name);
+													}),
+													hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__actions-cell" })
+												]
 											}),
-											hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {})
+											options.errorMessage && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", {
+												className: "native-datagrid__error-row",
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+													colSpan,
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+														className: "native-datagrid__error-message",
+														role: "alert",
+														children: [
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																className: "ph ph-warning-circle",
+																"aria-hidden": "true"
+															}),
+															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: options.errorMessage }),
+															options.onDismissError && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+																type: "button",
+																className: "native-datagrid__error-close",
+																"aria-label": "Cerrar error",
+																onClick: options.onDismissError,
+																children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																	className: "ph ph-x",
+																	"aria-hidden": "true"
+																})
+															})
+														]
+													})
+												})
+											})
 										]
 									}),
-									options.errorMessage && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", {
-										className: "native-datagrid__error-row",
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", {
+										ref: tbodyRef,
+										children: rows.length === 0 && isGridLoading ? Array.from({ length: 7 }, (_, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
+											className: "native-datagrid__skeleton-row",
+											children: [
+												options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__detail-cell" }),
+												hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+													className: "native-datagrid__select-cell",
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+														className: "native-datagrid__skeleton-cell",
+														style: {
+															width: 16,
+															height: 16
+														}
+													})
+												}),
+												visibleFields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: "native-datagrid__skeleton-cell" }) }, field.name)),
+												hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { className: "native-datagrid__actions-cell" })
+											]
+										}, `skeleton-${i}`)) : rows.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
 											colSpan,
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-												className: "native-datagrid__error-message",
-												role: "alert",
+											className: "native-datagrid__empty-td"
+										}) }) : rows.map((row, rowIndex) => {
+											const key = row[idField] ?? rowIndex;
+											const detailFields = typeof options.detailFields === "function" ? options.detailFields(row) : options.detailFields;
+											const detailUrl = options.detailUrl?.replace("{id}", String(key));
+											const expanded = expandedKeys.has(key);
+											const rowActions = [
+												...options.allowEdit && (options.onEdit || options.events?.EDIT) ? [{
+													text: t("grid.buttonEdit"),
+													icon: "ph-pencil-simple",
+													disabled: options.editDisabled,
+													onClick: () => {
+														if (options.onEdit) options.onEdit(row);
+														else emit(options.events.EDIT, { row });
+													}
+												}] : [],
+												...getResolvedRowActions(row, options.rowActions),
+												...options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
+													text: t("grid.buttonDelete"),
+													icon: "ph-trash",
+													type: "danger",
+													disabled: options.deleteDisabled,
+													onClick: () => setConfirmRow(row)
+												}] : []
+											];
+											return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.default.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
+												className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selectedKeys.includes(key) ? "native-datagrid__row--selected" : ""}`,
+												tabIndex: 0,
+												onClick: () => selectRow(row),
+												onKeyDown: (event) => {
+													if (event.key === "Enter" && options.allowEdit && (options.onEdit || options.events?.EDIT)) if (options.onEdit) options.onEdit(row);
+													else emit(options.events.EDIT, { row });
+													else if (event.key === "Delete" && options.allowDelete && (options.onDelete || options.events?.DELETE)) setConfirmRow(row);
+													else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+														event.preventDefault();
+														const allRows = event.currentTarget.closest("tbody")?.querySelectorAll("tr.native-datagrid__row");
+														if (!allRows) return;
+														const idx = Array.from(allRows).indexOf(event.currentTarget);
+														const next = allRows[event.key === "ArrowUp" ? idx - 1 : idx + 1];
+														if (next) {
+															next.focus();
+															selectRow(rows[event.key === "ArrowUp" ? idx - 1 : idx + 1]);
+														}
+													}
+												},
 												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-														className: "ph ph-warning-circle",
-														"aria-hidden": "true"
+													options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+														className: "native-datagrid__detail-cell",
+														children: detailUrl && detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+															type: "button",
+															className: `native-datagrid__expand-button${expanded ? " is-expanded" : ""}`,
+															"aria-label": expanded ? "Contraer detalle" : "Expandir detalle",
+															onClick: (event) => {
+																event.stopPropagation();
+																setExpandedKeys((current) => {
+																	const next = new Set(current);
+																	if (next.has(key)) next.delete(key);
+																	else next.add(key);
+																	return next;
+																});
+															},
+															children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																className: `ph ${expanded ? "ph-caret-down" : "ph-caret-right"}`,
+																"aria-hidden": "true"
+															})
+														})
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: options.errorMessage }),
-													options.onDismissError && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-														type: "button",
-														className: "native-datagrid__error-close",
-														"aria-label": "Cerrar error",
-														onClick: options.onDismissError,
-														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-															className: "ph ph-x",
-															"aria-hidden": "true"
+													hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+														className: "native-datagrid__select-cell",
+														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+															type: "checkbox",
+															checked: selectedKeys.includes(key),
+															readOnly: true,
+															"aria-label": "Seleccionar fila"
+														})
+													}),
+													visibleFields.map((field, columnIndex) => {
+														return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+															style: {
+																width: getColumnWidth(field, colWidths),
+																textAlign: field.align
+															},
+															title: getCellText(field, row, filterRemoteOptions[field.name], t("common.yes"), t("common.no")),
+															children: renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t("common.yes"), t("common.no"))
+														}, field.name);
+													}),
+													hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+														className: "native-datagrid__actions-cell",
+														onClick: (e) => e.stopPropagation(),
+														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+															className: "native-datagrid__row-actions",
+															children: rowActions.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+																icon: "ph ph-dots-three-vertical",
+																label: t("grid.buttonActions"),
+																onClick: (e) => {
+																	e.stopPropagation();
+																	const rect = e.currentTarget.getBoundingClientRect();
+																	const rowKey = key;
+																	const actionsAtOpen = [
+																		...options.allowEdit && (options.onEdit || options.events?.EDIT) ? [{
+																			text: t("grid.buttonEdit"),
+																			icon: "ph-pencil-simple",
+																			disabled: options.editDisabled,
+																			onClick: () => {
+																				if (options.onEdit) options.onEdit(row);
+																				else emit(options.events.EDIT, { row });
+																			}
+																		}] : [],
+																		...getResolvedRowActions(row, options.rowActions),
+																		...options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
+																			text: t("grid.buttonDelete"),
+																			icon: "ph-trash",
+																			type: "danger",
+																			disabled: options.deleteDisabled,
+																			onClick: () => setConfirmRow(row)
+																		}] : []
+																	].filter((a) => isToolbarActionVisible(a, toolbarPermissions));
+																	setOpenRowMenu((current) => current && current.key === rowKey ? null : {
+																		key: rowKey,
+																		rect,
+																		actions: actionsAtOpen
+																	});
+																}
+															})
 														})
 													})
 												]
-											})
+											}), expanded && detailUrl && detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", {
+												className: "native-datagrid__detail-row",
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+													colSpan,
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DetailRows, {
+														fields: detailFields,
+														url: detailUrl
+													})
+												})
+											})] }, String(key));
 										})
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SummaryFooter, {
+										fields: visibleFields,
+										hasCheckbox,
+										hasDetail,
+										hasRowActions,
+										rows,
+										summaryFields: options.summaryFields,
+										footerRef: tfootRef,
+										colWidths
 									})
-								] }),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: rows.length === 0 && isGridLoading ? Array.from({ length: 7 }, (_, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
-									className: "native-datagrid__skeleton-row",
-									children: [
-										options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {}),
-										hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-											className: "native-datagrid__select-cell",
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-												className: "native-datagrid__skeleton-cell",
-												style: {
-													width: 16,
-													height: 16
-												}
-											})
-										}),
-										visibleFields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: "native-datagrid__skeleton-cell" }) }, field.name)),
-										hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {})
-									]
-								}, `skeleton-${i}`)) : rows.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-									colSpan,
-									className: "native-datagrid__empty-td"
-								}) }) : rows.map((row, rowIndex) => {
-									const key = row[idField] ?? rowIndex;
-									const detailFields = typeof options.detailFields === "function" ? options.detailFields(row) : options.detailFields;
-									const detailUrl = options.detailUrl?.replace("{id}", String(key));
-									const expanded = expandedKeys.has(key);
-									const rowActions = [
-										...options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT) ? [{
-											text: t("grid.buttonEdit"),
-											icon: "ph-pencil-simple",
-											onClick: () => {
-												if (options.onEdit) options.onEdit(row);
-												else emit(options.events.EDIT, { row });
-											}
-										}] : [],
-										...getResolvedRowActions(row, options.rowActions),
-										...options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
-											text: t("grid.buttonDelete"),
-											icon: "ph-trash",
-											type: "danger",
-											onClick: () => setConfirmRow(row)
-										}] : []
-									];
-									return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.default.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", {
-										className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selectedKeys.includes(key) ? "native-datagrid__row--selected" : ""}`,
-										tabIndex: 0,
-										onClick: () => selectRow(row),
-										onKeyDown: (event) => {
-											if (event.key === "Enter" && options.allowEdit && (options.onEdit || options.events?.EDIT)) if (options.onEdit) options.onEdit(row);
-											else emit(options.events.EDIT, { row });
-											else if (event.key === "Delete" && options.allowDelete && (options.onDelete || options.events?.DELETE)) setConfirmRow(row);
-											else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-												event.preventDefault();
-												const allRows = event.currentTarget.closest("tbody")?.querySelectorAll("tr.native-datagrid__row");
-												if (!allRows) return;
-												const idx = Array.from(allRows).indexOf(event.currentTarget);
-												const next = allRows[event.key === "ArrowUp" ? idx - 1 : idx + 1];
-												if (next) {
-													next.focus();
-													selectRow(rows[event.key === "ArrowUp" ? idx - 1 : idx + 1]);
-												}
-											}
-										},
-										children: [
-											options.detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-												className: "native-datagrid__detail-cell",
-												children: detailUrl && detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-													type: "button",
-													className: `native-datagrid__expand-button${expanded ? " is-expanded" : ""}`,
-													"aria-label": expanded ? "Contraer detalle" : "Expandir detalle",
-													onClick: (event) => {
-														event.stopPropagation();
-														setExpandedKeys((current) => {
-															const next = new Set(current);
-															if (next.has(key)) next.delete(key);
-															else next.add(key);
-															return next;
-														});
-													},
-													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-														className: `ph ${expanded ? "ph-caret-down" : "ph-caret-right"}`,
-														"aria-hidden": "true"
-													})
-												})
-											}),
-											hasCheckbox && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-												className: "native-datagrid__select-cell",
-												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-													type: "checkbox",
-													checked: selectedKeys.includes(key),
-													readOnly: true,
-													"aria-label": "Seleccionar fila"
-												})
-											}),
-											visibleFields.map((field, columnIndex) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-												style: { textAlign: field.align },
-												title: getCellText(field, row, filterRemoteOptions[field.name], t("common.yes"), t("common.no")),
-												children: renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t("common.yes"), t("common.no"))
-											}, field.name)),
-											hasRowActions && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-												className: "native-datagrid__actions-cell",
-												onClick: (e) => e.stopPropagation(),
-												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-													className: "native-datagrid__row-actions",
-													children: rowActions.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
-														icon: "ph ph-dots-three-vertical",
-														label: t("grid.buttonActions"),
-														onClick: (e) => {
-															e.stopPropagation();
-															const rect = e.currentTarget.getBoundingClientRect();
-															const rowKey = key;
-															const actionsAtOpen = [
-																...options.inlineActions && options.allowEdit && (options.onEdit || options.events?.EDIT) ? [{
-																	text: t("grid.buttonEdit"),
-																	icon: "ph-pencil-simple",
-																	onClick: () => {
-																		if (options.onEdit) options.onEdit(row);
-																		else emit(options.events.EDIT, { row });
-																	}
-																}] : [],
-																...getResolvedRowActions(row, options.rowActions),
-																...options.inlineActions && options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
-																	text: t("grid.buttonDelete"),
-																	icon: "ph-trash",
-																	type: "danger",
-																	onClick: () => setConfirmRow(row)
-																}] : []
-															].filter((a) => isToolbarActionVisible(a, toolbarPermissions));
-															setOpenRowMenu((current) => current && current.key === rowKey ? null : {
-																key: rowKey,
-																rect,
-																actions: actionsAtOpen
-															});
-														}
-													})
-												})
-											})
-										]
-									}), expanded && detailUrl && detailFields && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", {
-										className: "native-datagrid__detail-row",
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
-											colSpan,
-											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(DetailRows, {
-												fields: detailFields,
-												url: detailUrl
-											})
-										})
-									})] }, String(key));
-								}) }),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SummaryFooter, {
-									fields: visibleFields,
-									hasCheckbox,
-									hasDetail: Boolean(options.detailFields),
-									hasRowActions,
-									rows,
-									summaryFields: options.summaryFields
+								]
+							}),
+							rows.length === 0 && !isGridLoading && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: "native-datagrid__empty",
+								"aria-live": "polite",
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+									className: "ph ph-database",
+									"aria-hidden": "true"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("grid.noRecords") })]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								ref: hScrollRef,
+								className: `native-datagrid__hscroll${layoutWidth > containerWidth ? "" : " native-datagrid__hscroll--hidden"}`,
+								"aria-hidden": "true",
+								tabIndex: -1,
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									className: "native-datagrid__hscroll-inner",
+									style: { width: layoutWidth }
 								})
-							]
-						}), rows.length === 0 && !isGridLoading && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "native-datagrid__empty",
-							"aria-live": "polite",
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-								className: "ph ph-database",
-								"aria-hidden": "true"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("grid.noRecords") })]
-						})]
+							})
+						]
 					}),
 					(options.paging ?? true) && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "native-datagrid__pager",
@@ -3256,37 +3709,15 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 							})
 						]
 					}),
-					confirmRow && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: "native-datagrid__confirm-overlay",
-						role: "alertdialog",
-						"aria-modal": "true",
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "native-datagrid__confirm-card",
-							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-									className: "native-datagrid__confirm-title",
-									children: t("dialog.confirmDeleteTitle")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-									className: "native-datagrid__confirm-body",
-									children: t("dialog.confirmDelete")
-								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: "native-datagrid__confirm-actions",
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
-										variant: "secondary",
-										size: "sm",
-										onClick: () => setConfirmRow(null),
-										children: t("dialog.buttonCancel")
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
-										variant: "danger",
-										size: "sm",
-										onClick: confirmDelete,
-										children: t("grid.buttonDelete")
-									})]
-								})
-							]
-						})
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.ConfirmDialog, {
+						open: Boolean(confirmRow),
+						title: t("dialog.confirmDeleteTitle"),
+						message: t("dialog.confirmDelete"),
+						variant: "danger",
+						cancelLabel: t("dialog.buttonCancel"),
+						confirmLabel: t("grid.buttonDelete"),
+						onCancel: () => setConfirmRow(null),
+						onConfirm: confirmDelete
 					}),
 					isGridLoading && rows.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: "native-datagrid__loading-overlay",
@@ -3313,9 +3744,10 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 						children: (() => {
 							const regular = openRowMenu.actions.filter((a) => a.type !== "danger");
 							const danger = openRowMenu.actions.filter((a) => a.type === "danger");
-							return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [regular.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions)), danger.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							const closeCurrentRowMenu = () => setOpenRowMenu(null);
+							return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [regular.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu)), danger.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								className: "native-datagrid__actions-danger-group",
-								children: danger.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions))
+								children: danger.map((action, idx) => renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu))
 							})] });
 						})()
 					}), document.body)
@@ -3436,6 +3868,207 @@ const CrudDialogView = (0, react.forwardRef)((options, ref) => {
 	});
 });
 CrudDialogView.displayName = "CrudDialogView";
+//#endregion
+//#region assets/crud/view/CrudDialogShell.tsx
+/**
+* Dialog form shell — preserves the legacy CRUD UX.
+* Thin wrapper around `CrudDialogView` so the orchestrator can stay shell-agnostic.
+*/
+const CrudDialogShell = ({ isOpen, title, onClose, onCancel, onSave, width, height, events, children }) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudDialogView, {
+	events,
+	width,
+	height,
+	title,
+	isOpen,
+	onClose,
+	onCancel,
+	onSave,
+	children
+});
+//#endregion
+//#region assets/crud/view/CrudDrawerShell.tsx
+const formatSize = (value) => {
+	if (value === void 0) return void 0;
+	return typeof value === "number" ? `${value}px` : value;
+};
+/**
+* Drawer form shell — slides in from the side and leaves the grid visible.
+*
+* - Default: right-side panel `min(720px, 60vw)` wide.
+* - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
+* - Escape closes the drawer; nested lookup dialogs float above via z-index.
+*/
+const CrudDrawerShell = ({ isOpen, title, onClose, onCancel, onSave, drawerWidth = "min(720px, 60vw)", drawerSide = "right", children }) => {
+	const { t } = (0, _nubit_core.useCoreTranslation)();
+	const titleId = (0, react.useId)();
+	const panelRef = (0, react.useRef)(null);
+	const lastFocusedElementRef = (0, react.useRef)(null);
+	(0, react.useEffect)(() => {
+		if (!isOpen) return;
+		lastFocusedElementRef.current = document.activeElement;
+		window.setTimeout(() => {
+			(panelRef.current?.querySelector("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex=\"-1\"])"))?.focus();
+		});
+		return () => lastFocusedElementRef.current?.focus?.();
+	}, [isOpen]);
+	(0, react.useEffect)(() => {
+		if (!isOpen) return;
+		const handleKeyDown = (event) => {
+			if (event.key === "Escape") {
+				event.preventDefault();
+				onClose();
+			}
+		};
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [isOpen, onClose]);
+	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: [
+			"crud-drawer-root",
+			isOpen && "crud-drawer-root--open",
+			`crud-drawer-root--${drawerSide}`
+		].filter(Boolean).join(" "),
+		"aria-hidden": !isOpen,
+		style: { pointerEvents: isOpen ? void 0 : "none" },
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			className: "crud-drawer__scrim",
+			type: "button",
+			"aria-label": t("dialog.buttonCancel"),
+			onClick: onClose,
+			tabIndex: -1
+		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+			ref: panelRef,
+			className: "crud-drawer",
+			role: "dialog",
+			"aria-modal": "false",
+			"aria-labelledby": titleId,
+			style: { width: formatSize(drawerWidth) },
+			children: [
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+					className: "crud-drawer__header",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+						className: "crud-drawer__title",
+						id: titleId,
+						children: title
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+						className: "crud-drawer__close",
+						icon: "ph ph-x",
+						label: t("dialog.buttonCancel"),
+						onClick: onClose
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: "crud-drawer__body",
+					children
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("footer", {
+					className: "crud-drawer__footer",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+						variant: "secondary",
+						onClick: onCancel,
+						children: t("dialog.buttonCancel")
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+						variant: "primary",
+						className: "dialog-save-button",
+						onClick: onSave,
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("dialog.buttonSave") })
+					})]
+				})
+			]
+		})]
+	}), document.body);
+};
+//#endregion
+//#region assets/crud/view/CrudPageShell.tsx
+/**
+* Page form shell — renders inline (no portal) and is expected to replace the
+* grid view via the `wrapper--with-page` CSS hook set by `CrudPage`.
+*
+* URL deep-linking is already wired through `useRouting`; the shell itself
+* does not navigate — it just exposes Back/Cancel/Save callbacks that the
+* orchestrator maps to `navigate()` calls or close-dialog dispatches.
+*/
+const CrudPageShell = ({ isOpen, title, onClose, onCancel, onSave, children }) => {
+	const { t } = (0, _nubit_core.useCoreTranslation)();
+	if (!isOpen) return null;
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+		className: "crud-page-shell",
+		"aria-label": title,
+		children: [
+			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+				className: "crud-page-shell__header",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+					className: "crud-page-shell__back",
+					icon: "ph ph-arrow-left",
+					label: t("dialog.buttonCancel"),
+					onClick: onClose
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", {
+					className: "crud-page-shell__title",
+					children: title
+				})]
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: "crud-page-shell__body",
+				children
+			}),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("footer", {
+				className: "crud-page-shell__footer",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+					variant: "secondary",
+					onClick: onCancel,
+					children: t("dialog.buttonCancel")
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+					variant: "primary",
+					className: "dialog-save-button",
+					onClick: onSave,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("dialog.buttonSave") })
+				})]
+			})
+		]
+	});
+};
+//#endregion
+//#region assets/crud/view/CrudFormShell.tsx
+/**
+* Dispatches the form rendering to the correct shell based on the resource's
+* `viewMode`. All three shells consume the same `CrudFormShellProps`, so the
+* orchestrator (`CrudPage`) never has to know which shell is active.
+*/
+const CrudFormShell = ({ viewMode, ...shellProps }) => {
+	switch (viewMode.mode) {
+		case "drawer": return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudDrawerShell, {
+			...shellProps,
+			drawerWidth: viewMode.drawerWidth,
+			drawerSide: viewMode.drawerSide
+		});
+		case "page": return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudPageShell, { ...shellProps });
+		default: return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudDialogShell, { ...shellProps });
+	}
+};
+//#endregion
+//#region assets/crud/view/viewMode.ts
+const DEFAULTS = {
+	mode: "dialog",
+	drawerWidth: "min(720px, 60vw)",
+	drawerSide: "right"
+};
+/**
+* Normalises the `viewMode` field of `ResourceConfig` into a fully-resolved
+* object with defaults applied. Accepts the shorthand string form
+* (`'dialog' | 'drawer' | 'page'`) or the full config object.
+*/
+function resolveViewMode(raw) {
+	if (raw == null) return DEFAULTS;
+	if (typeof raw === "string") return {
+		...DEFAULTS,
+		mode: raw
+	};
+	return {
+		mode: raw.mode,
+		drawerWidth: raw.drawerWidth ?? DEFAULTS.drawerWidth,
+		drawerSide: raw.drawerSide ?? DEFAULTS.drawerSide
+	};
+}
 //#endregion
 //#region assets/crud/crud/usePermissions.ts
 /** Resolve a single permission entry: callable → call it, boolean → use it, undefined → fallback. */
@@ -3845,6 +4478,48 @@ function resolveResourceToolbar(resource, context) {
 	return typeof resource.toolbar === "function" ? resource.toolbar(context) : resource.toolbar;
 }
 //#endregion
+//#region assets/crud/crud/ColumnPresetSelector.tsx
+function cx(...values) {
+	return values.filter(Boolean).join(" ");
+}
+function normalizeIcon(icon) {
+	if (!icon) return void 0;
+	if (icon.startsWith("ph ")) return icon;
+	if (icon.startsWith("ph-")) return `ph ${icon}`;
+	return `ph ph-${icon}`;
+}
+function ColumnPresetSelector({ resourceId, presets, activePreset, onPresetChange, columnsLabel, allColumnsLabel }) {
+	const labelId = `preset-label-${resourceId}`;
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: "native-datagrid__preset-control",
+		role: "group",
+		"aria-labelledby": labelId,
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+			className: "native-datagrid__preset-label",
+			id: labelId,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+				className: normalizeIcon("ph-columns"),
+				"aria-hidden": "true"
+			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: columnsLabel })]
+		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			className: "native-datagrid__preset-segments",
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: cx("native-datagrid__preset-segment", activePreset === null && "native-datagrid__preset-segment--active"),
+				onClick: () => onPresetChange(null),
+				"aria-pressed": activePreset === null,
+				children: allColumnsLabel
+			}), presets.map((preset) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				type: "button",
+				className: cx("native-datagrid__preset-segment", activePreset === preset.key && "native-datagrid__preset-segment--active"),
+				onClick: () => onPresetChange(preset.key),
+				"aria-pressed": activePreset === preset.key,
+				children: preset.label
+			}, preset.key))]
+		})]
+	});
+}
+//#endregion
 //#region assets/crud/crud/CrudPage.tsx
 function inferFilterOperator(field) {
 	if (field.selectedFilterOperation) return field.selectedFilterOperation;
@@ -3905,6 +4580,9 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		routeAwareGridFields
 	]);
 	const isInlineEditMode = resolvedResource.editMode === "row" || resolvedResource.editMode === "cell" || resolvedResource.editMode === "batch";
+	const viewMode = (0, react.useMemo)(() => resolveViewMode(resolvedResource.viewMode), [resolvedResource.viewMode]);
+	const navigate = (0, react_router_dom.useNavigate)();
+	const location = (0, react_router_dom.useLocation)();
 	const hasMultipleSelection = (resolvedResource.bulkActions?.length ?? 0) > 0;
 	const hasPresets = (resolvedResource.columnPresets?.length ?? 0) > 0;
 	const hasAuditTrail = resolvedResource.auditTrail?.enabled === true;
@@ -3938,6 +4616,49 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		openDialog("edit", row);
 		onOperationChange?.("edit");
 	}, [onOperationChange, openDialog]);
+	const listUrl = (0, react.useMemo)(() => {
+		const path = location.pathname;
+		if (initialRecordId != null) return path.replace(new RegExp(`/${initialRecordId}$`), "") || path;
+		if (initialIsNew) return path.replace(/\/new$/, "") || path;
+		return path;
+	}, [
+		location.pathname,
+		initialRecordId,
+		initialIsNew
+	]);
+	const requestNew = (0, react.useCallback)(() => {
+		if (viewMode.mode === "page") navigate(`${listUrl}/new`);
+		else openAddDialog(null);
+	}, [
+		viewMode.mode,
+		navigate,
+		listUrl,
+		openAddDialog
+	]);
+	const requestEdit = (0, react.useCallback)((row) => {
+		if (viewMode.mode === "page") {
+			const id = row["id"] ?? row["ID"];
+			if (id == null) {
+				openEditDialog(row);
+				return;
+			}
+			navigate(`${listUrl}/${id}`);
+		} else openEditDialog(row);
+	}, [
+		viewMode.mode,
+		navigate,
+		listUrl,
+		openEditDialog
+	]);
+	const requestClose = (0, react.useCallback)(() => {
+		if (viewMode.mode === "page") navigate(listUrl);
+		else resetDialogOperation();
+	}, [
+		viewMode.mode,
+		navigate,
+		listUrl,
+		resetDialogOperation
+	]);
 	const routingActionsRef = react.default.useRef({
 		openAddDialog,
 		openEditDialog,
@@ -4026,35 +4747,17 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		selectedRows
 	]);
 	/** Preset selector rendered as a toolbar slot via `beforeToolbar`. */
-	const renderPresetSelector = hasPresets ? () => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: "column-preset-selector",
-		style: {
-			display: "inline-flex",
-			alignItems: "center",
-			gap: 8
-		},
-		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
-			htmlFor: `preset-${resolvedResource.id}`,
-			style: { fontSize: 13 },
-			children: t("crudPage.columnsLabel")
-		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-			id: `preset-${resolvedResource.id}`,
-			"aria-label": "Seleccionar preset de columnas",
-			value: presetState.activePreset ?? "",
-			onChange: (e) => presetState.setPreset(e.target.value || null),
-			style: { fontSize: 13 },
-			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-				value: "",
-				children: t("crudPage.allColumns")
-			}), resolvedResource.columnPresets.map((p) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-				value: p.key,
-				children: p.label
-			}, p.key))]
-		})]
+	const renderPresetSelector = hasPresets ? () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ColumnPresetSelector, {
+		resourceId: resolvedResource.id,
+		presets: resolvedResource.columnPresets,
+		activePreset: presetState.activePreset,
+		onPresetChange: presetState.setPreset,
+		columnsLabel: t("crudPage.columnsLabel"),
+		allColumnsLabel: t("crudPage.allColumns")
 	}) : void 0;
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		id: "wrapper",
-		className: auditOpen ? "wrapper--with-audit" : void 0,
+		className: [auditOpen && "wrapper--with-audit", viewMode.mode === "page" && dialogIsOpen && "wrapper--with-page"].filter(Boolean).join(" ") || void 0,
 		children: [
 			(resolvedResource.bulkActions?.length ?? 0) > 0 && selectionState.hasSelection && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: "bulk-toolbar",
@@ -4103,8 +4806,8 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				stateStoringEnabled: resolvedResource.stateStoring,
 				toolbar,
 				rowActions: resolvedResource.rowActions,
-				onAdd: () => openAddDialog(null),
-				onEdit: openEditDialog,
+				onAdd: requestNew,
+				onEdit: requestEdit,
 				onDelete: (row) => formRef.current?.deleteRow(row),
 				selectionMode: hasMultipleSelection ? "multiple" : "single",
 				onSelectionChanged: handleSelectionChanged,
@@ -4116,14 +4819,16 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				onFilterChange: onFiltersChange,
 				adapter: resolvedResource.adapter
 			}),
-			!isInlineEditMode && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudDialogView, {
+			!isInlineEditMode && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CrudFormShell, {
+				viewMode,
 				events,
 				width: resolvedResource.dialogWidth,
 				height: resolvedResource.dialogHeight,
 				title: dialogTitle,
 				isOpen: dialogIsOpen,
-				onClose: resetDialogOperation,
-				onCancel: resetDialogOperation,
+				mode: dialogMode,
+				onClose: requestClose,
+				onCancel: requestClose,
 				onSave: () => formRef.current?.save(),
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(NativeFormView, {
 					ref: formRef,
@@ -4140,7 +4845,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					format: resolvedResource.format,
 					onSaveSuccess: (response) => {
 						resolvedResource.onSaveSuccess?.(response);
-						resetDialogOperation();
+						requestClose();
 						refreshGrid();
 					},
 					onSaveError: resolvedResource.onSaveError,
@@ -5555,22 +6260,35 @@ function currencyField() {
 	return new CurrencyFieldBuilder();
 }
 /**
-* Factory for image upload fields (FILE type).
+* Factory for generic file upload fields (FILE type).
 *
-* Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
-* Formatter must be provided by the caller since it depends on the data shape.
+* Uploads immediately to apiBaseUrl+'media' and submits the returned Media IRI.
+* Use `.accept()` to restrict mime types or extensions.
 *
 * Usage:
-*   imageField('/api/')
-*     .name('photo')
-*     .label('Imagen')
-*     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
+*   fileField('/api/')
+*     .name('attachment')
+*     .label('Adjunto')
+*     .accept('application/pdf')
 *     .build()
 */
-var ImageFieldBuilder = class extends BaseFieldBuilder {
+var FileFieldBuilder = class extends BaseFieldBuilder {
 	constructor(apiBaseUrl) {
 		super("file");
 		this._field.url = apiBaseUrl + "media";
+	}
+};
+function fileField(apiBaseUrl) {
+	return new FileFieldBuilder(apiBaseUrl);
+}
+/**
+* Preset for image uploads — shorthand over fileField with image defaults.
+*
+* Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
+*/
+var ImageFieldBuilder = class extends FileFieldBuilder {
+	constructor(apiBaseUrl) {
+		super(apiBaseUrl);
 		this._field.accept = "image/*";
 		this._field.align = "center";
 	}
@@ -6140,7 +6858,11 @@ const RestAdapter = {
 };
 //#endregion
 exports.AuditTrailPanel = AuditTrailPanel;
+exports.CrudDialogShell = CrudDialogShell;
+exports.CrudDrawerShell = CrudDrawerShell;
+exports.CrudFormShell = CrudFormShell;
 exports.CrudPage = CrudPage;
+exports.CrudPageShell = CrudPageShell;
 exports.DATA_GRID_EVENTS = DATA_GRID_EVENTS;
 exports.DataGridView = NativeDataGridView;
 exports.DialogView = CrudDialogView;
@@ -6170,6 +6892,7 @@ exports.defineFields = defineFields;
 exports.defineResource = defineResource;
 exports.entityField = entityField;
 exports.enumField = enumField;
+exports.fileField = fileField;
 exports.formatSummaryValue = formatSummaryValue;
 exports.identityField = identityField;
 exports.imageField = imageField;
@@ -6177,6 +6900,7 @@ exports.noneField = noneField;
 exports.numberField = numberField;
 exports.passwordField = passwordField;
 exports.resolveSummaryText = resolveSummaryText;
+exports.resolveViewMode = resolveViewMode;
 exports.selectField = selectField;
 exports.switchField = switchField;
 exports.textField = textField;

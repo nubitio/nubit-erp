@@ -2207,9 +2207,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/rollup-darwin-arm64@npm:4.61.1":
+"@rollup/rollup-darwin-arm64@npm:4.61.1, @rollup/rollup-darwin-arm64@npm:^4.61.1":
   version: 4.61.1
   resolution: "@rollup/rollup-darwin-arm64@npm:4.61.1"
+  checksum: 10c0/e1b295e3700f18404e781e963aa13d2fafb5a5bd2aaae6864bebe1365cfe114ce005a067c35194b8d2777dbc1eec379ae57095f66f0c38714f9217e4f60c694c
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
@@ -4094,6 +4095,7 @@ __metadata:
     "@fontsource/syne": "npm:^5.2.7"
     "@phosphor-icons/web": "npm:^2.1.2"
     "@playwright/test": "npm:^1.58.2"
+    "@rollup/rollup-darwin-arm64": "npm:^4.61.1"
     "@tailwindcss/postcss": "npm:^4.2.1"
     "@tanstack/react-query": "npm:^5.0.0"
     "@tanstack/react-query-devtools": "npm:^5.0.0"

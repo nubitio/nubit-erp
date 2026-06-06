@@ -147,7 +147,7 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-dialog__body');
+  return crudDialog(page, name).locator('.app-dialog__body, .crud-dialog__body');
 }
 
 /**
@@ -156,22 +156,19 @@ function crudDialogBody(page: Page, name?: RegExp) {
  * buscando la celda de filtro que está debajo del columnheader "Columna Nombre".
  */
 async function filterGridByName(page: Page, name: string) {
-  // NativeDataGridView filter row: .native-datagrid__filter-row with input[type="text"] per text column.
-  // For the products grid: Código(0), Nombre(1) — use nth(1) for Name.
-  const nameFilterInput = page.locator('.native-datagrid__filter-row input[type="text"]').nth(1);
+  // Product grid "Básico" preset exposes a Name filter with a stable aria-label.
+  const nameFilterInput = page.getByRole('textbox', { name: /Filtrar (Name|Nombre)/i });
   try {
     await nameFilterInput.waitFor({ state: 'visible', timeout: 3000 });
     await nameFilterInput.click({ clickCount: 3 });
     await nameFilterInput.fill(name);
     await page.waitForTimeout(500); // wait for 300ms debounce + re-render
   } catch {
-    // Fallback: try the first text input in the native filter row
     const filterInputs = page.locator('.native-datagrid__filter-row input[type="text"]');
     const count = await filterInputs.count();
     if (count > 0) {
-      const targetIndex = Math.min(1, count - 1);
-      await filterInputs.nth(targetIndex).click({ clickCount: 3 });
-      await filterInputs.nth(targetIndex).fill(name);
+      await filterInputs.first().click({ clickCount: 3 });
+      await filterInputs.first().fill(name);
       await page.waitForTimeout(500);
     }
   }
@@ -438,7 +435,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         // Brief pause to let React commit the selection state before accepting
         await page.waitForTimeout(300);
         // Hacer click en "Aceptar" para confirmar la selección
-        const acceptBtn = page.locator('.picker-popup-buttons-container').getByRole('button', { name: /aceptar/i });
+        const acceptBtn = page
+          .getByRole('dialog', { name: 'Seleccionar local' })
+          .getByRole('button', { name: /aceptar/i });
         await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
         await acceptBtn.click();
         // Wait for the dialog to close after accepting
@@ -735,12 +734,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await firstPaymentMethod.waitFor({ state: 'visible', timeout: 15000 });
       await firstPaymentMethod.click();
 
-      // Si es pago en efectivo, aparece el campo "Monto recibido"
-      // Ingresar monto exacto usando el botón "Exacto" para que checkoutDisabled = false
-      const exactoBtn = page.getByTestId('pos-cash-preset-exacto');
+      // Si es pago en efectivo, aparece el campo "Monto recibido".
+      // Ingresar el monto exacto para que checkoutDisabled = false.
+      const amountReceivedInput = page.getByLabel('Monto recibido');
       try {
-        await exactoBtn.waitFor({ state: 'visible', timeout: 3000 });
-        await exactoBtn.click();
+        await amountReceivedInput.waitFor({ state: 'visible', timeout: 3000 });
+        await amountReceivedInput.fill('10');
       } catch {
         // No cash payment selected — monto recibido not required
       }
@@ -852,12 +851,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await addRowBtn.click();
 
       // The new row appears immediately in the native detail table
-      const insertedRow = page.locator('.native-form__detail-table tbody tr').last();
+      const saleDialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
+      const detailTable = saleDialog.locator('.native-form__detail-table').first();
+      const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
-      // Product column (td.nth(0)) renders a NativeEntitySelect combobox
-      const productInput = insertedRow.locator('td').nth(0).locator('input[role="combobox"]').first();
-      await productInput.waitFor({ state: 'visible', timeout: 5000 });
+      // Product column renders a NativeEntitySelect; click the cell first because
+      // compact/table layouts can leave the input without focus until interaction.
+      const productCell = insertedRow.locator('td').nth(0);
+      await productCell.click();
+      const productInput = productCell.locator('input[role="combobox"], input').first();
+      await productInput.waitFor({ state: 'attached', timeout: 5000 });
       await productInput.click();
       await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
       salesModuleProductName = SEED_PRODUCT_NAME;
@@ -881,7 +885,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Verify the row exists in the native detail table
       // Note: product name is in an input.value (not text content), so we can't use hasText
-      const committedRow = page.locator('.native-form__detail-table tbody tr').first();
+      const committedRow = detailTable.locator('tbody tr').first();
       await committedRow.waitFor({ state: 'visible', timeout: 8000 });
 
       // The product's onChange auto-populates unitPrice; read via inputValue()
@@ -912,7 +916,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         .then(() => toastLocator.textContent())
         .catch(() => null);
 
-      await saleDialog.locator('button.dialog-save-button').click({ force: true });
+      await saleDialog.getByRole('button', { name: /guardar|save/i }).click({ force: true });
 
       const toastText = await toastPromise;
       if (toastText) {
@@ -1080,7 +1084,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const popup = crudDialog(page, /editar|edit/i);
       let opened = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
-        await clickGridToolbarButton(page, 'Editar');
+          const rowActionsButton = page
+            .locator('.native-datagrid__row')
+            .filter({ hasText: createdMovementRowText! })
+            .locator('.native-datagrid__row-actions button')
+            .first();
+          await rowActionsButton.click();
+          await page
+            .locator('.native-datagrid__row-actions-popover')
+            .locator('button')
+            .filter({ hasText: /editar|edit/i })
+            .click();
         try {
           await popup.waitFor({ state: 'visible', timeout: 4000 });
           opened = true;

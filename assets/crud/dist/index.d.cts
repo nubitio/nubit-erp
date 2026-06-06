@@ -588,6 +588,25 @@ interface ResourceFormDetail {
   allowUpdating?: boolean;
   required?: boolean;
 }
+/**
+ * Where the create/edit form is rendered.
+ *
+ * - `'dialog'` (default) — modal centred over the grid. Best for short forms.
+ * - `'drawer'` — slide-in panel from the right (full-screen sheet on mobile).
+ *   Grid stays visible — user can reference other rows while editing.
+ * - `'page'`   — full route. The grid is replaced by the form; Save/Cancel
+ *   navigate back to the list URL. Requires the route to accept `:id?`.
+ *   Use the `crudRoute()` helper to wire `/<resource>` and `/<resource>/:id?`
+ *   in one call.
+ */
+type CrudViewMode = 'dialog' | 'drawer' | 'page';
+interface CrudViewModeConfig {
+  mode: CrudViewMode;
+  /** Drawer width. Default: `min(720px, 60vw)`. */
+  drawerWidth?: number | string;
+  /** Side the drawer slides in from. Default: `'right'`. */
+  drawerSide?: 'right' | 'left';
+}
 interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
   id: string;
   title: string;
@@ -635,6 +654,15 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
   permissions?: ResourcePermissions;
   dialogWidth?: number;
   dialogHeight?: number;
+  /**
+   * Where the create/edit form is rendered. Defaults to `'dialog'`.
+   *
+   * Examples:
+   *   viewMode: 'drawer'
+   *   viewMode: { mode: 'drawer', drawerWidth: 880 }
+   *   viewMode: 'page'
+   */
+  viewMode?: CrudViewMode | CrudViewModeConfig;
   format?: 'json' | 'multipart';
   toolbar?: ResourceToolbar<T>;
   rowActions?: ResourceRowActions<T>;
@@ -761,7 +789,7 @@ declare const CrudPage: <T extends DataRecord$1 = DataRecord$1>({
   deleteDisabled,
   gridRef,
   onOperationChange
-}: CrudPageProps<T>) => import("react/jsx-runtime").JSX.Element;
+}: CrudPageProps<T>) => React.JSX.Element;
 //#endregion
 //#region assets/crud/crud/resolveSmartCrudFields.d.ts
 type FieldOverride = Partial<Field> & {
@@ -818,7 +846,7 @@ declare function SmartCrudPage<T extends DataRecord$1 = DataRecord$1>({
   editDisabled,
   deleteDisabled,
   gridRef
-}: SmartCrudPageProps<T>): import("react/jsx-runtime").JSX.Element;
+}: SmartCrudPageProps<T>): React.JSX.Element;
 //#endregion
 //#region assets/crud/crud/SmartCrudRolesContext.d.ts
 declare function SmartCrudRolesProvider({
@@ -826,7 +854,7 @@ declare function SmartCrudRolesProvider({
   roles
 }: React.PropsWithChildren<{
   roles?: string[];
-}>): import("react/jsx-runtime").JSX.Element;
+}>): React.JSX.Element;
 declare function useSmartCrudRoles(): string[];
 //#endregion
 //#region assets/crud/crud/AuditTrailPanel.d.ts
@@ -958,19 +986,28 @@ declare class CurrencyFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> 
 }
 declare function currencyField<TRecord extends DataRecord$1 = DataRecord$1>(): CurrencyFieldBuilder<TRecord>;
 /**
- * Factory for image upload fields (FILE type).
+ * Factory for generic file upload fields (FILE type).
  *
- * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
- * Formatter must be provided by the caller since it depends on the data shape.
+ * Uploads immediately to apiBaseUrl+'media' and submits the returned Media IRI.
+ * Use `.accept()` to restrict mime types or extensions.
  *
  * Usage:
- *   imageField('/api/')
- *     .name('photo')
- *     .label('Imagen')
- *     .formatter(e => SharedUtils.imageFormatter(e.value?.path, e.data?.name))
+ *   fileField('/api/')
+ *     .name('attachment')
+ *     .label('Adjunto')
+ *     .accept('application/pdf')
  *     .build()
  */
-declare class ImageFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
+declare class FileFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends BaseFieldBuilder<TRecord> {
+  constructor(apiBaseUrl: string);
+}
+declare function fileField<TRecord extends DataRecord$1 = DataRecord$1>(apiBaseUrl: string): FileFieldBuilder<TRecord>;
+/**
+ * Preset for image uploads — shorthand over fileField with image defaults.
+ *
+ * Defaults: url=apiBaseUrl+'media', accept='image/*', align='center'
+ */
+declare class ImageFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> extends FileFieldBuilder<TRecord> {
   constructor(apiBaseUrl: string);
 }
 declare function imageField<TRecord extends DataRecord$1 = DataRecord$1>(apiBaseUrl: string): ImageFieldBuilder<TRecord>;
@@ -1415,6 +1452,97 @@ declare const FORM_EVENTS: {
   LOADING_DETAIL: string;
 };
 //#endregion
+//#region assets/crud/crud/dialogStore.d.ts
+type DialogMode = 'add' | 'edit' | 'view';
+//#endregion
+//#region assets/crud/view/CrudFormShellProps.d.ts
+/**
+ * Common API consumed by every CRUD form shell — Dialog, Drawer, Page.
+ *
+ * The shell is purely a presentational container around the `FormView` passed
+ * in `children`. The orchestrator (`CrudPage`) owns the form lifecycle and
+ * tells the shell only when to open/close.
+ */
+interface CrudFormShellProps {
+  /** Whether the form is currently being shown. */
+  isOpen: boolean;
+  /** add | edit | view — drives the title and (for some shells) intent UI. */
+  mode: DialogMode;
+  /** Localised title (already mapped from mode by the orchestrator). */
+  title: string;
+  /** Called when the user dismisses the shell (Escape, scrim, back nav). */
+  onClose: () => void;
+  /** Called when the user clicks the Cancel button. */
+  onCancel: () => void;
+  /** Called when the user clicks the Save button. */
+  onSave: () => void;
+  /** Dialog-only sizing. Drawer/Page shells ignore these. */
+  width?: number;
+  height?: number;
+  /** Drawer-only sizing. */
+  drawerWidth?: number | string;
+  drawerSide?: 'right' | 'left';
+  /**
+   * Legacy event bus — passed through to keep the existing event-driven
+   * close/loading behaviour working until consumers migrate to callbacks.
+   */
+  events?: DialogEventNames;
+  /** The rendered `FormView`. */
+  children: React.ReactNode;
+}
+//#endregion
+//#region assets/crud/view/viewMode.d.ts
+interface ResolvedViewMode {
+  mode: CrudViewMode;
+  drawerWidth: number | string;
+  drawerSide: 'right' | 'left';
+}
+/**
+ * Normalises the `viewMode` field of `ResourceConfig` into a fully-resolved
+ * object with defaults applied. Accepts the shorthand string form
+ * (`'dialog' | 'drawer' | 'page'`) or the full config object.
+ */
+declare function resolveViewMode(raw: CrudViewMode | CrudViewModeConfig | undefined): ResolvedViewMode;
+//#endregion
+//#region assets/crud/view/CrudFormShell.d.ts
+interface CrudFormShellPropsWithMode extends CrudFormShellProps {
+  viewMode: ResolvedViewMode;
+}
+/**
+ * Dispatches the form rendering to the correct shell based on the resource's
+ * `viewMode`. All three shells consume the same `CrudFormShellProps`, so the
+ * orchestrator (`CrudPage`) never has to know which shell is active.
+ */
+declare const CrudFormShell: React.FC<CrudFormShellPropsWithMode>;
+//#endregion
+//#region assets/crud/view/CrudDialogShell.d.ts
+/**
+ * Dialog form shell — preserves the legacy CRUD UX.
+ * Thin wrapper around `CrudDialogView` so the orchestrator can stay shell-agnostic.
+ */
+declare const CrudDialogShell: React.FC<CrudFormShellProps>;
+//#endregion
+//#region assets/crud/view/CrudDrawerShell.d.ts
+/**
+ * Drawer form shell — slides in from the side and leaves the grid visible.
+ *
+ * - Default: right-side panel `min(720px, 60vw)` wide.
+ * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
+ * - Escape closes the drawer; nested lookup dialogs float above via z-index.
+ */
+declare const CrudDrawerShell: React.FC<CrudFormShellProps>;
+//#endregion
+//#region assets/crud/view/CrudPageShell.d.ts
+/**
+ * Page form shell — renders inline (no portal) and is expected to replace the
+ * grid view via the `wrapper--with-page` CSS hook set by `CrudPage`.
+ *
+ * URL deep-linking is already wired through `useRouting`; the shell itself
+ * does not navigate — it just exposes Back/Cancel/Save callbacks that the
+ * orchestrator maps to `navigate()` calls or close-dialog dispatches.
+ */
+declare const CrudPageShell: React.FC<CrudFormShellProps>;
+//#endregion
 //#region assets/crud/adapter/HydraAdapter.d.ts
 /**
  * Default backend adapter for API Platform / JSON-LD + Hydra backends.
@@ -1459,7 +1587,7 @@ interface ResourceSchemaProviderProps {
 declare function ResourceSchemaProvider({
   children,
   resolver
-}: ResourceSchemaProviderProps): import("react/jsx-runtime").JSX.Element;
+}: ResourceSchemaProviderProps): React.JSX.Element;
 //#endregion
 //#region assets/crud/data/ResourceStore.d.ts
 type ResourceFilterDescriptor = unknown[];
@@ -1505,7 +1633,7 @@ interface ResourceStoreProviderProps {
 declare function ResourceStoreProvider({
   children,
   factory
-}: ResourceStoreProviderProps): import("react/jsx-runtime").JSX.Element;
+}: ResourceStoreProviderProps): React.JSX.Element;
 declare function useResourceStoreFactory(): ResourceStoreFactory;
 //#endregion
-export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudPage, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, CrudDialogShell, CrudDrawerShell, CrudFormShell, type CrudFormShellProps, CrudPage, CrudPageShell, type CrudViewMode, type CrudViewModeConfig, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResolvedViewMode, type ResourceConfig, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
