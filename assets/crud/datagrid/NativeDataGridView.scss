@@ -326,6 +326,14 @@
   width: 36px;
 }
 
+.native-datagrid__filler-col {
+  /* no explicit width — absorbs all remaining space in table-layout: fixed */
+}
+
+.native-datagrid__filler-cell {
+  /* invisible spacer — inherits row background */
+}
+
 .native-datagrid__actions-col {
   width: 44px;
 }

@@ -83,6 +83,7 @@ function GridColumnGroup({
       {fields.map((field) => (
         <col key={field.name} style={{ width: getColumnWidth(field, colWidths) }} />
       ))}
+      {hasRowActions && <col className="native-datagrid__filler-col" />}
       {hasRowActions && <col className="native-datagrid__actions-col" />}
     </colgroup>
   );
@@ -734,6 +735,7 @@ function SummaryFooter({
             </td>
           );
         })}
+        {hasRowActions && <td className="native-datagrid__filler-cell" />}
         {hasRowActions && <td className="native-datagrid__actions-cell" />}
       </tr>
     </tfoot>
@@ -1147,7 +1149,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       options.rowActions
     ),
   );
-  const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
+  const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 2 : 0);
   const hasDetail = Boolean(options.detailFields);
   const layoutWidth = computeLayoutWidth({
     visibleFields,
@@ -1224,6 +1226,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       </th>
                     );
                   })}
+                  {hasRowActions && <th className="native-datagrid__filler-cell" />}
                   {hasRowActions && <th className="native-datagrid__actions-cell" />}
                 </tr>
                 {(options.filterRow ?? true) && (
@@ -1292,6 +1295,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       </td>
                     );
                     })}
+                    {hasRowActions && <td className="native-datagrid__filler-cell" />}
                     {hasRowActions && <td className="native-datagrid__actions-cell" />}
                   </tr>
                 )}
@@ -1325,6 +1329,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       {visibleFields.map((field) => (
                         <td key={field.name}><div className="native-datagrid__skeleton-cell" /></td>
                       ))}
+                      {hasRowActions && <td className="native-datagrid__filler-cell" />}
                       {hasRowActions && <td className="native-datagrid__actions-cell" />}
                     </tr>
                   ))
@@ -1446,6 +1451,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               </td>
                             );
                           })}
+                           {hasRowActions && <td className="native-datagrid__filler-cell" />}
                            {hasRowActions && (
                              <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
                                <div className="native-datagrid__row-actions">
