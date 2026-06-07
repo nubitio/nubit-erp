@@ -10,17 +10,17 @@ export interface AccentPreset {
 }
 
 export const ACCENT_PRESETS: AccentPreset[] = [
-  { label: 'Blue',   value: '#2563eb' },
-  { label: 'Indigo', value: '#4f46e5' },
-  { label: 'Violet', value: '#7c3aed' },
+  { label: 'Azure',  value: '#1a6fd4' },
   { label: 'Teal',   value: '#0d9488' },
+  { label: 'Indigo', value: '#4f46e5' },
+  { label: 'Slate',  value: '#475569' },
+  { label: 'Violet', value: '#7c3aed' },
   { label: 'Rose',   value: '#e11d48' },
   { label: 'Amber',  value: '#d97706' },
-  { label: 'Slate',  value: '#475569' },
 ];
 
 const STORAGE_KEY = 'app-accent-color';
-const DEFAULT_ACCENT = '#2563eb';
+const DEFAULT_ACCENT = '#1a6fd4';
 
 // Apply a color by setting it as an inline style on <html>.
 // Inline styles override any stylesheet rule — including the theme CSS file —

@@ -5,7 +5,7 @@
 // tokens.scss and bundled into the main CSS entry. Do NOT add them here.
 //
 // Design reference: Fluent UI Web dark palette / VS Code dark+ surface model.
-// Accent shifts to blue-500 (#3b82f6) — lighter than light-mode accent to
+// Accent shifts to blue-500 (#2f7ce0) — lighter than light-mode accent to
 // maintain contrast against dark surfaces (min 4.5:1 on surface-1).
 //
 // Shadow technique: each shadow includes a 1px inset ring at rgba(white, 0.05)
@@ -27,7 +27,7 @@
 
   // ── Semantic / status colors ────────────────────────────────────────────────
   // Pastel variants prevent oversaturation on dark surfaces.
-  --accent-color:       #3b82f6;
+  --accent-color:       #2f7ce0;
   --accent-hover:  color-mix(in srgb, var(--accent-color) 80%, #fff);
   --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));
   --success-color:      #22c55e;
@@ -98,15 +98,14 @@
   --status-info-text:      #7dd3fc;
   --status-info-border:    rgba(56, 189, 248, 0.32);
 
-  // ── Shadows ─────────────────────────────────────────────────────────────────
-  // Each shadow includes a 1px inset ring (VS Code technique) for panel separation
-  // without requiring explicit borders on every surface.
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.50),
-                0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-lg:  0 12px 40px rgba(0, 0, 0, 0.60),
-                0 0 0 1px rgba(255, 255, 255, 0.07);
+  // ── Shadows (Fluent 2 ambient + directional, dark-boosted) ─────────────────
+  // Inset ring retained for dark panel separation without explicit borders.
+  --shadow-sm:  0 0 2px rgba(0,0,0,.40), 0 1px 2px  rgba(0,0,0,.50),
+                0 0 0 1px rgba(255,255,255,.05);
+  --shadow-md:  0 0 2px rgba(0,0,0,.40), 0 4px 8px  rgba(0,0,0,.50),
+                0 0 0 1px rgba(255,255,255,.06);
+  --shadow-lg:  0 0 8px rgba(0,0,0,.45), 0 14px 28px rgba(0,0,0,.55),
+                0 0 0 1px rgba(255,255,255,.07);
 
   // ── Effects ─────────────────────────────────────────────────────────────────
   --focus-ring-color:  color-mix(in srgb, var(--accent-color) 45%, transparent);

@@ -28,6 +28,13 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
+import {
+  clickCrudSave,
+  crudShell,
+  crudShellBody,
+  dismissDevToolbar,
+  switchFormTab,
+} from './helpers/crud';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
@@ -783,6 +790,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Navegar a /#/sale', async () => {
       await gotoProtectedRoute(page, 'sale');
+      await dismissDevToolbar(page);
       await waitForGridLoad(page);
       await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
         timeout: 15000,
@@ -791,20 +799,18 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Abrir formulario de nueva venta', async () => {
       await clickGridToolbarButton(page, 'Nuevo');
-      await expect(page.getByRole('dialog', { name: /nuevo|new/i })).toBeVisible({
+      await expect(crudShell(page, /nuevo|new/i)).toBeVisible({
         timeout: 12000,
       });
+      await switchFormTab(crudShellBody(page), /Cabecera/i);
     });
 
     await test.step('Seleccionar almacén si es visible', async () => {
-      // The Almacen field renders in the form (visibleOnForm defaults to true).
-      // We explicitly select the first warehouse to avoid async autoSelectIfSingle timing issues.
-      // Try multiple selector strategies to find the Almacen dropdown.
-      const dialogBody = crudDialogBody(page, /nuevo|new/i);
-
-      // Simpler: find the DX select widget that contains the label "Almacen"
-      const almacenInput = dialogBody.locator('input[aria-label="Almacen"]').first();
-      const almacenVisible = await almacenInput.isVisible({ timeout: 3000 }).catch(() => false);
+      const body = crudShellBody(page);
+      const almacenInput = body
+        .locator('#native-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
+        .first();
+      const almacenVisible = await almacenInput.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (almacenVisible) {
         const currentVal = await almacenInput.inputValue().catch(() => '');
@@ -818,32 +824,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
           }
           await page.waitForTimeout(300);
         }
-      } else {
-        // Try native form lookup: look for #native-form-warehouse combobox
-        const nativeAlmacenInput = dialogBody.locator('#native-form-warehouse, input[role="combobox"]').first();
-        const nativeVisible = await nativeAlmacenInput.isVisible({ timeout: 2000 }).catch(() => false);
-        if (nativeVisible) {
-          const currentVal = await nativeAlmacenInput.inputValue().catch(() => '');
-          if (currentVal.trim().length === 0) {
-            await nativeAlmacenInput.click();
-            await page.waitForTimeout(300);
-            const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
-            if (await firstOption.isVisible({ timeout: 5000 }).catch(() => false)) {
-              await firstOption.click();
-              await page.waitForTimeout(300);
-            }
-          }
-        }
       }
     });
 
     await test.step('Agregar producto al detalle de la venta', async () => {
-      const noteInput = page
-        .getByRole('dialog', { name: /nuevo|new/i })
-        .getByLabel('Nota')
-        .first();
-      await noteInput.fill(`Venta módulo ventas ${ts}`).catch(() => {});
-      await page.keyboard.press('Tab');
+      const saleDialog = crudShell(page, /nuevo|new/i);
 
       // NativeFormView: "+" button with aria-label="Agregar detalle"
       const addRowBtn = page.locator('button[aria-label="Agregar detalle"]').first();
@@ -851,7 +836,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await addRowBtn.click();
 
       // The new row appears immediately in the native detail table
-      const saleDialog = page.getByRole('dialog', { name: /nuevo|new/i }).last();
       const detailTable = saleDialog.locator('.native-form__detail-table').first();
       const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
@@ -907,7 +891,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         { timeout: 15000 },
       );
 
-      const saleDialog = page.getByRole('dialog', { name: /Nuevo|New/i }).last();
+      const saleDialog = crudShell(page, /nuevo|new/i);
 
       // Watch for a toast that would indicate silent validation failure
       const toastLocator = page.locator('[class*="toast"]').first();
@@ -916,7 +900,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         .then(() => toastLocator.textContent())
         .catch(() => null);
 
-      await saleDialog.getByRole('button', { name: /guardar|save/i }).click({ force: true });
+      await clickCrudSave(saleDialog);
 
       const toastText = await toastPromise;
       if (toastText) {

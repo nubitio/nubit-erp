@@ -7,6 +7,7 @@ export type { ResourcePermissions };
 export interface ResolvedPermissions {
   canAdd: boolean;
   canEdit: boolean;
+  canView: boolean;
   canDelete: boolean;
   canExport: boolean;
   canBulkDelete: boolean;
@@ -70,6 +71,7 @@ export function usePermissions(
     return {
       canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
       canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
+      canView: resolve(p?.canView, false),
       canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
       canExport: resolve(p?.canExport, false),
       canBulkDelete: resolve(p?.canBulkDelete, false),

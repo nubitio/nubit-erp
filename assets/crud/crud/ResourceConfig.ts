@@ -34,6 +34,7 @@ export interface ResourceRouting {
 export interface ResourcePermissions {
   canAdd?: boolean | (() => boolean);
   canEdit?: boolean | (() => boolean);
+  canView?: boolean | (() => boolean);
   canDelete?: boolean | (() => boolean);
   canExport?: boolean | (() => boolean);
   canBulkDelete?: boolean | (() => boolean);

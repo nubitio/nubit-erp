@@ -1,0 +1,247 @@
+.view-wrapper-scroll.reports-page {
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 8px clamp(12px, 1.4vw, 18px) 16px;
+  background: var(--surface-0);
+
+  .stat-card {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+// ── KPI strip ──────────────────────────────────────────────────────────────────
+.reports-kpi-strip {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reports-kpi {
+  flex: 1 1 140px;
+  padding: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  &__value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-family-mono);
+    line-height: 1.1;
+  }
+
+  &__sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 3px;
+  }
+}
+
+// ── Charts row ─────────────────────────────────────────────────────────────────
+.reports-charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Document/payment mix card ──────────────────────────────────────────────────
+.reports-mix-heading {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+
+  &--spaced {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+.reports-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reports-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &__label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    width: 88px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pct {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+}
+
+.reports-bar-wrap {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.reports-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+// ── Rankings row ───────────────────────────────────────────────────────────────
+.reports-rankings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Top clients table ──────────────────────────────────────────────────────────
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+
+  th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+  }
+
+  td {
+    padding: 0 16px;
+    height: var(--row-height);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  &__r { text-align: right; }
+
+  &__num {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+
+  &__bold {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.reports-client-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reports-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// ── Top products list ──────────────────────────────────────────────────────────
+.reports-products-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.reports-product-row {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+
+  &:last-child { border-bottom: none; }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  &__name {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__rev {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  &__qty {
+    display: block;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+}
+
+.reports-empty {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  padding: 24px 16px;
+  text-align: center;
+}

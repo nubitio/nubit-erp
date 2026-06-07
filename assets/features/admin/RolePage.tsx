@@ -18,10 +18,38 @@ type SelectedRole = {
   name?: string;
 };
 
+const ROLE_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['name'],
+  },
+];
+
+const ROLE_FORM_LAYOUT = {
+  type: 'tabs' as const,
+  tabs: [
+    {
+      label: 'General',
+      icon: 'ph-shield',
+      fields: ['name'],
+    },
+  ],
+};
+
 const baseResource = defineResource(roleEndpoints.list(), {
   id: 'roles',
   title: 'Roles',
   fields: RoleFields(),
+  viewMode: { mode: 'drawer', drawerWidth: 520 },
+  defaultPreset: 'basic',
+  columnPresets: ROLE_COLUMN_PRESETS,
+  formLayout: ROLE_FORM_LAYOUT,
+  emptyState: {
+    title: 'Sin roles configurados',
+    description: 'Crea un rol y asigna permisos desde la barra de herramientas.',
+    icon: 'shield',
+  },
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

@@ -13,6 +13,11 @@ const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
   id: 'voucherSeries',
   title: 'Series de comprobante',
   viewMode: { mode: 'drawer', drawerWidth: 560 },
+  emptyState: {
+    title: 'Sin series de comprobante',
+    description: 'Configura series por tipo de documento para facturación.',
+    icon: 'hash',
+  },
   fieldContract: defineFields<VoucherSeriesRecord>({
     source: 'hydra',
     strategy: 'augment',

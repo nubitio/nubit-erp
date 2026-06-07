@@ -1,0 +1,11 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Efact">
+  <rect width="48" height="48" rx="12" fill="#1a6fd4"></rect>
+  <rect width="48" height="48" rx="12" fill="url(#m)" fill-opacity="0.18"></rect>
+  <text x="24" y="35" text-anchor="middle" font-family="&#39;Segoe UI&#39;,&#39;Source Sans 3&#39;,system-ui,sans-serif" font-size="30" font-weight="700" fill="#ffffff">e</text>
+  <defs>
+    <linearGradient id="m" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+</svg>

@@ -29,6 +29,7 @@ export interface DataGridViewOptions {
   events?: DataGridEventNames;
   allowAdd?: boolean;
   allowEdit?: boolean;
+  allowView?: boolean;
   allowDelete?: boolean;
   allowExport?: boolean;
   addDisabled?: boolean;
@@ -49,6 +50,7 @@ export interface DataGridViewOptions {
   onBack?: () => void;
   onAdd?: () => void;
   onEdit?: (row: DataRecord) => void;
+  onView?: (row: DataRecord) => void;
   onDelete?: (row: DataRecord) => void;
   onSelectionChanged?: (event: DataGridSelectionChangedEvent) => void;
   onRowPrepared?: (event: unknown) => void;

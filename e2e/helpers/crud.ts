@@ -58,6 +58,25 @@ export async function openNewCrudForm(page: Page, route: string, toolbarTitle?: 
   return shell;
 }
 
+/** Hide Symfony Web Debug Toolbar — it overlaps drawer footers in dev. */
+export async function dismissDevToolbar(page: Page) {
+  await page.addStyleTag({
+    content:
+      '.sf-toolbar, .sf-toolbar-opened, [id^="sfwdt"] { display: none !important; pointer-events: none !important; visibility: hidden !important; }',
+  });
+}
+
+/** Click the CRUD save button without pointer interception from dev toolbars. */
+export async function clickCrudSave(shell: Locator) {
+  const save = shell
+    .locator(
+      '.crud-drawer__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
+    )
+    .first();
+  await save.waitFor({ state: 'visible', timeout: 8000 });
+  await save.evaluate((btn) => (btn as HTMLButtonElement).click());
+}
+
 export async function closeCrudShell(shell: Locator) {
   await shell
     .getByRole('button', { name: /cancel|cerrar/i })

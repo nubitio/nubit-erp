@@ -16,6 +16,11 @@ const baseResource = defineResource(priceListEndpoints.list(), {
   title: 'Tarifas',
   fields: PriceListFields(),
   viewMode: { mode: 'drawer', drawerWidth: 560 },
+  emptyState: {
+    title: 'Sin tarifas',
+    description: 'Crea una tarifa y asigna precios desde la barra de herramientas.',
+    icon: 'tag',
+  },
   permissions: { canAdd: true, canEdit: true, canDelete: true },
 });
 

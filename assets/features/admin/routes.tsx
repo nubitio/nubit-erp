@@ -8,9 +8,11 @@ const CompanyPage = lazyNamed(() => import('./CompanyPage'), 'CompanyPage');
 const ConfigPage = lazyNamed(() => import('./ConfigPage'), 'ConfigPage');
 const RolePage = lazyNamed(() => import('./RolePage'), 'RolePage');
 const UserPage = lazyNamed(() => import('./UserPage'), 'UserPage');
+const ReportsPage = lazyNamed(() => import('./ReportsPage'), 'ReportsPage');
 
 export const adminRoutes: AppRouteDefinition[] = [
   { path: '/dashboard', element: DashboardPage },
+  { path: '/reports', element: ReportsPage },
   { path: '/branch', element: BranchPage },
   { path: '/company', element: CompanyPage },
   { path: '/config', element: ConfigPage },

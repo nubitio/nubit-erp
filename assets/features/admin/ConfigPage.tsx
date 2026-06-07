@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, SelectField, TextField, Toggle } from '@nubit/ui';
+import { AppDropdown, Button, TextField, Toggle } from '@nubit/ui';
 import toast from '@shared/lib/SharedUtils';
 import {
   ConfigKey,
@@ -17,7 +17,7 @@ interface ConfigMeta {
   label: string;
   description?: string;
   group: 'general' | 'sales' | 'inventory' | 'feature';
-  options?: { value: string; label: string }[]; // if set → renders as <select>
+  options?: { value: string; label: string }[]; // if set → renders as AppDropdown
 }
 
 const CONFIG_META: Record<string, ConfigMeta> = {
@@ -122,7 +122,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(config.value);
   const [saving, setSaving] = useState(false);
-  const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync draft when config changes externally
   useEffect(() => {
@@ -182,31 +182,25 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
       <div className="config-setting-value">
         {editing ? (
           <div className="config-setting-edit">
-            {isEnum ? (
-              <SelectField
-                ref={inputRef as React.RefObject<HTMLSelectElement>}
+            {isEnum || isBool ? (
+              <AppDropdown
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={handleKeyDown}
+                options={
+                  isEnum
+                    ? meta.options!.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      }))
+                    : [
+                        { value: 'true', label: 'Sí' },
+                        { value: 'false', label: 'No' },
+                      ]
+                }
+                onChange={setDraft}
+                variant="form"
+                showFieldLabel={false}
                 className="config-setting-input"
-              >
-                {meta.options!.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </SelectField>
-            ) : isBool ? (
-              <SelectField
-                ref={inputRef as React.RefObject<HTMLSelectElement>}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="config-setting-input"
-              >
-                <option value="true">Sí</option>
-                <option value="false">No</option>
-              </SelectField>
+              />
             ) : (
               <TextField
                 ref={inputRef as React.RefObject<HTMLInputElement>}

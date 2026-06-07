@@ -532,6 +532,35 @@ function buildFilterExpression(
     });
 }
 
+function FilterValueDropdown({
+  id,
+  value,
+  options,
+  placeholder,
+  className,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  placeholder: string;
+  className?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <AppDropdown
+      id={id}
+      value={value}
+      options={[{ value: '', label: placeholder }, ...options]}
+      onChange={onChange}
+      variant="compact"
+      showFieldLabel={false}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+}
+
 function FilterCell({
   field,
   operator,
@@ -576,19 +605,17 @@ function FilterCell({
   if (isDropdown) {
     const items = field.data ?? [];
     return (
-      <select
-        className="native-datagrid__filter-select"
+      <FilterValueDropdown
+        id={`native-datagrid-filter-${field.name}`}
         value={value}
-        aria-label={`Filtrar ${field.label}`}
-        onChange={(e) => onSelectChange(e.target.value)}
-      >
-        <option value="">Todos</option>
-        {items.map((item) => (
-          <option key={String(item['value'] ?? '')} value={String(item['value'] ?? '')}>
-            {String(item['text'] ?? item['value'] ?? '')}
-          </option>
-        ))}
-      </select>
+        className="native-datagrid__filter-select"
+        placeholder="Todos"
+        options={items.map((item) => ({
+          value: String(item['value'] ?? ''),
+          label: String(item['text'] ?? item['value'] ?? ''),
+        }))}
+        onChange={onSelectChange}
+      />
     );
   }
 
@@ -600,16 +627,15 @@ function FilterCell({
   return (
     <div className={`native-datagrid__filter-wrap${isBetween ? ' native-datagrid__filter-wrap--between' : ''}`}>
       {operators.length > 1 ? (
-        <select
-          className="native-datagrid__filter-operator"
+        <AppDropdown
+          id={`native-datagrid-filter-op-${field.name}`}
           value={operator}
-          aria-label="Operador de filtro"
-          onChange={(e) => onOperatorChange(e.target.value)}
-        >
-          {operators.map((op) => (
-            <option key={op.value} value={op.value}>{op.label}</option>
-          ))}
-        </select>
+          options={operators.map((op) => ({ value: op.value, label: op.label }))}
+          onChange={onOperatorChange}
+          variant="compact"
+          showFieldLabel={false}
+          className="native-datagrid__filter-operator"
+        />
       ) : (
         <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
       )}
@@ -1112,6 +1138,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const hasCheckbox = options.selectionMode === 'multiple';
   const hasBuiltInRowActions = Boolean(
     (options.allowEdit && (options.onEdit || options.events?.EDIT)) ||
+    (options.allowView && options.onView) ||
     (options.allowDelete && (options.onDelete || options.events?.DELETE)),
   );
   const hasRowActions = Boolean(
@@ -1326,6 +1353,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             },
                           }]
                         : []),
+                      ...(options.allowView && options.onView
+                        ? [{
+                            text: t('grid.buttonView'),
+                            icon: 'ph-eye',
+                            onClick: () => options.onView!(row),
+                          }]
+                        : []),
                       ...getResolvedRowActions(row, options.rowActions),
                       ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
                         ? [{
@@ -1344,10 +1378,22 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           className={`native-datagrid__row ${expanded ? 'native-datagrid__row--expanded' : ''} ${selectedKeys.includes(key) ? 'native-datagrid__row--selected' : ''}`}
                           tabIndex={0}
                           onClick={() => selectRow(row)}
+                          onDoubleClick={() => {
+                            if (options.allowEdit && (options.onEdit || options.events?.EDIT)) {
+                              if (options.onEdit) options.onEdit(row);
+                              else emit(options.events!.EDIT!, { row });
+                              return;
+                            }
+                            if (options.allowView && options.onView) {
+                              options.onView(row);
+                            }
+                          }}
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' && options.allowEdit && (options.onEdit || options.events?.EDIT)) {
                               if (options.onEdit) options.onEdit(row);
                               else emit(options.events!.EDIT!, { row });
+                            } else if (event.key === 'Enter' && options.allowView && options.onView) {
+                              options.onView(row);
                             } else if (event.key === 'Delete' && options.allowDelete && (options.onDelete || options.events?.DELETE)) {
                               setConfirmRow(row);
                             } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -1424,6 +1470,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                                   else emit(options.events!.EDIT!, { row });
                                                 },
                                              }]
+                                            : []),
+                                          ...(options.allowView && options.onView
+                                            ? [{
+                                                text: t('grid.buttonView'),
+                                                icon: 'ph-eye',
+                                                onClick: () => options.onView!(row),
+                                              }]
                                             : []),
                                           ...getResolvedRowActions(row, options.rowActions),
                                           ...(options.allowDelete && (options.onDelete || options.events?.DELETE)

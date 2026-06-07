@@ -51,6 +51,11 @@ const resource = defineResource<OperationRecord>(operationEndpoints.list(), {
   id: 'operation',
   title: 'Operaciones',
   viewMode: { mode: 'drawer', drawerWidth: 560 },
+  emptyState: {
+    title: 'Sin operaciones de inventario',
+    description: 'Define tipos de entrada y salida para movimientos de stock.',
+    icon: 'arrows-left-right',
+  },
   fieldContract: defineFields<OperationRecord>({
     source: 'hydra',
     strategy: 'augment',

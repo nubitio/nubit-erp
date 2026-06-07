@@ -17,6 +17,27 @@ import toast from '@shared/lib/SharedUtils';
 const API_URL = API + 'tax-documents';
 const fields = InvoiceFields();
 
+const INVOICE_FORM_LAYOUT = {
+  type: 'tabs' as const,
+  tabs: [
+    {
+      label: 'Comercial',
+      icon: 'ph-receipt',
+      fields: ['issueDate', 'customer', 'ruc', 'documentType', 'series', 'number', 'total'],
+    },
+    {
+      label: 'SUNAT',
+      icon: 'ph-cloud-arrow-up',
+      fields: ['sunatStatus', 'sunatMessage', 'voided', 'voidTicket'],
+    },
+    {
+      label: 'Detracción',
+      icon: 'ph-percent',
+      fields: ['detraccionCodigo', 'detraccionMonto'],
+    },
+  ],
+};
+
 const INVOICE_COLUMN_PRESETS = [
   {
     key: 'basic',
@@ -48,6 +69,7 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
   defaultPreset: 'basic',
   columnPresets: INVOICE_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerWidth: 960 },
+  formLayout: INVOICE_FORM_LAYOUT,
   emptyState: {
     title: 'Sin comprobantes',
     description: 'Los comprobantes electrónicos emitidos aparecerán aquí.',
@@ -59,7 +81,7 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
       InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
   },
   sort: [{ selector: 'createdAt', desc: true }],
-  permissions: { canAdd: false, canEdit: false, canDelete: false },
+  permissions: { canAdd: false, canEdit: false, canView: true, canDelete: false },
 });
 
 export const InvoicePage = () => {

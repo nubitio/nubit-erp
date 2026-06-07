@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import './AppDropdown.scss';
 
 export interface AppDropdownOption {
@@ -38,6 +39,38 @@ function normalizeIcon(icon?: string): string | undefined {
   return `ph ph-${icon}`;
 }
 
+function getMenuStyle(containerRef: React.RefObject<HTMLElement | null>): CSSProperties {
+  if (!containerRef.current) return { position: 'fixed', visibility: 'hidden', margin: 0 };
+  const rect = containerRef.current.getBoundingClientRect();
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8));
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+    return {
+      position: 'fixed',
+      left: `${left}px`,
+      width: `${rect.width}px`,
+      bottom: `${window.innerHeight - rect.top + 4}px`,
+      top: 'auto',
+      margin: 0,
+      zIndex: 9999,
+      visibility: 'visible',
+    };
+  }
+
+  return {
+    position: 'fixed',
+    left: `${left}px`,
+    width: `${rect.width}px`,
+    top: `${rect.bottom + 4}px`,
+    bottom: 'auto',
+    margin: 0,
+    zIndex: 9999,
+    visibility: 'visible',
+  };
+}
+
 export function AppDropdown({
   id: idProp,
   label,
@@ -57,18 +90,50 @@ export function AppDropdown({
   const id = idProp ?? generatedId;
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
   const selected = options.find((option) => option.value === value);
 
+  const computeMenuStyle = useCallback(
+    () => getMenuStyle(containerRef),
+    [],
+  );
+
+  // Outside-click: close on mousedown outside trigger + menu
   useEffect(() => {
     if (!open) return;
-    const handler = (event: MouseEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!containerRef.current?.contains(target) && !menuRef.current?.contains(target)) {
         setOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
+
+  // Reposition on scroll/resize while open
+  useLayoutEffect(() => {
+    if (!open) return;
+    const update = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.top >= window.innerHeight || rect.bottom <= 0) { setOpen(false); return; }
+      setMenuStyle(computeMenuStyle());
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, { capture: true });
+    };
+  }, [open, computeMenuStyle]);
+
+  const openMenu = useCallback(() => {
+    setMenuStyle(computeMenuStyle());
+    setOpen(true);
+  }, [computeMenuStyle]);
 
   const control = (
     <div
@@ -96,15 +161,21 @@ export function AppDropdown({
         aria-expanded={open}
         aria-labelledby={label ? `${id}-label ${id}-value` : `${id}-value`}
         disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
       >
         <span className="app-dropdown__value" id={`${id}-value`}>
           {selected?.label ?? placeholder}
         </span>
         <i className="ph ph-caret-down app-dropdown__caret" aria-hidden="true" />
       </button>
-      {open && !disabled && (
-        <ul className="app-dropdown__menu" role="listbox" aria-labelledby={label ? `${id}-label` : undefined}>
+      {open && !disabled && createPortal(
+        <ul
+          ref={menuRef}
+          className={cx('app-dropdown__menu', `app-dropdown__menu--${variant}`)}
+          role="listbox"
+          aria-labelledby={label ? `${id}-label` : undefined}
+          style={menuStyle}
+        >
           {options.map((option) => {
             const isActive = option.value === value;
             return (
@@ -129,7 +200,8 @@ export function AppDropdown({
               </li>
             );
           })}
-        </ul>
+        </ul>,
+        document.body,
       )}
     </div>
   );

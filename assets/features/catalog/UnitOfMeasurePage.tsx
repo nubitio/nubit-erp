@@ -160,6 +160,11 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
   defaultPreset: 'basic',
   columnPresets: UNIT_OF_MEASURE_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerWidth: 640 },
+  emptyState: {
+    title: 'Sin unidades de medida',
+    description: 'Registra unidades SUNAT y factores de conversión para productos.',
+    icon: 'ruler',
+  },
   fieldContract: defineFields<UnitOfMeasureRecord>({
     source: 'hydra',
     strategy: 'augment',

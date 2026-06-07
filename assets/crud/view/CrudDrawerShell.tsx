@@ -19,6 +19,7 @@ const formatSize = (value?: number | string) => {
  */
 export const CrudDrawerShell: React.FC<CrudFormShellProps> = ({
   isOpen,
+  mode,
   title,
   onClose,
   onCancel,
@@ -102,9 +103,11 @@ export const CrudDrawerShell: React.FC<CrudFormShellProps> = ({
           <Button variant="secondary" onClick={onCancel}>
             {t('dialog.buttonCancel')}
           </Button>
-          <Button variant="primary" className="dialog-save-button" onClick={onSave}>
-            <span>{t('dialog.buttonSave')}</span>
-          </Button>
+          {mode !== 'view' && (
+            <Button variant="primary" className="dialog-save-button" onClick={onSave}>
+              <span>{t('dialog.buttonSave')}</span>
+            </Button>
+          )}
         </footer>
       </aside>
     </div>,

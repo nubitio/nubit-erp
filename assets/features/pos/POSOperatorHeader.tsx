@@ -5,7 +5,7 @@ import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
-import { AppDialog, ConfirmDialog } from '@nubit/ui';
+import { AppDialog, AppDropdown, ConfirmDialog } from '@nubit/ui';
 
 interface POSOperatorHeaderProps {
   branchName: string;
@@ -121,18 +121,19 @@ export function POSOperatorHeader({
               {warehouses.length === 1 ? (
                 <strong>{warehouses[0].name}</strong>
               ) : (
-                <select
-                  className="pos-operator-header__select"
+                <AppDropdown
+                  id="pos-warehouse-select"
                   value={selectedWarehouseId}
-                  onChange={(e) => handleWarehouseChange(e.target.value)}
-                  aria-label="Almacén activo"
-                >
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name}
-                    </option>
-                  ))}
-                </select>
+                  options={warehouses.map((warehouse) => ({
+                    value: warehouse.id,
+                    label: warehouse.name,
+                  }))}
+                  onChange={handleWarehouseChange}
+                  variant="compact"
+                  showFieldLabel={false}
+                  className="pos-operator-header__warehouse-dropdown"
+                  placeholder="Almacén"
+                />
               )}
             </div>
           </>

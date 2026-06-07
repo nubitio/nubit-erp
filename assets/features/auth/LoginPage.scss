@@ -134,8 +134,17 @@ html, body {
     height: 44px;
     width: auto;
     object-fit: contain;
+  }
+
+  // Custom company logos are unknown — invert to white so they read on the dark panel.
+  .brand-logo--custom {
     filter: brightness(0) invert(1);
     opacity: 0.92;
+  }
+
+  // Efact SVG is already designed for dark backgrounds — no filter needed.
+  .brand-logo--efact {
+    opacity: 0.94;
   }
 }
 
@@ -221,19 +230,16 @@ html, body {
   margin-bottom: 32px;
 
   img {
-    height: 40px;
+    height: 36px;
     width: auto;
     object-fit: contain;
   }
 
-  @media (max-width: 860px) { display: flex; justify-content: center; }
-}
+  .efact-wordmark {
+    height: 36px;
+  }
 
-.mobile-logo-fallback {
-  font-size: 20px;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-  color: var(--text-primary);
+  @media (max-width: 860px) { display: flex; justify-content: center; }
 }
 
 // the card
@@ -273,9 +279,3 @@ html, body {
   }
 }
 
-.brand-logo-fallback {
-  font-size: 21px;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  color: color-mix(in srgb, var(--on-accent-color) 88%, transparent);
-}

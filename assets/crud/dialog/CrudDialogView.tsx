@@ -42,6 +42,8 @@ export interface CrudDialogViewOptions {
   onClose?: () => void;
   onCancel?: () => void;
   onSave?: () => void;
+  /** When false, only the cancel/close button is shown in the footer. */
+  saveVisible?: boolean;
 }
 
 export interface CrudDialogViewEvents {
@@ -151,14 +153,16 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
               >
                 {options.negativeText ?? t('dialog.buttonCancel')}
               </Button>
-              <Button
-                variant="primary"
-                className="dialog-save-button"
-                onClick={onSaveClick}
-                loading={isProcessing}
-              >
-                <span>{options.positiveText ?? t('dialog.buttonSave')}</span>
-              </Button>
+              {(options.saveVisible ?? true) && (
+                <Button
+                  variant="primary"
+                  className="dialog-save-button"
+                  onClick={onSaveClick}
+                  loading={isProcessing}
+                >
+                  <span>{options.positiveText ?? t('dialog.buttonSave')}</span>
+                </Button>
+              )}
             </div>
           ) : undefined
         }

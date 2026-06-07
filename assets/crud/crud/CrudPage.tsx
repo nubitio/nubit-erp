@@ -265,6 +265,15 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
     [onOperationChange, openDialog],
   );
 
+  const openViewDialog = useCallback(
+    (row: DataRecord) => {
+      setOperationVersion((current) => current + 1);
+      openDialog('view', row);
+      onOperationChange?.('edit');
+    },
+    [onOperationChange, openDialog],
+  );
+
   // Page-mode: derive the bare list URL by stripping the trailing /:id or /new
   // segment from the current path. Used as the navigation target for the
   // shell's Back/Cancel/Save buttons and the grid's New/Edit row actions.
@@ -304,6 +313,22 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
       }
     },
     [viewMode.mode, navigate, listUrl, openEditDialog],
+  );
+
+  const requestView = useCallback(
+    (row: DataRecord) => {
+      if (viewMode.mode === 'page') {
+        const id = row['id'] ?? row['ID'];
+        if (id == null) {
+          openViewDialog(row);
+          return;
+        }
+        navigate(`${listUrl}/${id}`);
+      } else {
+        openViewDialog(row);
+      }
+    },
+    [viewMode.mode, navigate, listUrl, openViewDialog],
   );
 
   const requestClose = useCallback(() => {
@@ -480,6 +505,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         events={events}
         allowAdd={permissions.canAdd}
         allowEdit={permissions.canEdit}
+        allowView={permissions.canView}
         allowDelete={permissions.canDelete}
         allowExport={permissions.canExport}
         editDisabled={editDisabled}
@@ -494,6 +520,7 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         rowActions={resolvedResource.rowActions as ResourceRowActions | undefined}
         onAdd={requestNew}
         onEdit={requestEdit}
+        onView={requestView}
         onDelete={(row) => formRef.current?.deleteRow(row)}
         selectionMode={hasMultipleSelection ? 'multiple' : 'single'}
         onSelectionChanged={handleSelectionChanged}
@@ -527,9 +554,10 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             detailFields={formDetail?.fields}
             detailUrl={formDetail?.url}
             detailPropertyName={formDetail?.propertyName}
-            allowAdding={formDetail?.allowAdding}
-            allowDeleting={formDetail?.allowDeleting}
-            allowUpdating={formDetail?.allowUpdating}
+            allowAdding={dialogMode !== 'view' && formDetail?.allowAdding}
+            allowDeleting={dialogMode !== 'view' && formDetail?.allowDeleting}
+            allowUpdating={dialogMode !== 'view' && formDetail?.allowUpdating}
+            editable={dialogMode !== 'view'}
             requiredDetail={formDetail?.required}
             format={resolvedResource.format}
             onSaveSuccess={(response) => {
@@ -547,7 +575,15 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
             adapter={resolvedResource.adapter}
-            operation={dialogIsOpen && dialogMode !== 'view' ? dialogMode : null}
+            operation={
+              dialogIsOpen
+                ? dialogMode === 'add'
+                  ? 'add'
+                  : dialogMode === 'edit' || dialogMode === 'view'
+                    ? 'edit'
+                    : null
+                : null
+            }
             rowData={dialogRowData}
             operationVersion={operationVersion}
           />

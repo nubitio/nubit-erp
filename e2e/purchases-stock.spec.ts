@@ -21,7 +21,14 @@
 
 import { expect, test, type Page } from '@playwright/test';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
-import { crudShell, crudShellBody, switchFormTab, waitForGridLoad } from './helpers/crud';
+import {
+  clickCrudSave,
+  crudShell,
+  crudShellBody,
+  dismissDevToolbar,
+  switchFormTab,
+  waitForGridLoad,
+} from './helpers/crud';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
 const BASE_URL = getE2EBaseUrl();
@@ -318,6 +325,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   test('03 - Crear compra con producto seed y verificar stock incrementado', async () => {
     // Asegurar que estamos en la página de compras
     await gotoProtectedRoute(page, 'purchases');
+    await dismissDevToolbar(page);
     await waitForGridLoad(page);
 
     // ── Capturar stock ANTES ──────────────────────────────────────────────────
@@ -342,8 +350,11 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // ── Seleccionar almacén ───────────────────────────────────────────────────
     await test.step('Seleccionar almacén', async () => {
+      const body = crudShellBody(page);
+      await switchFormTab(body, /Cabecera/i);
+
       // NativeFormView: warehouse field has id="native-form-warehouse"
-      const almacenInput = page.locator('#native-form-warehouse').first();
+      const almacenInput = body.locator('#native-form-warehouse').first();
       await almacenInput.waitFor({ state: 'visible', timeout: 8000 });
 
       const currentVal = await almacenInput.inputValue().catch(() => '');
@@ -372,12 +383,17 @@ test.describe('Compras — crear compra e incremento de stock', () => {
           }
         }
       }
+
+      await expect(almacenInput).not.toHaveValue('', { timeout: 8000 });
     });
 
     // ── Seleccionar proveedor ─────────────────────────────────────────────────
     await test.step('Seleccionar proveedor (primer resultado disponible)', async () => {
+      const body = crudShellBody(page);
+      await switchFormTab(body, /Cabecera/i);
+
       // NativeFormView: supplier field has id="native-form-supplier"
-      const supplierInput = page.locator('#native-form-supplier').first();
+      const supplierInput = body.locator('#native-form-supplier').first();
       const supplierVisible = await supplierInput.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (supplierVisible) {
@@ -425,8 +441,18 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         .locator('.native-form__lookup-menu button[role="option"]')
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
+      const productLoadPromise = page
+        .waitForResponse(
+          (response) =>
+            /\/api\/products\/[^/?]+/.test(response.url()) &&
+            response.request().method() === 'GET' &&
+            response.ok(),
+          { timeout: 15000 },
+        )
+        .catch(() => null);
       await seedProductOption.first().click();
-      await page.waitForTimeout(400);
+      await productLoadPromise;
+      await expect(productInput).not.toHaveValue('', { timeout: 8000 });
 
       // Columna 1 = Cantidad
       const qtyCell = insertedRow.locator('td').nth(1);
@@ -456,6 +482,10 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // ── Guardar compra ────────────────────────────────────────────────────────
     await test.step('Guardar compra y verificar respuesta 2xx', async () => {
+      const shell = crudShell(page, /nuevo|new/i);
+      const body = crudShellBody(page);
+      await switchFormTab(body, /Cabecera/i);
+
       const consoleErrors: string[] = [];
       page.on('console', (msg) => {
         if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -468,8 +498,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         { timeout: 20000 },
       );
 
-      // Click en el botón Guardar del footer del popup
-      await crudShell(page, /nuevo|new/i).getByRole('button', { name: /guardar|save/i }).click({ force: true });
+      await clickCrudSave(shell);
 
       const createPurchaseResponse = await createPurchaseResponsePromise.catch(async (err) => {
         // eslint-disable-next-line no-console

@@ -541,6 +541,7 @@ interface ResourceRouting {
 interface ResourcePermissions {
   canAdd?: boolean | (() => boolean);
   canEdit?: boolean | (() => boolean);
+  canView?: boolean | (() => boolean);
   canDelete?: boolean | (() => boolean);
   canExport?: boolean | (() => boolean);
   canBulkDelete?: boolean | (() => boolean);
@@ -1338,6 +1339,7 @@ interface DataGridViewOptions {
   events?: DataGridEventNames;
   allowAdd?: boolean;
   allowEdit?: boolean;
+  allowView?: boolean;
   allowDelete?: boolean;
   allowExport?: boolean;
   addDisabled?: boolean;
@@ -1361,6 +1363,7 @@ interface DataGridViewOptions {
   onBack?: () => void;
   onAdd?: () => void;
   onEdit?: (row: DataRecord$1) => void;
+  onView?: (row: DataRecord$1) => void;
   onDelete?: (row: DataRecord$1) => void;
   onSelectionChanged?: (event: DataGridSelectionChangedEvent) => void;
   onRowPrepared?: (event: unknown) => void;
@@ -1404,6 +1407,8 @@ interface CrudDialogViewOptions {
   onClose?: () => void;
   onCancel?: () => void;
   onSave?: () => void;
+  /** When false, only the cancel/close button is shown in the footer. */
+  saveVisible?: boolean;
 }
 interface CrudDialogViewEvents {
   open: (title?: string) => void;

@@ -5,6 +5,11 @@ const resource = defineResource(voucherTypeEndpoints.list(), {
   id: 'voucherType',
   title: 'Tipos de comprobante',
   viewMode: { mode: 'drawer', drawerWidth: 560 },
+  emptyState: {
+    title: 'Sin tipos de comprobante',
+    description: 'Registra los tipos de documento que emite tu empresa.',
+    icon: 'receipt',
+  },
   fieldContract: defineFieldContract({
     source: 'hydra',
     strategy: 'augment',

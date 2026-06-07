@@ -32,6 +32,7 @@ export interface CoreTranslationKeys {
   'grid.buttonDelete': string;
   'grid.buttonRefresh': string;
   'grid.buttonActions': string;
+  'grid.buttonView': string;
   'grid.rowsPerPage': string;
   'dialog.buttonCancel': string;
   'dialog.buttonSave': string;

@@ -8,6 +8,7 @@ import type { CrudFormShellProps } from './CrudFormShellProps';
  */
 export const CrudDialogShell: React.FC<CrudFormShellProps> = ({
   isOpen,
+  mode,
   title,
   onClose,
   onCancel,
@@ -26,6 +27,7 @@ export const CrudDialogShell: React.FC<CrudFormShellProps> = ({
     onClose={onClose}
     onCancel={onCancel}
     onSave={onSave}
+    saveVisible={mode !== 'view'}
   >
     {children}
   </CrudDialogView>

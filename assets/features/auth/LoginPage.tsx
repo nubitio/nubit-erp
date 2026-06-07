@@ -1,19 +1,25 @@
 import { useMemo, useState } from 'react';
+import { useTheme } from '@nubit/ui';
 
 import '@assets/styles.scss';
 import '@theme/theme';
 import './LoginPage.scss';
 import { LoginForm } from './LoginForm';
+
+const LOGO_LIGHT = '/assets/images/efact-logo.svg';
+const LOGO_DARK  = '/assets/images/efact-logo-dark.svg';
+
 export const LoginPage = () => {
   const [brandLogoFailed, setBrandLogoFailed] = useState(false);
   const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
+  const { theme } = useTheme();
 
-  const brandLogoAvailable = useMemo(
+  const hasCustomLogo = useMemo(
     () => Boolean(window.app_logo) && !brandLogoFailed,
     [brandLogoFailed],
   );
 
-  const mobileLogoAvailable = useMemo(
+  const hasCustomMobileLogo = useMemo(
     () => Boolean(window.app_logo) && !mobileLogoFailed,
     [mobileLogoFailed],
   );
@@ -30,15 +36,19 @@ export const LoginPage = () => {
 
         <div className="brand-content">
           <div className="brand-logo-wrap">
-            {brandLogoAvailable ? (
+            {hasCustomLogo ? (
               <img
                 src={window.app_logo}
-                className="brand-logo"
+                className="brand-logo brand-logo--custom"
                 alt="Logo"
                 onError={() => setBrandLogoFailed(true)}
               />
             ) : (
-              <span className="brand-logo-fallback">EFACT</span>
+              <img
+                src={LOGO_DARK}
+                className="brand-logo brand-logo--efact"
+                alt="Efact"
+              />
             )}
           </div>
 
@@ -78,10 +88,14 @@ export const LoginPage = () => {
       <main className="login-form-panel">
         {/* mobile-only logo */}
         <div className="mobile-logo">
-          {mobileLogoAvailable ? (
+          {hasCustomMobileLogo ? (
             <img src={window.app_logo} alt="Logo" onError={() => setMobileLogoFailed(true)} />
           ) : (
-            <span className="mobile-logo-fallback">EFACT</span>
+            <img
+              src={theme === 'dark' ? LOGO_DARK : LOGO_LIGHT}
+              className="efact-wordmark"
+              alt="Efact"
+            />
           )}
         </div>
 

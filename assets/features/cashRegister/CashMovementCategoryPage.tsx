@@ -62,9 +62,47 @@ const booleanSwitchPatch = (name: 'system' | 'active', label: string) =>
       .build(),
   );
 
+const CASH_MOVEMENT_CATEGORY_COLUMN_PRESETS = [
+  {
+    key: 'basic',
+    label: 'Básico',
+    columns: ['code', 'name', 'type'],
+  },
+  {
+    key: 'full',
+    label: 'Completo',
+    columns: ['code', 'name', 'type', 'active'],
+  },
+];
+
+const CASH_MOVEMENT_CATEGORY_FORM_LAYOUT = {
+  type: 'tabs' as const,
+  tabs: [
+    {
+      label: 'General',
+      icon: 'ph-tag',
+      fields: ['code', 'name', 'type'],
+    },
+    {
+      label: 'Estado',
+      icon: 'ph-toggle-right',
+      fields: ['system', 'active'],
+    },
+  ],
+};
+
 const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement-categories', {
   id: 'cash-movement-categories',
   title: 'Categorías de caja',
+  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  defaultPreset: 'basic',
+  columnPresets: CASH_MOVEMENT_CATEGORY_COLUMN_PRESETS,
+  formLayout: CASH_MOVEMENT_CATEGORY_FORM_LAYOUT,
+  emptyState: {
+    title: 'Sin categorías de caja',
+    description: 'Crea categorías para clasificar ingresos y egresos de caja.',
+    icon: 'tag',
+  },
   fieldContract: defineFields<CashMovementCategoryRecord>({
     source: 'hydra',
     strategy: 'augment',

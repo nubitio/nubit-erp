@@ -14,6 +14,7 @@ import './CrudPageShell.scss';
  */
 export const CrudPageShell: React.FC<CrudFormShellProps> = ({
   isOpen,
+  mode,
   title,
   onClose,
   onCancel,
@@ -39,9 +40,11 @@ export const CrudPageShell: React.FC<CrudFormShellProps> = ({
         <Button variant="secondary" onClick={onCancel}>
           {t('dialog.buttonCancel')}
         </Button>
-        <Button variant="primary" className="dialog-save-button" onClick={onSave}>
-          <span>{t('dialog.buttonSave')}</span>
-        </Button>
+        {mode !== 'view' && (
+          <Button variant="primary" className="dialog-save-button" onClick={onSave}>
+            <span>{t('dialog.buttonSave')}</span>
+          </Button>
+        )}
       </footer>
     </section>
   );

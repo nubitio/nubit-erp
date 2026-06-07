@@ -10,6 +10,11 @@ const resource = defineResource<PaymentMethodRecord>(paymentMethodEndpoints.list
   id: 'payment-methods',
   title: 'Medios de pago',
   viewMode: { mode: 'drawer', drawerWidth: 520 },
+  emptyState: {
+    title: 'Sin medios de pago',
+    description: 'Registra las formas de pago aceptadas en ventas y caja.',
+    icon: 'credit-card',
+  },
   fieldContract: defineFields<PaymentMethodRecord>({
     source: 'hydra',
     strategy: 'augment',

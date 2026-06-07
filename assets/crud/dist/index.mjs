@@ -2707,6 +2707,21 @@ function buildFilterExpression(filters, operators, fields) {
 		]];
 	});
 }
+function FilterValueDropdown({ id, value, options, placeholder, className, onChange }) {
+	return /* @__PURE__ */ jsx(AppDropdown, {
+		id,
+		value,
+		options: [{
+			value: "",
+			label: placeholder
+		}, ...options],
+		onChange,
+		variant: "compact",
+		showFieldLabel: false,
+		placeholder,
+		className
+	});
+}
 function FilterCell({ field, operator, remoteOptions, value, onClear, onInputChange, onBetweenInputChange, onSelectChange, onOperatorChange }) {
 	const httpClient = useCoreHttpClient();
 	if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
@@ -2719,18 +2734,16 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 	});
 	if (field.type === "enum" || field.type === "select" || field.type === "switch") {
 		const items = field.data ?? [];
-		return /* @__PURE__ */ jsxs("select", {
-			className: "native-datagrid__filter-select",
+		return /* @__PURE__ */ jsx(FilterValueDropdown, {
+			id: `native-datagrid-filter-${field.name}`,
 			value,
-			"aria-label": `Filtrar ${field.label}`,
-			onChange: (e) => onSelectChange(e.target.value),
-			children: [/* @__PURE__ */ jsx("option", {
-				value: "",
-				children: "Todos"
-			}), items.map((item) => /* @__PURE__ */ jsx("option", {
+			className: "native-datagrid__filter-select",
+			placeholder: "Todos",
+			options: items.map((item) => ({
 				value: String(item["value"] ?? ""),
-				children: String(item["text"] ?? item["value"] ?? "")
-			}, String(item["value"] ?? "")))]
+				label: String(item["text"] ?? item["value"] ?? "")
+			})),
+			onChange: onSelectChange
 		});
 	}
 	const operators = getFilterOperators(field);
@@ -2740,15 +2753,17 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 	return /* @__PURE__ */ jsxs("div", {
 		className: `native-datagrid__filter-wrap${isBetween ? " native-datagrid__filter-wrap--between" : ""}`,
 		children: [
-			operators.length > 1 ? /* @__PURE__ */ jsx("select", {
-				className: "native-datagrid__filter-operator",
+			operators.length > 1 ? /* @__PURE__ */ jsx(AppDropdown, {
+				id: `native-datagrid-filter-op-${field.name}`,
 				value: operator,
-				"aria-label": "Operador de filtro",
-				onChange: (e) => onOperatorChange(e.target.value),
-				children: operators.map((op) => /* @__PURE__ */ jsx("option", {
+				options: operators.map((op) => ({
 					value: op.value,
-					children: op.label
-				}, op.value))
+					label: op.label
+				})),
+				onChange: onOperatorChange,
+				variant: "compact",
+				showFieldLabel: false,
+				className: "native-datagrid__filter-operator"
 			}) : /* @__PURE__ */ jsx("i", {
 				className: "ph ph-magnifying-glass native-datagrid__filter-icon",
 				"aria-hidden": "true"
@@ -3207,7 +3222,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 	};
 	const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 	const hasCheckbox = options.selectionMode === "multiple";
-	const hasBuiltInRowActions = Boolean(options.allowEdit && (options.onEdit || options.events?.EDIT) || options.allowDelete && (options.onDelete || options.events?.DELETE));
+	const hasBuiltInRowActions = Boolean(options.allowEdit && (options.onEdit || options.events?.EDIT) || options.allowView && options.onView || options.allowDelete && (options.onDelete || options.events?.DELETE));
 	const hasRowActions = Boolean(options.mode !== "minimal" && (hasBuiltInRowActions || options.rowActions));
 	const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 1 : 0);
 	const hasDetail = Boolean(options.detailFields);
@@ -3453,6 +3468,11 @@ const NativeDataGridView = forwardRef((options, ref) => {
 														else emit(options.events.EDIT, { row });
 													}
 												}] : [],
+												...options.allowView && options.onView ? [{
+													text: t("grid.buttonView"),
+													icon: "ph-eye",
+													onClick: () => options.onView(row)
+												}] : [],
 												...getResolvedRowActions(row, options.rowActions),
 												...options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
 													text: t("grid.buttonDelete"),
@@ -3466,9 +3486,18 @@ const NativeDataGridView = forwardRef((options, ref) => {
 												className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selectedKeys.includes(key) ? "native-datagrid__row--selected" : ""}`,
 												tabIndex: 0,
 												onClick: () => selectRow(row),
+												onDoubleClick: () => {
+													if (options.allowEdit && (options.onEdit || options.events?.EDIT)) {
+														if (options.onEdit) options.onEdit(row);
+														else emit(options.events.EDIT, { row });
+														return;
+													}
+													if (options.allowView && options.onView) options.onView(row);
+												},
 												onKeyDown: (event) => {
 													if (event.key === "Enter" && options.allowEdit && (options.onEdit || options.events?.EDIT)) if (options.onEdit) options.onEdit(row);
 													else emit(options.events.EDIT, { row });
+													else if (event.key === "Enter" && options.allowView && options.onView) options.onView(row);
 													else if (event.key === "Delete" && options.allowDelete && (options.onDelete || options.events?.DELETE)) setConfirmRow(row);
 													else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
 														event.preventDefault();
@@ -3544,6 +3573,11 @@ const NativeDataGridView = forwardRef((options, ref) => {
 																				if (options.onEdit) options.onEdit(row);
 																				else emit(options.events.EDIT, { row });
 																			}
+																		}] : [],
+																		...options.allowView && options.onView ? [{
+																			text: t("grid.buttonView"),
+																			icon: "ph-eye",
+																			onClick: () => options.onView(row)
 																		}] : [],
 																		...getResolvedRowActions(row, options.rowActions),
 																		...options.allowDelete && (options.onDelete || options.events?.DELETE) ? [{
@@ -3838,7 +3872,7 @@ const CrudDialogView = forwardRef((options, ref) => {
 				onClick: onCancelClick,
 				disabled: isProcessing,
 				children: options.negativeText ?? t("dialog.buttonCancel")
-			}), /* @__PURE__ */ jsx(Button, {
+			}), (options.saveVisible ?? true) && /* @__PURE__ */ jsx(Button, {
 				variant: "primary",
 				className: "dialog-save-button",
 				onClick: onSaveClick,
@@ -3860,7 +3894,7 @@ CrudDialogView.displayName = "CrudDialogView";
 * Dialog form shell — preserves the legacy CRUD UX.
 * Thin wrapper around `CrudDialogView` so the orchestrator can stay shell-agnostic.
 */
-const CrudDialogShell = ({ isOpen, title, onClose, onCancel, onSave, width, height, events, children }) => /* @__PURE__ */ jsx(CrudDialogView, {
+const CrudDialogShell = ({ isOpen, mode, title, onClose, onCancel, onSave, width, height, events, children }) => /* @__PURE__ */ jsx(CrudDialogView, {
 	events,
 	width,
 	height,
@@ -3869,6 +3903,7 @@ const CrudDialogShell = ({ isOpen, title, onClose, onCancel, onSave, width, heig
 	onClose,
 	onCancel,
 	onSave,
+	saveVisible: mode !== "view",
 	children
 });
 //#endregion
@@ -3884,7 +3919,7 @@ const formatSize = (value) => {
 * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
 * - Escape closes the drawer; nested lookup dialogs float above via z-index.
 */
-const CrudDrawerShell = ({ isOpen, title, onClose, onCancel, onSave, drawerWidth = "min(720px, 60vw)", drawerSide = "right", children }) => {
+const CrudDrawerShell = ({ isOpen, mode, title, onClose, onCancel, onSave, drawerWidth = "min(720px, 60vw)", drawerSide = "right", children }) => {
 	const { t } = useCoreTranslation();
 	const titleId = useId();
 	const panelRef = useRef(null);
@@ -3953,7 +3988,7 @@ const CrudDrawerShell = ({ isOpen, title, onClose, onCancel, onSave, drawerWidth
 						variant: "secondary",
 						onClick: onCancel,
 						children: t("dialog.buttonCancel")
-					}), /* @__PURE__ */ jsx(Button, {
+					}), mode !== "view" && /* @__PURE__ */ jsx(Button, {
 						variant: "primary",
 						className: "dialog-save-button",
 						onClick: onSave,
@@ -3974,7 +4009,7 @@ const CrudDrawerShell = ({ isOpen, title, onClose, onCancel, onSave, drawerWidth
 * does not navigate — it just exposes Back/Cancel/Save callbacks that the
 * orchestrator maps to `navigate()` calls or close-dialog dispatches.
 */
-const CrudPageShell = ({ isOpen, title, onClose, onCancel, onSave, children }) => {
+const CrudPageShell = ({ isOpen, mode, title, onClose, onCancel, onSave, children }) => {
 	const { t } = useCoreTranslation();
 	if (!isOpen) return null;
 	return /* @__PURE__ */ jsxs("section", {
@@ -4003,7 +4038,7 @@ const CrudPageShell = ({ isOpen, title, onClose, onCancel, onSave, children }) =
 					variant: "secondary",
 					onClick: onCancel,
 					children: t("dialog.buttonCancel")
-				}), /* @__PURE__ */ jsx(Button, {
+				}), mode !== "view" && /* @__PURE__ */ jsx(Button, {
 					variant: "primary",
 					className: "dialog-save-button",
 					onClick: onSave,
@@ -4098,6 +4133,7 @@ function usePermissions(resource, supportedOperations = []) {
 		return {
 			canAdd: resolveWithInferred(p?.canAdd, inferred?.canAdd, true),
 			canEdit: resolveWithInferred(p?.canEdit, inferred?.canEdit, true),
+			canView: resolve(p?.canView, false),
 			canDelete: resolveWithInferred(p?.canDelete, inferred?.canDelete, true),
 			canExport: resolve(p?.canExport, false),
 			canBulkDelete: resolve(p?.canBulkDelete, false)
@@ -4603,6 +4639,11 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		openDialog("edit", row);
 		onOperationChange?.("edit");
 	}, [onOperationChange, openDialog]);
+	const openViewDialog = useCallback((row) => {
+		setOperationVersion((current) => current + 1);
+		openDialog("view", row);
+		onOperationChange?.("edit");
+	}, [onOperationChange, openDialog]);
 	const listUrl = useMemo(() => {
 		const path = location.pathname;
 		if (initialRecordId != null) return path.replace(new RegExp(`/${initialRecordId}$`), "") || path;
@@ -4636,6 +4677,21 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 		navigate,
 		listUrl,
 		openEditDialog
+	]);
+	const requestView = useCallback((row) => {
+		if (viewMode.mode === "page") {
+			const id = row["id"] ?? row["ID"];
+			if (id == null) {
+				openViewDialog(row);
+				return;
+			}
+			navigate(`${listUrl}/${id}`);
+		} else openViewDialog(row);
+	}, [
+		viewMode.mode,
+		navigate,
+		listUrl,
+		openViewDialog
 	]);
 	const requestClose = useCallback(() => {
 		if (viewMode.mode === "page") navigate(listUrl);
@@ -4781,6 +4837,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				events,
 				allowAdd: permissions.canAdd,
 				allowEdit: permissions.canEdit,
+				allowView: permissions.canView,
 				allowDelete: permissions.canDelete,
 				allowExport: permissions.canExport,
 				editDisabled,
@@ -4795,6 +4852,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 				rowActions: resolvedResource.rowActions,
 				onAdd: requestNew,
 				onEdit: requestEdit,
+				onView: requestView,
 				onDelete: (row) => formRef.current?.deleteRow(row),
 				selectionMode: hasMultipleSelection ? "multiple" : "single",
 				onSelectionChanged: handleSelectionChanged,
@@ -4826,9 +4884,10 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					detailFields: formDetail?.fields,
 					detailUrl: formDetail?.url,
 					detailPropertyName: formDetail?.propertyName,
-					allowAdding: formDetail?.allowAdding,
-					allowDeleting: formDetail?.allowDeleting,
-					allowUpdating: formDetail?.allowUpdating,
+					allowAdding: dialogMode !== "view" && formDetail?.allowAdding,
+					allowDeleting: dialogMode !== "view" && formDetail?.allowDeleting,
+					allowUpdating: dialogMode !== "view" && formDetail?.allowUpdating,
+					editable: dialogMode !== "view",
 					requiredDetail: formDetail?.required,
 					format: resolvedResource.format,
 					onSaveSuccess: (response) => {
@@ -4846,7 +4905,7 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					computedValues,
 					onFieldDataChanged: onFormDataChange,
 					adapter: resolvedResource.adapter,
-					operation: dialogIsOpen && dialogMode !== "view" ? dialogMode : null,
+					operation: dialogIsOpen ? dialogMode === "add" ? "add" : dialogMode === "edit" || dialogMode === "view" ? "edit" : null : null,
 					rowData: dialogRowData,
 					operationVersion
 				})
