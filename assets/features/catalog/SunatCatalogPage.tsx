@@ -67,7 +67,7 @@ const SUNAT_CATALOG_FORM_LAYOUT = {
 const resource = defineResource<SunatCatalogRecord>(sunatCatalogEndpoints.list(), {
   id: 'sunat-catalog',
   title: 'Catálogos SUNAT',
-  viewMode: { mode: 'drawer', drawerWidth: 600 },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   defaultPreset: 'basic',
   columnPresets: SUNAT_CATALOG_COLUMN_PRESETS,
   formLayout: SUNAT_CATALOG_FORM_LAYOUT,

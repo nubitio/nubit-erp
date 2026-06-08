@@ -105,11 +105,11 @@ const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'code', patch: { order: 0, col: 4, label: 'Código' } },
-      { kind: 'override', key: 'name', patch: { order: 1, col: 8, label: 'Nombre' } },
-      { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, col: 6 } },
-      { kind: 'override', key: 'system', patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, col: 6 } },
-      { kind: 'override', key: 'active', patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, col: 6 } },
+      { kind: 'override', key: 'code', patch: { order: 0, layoutHint: 'short', label: 'Código' } },
+      { kind: 'override', key: 'name', patch: { order: 1, layoutHint: 'medium', label: 'Nombre' } },
+      { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, layoutHint: 'short' } },
+      { kind: 'override', key: 'system', patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, layoutHint: 'short' } },
+      { kind: 'override', key: 'active', patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, layoutHint: 'short' } },
     ],
   }),
 });

@@ -1,9 +1,12 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useCoreTranslation, useEvents, type DialogEventNames } from '@nubit/core';
 import { CrudDrawerShell } from './CrudDrawerShell';
+import { resolveDrawerWidth, type CrudDrawerSize } from './drawerSizes';
 
 export interface CrudDrawerViewOptions {
   title?: string;
+  /** Token width: sm 480, md 640, lg 880, xl 1120. Ignored when `drawerWidth` is set. */
+  drawerSize?: CrudDrawerSize;
   drawerWidth?: number | string;
   drawerSide?: 'right' | 'left';
   visible?: boolean;
@@ -107,7 +110,10 @@ export const CrudDrawerView = forwardRef<CrudDrawerViewEvents, CrudDrawerViewOpt
       <CrudDrawerShell
         isOpen={visible}
         title={title}
-        drawerWidth={options.drawerWidth ?? 1200}
+        drawerWidth={resolveDrawerWidth({
+          drawerSize: options.drawerSize,
+          drawerWidth: options.drawerWidth,
+        })}
         drawerSide={options.drawerSide ?? 'right'}
         onClose={handleClose}
         onCancel={onCancelClick}

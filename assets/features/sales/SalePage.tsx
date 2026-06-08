@@ -423,7 +423,7 @@ export const SalePage = () => {
         />
       </PageView>
       <DiscountDialog />
-      <DrawerView drawerWidth={720} events={CustomerPage.EVENTS}>
+      <DrawerView drawerSize="md" events={CustomerPage.EVENTS}>
         <FormView
           ref={customerFormRef}
           url={CustomerPage.API_URL}

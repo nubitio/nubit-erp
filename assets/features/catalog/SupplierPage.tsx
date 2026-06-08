@@ -38,7 +38,7 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   title: 'Proveedores',
   defaultPreset: 'basic',
   columnPresets: SUPPLIER_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerSize: 'lg' },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: {
     type: 'sections',
     sections: [
@@ -56,14 +56,14 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'businessName', patch: { order: 1, col: 8, label: 'Razón social' } },
-      { kind: 'override', key: 'phone', patch: { order: 3, col: 6, label: 'Teléfono' } },
+      { kind: 'override', key: 'businessName', patch: { order: 1, layoutHint: 'fullWidth', label: 'Razón social' } },
+      { kind: 'override', key: 'phone', patch: { order: 3, layoutHint: 'short', label: 'Teléfono' } },
       {
         kind: 'override',
         key: 'ruc',
         patch: {
           order: 0,
-          col: 4,
+          layoutHint: 'identity',
           label: 'RUC',
           maxLength: 11,
           validators: [
@@ -121,7 +121,7 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
       {
         kind: 'override',
         key: 'fiscalAddress',
-        patch: { order: 2, type: FieldType.TEXTAREA, col: 12, label: 'Domicilio fiscal' },
+        patch: { order: 2, type: FieldType.TEXTAREA, layoutHint: 'long', label: 'Domicilio fiscal' },
       },
     ],
   }),
