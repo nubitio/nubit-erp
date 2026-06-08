@@ -6,6 +6,8 @@ import './AppDropdown.scss';
 export interface AppDropdownOption {
   value: string;
   label: string;
+  selectedLabel?: string;
+  iconText?: string;
   disabled?: boolean;
 }
 
@@ -24,6 +26,7 @@ export interface AppDropdownProps {
   className?: string;
   /** When true, wraps the control in a form-field label (form variant only). */
   showFieldLabel?: boolean;
+  menuMinWidth?: number;
   error?: ReactNode;
   helpText?: ReactNode;
 }
@@ -39,10 +42,15 @@ function normalizeIcon(icon?: string): string | undefined {
   return `ph ph-${icon}`;
 }
 
-function getMenuStyle(containerRef: React.RefObject<HTMLElement | null>): CSSProperties {
+function getMenuStyle(
+  containerRef: React.RefObject<HTMLElement | null>,
+  menuMinWidth = 72,
+): CSSProperties {
   if (!containerRef.current) return { position: 'fixed', visibility: 'hidden', margin: 0 };
-  const rect = containerRef.current.getBoundingClientRect();
-  const left = Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8));
+  const trigger = containerRef.current.querySelector<HTMLElement>('.app-dropdown__trigger');
+  const rect = (trigger ?? containerRef.current).getBoundingClientRect();
+  const menuWidth = Math.max(rect.width, menuMinWidth);
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
   const spaceBelow = window.innerHeight - rect.bottom;
   const spaceAbove = rect.top;
 
@@ -50,7 +58,7 @@ function getMenuStyle(containerRef: React.RefObject<HTMLElement | null>): CSSPro
     return {
       position: 'fixed',
       left: `${left}px`,
-      width: `${rect.width}px`,
+      width: `${menuWidth}px`,
       bottom: `${window.innerHeight - rect.top + 4}px`,
       top: 'auto',
       margin: 0,
@@ -62,7 +70,7 @@ function getMenuStyle(containerRef: React.RefObject<HTMLElement | null>): CSSPro
   return {
     position: 'fixed',
     left: `${left}px`,
-    width: `${rect.width}px`,
+    width: `${menuWidth}px`,
     top: `${rect.bottom + 4}px`,
     bottom: 'auto',
     margin: 0,
@@ -83,6 +91,7 @@ export function AppDropdown({
   variant = 'form',
   className,
   showFieldLabel = variant === 'form',
+  menuMinWidth,
   error,
   helpText,
 }: AppDropdownProps) {
@@ -91,12 +100,16 @@ export function AppDropdown({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
-  const [menuStyle, setMenuStyle] = useState<CSSProperties>({ position: 'fixed', visibility: 'hidden', margin: 0 });
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({
+    position: 'fixed',
+    visibility: 'hidden',
+    margin: 0,
+  });
   const selected = options.find((option) => option.value === value);
 
   const computeMenuStyle = useCallback(
-    () => getMenuStyle(containerRef),
-    [],
+    () => getMenuStyle(containerRef, menuMinWidth),
+    [menuMinWidth],
   );
 
   // Outside-click: close on mousedown outside trigger + menu
@@ -118,7 +131,10 @@ export function AppDropdown({
     const update = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      if (rect.top >= window.innerHeight || rect.bottom <= 0) { setOpen(false); return; }
+      if (rect.top >= window.innerHeight || rect.bottom <= 0) {
+        setOpen(false);
+        return;
+      }
       setMenuStyle(computeMenuStyle());
     };
     update();
@@ -164,45 +180,54 @@ export function AppDropdown({
         onClick={() => (open ? setOpen(false) : openMenu())}
       >
         <span className="app-dropdown__value" id={`${id}-value`}>
-          {selected?.label ?? placeholder}
+          {selected?.selectedLabel ?? selected?.label ?? placeholder}
         </span>
         <i className="ph ph-caret-down app-dropdown__caret" aria-hidden="true" />
       </button>
-      {open && !disabled && createPortal(
-        <ul
-          ref={menuRef}
-          className={cx('app-dropdown__menu', `app-dropdown__menu--${variant}`)}
-          role="listbox"
-          aria-labelledby={label ? `${id}-label` : undefined}
-          style={menuStyle}
-        >
-          {options.map((option) => {
-            const isActive = option.value === value;
-            return (
-              <li key={option.value} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={isActive}
-                  disabled={option.disabled}
-                  className={cx(
-                    'app-dropdown__option',
-                    isActive && 'app-dropdown__option--active',
-                  )}
-                  onClick={() => {
-                    if (option.disabled) return;
-                    onChange(option.value);
-                    setOpen(false);
-                  }}
-                >
-                  {option.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>,
-        document.body,
-      )}
+      {open &&
+        !disabled &&
+        createPortal(
+          <ul
+            ref={menuRef}
+            className={cx('app-dropdown__menu', `app-dropdown__menu--${variant}`)}
+            role="listbox"
+            aria-labelledby={label ? `${id}-label` : undefined}
+            style={menuStyle}
+          >
+            {options.map((option) => {
+              const isActive = option.value === value;
+              return (
+                <li key={option.value} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isActive}
+                    disabled={option.disabled}
+                    className={cx(
+                      'app-dropdown__option',
+                      isActive && 'app-dropdown__option--active',
+                    )}
+                    onClick={() => {
+                      if (option.disabled) return;
+                      onChange(option.value);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="app-dropdown__option-content">
+                      {option.iconText && (
+                        <span className="app-dropdown__option-icon" aria-hidden="true">
+                          {option.iconText}
+                        </span>
+                      )}
+                      <span>{option.label}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 
@@ -212,10 +237,16 @@ export function AppDropdown({
 
   return (
     <label className={cx('app-form-field', !!error && 'app-form-field--error')} htmlFor={id}>
-      {label && <span className="app-form-field__label" id={`${id}-label`}>{label}</span>}
+      {label && (
+        <span className="app-form-field__label" id={`${id}-label`}>
+          {label}
+        </span>
+      )}
       {control}
       {error ? (
-        <span className="app-form-field__error" role="alert">{error}</span>
+        <span className="app-form-field__error" role="alert">
+          {error}
+        </span>
       ) : helpText ? (
         <span className="app-form-field__help">{helpText}</span>
       ) : null}

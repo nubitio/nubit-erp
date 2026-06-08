@@ -11,17 +11,35 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { AppDropdown, Button, ConfirmDialog, DatePicker, EmptyState, IconButton } from '@nubit/ui';
+import {
+  AppDropdown,
+  Button,
+  ConfirmDialog,
+  DatePicker,
+  DateRangePicker,
+  EmptyState,
+  IconButton,
+} from '@nubit/ui';
 import { type ResourceLoadOptions, useResourceStoreFactory } from '../data/ResourceStore';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
-import { useEvents, useCoreHttpClient, getCoreLocale, getCoreTimezone, useCoreTranslation } from '@nubit/core';
+import {
+  useEvents,
+  useCoreHttpClient,
+  getCoreLocale,
+  getCoreTimezone,
+  useCoreTranslation,
+} from '@nubit/core';
 import { DATA_GRID_EVENTS } from './DataGridEvents';
 import type { DataGridSummaryItem, DataGridViewOptions } from './DataGridViewOptions';
 import type { GridHandle } from './GridHandle';
 import type { FilterRule } from '../field/FilterRule';
-import type { ResourceEmptyState, ResourceToolbarAction, ResourceToolbarItems } from '../crud/ResourceConfig';
+import type {
+  ResourceEmptyState,
+  ResourceToolbarAction,
+  ResourceToolbarItems,
+} from '../crud/ResourceConfig';
 import { useSmartCrudRoles } from '../crud/SmartCrudRolesContext';
 import { NativeEntitySelect } from '../form/NativeFormView';
 import { resolveSummaryText } from '../summary';
@@ -83,7 +101,6 @@ function GridColumnGroup({
       {fields.map((field) => (
         <col key={field.name} style={{ width: getColumnWidth(field, colWidths) }} />
       ))}
-      {hasRowActions && <col className="native-datagrid__filler-col" />}
       {hasRowActions && <col className="native-datagrid__actions-col" />}
     </colgroup>
   );
@@ -125,10 +142,10 @@ function GridEmptyStateView({
   );
 }
 
-
 function getPrimitiveDisplay(value: unknown, yesLabel = 'Yes', noLabel = 'No'): string {
   if (value === null || value === undefined) return '';
-  if (value instanceof Date) return value.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
+  if (value instanceof Date)
+    return value.toLocaleDateString(getCoreLocale(), { timeZone: getCoreTimezone() });
   if (typeof value === 'boolean') return value ? yesLabel : noLabel;
   if (typeof value === 'object') return '';
   return String(value);
@@ -145,7 +162,11 @@ function getDateTimeDisplay(value: unknown): string {
   if (!value) return '';
   const d = value instanceof Date ? value : new Date(String(value));
   if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleString(getCoreLocale(), { timeZone: getCoreTimezone(), dateStyle: 'short', timeStyle: 'short' });
+  return d.toLocaleString(getCoreLocale(), {
+    timeZone: getCoreTimezone(),
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
 }
 
 function getEntityDisplayValue(field: Field, value: unknown, entityOptions?: DataRecord[]): string {
@@ -175,17 +196,32 @@ function getEnumDisplayValue(field: Field, value: unknown): string {
   return getPrimitiveDisplay(match?.['text'] ?? match?.[field.textField] ?? value);
 }
 
-function getCellText(field: Field, row: DataRecord, entityOptions?: DataRecord[], yesLabel = 'Yes', noLabel = 'No'): string {
+function getCellText(
+  field: Field,
+  row: DataRecord,
+  entityOptions?: DataRecord[],
+  yesLabel = 'Yes',
+  noLabel = 'No',
+): string {
   if (field.formatter) return '';
   const value = row[field.name];
   if (field.type === FieldType.ENTITY) return getEntityDisplayValue(field, value, entityOptions);
-  if (field.type === FieldType.ENUM || field.type === FieldType.SWITCH) return getEnumDisplayValue(field, value);
+  if (field.type === FieldType.ENUM || field.type === FieldType.SWITCH)
+    return getEnumDisplayValue(field, value);
   if (field.type === FieldType.DATE) return getDateDisplay(value);
   if (field.type === FieldType.DATETIME) return getDateTimeDisplay(value);
   return getPrimitiveDisplay(value, yesLabel, noLabel);
 }
 
-function renderCell(field: Field, row: DataRecord, rowIndex: number, columnIndex: number, entityOptions?: DataRecord[], yesLabel = 'Yes', noLabel = 'No') {
+function renderCell(
+  field: Field,
+  row: DataRecord,
+  rowIndex: number,
+  columnIndex: number,
+  entityOptions?: DataRecord[],
+  yesLabel = 'Yes',
+  noLabel = 'No',
+) {
   const value = row[field.name];
   if (field.formatter) {
     return field.formatter({ value, data: row, rowIndex, columnIndex });
@@ -211,7 +247,8 @@ function getToolbarKey(action: ResourceToolbarAction, index: number): string {
 function renderToolbarButton(action: ResourceToolbarAction, index: number, iconOnly = false) {
   if (action.visible === false) return null;
   const icon = normalizeIcon(action.icon);
-  const variant = action.type === 'danger' ? 'danger' : action.type === 'primary' ? 'primary' : 'secondary';
+  const variant =
+    action.type === 'danger' ? 'danger' : action.type === 'primary' ? 'primary' : 'secondary';
   if (iconOnly) {
     return (
       <IconButton
@@ -349,7 +386,9 @@ function SelectionActionsMenu({
     if (disabled) return;
     const next = !open;
     if (next) {
-      document.dispatchEvent(new CustomEvent<{ id: symbol }>(DROPDOWN_OPENED_EVENT, { detail: { id: idRef.current } }));
+      document.dispatchEvent(
+        new CustomEvent<{ id: symbol }>(DROPDOWN_OPENED_EVENT, { detail: { id: idRef.current } }),
+      );
     }
     setOpen(next);
   };
@@ -370,16 +409,18 @@ function SelectionActionsMenu({
           {Object.entries(groups).map(([group, items]) => (
             <div key={group} className="native-datagrid__actions-group">
               {items.length > 1 && items[0]?.groupLabel && (
-                <div className="native-datagrid__actions-group-label">
-                  {items[0].groupLabel}
-                </div>
+                <div className="native-datagrid__actions-group-label">{items[0].groupLabel}</div>
               )}
-              {items.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))}
+              {items.map((action, index) =>
+                renderSelectionActionItem(action, index, disabled, () => setOpen(false)),
+              )}
             </div>
           ))}
           {dangerActions.length > 0 && (
             <div className="native-datagrid__actions-danger-group">
-              {dangerActions.map((action, index) => renderSelectionActionItem(action, index, disabled, () => setOpen(false)))}
+              {dangerActions.map((action, index) =>
+                renderSelectionActionItem(action, index, disabled, () => setOpen(false)),
+              )}
             </div>
           )}
         </div>
@@ -396,13 +437,15 @@ function buildToolbar(
   return {
     primary: [
       ...(options.allowAdd
-        ? [{
-            text: t('grid.buttonNew'),
-            icon: 'ph-plus',
-            type: 'primary' as const,
-            onClick: onAddClick,
-            disabled: options.addDisabled,
-          }]
+        ? [
+            {
+              text: t('grid.buttonNew'),
+              icon: 'ph-plus',
+              type: 'primary' as const,
+              onClick: onAddClick,
+              disabled: options.addDisabled,
+            },
+          ]
         : []),
       ...(options.toolbar?.primary ?? []),
     ],
@@ -413,6 +456,7 @@ function buildToolbar(
 }
 
 type FilterOperator = { value: string; label: string };
+const FILTER_RESET_OPERATOR = '__reset_filter__';
 const BETWEEN_VALUE_SEPARATOR = '|';
 
 function isDateLikeField(field: Field): boolean {
@@ -493,6 +537,55 @@ function getFilterOperators(field: Field): FilterOperator[] {
   }
 }
 
+function getFilterOperatorLabel(
+  value: string,
+  t: ReturnType<typeof useCoreTranslation>['t'],
+): string {
+  switch (value) {
+    case 'contains':
+      return t('grid.filterOperator.contains');
+    case 'notcontains':
+      return t('grid.filterOperator.notcontains');
+    case 'startswith':
+      return t('grid.filterOperator.startswith');
+    case '=':
+      return t('grid.filterOperator.equals');
+    case '<>':
+      return t('grid.filterOperator.notEquals');
+    case '>':
+      return t('grid.filterOperator.greaterThan');
+    case '>=':
+      return t('grid.filterOperator.greaterOrEqual');
+    case '<':
+      return t('grid.filterOperator.lessThan');
+    case '<=':
+      return t('grid.filterOperator.lessOrEqual');
+    case 'between':
+      return t('grid.filterOperator.between');
+    default:
+      return value;
+  }
+}
+
+function getFilterOperatorIcon(value: string): string {
+  switch (value) {
+    case 'contains':
+      return 'abc';
+    case 'notcontains':
+      return 'a̸bc';
+    case 'startswith':
+      return 'ab|';
+    case '=':
+      return '=';
+    case '<>':
+      return '≠';
+    case 'between':
+      return '↔';
+    default:
+      return value;
+  }
+}
+
 function computeDefaultOperators(fields: Field[]): Record<string, string> {
   const defaults: Record<string, string> = {};
   fields.forEach((field) => {
@@ -516,8 +609,18 @@ function buildFilterExpression(
         if (operator === 'between') {
           const [start, end] = splitBetweenValue(value);
           return [
-            ...(start ? [[fieldName, '>=', field.type === FieldType.DATETIME ? getDateStartOfDay(start) : start]] : []),
-            ...(end ? [[fieldName, '<=', field.type === FieldType.DATETIME ? getDateEndOfDay(end) : end]] : []),
+            ...(start
+              ? [
+                  [
+                    fieldName,
+                    '>=',
+                    field.type === FieldType.DATETIME ? getDateStartOfDay(start) : start,
+                  ],
+                ]
+              : []),
+            ...(end
+              ? [[fieldName, '<=', field.type === FieldType.DATETIME ? getDateEndOfDay(end) : end]]
+              : []),
           ];
         }
 
@@ -584,6 +687,7 @@ function FilterCell({
   onOperatorChange: (operator: string) => void;
 }) {
   const httpClient = useCoreHttpClient();
+  const { t } = useCoreTranslation();
 
   if (field.type === FieldType.ENTITY) {
     return (
@@ -610,7 +714,7 @@ function FilterCell({
         id={`native-datagrid-filter-${field.name}`}
         value={value}
         className="native-datagrid__filter-select"
-        placeholder="Todos"
+        placeholder={t('grid.allFilter')}
         options={items.map((item) => ({
           value: String(item['value'] ?? ''),
           label: String(item['text'] ?? item['value'] ?? ''),
@@ -621,51 +725,67 @@ function FilterCell({
   }
 
   const operators = getFilterOperators(field);
-  const inputType = field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : 'text';
+  const inputType =
+    field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY ? 'number' : 'text';
   const [betweenStart, betweenEnd] = splitBetweenValue(value);
   const isBetween = isDateLikeField(field) && operator === 'between';
 
   return (
-    <div className={`native-datagrid__filter-wrap${isBetween ? ' native-datagrid__filter-wrap--between' : ''}`}>
+    <div
+      className={`native-datagrid__filter-wrap${isBetween ? ' native-datagrid__filter-wrap--between' : ''}`}
+    >
       {operators.length > 1 ? (
         <AppDropdown
           id={`native-datagrid-filter-op-${field.name}`}
           value={operator}
-          options={operators.map((op) => ({ value: op.value, label: op.label }))}
-          onChange={onOperatorChange}
+          options={[
+            ...operators.map((op) => ({
+              value: op.value,
+              label: getFilterOperatorLabel(op.value, t),
+              selectedLabel: op.label,
+              iconText: getFilterOperatorIcon(op.value),
+            })),
+            ...(value
+              ? [
+                  {
+                    value: FILTER_RESET_OPERATOR,
+                    label: t('grid.filterOperator.reset'),
+                    iconText: '⌕',
+                  },
+                ]
+              : []),
+          ]}
+          onChange={(nextOperator) => {
+            if (nextOperator === FILTER_RESET_OPERATOR) {
+              onClear();
+              return;
+            }
+            onOperatorChange(nextOperator);
+          }}
           variant="compact"
           showFieldLabel={false}
+          menuMinWidth={220}
           className="native-datagrid__filter-operator"
         />
       ) : (
         <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
       )}
       {isBetween ? (
-        <div className="native-datagrid__filter-between-inputs">
-          <DatePicker
-            className="native-datagrid__filter-date"
-            clearable={false}
-            locale={getCoreLocale()}
-            value={betweenStart}
-            ariaLabel={`Filtrar ${field.label} desde`}
-            onChange={(nextValue) => onBetweenInputChange(nextValue, betweenEnd)}
-          />
-          <DatePicker
-            className="native-datagrid__filter-date"
-            clearable={false}
-            locale={getCoreLocale()}
-            value={betweenEnd}
-            ariaLabel={`Filtrar ${field.label} hasta`}
-            onChange={(nextValue) => onBetweenInputChange(betweenStart, nextValue)}
-          />
-        </div>
+        <DateRangePicker
+          className="native-datagrid__filter-range"
+          locale={getCoreLocale()}
+          startValue={betweenStart}
+          endValue={betweenEnd}
+          ariaLabel={t('grid.filterColumn', { column: field.label })}
+          onChange={onBetweenInputChange}
+        />
       ) : isDateLikeField(field) ? (
         <DatePicker
           className="native-datagrid__filter-date"
           clearable={false}
           locale={getCoreLocale()}
           value={value}
-          ariaLabel={`Filtrar ${field.label}`}
+          ariaLabel={t('grid.filterColumn', { column: field.label })}
           onChange={onInputChange}
         />
       ) : (
@@ -673,14 +793,14 @@ function FilterCell({
           type={inputType}
           className="native-datagrid__filter-input"
           value={value}
-          aria-label={`Filtrar ${field.label}`}
+          aria-label={t('grid.filterColumn', { column: field.label })}
           onChange={(e) => onInputChange(e.target.value)}
         />
       )}
       <button
         type="button"
         className={`native-datagrid__filter-clear${value ? ' is-active' : ''}`}
-        aria-label="Limpiar filtro"
+        aria-label={t('grid.clearFilter')}
         tabIndex={value ? 0 : -1}
         onClick={onClear}
       >
@@ -711,7 +831,9 @@ function SummaryFooter({
 }) {
   if (!summaryFields?.length) return null;
 
-  const itemsByColumn = new Map(summaryFields.filter((item) => item.column).map((item) => [item.column, item]));
+  const itemsByColumn = new Map(
+    summaryFields.filter((item) => item.column).map((item) => [item.column, item]),
+  );
   const unboundItems = summaryFields.filter((item) => !item.column);
   const fallbackFieldName = fields[fields.length - 1]?.name;
 
@@ -721,21 +843,30 @@ function SummaryFooter({
         {hasDetail && <td className="native-datagrid__detail-cell" />}
         {hasCheckbox && <td className="native-datagrid__select-cell" />}
         {fields.map((field) => {
-          const item = itemsByColumn.get(field.name) ?? (field.name === fallbackFieldName ? unboundItems[0] : undefined);
+          const item =
+            itemsByColumn.get(field.name) ??
+            (field.name === fallbackFieldName ? unboundItems[0] : undefined);
           const align = item?.align ?? field.align;
-          const justifyContent = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
+          const justifyContent =
+            align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start';
           return (
-            <td key={field.name} style={{ width: getColumnWidth(field, colWidths), textAlign: align }}>
+            <td
+              key={field.name}
+              style={{ width: getColumnWidth(field, colWidths), textAlign: align }}
+            >
               {item && (
                 <div className="native-datagrid__summary-cell" style={{ justifyContent }}>
-                  {item.label && <span className="native-datagrid__summary-label">{item.label}</span>}
-                  <span className="native-datagrid__summary-value">{resolveSummaryText(rows, item)}</span>
+                  {item.label && (
+                    <span className="native-datagrid__summary-label">{item.label}</span>
+                  )}
+                  <span className="native-datagrid__summary-value">
+                    {resolveSummaryText(rows, item)}
+                  </span>
                 </div>
               )}
             </td>
           );
         })}
-        {hasRowActions && <td className="native-datagrid__filler-cell" />}
         {hasRowActions && <td className="native-datagrid__actions-cell" />}
       </tr>
     </tfoot>
@@ -766,17 +897,31 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
       <table className="native-datagrid__detail-table">
         <thead>
           <tr>
-            {fields.filter((field) => field.visible && !field.hidden).map((field) => (
-              <th key={field.name}>{field.label}</th>
-            ))}
+            {fields
+              .filter((field) => field.visible && !field.hidden)
+              .map((field) => (
+                <th key={field.name}>{field.label}</th>
+              ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => (
             <tr key={String(row[getIdField(fields)] ?? rowIndex)}>
-              {fields.filter((field) => field.visible && !field.hidden).map((field, columnIndex) => (
-                <td key={field.name}>{renderCell(field, row, rowIndex, columnIndex, undefined, t('common.yes'), t('common.no'))}</td>
-              ))}
+              {fields
+                .filter((field) => field.visible && !field.hidden)
+                .map((field, columnIndex) => (
+                  <td key={field.name}>
+                    {renderCell(
+                      field,
+                      row,
+                      rowIndex,
+                      columnIndex,
+                      undefined,
+                      t('common.yes'),
+                      t('common.no'),
+                    )}
+                  </td>
+                ))}
             </tr>
           ))}
         </tbody>
@@ -794,10 +939,15 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [on, emit] = useEvents();
   const idField = useMemo(() => getIdField(options.fields), [options.fields]);
   const visibleFields = useMemo(
-    () => options.fields
-      .filter((field) => field.visible && !field.hidden)
-      .filter((field) => options.visibleColumns == null || options.visibleColumns.includes(field.name))
-      .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)),
+    () =>
+      options.fields
+        .filter((field) => field.visible && !field.hidden)
+        .filter(
+          (field) => options.visibleColumns == null || options.visibleColumns.includes(field.name),
+        )
+        .sort(
+          (a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER),
+        ),
     [options.fields, options.visibleColumns],
   );
   const [rows, setRows] = useState<DataRecord[]>([]);
@@ -807,7 +957,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [filterInputs, setFilterInputs] = useState<Record<string, string>>({});
   const filterDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [filterOperators, setFilterOperators] = useState<Record<string, string>>(() => computeDefaultOperators(options.fields));
+  const [filterOperators, setFilterOperators] = useState<Record<string, string>>(() =>
+    computeDefaultOperators(options.fields),
+  );
   const [filterRemoteOptions, setFilterRemoteOptions] = useState<Record<string, DataRecord[]>>({});
   const loadedFilterOptionsRef = useRef<Set<string>>(new Set());
   const [sort, setSort] = useState<SortRule[]>(options.sort ?? []);
@@ -1005,7 +1157,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
   useEffect(() => {
     visibleFields
-      .filter((f) => f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name))
+      .filter(
+        (f) => f.type === FieldType.ENTITY && f.url && !loadedFilterOptionsRef.current.has(f.name),
+      )
       .forEach((f) => {
         loadedFilterOptionsRef.current.add(f.name);
         resourceStoreFactory({ url: f.url!, idField: f.valueField, httpClient, iriMode: true })
@@ -1020,45 +1174,69 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const handleStateRef = useRef({ selectedKeys, filters, filterOperators, loadRows, idField });
   handleStateRef.current = { selectedKeys, filters, filterOperators, loadRows, idField }; // eslint-disable-line react-hooks/refs
 
-  useImperativeHandle(ref, () => ({
-    showLoading: (message) => {
-      setLoadingMessage(message ?? t('grid.loading'));
-      setIsGridLoading(true);
-    },
-    hideLoading: () => setIsGridLoading(false),
-    refresh: () => void handleStateRef.current.loadRows(),
-    reset: () => {
-      clearTimeout(filterDebounceRef.current);
-      setSelectedKeys([]);
-      setFilters({});
-      setFilterInputs({});
-      setFilterOperators(computeDefaultOperators(options.fields));
-      setSort([]);
-      setPage(0);
-      setExpandedKeys(new Set());
-    },
-    loadData: () => Promise.resolve(rowsRef.current),
-    getSelectedRowKey: () => {
-      const key = handleStateRef.current.selectedKeys[0];
-      return typeof key === 'string' || typeof key === 'number' ? key : undefined;
-    },
-    getSelectedRow: () => rowsRef.current.find((row) => row[handleStateRef.current.idField] === handleStateRef.current.selectedKeys[0]),
-    getSelectedRowKeys: () => handleStateRef.current.selectedKeys,
-    getSelectedRows: () => rowsRef.current.filter((row) => handleStateRef.current.selectedKeys.includes(row[handleStateRef.current.idField])),
-    getFilter: () => buildFilterExpression(handleStateRef.current.filters, handleStateRef.current.filterOperators, options.fields),
-    filter: (filterRule: FilterRule | null) => {
-      const { filterOperators: currentOps } = handleStateRef.current;
-      const nextFilters = filterRule ? { [filterRule.field]: String(filterRule.value ?? '') } : {};
-      const nextOperators = filterRule
-        ? { ...currentOps, [filterRule.field]: filterRule.operator || getDefaultFilterOperator(options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0]) }
-        : computeDefaultOperators(options.fields);
-      clearTimeout(filterDebounceRef.current);
-      setFilters(nextFilters);
-      setFilterInputs(nextFilters);
-      setFilterOperators(nextOperators);
-      setPage(0);
-    },
-  }), [options.fields, t]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      showLoading: (message) => {
+        setLoadingMessage(message ?? t('grid.loading'));
+        setIsGridLoading(true);
+      },
+      hideLoading: () => setIsGridLoading(false),
+      refresh: () => void handleStateRef.current.loadRows(),
+      reset: () => {
+        clearTimeout(filterDebounceRef.current);
+        setSelectedKeys([]);
+        setFilters({});
+        setFilterInputs({});
+        setFilterOperators(computeDefaultOperators(options.fields));
+        setSort([]);
+        setPage(0);
+        setExpandedKeys(new Set());
+      },
+      loadData: () => Promise.resolve(rowsRef.current),
+      getSelectedRowKey: () => {
+        const key = handleStateRef.current.selectedKeys[0];
+        return typeof key === 'string' || typeof key === 'number' ? key : undefined;
+      },
+      getSelectedRow: () =>
+        rowsRef.current.find(
+          (row) => row[handleStateRef.current.idField] === handleStateRef.current.selectedKeys[0],
+        ),
+      getSelectedRowKeys: () => handleStateRef.current.selectedKeys,
+      getSelectedRows: () =>
+        rowsRef.current.filter((row) =>
+          handleStateRef.current.selectedKeys.includes(row[handleStateRef.current.idField]),
+        ),
+      getFilter: () =>
+        buildFilterExpression(
+          handleStateRef.current.filters,
+          handleStateRef.current.filterOperators,
+          options.fields,
+        ),
+      filter: (filterRule: FilterRule | null) => {
+        const { filterOperators: currentOps } = handleStateRef.current;
+        const nextFilters = filterRule
+          ? { [filterRule.field]: String(filterRule.value ?? '') }
+          : {};
+        const nextOperators = filterRule
+          ? {
+              ...currentOps,
+              [filterRule.field]:
+                filterRule.operator ||
+                getDefaultFilterOperator(
+                  options.fields.find((f) => f.name === filterRule.field) ?? options.fields[0],
+                ),
+            }
+          : computeDefaultOperators(options.fields);
+        clearTimeout(filterDebounceRef.current);
+        setFilters(nextFilters);
+        setFilterInputs(nextFilters);
+        setFilterOperators(nextOperators);
+        setPage(0);
+      },
+    }),
+    [options.fields, t],
+  );
 
   const selectedRows = rows.filter((row) => selectedKeys.includes(row[idField]));
 
@@ -1144,12 +1322,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     (options.allowDelete && (options.onDelete || options.events?.DELETE)),
   );
   const hasRowActions = Boolean(
-    options.mode !== 'minimal' && (
-      hasBuiltInRowActions ||
-      options.rowActions
-    ),
+    options.mode !== 'minimal' && (hasBuiltInRowActions || options.rowActions),
   );
-  const colSpan = visibleFields.length + (hasCheckbox ? 1 : 0) + (options.detailFields ? 1 : 0) + (hasRowActions ? 2 : 0);
+  const colSpan =
+    visibleFields.length +
+    (hasCheckbox ? 1 : 0) +
+    (options.detailFields ? 1 : 0) +
+    (hasRowActions ? 1 : 0);
   const hasDetail = Boolean(options.detailFields);
   const layoutWidth = computeLayoutWidth({
     visibleFields,
@@ -1159,39 +1338,96 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     hasRowActions,
     containerWidth,
   });
+
+  // Distribute container space proportionally among data columns only.
+  // The actions column (fixed UI chrome) is excluded from stretching — it always
+  // stays at ACTIONS_COL_WIDTH regardless of how wide the container gets.
+  const resolvedColWidths = useMemo(() => {
+    if (visibleFields.length === 0) return colWidths;
+    const dataTotal = visibleFields.reduce((sum, f) => sum + getColumnWidth(f, colWidths), 0);
+    const fixedTotal =
+      (hasCheckbox ? CHECKBOX_COL_WIDTH : 0) +
+      (hasDetail ? DETAIL_COL_WIDTH : 0) +
+      (hasRowActions ? ACTIONS_COL_WIDTH : 0);
+    const extra = Math.max(0, containerWidth - dataTotal - fixedTotal);
+    if (extra === 0 || dataTotal === 0) return colWidths;
+    let distributed = 0;
+    const result: Record<string, number> = {};
+    visibleFields.forEach((f, i) => {
+      const base = getColumnWidth(f, colWidths);
+      const share =
+        i < visibleFields.length - 1 ? Math.round(extra * (base / dataTotal)) : extra - distributed; // give remainder to last col to avoid rounding gaps
+      result[f.name] = base + share;
+      distributed += share;
+    });
+    return result;
+  }, [visibleFields, colWidths, hasCheckbox, hasDetail, hasRowActions, containerWidth]);
+
   const tableLayoutStyle = {
     '--native-datagrid-layout-width': `${layoutWidth}px`,
   } as React.CSSProperties;
   const toolbar = buildToolbar(options, t, onAddClick);
+  const pageStart = totalCount > 0 ? page * pageSize + 1 : 0;
+  const pageEnd = totalCount > 0 ? Math.min((page + 1) * pageSize, totalCount) : 0;
+  const recordRangeLabel =
+    totalCount > 0
+      ? t('grid.recordRange', { start: pageStart, end: pageEnd, total: totalCount })
+      : t('grid.noRecordCount');
+  const selectedCountLabel =
+    selectedRows.length > 0 ? t('grid.selectedCount', { count: selectedRows.length }) : null;
+  const pageStatusLabel =
+    totalPages > 0 ? t('grid.pageStatus', { page: page + 1, total: totalPages }) : null;
   return (
     <div className="view datagrid-list">
-      <div className={`view-wrapper ${options.mode === 'full' || !options.mode ? 'view-wrapper-datagrid-list list-page' : ''}`}>
+      <div
+        className={`view-wrapper ${options.mode === 'full' || !options.mode ? 'view-wrapper-datagrid-list list-page' : ''}`}
+      >
         <div className="grid theme-dependent native-datagrid">
           {(options.toolbarVisible ?? true) && options.mode !== 'minimal' && (
             <div className="native-datagrid__toolbar">
               {options.hasBackButton && (
                 <IconButton
                   icon="ph ph-arrow-left"
-                  label="Volver"
+                  label={t('grid.back')}
                   onClick={() => (options.onBack ? options.onBack() : navigate(-1))}
                 />
               )}
-              {options.mode === 'full' || !options.mode ? <div className="grid-header">{options.title}</div> : null}
+              {options.mode === 'full' || !options.mode ? (
+                <div className="grid-header">{options.title}</div>
+              ) : null}
               {options.beforeToolbar?.()}
               <div className="native-datagrid__toolbar-spacer" />
-              {toolbar.primary?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index))}
-              <SelectionActionsMenu actionsLabel={t('grid.buttonActions')} selectedCount={selectedRows.length} actions={toolbar.selection} permissions={toolbarPermissions} />
-              {toolbar.utility?.filter((action) => isToolbarActionVisible(action, toolbarPermissions)).map((action, index) => renderToolbarButton(action, index, true))}
+              {toolbar.primary
+                ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
+                .map((action, index) => renderToolbarButton(action, index))}
+              <SelectionActionsMenu
+                actionsLabel={t('grid.buttonActions')}
+                selectedCount={selectedRows.length}
+                actions={toolbar.selection}
+                permissions={toolbarPermissions}
+              />
+              {toolbar.utility
+                ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
+                .map((action, index) => renderToolbarButton(action, index, true))}
               {toolbar.showRefresh !== false && (
-                <IconButton icon="ph ph-arrow-clockwise" label={t('grid.buttonRefresh')} onClick={() => void loadRows()} />
+                <IconButton
+                  icon="ph ph-arrow-clockwise"
+                  label={t('grid.buttonRefresh')}
+                  onClick={() => void loadRows()}
+                />
               )}
             </div>
           )}
-           <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
-            <table className="native-datagrid__table" style={tableLayoutStyle}>
+          <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
+            <table
+              className="native-datagrid__table"
+              style={tableLayoutStyle}
+              aria-label={options.title}
+              aria-rowcount={totalCount || rows.length}
+            >
               <GridColumnGroup
                 fields={visibleFields}
-                colWidths={colWidths}
+                colWidths={resolvedColWidths}
                 hasCheckbox={hasCheckbox}
                 hasDetail={hasDetail}
                 hasRowActions={hasRowActions}
@@ -1202,16 +1438,42 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   {hasCheckbox && <th className="native-datagrid__select-cell" />}
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
-                    const width = getColumnWidth(field, colWidths);
+                    const width = getColumnWidth(field, resolvedColWidths);
+                    const hasActiveFilter = Boolean((filterInputs[field.name] ?? '').trim());
+                    const headerClassName = [
+                      sortRule ? 'native-datagrid__header-cell--sorted' : '',
+                      hasActiveFilter ? 'native-datagrid__header-cell--filtered' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
                     return (
-                      <th key={field.name} title={field.label} style={{ width, textAlign: field.align }}>
+                      <th
+                        key={field.name}
+                        className={headerClassName || undefined}
+                        title={field.label}
+                        style={{ width, textAlign: field.align }}
+                        aria-sort={
+                          sortRule ? (sortRule.desc ? 'descending' : 'ascending') : undefined
+                        }
+                      >
                         {field.sortable ? (
-                          <button type="button" className="native-datagrid__sort-button" onClick={() => toggleSort(field)}>
+                          <button
+                            type="button"
+                            className="native-datagrid__sort-button"
+                            aria-label={t('grid.sortColumn', { column: field.label })}
+                            onClick={() => toggleSort(field)}
+                          >
                             <span>{field.label}</span>
                             {sortRule ? (
-                              <i className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`} aria-hidden="true" />
+                              <i
+                                className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`}
+                                aria-hidden="true"
+                              />
                             ) : (
-                              <i className="ph ph-caret-up-down native-datagrid__sort-hint" aria-hidden="true" />
+                              <i
+                                className="ph ph-caret-up-down native-datagrid__sort-hint"
+                                aria-hidden="true"
+                              />
                             )}
                           </button>
                         ) : (
@@ -1221,12 +1483,11 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           className="native-datagrid__col-resize"
                           onMouseDown={handleResizeMouseDown(field.name)}
                           onClick={(event) => event.stopPropagation()}
-                          title="Arrastrar para redimensionar"
+                          title={t('grid.resizeColumn')}
                         />
                       </th>
                     );
                   })}
-                  {hasRowActions && <th className="native-datagrid__filler-cell" />}
                   {hasRowActions && <th className="native-datagrid__actions-cell" />}
                 </tr>
                 {(options.filterRow ?? true) && (
@@ -1234,6 +1495,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     {options.detailFields && <td className="native-datagrid__detail-cell" />}
                     {hasCheckbox && <td className="native-datagrid__select-cell" />}
                     {visibleFields.map((field) => {
+                      const filterCellWidth = getColumnWidth(field, resolvedColWidths);
                       const applyImmediate = (nextInputs: Record<string, string>) => {
                         clearTimeout(filterDebounceRef.current);
                         setFilterInputs(nextInputs);
@@ -1242,60 +1504,86 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         options.onFilterChange?.(nextInputs);
                       };
                       return (
-                      <td key={field.name} style={{ width: getColumnWidth(field, colWidths) }} className={field.filterable === false ? 'native-datagrid__filter-cell--noop' : undefined}>
-                        {field.filterable ? (
-                          <FilterCell
-                            field={field}
-                            operator={filterOperators[field.name] ?? getDefaultFilterOperator(field)}
-                            remoteOptions={filterRemoteOptions[field.name] ?? []}
-                            value={filterInputs[field.name] ?? ''}
-                            onInputChange={(nextValue) => {
-                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                              if (nextValue === '') delete nextInputs[field.name];
-                              setFilterInputs(nextInputs);
-                              clearTimeout(filterDebounceRef.current);
-                              filterDebounceRef.current = setTimeout(() => {
-                                setFilters(nextInputs);
-                                setPage(0);
-                                options.onFilterChange?.(nextInputs);
-                              }, 300);
-                            }}
-                            onBetweenInputChange={(start, end) => {
-                              const nextValue = joinBetweenValue(start, end);
-                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                              if (nextValue === '') delete nextInputs[field.name];
-                              applyImmediate(nextInputs);
-                            }}
-                            onSelectChange={(nextValue) => {
-                              const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                              if (nextValue === '') delete nextInputs[field.name];
-                              applyImmediate(nextInputs);
-                            }}
-                            onOperatorChange={(nextOperator) => {
-                              setFilterOperators((prev) => ({ ...prev, [field.name]: nextOperator }));
-                              const currentValue = filterInputs[field.name];
-                              if (currentValue) {
-                                const nextInputs = { ...filterInputs };
-                                if (nextOperator === 'between' && !currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
-                                  nextInputs[field.name] = joinBetweenValue(currentValue, '');
-                                }
-                                if (nextOperator !== 'between' && currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
-                                  nextInputs[field.name] = splitBetweenValue(currentValue).find(Boolean) ?? '';
-                                }
-                                applyImmediate(nextInputs);
+                        <td
+                          key={field.name}
+                          style={{ width: filterCellWidth }}
+                          className={
+                            [
+                              field.filterable === false
+                                ? 'native-datagrid__filter-cell--noop'
+                                : '',
+                              (filterInputs[field.name] ?? '').trim()
+                                ? 'native-datagrid__filter-cell--active'
+                                : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ') || undefined
+                          }
+                        >
+                          {field.filterable ? (
+                            <FilterCell
+                              field={field}
+                              operator={
+                                filterOperators[field.name] ?? getDefaultFilterOperator(field)
                               }
-                            }}
-                            onClear={() => {
-                              const nextInputs = { ...filterInputs };
-                              delete nextInputs[field.name];
-                              applyImmediate(nextInputs);
-                            }}
-                          />
-                        ) : null}
-                      </td>
-                    );
+                              remoteOptions={filterRemoteOptions[field.name] ?? []}
+                              value={filterInputs[field.name] ?? ''}
+                              onInputChange={(nextValue) => {
+                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                                if (nextValue === '') delete nextInputs[field.name];
+                                setFilterInputs(nextInputs);
+                                clearTimeout(filterDebounceRef.current);
+                                filterDebounceRef.current = setTimeout(() => {
+                                  setFilters(nextInputs);
+                                  setPage(0);
+                                  options.onFilterChange?.(nextInputs);
+                                }, 300);
+                              }}
+                              onBetweenInputChange={(start, end) => {
+                                const nextValue = joinBetweenValue(start, end);
+                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                                if (nextValue === '') delete nextInputs[field.name];
+                                applyImmediate(nextInputs);
+                              }}
+                              onSelectChange={(nextValue) => {
+                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
+                                if (nextValue === '') delete nextInputs[field.name];
+                                applyImmediate(nextInputs);
+                              }}
+                              onOperatorChange={(nextOperator) => {
+                                setFilterOperators((prev) => ({
+                                  ...prev,
+                                  [field.name]: nextOperator,
+                                }));
+                                const currentValue = filterInputs[field.name];
+                                if (currentValue) {
+                                  const nextInputs = { ...filterInputs };
+                                  if (
+                                    nextOperator === 'between' &&
+                                    !currentValue.includes(BETWEEN_VALUE_SEPARATOR)
+                                  ) {
+                                    nextInputs[field.name] = joinBetweenValue(currentValue, '');
+                                  }
+                                  if (
+                                    nextOperator !== 'between' &&
+                                    currentValue.includes(BETWEEN_VALUE_SEPARATOR)
+                                  ) {
+                                    nextInputs[field.name] =
+                                      splitBetweenValue(currentValue).find(Boolean) ?? '';
+                                  }
+                                  applyImmediate(nextInputs);
+                                }
+                              }}
+                              onClear={() => {
+                                const nextInputs = { ...filterInputs };
+                                delete nextInputs[field.name];
+                                applyImmediate(nextInputs);
+                              }}
+                            />
+                          ) : null}
+                        </td>
+                      );
                     })}
-                    {hasRowActions && <td className="native-datagrid__filler-cell" />}
                     {hasRowActions && <td className="native-datagrid__actions-cell" />}
                   </tr>
                 )}
@@ -1325,11 +1613,19 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                   Array.from({ length: 7 }, (_, i) => (
                     <tr key={`skeleton-${i}`} className="native-datagrid__skeleton-row">
                       {options.detailFields && <td className="native-datagrid__detail-cell" />}
-                      {hasCheckbox && <td className="native-datagrid__select-cell"><div className="native-datagrid__skeleton-cell" style={{ width: 16, height: 16 }} /></td>}
+                      {hasCheckbox && (
+                        <td className="native-datagrid__select-cell">
+                          <div
+                            className="native-datagrid__skeleton-cell"
+                            style={{ width: 16, height: 16 }}
+                          />
+                        </td>
+                      )}
                       {visibleFields.map((field) => (
-                        <td key={field.name}><div className="native-datagrid__skeleton-cell" /></td>
+                        <td key={field.name}>
+                          <div className="native-datagrid__skeleton-cell" />
+                        </td>
                       ))}
-                      {hasRowActions && <td className="native-datagrid__filler-cell" />}
                       {hasRowActions && <td className="native-datagrid__actions-cell" />}
                     </tr>
                   ))
@@ -1340,6 +1636,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 ) : (
                   rows.map((row, rowIndex) => {
                     const key = row[idField] ?? rowIndex;
+                    const selected = selectedKeys.includes(key);
                     const detailFields =
                       typeof options.detailFields === 'function'
                         ? options.detailFields(row)
@@ -1348,40 +1645,47 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     const expanded = expandedKeys.has(key);
                     const rowActions: ResourceToolbarAction[] = [
                       ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
-                        ? [{
-                            text: t('grid.buttonEdit'),
-                            icon: 'ph-pencil-simple',
-                            disabled: options.editDisabled,
-                            onClick: () => {
-                              if (options.onEdit) options.onEdit(row);
-                              else emit(options.events!.EDIT!, { row });
+                        ? [
+                            {
+                              text: t('grid.buttonEdit'),
+                              icon: 'ph-pencil-simple',
+                              disabled: options.editDisabled,
+                              onClick: () => {
+                                if (options.onEdit) options.onEdit(row);
+                                else emit(options.events!.EDIT!, { row });
+                              },
                             },
-                          }]
+                          ]
                         : []),
                       ...(options.allowView && options.onView
-                        ? [{
-                            text: t('grid.buttonView'),
-                            icon: 'ph-eye',
-                            onClick: () => options.onView!(row),
-                          }]
+                        ? [
+                            {
+                              text: t('grid.buttonView'),
+                              icon: 'ph-eye',
+                              onClick: () => options.onView!(row),
+                            },
+                          ]
                         : []),
                       ...getResolvedRowActions(row, options.rowActions),
                       ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
-                        ? [{
-                            text: t('grid.buttonDelete'),
-                            icon: 'ph-trash',
-                            type: 'danger',
-                            disabled: options.deleteDisabled,
-                            onClick: () => setConfirmRow(row),
-                          }]
+                        ? [
+                            {
+                              text: t('grid.buttonDelete'),
+                              icon: 'ph-trash',
+                              type: 'danger',
+                              disabled: options.deleteDisabled,
+                              onClick: () => setConfirmRow(row),
+                            },
+                          ]
                         : []),
                     ];
 
                     return (
                       <React.Fragment key={String(key)}>
                         <tr
-                          className={`native-datagrid__row ${expanded ? 'native-datagrid__row--expanded' : ''} ${selectedKeys.includes(key) ? 'native-datagrid__row--selected' : ''}`}
+                          className={`native-datagrid__row ${expanded ? 'native-datagrid__row--expanded' : ''} ${selected ? 'native-datagrid__row--selected' : ''}`}
                           tabIndex={0}
+                          aria-selected={selected}
                           onClick={() => selectRow(row)}
                           onDoubleClick={() => {
                             if (options.allowEdit && (options.onEdit || options.events?.EDIT)) {
@@ -1394,20 +1698,37 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             }
                           }}
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' && options.allowEdit && (options.onEdit || options.events?.EDIT)) {
+                            if (
+                              event.key === 'Enter' &&
+                              options.allowEdit &&
+                              (options.onEdit || options.events?.EDIT)
+                            ) {
                               if (options.onEdit) options.onEdit(row);
                               else emit(options.events!.EDIT!, { row });
-                            } else if (event.key === 'Enter' && options.allowView && options.onView) {
+                            } else if (
+                              event.key === 'Enter' &&
+                              options.allowView &&
+                              options.onView
+                            ) {
                               options.onView(row);
-                            } else if (event.key === 'Delete' && options.allowDelete && (options.onDelete || options.events?.DELETE)) {
+                            } else if (
+                              event.key === 'Delete' &&
+                              options.allowDelete &&
+                              (options.onDelete || options.events?.DELETE)
+                            ) {
                               setConfirmRow(row);
                             } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                               event.preventDefault();
-                              const allRows = event.currentTarget.closest('tbody')?.querySelectorAll<HTMLTableRowElement>('tr.native-datagrid__row');
+                              const allRows = event.currentTarget
+                                .closest('tbody')
+                                ?.querySelectorAll<HTMLTableRowElement>('tr.native-datagrid__row');
                               if (!allRows) return;
                               const idx = Array.from(allRows).indexOf(event.currentTarget);
                               const next = allRows[event.key === 'ArrowUp' ? idx - 1 : idx + 1];
-                              if (next) { next.focus(); selectRow(rows[event.key === 'ArrowUp' ? idx - 1 : idx + 1]); }
+                              if (next) {
+                                next.focus();
+                                selectRow(rows[event.key === 'ArrowUp' ? idx - 1 : idx + 1]);
+                              }
                             }
                           }}
                         >
@@ -1417,7 +1738,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                 <button
                                   type="button"
                                   className={`native-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
-                                  aria-label={expanded ? 'Contraer detalle' : 'Expandir detalle'}
+                                  aria-label={
+                                    expanded ? t('grid.collapseDetail') : t('grid.expandDetail')
+                                  }
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     setExpandedKeys((current) => {
@@ -1428,7 +1751,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                     });
                                   }}
                                 >
-                                  <i className={`ph ${expanded ? 'ph-caret-down' : 'ph-caret-right'}`} aria-hidden="true" />
+                                  <i
+                                    className={`ph ${expanded ? 'ph-caret-down' : 'ph-caret-right'}`}
+                                    aria-hidden="true"
+                                  />
                                 </button>
                               )}
                             </td>
@@ -1437,37 +1763,61 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             <td className="native-datagrid__select-cell">
                               <input
                                 type="checkbox"
-                                checked={selectedKeys.includes(key)}
+                                checked={selected}
                                 readOnly
-                                aria-label="Seleccionar fila"
+                                aria-label={t('grid.selectRow')}
                               />
                             </td>
                           )}
                           {visibleFields.map((field, columnIndex) => {
-                            const width = getColumnWidth(field, colWidths);
+                            const width = getColumnWidth(field, resolvedColWidths);
                             return (
-                              <td key={field.name} style={{ width, textAlign: field.align }} title={getCellText(field, row, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}>
-                                {renderCell(field, row, rowIndex, columnIndex, filterRemoteOptions[field.name], t('common.yes'), t('common.no'))}
+                              <td
+                                key={field.name}
+                                style={{ width, textAlign: field.align }}
+                                title={getCellText(
+                                  field,
+                                  row,
+                                  filterRemoteOptions[field.name],
+                                  t('common.yes'),
+                                  t('common.no'),
+                                )}
+                              >
+                                {renderCell(
+                                  field,
+                                  row,
+                                  rowIndex,
+                                  columnIndex,
+                                  filterRemoteOptions[field.name],
+                                  t('common.yes'),
+                                  t('common.no'),
+                                )}
                               </td>
                             );
                           })}
-                           {hasRowActions && <td className="native-datagrid__filler-cell" />}
-                           {hasRowActions && (
-                             <td className="native-datagrid__actions-cell" onClick={(e) => e.stopPropagation()}>
-                               <div className="native-datagrid__row-actions">
-                                 {rowActions.length > 0 && (
-                                    <IconButton
-                                      icon="ph ph-dots-three-vertical"
-                                      label={t('grid.buttonActions')}
-                                      onClick={(e) => {
-                                       e.stopPropagation();
-                                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                       const rowKey = key;
+                          {hasRowActions && (
+                            <td
+                              className="native-datagrid__actions-cell"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="native-datagrid__row-actions">
+                                {rowActions.length > 0 && (
+                                  <IconButton
+                                    icon="ph ph-dots-three-vertical"
+                                    label={t('grid.buttonActions')}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const rect = (
+                                        e.currentTarget as HTMLElement
+                                      ).getBoundingClientRect();
+                                      const rowKey = key;
 
-                                        // Resolve actions at click time (avoids fragile re-lookup later)
-                                        const actionsAtOpen: ResourceToolbarAction[] = [
-                                          ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
-                                            ? [{
+                                      // Resolve actions at click time (avoids fragile re-lookup later)
+                                      const actionsAtOpen: ResourceToolbarAction[] = [
+                                        ...(options.allowEdit &&
+                                        (options.onEdit || options.events?.EDIT)
+                                          ? [
+                                              {
                                                 text: t('grid.buttonEdit'),
                                                 icon: 'ph-pencil-simple',
                                                 disabled: options.editDisabled,
@@ -1475,38 +1825,46 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                                   if (options.onEdit) options.onEdit(row);
                                                   else emit(options.events!.EDIT!, { row });
                                                 },
-                                             }]
-                                            : []),
-                                          ...(options.allowView && options.onView
-                                            ? [{
+                                              },
+                                            ]
+                                          : []),
+                                        ...(options.allowView && options.onView
+                                          ? [
+                                              {
                                                 text: t('grid.buttonView'),
                                                 icon: 'ph-eye',
                                                 onClick: () => options.onView!(row),
-                                              }]
-                                            : []),
-                                          ...getResolvedRowActions(row, options.rowActions),
-                                          ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
-                                            ? [{
+                                              },
+                                            ]
+                                          : []),
+                                        ...getResolvedRowActions(row, options.rowActions),
+                                        ...(options.allowDelete &&
+                                        (options.onDelete || options.events?.DELETE)
+                                          ? [
+                                              {
                                                 text: t('grid.buttonDelete'),
                                                 icon: 'ph-trash',
                                                 type: 'danger' as const,
                                                 disabled: options.deleteDisabled,
                                                 onClick: () => setConfirmRow(row),
-                                              }]
-                                            : []),
-                                       ].filter((a) => isToolbarActionVisible(a, toolbarPermissions));
+                                              },
+                                            ]
+                                          : []),
+                                      ].filter((a) =>
+                                        isToolbarActionVisible(a, toolbarPermissions),
+                                      );
 
-                                       setOpenRowMenu((current) =>
-                                         current && current.key === rowKey
-                                           ? null
-                                           : { key: rowKey, rect, actions: actionsAtOpen }
-                                       );
-                                      }}
-                                    />
-                                 )}
-                               </div>
-                             </td>
-                           )}
+                                      setOpenRowMenu((current) =>
+                                        current && current.key === rowKey
+                                          ? null
+                                          : { key: rowKey, rect, actions: actionsAtOpen },
+                                      );
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </td>
+                          )}
                         </tr>
                         {expanded && detailUrl && detailFields && (
                           <tr className="native-datagrid__detail-row">
@@ -1528,7 +1886,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 rows={rows}
                 summaryFields={options.summaryFields}
                 footerRef={tfootRef}
-                colWidths={colWidths}
+                colWidths={resolvedColWidths}
               />
             </table>
             {rows.length === 0 && !isGridLoading && (
@@ -1548,19 +1906,39 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           </div>
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">
-              <span className="native-datagrid__pager-info">
-                {totalCount > 0 ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} de ${totalCount}` : '0 registros'}
-              </span>
+              <div className="native-datagrid__pager-status" aria-live="polite">
+                <span className="native-datagrid__pager-info">{recordRangeLabel}</span>
+                {selectedCountLabel && (
+                  <span className="native-datagrid__pager-selected">{selectedCountLabel}</span>
+                )}
+                {pageStatusLabel && (
+                  <span className="native-datagrid__pager-page-status">{pageStatusLabel}</span>
+                )}
+              </div>
               <div className="native-datagrid__pager-nav">
-                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage(0)} disabled={page === 0} aria-label="Primera página">
+                <button
+                  type="button"
+                  className="native-datagrid__pager-btn"
+                  onClick={() => setPage(0)}
+                  disabled={page === 0}
+                  aria-label={t('grid.firstPage')}
+                >
                   <i className="ph ph-caret-double-left" aria-hidden="true" />
                 </button>
-                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Página anterior">
+                <button
+                  type="button"
+                  className="native-datagrid__pager-btn"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  aria-label={t('grid.previousPage')}
+                >
                   <i className="ph ph-caret-left" aria-hidden="true" />
                 </button>
                 {getPageRange(page, totalPages).map((pageNum, i) =>
                   pageNum === null ? (
-                    <span key={`ellipsis-${i}`} className="native-datagrid__pager-ellipsis">…</span>
+                    <span key={`ellipsis-${i}`} className="native-datagrid__pager-ellipsis">
+                      …
+                    </span>
                   ) : (
                     <button
                       key={pageNum}
@@ -1571,17 +1949,36 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     >
                       {pageNum + 1}
                     </button>
-                  )
+                  ),
                 )}
-                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page + 1 >= totalPages} aria-label="Página siguiente">
+                <button
+                  type="button"
+                  className="native-datagrid__pager-btn"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page + 1 >= totalPages}
+                  aria-label={t('grid.nextPage')}
+                >
                   <i className="ph ph-caret-right" aria-hidden="true" />
                 </button>
-                <button type="button" className="native-datagrid__pager-btn" onClick={() => setPage(totalPages - 1)} disabled={page + 1 >= totalPages} aria-label="Última página">
+                <button
+                  type="button"
+                  className="native-datagrid__pager-btn"
+                  onClick={() => setPage(totalPages - 1)}
+                  disabled={page + 1 >= totalPages}
+                  aria-label={t('grid.lastPage')}
+                >
                   <i className="ph ph-caret-double-right" aria-hidden="true" />
                 </button>
               </div>
-              <div className="native-datagrid__pager-size" role="group" aria-labelledby="native-datagrid-page-size-label">
-                <span className="native-datagrid__pager-size-label" id="native-datagrid-page-size-label">
+              <div
+                className="native-datagrid__pager-size"
+                role="group"
+                aria-labelledby="native-datagrid-page-size-label"
+              >
+                <span
+                  className="native-datagrid__pager-size-label"
+                  id="native-datagrid-page-size-label"
+                >
                   {t('grid.rowsPerPage')}
                 </span>
                 <AppDropdown
@@ -1608,32 +2005,36 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             onCancel={() => setConfirmRow(null)}
             onConfirm={confirmDelete}
           />
-           {isGridLoading && rows.length > 0 && (
-             <div className="native-datagrid__loading-overlay" aria-live="polite">
-               <div className="native-datagrid__loading-card">{loadingMessage || t('grid.loading')}</div>
-             </div>
-           )}
+          {isGridLoading && rows.length > 0 && (
+            <div className="native-datagrid__loading-overlay" aria-live="polite">
+              <div className="native-datagrid__loading-card">
+                {loadingMessage || t('grid.loading')}
+              </div>
+            </div>
+          )}
 
-            {openRowMenu && createPortal(
+          {openRowMenu &&
+            createPortal(
               <div
                 className="native-datagrid__row-actions-popover"
                 role="menu"
-                 style={{
-                   position: 'fixed',
-                   // Anchor the right edge of the menu to the right edge of the ⋮ button.
-                   // This makes the menu open to the left, which is what we want when the
-                   // actions column is the last column on the right of a wide table.
-                   right: `${Math.max(0, window.innerWidth - openRowMenu.rect.right + 4)}px`,
-                   top: (() => {
-                     const menuHeightEstimate = 180;
-                     const wouldOverflowBottom = openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight;
-                     if (wouldOverflowBottom) {
-                       return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
-                     }
-                     return `${openRowMenu.rect.bottom + 4}px`;
-                   })(),
-                   zIndex: 9999,
-                 }}
+                style={{
+                  position: 'fixed',
+                  // Anchor the right edge of the menu to the right edge of the ⋮ button.
+                  // This makes the menu open to the left, which is what we want when the
+                  // actions column is the last column on the right of a wide table.
+                  right: `${Math.max(0, window.innerWidth - openRowMenu.rect.right + 4)}px`,
+                  top: (() => {
+                    const menuHeightEstimate = 180;
+                    const wouldOverflowBottom =
+                      openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight;
+                    if (wouldOverflowBottom) {
+                      return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
+                    }
+                    return `${openRowMenu.rect.bottom + 4}px`;
+                  })(),
+                  zIndex: 'var(--z-popover)',
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
                 {(() => {
@@ -1649,20 +2050,25 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       {danger.length > 0 && (
                         <div className="native-datagrid__actions-danger-group">
                           {danger.map((action, idx) =>
-                            renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
+                            renderRowActionItem(
+                              action,
+                              idx,
+                              toolbarPermissions,
+                              closeCurrentRowMenu,
+                            ),
                           )}
                         </div>
                       )}
-                   </>
-                 );
-               })()}
-             </div>,
-             document.body
-           )}
-         </div>
-       </div>
-     </div>
-   );
- });
+                    </>
+                  );
+                })()}
+              </div>,
+              document.body,
+            )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 NativeDataGridView.displayName = 'NativeDataGridView';

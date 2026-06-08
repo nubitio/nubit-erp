@@ -96,7 +96,14 @@
 }
 
 .app-dropdown__menu--compact {
+  max-width: min(280px, 80vw);
   min-width: 72px;
+}
+
+.app-dropdown__menu--compact .app-dropdown__option {
+  font-size: var(--font-size-xs);
+  min-height: 30px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .app-dropdown__value {
@@ -120,7 +127,7 @@
   list-style: none;
   max-height: 280px;
   max-width: min(360px, 80vw);
-  min-width: 100%;
+  min-width: 0;
   overflow: auto;
   padding: var(--space-1);
   /* position/top/left/z-index come from inline styles set by the portal */
@@ -153,6 +160,27 @@
     color: var(--accent-color);
     font-weight: var(--font-weight-semibold);
   }
+}
+
+.app-dropdown__option-content {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.app-dropdown__option-icon {
+  color: var(--text-tertiary);
+  flex: 0 0 28px;
+  font-family: var(--font-family-sans);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  text-align: center;
+}
+
+.app-dropdown__option--active .app-dropdown__option-icon {
+  color: var(--accent-color);
 }
 
 @media (max-width: 720px) {
