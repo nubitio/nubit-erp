@@ -45,26 +45,26 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   events: customerEvents,
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerWidth: 720 },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: customerFormLayout,
   fieldContract: defineFields<CustomerRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'businessName', patch: { order: 1, width: 260, label: 'Razón social' } },
+      { kind: 'override', key: 'businessName', patch: { order: 1, layoutHint: 'fullWidth', label: 'Razón social' } },
       {
         kind: 'override',
         key: 'fiscalAddress',
-        patch: { order: 2, type: FieldType.TEXTAREA, col: 12, label: 'Domicilio fiscal' },
+        patch: { order: 2, type: FieldType.TEXTAREA, layoutHint: 'long', label: 'Domicilio fiscal' },
       },
-      { kind: 'override', key: 'phone', patch: { order: 3, width: 160, label: 'Teléfono' } },
-      { kind: 'override', key: 'email', patch: { order: 4, width: 220, label: 'Correo' } },
+      { kind: 'override', key: 'phone', patch: { order: 3, layoutHint: 'short', label: 'Teléfono' } },
+      { kind: 'override', key: 'email', patch: { order: 4, layoutHint: 'short', label: 'Correo' } },
       {
         kind: 'override',
         key: 'ruc',
         patch: {
           order: 0,
-          width: 140,
+          layoutHint: 'identity',
           label: 'RUC/DNI',
           maxLength: 11,
           validators: [
@@ -139,6 +139,7 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
           url: API + 'price-lists',
           valueField: '_iri',
           textField: 'name',
+          layoutHint: 'lookup',
           label: 'Tarifa',
         },
       },

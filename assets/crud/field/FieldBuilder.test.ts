@@ -32,7 +32,7 @@ describe('FieldBuilder', () => {
     expect(field.visibleOnForm).toBe(true);
     expect(field.sortable).toBe(true);
     expect(field.filterable).toBe(true);
-    expect(field.col).toBe(12);
+    expect(field.col).toBeUndefined();
   });
 
   it('chains fluent setters without mutating previous instances', () => {

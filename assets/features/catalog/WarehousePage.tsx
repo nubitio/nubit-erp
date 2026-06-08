@@ -4,7 +4,7 @@ import { warehouseEndpoints } from './api/catalogEndpoints';
 const resource = defineResource(warehouseEndpoints.list(), {
   id: 'warehouse',
   title: 'Almacenes',
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin almacenes',
     description: 'Crea un almacén para gestionar existencias por local.',

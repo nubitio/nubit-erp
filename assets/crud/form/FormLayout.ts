@@ -9,6 +9,8 @@ export interface FormSection {
   fields: string[];
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  /** When true (default), trailing half-column orphans expand to full width. */
+  avoidOrphanFields?: boolean;
 }
 
 export type FormLayout =

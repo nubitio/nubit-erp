@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Button, IconButton } from '@nubit/ui';
 import { useCoreTranslation } from '@nubit/core';
 import type { CrudFormShellProps } from './CrudFormShellProps';
+import { DEFAULT_DRAWER_WIDTH } from './drawerSizes';
 import './CrudDrawerShell.scss';
 
 const formatSize = (value?: number | string) => {
@@ -13,7 +14,7 @@ const formatSize = (value?: number | string) => {
 /**
  * Drawer form shell — slides in from the side and leaves the grid visible.
  *
- * - Default: right-side panel `min(720px, 60vw)` wide.
+ * - Default: right-side panel `min(880px, 60vw)` wide.
  * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
  * - Escape closes the drawer; nested lookup dialogs float above via z-index.
  */
@@ -24,7 +25,7 @@ export const CrudDrawerShell: React.FC<CrudFormShellProps> = ({
   onClose,
   onCancel,
   onSave,
-  drawerWidth = 'min(720px, 60vw)',
+  drawerWidth = DEFAULT_DRAWER_WIDTH,
   drawerSide = 'right',
   children,
 }) => {

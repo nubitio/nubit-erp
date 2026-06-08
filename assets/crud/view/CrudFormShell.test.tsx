@@ -46,7 +46,7 @@ describe('resolveViewMode', () => {
   it('returns the dialog defaults when viewMode is undefined', () => {
     expect(resolveViewMode(undefined)).toEqual({
       mode: 'dialog',
-      drawerWidth: 'min(720px, 60vw)',
+      drawerWidth: 'min(880px, 60vw)',
       drawerSide: 'right',
     });
   });
@@ -60,7 +60,7 @@ describe('resolveViewMode', () => {
   it('keeps default drawer dimensions for shorthand drawer', () => {
     expect(resolveViewMode('drawer')).toEqual({
       mode: 'drawer',
-      drawerWidth: 'min(720px, 60vw)',
+      drawerWidth: 'min(880px, 60vw)',
       drawerSide: 'right',
     });
   });
@@ -70,6 +70,24 @@ describe('resolveViewMode', () => {
       mode: 'drawer',
       drawerWidth: 480,
       drawerSide: 'left',
+    });
+  });
+
+  it('resolves drawerSize tokens to pixel widths', () => {
+    expect(resolveViewMode({ mode: 'drawer', drawerSize: 'md' })).toEqual({
+      mode: 'drawer',
+      drawerWidth: 640,
+      drawerSide: 'right',
+      drawerSize: 'md',
+    });
+  });
+
+  it('prefers explicit drawerWidth over drawerSize', () => {
+    expect(resolveViewMode({ mode: 'drawer', drawerSize: 'md', drawerWidth: 880 })).toEqual({
+      mode: 'drawer',
+      drawerWidth: 880,
+      drawerSide: 'right',
+      drawerSize: 'md',
     });
   });
 });

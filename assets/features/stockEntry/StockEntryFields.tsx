@@ -76,6 +76,7 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
       entityField(API + 'warehouses', 'id', 'name')
         .name('targetWarehouse')
         .label('Almacén destino')
+        .filters([{ field: 'branch', operator: '=', value: branchId }])
         .required(true)
         .build(),
     );

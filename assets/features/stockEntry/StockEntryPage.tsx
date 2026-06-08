@@ -41,7 +41,8 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
     formDetail: { url: detailUrl, fields: detailFields },
     events,
     sort:      [{ selector: 'createdAt', desc: true }],
-    viewMode:  { mode: 'drawer', drawerWidth: 960 },
+    viewMode: 'page',
+    routing: { routeParam: 'id' },
     defaultPreset: 'basic',
     columnPresets: [
       {
@@ -60,6 +61,7 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
       canEdit:   false,  // stock entries are immutable
       canDelete: false,
     },
+    mercure: false,
   });
 
   return <SmartCrudPage resource={resource} />;

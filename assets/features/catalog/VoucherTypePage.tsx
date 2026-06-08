@@ -4,7 +4,7 @@ import { voucherTypeEndpoints } from './api/catalogEndpoints';
 const resource = defineResource(voucherTypeEndpoints.list(), {
   id: 'voucherType',
   title: 'Tipos de comprobante',
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin tipos de comprobante',
     description: 'Registra los tipos de documento que emite tu empresa.',

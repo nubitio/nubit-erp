@@ -10,6 +10,7 @@ import type { ColumnPreset } from './ColumnPreset';
 import type { AuditTrailConfig } from './AuditTrail';
 import type { SmartCrudFieldContract } from './fieldContract';
 import type { BackendAdapter } from '../adapter/BackendAdapter';
+import type { CrudDrawerSize } from '../view/drawerSizes';
 
 /**
  * URL-based deep-linking and filter sync configuration for SmartCrudPage.
@@ -111,7 +112,12 @@ export type CrudViewMode = 'dialog' | 'drawer' | 'page';
 
 export interface CrudViewModeConfig {
   mode: CrudViewMode;
-  /** Drawer width. Default: `min(720px, 60vw)`. */
+  /**
+   * Drawer size token — maps to a library width preset (`sm` 480, `md` 640,
+   * `lg` 880, `xl` 1120). Ignored when `drawerWidth` is set.
+   */
+  drawerSize?: CrudDrawerSize;
+  /** Explicit drawer width override. Takes priority over `drawerSize`. */
   drawerWidth?: number | string;
   /** Side the drawer slides in from. Default: `'right'`. */
   drawerSide?: 'right' | 'left';
@@ -181,7 +187,7 @@ export interface ResourceConfig<T extends DataRecord = DataRecord> {
    *
    * Examples:
    *   viewMode: 'drawer'
-   *   viewMode: { mode: 'drawer', drawerWidth: 880 }
+   *   viewMode: { mode: 'drawer', drawerSize: 'lg' }
    *   viewMode: 'page'
    */
   viewMode?: CrudViewMode | CrudViewModeConfig;

@@ -68,7 +68,8 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
   fields,
   defaultPreset: 'basic',
   columnPresets: INVOICE_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerWidth: 960 },
+  viewMode: 'page',
+  routing: { routeParam: 'id' },
   formLayout: INVOICE_FORM_LAYOUT,
   emptyState: {
     title: 'Sin comprobantes',

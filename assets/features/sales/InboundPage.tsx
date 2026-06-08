@@ -21,7 +21,8 @@ export const PurchasesPage = () => {
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: { url: detailUrl, fields: detailFields },
       sort: [{ selector: 'createdAt', desc: true }],
-      viewMode: { mode: 'drawer', drawerWidth: 960 },
+      viewMode: 'page',
+      routing: { routeParam: 'id' },
       columnPresets: [
         {
           key: 'basic',

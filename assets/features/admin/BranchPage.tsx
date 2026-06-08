@@ -1,5 +1,13 @@
-import { SmartCrudPage, defineResource } from '@nubit/crud';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
 import { branchEndpoints } from './api/adminEndpoints';
+
+interface BranchRecord extends DataRecord {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  company: unknown;
+}
 
 const BRANCH_COLUMN_PRESETS = [
   {
@@ -15,28 +23,36 @@ const BRANCH_COLUMN_PRESETS = [
 ];
 
 const BRANCH_FORM_LAYOUT = {
-  type: 'tabs' as const,
-  tabs: [
+  type: 'sections' as const,
+  sections: [
     {
       label: 'General',
-      icon: 'ph-storefront',
       fields: ['name', 'address', 'phone'],
     },
     {
       label: 'Empresa',
-      icon: 'ph-buildings',
       fields: ['company'],
     },
   ],
 };
 
-const resource = defineResource(branchEndpoints.list(), {
+const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
   id: 'branch',
   title: 'Locales',
-  viewMode: { mode: 'drawer', drawerWidth: 640 },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   defaultPreset: 'basic',
   columnPresets: BRANCH_COLUMN_PRESETS,
   formLayout: BRANCH_FORM_LAYOUT,
+  fieldContract: defineFields<BranchRecord>({
+    source: 'hydra',
+    strategy: 'augment',
+    directives: [
+      { kind: 'override', key: 'name', patch: { order: 0, col: 8, label: 'Nombre' } },
+      { kind: 'override', key: 'phone', patch: { order: 1, col: 4, label: 'Teléfono' } },
+      { kind: 'override', key: 'address', patch: { order: 2, col: 12, label: 'Dirección' } },
+      { kind: 'override', key: 'company', patch: { order: 3, col: 6, label: 'Empresa' } },
+    ],
+  }),
 });
 
 export const BranchPage = () => <SmartCrudPage resource={resource} />;

@@ -54,6 +54,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       ])
       .required(true)
       .sortable(true)
+      .layoutHint('identity')
       .buttons([
         {
           name: 'search',
@@ -91,13 +92,14 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    textareaField().name('businessName').label('Cliente').required(true).sortable(true).build(),
+    textareaField().name('businessName').label('Razón social').layoutHint('fullWidth').required(true).sortable(true).build(),
   );
-  fields.push(textareaField().name('fiscalAddress').label('Domicilio').build());
+  fields.push(textareaField().name('fiscalAddress').label('Domicilio').layoutHint('long').build());
   fields.push(
     textField()
       .name('phone')
       .label('Teléfono')
+      .layoutHint('short')
       .validators([
         {
           type: 'pattern',
@@ -113,6 +115,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
     textField()
       .name('email')
       .label('Email')
+      .layoutHint('short')
       .validators([
         {
           type: 'email',
@@ -125,6 +128,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
     entityField(API + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')
+      .layoutHint('lookup')
       .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .valueType('number')
       .build(),

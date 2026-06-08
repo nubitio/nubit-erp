@@ -2,6 +2,7 @@ import { FieldType } from './FieldType';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, GridOnChangeFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
+import type { FormLayoutHint } from '../form/resolveFieldColSpan';
 import React from 'react';
 import type { DataRecord } from '@nubit/core';
 
@@ -81,6 +82,18 @@ export interface Field {
   sendAsString: boolean;
   /** Column display order hint set via `x-crud.order` from Hydra metadata. */
   order?: number;
+
+  /** Optional visual layout hint for auto column resolution. */
+  layoutHint?: FormLayoutHint;
+
+  /** Preferred grid span when auto layout is active. */
+  preferredColSpan?: 6 | 12;
+
+  /** Minimum grid span when auto layout is active. */
+  minColSpan?: 6 | 12;
+
+  /** Forces full-width layout regardless of heuristics (explicit `col` still wins). */
+  forceFullWidth?: boolean;
 
   // ---------------------------------------------------------------------------
   // Declarative rules (SLICE-006) — all optional, do NOT break existing fields

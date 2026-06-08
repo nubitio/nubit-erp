@@ -84,7 +84,8 @@ export const CreditNotePage = () => {
         fields,
         defaultPreset: 'basic',
         columnPresets: CREDIT_NOTE_COLUMN_PRESETS,
-        viewMode: { mode: 'drawer', drawerWidth: 1200 },
+        viewMode: 'page',
+        routing: { routeParam: 'id' },
         formLayout: {
           type: 'tabs',
           tabs: [

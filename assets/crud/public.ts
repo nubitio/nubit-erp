@@ -93,6 +93,8 @@ export { DataGridView, DATA_GRID_EVENTS } from './datagrid/DataGridView';
 export { DialogView } from './dialog/DialogView';
 export { DrawerView } from './view/DrawerView';
 export type { CrudDrawerViewEvents, CrudDrawerViewOptions } from './view/CrudDrawerView';
+export { PageView } from './view/PageView';
+export type { CrudPageViewEvents, CrudPageViewOptions } from './view/CrudPageView';
 export { FormView, FORM_EVENTS } from './form/FormView';
 export {
   CrudFormShell,
@@ -102,7 +104,15 @@ export {
   resolveViewMode,
 } from './view';
 export type { CrudFormShellProps } from './view';
-export type { ResolvedViewMode } from './view';
+export type { ResolvedViewMode, CrudDrawerSize } from './view';
+export {
+  DRAWER_WIDTHS,
+  DEFAULT_DRAWER_SIZE,
+  DEFAULT_DRAWER_WIDTH,
+  resolveDrawerWidth,
+  resolveDrawerLayoutBucket,
+  parseDrawerWidthPx,
+} from './view';
 export type { CrudViewMode, CrudViewModeConfig } from './crud/ResourceConfig';
 export { ToolbarSelect } from './crud/ToolbarSelect';
 export type { ToolbarSelectOption, ToolbarSelectProps } from './crud/ToolbarSelect';
@@ -114,6 +124,22 @@ export type { ColumnPresetState } from './crud/useColumnPreset';
 // ── Handles & options ─────────────────────────────────────────────────────────
 export type { FormHandle } from './form/FormHandle';
 export type { FormViewOptions } from './form/FormViewOptions';
+export {
+  buildFieldColSpanContext,
+  isLongTextField,
+  isShortField,
+  resolveDrawerSize,
+  resolveFieldColSpan,
+  resolveFieldsColSpans,
+} from './form/resolveFieldColSpan';
+export type {
+  ColSpan,
+  DrawerSize,
+  FieldColSpanContext,
+  FormLayoutHint,
+  FormPresentationContext,
+  FormPresentationMode,
+} from './form/resolveFieldColSpan';
 export type { GridHandle } from './datagrid/GridHandle';
 export type {
   DataGridSelectionChangedEvent,

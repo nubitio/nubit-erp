@@ -76,16 +76,14 @@ const CASH_MOVEMENT_CATEGORY_COLUMN_PRESETS = [
 ];
 
 const CASH_MOVEMENT_CATEGORY_FORM_LAYOUT = {
-  type: 'tabs' as const,
-  tabs: [
+  type: 'sections' as const,
+  sections: [
     {
       label: 'General',
-      icon: 'ph-tag',
       fields: ['code', 'name', 'type'],
     },
     {
       label: 'Estado',
-      icon: 'ph-toggle-right',
       fields: ['system', 'active'],
     },
   ],
@@ -94,7 +92,7 @@ const CASH_MOVEMENT_CATEGORY_FORM_LAYOUT = {
 const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement-categories', {
   id: 'cash-movement-categories',
   title: 'Categorías de caja',
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   defaultPreset: 'basic',
   columnPresets: CASH_MOVEMENT_CATEGORY_COLUMN_PRESETS,
   formLayout: CASH_MOVEMENT_CATEGORY_FORM_LAYOUT,
@@ -107,9 +105,11 @@ const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'type', patch: typePatch },
-      { kind: 'override', key: 'system', patch: booleanSwitchPatch('system', 'Sistema') },
-      { kind: 'override', key: 'active', patch: booleanSwitchPatch('active', 'Activo') },
+      { kind: 'override', key: 'code', patch: { order: 0, col: 4, label: 'Código' } },
+      { kind: 'override', key: 'name', patch: { order: 1, col: 8, label: 'Nombre' } },
+      { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, col: 6 } },
+      { kind: 'override', key: 'system', patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, col: 6 } },
+      { kind: 'override', key: 'active', patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, col: 6 } },
     ],
   }),
 });

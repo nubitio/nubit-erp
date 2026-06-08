@@ -17,6 +17,12 @@
   flex-direction: column;
   gap: var(--space-3);
   min-height: 0;
+  padding: 20px 24px;
+}
+
+.native-form:has(> .native-form__tabs),
+.native-form--with-detail {
+  padding: 0;
 }
 
 .native-form--with-detail {
@@ -56,7 +62,7 @@
 
 .native-form__grid {
   display: grid;
-  gap: 10px 12px;
+  gap: 16px 18px;
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
@@ -65,6 +71,7 @@
   flex-direction: column;
   gap: var(--space-1);
   grid-column: span var(--native-form-col, 12);
+  min-width: 0;
 }
 
 // ── Labels ─────────────────────────────────────────────────────────────────────
@@ -73,9 +80,16 @@
 
 .native-form__label {
   color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.01em;
+  margin-bottom: 6px;
+}
+
+.native-form__hint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .native-form__label--required::after {
@@ -313,7 +327,7 @@
 // ── Textarea ───────────────────────────────────────────────────────────────────
 
 .native-form__textarea {
-  min-height: 72px;
+  min-height: 92px;
   resize: vertical;
 }
 
@@ -431,7 +445,23 @@
 // ── Section / tabs / detail panels ────────────────────────────────────────────
 // Bordered containers that group related fields. Tabs variant adds a nav row.
 
-.native-form__section,
+.native-form__section {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: visible;
+  padding: 18px 0 22px;
+}
+
+.native-form__section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .native-form__detail {
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
@@ -441,10 +471,6 @@
   min-height: 240px;
   overflow: hidden;
   padding: 0;
-}
-
-.native-form__section {
-  height: 100%;
 }
 
 .native-form__tabs {
@@ -467,7 +493,13 @@
   width: 100%;
 }
 
-.native-form__section-title,
+.native-form__section-title {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
 .native-form__detail-title {
   color: var(--text-primary);
   font-size: var(--font-size-sm);
@@ -864,13 +896,17 @@
 
 // ── Responsive ────────────────────────────────────────────────────────────────
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  .native-form {
+    padding: 16px;
+  }
+
   .native-form__master-detail {
     grid-template-columns: 1fr;
   }
 
   .native-form__field {
-    grid-column: span 12;
+    grid-column: span 12 !important;
   }
 }
 

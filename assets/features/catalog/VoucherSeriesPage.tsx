@@ -12,7 +12,7 @@ interface VoucherSeriesRecord extends DataRecord {
 const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
   id: 'voucherSeries',
   title: 'Series de comprobante',
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin series de comprobante',
     description: 'Configura series por tipo de documento para facturación.',

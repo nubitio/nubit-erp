@@ -1,4 +1,5 @@
 import type { FormLayout } from './FormLayout';
+import type { FormPresentationContext } from './resolveFieldColSpan';
 import type { FormEventNames } from '@nubit/core';
 import type { Field } from '../field/Field';
 import type { FormDataChangedHandler, FormDataRecord, FormDataSnapshot } from './FormDataSnapshot';
@@ -39,6 +40,8 @@ export interface FormViewOptions {
   onLoadingChange?: (loading: boolean) => void;
   /** Optional layout descriptor for tabs or collapsible sections. */
   formLayout?: FormLayout;
+  /** Presentation context used by auto column-span resolution. */
+  presentationContext?: FormPresentationContext;
   /** Called whenever any form field value changes with a full form data snapshot. */
   onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */

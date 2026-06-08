@@ -1,6 +1,7 @@
 import React from 'react';
 import { FieldType } from './FieldType';
 import { Field, FieldButton, LoadOption } from './Field';
+import type { FormLayoutHint } from '../form/resolveFieldColSpan';
 import { FilterRule } from './FilterRule';
 import { ValidationRule } from './ValidationRule';
 import { FormatterFn, GridCellContext, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
@@ -13,7 +14,7 @@ export class FieldBuilder<TRecord extends DataRecord = DataRecord> {
     this._field = {
       isIdentity: false,
       type: FieldType.TEXT,
-      col: 12,
+      col: undefined,
       name: '',
       label: '',
       width: undefined,
@@ -73,6 +74,26 @@ export class FieldBuilder<TRecord extends DataRecord = DataRecord> {
 
   col(col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12): FieldBuilder {
     this._field.col = col;
+    return this;
+  }
+
+  layoutHint(value: FormLayoutHint): FieldBuilder {
+    this._field.layoutHint = value;
+    return this;
+  }
+
+  preferredColSpan(value: 6 | 12): FieldBuilder {
+    this._field.preferredColSpan = value;
+    return this;
+  }
+
+  minColSpan(value: 6 | 12): FieldBuilder {
+    this._field.minColSpan = value;
+    return this;
+  }
+
+  forceFullWidth(value = true): FieldBuilder {
+    this._field.forceFullWidth = value;
     return this;
   }
 

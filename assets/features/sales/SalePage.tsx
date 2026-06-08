@@ -5,6 +5,7 @@ import {
   DrawerView,
   FormView,
   FORM_EVENTS,
+  PageView,
   useColumnPreset,
   type DetailSummaryOptions,
   type FormHandle,
@@ -98,6 +99,7 @@ export const SalePage = () => {
   const [replaceEnabled, setReplaceEnabled] = useState<boolean>(false);
   const [documentsEnabled, setDocumentsEnabled] = useState<boolean>(false);
   const [documentsDialogSaleId, setDocumentsDialogSaleId] = useState<string | null>(null);
+  const [saleFormOpen, setSaleFormOpen] = useState(false);
   const { currentBranchId, currentUserId } = useSessionInfo();
 
   const formHandleProxy = useMemo<FormHandle>(() => ({
@@ -123,6 +125,17 @@ export const SalePage = () => {
   }), []);
 
   const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
+
+  useEffect(() => {
+    const subscriptions = [
+      on(saleEvents.ADD, () => setSaleFormOpen(true)),
+      on(saleEvents.EDIT, () => setSaleFormOpen(true)),
+      on(saleEvents.CANCEL, () => setSaleFormOpen(false)),
+      on(saleEvents.SUCCESS, () => setSaleFormOpen(false)),
+    ];
+
+    return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }, [on]);
 
   const container = 'wrapper';
   const fields = useMemo(
@@ -374,28 +387,30 @@ export const SalePage = () => {
 
   return (
     <div id={container}>
-      <DataGridView
-        id={'sales'}
-        ref={gridRef}
-        title={'Ventas'}
-        url={API_URL}
-        fields={fields}
-        allowAdd={true}
-        toolbar={toolbar}
-        rowActions={rowActions}
-        detailUrl={saleEndpoints.items('{id}')}
-        detailFields={gridDetailFields}
-        events={saleEvents}
-        sort={[{ selector: 'createdAt', desc: true }]}
-        visibleColumns={presetState.visibleColumns}
-        beforeToolbar={renderPresetSelector}
-        emptyState={{
-          title: 'Sin ventas registradas',
-          description: 'Crea una venta con el botón Nuevo.',
-          icon: 'receipt',
-        }}
-      />
-      <DrawerView drawerWidth={1200} events={saleEvents}>
+      {!saleFormOpen && (
+        <DataGridView
+          id={'sales'}
+          ref={gridRef}
+          title={'Ventas'}
+          url={API_URL}
+          fields={fields}
+          allowAdd={true}
+          toolbar={toolbar}
+          rowActions={rowActions}
+          detailUrl={saleEndpoints.items('{id}')}
+          detailFields={gridDetailFields}
+          events={saleEvents}
+          sort={[{ selector: 'createdAt', desc: true }]}
+          visibleColumns={presetState.visibleColumns}
+          beforeToolbar={renderPresetSelector}
+          emptyState={{
+            title: 'Sin ventas registradas',
+            description: 'Crea una venta con el botón Nuevo.',
+            icon: 'receipt',
+          }}
+        />
+      )}
+      <PageView events={saleEvents} onClose={() => setSaleFormOpen(false)}>
         <FormView
           ref={formRef}
           url={API_URL}
@@ -406,7 +421,7 @@ export const SalePage = () => {
           formLayout={SALE_FORM_LAYOUT}
           events={saleEvents}
         />
-      </DrawerView>
+      </PageView>
       <DiscountDialog />
       <DrawerView drawerWidth={720} events={CustomerPage.EVENTS}>
         <FormView

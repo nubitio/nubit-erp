@@ -1,4 +1,5 @@
 import { lazyNamed } from '@app/router/lazy';
+import { crudRoute } from '@app/router/crudRoute';
 import type { AppRouteDefinition } from '@app/router/types';
 import { customerRoutes } from '@features/customer/routes';
 import { productRoutes } from '@features/product/routes';
@@ -27,8 +28,8 @@ export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/stock', element: StockItemPage },
   { path: '/kardex', element: KardexPage },
   { path: '/reorder', element: ReorderPage },
-  { path: '/stock-adjustment', element: StockAdjustmentPage },
-  { path: '/receipt', element: ReceiptPage },
+  ...crudRoute('/stock-adjustment', StockAdjustmentPage),
+  ...crudRoute('/receipt', ReceiptPage),
   { path: '/category', element: CategoryPage },
   ...customerRoutes,
   { path: '/warehouse', element: WarehousePage },

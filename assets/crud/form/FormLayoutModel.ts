@@ -6,6 +6,7 @@ export interface FormLayoutGroup {
   icon?: string;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  avoidOrphanFields?: boolean;
   fields: Field[];
 }
 
@@ -57,6 +58,7 @@ export function buildFormLayoutModel(
         label: section.label,
         collapsible: section.collapsible,
         defaultCollapsed: section.defaultCollapsed,
+        avoidOrphanFields: section.avoidOrphanFields,
         fields: pickFields(section.fields),
       })),
       overflow: overflow.length > 0 ? { label: overflowLabel, fields: overflow } : undefined,

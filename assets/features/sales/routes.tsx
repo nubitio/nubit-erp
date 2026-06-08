@@ -1,4 +1,5 @@
 import { lazyNamed } from '@app/router/lazy';
+import { crudRoute } from '@app/router/crudRoute';
 import type { AppRouteDefinition } from '@app/router/types';
 
 const SalePage = lazyNamed(() => import('./SalePage'), 'SalePage');
@@ -18,11 +19,11 @@ const OutboundPage = lazyNamed(
 
 export const salesRoutes: AppRouteDefinition[] = [
   { path: '/sale', element: SalePage },
-  { path: '/invoice', element: InvoicePage },
-  { path: '/credit-note', element: CreditNotePage },
+  ...crudRoute('/invoice', InvoicePage),
+  ...crudRoute('/credit-note', CreditNotePage),
   { path: '/sale-consult', element: SaleConsultPage },
   { path: '/purchases', element: PurchasesPage },
-  { path: '/inbound', element: InboundPage },
-  { path: '/transfer', element: TransferPage },
-  { path: '/outbound', element: OutboundPage },
+  ...crudRoute('/inbound', InboundPage),
+  ...crudRoute('/transfer', TransferPage),
+  ...crudRoute('/outbound', OutboundPage),
 ];

@@ -50,8 +50,8 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext:   ['groups' => ['stock_entry:read']],
     denormalizationContext: ['groups' => ['stock_entry:write']],
     filters: [DataGridFilter::class],
-    security: "is_granted('ROLE_ADMIN')",
-    mercure: true,
+    security: "is_granted('ROLE_USER')",
+    mercure: false,
 )]
 class StockEntry
 {

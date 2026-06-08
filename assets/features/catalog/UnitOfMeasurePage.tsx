@@ -159,7 +159,7 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
   title: 'Unidades de medida',
   defaultPreset: 'basic',
   columnPresets: UNIT_OF_MEASURE_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerWidth: 640 },
+  viewMode: { mode: 'drawer', drawerSize: 'md' },
   emptyState: {
     title: 'Sin unidades de medida',
     description: 'Registra unidades SUNAT y factores de conversión para productos.',

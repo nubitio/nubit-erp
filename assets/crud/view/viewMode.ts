@@ -1,14 +1,23 @@
 import type { CrudViewMode, CrudViewModeConfig } from '../crud/ResourceConfig';
+import {
+  DEFAULT_DRAWER_WIDTH,
+  resolveDrawerWidth,
+  type CrudDrawerSize,
+} from './drawerSizes';
+
+export type { CrudDrawerSize };
 
 export interface ResolvedViewMode {
   mode: CrudViewMode;
   drawerWidth: number | string;
   drawerSide: 'right' | 'left';
+  /** Set when the resource used a size token instead of an explicit width. */
+  drawerSize?: CrudDrawerSize;
 }
 
 const DEFAULTS: ResolvedViewMode = {
   mode: 'dialog',
-  drawerWidth: 'min(720px, 60vw)',
+  drawerWidth: DEFAULT_DRAWER_WIDTH,
   drawerSide: 'right',
 };
 
@@ -24,9 +33,16 @@ export function resolveViewMode(
   if (typeof raw === 'string') {
     return { ...DEFAULTS, mode: raw };
   }
-  return {
+  const resolved: ResolvedViewMode = {
     mode: raw.mode,
-    drawerWidth: raw.drawerWidth ?? DEFAULTS.drawerWidth,
+    drawerWidth: resolveDrawerWidth({
+      drawerSize: raw.drawerSize,
+      drawerWidth: raw.drawerWidth,
+    }),
     drawerSide: raw.drawerSide ?? DEFAULTS.drawerSide,
   };
+  if (raw.drawerSize) {
+    resolved.drawerSize = raw.drawerSize;
+  }
+  return resolved;
 }

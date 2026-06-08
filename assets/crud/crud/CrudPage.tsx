@@ -572,6 +572,13 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
             }}
             onDeleteError={resolvedResource.onDeleteError}
             formLayout={resolvedResource.formLayout}
+            presentationContext={{
+              presentationMode: viewMode.mode,
+              drawerWidth: viewMode.drawerWidth,
+              dialogWidth: resolvedResource.dialogWidth,
+              hasTabs: resolvedResource.formLayout?.type === 'tabs',
+              hasMasterDetail: !!formDetail?.fields,
+            }}
             computedValues={computedValues}
             onFieldDataChanged={onFormDataChange}
             adapter={resolvedResource.adapter}

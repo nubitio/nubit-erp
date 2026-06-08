@@ -50,7 +50,7 @@ const typePatch = toPatch(
 const resource = defineResource<OperationRecord>(operationEndpoints.list(), {
   id: 'operation',
   title: 'Operaciones',
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin operaciones de inventario',
     description: 'Define tipos de entrada y salida para movimientos de stock.',

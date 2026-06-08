@@ -23,6 +23,12 @@ import { FORM_ERRORS_EVENT, FORM_EVENTS } from './FormEvents';
 import { buildEmptyRow, normalizeFormData, type PrependDataMap } from './FormDataTransform';
 import { safeRandomId } from './safeRandomId';
 import { buildFormLayoutModel, type FormLayoutGroup, type FormLayoutModel } from './FormLayoutModel';
+import {
+  buildFieldColSpanContext,
+  resolveFieldsColSpans,
+  type ColSpan,
+  type FieldColSpanContext,
+} from './resolveFieldColSpan';
 import type { FormDataRecord } from './FormDataSnapshot';
 import type { FormHandle } from './FormHandle';
 import type { FormViewOptions } from './FormViewOptions';
@@ -86,8 +92,23 @@ function fieldSearchExpr(field: Field): string[] {
   return [field.textField].filter(Boolean);
 }
 
-function colSpan(field: Field): React.CSSProperties {
-  return { '--native-form-col': String(field.col ?? 12) } as React.CSSProperties;
+function colSpanStyle(span: ColSpan): React.CSSProperties {
+  return { '--native-form-col': String(span) } as React.CSSProperties;
+}
+
+function useViewportWidth(): number | undefined {
+  const [width, setWidth] = useState<number | undefined>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : undefined,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  return width;
 }
 
 type FieldButtonFormApi = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
@@ -899,8 +920,23 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   const onFieldDataChanged = options.onFieldDataChanged;
   const detailPropertyName = options.detailPropertyName ?? 'items';
   const computedFieldNames = useMemo(() => fields.filter((field) => field.computed !== undefined).map((field) => field.name), [fields]);
+  const viewportWidth = useViewportWidth();
   const formLayoutModel = useMemo(() => buildFormLayoutModel(fields, options.formLayout, t('form.groupOther')), [fields, options.formLayout, t]);
   const optionFields = useMemo(() => [...fields, ...(options.detailFields ?? [])], [fields, options.detailFields]);
+  const baseColSpanContext = useMemo<FieldColSpanContext>(() => buildFieldColSpanContext({
+    presentationMode: options.presentationContext?.presentationMode ?? 'dialog',
+    drawerWidth: options.presentationContext?.drawerWidth,
+    dialogWidth: options.presentationContext?.dialogWidth,
+    viewportWidth: options.presentationContext?.viewportWidth ?? viewportWidth,
+    containerWidth: options.presentationContext?.containerWidth,
+    hasTabs: options.presentationContext?.hasTabs ?? formLayoutModel.type === 'tabs',
+    hasMasterDetail: options.presentationContext?.hasMasterDetail ?? !!options.detailFields,
+  }), [
+    formLayoutModel.type,
+    options.detailFields,
+    options.presentationContext,
+    viewportWidth,
+  ]);
 
   const setNextFormData = useCallback((nextData: FormDataRecord) => {
     formDataRef.current = nextData;
@@ -1173,7 +1209,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     setIsEdit: (value) => { isEdit.current = value; },
   }), [options.fields, setFieldValue, setNextDetailRows, setNextFormData, validate]);
 
-  const renderField = (field: Field) => {
+  const renderField = (field: Field, span: ColSpan) => {
     const state = fieldState[field.name] ?? {};
     if (field.isIdentity || !field.visibleOnForm || field.hidden || state.hidden) return null;
     const value = formData[field.name];
@@ -1337,21 +1373,31 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     }
 
     return (
-      <div key={field.name} className="native-form__field" style={colSpan(field)}>
+      <div key={field.name} className="native-form__field" style={colSpanStyle(span)}>
         {field.type !== FieldType.CHECKBOX && field.type !== FieldType.SWITCH && <label className={`native-form__label${field.required ? ' native-form__label--required' : ''}`} htmlFor={`native-form-${field.name}`}>{field.label}</label>}
         {control}
-        {field.helpText && <span className="native-form__label">{field.helpText}</span>}
+        {field.helpText && <span className="native-form__hint">{field.helpText}</span>}
         {error && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{error}</span>}
       </div>
     );
   };
 
-  const renderFields = (fields: Field[]) => <div className="native-form__grid">{fields.map(renderField)}</div>;
+  const renderFields = (visibleFields: Field[], layoutContext?: Partial<FieldColSpanContext>) => {
+    const spans = resolveFieldsColSpans(visibleFields, {
+      ...baseColSpanContext,
+      ...layoutContext,
+    });
+    return (
+      <div className="native-form__grid">
+        {visibleFields.map((field) => renderField(field, spans.get(field.name) ?? 12))}
+      </div>
+    );
+  };
 
   const renderGroup = (group: FormLayoutGroup) => (
     <section key={group.label} className="native-form__section">
       <h3 className="native-form__section-title">{group.label}</h3>
-      {renderFields(group.fields)}
+      {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
     </section>
   );
 

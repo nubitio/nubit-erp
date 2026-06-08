@@ -1,22 +1,15 @@
 import type { FormLayout } from '@nubit/crud';
 
 export const customerFormLayout: FormLayout = {
-  type: 'tabs',
-  tabs: [
+  type: 'sections',
+  sections: [
     {
-      label: 'General',
-      icon: 'ph-identification-card',
+      label: 'Identificación',
       fields: ['ruc', 'businessName', 'fiscalAddress'],
     },
     {
-      label: 'Contacto',
-      icon: 'ph-phone',
-      fields: ['phone', 'email'],
-    },
-    {
-      label: 'Comercial',
-      icon: 'ph-tag',
-      fields: ['priceList'],
+      label: 'Contacto y condiciones',
+      fields: ['phone', 'email', 'priceList'],
     },
   ],
 };

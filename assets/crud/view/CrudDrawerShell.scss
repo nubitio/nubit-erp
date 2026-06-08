@@ -132,18 +132,22 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: var(--space-4);
+  padding: 0;
 }
 
 // ── Footer ───────────────────────────────────────────────────────────────────
 
 .crud-drawer__footer {
-  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-color);
+  bottom: 0;
   display: flex;
   flex-shrink: 0;
   gap: var(--space-2);
   justify-content: flex-end;
-  padding: var(--space-3) var(--space-4);
+  padding: 14px 24px;
+  position: sticky;
+  z-index: 2;
 }
 
 .crud-drawer__footer .app-button {

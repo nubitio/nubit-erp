@@ -9,7 +9,7 @@ interface PaymentMethodRecord extends DataRecord {
 const resource = defineResource<PaymentMethodRecord>(paymentMethodEndpoints.list(), {
   id: 'payment-methods',
   title: 'Medios de pago',
-  viewMode: { mode: 'drawer', drawerWidth: 520 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin medios de pago',
     description: 'Registra las formas de pago aceptadas en ventas y caja.',

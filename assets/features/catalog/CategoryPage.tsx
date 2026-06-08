@@ -9,7 +9,7 @@ interface CategoryRecord extends DataRecord {
 const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
   id: 'category',
   title: 'Categorías',
-  viewMode: { mode: 'drawer', drawerWidth: 520 },
+  viewMode: 'dialog',
   emptyState: {
     title: 'Sin categorías',
     description: 'Organiza el catálogo agrupando productos por categoría.',

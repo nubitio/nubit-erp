@@ -70,6 +70,8 @@ final class StockEntryProcessorTest extends TestCase
 
     private InventoryService $inventoryService;
 
+    private UnitConversionService $unitConversion;
+
     protected function setUp(): void
     {
         $this->conn = DriverManager::getConnection([
@@ -84,12 +86,12 @@ final class StockEntryProcessorTest extends TestCase
         $this->security       = $this->createMock(Security::class);
         $this->policy         = $this->createMock(StockValidationPolicyInterface::class);
 
-        $unitConversion = new UnitConversionService($this->conn);
+        $this->unitConversion = new UnitConversionService($this->conn);
 
         $this->inventoryService = new InventoryService(
             $this->conn,
             $this->policy,
-            $unitConversion,
+            $this->unitConversion,
             $this->dispatcher,
         );
 
@@ -146,6 +148,21 @@ final class StockEntryProcessorTest extends TestCase
 
         self::assertOnHand('wh-1', 'prod-a', 3.0);
         self::assertOnHand('wh-1', 'prod-b', 7.0);
+    }
+
+    public function testReceiptWithRepeatedProductLinesAppliesEveryLine(): void
+    {
+        $this->seedStock('wh-1', 'prod-a', '0.000000');
+
+        $entry = $this->makeEntry(StockEntryType::RECEIPT, 'wh-1');
+        $entry->addItem($this->makeItem('prod-a', '3.000000'));
+        $entry->addItem($this->makeItem('prod-a', '7.000000'));
+
+        $this->processor()->process($entry, $this->stubOperation());
+
+        self::assertOnHand('wh-1', 'prod-a', 10.0);
+        $count = $this->conn->fetchOne("SELECT COUNT(*) FROM stock_movements WHERE product_id = 'prod-a'");
+        self::assertSame(2, (int) $count);
     }
 
     // ─── ISSUE ───────────────────────────────────────────────────────────────
@@ -222,6 +239,30 @@ final class StockEntryProcessorTest extends TestCase
         $entry->addItem($this->makeItem('prod-a', '1.000000'));
 
         $this->processor()->process($entry, $this->stubOperation());
+    }
+
+    public function testTransferValidatesRepeatedProductLinesAsOneRequest(): void
+    {
+        $this->seedStock('wh-src', 'prod-a', '30.000000');
+
+        $blockingPolicy = $this->createMock(StockValidationPolicyInterface::class);
+        $blockingPolicy->method('validateSale')
+            ->willReturnCallback(
+                static function (Product $product, string $warehouseId, string $requestedQty, string $onHand): StockValidationResult {
+                    return bccomp($requestedQty, $onHand, 6) === 1
+                        ? StockValidationResult::blocked('stock insuficiente')
+                        : StockValidationResult::allowed();
+                }
+            );
+
+        $entry = $this->makeTransferEntry('wh-src', 'wh-dst');
+        $entry->addItem($this->makeItem('prod-a', '20.000000'));
+        $entry->addItem($this->makeItem('prod-a', '20.000000'));
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessageMatches('/Stock insuficiente/i');
+
+        $this->processorWith($blockingPolicy)->process($entry, $this->stubOperation());
     }
 
     // ─── ADJUSTMENT ──────────────────────────────────────────────────────────
@@ -348,6 +389,7 @@ final class StockEntryProcessorTest extends TestCase
 
         return new StockEntryProcessor(
             $this->inventoryService,
+            $this->unitConversion,
             $this->em,
             $this->security,
             $policy,

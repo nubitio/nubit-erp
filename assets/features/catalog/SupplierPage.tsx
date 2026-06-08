@@ -38,18 +38,16 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   title: 'Proveedores',
   defaultPreset: 'basic',
   columnPresets: SUPPLIER_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerWidth: 720 },
+  viewMode: { mode: 'drawer', drawerSize: 'lg' },
   formLayout: {
-    type: 'tabs',
-    tabs: [
+    type: 'sections',
+    sections: [
       {
-        label: 'General',
-        icon: 'ph-identification-card',
+        label: 'Identificación',
         fields: ['ruc', 'businessName', 'fiscalAddress'],
       },
       {
         label: 'Contacto',
-        icon: 'ph-phone',
         fields: ['phone'],
       },
     ],
@@ -58,14 +56,14 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'businessName', patch: { order: 1, width: 260, label: 'Razón social' } },
-      { kind: 'override', key: 'phone', patch: { order: 3, width: 160, label: 'Teléfono' } },
+      { kind: 'override', key: 'businessName', patch: { order: 1, col: 8, label: 'Razón social' } },
+      { kind: 'override', key: 'phone', patch: { order: 3, col: 6, label: 'Teléfono' } },
       {
         kind: 'override',
         key: 'ruc',
         patch: {
           order: 0,
-          width: 140,
+          col: 4,
           label: 'RUC',
           maxLength: 11,
           validators: [

@@ -18,19 +18,9 @@ const baseResource = defineResource(`${API}cash-registers`, {
   id: 'cash-register',
   title: 'Cajas',
   fields: CashRegisterFields(),
-  viewMode: { mode: 'drawer', drawerWidth: 560 },
+  viewMode: 'dialog',
   defaultPreset: 'basic',
   columnPresets: CASH_REGISTER_COLUMN_PRESETS,
-  formLayout: {
-    type: 'tabs',
-    tabs: [
-      {
-        label: 'General',
-        icon: 'ph-cash-register',
-        fields: ['name', 'branch'],
-      },
-    ],
-  },
   emptyState: {
     title: 'Sin cajas registradas',
     description: 'Crea una caja para operar el punto de venta.',

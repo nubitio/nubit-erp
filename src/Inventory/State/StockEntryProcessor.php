@@ -7,12 +7,13 @@ namespace App\Inventory\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Entity\User;
+use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Inventory\Core\Contract\UnitConversionServiceInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockEntryType;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
-use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Entity\StockEntry;
 use App\Inventory\Entity\StockEntryItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,6 +41,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 {
     public function __construct(
         private InventoryService $inventoryService,
+        private UnitConversionServiceInterface $unitConversion,
         private EntityManagerInterface $em,
         private Security $security,
         private StockValidationPolicyInterface $stockValidationPolicy,
@@ -92,7 +94,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         $warehouseId = (string) $entry->getWarehouse()?->getId();
         $note        = $this->buildNote($entry);
 
-        foreach ($entry->getItems() as $item) {
+        foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
             if (!$this->isTracked($product)) {
                 continue;
@@ -103,7 +105,15 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 
             $item->setQtyDelta($delta);
 
-            $this->record($warehouseId, $product, StockMovementType::MANUAL_IN, $delta, $item, $entryId, $note);
+            $this->record(
+                $warehouseId,
+                $product,
+                StockMovementType::MANUAL_IN,
+                $delta,
+                $item,
+                $this->lineSourceId($entryId, $item, $lineNo),
+                $note,
+            );
         }
     }
 
@@ -112,7 +122,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         $warehouseId = (string) $entry->getWarehouse()?->getId();
         $note        = $this->buildNote($entry);
 
-        foreach ($entry->getItems() as $item) {
+        foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
             if (!$this->isTracked($product)) {
                 continue;
@@ -123,7 +133,15 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 
             $item->setQtyDelta($delta);
 
-            $this->record($warehouseId, $product, StockMovementType::MANUAL_OUT, $delta, $item, $entryId, $note);
+            $this->record(
+                $warehouseId,
+                $product,
+                StockMovementType::MANUAL_OUT,
+                $delta,
+                $item,
+                $this->lineSourceId($entryId, $item, $lineNo),
+                $note,
+            );
         }
     }
 
@@ -134,14 +152,14 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         $sourceName = $entry->getWarehouse()?->getName() ?? '';
         $targetName = $entry->getTargetWarehouse()?->getName() ?? '';
 
-        foreach ($entry->getItems() as $item) {
+        foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
             if (!$this->isTracked($product)) {
                 continue;
             }
 
             $qty   = $item->getQty();
-            $itemId = (string) ($item->getId() ?? uniqid('sei_', true));
+            $lineSourceId = $this->lineSourceId($entryId, $item, $lineNo);
 
             $item->setQtyDelta('-' . $qty); // from source perspective
 
@@ -151,7 +169,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 StockMovementType::TRANSFER_OUT,
                 '-' . $qty,
                 $item,
-                $entryId . ':out:' . $itemId,
+                $lineSourceId . ':out',
                 'Traslado a ' . $targetName
             );
 
@@ -161,7 +179,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 StockMovementType::TRANSFER_IN,
                 $qty,
                 $item,
-                $entryId . ':in:' . $itemId,
+                $lineSourceId . ':in',
                 'Traslado desde ' . $sourceName
             );
         }
@@ -172,7 +190,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         $warehouseId = (string) $entry->getWarehouse()?->getId();
         $reasonNote  = $this->buildNote($entry);
 
-        foreach ($entry->getItems() as $item) {
+        foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
             if (!$this->isTracked($product)) {
                 continue;
@@ -190,7 +208,15 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 continue;
             }
 
-            $this->record($warehouseId, $product, StockMovementType::ADJUSTMENT, $delta, $item, $entryId, $reasonNote);
+            $this->record(
+                $warehouseId,
+                $product,
+                StockMovementType::ADJUSTMENT,
+                $delta,
+                $item,
+                $this->lineSourceId($entryId, $item, $lineNo),
+                $reasonNote,
+            );
         }
     }
 
@@ -231,22 +257,38 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 
         if ($type->validatesStock()) {
             $warehouseId = (string) $warehouse->getId();
+            $requestedByProduct = [];
+
             foreach ($entry->getItems() as $item) {
                 $product = $item->getProduct();
                 if (!$this->isTracked($product)) {
                     continue;
                 }
 
-                $qty    = $item->getQty();
-                $onHand = $this->inventoryService->getOnHand($warehouseId, (string) $product?->getId());
-                $result = $this->stockValidationPolicy->validateSale($product, $warehouseId, $qty, $onHand);
+                $productId = (string) $product?->getId();
+                $requestedByProduct[$productId] ??= ['product' => $product, 'qty' => '0.000000'];
+                $requestedByProduct[$productId]['qty'] = bcadd(
+                    $requestedByProduct[$productId]['qty'],
+                    $this->toBaseQty($item),
+                    6,
+                );
+            }
+
+            foreach ($requestedByProduct as $productId => $request) {
+                $onHand = $this->inventoryService->getOnHand($warehouseId, $productId);
+                $result = $this->stockValidationPolicy->validateSale(
+                    $request['product'],
+                    $warehouseId,
+                    $request['qty'],
+                    $onHand,
+                );
 
                 if (!$result->allowed) {
                     throw new UnprocessableEntityHttpException(sprintf(
                         'Stock insuficiente para "%s". Disponible: %s, solicitado: %s.',
-                        $product?->getName(),
+                        $request['product']->getName(),
                         $onHand,
-                        $qty,
+                        $request['qty'],
                     ));
                 }
             }
@@ -286,6 +328,25 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         ]);
 
         return implode(' — ', $parts) ?: $entry->getType()?->label() ?? '';
+    }
+
+    private function lineSourceId(string $entryId, StockEntryItem $item, int|string $lineNo): string
+    {
+        return sprintf('%s:line:%s', $entryId, $item->getId() ?? $lineNo);
+    }
+
+    private function toBaseQty(StockEntryItem $item): string
+    {
+        $unitId = $item->getUnit()?->getId();
+        if ($unitId === null) {
+            return $item->getQty();
+        }
+
+        return $this->unitConversion->toBase(
+            (string) $item->getProduct()?->getId(),
+            (int) $unitId,
+            $item->getQty(),
+        );
     }
 
     private function isTracked(mixed $product): bool
