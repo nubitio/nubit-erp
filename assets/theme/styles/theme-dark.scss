@@ -1,12 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Dark Theme — color, surface, and shadow tokens only.
+// Efact Dark Theme — color, surface, and shadow tokens.
 //
 // Static tokens (typography, spacing, radii, layout) are defined once in
 // tokens.scss and bundled into the main CSS entry. Do NOT add them here.
 //
-// Design reference: Fluent UI Web dark palette / VS Code dark+ surface model.
-// Accent shifts to blue-500 (#2f7ce0) — lighter than light-mode accent to
-// maintain contrast against dark surfaces (min 4.5:1 on surface-1).
+// Accent shifts to #60a5fa — lighter than light-mode cobalt to maintain
+// min 4.5:1 contrast against dark surfaces.
 //
 // Shadow technique: each shadow includes a 1px inset ring at rgba(white, 0.05)
 // so panels remain visually separated without needing explicit borders everywhere.
@@ -17,38 +16,40 @@
 .app-theme-dark {
 
   // ── Color base ──────────────────────────────────────────────────────────────
-  --base-bg:               #1e2128;
-  --base-bg-darken-4:      #181c23;
-  --base-bg-darken-5:      #13161d;
-  --base-text-color:       #e8ecf3;
-  --base-text-color-alpha: rgba(232, 236, 243, 0.65);
-  --background-gray-color: rgba(232, 236, 243, 0.04);
+  // True neutral dark — no blue tint. Breaks association with VS Code / Tailwind dark.
+  --base-bg:               #1f1f1f;
+  --base-bg-darken-4:      #171717;
+  --base-bg-darken-5:      #0f0f0f;
+  --base-text-color:       #f5f5f5;
+  --base-text-color-alpha: rgba(245, 245, 245, 0.65);
+  --background-gray-color: rgba(245, 245, 245, 0.04);
   --typography-bg:         var(--base-bg);
 
   // ── Semantic / status colors ────────────────────────────────────────────────
-  // Pastel variants prevent oversaturation on dark surfaces.
-  --accent-color:       #2f7ce0;
-  --accent-hover:  color-mix(in srgb, var(--accent-color) 80%, #fff);
+  --accent-color:       #60a5fa;
+  --accent-hover:       #7ab8fc;
+  --accent-pressed:     #4b8ef3;
   --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));
-  --success-color:      #22c55e;
-  --info-color:         #38bdf8;
-  --warning-color:      #fbbf24;
-  --dark-warning-color: #f59e0b;
-  --error-color:        #f87171;
-  --on-accent-color:    #061529;
-  --on-success-color:   #04130a;
+  --success-color:      #4cc84c;
+  --info-color:         var(--accent-color);
+  --warning-color:      #e07530;
+  --dark-warning-color: #c5622a;
+  --error-color:        #ef5a5a;
+  --on-accent-color:    #05112a;
+  --on-success-color:   #031403;
   --on-error-color:     #1f0707;
 
   // ── Borders ─────────────────────────────────────────────────────────────────
-  --border-color:      #303849;
-  --border-subtle:     #252c3a;
+  // Pure neutral — no blue tint.
+  --border-color:      #404040;
+  --border-subtle:     #2e2e2e;
   --base-border-color: var(--border-color);
 
   // ── Text ────────────────────────────────────────────────────────────────────
   --text-primary:           var(--base-text-color);
-  --text-secondary:         #9aaabb;   // lifted from #a0a8b8 — better contrast on surface-2
-  --text-tertiary:          #657080;
-  --text-disabled:          #3a4155;
+  --text-secondary:         #c7c7c7;
+  --text-tertiary:          #969696;
+  --text-disabled:          #4d4d4d;
   --text-on-accent:         var(--on-accent-color);
 
   // Legacy aliases
@@ -57,62 +58,59 @@
   --subtitle-text-color:    var(--text-secondary);
 
   // ── Surfaces (4-level elevation) ────────────────────────────────────────────
-  --surface-0:  #111827;   // canvas / deepest background
-  --surface-1:  #171d27;   // cards, panels, dialogs
-  --surface-2:  #1f2937;   // hover, secondary sections
-  --surface-3:  color-mix(in srgb, var(--accent-color) 18%, #111827);
+  // Pure neutral dark — not Tailwind gray-900 (#111827). No blue tint.
+  --surface-0:  #0f0f0f;   // canvas / deepest background
+  --surface-1:  #1f1f1f;   // cards, panels, dialogs
+  --surface-2:  #2b2b2b;   // hover, secondary sections
+  --surface-3:  color-mix(in srgb, var(--accent-color) 16%, #0f0f0f);
   --surface-canvas:    var(--surface-0);
   --surface-card:      var(--surface-1);
-  --surface-elevated:  #242936;
+  --surface-elevated:  #333333;
   --surface-subtle:    var(--surface-2);
   --surface-selected:  var(--surface-3);
   --card-background:       var(--surface-1);
-  --side-panel-background: #181c23;
+  --side-panel-background: #1a1a1a;
 
   --control-bg:       var(--surface-1);
-  --control-bg-hover: color-mix(in srgb, var(--surface-2) 42%, var(--surface-1));
+  --control-bg-hover: #2b2b2b;
   --control-border:   var(--border-color);
 
   // ── Dense ERP surfaces ──────────────────────────────────────────────────────
-  --grid-header-bg:           #151b24;
-  --grid-filter-bg:           #171d27;
-  --grid-row-hover-bg:        #1b2432;
-  --grid-row-selected-bg:     color-mix(in srgb, var(--accent-color) 16%, #111827);
-  --grid-row-selected-border: color-mix(in srgb, var(--accent-color) 72%, #111827);
-  // Explicit zebra token for dark mode — slightly darker than surface-1.
-  // Provides ~2.5% luminance difference, clearly perceptible at 13px body text.
+  --grid-header-bg:           #1a1a1a;
+  --grid-filter-bg:           #1f1f1f;
+  --grid-row-hover-bg:        #2e2e2e;
+  --grid-row-selected-bg:     color-mix(in srgb, var(--accent-color) 14%, #0f0f0f);
+  --grid-row-selected-border: color-mix(in srgb, var(--accent-color) 60%, #0f0f0f);
   --grid-row-alt-bg:          color-mix(in srgb, var(--surface-0) 40%, var(--surface-1));
 
   // ── Status palette ──────────────────────────────────────────────────────────
-  // Alpha backgrounds instead of solid to prevent excessive colorization.
-  --status-success-bg:     rgba(34, 197, 94, 0.14);
-  --status-success-text:   #86efac;
-  --status-success-border: rgba(34, 197, 94, 0.32);
-  --status-warning-bg:     rgba(251, 191, 36, 0.14);
-  --status-warning-text:   #fde68a;
-  --status-warning-border: rgba(251, 191, 36, 0.32);
-  --status-danger-bg:      rgba(248, 113, 113, 0.14);
-  --status-danger-text:    #fca5a5;
-  --status-danger-border:  rgba(248, 113, 113, 0.34);
-  --status-info-bg:        rgba(56, 189, 248, 0.14);
-  --status-info-text:      #7dd3fc;
-  --status-info-border:    rgba(56, 189, 248, 0.32);
+  // Alpha backgrounds to prevent excessive colorization on dark surfaces.
+  --status-success-bg:     rgba(76, 200, 76, 0.14);
+  --status-success-text:   #7ddc7d;
+  --status-success-border: rgba(76, 200, 76, 0.32);
+  --status-warning-bg:     rgba(224, 117, 48, 0.14);
+  --status-warning-text:   #f0a070;
+  --status-warning-border: rgba(224, 117, 48, 0.32);
+  --status-danger-bg:      rgba(239, 90, 90, 0.14);
+  --status-danger-text:    #f79898;
+  --status-danger-border:  rgba(239, 90, 90, 0.34);
+  --status-info-bg:        rgba(96, 165, 250, 0.14);
+  --status-info-text:      #93c5fd;
+  --status-info-border:    rgba(96, 165, 250, 0.32);
 
-  // ── Shadows (Fluent 2 ambient + directional, dark-boosted) ─────────────────
-  // Inset ring retained for dark panel separation without explicit borders.
-  --shadow-sm:  0 0 2px rgba(0,0,0,.40), 0 1px 2px  rgba(0,0,0,.50),
-                0 0 0 1px rgba(255,255,255,.05);
-  --shadow-md:  0 0 2px rgba(0,0,0,.40), 0 4px 8px  rgba(0,0,0,.50),
-                0 0 0 1px rgba(255,255,255,.06);
-  --shadow-lg:  0 0 8px rgba(0,0,0,.45), 0 14px 28px rgba(0,0,0,.55),
+  // ── Shadows ───────────────────────────────────────────────────────────────
+  // Inset ring retains dark panel separation without explicit borders.
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.40), 0 0 0 1px rgba(255,255,255,.05);
+  --shadow-md:  0 4px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
+  --shadow-lg:  0 12px 28px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.35),
                 0 0 0 1px rgba(255,255,255,.07);
 
   // ── Effects ─────────────────────────────────────────────────────────────────
   --focus-ring-color:  color-mix(in srgb, var(--accent-color) 45%, transparent);
-  --overlay-bg:        rgb(0 0 0 / 54%);
-  --overlay-bg-subtle: rgb(0 0 0 / 28%);
-  --tooltip-danger-button-color:  rgba(248, 113, 113, 0.12);
-  --tooltip-success-button-color: rgba(34, 197, 94, 0.12);
+  --overlay-bg:        rgb(0 0 0 / 58%);
+  --overlay-bg-subtle: rgb(0 0 0 / 30%);
+  --tooltip-danger-button-color:  rgba(239, 90, 90, 0.12);
+  --tooltip-success-button-color: rgba(76, 200, 76, 0.12);
 }
 
 // Sentinel — allows JS/SCSS to detect the active theme class.
