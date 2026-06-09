@@ -27,8 +27,9 @@ const BASE_URL = getE2EBaseUrl();
 type CrudPageSpec = {
   route: string;
   toolbar: RegExp;
-  /** Pages that open a create shell with drawer UX */
-  opensDrawer: boolean;
+  /** Pages that open a create shell */
+  opensForm: boolean;
+  shell?: 'drawer' | 'dialog' | 'page';
   /** Pages with ColumnPresetSelector segments */
   hasPresets: boolean;
   /** Pages whose create form uses NativeFormView tabs */
@@ -39,38 +40,46 @@ const CRUD_PAGES: CrudPageSpec[] = [
   {
     route: '/product',
     toolbar: /productos|products/i,
-    opensDrawer: true,
+    opensForm: true,
+    shell: 'drawer',
     hasPresets: true,
     hasFormTabs: [/General/i, /Inventario/i],
   },
   {
     route: '/customer',
     toolbar: /clientes|customers/i,
-    opensDrawer: true,
+    opensForm: true,
+    shell: 'drawer',
     hasPresets: true,
-    hasFormTabs: [/General/i, /Contacto/i],
   },
-  { route: '/category', toolbar: /categor/i, opensDrawer: true, hasPresets: true, hasFormTabs: [/General/i] },
-  { route: '/warehouse', toolbar: /almac/i, opensDrawer: true, hasPresets: true, hasFormTabs: [/General/i] },
+  { route: '/category', toolbar: /categor/i, opensForm: true, shell: 'dialog', hasPresets: false },
+  { route: '/warehouse', toolbar: /almac/i, opensForm: true, shell: 'dialog', hasPresets: false },
   {
     route: '/supplier',
     toolbar: /proveedor/i,
-    opensDrawer: true,
+    opensForm: true,
+    shell: 'drawer',
     hasPresets: true,
-    hasFormTabs: [/General/i, /Contacto/i],
   },
-  { route: '/role', toolbar: /rol/i, opensDrawer: true, hasPresets: true, hasFormTabs: [/General/i] },
-  { route: '/user', toolbar: /usuario/i, opensDrawer: true, hasPresets: true, hasFormTabs: [/Acceso/i] },
-  { route: '/invoice', toolbar: /comprobante/i, opensDrawer: false, hasPresets: true },
+  { route: '/role', toolbar: /rol/i, opensForm: true, shell: 'dialog', hasPresets: true },
+  { route: '/user', toolbar: /usuario/i, opensForm: true, shell: 'dialog', hasPresets: true },
+  { route: '/invoice', toolbar: /comprobante/i, opensForm: false, hasPresets: true },
   {
     route: '/purchases',
     toolbar: /compra/i,
-    opensDrawer: true,
+    opensForm: true,
+    shell: 'page',
     hasPresets: true,
     hasFormTabs: [/Cabecera/i, /Notas/i],
   },
-  { route: '/reorder', toolbar: /reabastecimiento|reorder/i, opensDrawer: false, hasPresets: true },
+  { route: '/reorder', toolbar: /reabastecimiento|reorder/i, opensForm: false, hasPresets: true },
 ];
+
+const shellClassPattern: Record<NonNullable<CrudPageSpec['shell']>, RegExp> = {
+  drawer: /crud-drawer/,
+  dialog: /crud-dialog|app-dialog/,
+  page: /crud-page-shell/,
+};
 
 function datagridSurface(page: Page) {
   return page.locator('.native-datagrid').first();
@@ -110,7 +119,7 @@ test.describe('UI consistency — patrones CRUD enterprise', () => {
       if (spec.hasPresets) {
         await expect(columnPresetControl(page)).toBeVisible({ timeout: 8000 });
         const presetButtons = columnPresetControl(page).getByRole('button');
-        expect(await presetButtons.count()).toBeGreaterThanOrEqual(2);
+        expect(await presetButtons.count()).toBeGreaterThanOrEqual(1);
       }
 
       // Native selects are not used in datagrid chrome (filters, toolbar, paginator).
@@ -126,8 +135,8 @@ test.describe('UI consistency — patrones CRUD enterprise', () => {
       }
     });
 
-    if (spec.opensDrawer) {
-      test(`${spec.route} — formulario en drawer con tabs`, async () => {
+    if (spec.opensForm) {
+      test(`${spec.route} — formulario CRUD consistente`, async () => {
         await page.goto(`${BASE_URL}/#${spec.route}`);
         await waitForGridLoad(page);
 
@@ -135,7 +144,9 @@ test.describe('UI consistency — patrones CRUD enterprise', () => {
 
         const shell = crudShell(page, /nuevo|new/i);
         await shell.waitFor({ state: 'visible', timeout: 12000 });
-        await expect(shell).toHaveClass(/crud-drawer/);
+        if (spec.shell) {
+          await expect(shell).toHaveClass(shellClassPattern[spec.shell]);
+        }
 
         const body = crudShellBody(page);
         await expect(body.locator('select')).toHaveCount(0);

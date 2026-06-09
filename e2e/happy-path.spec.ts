@@ -150,11 +150,11 @@ async function clickDialogButton(page: Page, buttonText: string) {
 }
 
 function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
-  return page.getByRole('dialog', { name }).last();
+  return page.getByRole('dialog', { name }).or(page.getByRole('region', { name })).last();
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.app-dialog__body, .crud-dialog__body');
+  return crudDialog(page, name).locator('.crud-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body');
 }
 
 /**

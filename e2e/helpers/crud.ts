@@ -11,17 +11,23 @@ export async function waitForGridLoad(page: Page) {
   }
 }
 
-/**
- * Returns the active CRUD shell — drawer (preferred) or legacy centered dialog.
- * Both use role="dialog"; drawer body is `.crud-drawer__body`.
+/** Returns the active CRUD shell — drawer/dialog or inline page form.
+ * Matches by role+name when the shell exposes "nuevo|new|..." (or caller-provided name).
+ * Always includes structural containers (.crud-drawer, .crud-page-shell) so that
+ * page-mode resources (aria-label = resource title like "Compras") are discoverable
+ * regardless of the exact accessible name.
  */
 export function crudShell(page: Page, name: RegExp = /nuevo|new|editar|edit/i): Locator {
-  return page.getByRole('dialog', { name }).last();
+  const named = page.getByRole('dialog', { name }).or(page.getByRole('region', { name }));
+  const structural = page.locator('.crud-drawer-root--open .crud-drawer, .crud-page-shell, .app-dialog:visible, .crud-dialog:visible');
+  // structural first so page shells are found even if name doesn't include "new";
+  // .last() selects the most recently attached / topmost shell in DOM order.
+  return structural.or(named).last();
 }
 
 export function crudShellBody(page: Page, name?: RegExp): Locator {
   return crudShell(page, name).locator(
-    '.crud-drawer__body, .app-dialog__body, .crud-dialog__body',
+    '.crud-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body',
   );
 }
 
@@ -70,7 +76,7 @@ export async function dismissDevToolbar(page: Page) {
 export async function clickCrudSave(shell: Locator) {
   const save = shell
     .locator(
-      '.crud-drawer__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
+      '.crud-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
     )
     .first();
   await save.waitFor({ state: 'visible', timeout: 8000 });

@@ -22,7 +22,7 @@ export const salesRoutes: AppRouteDefinition[] = [
   ...crudRoute('/invoice', InvoicePage),
   ...crudRoute('/credit-note', CreditNotePage),
   { path: '/sale-consult', element: SaleConsultPage },
-  { path: '/purchases', element: PurchasesPage },
+  ...crudRoute('/purchases', PurchasesPage),
   ...crudRoute('/inbound', InboundPage),
   ...crudRoute('/transfer', TransferPage),
   ...crudRoute('/outbound', OutboundPage),

@@ -1100,6 +1100,12 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     prependDataRef.current = new Map();
     const row = payload ? normalizeFormData(payload, options.fields, options.adapter, prependDataRef.current) : buildEmptyRow(options.fields);
     setNextFormData(row);
+    options.fields.forEach((field) => {
+      const value = row[field.name];
+      if (value !== undefined) {
+        void (field.onChange as ((value: unknown) => void | Promise<void>) | undefined)?.(value);
+      }
+    });
     if (payload && Array.isArray(payload[detailPropertyName])) {
       setNextDetailRows(payload[detailPropertyName] as FormDataRecord[]);
     }

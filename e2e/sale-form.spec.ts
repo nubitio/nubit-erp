@@ -380,14 +380,12 @@ test.describe('Sale form — mejoras de UX', () => {
     // Cliente field should have a default value (not empty) — defaultValue(1) in SaleFields.tsx
     const clienteInput = body.getByLabel(/Cliente/i).first();
     await clienteInput.waitFor({ state: 'visible', timeout: 8000 });
-    const clienteValue = await clienteInput.inputValue();
-    expect(clienteValue.trim().length).toBeGreaterThan(0);
+    await expect.poll(async () => (await clienteInput.inputValue()).trim().length).toBeGreaterThan(0);
 
     // Método de pago should also have a default
     const metodoPagoInput = body.getByLabel(/Método de pago/i).first();
     await metodoPagoInput.waitFor({ state: 'visible', timeout: 8000 });
-    const metodoPagoValue = await metodoPagoInput.inputValue();
-    expect(metodoPagoValue.trim().length).toBeGreaterThan(0);
+    await expect.poll(async () => (await metodoPagoInput.inputValue()).trim().length).toBeGreaterThan(0);
 
     await closeCrudShell(shell);
   });
@@ -441,7 +439,9 @@ test.describe('Sale form — mejoras de UX', () => {
     const priceInput = insertedRow.locator('td').nth(2).locator('input').first();
     await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
 
-    const footerSave = shell.locator('.crud-drawer__footer .dialog-save-button');
+    const footerSave = shell.locator(
+      '.crud-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button',
+    );
     await expect(footerSave).toBeEnabled({ timeout: 5000 });
 
     await closeCrudShell(shell);

@@ -270,6 +270,12 @@ export const SalePage = () => {
       if (currency === 'PEN' || !currency) {
         formRef.current?.hideField('exchangeRate');
       }
+      window.setTimeout(() => {
+        const currentCurrency = (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
+        if (currentCurrency === 'PEN' || !currentCurrency) {
+          formRef.current?.hideField('exchangeRate');
+        }
+      });
       await applySaleAutoInvoiceOnAdd(formRef);
     },
   });

@@ -147,17 +147,43 @@ async function ensureLoggedIn(page: Page) {
 }
 
 async function gotoProtectedRoute(page: Page, hashPath: string) {
-  await page.goto(`${BASE_URL}/#/${hashPath}`);
+  const targetHash = `/#/${hashPath}`;
+  const alreadyThere = page.url().includes(targetHash);
+  if (alreadyThere) {
+    // Already on target hash; just make sure chrome is settled and not on login
+    await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
+    await waitForPostLoginLanding(page);
+    return;
+  }
+
+  await page.goto(`${BASE_URL}${targetHash}`);
   await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
   await ensureLoggedIn(page);
   await waitForPostLoginLanding(page);
 
-  if (!page.url().includes(`/#/${hashPath}`)) {
-    await page.goto(`${BASE_URL}/#/${hashPath}`);
+  // Strongly enforce we landed on the requested hash
+  try {
+    await page.waitForURL(new RegExp(targetHash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 15000 });
+  } catch {
+    await page.goto(`${BASE_URL}${targetHash}`);
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     await ensureLoggedIn(page);
     await waitForPostLoginLanding(page);
+    await page.waitForURL(new RegExp(targetHash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 15000 }).catch(() => {});
   }
+}
+
+async function ensurePurchasesGrid(page: Page) {
+  // If a purchases datagrid toolbar is already visible, stay here (avoid re-goto that may redirect to POS when cash open)
+  const toolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+  const visible = await toolbar.isVisible({ timeout: 3000 }).catch(() => false);
+  if (visible) {
+    await waitForGridLoad(page).catch(() => {});
+    return;
+  }
+  await gotoProtectedRoute(page, 'purchases');
+  await waitForGridLoad(page);
+  await expect(toolbar).toBeVisible({ timeout: 15000 });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -304,10 +330,21 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   });
 
   test('02b - El formulario de compra tiene pestañas Cabecera y Notas', async () => {
-    await gotoProtectedRoute(page, 'purchases');
-    await waitForGridLoad(page);
-    await clickGridToolbarButton(page, 'Nuevo');
-    await expect(crudShell(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
+    await ensurePurchasesGrid(page);
+
+    // Scope the "Nuevo" click to the purchases grid toolbar (avoid .first() matching other grids)
+    const purchasesToolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+    const nuevoBtn = purchasesToolbar.locator('.app-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
+    await nuevoBtn.waitFor({ state: 'visible', timeout: 8000 });
+    await nuevoBtn.click();
+
+    // Page-mode form for "Compras" mounts .crud-page-shell (aria-label may be "Compras", not "Nuevo").
+    // Wait for either our shell locator or a concrete stable element from the form (warehouse or Cabecera tab).
+    await Promise.race([
+      expect(crudShell(page, /nuevo|new|compras/i)).toBeVisible({ timeout: 30000 }),
+      expect(page.getByRole('tab', { name: /Cabecera/i }).first()).toBeVisible({ timeout: 30000 }),
+      expect(page.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
+    ]);
 
     const body = crudShellBody(page);
     await switchFormTab(body, /Cabecera/i);
@@ -323,10 +360,14 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   // PASO 3 — Crear compra
   // ───────────────────────────────────────────────────────────────────────────
   test('03 - Crear compra con producto seed y verificar stock incrementado', async () => {
-    // Asegurar que estamos en la página de compras
-    await gotoProtectedRoute(page, 'purchases');
+    // Asegurar que estamos en la página de compras (reuse state if previous test left us there)
+    await ensurePurchasesGrid(page);
     await dismissDevToolbar(page);
     await waitForGridLoad(page);
+
+    await expect(
+      page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
+    ).toBeVisible({ timeout: 15000 });
 
     // ── Capturar stock ANTES ──────────────────────────────────────────────────
     const stockBefore = await page.evaluate(
@@ -344,8 +385,18 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     // ── Abrir formulario de nueva compra ─────────────────────────────────────
     await test.step('Abrir formulario de nueva compra', async () => {
-      await clickGridToolbarButton(page, 'Nuevo');
-      await expect(crudShell(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
+      // Scope to the purchases toolbar
+      const purchasesToolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+      const nuevoBtn = purchasesToolbar.locator('.app-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
+      await nuevoBtn.waitFor({ state: 'visible', timeout: 8000 });
+      await nuevoBtn.click();
+
+      // Same race as 02b: page form may expose "Compras" as name or just the content.
+      await Promise.race([
+        expect(crudShell(page, /nuevo|new|compras/i)).toBeVisible({ timeout: 30000 }),
+        expect(page.getByRole('tab', { name: /Cabecera/i }).first()).toBeVisible({ timeout: 30000 }),
+        expect(page.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
+      ]);
     });
 
     // ── Seleccionar almacén ───────────────────────────────────────────────────
