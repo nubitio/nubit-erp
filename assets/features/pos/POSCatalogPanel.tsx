@@ -89,11 +89,6 @@ export function POSCatalogPanel({
             </button>
           )}
         </div>
-        {cartItemsCount > 0 && (
-          <div className="pos-toolbar__cart-count" aria-live="polite">
-            {cartItemsCount} en orden
-          </div>
-        )}
       </header>
 
       {/* Category bar — fixed outside scroll, single-row, horizontally scrollable */}
@@ -129,7 +124,11 @@ export function POSCatalogPanel({
           <div className="pos-skeleton-grid">
             {Array.from({ length: 12 }, (_, i) => (
               <div key={i} className="pos-skeleton-card">
-                <div className="pos-skeleton-card__media" />
+                <div className="pos-skeleton-card__top">
+                  <div className="pos-skeleton-card__media" />
+                  <div className="pos-skeleton-card__stock" />
+                </div>
+                <div className="pos-skeleton-card__line" />
                 <div className="pos-skeleton-card__line" />
                 <div className="pos-skeleton-card__line pos-skeleton-card__line--short" />
               </div>

@@ -88,3 +88,6 @@ phpstan.neon
 .spex/*.db-shm
 .spex/*.db-wal
 
+# Local browser/debug artifacts
+.playwright-mcp/
+/menu-*.png
