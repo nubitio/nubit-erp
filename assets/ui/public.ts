@@ -49,3 +49,5 @@ export { Popover } from './Popover';
 export type { PopoverProps, PopoverAlign } from './Popover';
 export { useFloatingPanel } from './useFloatingPanel';
 export type { UseFloatingPanelOptions, UseFloatingPanelResult } from './useFloatingPanel';
+export { Drawer } from './Drawer';
+export type { DrawerProps, DrawerSide } from './Drawer';

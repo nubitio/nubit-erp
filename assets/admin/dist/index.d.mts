@@ -6,7 +6,9 @@ interface AdminHeaderAction {
   icon: string;
   label: string;
   badge?: number;
-  renderPanel: (props: {
+  /** When provided, clicking the button calls this instead of opening a panel. */
+  onClick?: () => void;
+  renderPanel?: (props: {
     close: () => void;
   }) => React.ReactNode;
 }

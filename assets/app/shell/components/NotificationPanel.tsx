@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DateTime } from 'luxon';
 import { useNavigate } from 'react-router-dom';
-import { Badge, Button, EmptyState, IconButton, Skeleton } from '@nubit/ui';
+import { EmptyState, IconButton, Skeleton } from '@nubit/ui';
 
 import type {
   Notification,
@@ -20,70 +20,137 @@ interface NotificationPanelProps extends Pick<
   onHiding: () => void;
 }
 
-const SEVERITY_ORDER: NotificationSeverity[] = ['critical', 'warning', 'info'];
+// ── Category mapping ────────────────────────────────────────────────────────
 
-const SEVERITY_ICON_CHAR: Record<NotificationSeverity, string> = {
-  critical: '!',
-  warning: '⚠',
-  info: 'ℹ',
+type Category = 'all' | 'sunat' | 'stock' | 'system';
+
+const CATEGORY_LABEL: Record<Category, string> = {
+  all: 'Todos',
+  sunat: 'SUNAT',
+  stock: 'Stock',
+  system: 'Sistema',
 };
 
-const TYPE_LABEL: Record<NotificationType, string> = {
-  sunat_error: 'Error SUNAT',
-  sunat_blocked: 'Bloqueado SUNAT',
-  stock_low: 'Stock Bajo',
-  cash_not_opened: 'Caja no abierta',
-  quota_warning: 'Cuota',
-  daily_briefing: 'Resumen Diario',
+const TYPE_CATEGORY: Record<NotificationType, Category> = {
+  sunat_error:     'sunat',
+  sunat_blocked:   'sunat',
+  stock_low:       'stock',
+  cash_not_opened: 'system',
+  quota_warning:   'system',
+  daily_briefing:  'system',
 };
 
-function relativeTime(isoString: string): string {
+// ── Icon config per type ────────────────────────────────────────────────────
+
+interface IconConfig {
+  icon: string;
+  bg: string;   // CSS color for the icon square background
+  color: string; // CSS color for the icon itself
+}
+
+const TYPE_ICON: Record<NotificationType, IconConfig> = {
+  sunat_error:     { icon: 'ph ph-warning',       bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
+  sunat_blocked:   { icon: 'ph ph-seal-warning',   bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
+  stock_low:       { icon: 'ph ph-cube',           bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
+  cash_not_opened: { icon: 'ph ph-cash-register',  bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
+  quota_warning:   { icon: 'ph ph-chart-bar',      bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
+  daily_briefing:  { icon: 'ph ph-seal-check',     bg: 'var(--status-success-bg)',  color: 'var(--success-color)' },
+};
+
+const SEVERITY_DOT_COLOR: Record<NotificationSeverity, string> = {
+  critical: 'var(--error-color)',
+  warning:  'var(--warning-color)',
+  info:     'var(--accent-color)',
+};
+
+// ── Action link label per type ───────────────────────────────────────────────
+
+const TYPE_ACTION_LABEL: Partial<Record<NotificationType, string>> = {
+  sunat_error:     'Ver comprobante',
+  sunat_blocked:   'Ver comprobante',
+  stock_low:       'Ver inventario',
+  cash_not_opened: 'Abrir caja',
+  quota_warning:   'Ver configuración',
+};
+
+// ── Time formatting ──────────────────────────────────────────────────────────
+
+function formatTime(isoString: string): string {
   const dt = DateTime.fromISO(isoString);
   if (!dt.isValid) return '';
-  return dt.toRelative({ locale: 'es' }) ?? '';
+  const now = DateTime.now();
+  if (dt.hasSame(now, 'day')) return dt.toFormat('HH:mm');
+  if (dt.hasSame(now.minus({ days: 1 }), 'day')) return 'Ayer';
+  return dt.toFormat('dd/MM');
 }
 
-function groupBySeverity(notifications: Notification[]): Notification[] {
-  return [...notifications].sort((a, b) => {
-    const ai = SEVERITY_ORDER.indexOf(a.severity);
-    const bi = SEVERITY_ORDER.indexOf(b.severity);
-    return ai - bi;
-  });
-}
+// ── Component ────────────────────────────────────────────────────────────────
 
 const NotificationPanel = (props: NotificationPanelProps) => {
   const navigate = useNavigate();
   const { notifications, loading, markRead, markAllRead } = props;
+  const [activeCategory, setActiveCategory] = useState<Category>('all');
 
   const unreadCount = notifications.filter((n) => n.readAt === null).length;
+  const allRead = notifications.every((n) => n.readAt !== null);
+
+  // Category counts (unread only for the badge, total for filter)
+  const categoryCounts = (['sunat', 'stock', 'system'] as Category[]).reduce<Record<Category, number>>(
+    (acc, cat) => {
+      acc[cat] = notifications.filter((n) => TYPE_CATEGORY[n.type] === cat).length;
+      return acc;
+    },
+    { all: notifications.length, sunat: 0, stock: 0, system: 0 },
+  );
+
+  const filtered = activeCategory === 'all'
+    ? notifications
+    : notifications.filter((n) => TYPE_CATEGORY[n.type] === activeCategory);
 
   const handleItemClick = (item: Notification) => {
     markRead(item.id);
     if (item.actionUrl) {
       navigate(item.actionUrl);
+      props.onHiding();
     }
-    props.onHiding();
   };
 
-  const sorted = groupBySeverity(notifications);
+  const handleActionLink = (e: React.MouseEvent, item: Notification) => {
+    e.stopPropagation();
+    markRead(item.id);
+    if (item.actionUrl) {
+      navigate(item.actionUrl);
+      props.onHiding();
+    }
+  };
+
+  const handleDismiss = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    markRead(id);
+  };
 
   return (
-    <>
-      <div className="notification-header">
-        <div className="notification-header-title">
-          Notificaciones
+    <div className="notif-panel">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="notif-panel__header">
+        <div className="notif-panel__header-left">
+          <span className="notif-panel__title">Notificaciones</span>
           {unreadCount > 0 && (
-            <span
-              className="notification-header-unread-count"
-              aria-label={`${unreadCount} sin leer`}
-            >
-              ({unreadCount})
+            <span className="notif-panel__badge" aria-label={`${unreadCount} sin leer`}>
+              {unreadCount}
             </span>
           )}
         </div>
-        <div className="notification-header-button">
+        <div className="notif-panel__header-right">
+          <button
+            type="button"
+            className="notif-panel__mark-all"
+            disabled={loading || allRead}
+            onClick={markAllRead}
+          >
+            Marcar todo leído
+          </button>
           <IconButton
-            className="notification-close-button"
             icon="ph ph-x"
             label="Cerrar notificaciones"
             onClick={props.onHiding}
@@ -91,12 +158,39 @@ const NotificationPanel = (props: NotificationPanelProps) => {
         </div>
       </div>
 
-      <div className="notification-body" role="list" aria-label="Lista de notificaciones">
+      {/* ── Category filters ────────────────────────────────────────────────── */}
+      <div className="notif-panel__filters" role="tablist" aria-label="Filtrar por categoría">
+        {(['all', 'sunat', 'stock', 'system'] as Category[]).map((cat) => {
+          const count = categoryCounts[cat];
+          if (cat !== 'all' && count === 0) return null;
+          return (
+            <button
+              key={cat}
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === cat}
+              className={`notif-panel__filter-tab${activeCategory === cat ? ' is-active' : ''}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {CATEGORY_LABEL[cat]}
+              {count > 0 && (
+                <span className={`notif-panel__filter-count${activeCategory === cat ? ' is-active' : ''}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      <div className="notif-panel__body" role="list" aria-label="Lista de notificaciones">
         {loading && notifications.length === 0 ? (
-          <div className="notification-loading" aria-label="Cargando notificaciones">
-            <Skeleton variant="circle" width={28} height={28} />
+          <div className="notif-panel__loading" aria-live="polite">
+            <Skeleton variant="circle" width={36} height={36} />
+            <Skeleton variant="text" width="60%" height={14} />
           </div>
-        ) : sorted.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <EmptyState
             icon="bell"
             title="Sin notificaciones"
@@ -104,70 +198,72 @@ const NotificationPanel = (props: NotificationPanelProps) => {
             size="sm"
           />
         ) : (
-          sorted.map((item) => {
+          filtered.map((item) => {
             const isRead = item.readAt !== null;
-            const typeLabel = TYPE_LABEL[item.type];
+            const iconCfg = TYPE_ICON[item.type];
+            const actionLabel = TYPE_ACTION_LABEL[item.type];
+            const dotColor = SEVERITY_DOT_COLOR[item.severity];
 
             return (
               <div
                 key={item.id}
-                className={`notification-body-item notification-body-item--${item.severity}${isRead ? ' notification-body-item--read' : ''}`}
+                className={`notif-item${isRead ? ' notif-item--read' : ''}`}
                 role="listitem"
                 tabIndex={0}
-                aria-label={`${item.title}: ${item.body}`}
                 onClick={() => handleItemClick(item)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleItemClick(item);
-                  }
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }
                 }}
               >
+                {/* Icon square */}
                 <div
-                  className={`notification-body-item-icon notification-body-item-icon--${item.severity}`}
+                  className="notif-item__icon"
+                  style={{ background: iconCfg.bg, color: iconCfg.color }}
                   aria-hidden="true"
                 >
-                  {SEVERITY_ICON_CHAR[item.severity]}
+                  <i className={iconCfg.icon} />
                 </div>
-                <div className="notification-body-item-title">
-                  <div className="notification-body-item-title-row">
-                    <div className="notification-body-item-title-text">{item.title}</div>
+
+                {/* Content */}
+                <div className="notif-item__content">
+                  <div className="notif-item__title-row">
                     {!isRead && (
-                      <span className="notification-body-item-unread-dot" aria-label="No leído" />
+                      <span
+                        className="notif-item__dot"
+                        style={{ background: dotColor }}
+                        aria-label="Sin leer"
+                      />
                     )}
+                    <span className="notif-item__title">{item.title}</span>
+                    <span className="notif-item__time">{formatTime(item.createdAt)}</span>
                   </div>
-                  {typeLabel && (
-                    <Badge
-                      variant={item.severity === 'critical' ? 'danger' : item.severity === 'warning' ? 'warning' : 'info'}
-                      size="sm"
-                      pill
-                      className="notification-type-badge"
+                  <p className="notif-item__body">{item.body}</p>
+                  {item.actionUrl && actionLabel && (
+                    <button
+                      type="button"
+                      className="notif-item__action"
+                      onClick={(e) => handleActionLink(e, item)}
                     >
-                      {typeLabel}
-                    </Badge>
+                      {actionLabel} →
+                    </button>
                   )}
-                  <div className="notification-body-item-title-body">{item.body}</div>
-                  <div className="notification-body-item-title-time">
-                    {relativeTime(item.createdAt)}
-                  </div>
                 </div>
+
+                {/* Dismiss */}
+                <button
+                  type="button"
+                  className="notif-item__dismiss"
+                  aria-label="Descartar"
+                  onClick={(e) => handleDismiss(e, item.id)}
+                >
+                  ×
+                </button>
               </div>
             );
           })
         )}
       </div>
-
-      <div className="notification-footer">
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={loading || notifications.every((n) => n.readAt !== null)}
-          onClick={markAllRead}
-        >
-          Marcar todo como leído
-        </Button>
-      </div>
-    </>
+    </div>
   );
 };
 

@@ -1382,7 +1382,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       <div
         className={`view-wrapper ${options.mode === 'full' || !options.mode ? 'view-wrapper-datagrid-list list-page' : ''}`}
       >
-        <div className="grid theme-dependent native-datagrid">
+        <div className={`grid theme-dependent native-datagrid${options.zebraRows ? ' native-datagrid--zebra' : ''}`}>
           {(options.toolbarVisible ?? true) && options.mode !== 'minimal' && (
             <div className="native-datagrid__toolbar">
               {options.hasBackButton && (

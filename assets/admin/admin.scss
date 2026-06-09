@@ -162,9 +162,6 @@
   z-index: var(--z-shell-popover);
 }
 
-.notification-popover {
-  width: min(460px, calc(100vw - 20px));
-}
 
 // Notification badge — sits on top of header icon buttons.
 .messages > .app-badge {
@@ -362,19 +359,93 @@
   background-color: var(--side-panel-background);
   border-top: 1px solid var(--border-subtle);
   bottom: 0;
-  color: var(--text-tertiary);
   display: flex;
-  align-items: center;
-  font-size: var(--font-size-xxs);
-  height: var(--footer-height);
+  flex-direction: column;
   left: 0;
   opacity: 0;
-  padding: 0 0 0 var(--footer-left-padding);
   position: absolute;
   right: 0;
   transition: opacity var(--transition-slow);
 
   .side-nav-outer-toolbar__body.is-open & {
     opacity: 1;
+  }
+}
+
+// Footer nav items — same visual rhythm as sidebar nav items.
+.footer-nav {
+  display: flex;
+  flex-direction: column;
+
+  &__item {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-left: 3px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: var(--font-size-sm);
+    min-height: 36px;
+    padding: 0;
+    text-align: left;
+    transition:
+      background var(--transition-base),
+      color var(--transition-base);
+    width: 100%;
+
+    &:hover {
+      background: var(--surface-2);
+      color: var(--text-primary);
+    }
+
+    &.is-selected {
+      background: var(--surface-2);
+      border-left-color: var(--accent-color);
+      color: var(--accent-color);
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  &__icon {
+    align-items: center;
+    color: inherit;
+    display: inline-flex;
+    flex: 0 0 var(--side-panel-min-width);
+    font-size: 1.1rem;
+    justify-content: center;
+    margin: 0 !important;
+    opacity: 0.75;
+    width: var(--side-panel-min-width) !important;
+
+    .is-selected & {
+      opacity: 1;
+    }
+  }
+
+  &__text {
+    overflow: hidden;
+    padding-right: var(--space-3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Copyright line inside footer.
+.footer-copyright {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xxs);
+  height: var(--footer-height);
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 var(--footer-left-padding);
+}
+
+// Compact (icon-only) mode — hide footer text.
+.side-nav-outer-toolbar__body.is-compact .footer-nav {
+  &__text {
+    opacity: 0;
+    pointer-events: none;
   }
 }

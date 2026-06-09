@@ -479,7 +479,7 @@
     background var(--transition-fast),
     box-shadow var(--transition-fast);
 
-  &:nth-child(even) td {
+  .native-datagrid--zebra &:nth-child(even) td {
     // Use the explicit zebra token — ~3.5% darker than white, clearly visible at 13px.
     // The old inline color-mix formula produced ~#fbfbfc which was imperceptible.
     background: var(--grid-row-alt-bg);

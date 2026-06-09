@@ -51,8 +51,8 @@ export const AdminSidebarMenu = ({
   const location = useLocation();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing expansion to screen size change is intentional derived state
-    setExpandedItemKeys(new Set(isLarge ? items.map((item) => item.path || item.text) : []));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- always start collapsed; the active-parent effect will expand the right section
+    setExpandedItemKeys(new Set());
   }, [isLarge, items]);
 
   const activePath = useMemo(() => {

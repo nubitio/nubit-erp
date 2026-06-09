@@ -1,288 +1,302 @@
-// ─── Header ──────────────────────────────────────────────────────────────────
-.notification-header {
+/* stylelint-disable */
+
+// ── Panel container ───────────────────────────────────────────────────────────
+.notif-panel {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  min-height: 0;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.notif-panel__header {
+  display: flex;
   align-items: center;
-  padding: 0 var(--space-4);
-  height: var(--footer-height);
-  border-bottom: 1px solid var(--border-color);
-  background-color: transparent;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: var(--space-3);
+}
 
-  .notification-header-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--font-size-md);
-    font-weight: 600;
+.notif-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.notif-panel__header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.notif-panel__title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.notif-panel__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-1);
+  border-radius: 99px;
+  background: var(--error-color);
+  color: #fff;
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.notif-panel__mark-all {
+  background: transparent;
+  border: 0;
+  color: var(--accent-color);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: 0;
+  white-space: nowrap;
+  transition: color var(--transition-base);
+
+  &:hover:not(:disabled) {
+    color: var(--accent-hover);
   }
 
-  .notification-header-unread-count {
-    color: var(--accent-color);
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-  }
-
-  // The close button wrapper is transparent — IconButton handles all interaction styling
-  .notification-header-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  &:disabled {
+    color: var(--text-disabled);
+    cursor: default;
   }
 }
 
-// ─── Body ─────────────────────────────────────────────────────────────────────
-.notification-body {
-  max-height: 320px;
+// ── Category filters ──────────────────────────────────────────────────────────
+.notif-panel__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.notif-panel__filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: transparent;
+  border: 1.5px solid var(--border-color);
+  border-radius: 99px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: 3px var(--space-3);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-base);
+
+  &:hover {
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+  }
+
+  &.is-active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+  }
+}
+
+.notif-panel__filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 99px;
+  background: var(--border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  transition: background var(--transition-base), color var(--transition-base);
+
+  &.is-active {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+  }
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.notif-panel__body {
+  max-height: 420px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
 
-  // ── Custom scrollbar (Webkit + Firefox) ─────────────────────────────────
-  scrollbar-width: thin; // Firefox
-  scrollbar-color: var(--border-color) transparent; // Firefox
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: var(--radius-sm);
   }
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-secondary);
+}
+
+.notif-panel__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+}
+
+// ── Notification item ─────────────────────────────────────────────────────────
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition-base);
+
+  &:last-child {
+    border-bottom: none;
   }
 
-  .notification-body-item {
-    display: flex;
-    align-items: flex-start;
-    // 3 px accent strip lives as border-left; inner spacing starts after it
-    padding: var(--space-3) var(--space-3);
-    border-bottom: 1px solid var(--border-color);
-    border-left: 3px solid transparent;
-    cursor: pointer;
-    transition: background-color var(--transition-base);
-    position: relative;
+  &:hover {
+    background: var(--surface-2);
 
-    // ── Severity accent strips ──────────────────────────────────────────────
-    &--critical {
-      border-left-color: var(--error-color);
+    .notif-item__dismiss {
+      opacity: 1;
+    }
+  }
 
-      &:not(.notification-body-item--read) {
-        background-color: color-mix(in srgb, var(--error-color) 5%, transparent);
-      }
+  &--read {
+    .notif-item__title {
+      font-weight: var(--font-weight-regular);
+      color: var(--text-secondary);
     }
 
-    &--warning {
-      border-left-color: var(--warning-color);
-
-      &:not(.notification-body-item--read) {
-        background-color: color-mix(in srgb, var(--warning-color) 5%, transparent);
-      }
-    }
-
-    &--info {
-      border-left-color: var(--info-color);
-
-      &:not(.notification-body-item--read) {
-        background-color: color-mix(in srgb, var(--accent-color) 5%, transparent);
-      }
-    }
-
-    // ── Read state ──────────────────────────────────────────────────────────
-    &--read {
-      border-left-color: var(--border-color);
-      // no background tint — relies on hover only
-    }
-
-    &:hover {
-      background-color: var(--surface-2);
-    }
-
-    &:active {
-      background-color: var(--surface-3);
-    }
-
-    // ── Icon circle ─────────────────────────────────────────────────────────
-    .notification-body-item-icon {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      font-size: var(--font-size-sm);
-      font-weight: 700;
-      margin-right: var(--space-2);
-      margin-top: var(--space-1);
-
-      &--critical {
-        background-color: color-mix(in srgb, var(--error-color) 18%, transparent);
-        color: var(--error-color);
-      }
-
-      &--warning {
-        background-color: color-mix(in srgb, var(--warning-color) 18%, transparent);
-        color: var(--warning-color);
-      }
-
-      &--info {
-        background-color: color-mix(in srgb, var(--info-color) 18%, transparent);
-        color: var(--info-color);
-      }
-    }
-
-    // ── Text content block ──────────────────────────────────────────────────
-    .notification-body-item-title {
-      flex: 1;
-      min-width: 0; // allow text truncation inside flex child
-
-      // Title row: text + unread dot
-      .notification-body-item-title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-2);
-      }
-
-      .notification-body-item-title-text {
-        font-size: var(--font-size-md);
-        font-weight: 600;
-        line-height: var(--line-height-tight);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .notification-body-item-title-time {
-        font-size: var(--font-size-xs);
-        font-weight: 400;
-        color: var(--text-secondary);
-        margin-top: var(--space-1);
-      }
-    }
-
-    // ── Unread dot ──────────────────────────────────────────────────────────
-    .notification-body-item-unread-dot {
-      flex-shrink: 0;
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background-color: var(--accent-color);
+    .notif-item__body {
+      color: var(--text-tertiary);
     }
   }
 }
 
-// ── Body text — 2-line clamp ──────────────────────────────────────────────────
-.notification-body-item-title-body {
+// Icon square
+.notif-item__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  margin-top: 1px;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Content block
+.notif-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-item__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.notif-item__dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.notif-item__title {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  // allow wrapping for long titles
+  word-break: break-word;
+}
+
+.notif-item__time {
+  flex-shrink: 0;
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  margin-left: auto;
+  padding-left: var(--space-2);
+  line-height: var(--line-height-tight);
+}
+
+.notif-item__body {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: var(--font-size-sm);
-  font-weight: 400;
-  color: var(--text-secondary);
-  margin-top: var(--space-1);
-  line-height: var(--line-height-normal);
 }
 
-// ─── Type badge (pill) — uses Badge component now; keep for legacy fallback ────
-.notification-type-badge {
-  display: inline-block;
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-xl);
-  margin-top: var(--space-1);
-  line-height: 1.4;
-
-  &--critical {
-    background-color: color-mix(in srgb, var(--error-color) 14%, transparent);
-    color: var(--error-color);
-  }
-
-  &--warning {
-    background-color: color-mix(in srgb, var(--warning-color) 14%, transparent);
-    color: var(--warning-color);
-  }
-
-  &--info {
-    background-color: color-mix(in srgb, var(--info-color) 14%, transparent);
-    color: var(--info-color);
-  }
-}
-
-// ─── Loading state ────────────────────────────────────────────────────────────
-.notification-loading {
-  display: flex;
-  justify-content: center;
+.notif-item__action {
+  display: inline-flex;
   align-items: center;
-  height: 100%;
-  padding: var(--space-7) 0;
-}
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
-// Kept for cases where EmptyState component isn't used
-.notification-empty {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-8) var(--space-4);
-  color: var(--text-secondary);
-
-  .notification-empty-icon {
-    font-size: var(--font-size-xl);
-    line-height: 1;
-  }
-
-  .notification-empty-title {
-    font-size: var(--font-size-md);
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-
-  .notification-empty-subtitle {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-  }
-}
-
-// ─── Footer ───────────────────────────────────────────────────────────────────
-.notification-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--space-3) var(--space-4);
-  height: var(--footer-height);
-  border-top: 1px solid var(--border-color);
-  background-color: transparent;
-}
-
-// "Marcar todo como leído" — ghost button style aligned with @nubit/ui Button ghost variant
-.notification-mark-all-button {
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
   color: var(--accent-color);
   cursor: pointer;
   font: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  padding: var(--space-1) var(--space-2);
-  transition: background var(--transition-base), color var(--transition-base);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  margin-top: var(--space-2);
+  padding: 0;
+  transition: color var(--transition-base);
 
-  &:disabled {
-    color: var(--text-secondary);
-    cursor: default;
+  &:hover {
+    color: var(--accent-hover);
   }
+}
 
-  &:not(:disabled):hover,
-  &:not(:disabled):focus-visible {
-    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
-    outline: none;
+// Dismiss button — hidden until hover
+.notif-item__dismiss {
+  flex-shrink: 0;
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0;
+  padding: 2px var(--space-1);
+  margin-top: 2px;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-base), color var(--transition-base), background var(--transition-base);
+
+  &:hover {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    opacity: 1;
   }
 }

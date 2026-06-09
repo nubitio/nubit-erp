@@ -68,4 +68,6 @@ export interface DataGridViewOptions {
   emptyState?: ResourceEmptyState;
   /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */
   adapter?: BackendAdapter;
+  /** Alternate row background (zebra stripes). Defaults to false. */
+  zebraRows?: boolean;
 }

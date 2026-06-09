@@ -1,7 +1,7 @@
 import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { AppDialog, AppDropdown, Button, ConfirmDialog, DatePicker, EmptyState, IconButton } from "@nubit/ui";
+import { AppDialog, AppDropdown, Button, ConfirmDialog, DatePicker, DateRangePicker, EmptyState, IconButton } from "@nubit/ui";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { createCrudEvents, createScopedEventBus, getCoreLocale, getCoreTimezone, useCoreHttpClient, useCoreRuntime, useCoreTranslation, useEvents, useMercureSubscription } from "@nubit/core";
 import { useDropzone } from "react-dropzone";
@@ -307,6 +307,7 @@ function buildFormLayoutModel(fields, formLayout, overflowLabel) {
 				label: section.label,
 				collapsible: section.collapsible,
 				defaultCollapsed: section.defaultCollapsed,
+				avoidOrphanFields: section.avoidOrphanFields,
 				fields: pickFields(section.fields)
 			})),
 			overflow: overflow.length > 0 ? {
@@ -318,6 +319,168 @@ function buildFormLayoutModel(fields, formLayout, overflowLabel) {
 	return {
 		type: "plain",
 		fields
+	};
+}
+//#endregion
+//#region assets/crud/view/drawerSizes.ts
+const DRAWER_WIDTHS = {
+	sm: 480,
+	md: 640,
+	lg: 880,
+	xl: 1120
+};
+const DEFAULT_DRAWER_SIZE = "lg";
+const DEFAULT_DRAWER_WIDTH = `min(${DRAWER_WIDTHS.lg}px, 60vw)`;
+function resolveDrawerWidth(options) {
+	if (options?.drawerWidth != null) return options.drawerWidth;
+	if (options?.drawerSize != null) return DRAWER_WIDTHS[options.drawerSize];
+	return DEFAULT_DRAWER_WIDTH;
+}
+function parseDrawerWidthPx(drawerWidth) {
+	if (drawerWidth == null) return void 0;
+	if (typeof drawerWidth === "number") return drawerWidth;
+	const trimmed = drawerWidth.trim();
+	const minMatch = trimmed.match(/^min\(\s*(\d+(?:\.\d+)?)px/i);
+	if (minMatch) return Number(minMatch[1]);
+	const pxMatch = trimmed.match(/^(\d+(?:\.\d+)?)px$/i);
+	if (pxMatch) return Number(pxMatch[1]);
+	const vwMatch = trimmed.match(/^(\d+(?:\.\d+)?)vw$/i);
+	if (vwMatch && typeof window !== "undefined") return Number(vwMatch[1]) / 100 * window.innerWidth;
+}
+/**
+* Maps an effective drawer width to a layout bucket used by the form grid resolver.
+* Thresholds align with {@link DRAWER_WIDTHS} token boundaries.
+*/
+function resolveDrawerLayoutBucket(drawerWidth) {
+	const px = parseDrawerWidthPx(drawerWidth);
+	if (px == null) return "md";
+	if (px < DRAWER_WIDTHS.md) return "sm";
+	if (px < DRAWER_WIDTHS.lg) return "md";
+	if (px < DRAWER_WIDTHS.xl) return "lg";
+	return "xl";
+}
+//#endregion
+//#region assets/crud/form/resolveFieldColSpan.ts
+const MOBILE_BREAKPOINT = 768;
+const FULL_WIDTH_HINTS = new Set([
+	"long",
+	"multiline",
+	"fullWidth",
+	"upload",
+	"detail"
+]);
+const SHORT_HINTS = new Set([
+	"short",
+	"identity",
+	"money",
+	"date",
+	"lookup",
+	"medium"
+]);
+const COMPACT_FIELD_TYPES = new Set([
+	"date",
+	"datetime",
+	"number",
+	"currency",
+	"select",
+	"enum",
+	"switch",
+	"checkbox",
+	"radio"
+]);
+/** Layout bucket derived from the effective drawer width. */
+function resolveDrawerSize(drawerWidth) {
+	return resolveDrawerLayoutBucket(drawerWidth);
+}
+function isMobileViewport(context) {
+	const width = context.viewportWidth ?? context.containerWidth;
+	return width != null && width <= MOBILE_BREAKPOINT;
+}
+function isFullWidthFieldType(field) {
+	return field.type === "textarea" || field.type === "html" || field.type === "file" || field.type === "tags" || field.contentRender != null;
+}
+/**
+* Structural full-width signal — type, layout hint, or declared max length only.
+* No field-name or label heuristics (library stays domain-agnostic).
+*/
+function isLongTextField(field) {
+	if (isFullWidthFieldType(field)) return true;
+	if (field.layoutHint && FULL_WIDTH_HINTS.has(field.layoutHint)) return true;
+	if (field.type === "text" && field.maxLength != null && field.maxLength > 80) return true;
+	return false;
+}
+/**
+* Structural compact-field signal — field type and explicit layout hints only.
+*/
+function isShortField(field) {
+	if (isLongTextField(field)) return false;
+	if (field.layoutHint && SHORT_HINTS.has(field.layoutHint)) return true;
+	if (COMPACT_FIELD_TYPES.has(field.type)) return true;
+	if (field.type === "entity") return !field.multiple;
+	if (field.type === "text" || field.type === "password") return field.maxLength != null && field.maxLength <= 40;
+	return false;
+}
+function canUseHalfColumn(context) {
+	if (isMobileViewport(context)) return false;
+	if (context.presentationMode === "page") return true;
+	if (context.presentationMode === "drawer") {
+		const size = context.drawerSize ?? "md";
+		return size === "lg" || size === "xl";
+	}
+	if (context.presentationMode === "dialog") return (context.dialogWidth ?? 480) >= DRAWER_WIDTHS.lg;
+	return false;
+}
+function resolveHeuristicColSpan(field, context) {
+	if (field.forceFullWidth || isLongTextField(field)) return 12;
+	if (field.minColSpan === 12 || field.preferredColSpan === 12) return 12;
+	if (field.layoutHint) {
+		if (FULL_WIDTH_HINTS.has(field.layoutHint)) return 12;
+		if (SHORT_HINTS.has(field.layoutHint) && canUseHalfColumn(context)) return field.preferredColSpan === 6 || field.minColSpan !== 12 ? 6 : 12;
+	}
+	if (!canUseHalfColumn(context)) return 12;
+	if (field.preferredColSpan === 6 || field.minColSpan === 6) return 6;
+	return isShortField(field) ? 6 : 12;
+}
+/**
+* Resolves the grid column span for a single field.
+* Explicit `field.col` always wins over heuristics.
+*/
+function resolveFieldColSpan(field, context) {
+	if (field.col != null) return field.col;
+	if (isMobileViewport(context) || field.forceFullWidth) return 12;
+	return resolveHeuristicColSpan(field, context);
+}
+function advanceRow(rowUsed, span) {
+	if (rowUsed + span > 12) return span;
+	const next = rowUsed + span;
+	return next === 12 ? 0 : next;
+}
+/**
+* Resolves spans for a field list and optionally expands a trailing half-column orphan.
+*/
+function resolveFieldsColSpans(fields, context) {
+	const resolved = fields.map((field) => ({
+		field,
+		span: resolveFieldColSpan(field, context)
+	}));
+	if (context.avoidOrphanFields !== false && resolved.length > 0) {
+		let rowUsed = 0;
+		for (const item of resolved) rowUsed = advanceRow(rowUsed, item.span);
+		if (rowUsed === 6) resolved[resolved.length - 1].span = 12;
+	}
+	return new Map(resolved.map((item) => [item.field.name, item.span]));
+}
+function buildFieldColSpanContext(options) {
+	return {
+		presentationMode: options.presentationMode,
+		drawerWidth: options.drawerWidth,
+		drawerSize: resolveDrawerSize(options.drawerWidth),
+		dialogWidth: options.dialogWidth,
+		viewportWidth: options.viewportWidth,
+		containerWidth: options.containerWidth,
+		hasTabs: options.hasTabs,
+		hasMasterDetail: options.hasMasterDetail,
+		avoidOrphanFields: options.avoidOrphanFields
 	};
 }
 //#endregion
@@ -971,8 +1134,18 @@ function fieldSearchExpr(field) {
 	if (field.searchExpr && field.searchExpr.length > 0) return field.searchExpr;
 	return [field.textField].filter(Boolean);
 }
-function colSpan(field) {
-	return { "--native-form-col": String(field.col ?? 12) };
+function colSpanStyle(span) {
+	return { "--native-form-col": String(span) };
+}
+function useViewportWidth() {
+	const [width, setWidth] = useState(() => typeof window !== "undefined" ? window.innerWidth : void 0);
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const onResize = () => setWidth(window.innerWidth);
+		window.addEventListener("resize", onResize, { passive: true });
+		return () => window.removeEventListener("resize", onResize);
+	}, []);
+	return width;
 }
 const FIELD_BUTTON_ICONS = {
 	search: "ph ph-magnifying-glass",
@@ -1665,12 +1838,27 @@ const NativeFormView = forwardRef((options, ref) => {
 	const onFieldDataChanged = options.onFieldDataChanged;
 	const detailPropertyName = options.detailPropertyName ?? "items";
 	const computedFieldNames = useMemo(() => fields.filter((field) => field.computed !== void 0).map((field) => field.name), [fields]);
+	const viewportWidth = useViewportWidth();
 	const formLayoutModel = useMemo(() => buildFormLayoutModel(fields, options.formLayout, t("form.groupOther")), [
 		fields,
 		options.formLayout,
 		t
 	]);
 	const optionFields = useMemo(() => [...fields, ...options.detailFields ?? []], [fields, options.detailFields]);
+	const baseColSpanContext = useMemo(() => buildFieldColSpanContext({
+		presentationMode: options.presentationContext?.presentationMode ?? "dialog",
+		drawerWidth: options.presentationContext?.drawerWidth,
+		dialogWidth: options.presentationContext?.dialogWidth,
+		viewportWidth: options.presentationContext?.viewportWidth ?? viewportWidth,
+		containerWidth: options.presentationContext?.containerWidth,
+		hasTabs: options.presentationContext?.hasTabs ?? formLayoutModel.type === "tabs",
+		hasMasterDetail: options.presentationContext?.hasMasterDetail ?? !!options.detailFields
+	}), [
+		formLayoutModel.type,
+		options.detailFields,
+		options.presentationContext,
+		viewportWidth
+	]);
 	const setNextFormData = useCallback((nextData) => {
 		formDataRef.current = nextData;
 		setFormData(nextData);
@@ -1834,7 +2022,12 @@ const NativeFormView = forwardRef((options, ref) => {
 		setDetailErrors({});
 		setNextDetailRows([]);
 		prependDataRef.current = /* @__PURE__ */ new Map();
-		setNextFormData(payload ? normalizeFormData(payload, options.fields, options.adapter, prependDataRef.current) : buildEmptyRow(options.fields));
+		const row = payload ? normalizeFormData(payload, options.fields, options.adapter, prependDataRef.current) : buildEmptyRow(options.fields);
+		setNextFormData(row);
+		options.fields.forEach((field) => {
+			const value = row[field.name];
+			if (value !== void 0) field.onChange?.(value);
+		});
 		if (payload && Array.isArray(payload[detailPropertyName])) setNextDetailRows(payload[detailPropertyName]);
 		isEdit.current = false;
 	}, [
@@ -1993,7 +2186,7 @@ const NativeFormView = forwardRef((options, ref) => {
 		setNextFormData,
 		validate
 	]);
-	const renderField = (field) => {
+	const renderField = (field, span) => {
 		const state = fieldState[field.name] ?? {};
 		if (field.isIdentity || !field.visibleOnForm || field.hidden || state.hidden) return null;
 		const value = formData[field.name];
@@ -2179,7 +2372,7 @@ const NativeFormView = forwardRef((options, ref) => {
 		}
 		return /* @__PURE__ */ jsxs("div", {
 			className: "native-form__field",
-			style: colSpan(field),
+			style: colSpanStyle(span),
 			children: [
 				field.type !== "checkbox" && field.type !== "switch" && /* @__PURE__ */ jsx("label", {
 					className: `native-form__label${field.required ? " native-form__label--required" : ""}`,
@@ -2188,7 +2381,7 @@ const NativeFormView = forwardRef((options, ref) => {
 				}),
 				control,
 				field.helpText && /* @__PURE__ */ jsx("span", {
-					className: "native-form__label",
+					className: "native-form__hint",
 					children: field.helpText
 				}),
 				error && /* @__PURE__ */ jsxs("span", {
@@ -2201,16 +2394,22 @@ const NativeFormView = forwardRef((options, ref) => {
 			]
 		}, field.name);
 	};
-	const renderFields = (fields) => /* @__PURE__ */ jsx("div", {
-		className: "native-form__grid",
-		children: fields.map(renderField)
-	});
+	const renderFields = (visibleFields, layoutContext) => {
+		const spans = resolveFieldsColSpans(visibleFields, {
+			...baseColSpanContext,
+			...layoutContext
+		});
+		return /* @__PURE__ */ jsx("div", {
+			className: "native-form__grid",
+			children: visibleFields.map((field) => renderField(field, spans.get(field.name) ?? 12))
+		});
+	};
 	const renderGroup = (group) => /* @__PURE__ */ jsxs("section", {
 		className: "native-form__section",
 		children: [/* @__PURE__ */ jsx("h3", {
 			className: "native-form__section-title",
 			children: group.label
-		}), renderFields(group.fields)]
+		}), renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })]
 	}, group.label);
 	const renderLayout = (layout) => {
 		if (layout.type === "tabs") {
@@ -2543,6 +2742,7 @@ function buildToolbar(options, t, onAddClick) {
 		showRefresh: options.toolbar?.showRefresh ?? true
 	};
 }
+const FILTER_RESET_OPERATOR = "__reset_filter__";
 const BETWEEN_VALUE_SEPARATOR = "|";
 function isDateLikeField(field) {
 	return field.type === "date" || field.type === "datetime";
@@ -2666,6 +2866,32 @@ function getFilterOperators(field) {
 		];
 	}
 }
+function getFilterOperatorLabel(value, t) {
+	switch (value) {
+		case "contains": return t("grid.filterOperator.contains");
+		case "notcontains": return t("grid.filterOperator.notcontains");
+		case "startswith": return t("grid.filterOperator.startswith");
+		case "=": return t("grid.filterOperator.equals");
+		case "<>": return t("grid.filterOperator.notEquals");
+		case ">": return t("grid.filterOperator.greaterThan");
+		case ">=": return t("grid.filterOperator.greaterOrEqual");
+		case "<": return t("grid.filterOperator.lessThan");
+		case "<=": return t("grid.filterOperator.lessOrEqual");
+		case "between": return t("grid.filterOperator.between");
+		default: return value;
+	}
+}
+function getFilterOperatorIcon(value) {
+	switch (value) {
+		case "contains": return "abc";
+		case "notcontains": return "a̸bc";
+		case "startswith": return "ab|";
+		case "=": return "=";
+		case "<>": return "≠";
+		case "between": return "↔";
+		default: return value;
+	}
+}
 function computeDefaultOperators(fields) {
 	const defaults = {};
 	fields.forEach((field) => {
@@ -2724,6 +2950,7 @@ function FilterValueDropdown({ id, value, options, placeholder, className, onCha
 }
 function FilterCell({ field, operator, remoteOptions, value, onClear, onInputChange, onBetweenInputChange, onSelectChange, onOperatorChange }) {
 	const httpClient = useCoreHttpClient();
+	const { t } = useCoreTranslation();
 	if (field.type === "entity") return /* @__PURE__ */ jsx(NativeEntitySelect, {
 		className: "native-datagrid__filter-select",
 		field,
@@ -2738,7 +2965,7 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 			id: `native-datagrid-filter-${field.name}`,
 			value,
 			className: "native-datagrid__filter-select",
-			placeholder: "Todos",
+			placeholder: t("grid.allFilter"),
 			options: items.map((item) => ({
 				value: String(item["value"] ?? ""),
 				label: String(item["text"] ?? item["value"] ?? "")
@@ -2756,53 +2983,56 @@ function FilterCell({ field, operator, remoteOptions, value, onClear, onInputCha
 			operators.length > 1 ? /* @__PURE__ */ jsx(AppDropdown, {
 				id: `native-datagrid-filter-op-${field.name}`,
 				value: operator,
-				options: operators.map((op) => ({
+				options: [...operators.map((op) => ({
 					value: op.value,
-					label: op.label
-				})),
-				onChange: onOperatorChange,
+					label: getFilterOperatorLabel(op.value, t),
+					selectedLabel: op.label,
+					iconText: getFilterOperatorIcon(op.value)
+				})), ...value ? [{
+					value: FILTER_RESET_OPERATOR,
+					label: t("grid.filterOperator.reset"),
+					iconText: "⌕"
+				}] : []],
+				onChange: (nextOperator) => {
+					if (nextOperator === FILTER_RESET_OPERATOR) {
+						onClear();
+						return;
+					}
+					onOperatorChange(nextOperator);
+				},
 				variant: "compact",
 				showFieldLabel: false,
+				menuMinWidth: 220,
 				className: "native-datagrid__filter-operator"
 			}) : /* @__PURE__ */ jsx("i", {
 				className: "ph ph-magnifying-glass native-datagrid__filter-icon",
 				"aria-hidden": "true"
 			}),
-			isBetween ? /* @__PURE__ */ jsxs("div", {
-				className: "native-datagrid__filter-between-inputs",
-				children: [/* @__PURE__ */ jsx(DatePicker, {
-					className: "native-datagrid__filter-date",
-					clearable: false,
-					locale: getCoreLocale(),
-					value: betweenStart,
-					ariaLabel: `Filtrar ${field.label} desde`,
-					onChange: (nextValue) => onBetweenInputChange(nextValue, betweenEnd)
-				}), /* @__PURE__ */ jsx(DatePicker, {
-					className: "native-datagrid__filter-date",
-					clearable: false,
-					locale: getCoreLocale(),
-					value: betweenEnd,
-					ariaLabel: `Filtrar ${field.label} hasta`,
-					onChange: (nextValue) => onBetweenInputChange(betweenStart, nextValue)
-				})]
+			isBetween ? /* @__PURE__ */ jsx(DateRangePicker, {
+				className: "native-datagrid__filter-range",
+				locale: getCoreLocale(),
+				startValue: betweenStart,
+				endValue: betweenEnd,
+				ariaLabel: t("grid.filterColumn", { column: field.label }),
+				onChange: onBetweenInputChange
 			}) : isDateLikeField(field) ? /* @__PURE__ */ jsx(DatePicker, {
 				className: "native-datagrid__filter-date",
 				clearable: false,
 				locale: getCoreLocale(),
 				value,
-				ariaLabel: `Filtrar ${field.label}`,
+				ariaLabel: t("grid.filterColumn", { column: field.label }),
 				onChange: onInputChange
 			}) : /* @__PURE__ */ jsx("input", {
 				type: inputType,
 				className: "native-datagrid__filter-input",
 				value,
-				"aria-label": `Filtrar ${field.label}`,
+				"aria-label": t("grid.filterColumn", { column: field.label }),
 				onChange: (e) => onInputChange(e.target.value)
 			}),
 			/* @__PURE__ */ jsx("button", {
 				type: "button",
 				className: `native-datagrid__filter-clear${value ? " is-active" : ""}`,
-				"aria-label": "Limpiar filtro",
+				"aria-label": t("grid.clearFilter"),
 				tabIndex: value ? 0 : -1,
 				onClick: onClear,
 				children: /* @__PURE__ */ jsx("i", {
@@ -3234,8 +3464,43 @@ const NativeDataGridView = forwardRef((options, ref) => {
 		hasRowActions,
 		containerWidth
 	});
+	const resolvedColWidths = useMemo(() => {
+		if (visibleFields.length === 0) return colWidths;
+		const dataTotal = visibleFields.reduce((sum, f) => sum + getColumnWidth(f, colWidths), 0);
+		const fixedTotal = (hasCheckbox ? CHECKBOX_COL_WIDTH : 0) + (hasDetail ? DETAIL_COL_WIDTH : 0) + (hasRowActions ? ACTIONS_COL_WIDTH : 0);
+		const extra = Math.max(0, containerWidth - dataTotal - fixedTotal);
+		if (extra === 0 || dataTotal === 0) return colWidths;
+		let distributed = 0;
+		const result = {};
+		visibleFields.forEach((f, i) => {
+			const base = getColumnWidth(f, colWidths);
+			const share = i < visibleFields.length - 1 ? Math.round(extra * (base / dataTotal)) : extra - distributed;
+			result[f.name] = base + share;
+			distributed += share;
+		});
+		return result;
+	}, [
+		visibleFields,
+		colWidths,
+		hasCheckbox,
+		hasDetail,
+		hasRowActions,
+		containerWidth
+	]);
 	const tableLayoutStyle = { "--native-datagrid-layout-width": `${layoutWidth}px` };
 	const toolbar = buildToolbar(options, t, onAddClick);
+	const pageStart = totalCount > 0 ? page * pageSize + 1 : 0;
+	const pageEnd = totalCount > 0 ? Math.min((page + 1) * pageSize, totalCount) : 0;
+	const recordRangeLabel = totalCount > 0 ? t("grid.recordRange", {
+		start: pageStart,
+		end: pageEnd,
+		total: totalCount
+	}) : t("grid.noRecordCount");
+	const selectedCountLabel = selectedRows.length > 0 ? t("grid.selectedCount", { count: selectedRows.length }) : null;
+	const pageStatusLabel = totalPages > 0 ? t("grid.pageStatus", {
+		page: page + 1,
+		total: totalPages
+	}) : null;
 	return /* @__PURE__ */ jsx("div", {
 		className: "view datagrid-list",
 		children: /* @__PURE__ */ jsx("div", {
@@ -3248,7 +3513,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 						children: [
 							options.hasBackButton && /* @__PURE__ */ jsx(IconButton, {
 								icon: "ph ph-arrow-left",
-								label: "Volver",
+								label: t("grid.back"),
 								onClick: () => options.onBack ? options.onBack() : navigate(-1)
 							}),
 							options.mode === "full" || !options.mode ? /* @__PURE__ */ jsx("div", {
@@ -3279,10 +3544,12 @@ const NativeDataGridView = forwardRef((options, ref) => {
 							/* @__PURE__ */ jsxs("table", {
 								className: "native-datagrid__table",
 								style: tableLayoutStyle,
+								"aria-label": options.title,
+								"aria-rowcount": totalCount || rows.length,
 								children: [
 									/* @__PURE__ */ jsx(GridColumnGroup, {
 										fields: visibleFields,
-										colWidths,
+										colWidths: resolvedColWidths,
 										hasCheckbox,
 										hasDetail,
 										hasRowActions
@@ -3295,16 +3562,20 @@ const NativeDataGridView = forwardRef((options, ref) => {
 												hasCheckbox && /* @__PURE__ */ jsx("th", { className: "native-datagrid__select-cell" }),
 												visibleFields.map((field) => {
 													const sortRule = sort.find((rule) => rule.selector === field.name);
-													const width = getColumnWidth(field, colWidths);
+													const width = getColumnWidth(field, resolvedColWidths);
+													const hasActiveFilter = Boolean((filterInputs[field.name] ?? "").trim());
 													return /* @__PURE__ */ jsxs("th", {
+														className: [sortRule ? "native-datagrid__header-cell--sorted" : "", hasActiveFilter ? "native-datagrid__header-cell--filtered" : ""].filter(Boolean).join(" ") || void 0,
 														title: field.label,
 														style: {
 															width,
 															textAlign: field.align
 														},
+														"aria-sort": sortRule ? sortRule.desc ? "descending" : "ascending" : void 0,
 														children: [field.sortable ? /* @__PURE__ */ jsxs("button", {
 															type: "button",
 															className: "native-datagrid__sort-button",
+															"aria-label": t("grid.sortColumn", { column: field.label }),
 															onClick: () => toggleSort(field),
 															children: [/* @__PURE__ */ jsx("span", { children: field.label }), sortRule ? /* @__PURE__ */ jsx("i", {
 																className: `ph ${sortRule.desc ? "ph-caret-down" : "ph-caret-up"} native-datagrid__sort-icon`,
@@ -3320,7 +3591,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 															className: "native-datagrid__col-resize",
 															onMouseDown: handleResizeMouseDown(field.name),
 															onClick: (event) => event.stopPropagation(),
-															title: "Arrastrar para redimensionar"
+															title: t("grid.resizeColumn")
 														})]
 													}, field.name);
 												}),
@@ -3332,6 +3603,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 													options.detailFields && /* @__PURE__ */ jsx("td", { className: "native-datagrid__detail-cell" }),
 													hasCheckbox && /* @__PURE__ */ jsx("td", { className: "native-datagrid__select-cell" }),
 													visibleFields.map((field) => {
+														const filterCellWidth = getColumnWidth(field, resolvedColWidths);
 														const applyImmediate = (nextInputs) => {
 															clearTimeout(filterDebounceRef.current);
 															setFilterInputs(nextInputs);
@@ -3340,8 +3612,8 @@ const NativeDataGridView = forwardRef((options, ref) => {
 															options.onFilterChange?.(nextInputs);
 														};
 														return /* @__PURE__ */ jsx("td", {
-															style: { width: getColumnWidth(field, colWidths) },
-															className: field.filterable === false ? "native-datagrid__filter-cell--noop" : void 0,
+															style: { width: filterCellWidth },
+															className: [field.filterable === false ? "native-datagrid__filter-cell--noop" : "", (filterInputs[field.name] ?? "").trim() ? "native-datagrid__filter-cell--active" : ""].filter(Boolean).join(" ") || void 0,
 															children: field.filterable ? /* @__PURE__ */ jsx(FilterCell, {
 																field,
 																operator: filterOperators[field.name] ?? getDefaultFilterOperator(field),
@@ -3455,6 +3727,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 											className: "native-datagrid__empty-td"
 										}) }) : rows.map((row, rowIndex) => {
 											const key = row[idField] ?? rowIndex;
+											const selected = selectedKeys.includes(key);
 											const detailFields = typeof options.detailFields === "function" ? options.detailFields(row) : options.detailFields;
 											const detailUrl = options.detailUrl?.replace("{id}", String(key));
 											const expanded = expandedKeys.has(key);
@@ -3483,8 +3756,9 @@ const NativeDataGridView = forwardRef((options, ref) => {
 												}] : []
 											];
 											return /* @__PURE__ */ jsxs(React.Fragment, { children: [/* @__PURE__ */ jsxs("tr", {
-												className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selectedKeys.includes(key) ? "native-datagrid__row--selected" : ""}`,
+												className: `native-datagrid__row ${expanded ? "native-datagrid__row--expanded" : ""} ${selected ? "native-datagrid__row--selected" : ""}`,
 												tabIndex: 0,
+												"aria-selected": selected,
 												onClick: () => selectRow(row),
 												onDoubleClick: () => {
 													if (options.allowEdit && (options.onEdit || options.events?.EDIT)) {
@@ -3517,7 +3791,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 														children: detailUrl && detailFields && /* @__PURE__ */ jsx("button", {
 															type: "button",
 															className: `native-datagrid__expand-button${expanded ? " is-expanded" : ""}`,
-															"aria-label": expanded ? "Contraer detalle" : "Expandir detalle",
+															"aria-label": expanded ? t("grid.collapseDetail") : t("grid.expandDetail"),
 															onClick: (event) => {
 																event.stopPropagation();
 																setExpandedKeys((current) => {
@@ -3537,15 +3811,15 @@ const NativeDataGridView = forwardRef((options, ref) => {
 														className: "native-datagrid__select-cell",
 														children: /* @__PURE__ */ jsx("input", {
 															type: "checkbox",
-															checked: selectedKeys.includes(key),
+															checked: selected,
 															readOnly: true,
-															"aria-label": "Seleccionar fila"
+															"aria-label": t("grid.selectRow")
 														})
 													}),
 													visibleFields.map((field, columnIndex) => {
 														return /* @__PURE__ */ jsx("td", {
 															style: {
-																width: getColumnWidth(field, colWidths),
+																width: getColumnWidth(field, resolvedColWidths),
 																textAlign: field.align
 															},
 															title: getCellText(field, row, filterRemoteOptions[field.name], t("common.yes"), t("common.no")),
@@ -3618,7 +3892,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										rows,
 										summaryFields: options.summaryFields,
 										footerRef: tfootRef,
-										colWidths
+										colWidths: resolvedColWidths
 									})
 								]
 							}),
@@ -3641,9 +3915,23 @@ const NativeDataGridView = forwardRef((options, ref) => {
 					(options.paging ?? true) && /* @__PURE__ */ jsxs("div", {
 						className: "native-datagrid__pager",
 						children: [
-							/* @__PURE__ */ jsx("span", {
-								className: "native-datagrid__pager-info",
-								children: totalCount > 0 ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} de ${totalCount}` : "0 registros"
+							/* @__PURE__ */ jsxs("div", {
+								className: "native-datagrid__pager-status",
+								"aria-live": "polite",
+								children: [
+									/* @__PURE__ */ jsx("span", {
+										className: "native-datagrid__pager-info",
+										children: recordRangeLabel
+									}),
+									selectedCountLabel && /* @__PURE__ */ jsx("span", {
+										className: "native-datagrid__pager-selected",
+										children: selectedCountLabel
+									}),
+									pageStatusLabel && /* @__PURE__ */ jsx("span", {
+										className: "native-datagrid__pager-page-status",
+										children: pageStatusLabel
+									})
+								]
 							}),
 							/* @__PURE__ */ jsxs("div", {
 								className: "native-datagrid__pager-nav",
@@ -3653,7 +3941,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										className: "native-datagrid__pager-btn",
 										onClick: () => setPage(0),
 										disabled: page === 0,
-										"aria-label": "Primera página",
+										"aria-label": t("grid.firstPage"),
 										children: /* @__PURE__ */ jsx("i", {
 											className: "ph ph-caret-double-left",
 											"aria-hidden": "true"
@@ -3664,7 +3952,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										className: "native-datagrid__pager-btn",
 										onClick: () => setPage((p) => Math.max(0, p - 1)),
 										disabled: page === 0,
-										"aria-label": "Página anterior",
+										"aria-label": t("grid.previousPage"),
 										children: /* @__PURE__ */ jsx("i", {
 											className: "ph ph-caret-left",
 											"aria-hidden": "true"
@@ -3685,7 +3973,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										className: "native-datagrid__pager-btn",
 										onClick: () => setPage((p) => Math.min(totalPages - 1, p + 1)),
 										disabled: page + 1 >= totalPages,
-										"aria-label": "Página siguiente",
+										"aria-label": t("grid.nextPage"),
 										children: /* @__PURE__ */ jsx("i", {
 											className: "ph ph-caret-right",
 											"aria-hidden": "true"
@@ -3696,7 +3984,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 										className: "native-datagrid__pager-btn",
 										onClick: () => setPage(totalPages - 1),
 										disabled: page + 1 >= totalPages,
-										"aria-label": "Última página",
+										"aria-label": t("grid.lastPage"),
 										children: /* @__PURE__ */ jsx("i", {
 											className: "ph ph-caret-double-right",
 											"aria-hidden": "true"
@@ -3758,7 +4046,7 @@ const NativeDataGridView = forwardRef((options, ref) => {
 								if (openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight) return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
 								return `${openRowMenu.rect.bottom + 4}px`;
 							})(),
-							zIndex: 9999
+							zIndex: "var(--z-popover)"
 						},
 						onClick: (e) => e.stopPropagation(),
 						children: (() => {
@@ -3915,11 +4203,11 @@ const formatSize = (value) => {
 /**
 * Drawer form shell — slides in from the side and leaves the grid visible.
 *
-* - Default: right-side panel `min(720px, 60vw)` wide.
+* - Default: right-side panel `min(880px, 60vw)` wide.
 * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
 * - Escape closes the drawer; nested lookup dialogs float above via z-index.
 */
-const CrudDrawerShell = ({ isOpen, mode, title, onClose, onCancel, onSave, drawerWidth = "min(720px, 60vw)", drawerSide = "right", children }) => {
+const CrudDrawerShell = ({ isOpen, mode, title, onClose, onCancel, onSave, drawerWidth = DEFAULT_DRAWER_WIDTH, drawerSide = "right", children }) => {
 	const { t } = useCoreTranslation();
 	const titleId = useId();
 	const panelRef = useRef(null);
@@ -4070,7 +4358,7 @@ const CrudFormShell = ({ viewMode, ...shellProps }) => {
 //#region assets/crud/view/viewMode.ts
 const DEFAULTS = {
 	mode: "dialog",
-	drawerWidth: "min(720px, 60vw)",
+	drawerWidth: DEFAULT_DRAWER_WIDTH,
 	drawerSide: "right"
 };
 /**
@@ -4084,11 +4372,16 @@ function resolveViewMode(raw) {
 		...DEFAULTS,
 		mode: raw
 	};
-	return {
+	const resolved = {
 		mode: raw.mode,
-		drawerWidth: raw.drawerWidth ?? DEFAULTS.drawerWidth,
+		drawerWidth: resolveDrawerWidth({
+			drawerSize: raw.drawerSize,
+			drawerWidth: raw.drawerWidth
+		}),
 		drawerSide: raw.drawerSide ?? DEFAULTS.drawerSide
 	};
+	if (raw.drawerSize) resolved.drawerSize = raw.drawerSize;
+	return resolved;
 }
 //#endregion
 //#region assets/crud/crud/usePermissions.ts
@@ -4902,6 +5195,13 @@ const CrudPageInner = ({ resource, onFormDataChange, initialRecordId = null, ini
 					},
 					onDeleteError: resolvedResource.onDeleteError,
 					formLayout: resolvedResource.formLayout,
+					presentationContext: {
+						presentationMode: viewMode.mode,
+						drawerWidth: viewMode.drawerWidth,
+						dialogWidth: resolvedResource.dialogWidth,
+						hasTabs: resolvedResource.formLayout?.type === "tabs",
+						hasMasterDetail: !!formDetail?.fields
+					},
 					computedValues,
 					onFieldDataChanged: onFormDataChange,
 					adapter: resolvedResource.adapter,
@@ -5557,6 +5857,10 @@ const MANUAL_FIELD_KEYS = [...[
 	"multiple",
 	"sendAsString",
 	"order",
+	"layoutHint",
+	"preferredColSpan",
+	"minColSpan",
+	"forceFullWidth",
 	"visibleWhen",
 	"disabledWhen",
 	"computed",
@@ -5969,7 +6273,7 @@ var BaseFieldBuilder = class {
 		this._field = {
 			isIdentity: false,
 			type,
-			col: 12,
+			col: void 0,
 			name: "",
 			label: "",
 			width: void 0,
@@ -6022,6 +6326,22 @@ var BaseFieldBuilder = class {
 	}
 	col(col) {
 		this._field.col = col;
+		return this;
+	}
+	layoutHint(value) {
+		this._field.layoutHint = value;
+		return this;
+	}
+	preferredColSpan(value) {
+		this._field.preferredColSpan = value;
+		return this;
+	}
+	minColSpan(value) {
+		this._field.minColSpan = value;
+		return this;
+	}
+	forceFullWidth(value = true) {
+		this._field.forceFullWidth = value;
 		return this;
 	}
 	name(name) {
@@ -6568,7 +6888,7 @@ var FieldBuilder = class {
 		this._field = {
 			isIdentity: false,
 			type: "text",
-			col: 12,
+			col: void 0,
 			name: "",
 			label: "",
 			width: void 0,
@@ -6625,6 +6945,22 @@ var FieldBuilder = class {
 	}
 	col(col) {
 		this._field.col = col;
+		return this;
+	}
+	layoutHint(value) {
+		this._field.layoutHint = value;
+		return this;
+	}
+	preferredColSpan(value) {
+		this._field.preferredColSpan = value;
+		return this;
+	}
+	minColSpan(value) {
+		this._field.minColSpan = value;
+		return this;
+	}
+	forceFullWidth(value = true) {
+		this._field.forceFullWidth = value;
 		return this;
 	}
 	name(name) {
@@ -6902,7 +7238,10 @@ const CrudDrawerView = forwardRef((options, ref) => {
 	return /* @__PURE__ */ jsxs(CrudDrawerShell, {
 		isOpen: visible,
 		title,
-		drawerWidth: options.drawerWidth ?? 1200,
+		drawerWidth: resolveDrawerWidth({
+			drawerSize: options.drawerSize,
+			drawerWidth: options.drawerWidth
+		}),
 		drawerSide: options.drawerSide ?? "right",
 		onClose: handleClose,
 		onCancel: onCancelClick,
@@ -6915,6 +7254,77 @@ const CrudDrawerView = forwardRef((options, ref) => {
 	});
 });
 CrudDrawerView.displayName = "CrudDrawerView";
+//#endregion
+//#region assets/crud/view/CrudPageView.tsx
+const CrudPageView = forwardRef((options, ref) => {
+	const { t } = useCoreTranslation();
+	const [title, setTitle] = useState(options.title ?? t("crudPage.dialogTitleAdd"));
+	const isControlled = options.isOpen !== void 0;
+	const [internalVisible, setInternalVisible] = useState(options.visible ?? false);
+	const visible = isControlled ? options.isOpen ?? false : internalVisible;
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [on, emit] = useEvents();
+	useEffect(() => {
+		if (options.title) setTitle(options.title);
+	}, [options.title]);
+	const open = (nextTitle) => {
+		if (!isControlled) setInternalVisible(true);
+		if (nextTitle) setTitle(nextTitle);
+	};
+	const close = () => {
+		if (isProcessing) return;
+		if (!isControlled) setInternalVisible(false);
+	};
+	const handleClose = () => {
+		if (isProcessing) return;
+		close();
+		options.onClose?.();
+	};
+	const onCancelClick = () => {
+		handleClose();
+		if (options.onCancel) {
+			options.onCancel();
+			return;
+		}
+		if (options.events?.CANCEL) emit(options.events.CANCEL);
+	};
+	const onSaveClick = () => {
+		if (options.onSave) {
+			options.onSave();
+			return;
+		}
+		if (options.events?.SAVE) emit(options.events.SAVE);
+	};
+	const setupObservers = () => {
+		if (options.events?.ADD) on(options.events.ADD, (payload) => open(payload?.title ?? t("crudPage.dialogTitleAdd")));
+		if (options.events?.EDIT) on(options.events.EDIT, () => open(t("crudPage.dialogTitleEdit")));
+		if (options.events?.LOADING) on(options.events.LOADING, (isLoading) => setIsProcessing(isLoading));
+		if (options.events?.SUCCESS) on(options.events.SUCCESS, () => close());
+	};
+	const setupObserversRef = useRef(setupObservers);
+	setupObserversRef.current = setupObservers;
+	useEffect(() => {
+		setupObserversRef.current();
+	}, []);
+	useImperativeHandle(ref, () => ({
+		open,
+		close
+	}));
+	return /* @__PURE__ */ jsxs(CrudPageShell, {
+		isOpen: visible,
+		mode: "edit",
+		title,
+		onClose: handleClose,
+		onCancel: onCancelClick,
+		onSave: onSaveClick,
+		children: [options.children, isProcessing && /* @__PURE__ */ jsx("div", {
+			className: "crud-dialog__loading",
+			"aria-hidden": "true",
+			children: /* @__PURE__ */ jsx("span", { className: "crud-dialog__loading-indicator" })
+		})]
+	});
+});
+CrudPageView.displayName = "CrudPageView";
 //#endregion
 //#region assets/crud/crud/ToolbarSelect.tsx
 /** @deprecated Use `AppDropdown` with `variant="toolbar"` from `@nubit/ui`. */
@@ -6999,4 +7409,4 @@ const RestAdapter = {
 	synthesizeEntityKey(_field, _entityValue) {}
 };
 //#endregion
-export { AuditTrailPanel, ColumnPresetSelector, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, CrudDrawerView as DrawerView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, ToolbarSelect, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { AuditTrailPanel, ColumnPresetSelector, CrudDialogShell, CrudDrawerShell, CrudFormShell, CrudPage, CrudPageShell, DATA_GRID_EVENTS, DEFAULT_DRAWER_SIZE, DEFAULT_DRAWER_WIDTH, DRAWER_WIDTHS, NativeDataGridView as DataGridView, CrudDialogView as DialogView, CrudDrawerView as DrawerView, FORM_EVENTS, FieldBuilder, FieldType, NativeFormView as FormView, HydraAdapter, CrudPageView as PageView, ResourceSchemaProvider, ResourceStoreProvider, RestAdapter, SmartCrudPage, SmartCrudRolesProvider, ToolbarSelect, buildFieldColSpanContext, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, isLongTextField, isShortField, noneField, numberField, parseDrawerWidthPx, passwordField, resolveDrawerLayoutBucket, resolveDrawerSize, resolveDrawerWidth, resolveFieldColSpan, resolveFieldsColSpans, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

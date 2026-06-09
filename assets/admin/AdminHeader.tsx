@@ -6,7 +6,9 @@ export interface AdminHeaderAction {
   icon: string;
   label: string;
   badge?: number;
-  renderPanel: (props: { close: () => void }) => React.ReactNode;
+  /** When provided, clicking the button calls this instead of opening a panel. */
+  onClick?: () => void;
+  renderPanel?: (props: { close: () => void }) => React.ReactNode;
 }
 
 export interface AdminHeaderProps {
@@ -25,6 +27,29 @@ export interface AdminHeaderProps {
 // ---------------------------------------------------------------------------
 function ActionPopover({ action }: { action: AdminHeaderAction }) {
   const { open, toggle, setOpen, containerRef } = useFloatingPanel();
+
+  // If the action has its own onClick, bypass the panel entirely.
+  if (action.onClick) {
+    return (
+      <div className="messages">
+        <IconButton
+          icon={action.icon}
+          label={action.label}
+          onClick={action.onClick}
+        />
+        {!!action.badge && action.badge > 0 && (
+          <Badge
+            variant="danger"
+            size="sm"
+            pill
+            aria-label={`${action.badge} ${action.label}`}
+          >
+            {action.badge > 99 ? '99+' : action.badge}
+          </Badge>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -49,7 +74,7 @@ function ActionPopover({ action }: { action: AdminHeaderAction }) {
           </Badge>
         )}
       </div>
-      {open && (
+      {open && action.renderPanel && (
         <div
           className="header-popover__panel"
           role="dialog"

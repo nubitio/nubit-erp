@@ -142,6 +142,71 @@ type OnChangeFn = GridOnChangeFn | FormOnChangeFn;
  */
 type ItemFormatterFn = (item: unknown) => React.ReactNode;
 //#endregion
+//#region assets/crud/view/drawerSizes.d.ts
+/**
+ * Drawer size tokens for CRUD viewMode.
+ *
+ * Tokens describe spatial capacity (how wide the panel is), not domain meaning.
+ * `drawerWidth` always wins when set explicitly.
+ */
+type CrudDrawerSize = 'sm' | 'md' | 'lg' | 'xl';
+declare const DRAWER_WIDTHS: Record<CrudDrawerSize, number>;
+declare const DEFAULT_DRAWER_SIZE: CrudDrawerSize;
+declare const DEFAULT_DRAWER_WIDTH: string;
+declare function resolveDrawerWidth(options?: {
+  drawerSize?: CrudDrawerSize;
+  drawerWidth?: number | string;
+}): number | string;
+declare function parseDrawerWidthPx(drawerWidth?: number | string): number | undefined;
+/**
+ * Maps an effective drawer width to a layout bucket used by the form grid resolver.
+ * Thresholds align with {@link DRAWER_WIDTHS} token boundaries.
+ */
+declare function resolveDrawerLayoutBucket(drawerWidth?: number | string): CrudDrawerSize;
+//#endregion
+//#region assets/crud/form/resolveFieldColSpan.d.ts
+type FormLayoutHint = 'short' | 'medium' | 'long' | 'multiline' | 'fullWidth' | 'identity' | 'money' | 'date' | 'lookup' | 'upload' | 'detail';
+type FormPresentationMode = 'dialog' | 'drawer' | 'page';
+/** @deprecated Use {@link CrudDrawerSize} from drawer size tokens instead. */
+type DrawerSize = CrudDrawerSize;
+type ColSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+interface FormPresentationContext {
+  presentationMode: FormPresentationMode;
+  drawerWidth?: number | string;
+  dialogWidth?: number;
+  viewportWidth?: number;
+  containerWidth?: number;
+  hasTabs?: boolean;
+  hasMasterDetail?: boolean;
+}
+interface FieldColSpanContext extends FormPresentationContext {
+  drawerSize?: CrudDrawerSize;
+  avoidOrphanFields?: boolean;
+}
+/** Layout bucket derived from the effective drawer width. */
+declare function resolveDrawerSize(drawerWidth?: number | string): CrudDrawerSize;
+/**
+ * Structural full-width signal — type, layout hint, or declared max length only.
+ * No field-name or label heuristics (library stays domain-agnostic).
+ */
+declare function isLongTextField(field: Field): boolean;
+/**
+ * Structural compact-field signal — field type and explicit layout hints only.
+ */
+declare function isShortField(field: Field): boolean;
+/**
+ * Resolves the grid column span for a single field.
+ * Explicit `field.col` always wins over heuristics.
+ */
+declare function resolveFieldColSpan(field: Field, context: FieldColSpanContext): ColSpan;
+/**
+ * Resolves spans for a field list and optionally expands a trailing half-column orphan.
+ */
+declare function resolveFieldsColSpans(fields: Field[], context: FieldColSpanContext): Map<string, ColSpan>;
+declare function buildFieldColSpanContext(options: FormPresentationContext & {
+  avoidOrphanFields?: boolean;
+}): FieldColSpanContext;
+//#endregion
 //#region assets/crud/field/Field.d.ts
 type LoadOption = Record<string, any>;
 interface FieldButton {
@@ -206,6 +271,14 @@ interface Field {
   sendAsString: boolean;
   /** Column display order hint set via `x-crud.order` from Hydra metadata. */
   order?: number;
+  /** Optional visual layout hint for auto column resolution. */
+  layoutHint?: FormLayoutHint;
+  /** Preferred grid span when auto layout is active. */
+  preferredColSpan?: 6 | 12;
+  /** Minimum grid span when auto layout is active. */
+  minColSpan?: 6 | 12;
+  /** Forces full-width layout regardless of heuristics (explicit `col` still wins). */
+  forceFullWidth?: boolean;
   /** Returns true when the field should be visible */
   visibleWhen?: (formData: DataRecord$1) => boolean;
   /** Returns true when the field should be disabled (read-only in form) */
@@ -295,6 +368,8 @@ interface FormSection {
   fields: string[];
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  /** When true (default), trailing half-column orphans expand to full width. */
+  avoidOrphanFields?: boolean;
 }
 type FormLayout = {
   type: 'tabs';
@@ -382,7 +457,7 @@ type SmartCrudFieldContractLike<T extends SmartCrudRecord$1> = {
   strategy: 'replace';
   fields: readonly SmartCrudManualFieldLike[];
 };
-declare const FIELD_KEYS: readonly ["isIdentity", "type", "col", "name", "label", "width", "height", "minWidth", "align", "sortable", "filterable", "hideable", "validators", "url", "loadOptions", "filters", "byKeyUrl", "textField", "valueField", "valueType", "format", "selectedFilterOperation", "filterValue", "data", "formatter", "itemFormatter", "visible", "defaultValue", "autoSelectIfSingle", "onChange", "onSelect", "onClick", "readonly", "disabled", "hidden", "required", "precision", "accept", "buttons", "searchEnabled", "searchExpr", "helpText", "contentRender", "visibleOnForm", "maxLength", "multiple", "sendAsString", "order", "visibleWhen", "disabledWhen", "computed", "defaultWhen", "requiredWhen", "clearWhenHidden", "dependsOn", "permissions"];
+declare const FIELD_KEYS: readonly ["isIdentity", "type", "col", "name", "label", "width", "height", "minWidth", "align", "sortable", "filterable", "hideable", "validators", "url", "loadOptions", "filters", "byKeyUrl", "textField", "valueField", "valueType", "format", "selectedFilterOperation", "filterValue", "data", "formatter", "itemFormatter", "visible", "defaultValue", "autoSelectIfSingle", "onChange", "onSelect", "onClick", "readonly", "disabled", "hidden", "required", "precision", "accept", "buttons", "searchEnabled", "searchExpr", "helpText", "contentRender", "visibleOnForm", "maxLength", "multiple", "sendAsString", "order", "layoutHint", "preferredColSpan", "minColSpan", "forceFullWidth", "visibleWhen", "disabledWhen", "computed", "defaultWhen", "requiredWhen", "clearWhenHidden", "dependsOn", "permissions"];
 type SmartCrudFieldShape = Partial<Record<(typeof FIELD_KEYS)[number], unknown>>;
 type SmartCrudFieldPatchLike = SmartCrudFieldShape & {
   operation?: SmartCrudFieldOperationBehavior;
@@ -604,7 +679,12 @@ interface ResourceFormDetail {
 type CrudViewMode = 'dialog' | 'drawer' | 'page';
 interface CrudViewModeConfig {
   mode: CrudViewMode;
-  /** Drawer width. Default: `min(720px, 60vw)`. */
+  /**
+   * Drawer size token — maps to a library width preset (`sm` 480, `md` 640,
+   * `lg` 880, `xl` 1120). Ignored when `drawerWidth` is set.
+   */
+  drawerSize?: CrudDrawerSize;
+  /** Explicit drawer width override. Takes priority over `drawerSize`. */
   drawerWidth?: number | string;
   /** Side the drawer slides in from. Default: `'right'`. */
   drawerSide?: 'right' | 'left';
@@ -675,7 +755,7 @@ interface ResourceConfig<T extends DataRecord$1 = DataRecord$1> {
    *
    * Examples:
    *   viewMode: 'drawer'
-   *   viewMode: { mode: 'drawer', drawerWidth: 880 }
+   *   viewMode: { mode: 'drawer', drawerSize: 'lg' }
    *   viewMode: 'page'
    */
   viewMode?: CrudViewMode | CrudViewModeConfig;
@@ -895,6 +975,10 @@ declare class BaseFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> {
   constructor(type: FieldType);
   isIdentity(isIdentity: boolean): this;
   col(col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12): this;
+  layoutHint(value: FormLayoutHint): this;
+  preferredColSpan(value: 6 | 12): this;
+  minColSpan(value: 6 | 12): this;
+  forceFullWidth(value?: boolean): this;
   name(name: string): this;
   label(label: string): this;
   width(width: number | string): this;
@@ -1209,6 +1293,10 @@ declare class FieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> {
   isIdentity(isIdentity: boolean): FieldBuilder;
   type(type: FieldType): FieldBuilder;
   col(col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12): FieldBuilder;
+  layoutHint(value: FormLayoutHint): FieldBuilder;
+  preferredColSpan(value: 6 | 12): FieldBuilder;
+  minColSpan(value: 6 | 12): FieldBuilder;
+  forceFullWidth(value?: boolean): FieldBuilder;
   name(name: string): FieldBuilder;
   label(label: string): FieldBuilder;
   width(width: number | string): FieldBuilder;
@@ -1419,6 +1507,8 @@ declare const CrudDialogView: React.ForwardRefExoticComponent<CrudDialogViewOpti
 //#region assets/crud/view/CrudDrawerView.d.ts
 interface CrudDrawerViewOptions {
   title?: string;
+  /** Token width: sm 480, md 640, lg 880, xl 1120. Ignored when `drawerWidth` is set. */
+  drawerSize?: CrudDrawerSize;
   drawerWidth?: number | string;
   drawerSide?: 'right' | 'left';
   visible?: boolean;
@@ -1445,6 +1535,26 @@ interface CrudDrawerViewEvents {
  * Mirrors `DialogView` API but slides in from the side so the grid stays visible.
  */
 declare const CrudDrawerView: React.ForwardRefExoticComponent<CrudDrawerViewOptions & React.RefAttributes<CrudDrawerViewEvents>>;
+//#endregion
+//#region assets/crud/view/CrudPageView.d.ts
+interface CrudPageViewOptions {
+  title?: string;
+  visible?: boolean;
+  /**
+   * Event-driven page shell for legacy pages that compose DataGridView + FormView directly.
+   */
+  events?: DialogEventNames;
+  children?: React.ReactNode;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onCancel?: () => void;
+  onSave?: () => void;
+}
+interface CrudPageViewEvents {
+  open: (title?: string) => void;
+  close: () => void;
+}
+declare const CrudPageView: React.ForwardRefExoticComponent<CrudPageViewOptions & React.RefAttributes<CrudPageViewEvents>>;
 //#endregion
 //#region assets/crud/form/FormViewOptions.d.ts
 interface FormViewOptions {
@@ -1481,6 +1591,8 @@ interface FormViewOptions {
   onLoadingChange?: (loading: boolean) => void;
   /** Optional layout descriptor for tabs or collapsible sections. */
   formLayout?: FormLayout;
+  /** Presentation context used by auto column-span resolution. */
+  presentationContext?: FormPresentationContext;
   /** Called whenever any form field value changes with a full form data snapshot. */
   onFieldDataChanged?: FormDataChangedHandler;
   /** Latest runtime-computed values pushed down by SmartCrudPage. */
@@ -1550,6 +1662,8 @@ interface ResolvedViewMode {
   mode: CrudViewMode;
   drawerWidth: number | string;
   drawerSide: 'right' | 'left';
+  /** Set when the resource used a size token instead of an explicit width. */
+  drawerSize?: CrudDrawerSize;
 }
 /**
  * Normalises the `viewMode` field of `ResourceConfig` into a fully-resolved
@@ -1580,7 +1694,7 @@ declare const CrudDialogShell: React.FC<CrudFormShellProps>;
 /**
  * Drawer form shell — slides in from the side and leaves the grid visible.
  *
- * - Default: right-side panel `min(720px, 60vw)` wide.
+ * - Default: right-side panel `min(880px, 60vw)` wide.
  * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
  * - Escape closes the drawer; nested lookup dialogs float above via z-index.
  */
@@ -1738,4 +1852,4 @@ declare function ResourceStoreProvider({
 }: ResourceStoreProviderProps): React.JSX.Element;
 declare function useResourceStoreFactory(): ResourceStoreFactory;
 //#endregion
-export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColumnPreset, ColumnPresetSelector, type ColumnPresetState, CrudDialogShell, CrudDrawerShell, type CrudDrawerViewEvents, type CrudDrawerViewOptions, CrudFormShell, type CrudFormShellProps, CrudPage, CrudPageShell, type CrudViewMode, type CrudViewModeConfig, DATA_GRID_EVENTS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, CrudDrawerView as DrawerView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormOnChangeFn, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, type ResolvedViewMode, type ResourceConfig, type ResourceEmptyState, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, ToolbarSelect, type ToolbarSelectOption, type ToolbarSelectProps, type ValidationRule, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, noneField, numberField, passwordField, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };
+export { type AuditEntry, type AuditTrailConfig, AuditTrailPanel, type AuditTrailPanelProps, type BackendAdapter, type BulkAction, type ColSpan, type ColumnPreset, ColumnPresetSelector, type ColumnPresetState, CrudDialogShell, CrudDrawerShell, type CrudDrawerSize, type CrudDrawerViewEvents, type CrudDrawerViewOptions, CrudFormShell, type CrudFormShellProps, CrudPage, CrudPageShell, type CrudPageViewEvents, type CrudPageViewOptions, type CrudViewMode, type CrudViewModeConfig, DATA_GRID_EVENTS, DEFAULT_DRAWER_SIZE, DEFAULT_DRAWER_WIDTH, DRAWER_WIDTHS, type DataGridSelectionChangedEvent, type DataGridSummaryItem, NativeDataGridView as DataGridView, type DataGridViewOptions, type DataRecord, type DetailSummaryOptions, CrudDialogView as DialogView, type DrawerSize, CrudDrawerView as DrawerView, type EnumOption, FORM_EVENTS, type Field, FieldBuilder, type FieldColSpanContext, type FieldDef, type FieldOverride, FieldType, type FilterRule, type FormHandle, type FormLayout, type FormLayoutHint, type FormOnChangeFn, type FormPresentationContext, type FormPresentationMode, type FormSection, type FormTab, NativeFormView as FormView, type FormViewOptions, type FormatterFn, type GridCellContext, type GridData, type GridHandle, type GridOnChangeFn, HydraAdapter, type ItemFormatterFn, type LoadOption, type OnChangeFn, CrudPageView as PageView, type ResolvedViewMode, type ResourceConfig, type ResourceEmptyState, type ResourceFilterDescriptor, type ResourceFilterRule, type ResourceFormDetail, type ResourceGridDetail, type ResourceLoadOption, type ResourceLoadOptions, type ResourcePermissions, type ResourceRouting, type ResourceRowActions, ResourceSchemaProvider, type ResourceSchemaProviderProps, type ResourceSchemaResolution, type ResourceSchemaResolver, type ResourceSortDescriptor, type ResourceStore, type ResourceStoreFactory, type ResourceStoreOptions, ResourceStoreProvider, type ResourceStoreProviderProps, type ResourceToolbar, type ResourceToolbarAction, type ResourceToolbarActionVariant, type ResourceToolbarContext, type ResourceToolbarItems, RestAdapter, type SmartCrudFieldContract, type SmartCrudFieldOperation, type SmartCrudFieldPatch, type SmartCrudHydraFieldContract, type SmartCrudHydraFieldDirective, type SmartCrudManualField, type SmartCrudManualFieldContract, type SmartCrudOperation, SmartCrudPage, SmartCrudRolesProvider, type SummaryCalculateContext, type SummaryFormat, type SummaryItem, type SummaryTextContext, type SummaryType, ToolbarSelect, type ToolbarSelectOption, type ToolbarSelectProps, type ValidationRule, buildFieldColSpanContext, checkboxField, computeSummaryValue, createCrudEvents, currencyField, dateField, datetimeField, defineFieldContract, defineFields, defineResource, entityField, enumField, fileField, formatSummaryValue, identityField, imageField, isLongTextField, isShortField, noneField, numberField, parseDrawerWidthPx, passwordField, resolveDrawerLayoutBucket, resolveDrawerSize, resolveDrawerWidth, resolveFieldColSpan, resolveFieldsColSpans, resolveSummaryText, resolveViewMode, selectField, switchField, textField, textareaField, useColumnPreset, useResourceStoreFactory, useSmartCrudRoles, validateFieldContract };

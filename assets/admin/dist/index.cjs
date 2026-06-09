@@ -29,6 +29,20 @@ let react_jsx_runtime = require("react/jsx-runtime");
 //#region assets/admin/AdminHeader.tsx
 function ActionPopover({ action }) {
 	const { open, toggle, setOpen, containerRef } = (0, _nubit_ui.useFloatingPanel)();
+	if (action.onClick) return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: "messages",
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
+			icon: action.icon,
+			label: action.label,
+			onClick: action.onClick
+		}), !!action.badge && action.badge > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Badge, {
+			variant: "danger",
+			size: "sm",
+			pill: true,
+			"aria-label": `${action.badge} ${action.label}`,
+			children: action.badge > 99 ? "99+" : action.badge
+		})]
+	});
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		className: "header-popover",
 		ref: containerRef,
@@ -46,7 +60,7 @@ function ActionPopover({ action }) {
 				"aria-label": `${action.badge} ${action.label}`,
 				children: action.badge > 99 ? "99+" : action.badge
 			})]
-		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+		}), open && action.renderPanel && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 			className: "header-popover__panel",
 			role: "dialog",
 			"aria-label": action.label,
@@ -167,7 +181,7 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 	const { isLarge } = useScreenSize();
 	const location = (0, react_router_dom.useLocation)();
 	(0, react.useEffect)(() => {
-		setExpandedItemKeys(new Set(isLarge ? items.map((item) => item.path || item.text) : []));
+		setExpandedItemKeys(/* @__PURE__ */ new Set());
 	}, [isLarge, items]);
 	const activePath = (0, react.useMemo)(() => {
 		const flattenPaths = (menuItems) => menuItems.flatMap((item) => [normalizeRoute(item.path), ...item.items?.map((sub) => normalizeRoute(sub.path)) ?? []]).filter(Boolean);

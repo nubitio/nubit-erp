@@ -202,6 +202,8 @@ declare const TextAreaField: import("react").ForwardRefExoticComponent<TextAreaF
 interface AppDropdownOption {
   value: string;
   label: string;
+  selectedLabel?: string;
+  iconText?: string;
   disabled?: boolean;
 }
 type AppDropdownVariant = 'form' | 'toolbar' | 'compact';
@@ -218,6 +220,7 @@ interface AppDropdownProps {
   className?: string;
   /** When true, wraps the control in a form-field label (form variant only). */
   showFieldLabel?: boolean;
+  menuMinWidth?: number;
   error?: ReactNode;
   helpText?: ReactNode;
 }
@@ -233,6 +236,7 @@ declare function AppDropdown({
   variant,
   className,
   showFieldLabel,
+  menuMinWidth,
   error,
   helpText
 }: AppDropdownProps): import("react").JSX.Element;

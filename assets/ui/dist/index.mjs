@@ -1,4 +1,4 @@
-import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
+import React, { createContext, forwardRef, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -319,20 +319,86 @@ function normalizeIcon(icon) {
 	if (icon.startsWith("ph-")) return `ph ${icon}`;
 	return `ph ph-${icon}`;
 }
-function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabled = false, placeholder = "Seleccionar…", variant = "form", className, showFieldLabel = variant === "form", error, helpText }) {
+function getMenuStyle(containerRef, menuMinWidth = 72) {
+	if (!containerRef.current) return {
+		position: "fixed",
+		visibility: "hidden",
+		margin: 0
+	};
+	const rect = (containerRef.current.querySelector(".app-dropdown__trigger") ?? containerRef.current).getBoundingClientRect();
+	const menuWidth = Math.max(rect.width, menuMinWidth);
+	const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
+	const spaceBelow = window.innerHeight - rect.bottom;
+	const spaceAbove = rect.top;
+	if (spaceBelow < 250 && spaceAbove > spaceBelow) return {
+		position: "fixed",
+		left: `${left}px`,
+		width: `${menuWidth}px`,
+		bottom: `${window.innerHeight - rect.top + 4}px`,
+		top: "auto",
+		margin: 0,
+		zIndex: 9999,
+		visibility: "visible"
+	};
+	return {
+		position: "fixed",
+		left: `${left}px`,
+		width: `${menuWidth}px`,
+		top: `${rect.bottom + 4}px`,
+		bottom: "auto",
+		margin: 0,
+		zIndex: 9999,
+		visibility: "visible"
+	};
+}
+function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabled = false, placeholder = "Seleccionar…", variant = "form", className, showFieldLabel = variant === "form", menuMinWidth, error, helpText }) {
 	const generatedId = useId();
 	const id = idProp ?? generatedId;
 	const [open, setOpen] = useState(false);
 	const containerRef = useRef(null);
+	const menuRef = useRef(null);
+	const [menuStyle, setMenuStyle] = useState({
+		position: "fixed",
+		visibility: "hidden",
+		margin: 0
+	});
 	const selected = options.find((option) => option.value === value);
+	const computeMenuStyle = useCallback(() => getMenuStyle(containerRef, menuMinWidth), [menuMinWidth]);
 	useEffect(() => {
 		if (!open) return;
-		const handler = (event) => {
-			if (!containerRef.current?.contains(event.target)) setOpen(false);
+		const handler = (e) => {
+			const target = e.target;
+			if (!containerRef.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
 		};
 		document.addEventListener("mousedown", handler);
 		return () => document.removeEventListener("mousedown", handler);
 	}, [open]);
+	useLayoutEffect(() => {
+		if (!open) return;
+		const update = () => {
+			if (!containerRef.current) return;
+			const rect = containerRef.current.getBoundingClientRect();
+			if (rect.top >= window.innerHeight || rect.bottom <= 0) {
+				setOpen(false);
+				return;
+			}
+			setMenuStyle(computeMenuStyle());
+		};
+		update();
+		window.addEventListener("resize", update);
+		window.addEventListener("scroll", update, {
+			capture: true,
+			passive: true
+		});
+		return () => {
+			window.removeEventListener("resize", update);
+			window.removeEventListener("scroll", update, { capture: true });
+		};
+	}, [open, computeMenuStyle]);
+	const openMenu = useCallback(() => {
+		setMenuStyle(computeMenuStyle());
+		setOpen(true);
+	}, [computeMenuStyle]);
 	const control = /* @__PURE__ */ jsxs("div", {
 		ref: containerRef,
 		className: cx$2("app-dropdown", `app-dropdown--${variant}`, open && "app-dropdown--open", disabled && "app-dropdown--disabled", className),
@@ -354,20 +420,22 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 				"aria-expanded": open,
 				"aria-labelledby": label ? `${id}-label ${id}-value` : `${id}-value`,
 				disabled,
-				onClick: () => setOpen((current) => !current),
+				onClick: () => open ? setOpen(false) : openMenu(),
 				children: [/* @__PURE__ */ jsx("span", {
 					className: "app-dropdown__value",
 					id: `${id}-value`,
-					children: selected?.label ?? placeholder
+					children: selected?.selectedLabel ?? selected?.label ?? placeholder
 				}), /* @__PURE__ */ jsx("i", {
 					className: "ph ph-caret-down app-dropdown__caret",
 					"aria-hidden": "true"
 				})]
 			}),
-			open && !disabled && /* @__PURE__ */ jsx("ul", {
-				className: "app-dropdown__menu",
+			open && !disabled && createPortal(/* @__PURE__ */ jsx("ul", {
+				ref: menuRef,
+				className: cx$2("app-dropdown__menu", `app-dropdown__menu--${variant}`),
 				role: "listbox",
 				"aria-labelledby": label ? `${id}-label` : void 0,
+				style: menuStyle,
 				children: options.map((option) => {
 					const isActive = option.value === value;
 					return /* @__PURE__ */ jsx("li", {
@@ -383,11 +451,18 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 								onChange(option.value);
 								setOpen(false);
 							},
-							children: option.label
+							children: /* @__PURE__ */ jsxs("span", {
+								className: "app-dropdown__option-content",
+								children: [option.iconText && /* @__PURE__ */ jsx("span", {
+									className: "app-dropdown__option-icon",
+									"aria-hidden": "true",
+									children: option.iconText
+								}), /* @__PURE__ */ jsx("span", { children: option.label })]
+							})
 						})
 					}, option.value);
 				})
-			})
+			}), document.body)
 		]
 	});
 	if (!showFieldLabel || variant === "toolbar") return control;
@@ -578,20 +653,24 @@ const DensityProvider = ({ children }) => {
 //#region assets/ui/theme/useAccentColor.ts
 const ACCENT_PRESETS = [
 	{
-		label: "Blue",
-		value: "#2563eb"
+		label: "Azure",
+		value: "#1a6fd4"
+	},
+	{
+		label: "Teal",
+		value: "#0d9488"
 	},
 	{
 		label: "Indigo",
 		value: "#4f46e5"
 	},
 	{
-		label: "Violet",
-		value: "#7c3aed"
+		label: "Slate",
+		value: "#475569"
 	},
 	{
-		label: "Teal",
-		value: "#0d9488"
+		label: "Violet",
+		value: "#7c3aed"
 	},
 	{
 		label: "Rose",
@@ -600,14 +679,10 @@ const ACCENT_PRESETS = [
 	{
 		label: "Amber",
 		value: "#d97706"
-	},
-	{
-		label: "Slate",
-		value: "#475569"
 	}
 ];
 const STORAGE_KEY = "app-accent-color";
-const DEFAULT_ACCENT = "#2563eb";
+const DEFAULT_ACCENT = "#1a6fd4";
 function applyAccent(color) {
 	document.documentElement.style.setProperty("--accent-color", color);
 }

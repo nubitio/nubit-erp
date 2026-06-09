@@ -5,6 +5,20 @@ import { jsx, jsxs } from "react/jsx-runtime";
 //#region assets/admin/AdminHeader.tsx
 function ActionPopover({ action }) {
 	const { open, toggle, setOpen, containerRef } = useFloatingPanel();
+	if (action.onClick) return /* @__PURE__ */ jsxs("div", {
+		className: "messages",
+		children: [/* @__PURE__ */ jsx(IconButton, {
+			icon: action.icon,
+			label: action.label,
+			onClick: action.onClick
+		}), !!action.badge && action.badge > 0 && /* @__PURE__ */ jsx(Badge, {
+			variant: "danger",
+			size: "sm",
+			pill: true,
+			"aria-label": `${action.badge} ${action.label}`,
+			children: action.badge > 99 ? "99+" : action.badge
+		})]
+	});
 	return /* @__PURE__ */ jsxs("div", {
 		className: "header-popover",
 		ref: containerRef,
@@ -22,7 +36,7 @@ function ActionPopover({ action }) {
 				"aria-label": `${action.badge} ${action.label}`,
 				children: action.badge > 99 ? "99+" : action.badge
 			})]
-		}), open && /* @__PURE__ */ jsx("div", {
+		}), open && action.renderPanel && /* @__PURE__ */ jsx("div", {
 			className: "header-popover__panel",
 			role: "dialog",
 			"aria-label": action.label,
@@ -143,7 +157,7 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 	const { isLarge } = useScreenSize();
 	const location = useLocation();
 	useEffect(() => {
-		setExpandedItemKeys(new Set(isLarge ? items.map((item) => item.path || item.text) : []));
+		setExpandedItemKeys(/* @__PURE__ */ new Set());
 	}, [isLarge, items]);
 	const activePath = useMemo(() => {
 		const flattenPaths = (menuItems) => menuItems.flatMap((item) => [normalizeRoute(item.path), ...item.items?.map((sub) => normalizeRoute(sub.path)) ?? []]).filter(Boolean);

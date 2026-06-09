@@ -11,7 +11,7 @@ import { AdminShell, type AdminMenuItem } from '@nubit/admin';
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
-import { SettingsPanel } from '@nubit/ui';
+import { Drawer, SettingsPanel } from '@nubit/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
@@ -28,6 +28,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
 
   useEffect(() => {
@@ -49,18 +50,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
             icon: 'ph ph-bell',
             label: 'Notificaciones',
             badge: unreadCount,
-            renderPanel: ({ close }) => (
-              <div className="notification-popover">
-                <NotificationPanel
-                  visible
-                  onHiding={close}
-                  notifications={notifications}
-                  loading={loading}
-                  markRead={markRead}
-                  markAllRead={markAllRead}
-                />
-              </div>
-            ),
+            onClick: () => setNotifOpen((prev) => !prev),
           },
           {
             id: 'display-settings',
@@ -78,10 +68,29 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
-        footer={<span>Copyright © {new Date().getFullYear()} Nubit Labs</span>}
+        footer={<span className="footer-copyright">© {new Date().getFullYear()} Nubit Labs</span>}
       >
         {children}
       </AdminShell>
+
+      {/* Notification drawer */}
+      <Drawer
+        isOpen={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        width={400}
+        scrim="overlay"
+        aria-label="Notificaciones"
+      >
+        <NotificationPanel
+          visible={notifOpen}
+          onHiding={() => setNotifOpen(false)}
+          notifications={notifications}
+          loading={loading}
+          markRead={markRead}
+          markAllRead={markAllRead}
+        />
+      </Drawer>
+
       <BranchPicker visible={showBranchPicker} setVisible={setShowBranchPicker} />
       <ChangePasswordModal
         visible={showChangePassword}

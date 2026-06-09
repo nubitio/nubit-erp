@@ -77,25 +77,34 @@ readonly class MenuProvider implements ProviderInterface
      */
     public function getMenuForRole(int $roleId): array
     {
+        // Sort by: parent group order → parent before children → child order_index.
+        // COALESCE(p.order_index, m.order_index) places each child under its parent's
+        // group slot; m.parent_id IS NOT NULL puts headings before their children.
         if (0 === $roleId) {
             return $this->connection->fetchAllAssociative(
                 '
-                    SELECT
-                        m.*
+                    SELECT m.*
                     FROM menu m
-                    ORDER BY id, order_index
+                    LEFT JOIN menu p ON p.id = m.parent_id
+                    ORDER BY
+                        COALESCE(p.order_index, m.order_index),
+                        m.parent_id IS NOT NULL,
+                        m.order_index
                 '
             );
         }
 
         return $this->connection->fetchAllAssociative(
             '
-                    SELECT
-                        m.*
+                    SELECT m.*
                     FROM menu m
+                    LEFT JOIN menu p ON p.id = m.parent_id
                         INNER JOIN menu_rol mr ON mr.menu_id = m.id
                     WHERE mr.role_id = ?
-                    ORDER BY m.id, order_index
+                    ORDER BY
+                        COALESCE(p.order_index, m.order_index),
+                        m.parent_id IS NOT NULL,
+                        m.order_index
                 ',
             [$roleId]
         );
