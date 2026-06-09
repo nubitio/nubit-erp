@@ -141,6 +141,9 @@ export function isShortField(field: Field): boolean {
 function canUseHalfColumn(context: FieldColSpanContext): boolean {
   if (isMobileViewport(context)) return false;
 
+  // Master-detail forms render in a narrow left panel (~332px), not full page width.
+  if (context.hasMasterDetail) return false;
+
   if (context.presentationMode === 'page') {
     return true;
   }

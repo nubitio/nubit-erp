@@ -27,9 +27,10 @@
     position: relative;
   }
 
-  // Tabbed forms carry their own panel chrome — slightly tighter dialog padding.
+  // Tabbed forms are flush with the dialog — tabs own their own inset padding.
   .app-dialog__body:has(.native-form__tabs) {
-    padding: var(--space-3);
+    overflow: hidden;
+    padding: 0;
   }
 
   // fit-content variant — used when the body is a self-contained view

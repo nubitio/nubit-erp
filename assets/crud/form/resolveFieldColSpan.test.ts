@@ -142,6 +142,16 @@ describe('resolveFieldColSpan', () => {
     expect(resolveFieldColSpan(field({ layoutHint: 'short', name: 'code' }), dialogContext)).toBe(12);
   });
 
+  it('keeps master-detail page forms in a single column', () => {
+    const masterDetailPage = buildFieldColSpanContext({
+      presentationMode: 'page',
+      hasMasterDetail: true,
+      viewportWidth: 1280,
+    });
+    expect(resolveFieldColSpan(field({ type: FieldType.DATE, name: 'issuedAt' }), masterDetailPage)).toBe(12);
+    expect(resolveFieldColSpan(field({ layoutHint: 'short', name: 'code' }), masterDetailPage)).toBe(12);
+  });
+
   it('honours layout metadata', () => {
     expect(
       resolveFieldColSpan(

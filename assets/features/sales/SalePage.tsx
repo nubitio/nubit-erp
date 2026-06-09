@@ -64,22 +64,17 @@ const SALE_PRESET_RESOURCE: ResourceConfig = {
 };
 
 const SALE_FORM_LAYOUT = {
-  type: 'tabs' as const,
-  tabs: [
+  type: 'sections' as const,
+  sections: [
     {
-      label: 'Cabecera',
-      icon: 'ph-receipt',
-      fields: ['issuedDate', 'warehouse', 'customer', 'paymentMethod'],
+      label: 'Datos principales',
+      fields: ['emitInvoice', 'issuedDate', 'warehouse', 'customer', 'paymentMethod', 'note'],
     },
     {
       label: 'Comercial',
-      icon: 'ph-currency-circle-dollar',
+      collapsible: true,
+      defaultCollapsed: true,
       fields: ['currency', 'exchangeRate', 'price_list', 'discountPercent'],
-    },
-    {
-      label: 'Notas',
-      icon: 'ph-note',
-      fields: ['note'],
     },
   ],
 };
@@ -392,7 +387,10 @@ export const SalePage = () => {
   );
 
   return (
-    <div id={container}>
+    <div
+      id={container}
+      className={saleFormOpen ? 'wrapper--with-page' : undefined}
+    >
       {!saleFormOpen && (
         <DataGridView
           id={'sales'}
@@ -426,6 +424,11 @@ export const SalePage = () => {
           detailPropertyName="writeItems"
           formLayout={SALE_FORM_LAYOUT}
           events={saleEvents}
+          presentationContext={{
+            presentationMode: 'page',
+            hasMasterDetail: true,
+            hasTabs: false,
+          }}
         />
       </PageView>
       <DiscountDialog />

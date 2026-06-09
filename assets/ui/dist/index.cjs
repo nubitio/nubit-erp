@@ -2198,6 +2198,86 @@ const Popover = ({ trigger, panel, align = "end", ariaLabel, className }) => {
 	});
 };
 //#endregion
+//#region assets/ui/Drawer.tsx
+const formatWidth = (value) => {
+	if (value === void 0) return void 0;
+	return typeof value === "number" ? `${value}px` : value;
+};
+const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle", children, footer, className, "aria-label": ariaLabel }) => {
+	const titleId = (0, react.useId)();
+	const panelRef = (0, react.useRef)(null);
+	const lastFocusRef = (0, react.useRef)(null);
+	(0, react.useEffect)(() => {
+		if (!isOpen) return;
+		lastFocusRef.current = document.activeElement;
+		const timer = window.setTimeout(() => {
+			(panelRef.current?.querySelector("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex=\"-1\"])"))?.focus();
+		});
+		return () => {
+			clearTimeout(timer);
+			lastFocusRef.current?.focus?.();
+		};
+	}, [isOpen]);
+	(0, react.useEffect)(() => {
+		if (!isOpen) return;
+		const handler = (e) => {
+			if (e.key === "Escape") {
+				e.preventDefault();
+				onClose();
+			}
+		};
+		document.addEventListener("keydown", handler);
+		return () => document.removeEventListener("keydown", handler);
+	}, [isOpen, onClose]);
+	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+		className: [
+			"ef-drawer-root",
+			isOpen && "ef-drawer-root--open",
+			`ef-drawer-root--${side}`
+		].filter(Boolean).join(" "),
+		"aria-hidden": !isOpen,
+		style: { pointerEvents: isOpen ? void 0 : "none" },
+		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			className: `ef-drawer__scrim ef-drawer__scrim--${scrim}`,
+			type: "button",
+			"aria-label": "Cerrar panel",
+			tabIndex: -1,
+			onClick: onClose
+		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
+			ref: panelRef,
+			className: ["ef-drawer", className].filter(Boolean).join(" "),
+			role: "dialog",
+			"aria-modal": "false",
+			"aria-labelledby": title ? titleId : void 0,
+			"aria-label": !title ? ariaLabel : void 0,
+			style: { width: formatWidth(width) },
+			children: [
+				title !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+					className: "ef-drawer__header",
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+						className: "ef-drawer__title",
+						id: titleId,
+						children: title
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconButton, {
+						className: "ef-drawer__close",
+						icon: "ph ph-x",
+						label: "Cerrar",
+						onClick: onClose
+					})]
+				}),
+				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: "ef-drawer__body",
+					children
+				}),
+				footer && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("footer", {
+					className: "ef-drawer__footer",
+					children: footer
+				})
+			]
+		})]
+	}), document.body);
+};
+//#endregion
 exports.ACCENT_PRESETS = ACCENT_PRESETS;
 exports.AppDialog = AppDialog;
 exports.AppDropdown = AppDropdown;
@@ -2214,6 +2294,7 @@ exports.DatePicker = DatePicker;
 exports.DateRangePicker = DateRangePicker;
 exports.DensityContext = DensityContext;
 exports.DensityProvider = DensityProvider;
+exports.Drawer = Drawer;
 exports.EmptyState = EmptyState;
 exports.FormField = FormField;
 exports.IconButton = IconButton;

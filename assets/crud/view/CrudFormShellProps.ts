@@ -28,6 +28,9 @@ export interface CrudFormShellProps {
   /** Called when the user clicks the Save button. */
   onSave: () => void;
 
+  /** Override the default save button label. */
+  saveLabel?: string;
+
   /** Dialog-only sizing. Drawer/Page shells ignore these. */
   width?: number;
   height?: number;

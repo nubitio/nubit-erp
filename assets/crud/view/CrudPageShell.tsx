@@ -19,6 +19,7 @@ export const CrudPageShell: React.FC<CrudFormShellProps> = ({
   onClose,
   onCancel,
   onSave,
+  saveLabel,
   children,
 }) => {
   const { t } = useCoreTranslation();
@@ -42,7 +43,7 @@ export const CrudPageShell: React.FC<CrudFormShellProps> = ({
         </Button>
         {mode !== 'view' && (
           <Button variant="primary" className="dialog-save-button" onClick={onSave}>
-            <span>{t('dialog.buttonSave')}</span>
+            <span>{saveLabel ?? t('dialog.buttonSave')}</span>
           </Button>
         )}
       </footer>

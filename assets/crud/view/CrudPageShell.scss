@@ -5,11 +5,27 @@
 // grid via the `wrapper--with-page` modifier class when `isOpen` is true.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Page forms fill the content column; master-detail layouts manage scroll
+// inside the shell instead of on `.content`.
+#wrapper.wrapper--with-page,
+#wrapper:has(> .crud-page-shell) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content:has(#wrapper.wrapper--with-page),
+.content:has(#wrapper > .crud-page-shell) {
+  overflow: hidden;
+}
+
 .crud-page-shell {
   background: var(--surface-1);
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   width: 100%;
 }
 
@@ -55,6 +71,27 @@
   min-height: 0;
   overflow: auto;
   padding: var(--space-4);
+}
+
+.crud-page-shell__body:has(.native-form--with-detail) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--space-4);
+}
+
+.crud-page-shell__body:has(.native-form__tabs) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.crud-page-shell:has(.native-form--with-detail) {
+  .crud-page-shell__header,
+  .crud-page-shell__footer {
+    position: static;
+  }
 }
 
 // ── Footer ───────────────────────────────────────────────────────────────────

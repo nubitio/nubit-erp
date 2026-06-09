@@ -2174,4 +2174,84 @@ const Popover = ({ trigger, panel, align = "end", ariaLabel, className }) => {
 	});
 };
 //#endregion
-export { ACCENT_PRESETS, AppDialog, AppDropdown, AppToolbar, Avatar, Badge, Button, Card, Chip, CollapsibleSection, ConfirmDialog, ContextMenu, DatePicker, DateRangePicker, DensityContext, DensityProvider, EmptyState, FormField, IconButton, Popover, SelectField, SettingsPanel, Skeleton, StatCard, TextAreaField, TextField, ThemeContext, ThemeProvider, ThemeSwitcher, Toggle, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };
+//#region assets/ui/Drawer.tsx
+const formatWidth = (value) => {
+	if (value === void 0) return void 0;
+	return typeof value === "number" ? `${value}px` : value;
+};
+const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle", children, footer, className, "aria-label": ariaLabel }) => {
+	const titleId = useId();
+	const panelRef = useRef(null);
+	const lastFocusRef = useRef(null);
+	useEffect(() => {
+		if (!isOpen) return;
+		lastFocusRef.current = document.activeElement;
+		const timer = window.setTimeout(() => {
+			(panelRef.current?.querySelector("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex=\"-1\"])"))?.focus();
+		});
+		return () => {
+			clearTimeout(timer);
+			lastFocusRef.current?.focus?.();
+		};
+	}, [isOpen]);
+	useEffect(() => {
+		if (!isOpen) return;
+		const handler = (e) => {
+			if (e.key === "Escape") {
+				e.preventDefault();
+				onClose();
+			}
+		};
+		document.addEventListener("keydown", handler);
+		return () => document.removeEventListener("keydown", handler);
+	}, [isOpen, onClose]);
+	return createPortal(/* @__PURE__ */ jsxs("div", {
+		className: [
+			"ef-drawer-root",
+			isOpen && "ef-drawer-root--open",
+			`ef-drawer-root--${side}`
+		].filter(Boolean).join(" "),
+		"aria-hidden": !isOpen,
+		style: { pointerEvents: isOpen ? void 0 : "none" },
+		children: [/* @__PURE__ */ jsx("button", {
+			className: `ef-drawer__scrim ef-drawer__scrim--${scrim}`,
+			type: "button",
+			"aria-label": "Cerrar panel",
+			tabIndex: -1,
+			onClick: onClose
+		}), /* @__PURE__ */ jsxs("aside", {
+			ref: panelRef,
+			className: ["ef-drawer", className].filter(Boolean).join(" "),
+			role: "dialog",
+			"aria-modal": "false",
+			"aria-labelledby": title ? titleId : void 0,
+			"aria-label": !title ? ariaLabel : void 0,
+			style: { width: formatWidth(width) },
+			children: [
+				title !== void 0 && /* @__PURE__ */ jsxs("header", {
+					className: "ef-drawer__header",
+					children: [/* @__PURE__ */ jsx("h2", {
+						className: "ef-drawer__title",
+						id: titleId,
+						children: title
+					}), /* @__PURE__ */ jsx(IconButton, {
+						className: "ef-drawer__close",
+						icon: "ph ph-x",
+						label: "Cerrar",
+						onClick: onClose
+					})]
+				}),
+				/* @__PURE__ */ jsx("div", {
+					className: "ef-drawer__body",
+					children
+				}),
+				footer && /* @__PURE__ */ jsx("footer", {
+					className: "ef-drawer__footer",
+					children: footer
+				})
+			]
+		})]
+	}), document.body);
+};
+//#endregion
+export { ACCENT_PRESETS, AppDialog, AppDropdown, AppToolbar, Avatar, Badge, Button, Card, Chip, CollapsibleSection, ConfirmDialog, ContextMenu, DatePicker, DateRangePicker, DensityContext, DensityProvider, Drawer, EmptyState, FormField, IconButton, Popover, SelectField, SettingsPanel, Skeleton, StatCard, TextAreaField, TextField, ThemeContext, ThemeProvider, ThemeSwitcher, Toggle, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };

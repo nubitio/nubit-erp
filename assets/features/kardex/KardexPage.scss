@@ -3,7 +3,8 @@
 .kardex-page {
   overflow-x: hidden;
   overflow-y: auto;
-  padding: clamp(12px, 1.6vw, 20px);
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .kardex-reference {

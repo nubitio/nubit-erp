@@ -263,6 +263,7 @@ function useLookupDropdown() {
 }
 
 function LookupDropdown({
+  activeOptionId,
   children,
   className,
   containerRef,
@@ -273,6 +274,7 @@ function LookupDropdown({
   menuStyle,
   normalizedValue,
   onClear,
+  onKeyDown,
   onQueryChange,
   onScroll,
   open,
@@ -282,6 +284,7 @@ function LookupDropdown({
   setDraftQuery,
   setOpen,
 }: {
+  activeOptionId?: string;
   children: React.ReactNode;
   className: string;
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -292,6 +295,7 @@ function LookupDropdown({
   menuStyle: React.CSSProperties;
   normalizedValue: string;
   onClear: () => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onQueryChange: (value: string) => void;
   onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
   open: boolean;
@@ -314,6 +318,8 @@ function LookupDropdown({
         required={required}
         role="combobox"
         aria-autocomplete="list"
+        aria-activedescendant={activeOptionId}
+        aria-controls={open ? `${id}-listbox` : undefined}
         aria-expanded={open}
         value={query}
         onBlur={() => {
@@ -323,6 +329,7 @@ function LookupDropdown({
         }}
         onChange={(event) => onQueryChange(event.currentTarget.value)}
         onFocus={() => { clearTimeout(blurTimer.current); setOpen(true); }}
+        onKeyDown={onKeyDown}
       />
       {!disabled && !readOnly && normalizedValue !== '' && (
         <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={onClear}>
@@ -335,7 +342,7 @@ function LookupDropdown({
         </button>
       )}
       {open && !disabled && !readOnly && createPortal(
-        <div ref={menuRef} className="native-form__lookup-menu" role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
+        <div ref={menuRef} className="native-form__lookup-menu" id={`${id}-listbox`} role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
           {children}
         </div>,
         document.body,
@@ -372,10 +379,12 @@ export function NativeEntitySelect({
   value: unknown;
 }) {
   const { t } = useCoreTranslation();
+  const generatedId = useId();
   const resourceStoreFactory = useResourceStoreFactory();
   const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
   const [searchedItems, setSearchedItems] = useState<DataRecord[] | null>(null);
   const [selectedItemCache, setSelectedItemCache] = useState<DataRecord | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -390,6 +399,21 @@ export function NativeEntitySelect({
     ?? cachedSelectedItem ?? objectSelectedItem;
   const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : '';
   const query = draftQuery ?? selectedText;
+  const controlId = id ?? generatedId;
+  const activeOptionIndex = items.length === 0 ? 0 : Math.min(activeIndex, items.length - 1);
+
+  useEffect(() => {
+    if (!field.url || normalizedValue === '' || selectedItem || cachedSelectedItem) return;
+    const source = createRemoteSource(field, httpClient, resourceStoreFactory, prependData);
+    if (!source.byKey) return;
+    let cancelled = false;
+    source.byKey(value && typeof value === 'object' ? fieldKeyValue(field, value as DataRecord) : value)
+      .then((item) => {
+        if (!cancelled && item) setSelectedItemCache(item);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [cachedSelectedItem, field, httpClient, normalizedValue, prependData, resourceStoreFactory, selectedItem, value]);
 
   useEffect(() => {
     if (!field.url || !field.searchEnabled || !open) return;
@@ -411,12 +435,12 @@ export function NativeEntitySelect({
         .finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(timer);
-  }, [field, httpClient, open, draftQuery, resourceStoreFactory]);
+  }, [draftQuery, field, httpClient, open, prependData, resourceStoreFactory]);
 
   const loadMore = useCallback(() => {
     if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
     setLoadingMore(true);
-    const searchValue = query.trim();
+    const searchValue = (draftQuery ?? '').trim();
     const currentCount = searchedItems ? searchedItems.length : 0;
     createRemoteSource(field, httpClient, resourceStoreFactory, prependData)
       .load({ take: 50, skip: currentCount, searchExpr: fieldSearchExpr(field), searchValue: searchValue === '' ? undefined : searchValue })
@@ -431,7 +455,7 @@ export function NativeEntitySelect({
       })
       .catch(() => setHasMore(false))
       .finally(() => setLoadingMore(false));
-  }, [field, httpClient, loading, loadingMore, hasMore, query, resourceStoreFactory, searchedItems]);
+  }, [draftQuery, field, hasMore, httpClient, loading, loadingMore, prependData, resourceStoreFactory, searchedItems]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const t = event.currentTarget;
@@ -445,18 +469,45 @@ export function NativeEntitySelect({
     setOpen(false);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((current) => Math.max(0, Math.min(items.length - 1, current + 1)));
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((current) => Math.max(0, current - 1));
+      return;
+    }
+    if (event.key === 'Enter' && open && items[activeOptionIndex]) {
+      event.preventDefault();
+      selectItem(items[activeOptionIndex]);
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setDraftQuery(null);
+      setOpen(false);
+    }
+  };
+
   return (
     <LookupDropdown
+      activeOptionId={open && items[activeOptionIndex] ? `${controlId}-option-${String(fieldKeyValue(field, items[activeOptionIndex]))}` : undefined}
       className={className}
       containerRef={containerRef}
       disabled={disabled}
-      id={id}
+      id={controlId}
       label={field.label}
       menuRef={menuRef}
       menuStyle={menuStyle}
       normalizedValue={normalizedValue}
-      onClear={() => { setSelectedItemCache(null); onChange(null, null); setDraftQuery(''); setOpen(true); }}
-      onQueryChange={(v) => { setDraftQuery(v); setOpen(true); if (v === '') onChange(null, null); }}
+      onClear={() => { setSelectedItemCache(null); setActiveIndex(0); onChange(null, null); setDraftQuery(''); setOpen(true); }}
+      onKeyDown={handleKeyDown}
+      onQueryChange={(v) => { setActiveIndex(0); setDraftQuery(v); setOpen(true); if (v === '') onChange(null, null); }}
       onScroll={handleScroll}
       open={open}
       query={query}
@@ -469,8 +520,9 @@ export function NativeEntitySelect({
       {!loading && items.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {!loading && items.map((item) => {
         const itemValue = fieldKeyValue(field, item);
+        const isActive = items[activeOptionIndex] === item;
         return (
-          <button key={String(itemValue)} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
+          <button key={String(itemValue)} id={`${controlId}-option-${String(itemValue)}`} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className={`native-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
             {fieldTextValue(field, item)}
           </button>
         );
@@ -500,7 +552,9 @@ function NativeEnumSelect({
   value: unknown;
 }) {
   const { t } = useCoreTranslation();
+  const generatedId = useId();
   const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const allItems: DataRecord[] = field.data ?? [];
   const normalizedValue = String(value ?? '');
@@ -510,19 +564,54 @@ function NativeEnumSelect({
   const visibleItems = draftQuery != null && draftQuery !== ''
     ? allItems.filter((item) => String(item['text'] ?? item['value'] ?? '').toLowerCase().includes(draftQuery.toLowerCase()))
     : allItems;
+  const controlId = id ?? generatedId;
+  const activeOptionIndex = visibleItems.length === 0 ? 0 : Math.min(activeIndex, visibleItems.length - 1);
+
+  const selectItem = (item: DataRecord) => {
+    onChange(item['value'] ?? null);
+    setDraftQuery(null);
+    setOpen(false);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((current) => Math.max(0, Math.min(visibleItems.length - 1, current + 1)));
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((current) => Math.max(0, current - 1));
+      return;
+    }
+    if (event.key === 'Enter' && open && visibleItems[activeOptionIndex]) {
+      event.preventDefault();
+      selectItem(visibleItems[activeOptionIndex]);
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setDraftQuery(null);
+      setOpen(false);
+    }
+  };
 
   return (
     <LookupDropdown
+      activeOptionId={open && visibleItems[activeOptionIndex] ? `${controlId}-option-${String(visibleItems[activeOptionIndex]['value'] ?? '')}` : undefined}
       className={className}
       containerRef={containerRef}
       disabled={disabled}
-      id={id}
+      id={controlId}
       label={field.label}
       menuRef={menuRef}
       menuStyle={menuStyle}
       normalizedValue={normalizedValue}
-      onClear={() => { onChange(null); setDraftQuery(''); setOpen(true); }}
-      onQueryChange={(v) => { setDraftQuery(v); setOpen(true); if (v === '') onChange(null); }}
+      onClear={() => { setActiveIndex(0); onChange(null); setDraftQuery(''); setOpen(true); }}
+      onKeyDown={handleKeyDown}
+      onQueryChange={(v) => { setActiveIndex(0); setDraftQuery(v); setOpen(true); if (v === '') onChange(null); }}
       open={open}
       query={query}
       readOnly={readOnly}
@@ -533,8 +622,9 @@ function NativeEnumSelect({
       {visibleItems.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {visibleItems.map((item) => {
         const itemValue = String(item['value'] ?? '');
+        const isActive = visibleItems[activeOptionIndex] === item;
         return (
-          <button key={itemValue} type="button" role="option" aria-selected={itemValue === normalizedValue} className="native-form__lookup-option" onMouseDown={(e) => e.preventDefault()}             onClick={() => { onChange(item['value'] ?? null); setDraftQuery(null); setOpen(false); }}>
+          <button key={itemValue} id={`${controlId}-option-${itemValue}`} type="button" role="option" aria-selected={itemValue === normalizedValue} className={`native-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
             {String(item['text'] ?? item['value'] ?? '')}
           </button>
         );
@@ -847,7 +937,13 @@ function NativeDetailGrid({
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">{t('form.detailEmpty')}</td>
+                  <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">
+                    <i className="ph ph-package native-form__detail-empty-icon" aria-hidden="true" />
+                    <span className="native-form__detail-empty-text">{t('form.detailEmpty')}</span>
+                    {allowAdding && (
+                      <span className="native-form__detail-empty-hint">{t('form.detailEmptyHint')}</span>
+                    )}
+                  </td>
                 </tr>
               )}
               {/* eslint-disable react-hooks/refs -- rowKeysRef is updated synchronously by addRow/removeRow before onRowsChange fires, so it is always in sync with rows here */}
@@ -1400,12 +1496,31 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     );
   };
 
-  const renderGroup = (group: FormLayoutGroup) => (
-    <section key={group.label} className="native-form__section">
-      <h3 className="native-form__section-title">{group.label}</h3>
-      {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
-    </section>
-  );
+  const renderGroup = (group: FormLayoutGroup) => {
+    if (group.collapsible) {
+      return (
+        <details
+          key={group.label}
+          className="native-form__section native-form__section--collapsible"
+          open={!group.defaultCollapsed}
+        >
+          <summary className="native-form__section-summary">
+            <span className="native-form__section-title">{group.label}</span>
+            <i className="ph ph-caret-down native-form__section-caret" aria-hidden="true" />
+          </summary>
+          <div className="native-form__section-body">
+            {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
+          </div>
+        </details>
+      );
+    }
+    return (
+      <section key={group.label} className="native-form__section">
+        <h3 className="native-form__section-title">{group.label}</h3>
+        {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
+      </section>
+    );
+  };
 
   const renderLayout = (layout: FormLayoutModel) => {
     if (layout.type === 'tabs') {

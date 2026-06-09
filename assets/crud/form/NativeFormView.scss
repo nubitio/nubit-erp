@@ -44,6 +44,51 @@
   overflow: visible;
 }
 
+// Page mode (CrudPageShell): fill viewport height, independent master scroll,
+// detail grid scrolls inside its panel.
+.crud-page-shell__body .native-form--with-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.crud-page-shell__body .native-form__master-detail {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// Cabecera master-detail: contenido inset; el scrollbar overlay queda en el borde de columna.
+.native-form--with-detail .native-form__master-panel {
+  padding: 0 var(--space-5) 0 var(--space-4);
+}
+
+.crud-page-shell__body .native-form__master-panel {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.crud-page-shell__body .native-form__detail-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.crud-page-shell__body .native-form__detail {
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+}
+
+.crud-page-shell__body .native-form:has(> .native-form__tabs) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .native-form__master-panel,
 .native-form__detail-panel {
   min-height: 0;
@@ -262,13 +307,14 @@
 
 // Dropdown menu
 .native-form__lookup-menu {
-  background: var(--surface-1);
+  background: var(--surface-elevated, var(--surface-1));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   left: 0;
   margin-top: var(--space-1);
   max-height: 240px;
+  max-width: min(420px, calc(100vw - 16px));
   min-width: 160px;
   overflow: auto;
   padding: var(--space-1);
@@ -276,15 +322,6 @@
   right: 0;
   z-index: 20;
 
-  &::-webkit-scrollbar { width: 6px; height: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: var(--radius-sm);
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--accent-color) 50%, var(--border-color));
-  }
 }
 
 .native-form__lookup-option,
@@ -294,8 +331,11 @@
   display: block;
   font: inherit;
   font-size: var(--font-size-sm);
+  line-height: 1.35;
   padding: 7px 9px;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: 100%;
 }
 
@@ -306,22 +346,31 @@
   transition: background var(--transition-fast), color var(--transition-fast);
 
   &:hover {
-    background: var(--surface-2);
+    background: var(--control-bg-hover, var(--surface-2));
+  }
+
+  &.is-active {
+    background: var(--control-bg-hover, var(--surface-2));
   }
 
   &[aria-selected='true'] {
-    background: var(--accent-color);
-    color: var(--on-accent-color);
-    font-weight: var(--font-weight-medium);
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    color: var(--accent-color);
+    font-weight: var(--font-weight-semibold, var(--font-weight-medium));
 
     &:hover {
-      background: var(--accent-hover);
+      background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+    }
+
+    &.is-active {
+      background: color-mix(in srgb, var(--accent-color) 16%, transparent);
     }
   }
 }
 
 .native-form__lookup-status {
   color: var(--text-tertiary);
+  cursor: default;
 }
 
 // ── Textarea ───────────────────────────────────────────────────────────────────
@@ -474,10 +523,10 @@
 }
 
 .native-form__tabs {
-  background: var(--surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs, none);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -498,6 +547,56 @@
   font-size: 13px;
   font-weight: 700;
   margin: 0 0 14px;
+}
+
+// ── Collapsible sections ───────────────────────────────────────────────────────
+
+.native-form__section--collapsible {
+  padding-bottom: 0;
+
+  &[open] {
+    padding-bottom: 22px;
+
+    .native-form__section-caret {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+.native-form__section-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin-bottom: 0;
+  padding: 2px 0 14px;
+  user-select: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover .native-form__section-title {
+    color: var(--accent-color);
+  }
+
+  .native-form__section-title {
+    margin: 0;
+    transition: color var(--transition-fast);
+  }
+}
+
+.native-form__section-caret {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+  font-size: 12px;
+  transform: rotate(-90deg);
+  transition: transform var(--transition-base);
+}
+
+.native-form__section-body {
+  padding-top: 2px;
 }
 
 .native-form__detail-title {
@@ -522,17 +621,17 @@
   margin: 0;
 }
 
-// ── Tabs (Fluent underline / DevExtreme multi-page form) ───────────────────────
+// ── Tabs (Fluent underline — integrated, no outer card chrome) ───────────────
 
 .native-form__tabs-nav {
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-wrap: nowrap;
-  gap: 0;
+  gap: var(--space-1);
   margin-bottom: 0;
   overflow-x: auto;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-4);
   scrollbar-width: thin;
 }
 
@@ -547,11 +646,11 @@
   display: inline-flex;
   flex: 0 0 auto;
   font: inherit;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   gap: var(--space-2);
   margin-bottom: -1px;
-  min-height: 40px;
+  min-height: var(--toolbar-height);
   padding: var(--space-2) var(--space-3);
   position: relative;
   transition:
@@ -561,12 +660,16 @@
 
   i {
     flex: 0 0 auto;
-    font-size: 16px;
-    opacity: 0.9;
+    font-size: 15px;
+    opacity: 0.72;
   }
 
   &:hover:not(.native-form__tab-button--active) {
     color: var(--text-primary);
+
+    i {
+      opacity: 0.9;
+    }
   }
 
   &:focus-visible {
@@ -577,19 +680,55 @@
 
 .native-form__tab-button--active {
   border-bottom-color: var(--accent-color);
-  color: var(--accent-color);
+  color: var(--text-primary);
   font-weight: var(--font-weight-semibold);
+
+  i {
+    color: var(--accent-color);
+    opacity: 1;
+  }
 }
 
 .native-form__tabs-body {
-  background: var(--surface-0);
+  background: transparent;
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-4) var(--space-4);
 
   .native-form__grid {
-    gap: 14px 16px;
+    gap: 16px 20px;
+  }
+
+  .native-form__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.02em;
+    margin-bottom: var(--space-1);
+    text-transform: none;
+  }
+
+  .native-form__file-upload-zone {
+    background: transparent;
+    border-color: var(--border-subtle);
+    min-height: 140px;
+
+    &:hover:not(.native-form__file-upload-zone--disabled):not(.native-form__file-upload-zone--filled) {
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-subtle));
+    }
+  }
+
+  .native-form__file-upload-icon {
+    background: var(--surface-2);
+    font-size: 20px;
+    height: 40px;
+    width: 40px;
+  }
+
+  .native-form__file-upload-title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
   }
 }
 
@@ -789,7 +928,7 @@
 
 .native-form__detail-summary-value {
   color: var(--text-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
@@ -876,10 +1015,30 @@
 
 // Empty state
 .native-form__detail-empty {
-  color: var(--text-tertiary);
-  font-size: var(--font-size-md);
-  height: 80px;
+  height: 120px;
   text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.native-form__detail-empty-icon {
+  color: var(--text-disabled);
+  display: block;
+  font-size: 28px;
+  margin: 0 auto var(--space-2);
+}
+
+.native-form__detail-empty-text {
+  color: var(--text-secondary);
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.native-form__detail-empty-hint {
+  color: var(--text-tertiary);
+  display: block;
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-1);
 }
 
 .native-form__detail-actions {
@@ -921,4 +1080,3 @@
 .native-form__field .app-date-picker__trigger:focus-within {
   min-height: var(--control-height-form, 34px);
 }
-

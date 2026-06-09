@@ -1,4 +1,6 @@
 // @nubit/ui — visual primitives facade.
+import './foundations/scrollbars.scss';
+
 export { Avatar, getAvatarInitials, getAvatarHue } from './Avatar';
 export type { AvatarProps, AvatarShape, AvatarSize } from './Avatar';
 export { AppDialog } from './AppDialog';

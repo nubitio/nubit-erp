@@ -19,30 +19,6 @@ body {
   }
 }
 
-/* ── Thin scrollbar — theme-aware, brand accent on hover ── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--accent-color) 60%, var(--border-color) 40%);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
-}
-
 body {
   line-height: var(--line-height-normal);
   background: var(--surface-0);

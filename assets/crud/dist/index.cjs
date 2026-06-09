@@ -446,6 +446,7 @@ function isShortField(field) {
 }
 function canUseHalfColumn(context) {
 	if (isMobileViewport(context)) return false;
+	if (context.hasMasterDetail) return false;
 	if (context.presentationMode === "page") return true;
 	if (context.presentationMode === "drawer") {
 		const size = context.drawerSize ?? "md";
@@ -1312,7 +1313,7 @@ function useLookupDropdown() {
 		menuStyle
 	};
 }
-function LookupDropdown({ children, className, containerRef, disabled, id, label, menuRef, menuStyle, normalizedValue, onClear, onQueryChange, onScroll, open, query, readOnly, required, setDraftQuery, setOpen }) {
+function LookupDropdown({ activeOptionId, children, className, containerRef, disabled, id, label, menuRef, menuStyle, normalizedValue, onClear, onKeyDown, onQueryChange, onScroll, open, query, readOnly, required, setDraftQuery, setOpen }) {
 	const blurTimer = (0, react.useRef)(void 0);
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: containerRef,
@@ -1327,6 +1328,8 @@ function LookupDropdown({ children, className, containerRef, disabled, id, label
 				required,
 				role: "combobox",
 				"aria-autocomplete": "list",
+				"aria-activedescendant": activeOptionId,
+				"aria-controls": open ? `${id}-listbox` : void 0,
 				"aria-expanded": open,
 				value: query,
 				onBlur: () => {
@@ -1339,7 +1342,8 @@ function LookupDropdown({ children, className, containerRef, disabled, id, label
 				onFocus: () => {
 					clearTimeout(blurTimer.current);
 					setOpen(true);
-				}
+				},
+				onKeyDown
 			}),
 			!disabled && !readOnly && normalizedValue !== "" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 				type: "button",
@@ -1373,6 +1377,7 @@ function LookupDropdown({ children, className, containerRef, disabled, id, label
 			open && !disabled && !readOnly && (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				ref: menuRef,
 				className: "native-form__lookup-menu",
+				id: `${id}-listbox`,
 				role: "listbox",
 				style: menuStyle,
 				onScroll,
@@ -1384,10 +1389,12 @@ function LookupDropdown({ children, className, containerRef, disabled, id, label
 }
 function NativeEntitySelect({ className, disabled, field, httpClient, id, onChange, options, prependData, readOnly, required, value }) {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
+	const generatedId = (0, react.useId)();
 	const resourceStoreFactory = useResourceStoreFactory();
 	const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
 	const [searchedItems, setSearchedItems] = (0, react.useState)(null);
 	const [selectedItemCache, setSelectedItemCache] = (0, react.useState)(null);
+	const [activeIndex, setActiveIndex] = (0, react.useState)(0);
 	const [loading, setLoading] = (0, react.useState)(false);
 	const [loadingMore, setLoadingMore] = (0, react.useState)(false);
 	const [hasMore, setHasMore] = (0, react.useState)(true);
@@ -1399,6 +1406,29 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 	const selectedItem = items.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue) ?? options.find((item) => String(fieldKeyValue(field, item) ?? "") === normalizedValue) ?? cachedSelectedItem ?? objectSelectedItem;
 	const selectedText = selectedItem ? fieldTextValue(field, selectedItem) : "";
 	const query = draftQuery ?? selectedText;
+	const controlId = id ?? generatedId;
+	const activeOptionIndex = items.length === 0 ? 0 : Math.min(activeIndex, items.length - 1);
+	(0, react.useEffect)(() => {
+		if (!field.url || normalizedValue === "" || selectedItem || cachedSelectedItem) return;
+		const source = createRemoteSource(field, httpClient, resourceStoreFactory, prependData);
+		if (!source.byKey) return;
+		let cancelled = false;
+		source.byKey(value && typeof value === "object" ? fieldKeyValue(field, value) : value).then((item) => {
+			if (!cancelled && item) setSelectedItemCache(item);
+		}).catch(() => void 0);
+		return () => {
+			cancelled = true;
+		};
+	}, [
+		cachedSelectedItem,
+		field,
+		httpClient,
+		normalizedValue,
+		prependData,
+		resourceStoreFactory,
+		selectedItem,
+		value
+	]);
 	(0, react.useEffect)(() => {
 		if (!field.url || !field.searchEnabled || !open) return;
 		const searchValue = (draftQuery ?? "").trim();
@@ -1420,16 +1450,17 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		}, 250);
 		return () => clearTimeout(timer);
 	}, [
+		draftQuery,
 		field,
 		httpClient,
 		open,
-		draftQuery,
+		prependData,
 		resourceStoreFactory
 	]);
 	const loadMore = (0, react.useCallback)(() => {
 		if (!field.url || !field.searchEnabled || loading || loadingMore || !hasMore) return;
 		setLoadingMore(true);
-		const searchValue = query.trim();
+		const searchValue = (draftQuery ?? "").trim();
 		const currentCount = searchedItems ? searchedItems.length : 0;
 		createRemoteSource(field, httpClient, resourceStoreFactory, prependData).load({
 			take: 50,
@@ -1451,12 +1482,13 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 			setHasMore(result.data.length === 50 && (result.totalCount === void 0 || nextTotal < result.totalCount));
 		}).catch(() => setHasMore(false)).finally(() => setLoadingMore(false));
 	}, [
+		draftQuery,
 		field,
+		hasMore,
 		httpClient,
 		loading,
 		loadingMore,
-		hasMore,
-		query,
+		prependData,
 		resourceStoreFactory,
 		searchedItems
 	]);
@@ -1470,22 +1502,50 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 		setDraftQuery(null);
 		setOpen(false);
 	};
+	const handleKeyDown = (event) => {
+		if (event.key === "ArrowDown") {
+			event.preventDefault();
+			setOpen(true);
+			setActiveIndex((current) => Math.max(0, Math.min(items.length - 1, current + 1)));
+			return;
+		}
+		if (event.key === "ArrowUp") {
+			event.preventDefault();
+			setOpen(true);
+			setActiveIndex((current) => Math.max(0, current - 1));
+			return;
+		}
+		if (event.key === "Enter" && open && items[activeOptionIndex]) {
+			event.preventDefault();
+			selectItem(items[activeOptionIndex]);
+			return;
+		}
+		if (event.key === "Escape") {
+			event.preventDefault();
+			setDraftQuery(null);
+			setOpen(false);
+		}
+	};
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(LookupDropdown, {
+		activeOptionId: open && items[activeOptionIndex] ? `${controlId}-option-${String(fieldKeyValue(field, items[activeOptionIndex]))}` : void 0,
 		className,
 		containerRef,
 		disabled,
-		id,
+		id: controlId,
 		label: field.label,
 		menuRef,
 		menuStyle,
 		normalizedValue,
 		onClear: () => {
 			setSelectedItemCache(null);
+			setActiveIndex(0);
 			onChange(null, null);
 			setDraftQuery("");
 			setOpen(true);
 		},
+		onKeyDown: handleKeyDown,
 		onQueryChange: (v) => {
+			setActiveIndex(0);
 			setDraftQuery(v);
 			setOpen(true);
 			if (v === "") onChange(null, null);
@@ -1508,11 +1568,13 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 			}),
 			!loading && items.map((item) => {
 				const itemValue = fieldKeyValue(field, item);
+				const isActive = items[activeOptionIndex] === item;
 				return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+					id: `${controlId}-option-${String(itemValue)}`,
 					type: "button",
 					role: "option",
 					"aria-selected": String(itemValue ?? "") === normalizedValue,
-					className: "native-form__lookup-option",
+					className: `native-form__lookup-option${isActive ? " is-active" : ""}`,
 					onMouseDown: (e) => e.preventDefault(),
 					onClick: () => selectItem(item),
 					children: fieldTextValue(field, item)
@@ -1527,28 +1589,65 @@ function NativeEntitySelect({ className, disabled, field, httpClient, id, onChan
 }
 function NativeEnumSelect({ className, disabled, field, id, onChange, readOnly, required, value }) {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
+	const generatedId = (0, react.useId)();
 	const { open, setOpen, draftQuery, setDraftQuery, containerRef, menuRef, menuStyle } = useLookupDropdown();
+	const [activeIndex, setActiveIndex] = (0, react.useState)(0);
 	const allItems = field.data ?? [];
 	const normalizedValue = String(value ?? "");
 	const selectedItem = allItems.find((item) => String(item["value"] ?? "") === normalizedValue);
 	const selectedText = selectedItem ? String(selectedItem["text"] ?? selectedItem["value"] ?? "") : "";
 	const query = draftQuery ?? selectedText;
 	const visibleItems = draftQuery != null && draftQuery !== "" ? allItems.filter((item) => String(item["text"] ?? item["value"] ?? "").toLowerCase().includes(draftQuery.toLowerCase())) : allItems;
+	const controlId = id ?? generatedId;
+	const activeOptionIndex = visibleItems.length === 0 ? 0 : Math.min(activeIndex, visibleItems.length - 1);
+	const selectItem = (item) => {
+		onChange(item["value"] ?? null);
+		setDraftQuery(null);
+		setOpen(false);
+	};
+	const handleKeyDown = (event) => {
+		if (event.key === "ArrowDown") {
+			event.preventDefault();
+			setOpen(true);
+			setActiveIndex((current) => Math.max(0, Math.min(visibleItems.length - 1, current + 1)));
+			return;
+		}
+		if (event.key === "ArrowUp") {
+			event.preventDefault();
+			setOpen(true);
+			setActiveIndex((current) => Math.max(0, current - 1));
+			return;
+		}
+		if (event.key === "Enter" && open && visibleItems[activeOptionIndex]) {
+			event.preventDefault();
+			selectItem(visibleItems[activeOptionIndex]);
+			return;
+		}
+		if (event.key === "Escape") {
+			event.preventDefault();
+			setDraftQuery(null);
+			setOpen(false);
+		}
+	};
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(LookupDropdown, {
+		activeOptionId: open && visibleItems[activeOptionIndex] ? `${controlId}-option-${String(visibleItems[activeOptionIndex]["value"] ?? "")}` : void 0,
 		className,
 		containerRef,
 		disabled,
-		id,
+		id: controlId,
 		label: field.label,
 		menuRef,
 		menuStyle,
 		normalizedValue,
 		onClear: () => {
+			setActiveIndex(0);
 			onChange(null);
 			setDraftQuery("");
 			setOpen(true);
 		},
+		onKeyDown: handleKeyDown,
 		onQueryChange: (v) => {
+			setActiveIndex(0);
 			setDraftQuery(v);
 			setOpen(true);
 			if (v === "") onChange(null);
@@ -1564,17 +1663,15 @@ function NativeEnumSelect({ className, disabled, field, id, onChange, readOnly, 
 			children: t("form.lookupNoResults")
 		}), visibleItems.map((item) => {
 			const itemValue = String(item["value"] ?? "");
+			const isActive = visibleItems[activeOptionIndex] === item;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				id: `${controlId}-option-${itemValue}`,
 				type: "button",
 				role: "option",
 				"aria-selected": itemValue === normalizedValue,
-				className: "native-form__lookup-option",
+				className: `native-form__lookup-option${isActive ? " is-active" : ""}`,
 				onMouseDown: (e) => e.preventDefault(),
-				onClick: () => {
-					onChange(item["value"] ?? null);
-					setDraftQuery(null);
-					setOpen(false);
-				},
+				onClick: () => selectItem(item),
 				children: String(item["text"] ?? item["value"] ?? "")
 			}, itemValue);
 		})]
@@ -1797,10 +1894,23 @@ function NativeDetailGrid({ allowAdding = true, allowDeleting = true, allowUpdat
 								title: "Arrastrar para redimensionar"
 							})]
 						}, field.name)), allowDeleting && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { className: "native-form__col-actions" })] }) }),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tbody", { children: [rows.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tbody", { children: [rows.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tr", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
 							colSpan: visibleFields.length + (allowDeleting ? 1 : 0),
 							className: "native-form__detail-empty",
-							children: t("form.detailEmpty")
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+									className: "ph ph-package native-form__detail-empty-icon",
+									"aria-hidden": "true"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: "native-form__detail-empty-text",
+									children: t("form.detailEmpty")
+								}),
+								allowAdding && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: "native-form__detail-empty-hint",
+									children: t("form.detailEmptyHint")
+								})
+							]
 						}) }), rows.map((row, rowIndex) => {
 							const rowKey = rowKeysRef.current[rowIndex];
 							return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [visibleFields.map((field) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", {
@@ -2428,13 +2538,32 @@ const NativeFormView = (0, react.forwardRef)((options, ref) => {
 			children: visibleFields.map((field) => renderField(field, spans.get(field.name) ?? 12))
 		});
 	};
-	const renderGroup = (group) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-		className: "native-form__section",
-		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
-			className: "native-form__section-title",
-			children: group.label
-		}), renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })]
-	}, group.label);
+	const renderGroup = (group) => {
+		if (group.collapsible) return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", {
+			className: "native-form__section native-form__section--collapsible",
+			open: !group.defaultCollapsed,
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", {
+				className: "native-form__section-summary",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					className: "native-form__section-title",
+					children: group.label
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+					className: "ph ph-caret-down native-form__section-caret",
+					"aria-hidden": "true"
+				})]
+			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				className: "native-form__section-body",
+				children: renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })
+			})]
+		}, group.label);
+		return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+			className: "native-form__section",
+			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
+				className: "native-form__section-title",
+				children: group.label
+			}), renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })]
+		}, group.label);
+	};
 	const renderLayout = (layout) => {
 		if (layout.type === "tabs") {
 			const groups = [...layout.tabs, ...layout.overflow ? [layout.overflow] : []];
@@ -3530,7 +3659,7 @@ const NativeDataGridView = (0, react.forwardRef)((options, ref) => {
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 			className: `view-wrapper ${options.mode === "full" || !options.mode ? "view-wrapper-datagrid-list list-page" : ""}`,
 			children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: "grid theme-dependent native-datagrid",
+				className: `grid theme-dependent native-datagrid${options.zebraRows ? " native-datagrid--zebra" : ""}`,
 				children: [
 					(options.toolbarVisible ?? true) && options.mode !== "minimal" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "native-datagrid__toolbar",
@@ -4220,96 +4349,33 @@ const CrudDialogShell = ({ isOpen, mode, title, onClose, onCancel, onSave, width
 });
 //#endregion
 //#region assets/crud/view/CrudDrawerShell.tsx
-const formatSize = (value) => {
-	if (value === void 0) return void 0;
-	return typeof value === "number" ? `${value}px` : value;
-};
 /**
 * Drawer form shell — slides in from the side and leaves the grid visible.
 *
-* - Default: right-side panel `min(880px, 60vw)` wide.
-* - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
-* - Escape closes the drawer; nested lookup dialogs float above via z-index.
+* Thin wrapper around the generic <Drawer> from @nubit/ui that adds the
+* CRUD-specific footer (Cancel + Save buttons).
 */
 const CrudDrawerShell = ({ isOpen, mode, title, onClose, onCancel, onSave, drawerWidth = DEFAULT_DRAWER_WIDTH, drawerSide = "right", children }) => {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
-	const titleId = (0, react.useId)();
-	const panelRef = (0, react.useRef)(null);
-	const lastFocusedElementRef = (0, react.useRef)(null);
-	(0, react.useEffect)(() => {
-		if (!isOpen) return;
-		lastFocusedElementRef.current = document.activeElement;
-		window.setTimeout(() => {
-			(panelRef.current?.querySelector("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex=\"-1\"])"))?.focus();
-		});
-		return () => lastFocusedElementRef.current?.focus?.();
-	}, [isOpen]);
-	(0, react.useEffect)(() => {
-		if (!isOpen) return;
-		const handleKeyDown = (event) => {
-			if (event.key === "Escape") {
-				event.preventDefault();
-				onClose();
-			}
-		};
-		document.addEventListener("keydown", handleKeyDown);
-		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [isOpen, onClose]);
-	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: [
-			"crud-drawer-root",
-			isOpen && "crud-drawer-root--open",
-			`crud-drawer-root--${drawerSide}`
-		].filter(Boolean).join(" "),
-		"aria-hidden": !isOpen,
-		style: { pointerEvents: isOpen ? void 0 : "none" },
-		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			className: "crud-drawer__scrim",
-			type: "button",
-			"aria-label": t("dialog.buttonCancel"),
-			onClick: onClose,
-			tabIndex: -1
-		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
-			ref: panelRef,
-			className: "crud-drawer",
-			role: "dialog",
-			"aria-modal": "false",
-			"aria-labelledby": titleId,
-			style: { width: formatSize(drawerWidth) },
-			children: [
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
-					className: "crud-drawer__header",
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-						className: "crud-drawer__title",
-						id: titleId,
-						children: title
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.IconButton, {
-						className: "crud-drawer__close",
-						icon: "ph ph-x",
-						label: t("dialog.buttonCancel"),
-						onClick: onClose
-					})]
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: "crud-drawer__body",
-					children
-				}),
-				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("footer", {
-					className: "crud-drawer__footer",
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
-						variant: "secondary",
-						onClick: onCancel,
-						children: t("dialog.buttonCancel")
-					}), mode !== "view" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
-						variant: "primary",
-						className: "dialog-save-button",
-						onClick: onSave,
-						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("dialog.buttonSave") })
-					})]
-				})
-			]
-		})]
-	}), document.body);
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Drawer, {
+		isOpen,
+		onClose,
+		title,
+		width: drawerWidth,
+		side: drawerSide,
+		scrim: "subtle",
+		footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+			variant: "secondary",
+			onClick: onCancel,
+			children: t("dialog.buttonCancel")
+		}), mode !== "view" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_nubit_ui.Button, {
+			variant: "primary",
+			className: "dialog-save-button",
+			onClick: onSave,
+			children: t("dialog.buttonSave")
+		})] }),
+		children
+	});
 };
 //#endregion
 //#region assets/crud/view/CrudPageShell.tsx
@@ -4321,7 +4387,7 @@ const CrudDrawerShell = ({ isOpen, mode, title, onClose, onCancel, onSave, drawe
 * does not navigate — it just exposes Back/Cancel/Save callbacks that the
 * orchestrator maps to `navigate()` calls or close-dialog dispatches.
 */
-const CrudPageShell = ({ isOpen, mode, title, onClose, onCancel, onSave, children }) => {
+const CrudPageShell = ({ isOpen, mode, title, onClose, onCancel, onSave, saveLabel, children }) => {
 	const { t } = (0, _nubit_core.useCoreTranslation)();
 	if (!isOpen) return null;
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
@@ -4354,7 +4420,7 @@ const CrudPageShell = ({ isOpen, mode, title, onClose, onCancel, onSave, childre
 					variant: "primary",
 					className: "dialog-save-button",
 					onClick: onSave,
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t("dialog.buttonSave") })
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: saveLabel ?? t("dialog.buttonSave") })
 				})]
 			})
 		]

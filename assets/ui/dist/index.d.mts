@@ -676,4 +676,34 @@ interface UseFloatingPanelResult {
 }
 declare function useFloatingPanel(options?: UseFloatingPanelOptions): UseFloatingPanelResult;
 //#endregion
-export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppDropdown, type AppDropdownOption, type AppDropdownProps, type AppDropdownVariant, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };
+//#region assets/ui/Drawer.d.ts
+type DrawerSide = 'right' | 'left';
+interface DrawerProps {
+  /** Controls visibility. The drawer mounts/unmounts with this flag. */
+  isOpen: boolean;
+  /** Called on Escape, scrim click, or the built-in close button. */
+  onClose: () => void;
+  /** Optional title rendered in the header. */
+  title?: React$1.ReactNode;
+  /** Width of the panel. Accepts any CSS value or a number (px). */
+  width?: number | string;
+  /** Which side the drawer slides in from. Default: right. */
+  side?: DrawerSide;
+  /**
+   * Scrim opacity level.
+   * - 'subtle'  — dimly tints background (default, keeps content legible)
+   * - 'overlay' — solid overlay, same as modal backdrop
+   */
+  scrim?: 'subtle' | 'overlay';
+  /** Content rendered inside the scrollable body. */
+  children: React$1.ReactNode;
+  /** Optional sticky footer (e.g. action buttons). */
+  footer?: React$1.ReactNode;
+  /** Extra class applied to the panel element. */
+  className?: string;
+  /** aria-label for the dialog when no title is provided. */
+  'aria-label'?: string;
+}
+declare const Drawer: React$1.FC<DrawerProps>;
+//#endregion
+export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppDropdown, type AppDropdownOption, type AppDropdownProps, type AppDropdownVariant, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, Drawer, type DrawerProps, type DrawerSide, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };

@@ -1469,6 +1469,8 @@ interface DataGridViewOptions {
   emptyState?: ResourceEmptyState;
   /** Backend adapter controlling entity key lookup and display. Defaults to HydraAdapter. */
   adapter?: BackendAdapter;
+  /** Alternate row background (zebra stripes). Defaults to false. */
+  zebraRows?: boolean;
 }
 //#endregion
 //#region assets/crud/datagrid/NativeDataGridView.d.ts
@@ -1642,6 +1644,8 @@ interface CrudFormShellProps {
   onCancel: () => void;
   /** Called when the user clicks the Save button. */
   onSave: () => void;
+  /** Override the default save button label. */
+  saveLabel?: string;
   /** Dialog-only sizing. Drawer/Page shells ignore these. */
   width?: number;
   height?: number;
@@ -1694,9 +1698,8 @@ declare const CrudDialogShell: React.FC<CrudFormShellProps>;
 /**
  * Drawer form shell — slides in from the side and leaves the grid visible.
  *
- * - Default: right-side panel `min(880px, 60vw)` wide.
- * - Mobile (≤ 768px): becomes a full-screen sheet (no side gap, no animation jank).
- * - Escape closes the drawer; nested lookup dialogs float above via z-index.
+ * Thin wrapper around the generic <Drawer> from @nubit/ui that adds the
+ * CRUD-specific footer (Cancel + Save buttons).
  */
 declare const CrudDrawerShell: React.FC<CrudFormShellProps>;
 //#endregion
