@@ -31,13 +31,32 @@ export const toOptionalNumber = (value: unknown): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
+export const isWeightUnitCode = (unitCode?: string): boolean => {
+  const normalized = String(unitCode ?? '')
+    .trim()
+    .toUpperCase();
+  return ['KGM', 'KG', 'KILO', 'KILOGRAMO', 'GRM', 'G'].includes(normalized);
+};
+
+export const formatPosQuantity = (value: number, unitCode?: string): string => {
+  if (!isWeightUnitCode(unitCode)) {
+    return Number.isInteger(value)
+      ? String(value)
+      : value.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+  }
+
+  return value.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+};
+
 export const normalizeProduct = (raw: any): PosItem => {
   const legacyType = raw?.type === undefined ? undefined : Number(raw.type);
   const productType = String(
     raw?.productType ?? raw?.product_type ?? (legacyType === 1 ? 'STOCKABLE' : 'SERVICE'),
   ).toUpperCase() as PosItem['productType'];
   const productKind = String(raw?.productKind ?? raw?.product_kind ?? '').toUpperCase();
-  const inventoryBehavior = String(raw?.inventoryBehavior ?? raw?.inventory_behavior ?? '').toUpperCase();
+  const inventoryBehavior = String(
+    raw?.inventoryBehavior ?? raw?.inventory_behavior ?? '',
+  ).toUpperCase();
   const nonStockable =
     productType === 'SERVICE' ||
     productType === 'DIGITAL' ||
@@ -63,24 +82,39 @@ export const normalizeProduct = (raw: any): PosItem => {
     productType,
     trackInventory: nonStockable
       ? false
-      : Boolean(raw?.trackInventory ?? raw?.track_inventory ?? raw?.trackInventoryFlag ?? legacyType === 1),
-    saleUnitCode: raw?.saleUnitCode ? String(raw.saleUnitCode) : undefined,
+      : Boolean(
+          raw?.trackInventory ??
+          raw?.track_inventory ??
+          raw?.trackInventoryFlag ??
+          legacyType === 1,
+        ),
+    saleUnitCode: raw?.saleUnitCode
+      ? String(raw.saleUnitCode)
+      : raw?.unitOfMeasure?.code
+        ? String(raw.unitOfMeasure.code)
+        : raw?.unitOfMeasure?.name
+          ? String(raw.unitOfMeasure.name)
+        : raw?.unit_of_measure?.code
+          ? String(raw.unit_of_measure.code)
+          : raw?.unit_of_measure?.name
+            ? String(raw.unit_of_measure.name)
+            : undefined,
     stock: toOptionalNumber(raw?.stock),
     sku: raw?.sku ? String(raw.sku) : undefined,
     barcode: raw?.barcode ? String(raw.barcode) : undefined,
     taxType,
     category:
-    raw?.category && raw.category.id
-      ? {
-          id: String(raw.category.id),
-          name: String(raw.category.name ?? 'Sin categoria'),
-          icon: raw.category.icon,
-          active: raw.category.active,
-        }
-      : {
-          id: 'uncategorized',
-          name: 'Sin categoria',
-        },
+      raw?.category && raw.category.id
+        ? {
+            id: String(raw.category.id),
+            name: String(raw.category.name ?? 'Sin categoria'),
+            icon: raw.category.icon,
+            active: raw.category.active,
+          }
+        : {
+            id: 'uncategorized',
+            name: 'Sin categoria',
+          },
   };
 };
 

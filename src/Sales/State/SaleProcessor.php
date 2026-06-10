@@ -437,9 +437,17 @@ readonly class SaleProcessor implements ProcessorInterface
                 $item->setDiscountPercent((string) $discountPercent);
             }
 
+            $description = trim((string) ($itemData['description'] ?? $itemData['nameSnapshot'] ?? $itemData['descripcion'] ?? ''));
+
+            if ($description !== '') {
+                $item->setNameSnapshot(mb_substr($description, 0, 255));
+            }
+
             // Populate snapshots from product when available
             if ($product !== null) {
-                $item->setNameSnapshot($product->getName());
+                if ($item->getNameSnapshot() === '') {
+                    $item->setNameSnapshot($product->getName());
+                }
                 $item->setSkuSnapshot($product->getCode());
                 $item->setUomSnapshot($product->getUnitOfMeasure()->getCode());
                 $item->setUnitCostSnapshot($product->getPurchasePrice());

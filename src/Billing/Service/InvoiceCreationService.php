@@ -218,7 +218,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                     'line_number' => $lineNumber,
                     'product_id' => $saleItem?->getProduct()?->getId(),
                     'product_code' => $saleItem?->getProduct()?->getCode(),
-                    'product_name' => $saleItem?->getProduct()?->getName() ?? ($saleItem?->getNameSnapshot() ?? '-'),
+                    'product_name' => $saleItem?->getNameSnapshot() ?: ($saleItem?->getProduct()?->getName() ?? '-'),
                     'product_uom' => $saleItem?->getProduct()?->getUnitOfMeasure()?->getCode() ?? $saleItem?->getUomSnapshot(),
                     'quantity' => $line->quantity,
                     'unit_price' => $line->unitPrice,

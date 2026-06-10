@@ -131,7 +131,13 @@ export const usePosCheckout = ({
         }
 
         return prevCart.map((cartItem) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
+          cartItem.id === item.id
+            ? {
+                ...cartItem,
+                saleUnitCode: cartItem.saleUnitCode ?? item.saleUnitCode,
+                quantity: cartItem.quantity + 1,
+              }
+            : cartItem,
         );
       }
 
@@ -150,7 +156,9 @@ export const usePosCheckout = ({
   };
 
   const updateQuantity = async (id: string, nextQuantity: number) => {
-    if (nextQuantity <= 0) {
+    const normalizedNextQuantity = Number(nextQuantity.toFixed(3));
+
+    if (normalizedNextQuantity <= 0) {
       removeFromCart(id);
       return;
     }
@@ -173,15 +181,21 @@ export const usePosCheckout = ({
         }
 
         if (tracksInventory && enforceStockCheck && typeof effectiveStock === 'number') {
-          const quantity = Math.min(nextQuantity, effectiveStock);
-          if (quantity < nextQuantity) {
+          const quantity = Math.min(normalizedNextQuantity, effectiveStock);
+          if (quantity < normalizedNextQuantity) {
             toast(`Stock máximo alcanzado para "${item.name}"`, 'warning');
           }
           return { ...item, stock: effectiveStock, quantity };
         }
 
-        return { ...item, stock: effectiveStock, quantity: nextQuantity };
+        return { ...item, stock: effectiveStock, quantity: normalizedNextQuantity };
       }),
+    );
+  };
+
+  const updateLineDescription = (id: string, lineDescription: string) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => (item.id === id ? { ...item, lineDescription } : item)),
     );
   };
 
@@ -250,13 +264,8 @@ export const usePosCheckout = ({
         issuedAt: nowUtcIso(),
         issuedDate: todayBusinessDate(),
         warehouse: getIRI(`${API}warehouses`, selectedWarehouseId),
-        customer: selectedCustomerId
-          ? getIRI(`${API}customers`, String(selectedCustomerId))
-          : null,
-        paymentMethod: getIRI(
-          `${API}payment-methods`,
-          String(selectedPaymentMethodId),
-        ),
+        customer: selectedCustomerId ? getIRI(`${API}customers`, String(selectedCustomerId)) : null,
+        paymentMethod: getIRI(`${API}payment-methods`, String(selectedPaymentMethodId)),
         payments: [
           {
             payment_method_id: Number(selectedPaymentMethodId),
@@ -275,6 +284,7 @@ export const usePosCheckout = ({
           product: getIRI(`${API}products`, String(item.id)),
           qty: Number(item.quantity),
           unitPrice: toNumber(item.salePrice).toFixed(2),
+          description: item.lineDescription?.trim() || item.name,
           discountAmount: '0.00',
           netAmount: (toNumber(item.salePrice) * item.quantity).toFixed(2),
         })),
@@ -288,7 +298,7 @@ export const usePosCheckout = ({
         requestBody: salePayload,
         items: cart.map((item) => ({
           productId: item.id,
-          name: item.name,
+          name: item.lineDescription?.trim() || item.name,
           quantity: item.quantity,
           unitPrice: toNumber(item.salePrice),
           lineTotal: toNumber(item.salePrice) * item.quantity,
@@ -361,6 +371,7 @@ export const usePosCheckout = ({
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateLineDescription,
     clearCart,
     cartItemsCount,
     subtotal,

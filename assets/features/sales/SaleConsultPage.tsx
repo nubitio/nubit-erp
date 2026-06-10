@@ -19,8 +19,9 @@ import './SaleConsultPage.scss';
 const API = getCoreApiBaseUrl();
 
 const reportTypes = [
+  { value: 'detailed-sales', text: 'Ventas por comprobante' },
+  { value: 'sales-by-line', text: 'Ventas por línea' },
   { value: 'sale-by-product', text: 'Ventas por producto' },
-  { value: 'detailed-sales', text: 'Ventas detalladas' },
   { value: 'accounting-report', text: 'Reporte contable' },
   { value: 'payment-method-daily', text: 'Pagos diarios por método' },
   { value: 'daily-summary', text: 'Resumen diario de ventas' },

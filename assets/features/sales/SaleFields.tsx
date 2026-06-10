@@ -343,7 +343,11 @@ export const SaleDetailFields = (
         row.netAmount = price;
         this.defaultSetCellValue(row, product, currentRow);
       })
-      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
+      .formatter((cell: GridCellContext) => {
+        const row = cell.data as { nameSnapshot?: string } | undefined;
+        const product = cell.value as { name?: string } | undefined;
+        return row?.nameSnapshot || product?.name;
+      })
       .required(true)
       .sortable(false)
       .build(),

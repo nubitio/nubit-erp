@@ -1191,6 +1191,43 @@
   max-width: 100%;
 }
 
+.pos-line__name--editable {
+  font-family: inherit;
+  color: inherit;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  cursor: text;
+}
+
+.pos-line__name-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-sm);
+  background: var(--pos-card-alt);
+  color: var(--pos-text);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 0.1rem 0.3rem;
+  outline: none;
+
+  &:focus {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-primary) 12%, transparent);
+  }
+}
+
+.pos-line__base-name {
+  font-size: 0.65rem;
+  color: var(--pos-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .pos-line__unit {
   font-size: var(--font-size-xs);
   color: var(--pos-muted);
@@ -1278,7 +1315,7 @@
 }
 
 .pos-line__qty-input {
-  width: 2.4rem;
+  width: 3.6rem;
   text-align: center;
   font-size: 0.85rem;
   font-weight: 800;

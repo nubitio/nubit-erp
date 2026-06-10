@@ -13115,7 +13115,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Type of report to generate */
-                report: "sale-by-product" | "detailed-sales" | "accounting-report" | "voided-sales" | "credit-notes" | "payment-method-daily" | "daily-summary";
+                report: "sale-by-product" | "sales-by-line" | "detailed-sales" | "accounting-report" | "voided-sales" | "credit-notes" | "payment-method-daily" | "daily-summary";
                 /** @description Start date for the report (YYYY-MM-DD) */
                 "date-from": string;
                 /** @description End date for the report (YYYY-MM-DD) */

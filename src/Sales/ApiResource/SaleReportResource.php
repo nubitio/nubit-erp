@@ -45,6 +45,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
                             'type' => 'string',
                             'enum' => [
                                 'sale-by-product',
+                                'sales-by-line',
                                 'detailed-sales',
                                 'accounting-report',
                                 'voided-sales',

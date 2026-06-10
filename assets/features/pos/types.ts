@@ -26,6 +26,7 @@ export interface PosItem {
 
 export type CartItem = PosItem & {
   quantity: number;
+  lineDescription?: string;
 };
 
 export interface CustomerOption {

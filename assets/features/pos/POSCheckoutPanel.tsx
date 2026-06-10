@@ -1,7 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Badge, Chip, EmptyState, IconButton, TextField } from '@nubit/ui';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
-import { isCashPaymentMethod, normalizeText, toNumber } from './posHelpers';
+import {
+  formatPosQuantity,
+  isCashPaymentMethod,
+  isWeightUnitCode,
+  normalizeText,
+  toNumber,
+} from './posHelpers';
 import type { LocalSale } from '@offline/types';
 
 interface POSCheckoutPanelProps {
@@ -26,6 +32,7 @@ interface POSCheckoutPanelProps {
   note: string;
   setNote: (value: string) => void;
   updateQuantity: (id: string, nextQuantity: number) => void | Promise<void>;
+  updateLineDescription: (id: string, lineDescription: string) => void;
   removeFromCart: (id: string) => void;
   formatMoney: (value: number) => string;
   paymentMethods: PaymentMethodOption[];
@@ -96,6 +103,7 @@ export function POSCheckoutPanel({
   note: _note,
   setNote: _setNote,
   updateQuantity,
+  updateLineDescription,
   removeFromCart,
   formatMoney,
   paymentMethods,
@@ -135,6 +143,8 @@ export function POSCheckoutPanel({
   // Inline quantity editing
   const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
   const [editingQtyVal, setEditingQtyVal] = useState<string>('');
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [editingNameVal, setEditingNameVal] = useState<string>('');
   // Customer field ref (for F3 shortcut focus)
   const customerInputRef = useRef<HTMLInputElement>(null);
   // Set to true when F3 fires; consumed once the input actually mounts
@@ -198,7 +208,9 @@ export function POSCheckoutPanel({
   }, [focusCustomerTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Collapse cash panel whenever payment method changes
-  useEffect(() => { setCashExpanded(false); }, [selectedPaymentMethodId]);
+  useEffect(() => {
+    setCashExpanded(false);
+  }, [selectedPaymentMethodId]);
 
   const selectedCustomer =
     selectedCustomerId !== null ? customerOptions.find((c) => c.id === selectedCustomerId) : null;
@@ -216,7 +228,12 @@ export function POSCheckoutPanel({
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <h2>Orden</h2>
           {cart.length > 0 && (
-            <Badge variant="primary" size="sm" pill aria-label={`${cart.length} productos en carrito`}>
+            <Badge
+              variant="primary"
+              size="sm"
+              pill
+              aria-label={`${cart.length} productos en carrito`}
+            >
               {cart.length}
             </Badge>
           )}
@@ -240,7 +257,7 @@ export function POSCheckoutPanel({
                 {selectedCustomer ? selectedCustomer.businessName : 'Cliente general'}
               </span>
               <span className="pos-customer-row__sub">
-                {selectedCustomer ? (selectedCustomer.doc || 'Sin documento') : 'Sin RUC'}
+                {selectedCustomer ? selectedCustomer.doc || 'Sin documento' : 'Sin RUC'}
               </span>
             </div>
             <button
@@ -258,8 +275,8 @@ export function POSCheckoutPanel({
               }}
               data-testid="pos-customer-clear"
             >
-              {customerOpen && !selectedCustomer ? 'Cancelar' : 'Cambiar'}
-              {' '}<i className="ph ph-caret-right" aria-hidden="true" />
+              {customerOpen && !selectedCustomer ? 'Cancelar' : 'Cambiar'}{' '}
+              <i className="ph ph-caret-right" aria-hidden="true" />
             </button>
           </div>
 
@@ -269,7 +286,10 @@ export function POSCheckoutPanel({
                 type="text"
                 placeholder="Buscar por nombre o RUC..."
                 value={customerSearch}
-                onChange={(e) => { setCustomerSearch(e.target.value); setShowCustomerSuggestions(true); }}
+                onChange={(e) => {
+                  setCustomerSearch(e.target.value);
+                  setShowCustomerSuggestions(true);
+                }}
                 onFocus={() => setShowCustomerSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowCustomerSuggestions(false), 120)}
                 aria-label="Cliente"
@@ -278,7 +298,8 @@ export function POSCheckoutPanel({
                 autoFocus
                 data-testid="pos-customer-search"
                 ref={(el) => {
-                  (customerInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                  (customerInputRef as React.MutableRefObject<HTMLInputElement | null>).current =
+                    el;
                   if (el && pendingCustomerFocusRef.current) {
                     pendingCustomerFocusRef.current = false;
                     el.focus();
@@ -289,7 +310,12 @@ export function POSCheckoutPanel({
                 <p className="pos-customer-no-results">Sin resultados</p>
               )}
               {showCustomerSuggestions && customerOptions.length > 0 && (
-                <div className="pos-customer-suggestions" role="listbox" aria-label="Sugerencias" data-testid="pos-customer-suggestions">
+                <div
+                  className="pos-customer-suggestions"
+                  role="listbox"
+                  aria-label="Sugerencias"
+                  data-testid="pos-customer-suggestions"
+                >
                   {customerOptions.slice(0, 8).map((customer) => (
                     <button
                       key={customer.id}
@@ -299,14 +325,20 @@ export function POSCheckoutPanel({
                       className={`pos-customer-option ${selectedCustomerId === customer.id ? 'is-active' : ''}`}
                       onMouseDown={(e) => e.preventDefault()}
                       data-testid="pos-customer-option"
-                      onClick={() => { setSelectedCustomerId(customer.id); setShowCustomerSuggestions(false); setCustomerOpen(false); }}
+                      onClick={() => {
+                        setSelectedCustomerId(customer.id);
+                        setShowCustomerSuggestions(false);
+                        setCustomerOpen(false);
+                      }}
                     >
                       <span>{customer.businessName}</span>
                       {customer.doc && <small>{customer.doc}</small>}
                     </button>
                   ))}
                   {(customersLoading || customersHasMore) && (
-                    <button type="button" className="pos-load-more-customers"
+                    <button
+                      type="button"
+                      className="pos-load-more-customers"
                       onClick={() => loadCustomers(deferredCustomerSearch, customersPage + 1, true)}
                       disabled={customersLoading || !customersHasMore}
                     >
@@ -338,91 +370,181 @@ export function POSCheckoutPanel({
               size="sm"
             />
           ) : (
-            cart.map((item) => (
-              <div key={item.id} className={`pos-line${newItemIds.has(item.id) ? ' is-new' : ''}`}>
-                <div className="pos-line__body">
-                  <div className="pos-line__name">{item.name}</div>
-                  <div className="pos-line__unit">{formatMoney(toNumber(item.salePrice))} c/u</div>
-                </div>
-                <div className="pos-line__qty">
-                  <button
-                    type="button"
-                    className={item.quantity === 1 ? 'is-remove' : ''}
-                    onClick={() => item.quantity === 1 ? removeFromCart(item.id) : updateQuantity(item.id, item.quantity - 1)}
-                    aria-label={item.quantity === 1 ? `Quitar ${item.name}` : 'Restar uno'}
-                  >
-                    {item.quantity === 1
-                      ? <i className="ph ph-trash" aria-hidden="true" />
-                      : <i className="ph ph-minus" aria-hidden="true" />}
-                  </button>
-                  {editingQtyId === item.id ? (
-                    <input
-                      type="number"
-                      className="pos-line__qty-input"
-                      value={editingQtyVal}
-                      min={0}
-                      autoFocus
-                      onChange={(e) => setEditingQtyVal(e.target.value)}
-                      onBlur={() => {
-                        const n = parseInt(editingQtyVal, 10);
-                        if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
-                        else if (!isNaN(n) && n === 0) removeFromCart(item.id);
-                        setEditingQtyId(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                        if (e.key === 'Escape') setEditingQtyId(null);
-                      }}
-                      aria-label="Cantidad"
-                    />
-                  ) : (
-                    <span
-                      className="pos-line__qty-display"
-                      role="button"
-                      tabIndex={0}
-                      title="Editar cantidad"
-                      onClick={() => { setEditingQtyId(item.id); setEditingQtyVal(String(item.quantity)); }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') { setEditingQtyId(item.id); setEditingQtyVal(String(item.quantity)); }
-                      }}
+            cart.map((item) => {
+              const isWeighted = isWeightUnitCode(item.saleUnitCode);
+              const quantityStep = isWeighted ? 0.001 : 1;
+              const quantityFloor = isWeighted ? 0.001 : 1;
+              const lineDescription = item.lineDescription ?? '';
+              const displayName = lineDescription || item.name;
+              const hasCustomName = lineDescription.trim() !== '' && lineDescription.trim() !== item.name;
+              const displayUnit = item.saleUnitCode
+                ? `/${item.saleUnitCode.toLowerCase()}`
+                : ' c/u';
+
+              const commitNameEdit = () => {
+                const nextName = editingNameVal.trim();
+                updateLineDescription(item.id, nextName === '' || nextName === item.name ? '' : nextName);
+                setEditingNameId(null);
+              };
+
+              return (
+                <div
+                  key={item.id}
+                  className={`pos-line${newItemIds.has(item.id) ? ' is-new' : ''}${isWeighted ? ' is-weighted' : ''}`}
+                >
+                  <div className="pos-line__body">
+                    {isWeighted && editingNameId === item.id ? (
+                      <input
+                        type="text"
+                        className="pos-line__name-input"
+                        value={editingNameVal}
+                        maxLength={255}
+                        autoFocus
+                        onChange={(e) => setEditingNameVal(e.target.value)}
+                        onBlur={commitNameEdit}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                          if (e.key === 'Escape') setEditingNameId(null);
+                        }}
+                        aria-label={`Descripcion de ${item.name}`}
+                      />
+                    ) : isWeighted ? (
+                      <button
+                        type="button"
+                        className="pos-line__name pos-line__name--editable"
+                        title="Editar descripcion para comprobante"
+                        onClick={() => {
+                          setEditingNameId(item.id);
+                          setEditingNameVal(displayName);
+                        }}
+                      >
+                        {displayName}
+                      </button>
+                    ) : (
+                      <div className="pos-line__name">{item.name}</div>
+                    )}
+                    <div className="pos-line__unit">
+                      {formatMoney(toNumber(item.salePrice))}
+                      {displayUnit}
+                    </div>
+                    {isWeighted && hasCustomName && (
+                      <div className="pos-line__base-name">Producto: {item.name}</div>
+                    )}
+                  </div>
+                  <div className="pos-line__qty">
+                    <button
+                      type="button"
+                      className={item.quantity <= quantityFloor ? 'is-remove' : ''}
+                      onClick={() =>
+                        item.quantity <= quantityFloor
+                          ? removeFromCart(item.id)
+                          : updateQuantity(item.id, item.quantity - quantityStep)
+                      }
+                      aria-label={
+                        item.quantity <= quantityFloor ? `Quitar ${item.name}` : 'Restar cantidad'
+                      }
                     >
-                      {item.quantity}
-                    </span>
-                  )}
-                  <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Sumar uno">
-                    <i className="ph ph-plus" aria-hidden="true" />
-                  </button>
+                      {item.quantity <= quantityFloor ? (
+                        <i className="ph ph-trash" aria-hidden="true" />
+                      ) : (
+                        <i className="ph ph-minus" aria-hidden="true" />
+                      )}
+                    </button>
+                    {editingQtyId === item.id ? (
+                      <input
+                        type="number"
+                        className="pos-line__qty-input"
+                        value={editingQtyVal}
+                        min={0}
+                        step={quantityStep}
+                        autoFocus
+                        onChange={(e) => setEditingQtyVal(e.target.value)}
+                        onBlur={() => {
+                          const n = Number.parseFloat(editingQtyVal);
+                          if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
+                          else if (!isNaN(n) && n === 0) removeFromCart(item.id);
+                          setEditingQtyId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                          if (e.key === 'Escape') setEditingQtyId(null);
+                        }}
+                        aria-label="Cantidad"
+                      />
+                    ) : (
+                      <span
+                        className="pos-line__qty-display"
+                        role="button"
+                        tabIndex={0}
+                        title="Editar cantidad"
+                        onClick={() => {
+                          setEditingQtyId(item.id);
+                          setEditingQtyVal(String(item.quantity));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setEditingQtyId(item.id);
+                            setEditingQtyVal(String(item.quantity));
+                          }
+                        }}
+                      >
+                        {formatPosQuantity(item.quantity, item.saleUnitCode)}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity + quantityStep)}
+                      aria-label="Sumar cantidad"
+                    >
+                      <i className="ph ph-plus" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <strong className="pos-line__total">
+                    {formatMoney(toNumber(item.salePrice) * item.quantity)}
+                  </strong>
                 </div>
-                <strong className="pos-line__total">
-                  {formatMoney(toNumber(item.salePrice) * item.quantity)}
-                </strong>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
-
       </div>
 
       {/* ── Fixed footer: everything non-scrolling ── */}
       <div className="pos-checkout-footer">
-
         {/* Discount — single compact inline row */}
         <div className="pos-footer-option-row">
           <span className="pos-discount-label">Descuento</span>
           <div className="pos-discount-presets" role="group" aria-label="Descuento">
-            <Chip label="Ninguno" active={discountPercent === 0} size="sm" onClick={() => setDiscountPercent(0)} />
+            <Chip
+              label="Ninguno"
+              active={discountPercent === 0}
+              size="sm"
+              onClick={() => setDiscountPercent(0)}
+            />
             {[5, 10, 15, 20].map((pct) => (
-              <Chip key={pct} label={`${pct}%`} active={discountPercent === pct} size="sm"
-                onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)} />
+              <Chip
+                key={pct}
+                label={`${pct}%`}
+                active={discountPercent === pct}
+                size="sm"
+                onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
+              />
             ))}
           </div>
         </div>
         {currency === 'USD' && (
           <div className="pos-footer-option-row">
             <span className="pos-discount-label">T.C. USD/PEN</span>
-            <TextField id="pos-exchange-rate" type="number" min={0.01} step="0.01"
-              value={exchangeRate} onChange={(e) => setExchangeRate(e.target.value)}
-              style={{ width: '72px' }} aria-label="Tipo de cambio" />
+            <TextField
+              id="pos-exchange-rate"
+              type="number"
+              min={0.01}
+              step="0.01"
+              value={exchangeRate}
+              onChange={(e) => setExchangeRate(e.target.value)}
+              style={{ width: '72px' }}
+              aria-label="Tipo de cambio"
+            />
           </div>
         )}
 
@@ -459,14 +581,18 @@ export function POSCheckoutPanel({
               role="radio"
               aria-checked={selectedPaymentMethodId === method.id}
             >
-              <input type="radio" name="pos-payment-method"
+              <input
+                type="radio"
+                name="pos-payment-method"
                 checked={selectedPaymentMethodId === method.id}
-                onChange={() => setSelectedPaymentMethodId(method.id)} />
+                onChange={() => setSelectedPaymentMethodId(method.id)}
+              />
               <span>{method.name}</span>
             </label>
           ))}
           {hasMorePayments && (
-            <button type="button"
+            <button
+              type="button"
               className={`pos-payment-btn pos-payment-btn--more ${showMorePayments ? 'is-expanded' : ''}`}
               onClick={() => setShowMorePayments((v) => !v)}
             >
@@ -485,9 +611,14 @@ export function POSCheckoutPanel({
             >
               <i className="ph ph-coins" aria-hidden="true" />
               <span>Monto recibido</span>
-              <i className={`ph ${cashExpanded ? 'ph-caret-up' : 'ph-caret-down'}`} aria-hidden="true" />
+              <i
+                className={`ph ${cashExpanded ? 'ph-caret-up' : 'ph-caret-down'}`}
+                aria-hidden="true"
+              />
               {amountReceivedNumber > 0 && !cashExpanded && (
-                <strong className="pos-cash-toggle__value">{formatMoney(amountReceivedNumber)}</strong>
+                <strong className="pos-cash-toggle__value">
+                  {formatMoney(amountReceivedNumber)}
+                </strong>
               )}
             </button>
             {cashExpanded && (
@@ -505,9 +636,18 @@ export function POSCheckoutPanel({
                 />
                 <div className="pos-discount-presets" role="group" aria-label="Montos rápidos">
                   {quickCashActions.map((action) => (
-                    <Chip key={action.label} label={action.label}
-                      active={amountReceived === action.value.toFixed(2)} size="sm" disabled={total <= 0}
-                      onClick={() => setAmountReceived(amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2))} />
+                    <Chip
+                      key={action.label}
+                      label={action.label}
+                      active={amountReceived === action.value.toFixed(2)}
+                      size="sm"
+                      disabled={total <= 0}
+                      onClick={() =>
+                        setAmountReceived(
+                          amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2),
+                        )
+                      }
+                    />
                   ))}
                 </div>
               </div>

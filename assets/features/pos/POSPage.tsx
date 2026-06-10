@@ -17,7 +17,6 @@ import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubit/ui';
 
-
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
   const resolvedTheme = themeContext?.theme ?? 'light';
@@ -95,6 +94,7 @@ const POSPage = () => {
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateLineDescription,
     clearCart,
     cartItemsCount,
     subtotal,
@@ -180,7 +180,10 @@ const POSPage = () => {
 
   useEffect(() => {
     invoicePrinterRef.current.initialize().catch(() => {
-      toast('No hay backend de impresion disponible. La venta se registrara sin impresion automatica.', 'warning');
+      toast(
+        'No hay backend de impresion disponible. La venta se registrara sin impresion automatica.',
+        'warning',
+      );
     });
   }, []);
 
@@ -347,6 +350,7 @@ const POSPage = () => {
         note={note}
         setNote={setNote}
         updateQuantity={updateQuantity}
+        updateLineDescription={updateLineDescription}
         removeFromCart={removeFromCart}
         formatMoney={formatMoney}
         paymentMethods={paymentMethods}
@@ -366,10 +370,10 @@ const POSPage = () => {
         quickCashActions={quickCashActions}
         subtotal={subtotal}
         discountAmount={discountAmount}
-         includedTax={includedTax}
-         total={total}
-         igvRate={igvRate}
-         amountReceivedNumber={amountReceivedNumber}
+        includedTax={includedTax}
+        total={total}
+        igvRate={igvRate}
+        amountReceivedNumber={amountReceivedNumber}
         amountMissing={amountMissing}
         changeAmount={changeAmount}
         checkoutDisabled={checkoutDisabled}
