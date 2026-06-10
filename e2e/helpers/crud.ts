@@ -19,7 +19,9 @@ export async function waitForGridLoad(page: Page) {
  */
 export function crudShell(page: Page, name: RegExp = /nuevo|new|editar|edit/i): Locator {
   const named = page.getByRole('dialog', { name }).or(page.getByRole('region', { name }));
-  const structural = page.locator('.crud-drawer-root--open .crud-drawer, .crud-page-shell, .app-dialog:visible, .crud-dialog:visible');
+  const structural = page.locator(
+    '.crud-drawer-root--open .crud-drawer, .ef-drawer-root--open .ef-drawer, .crud-page-shell, .app-dialog:visible, .crud-dialog:visible',
+  );
   // structural first so page shells are found even if name doesn't include "new";
   // .last() selects the most recently attached / topmost shell in DOM order.
   return structural.or(named).last();
@@ -27,7 +29,7 @@ export function crudShell(page: Page, name: RegExp = /nuevo|new|editar|edit/i): 
 
 export function crudShellBody(page: Page, name?: RegExp): Locator {
   return crudShell(page, name).locator(
-    '.crud-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body',
+    '.crud-drawer__body, .ef-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body',
   );
 }
 
@@ -76,7 +78,7 @@ export async function dismissDevToolbar(page: Page) {
 export async function clickCrudSave(shell: Locator) {
   const save = shell
     .locator(
-      '.crud-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
+      '.crud-drawer__footer .dialog-save-button, .ef-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
     )
     .first();
   await save.waitFor({ state: 'visible', timeout: 8000 });
@@ -84,11 +86,16 @@ export async function clickCrudSave(shell: Locator) {
 }
 
 export async function closeCrudShell(shell: Locator) {
-  await shell
-    .getByRole('button', { name: /cancel|cerrar/i })
-    .first()
-    .click()
-    .catch(() => {});
+  const backOrClose = shell.locator('.crud-page-shell__back, .ef-drawer__close').first();
+  if (await backOrClose.isVisible({ timeout: 1500 }).catch(() => false)) {
+    await backOrClose.click();
+  } else {
+    await shell
+      .getByRole('button', { name: /cancel|cerrar/i })
+      .first()
+      .click()
+      .catch(() => {});
+  }
   await shell.waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
 }
 
@@ -97,6 +104,26 @@ export async function switchFormTab(body: Locator, tabName: RegExp | string) {
   const tab = body.getByRole('tab', { name: tabName });
   await tab.waitFor({ state: 'visible', timeout: 8000 });
   await tab.click();
+}
+
+/** Expand a collapsible section inside a sectioned CRUD form (NativeFormView). */
+export async function expandFormSection(body: Locator, sectionName: RegExp | string) {
+  const section = body.locator('.native-form__section').filter({ hasText: sectionName }).first();
+  await section.waitFor({ state: 'visible', timeout: 8000 });
+
+  const summary = section.locator('summary.native-form__section-summary');
+  if (await summary.isVisible({ timeout: 500 }).catch(() => false)) {
+    const isOpen = await section.evaluate((el) => (el as HTMLDetailsElement).open);
+    if (!isOpen) {
+      await summary.click();
+    }
+  }
+}
+
+/** Wait until the main sale form fields are visible (page mode, sections layout). */
+export async function waitForSaleFormReady(body: Locator) {
+  await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
+  await expect(body.getByLabel(/Fecha/i).first()).toBeVisible({ timeout: 8000 });
 }
 
 /** Column preset control rendered by ColumnPresetSelector (segment buttons). */

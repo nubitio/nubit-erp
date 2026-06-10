@@ -76,7 +76,7 @@ const CRUD_PAGES: CrudPageSpec[] = [
 ];
 
 const shellClassPattern: Record<NonNullable<CrudPageSpec['shell']>, RegExp> = {
-  drawer: /crud-drawer/,
+  drawer: /ef-drawer|crud-drawer/,
   dialog: /crud-dialog|app-dialog/,
   page: /crud-page-shell/,
 };

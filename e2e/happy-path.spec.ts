@@ -33,8 +33,9 @@ import {
   crudShell,
   crudShellBody,
   dismissDevToolbar,
-  switchFormTab,
+  waitForSaleFormReady,
 } from './helpers/crud';
+import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
@@ -684,83 +685,19 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Seleccionar el cliente creado', async () => {
-      // POSCheckoutPanel — sección "Cliente (opcional)"
-      // A "Cliente General" may be pre-selected by default. If so:
-      //   - pos-customer-toggle button shows "Cliente General" [expanded][active]
-      //   - pos-customer-clear button (×) is visible
-      // We must clear the existing customer first, then open the search.
-
-      // Step 1: Clear any pre-selected customer (e.g. "Cliente General")
-      const clearCustomerBtn = page.getByTestId('pos-customer-clear');
-      const isClearVisible = await clearCustomerBtn.isVisible({ timeout: 3000 }).catch(() => false);
-      if (isClearVisible) {
-        await clearCustomerBtn.click();
-        // Wait for the clear button to disappear (customer deselected)
-        await clearCustomerBtn.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-      }
-
-      // Step 2: Click the toggle to open the customer search section
-      // After clearing, the toggle should show "Cliente (opcional)" and the section is closed.
-      const customerToggle = page.getByTestId('pos-customer-toggle').first();
-      await customerToggle.waitFor({ state: 'visible', timeout: 10000 });
-      await customerToggle.click();
-
-      // Input de búsqueda de cliente: data-testid="pos-customer-search" (mounts after toggle opens)
-      const customerSearchInput = page.getByTestId('pos-customer-search');
-      await customerSearchInput.waitFor({ state: 'visible', timeout: 8000 });
-      // Search directly by the seed customer DNI — always present in E2E DB.
-      // Test 05 only verifies (not creates) the seed customer, so we always
-      // fall back to the seed customer here.
-      await customerSearchInput.fill(SEED_CUSTOMER_DNI);
-
-      // Esperar sugerencias
-      const suggestions = page.getByTestId('pos-customer-suggestions');
-      await suggestions.waitFor({ state: 'visible', timeout: 10000 });
-
-      // Select the seed customer option
-      const expectedCustomerName = SEED_CUSTOMER_NAME;
-      const customerOption = page
-        .getByTestId('pos-customer-option')
-        .filter({ hasText: SEED_CUSTOMER_NAME })
-        .first();
-      await customerOption.waitFor({ state: 'visible', timeout: 8000 });
-      await customerOption.click();
-
-      // Verificar que el cliente quedó seleccionado (el toggle muestra el nombre)
-      await expect(
-        page.getByTestId('pos-customer-toggle').filter({ hasText: expectedCustomerName }),
-      ).toBeVisible({ timeout: 8000 });
+      await selectPosCustomer(page, {
+        name: SEED_CUSTOMER_NAME,
+        search: SEED_CUSTOMER_NAME,
+      });
     });
 
     await test.step('Seleccionar método de pago', async () => {
-      // POSCheckoutPanel — radiogroup "Método de pago"
-      // Payment methods load asynchronously; wait up to 15s for them to appear
-      const firstPaymentMethod = page
-        .locator('[role="radiogroup"][aria-label="Método de pago"] label.pos-payment-btn')
-        .first();
-      await firstPaymentMethod.waitFor({ state: 'visible', timeout: 15000 });
-      await firstPaymentMethod.click();
-
-      // Si es pago en efectivo, aparece el campo "Monto recibido".
-      // Ingresar el monto exacto para que checkoutDisabled = false.
-      const amountReceivedInput = page.getByLabel('Monto recibido');
-      try {
-        await amountReceivedInput.waitFor({ state: 'visible', timeout: 3000 });
-        await amountReceivedInput.fill('10');
-      } catch {
-        // No cash payment selected — monto recibido not required
-      }
+      await completePosCashPayment(page);
     });
 
     await test.step('Completar el pago (Cobrar)', async () => {
-      // Botón "Cobrar" — data-testid="pos-checkout-btn" es el botón principal del footer
-      // checkoutDisabled = cart.empty || !warehouse || !paymentMethod || (cash && amountReceived < total)
-      // We wait for the button to be enabled (warehouse + payment method must be settled)
-      const cobrarBtn = page.getByTestId('pos-checkout-btn');
-      await cobrarBtn.waitFor({ state: 'visible', timeout: 8000 });
-      // Wait until the button becomes enabled (up to 10 seconds for data to settle)
-      await expect(cobrarBtn).not.toBeDisabled({ timeout: 10000 });
-      await cobrarBtn.click();
+      await waitForPosCheckoutReady(page);
+      await page.getByTestId('pos-checkout-btn').click();
     });
 
     await test.step('Verificar overlay "¡Venta completada!"', async () => {
@@ -802,7 +739,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await expect(crudShell(page, /nuevo|new/i)).toBeVisible({
         timeout: 12000,
       });
-      await switchFormTab(crudShellBody(page), /Cabecera/i);
+      await waitForSaleFormReady(crudShellBody(page));
     });
 
     await test.step('Seleccionar almacén si es visible', async () => {

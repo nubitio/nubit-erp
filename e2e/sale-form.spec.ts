@@ -24,9 +24,10 @@ import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 import {
   closeCrudShell,
   crudShellBody,
+  expandFormSection,
   openNewCrudForm,
-  switchFormTab,
   waitForGridLoad,
+  waitForSaleFormReady,
 } from './helpers/crud';
 
 // ── Config ─────────────────────────────────────────────────────────────────────
@@ -106,10 +107,10 @@ async function ensureCashOpen(page: Page): Promise<void> {
   await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
 }
 
-/** Navigate to the sale list and open the "New sale" drawer on the Cabecera tab. */
+/** Navigate to the sale list and open the new-sale page form (sections layout). */
 async function openNewSaleDrawer(page: Page): Promise<Locator> {
   const shell = await openNewCrudForm(page, `${BASE_URL}/#/sale`, 'Ventas');
-  await switchFormTab(crudShellBody(page), /Cabecera/i);
+  await waitForSaleFormReady(crudShellBody(page));
   return shell;
 }
 
@@ -193,13 +194,13 @@ test.describe('Sale form — mejoras de UX', () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
 
-    // Cabecera tab — required header fields
+    // Datos principales — required header fields
     await expect(body.getByLabel(/Fecha/i).first()).toBeVisible({ timeout: 8000 });
     await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
     await expect(body.getByLabel(/Método de pago/i).first()).toBeVisible({ timeout: 8000 });
 
-    // Comercial tab — currency fields
-    await switchFormTab(body, /Comercial/i);
+    // Comercial section — currency fields (collapsed by default)
+    await expandFormSection(body, /Comercial/i);
     await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
 
     // Detail section must be present
@@ -231,7 +232,7 @@ test.describe('Sale form — mejoras de UX', () => {
   test('03 - "Tipo de cambio" se oculta cuando la moneda es PEN', async () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
-    await switchFormTab(body, /Comercial/i);
+    await expandFormSection(body, /Comercial/i);
 
     // Wait for the form to settle with default values
     await page.waitForTimeout(500);
@@ -255,7 +256,7 @@ test.describe('Sale form — mejoras de UX', () => {
   test('04 - "Tipo de cambio" aparece al seleccionar USD', async () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
-    await switchFormTab(body, /Comercial/i);
+    await expandFormSection(body, /Comercial/i);
 
     await page.waitForTimeout(500);
 
@@ -276,7 +277,7 @@ test.describe('Sale form — mejoras de UX', () => {
   test('05 - El campo "Descuento %" abre el diálogo de descuento al hacer clic', async () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
-    await switchFormTab(body, /Comercial/i);
+    await expandFormSection(body, /Comercial/i);
 
     // Locate the Descuento % field (it's a readonly currency input that triggers a dialog)
     const discountField = body.getByLabel(/Descuento %/i).first();
@@ -359,7 +360,7 @@ test.describe('Sale form — mejoras de UX', () => {
   test('07 - El texto de ayuda del descuento usa "Clic" (no "Click")', async () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
-    await switchFormTab(body, /Comercial/i);
+    await expandFormSection(body, /Comercial/i);
 
     // The help text "Clic para aplicar descuento" should be present (not "Click")
     await expect(body.locator('text=Clic para aplicar descuento').first()).toBeVisible({
@@ -440,7 +441,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
 
     const footerSave = shell.locator(
-      '.crud-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button',
+      '.crud-drawer__footer .dialog-save-button, .ef-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button',
     );
     await expect(footerSave).toBeEnabled({ timeout: 5000 });
 
@@ -448,22 +449,19 @@ test.describe('Sale form — mejoras de UX', () => {
   });
 
   // ────────────────────────────────────────────────────────────────────────────
-  // TEST 10 — Form tabs navigate between sections
+  // TEST 10 — Form sections expose distinct field groups
   // ────────────────────────────────────────────────────────────────────────────
-  test('10 - Las pestañas del formulario muestran campos distintos', async () => {
+  test('10 - Las secciones del formulario muestran campos distintos', async () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
 
-    await expect(body.getByRole('tab', { name: /Cabecera/i })).toBeVisible();
-    await switchFormTab(body, /Cabecera/i);
+    await expect(body.locator('.native-form__section').filter({ hasText: /Datos principales/i })).toBeVisible();
     await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
-
-    await switchFormTab(body, /Comercial/i);
-    await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
-    await expect(body.getByLabel(/Cliente/i)).toHaveCount(0);
-
-    await switchFormTab(body, /Notas/i);
     await expect(body.getByLabel(/Nota/i).first()).toBeVisible({ timeout: 8000 });
+
+    await expandFormSection(body, /Comercial/i);
+    await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
+    await expect(body.getByLabel(/Descuento %/i).first()).toBeVisible({ timeout: 8000 });
 
     await closeCrudShell(shell);
   });

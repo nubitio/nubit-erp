@@ -28,9 +28,10 @@ import {
   crudShell,
   crudShellBody,
   dismissDevToolbar,
-  switchFormTab,
   waitForGridLoad,
+  waitForSaleFormReady,
 } from './helpers/crud';
+import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 // ── Config ─────────────────────────────────────────────────────────────────────
@@ -188,53 +189,25 @@ async function createSaleViaPOS(page: Page, opts: { withDiscount?: boolean } = {
     timeout: 8000,
   });
 
-  // Apply item-level discount if requested (10%)
+  // Apply sale-level discount if requested (10% preset chips)
   if (opts.withDiscount) {
-    // The POS applies discount at sale level via #pos-discount input
-    const discountInput = page.locator('#pos-discount');
-    const discountVisible = await discountInput.isVisible({ timeout: 5000 }).catch(() => false);
-    if (discountVisible) {
-      await discountInput.fill('10');
-      await page.keyboard.press('Tab');
-    }
+    const discountChip = page
+      .locator('[role="group"][aria-label="Descuento"] .app-chip')
+      .filter({ hasText: /^10%$/ })
+      .first();
+    await discountChip.waitFor({ state: 'visible', timeout: 5000 });
+    await discountChip.click();
   }
 
-  // Select customer
-  const clearCustomerBtn = page.getByTestId('pos-customer-clear');
-  if (await clearCustomerBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await clearCustomerBtn.click();
-    await clearCustomerBtn.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-  }
-  const customerToggle = page.getByTestId('pos-customer-toggle').first();
-  await customerToggle.waitFor({ state: 'visible', timeout: 10000 });
-  await customerToggle.click();
-  const customerSearch = page.getByTestId('pos-customer-search');
-  await customerSearch.waitFor({ state: 'visible', timeout: 8000 });
-  await customerSearch.fill(SEED_CUSTOMER_DNI);
-  await page.getByTestId('pos-customer-suggestions').waitFor({ state: 'visible', timeout: 10000 });
-  await page
-    .getByTestId('pos-customer-option')
-    .filter({ hasText: SEED_CUSTOMER_NAME })
-    .first()
-    .click();
-  await expect(
-    page.getByTestId('pos-customer-toggle').filter({ hasText: SEED_CUSTOMER_NAME }),
-  ).toBeVisible({ timeout: 8000 });
+  await selectPosCustomer(page, {
+    name: SEED_CUSTOMER_NAME,
+    search: SEED_CUSTOMER_NAME,
+  });
 
-  // Select first payment method + exact amount
-  const firstPayBtn = page
-    .locator('[role="radiogroup"][aria-label="Método de pago"] label.pos-payment-btn')
-    .first();
-  await firstPayBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await firstPayBtn.click();
-  const amountReceivedInput = page.getByLabel('Monto recibido');
-  if (await amountReceivedInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await amountReceivedInput.fill('10');
-  }
+  await completePosCashPayment(page);
+  await waitForPosCheckoutReady(page);
 
   const cobrarBtn = page.getByTestId('pos-checkout-btn');
-  await cobrarBtn.waitFor({ state: 'visible', timeout: 8000 });
-  await expect(cobrarBtn).not.toBeDisabled({ timeout: 10000 });
 
   // Intercept the POST /api/sales response to capture the id.
   // Register JUST before clicking so we don't miss a fast response.
@@ -573,7 +546,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await saleDialog.waitFor({ state: 'visible', timeout: 12000 });
 
     const body = crudShellBody(page);
-    await switchFormTab(body, /Cabecera/i);
+    await waitForSaleFormReady(body);
 
     const almacenInput = body
       .locator('#native-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
@@ -591,7 +564,6 @@ test.describe('Fase 3 — ORM migration validation', () => {
     }
 
     const ts = Date.now();
-    await switchFormTab(body, /Notas/i);
     const noteInput = body.locator('#native-form-note, textarea[aria-label="Nota"], input[aria-label="Nota"]').first();
     await noteInput.waitFor({ state: 'visible', timeout: 8000 });
     await noteInput.fill(`ORM validation ${ts}`);
