@@ -77,6 +77,11 @@ export class BaseFieldBuilder<TRecord extends DataRecord = DataRecord> {
     return this;
   }
 
+  cardRole(value: 'title' | 'primary' | 'secondary' | 'hidden'): this {
+    this._field.cardRole = value;
+    return this;
+  }
+
   preferredColSpan(value: 6 | 12): this {
     this._field.preferredColSpan = value;
     return this;

@@ -1229,20 +1229,6 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-1) var(--space-2);
 }
 
-@media (max-width: 720px) {
-  .native-datagrid__pager {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .native-datagrid__pager-nav,
-  .native-datagrid__pager-size,
-  .native-datagrid__pager-status {
-    justify-content: space-between;
-    width: 100%;
-  }
-}
-
 .native-datagrid__pager-status {
   align-items: center;
   display: inline-flex;
@@ -1421,5 +1407,496 @@ html[data-density='compact'] .native-datagrid .app-badge {
 @keyframes native-datagrid-spinner {
   to {
     transform: rotate(360deg);
+  }
+}
+
+// Mobile pager: keep a single compact row — prev/next + record range only.
+// Numbered page buttons and the page-size selector are desktop affordances.
+// (Placed after the pager base styles so the cascade favours these overrides.)
+@media (max-width: 767.98px) {
+  .native-datagrid__pager {
+    flex-wrap: nowrap;
+  }
+
+  .native-datagrid__pager-btn--page,
+  .native-datagrid__pager-ellipsis,
+  .native-datagrid__pager-selected,
+  .native-datagrid__pager-size {
+    display: none;
+  }
+
+  .native-datagrid__pager-btn {
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .native-datagrid__pager-status {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
+
+// ── Mobile card list (rendered instead of the table below 768px) ──────────────
+
+.native-datagrid__cards {
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.native-datagrid__card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.native-datagrid__card--selected {
+  background: var(--grid-row-selected-bg, var(--surface-2));
+  border-color: color-mix(in srgb, var(--accent-color) 45%, var(--border-subtle));
+  box-shadow: inset 2px 0 0 var(--grid-row-selected-border, var(--accent-color));
+}
+
+.native-datagrid__card--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+
+  .native-datagrid__skeleton-cell {
+    max-width: none;
+  }
+}
+
+.native-datagrid__card-body {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-3);
+  outline: 0;
+  padding: var(--space-3);
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 34%, transparent);
+  }
+}
+
+.native-datagrid__card-check {
+  flex: 0 0 auto;
+  height: 18px;
+  margin-top: 1px;
+  width: 18px;
+}
+
+.native-datagrid__card-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.native-datagrid__card-title {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.native-datagrid__card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.native-datagrid__card-meta-row {
+  display: flex;
+  font-size: var(--font-size-xs);
+  gap: var(--space-3);
+  justify-content: space-between;
+
+  dt {
+    color: var(--text-tertiary);
+    flex: 0 0 auto;
+    font-weight: var(--font-weight-medium);
+  }
+
+  dd {
+    color: var(--text-secondary);
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}
+
+.native-datagrid__card-side {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.native-datagrid__card-detail {
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-2) var(--space-3);
+}
+
+// Master-detail rows render as stacked label/value blocks on mobile — a wide
+// nested table inside a card is unreadable and awkward to scroll.
+.native-datagrid__detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.native-datagrid__detail-card {
+  background: var(--surface-0, var(--surface-2));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md, 6px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+}
+
+.native-datagrid__detail-card-row {
+  display: flex;
+  font-size: var(--font-size-xs);
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.native-datagrid__detail-card-label {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+  font-weight: var(--font-weight-medium);
+}
+
+.native-datagrid__detail-card-value {
+  color: var(--text-secondary);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.native-datagrid__card-more {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--accent-color);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: var(--space-1) 0;
+}
+
+.native-datagrid__card-summary {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.native-datagrid__card-summary-item {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-2);
+}
+
+// ── Mobile toolbar additions ───────────────────────────────────────────────────
+
+.native-datagrid__mobile-filter {
+  display: inline-flex;
+  position: relative;
+}
+
+.native-datagrid__mobile-filter-badge {
+  align-items: center;
+  background: var(--accent-color);
+  border-radius: 999px;
+  color: var(--text-on-accent, #fff);
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  height: 14px;
+  justify-content: center;
+  min-width: 14px;
+  padding: 0 3px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: -2px;
+}
+
+@media (max-width: 767.98px) {
+  .native-datagrid__toolbar {
+    flex-wrap: wrap;
+  }
+}
+
+// ── Bottom sheets (mobile filter sheet + row actions) ─────────────────────────
+
+.native-datagrid__sheet-root {
+  inset: 0;
+  position: fixed;
+  z-index: var(--z-popover);
+}
+
+.native-datagrid__sheet-scrim {
+  background: color-mix(in srgb, #000 40%, transparent);
+  border: 0;
+  cursor: default;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+}
+
+%native-datagrid-sheet-panel {
+  animation: native-datagrid-sheet-in 0.18s ease-out;
+  border-bottom: 0;
+  border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+  bottom: 0;
+  left: 0;
+  max-height: 80dvh;
+  position: absolute;
+  right: 0;
+}
+
+.native-datagrid__row-actions-popover--sheet {
+  @extend %native-datagrid-sheet-panel;
+
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+
+  .native-datagrid__actions-item {
+    min-height: 44px;
+  }
+}
+
+.native-datagrid__sheet {
+  @extend %native-datagrid-sheet-panel;
+
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.native-datagrid__sheet-header {
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+}
+
+.native-datagrid__sheet-title {
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.native-datagrid__sheet-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+
+.native-datagrid__sheet-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  // FilterCell is styled for borderless table cells — give it a bordered,
+  // touch-sized container inside the sheet.
+  .native-datagrid__filter-wrap,
+  .native-datagrid__filter-select {
+    background: var(--surface-1);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md, 6px);
+    width: 100%;
+  }
+
+  .native-datagrid__filter-input,
+  .native-datagrid__filter-date .app-date-picker__trigger {
+    font-size: var(--font-size-sm);
+    height: 38px;
+    min-height: 38px;
+  }
+}
+
+.native-datagrid__sheet-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.native-datagrid__sheet-sort {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+
+  > :first-child {
+    flex: 1 1 auto;
+  }
+}
+
+.native-datagrid__sheet-footer {
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+}
+
+@keyframes native-datagrid-sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ── Mobile quick search bar ────────────────────────────────────────────────────
+
+.native-datagrid__quick-search {
+  align-items: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-3);
+}
+
+.native-datagrid__quick-search-icon {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.native-datagrid__quick-search-input {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  flex: 1 1 auto;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  height: 40px;
+  min-width: 0;
+  outline: none;
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.native-datagrid__quick-search-clear {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+
+  &:hover {
+    background: var(--control-bg-hover);
+    color: var(--text-primary);
+  }
+}
+
+// ── Mobile FAB (primary "New" action) ──────────────────────────────────────────
+
+.native-datagrid__fab {
+  align-items: center;
+  background: var(--accent-color);
+  border: 0;
+  border-radius: 50%;
+  // Sits above the pager row so it never covers the prev/next buttons.
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  box-shadow: var(--shadow-lg, 0 6px 16px rgb(15 23 42 / 28%));
+  color: var(--text-on-accent, #fff);
+  cursor: pointer;
+  display: flex;
+  font-size: 22px;
+  height: 52px;
+  justify-content: center;
+  position: fixed;
+  right: var(--space-4);
+  width: 52px;
+  z-index: var(--z-sticky, 30);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// Column presets relocate into the filter sheet on mobile — make the
+// segmented control stack full-width there.
+.native-datagrid__sheet-presets {
+  .native-datagrid__preset-control {
+    align-items: stretch;
+    flex-direction: column;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .native-datagrid__preset-segments {
+    width: 100%;
+  }
+}
+
+// On mobile the cards carry their own surface — drop the table-wrap chrome so
+// they sit directly on the app background (no double border).
+@media (max-width: 767.98px) {
+  .native-datagrid__table-wrap {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }

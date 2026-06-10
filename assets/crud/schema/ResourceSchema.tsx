@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import type { DataRecord } from '@nubit/core';
 import type { Field } from '../field/Field';
 import type { FieldOverride } from '../crud/resolveSmartCrudFields';
@@ -71,38 +71,66 @@ export function useResolvedResourceFields<T extends DataRecord = DataRecord>({
 }: ResolveResourceFieldsOptions<T>): ResourceSchemaResolution {
   const schemaResolver = useContext(ResourceSchemaResolverContext);
 
+  // NOTE on conditional hooks: which branch executes is fixed for the lifetime
+  // of a mounted component (a resource never changes its field source), so the
+  // hook order stays consistent — the same invariant the conditional
+  // `schemaResolver.useResourceSchema` call below already relies on.
+  // Each branch memoises its resolution: returning a fresh `fields` array per
+  // render cascades into grid data reloads and lookup refetches downstream
+  // (everything keys on field identity).
+
   if (fieldContract?.source === 'manual') {
-    return resolveWithRuntimeErrors(() => resolveSmartCrudFields({ contract: fieldContract }));
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMemo(
+      () => resolveWithRuntimeErrors(() => resolveSmartCrudFields({ contract: fieldContract })),
+      [fieldContract],
+    );
   }
 
   if (manualFields && manualFields.length > 0) {
-    return { fields: manualFields, isLoading: false, error: undefined, supportedOperations: [] };
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMemo(
+      () => ({
+        fields: manualFields,
+        isLoading: false,
+        error: undefined,
+        supportedOperations: [],
+      }),
+      [manualFields],
+    );
   }
 
   if (!schemaResolver) {
-    return {
-      fields: [],
-      isLoading: false,
-      error: new Error(
-        `No ResourceSchema resolver configured for ${apiUrl}. Wrap your app with ResourceSchemaProvider or a backend-specific provider such as HydraResourceSchemaProvider.`,
-      ),
-      supportedOperations: [],
-    };
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useMemo(
+      () => ({
+        fields: [],
+        isLoading: false,
+        error: new Error(
+          `No ResourceSchema resolver configured for ${apiUrl}. Wrap your app with ResourceSchemaProvider or a backend-specific provider such as HydraResourceSchemaProvider.`,
+        ),
+        supportedOperations: [],
+      }),
+      [apiUrl],
+    );
   }
 
   const baseline = schemaResolver.useResourceSchema({ apiUrl });
 
-  if (baseline.isLoading || baseline.error) {
-    return baseline;
-  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useMemo(() => {
+    if (baseline.isLoading || baseline.error) {
+      return baseline;
+    }
 
-  return resolveWithRuntimeErrors(
-    () =>
-      resolveSmartCrudFields({
-        baselineFields: baseline.fields,
-        contract: fieldContract,
-        legacyOverrides: fieldContract ? undefined : overrides,
-      }),
-    baseline.supportedOperations,
-  );
+    return resolveWithRuntimeErrors(
+      () =>
+        resolveSmartCrudFields({
+          baselineFields: baseline.fields,
+          contract: fieldContract,
+          legacyOverrides: fieldContract ? undefined : overrides,
+        }),
+      baseline.supportedOperations,
+    );
+  }, [baseline, fieldContract, overrides]);
 }

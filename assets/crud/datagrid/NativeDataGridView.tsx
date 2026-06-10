@@ -43,6 +43,7 @@ import type {
 import { useSmartCrudRoles } from '../crud/SmartCrudRolesContext';
 import { NativeEntitySelect } from '../form/NativeFormView';
 import { resolveSummaryText } from '../summary';
+import { useIsMobile } from './useIsMobile';
 
 type SortRule = { selector: string; desc: boolean };
 
@@ -433,10 +434,11 @@ function buildToolbar(
   options: DataGridViewOptions,
   t: ReturnType<typeof useCoreTranslation>['t'],
   onAddClick: () => void,
+  includeAddAction = true,
 ): ResourceToolbarItems {
   return {
     primary: [
-      ...(options.allowAdd
+      ...(options.allowAdd && includeAddAction
         ? [
             {
               text: t('grid.buttonNew'),
@@ -877,6 +879,7 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
   const httpClient = useCoreHttpClient();
   const resourceStoreFactory = useResourceStoreFactory();
   const { t } = useCoreTranslation();
+  const isMobile = useIsMobile();
   const [rows, setRows] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -891,6 +894,37 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
 
   if (loading) return <div className="native-datagrid__loading">{t('grid.loading')}</div>;
   if (rows.length === 0) return <GridEmptyStateView fallbackTitle={t('grid.noRecords')} />;
+
+  if (isMobile) {
+    const visibleDetailFields = fields.filter((field) => field.visible && !field.hidden);
+    return (
+      <div className="native-datagrid__detail-cards">
+        {rows.map((row, rowIndex) => (
+          <div
+            key={String(row[getIdField(fields)] ?? rowIndex)}
+            className="native-datagrid__detail-card"
+          >
+            {visibleDetailFields.map((field, columnIndex) => (
+              <div key={field.name} className="native-datagrid__detail-card-row">
+                <span className="native-datagrid__detail-card-label">{field.label}</span>
+                <span className="native-datagrid__detail-card-value">
+                  {renderCell(
+                    field,
+                    row,
+                    rowIndex,
+                    columnIndex,
+                    undefined,
+                    t('common.yes'),
+                    t('common.no'),
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="native-datagrid__detail-content">
@@ -969,6 +1003,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const [expandedKeys, setExpandedKeys] = useState<Set<unknown>>(() => new Set());
   const [isGridLoading, setIsGridLoading] = useState(!options.manualLoad);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const isMobile = useIsMobile();
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [expandedCardKeys, setExpandedCardKeys] = useState<Set<unknown>>(() => new Set());
   const [openRowMenu, setOpenRowMenu] = useState<{
     key: unknown;
     rect: DOMRect;
@@ -977,6 +1014,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const onContentReadyRef = useRef(options.onContentReady);
   const onRowPreparedRef = useRef(options.onRowPrepared);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLUListElement>(null);
   const theadRef = useRef<HTMLTableSectionElement>(null);
   const tbodyRef = useRef<HTMLTableSectionElement>(null);
   const tfootRef = useRef<HTMLTableSectionElement>(null);
@@ -1091,6 +1129,31 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       tbody?.removeEventListener('scroll', onScroll);
     };
   }, [openRowMenu, closeRowMenu]);
+
+  useEffect(() => {
+    if (!filterSheetOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFilterSheetOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [filterSheetOpen]);
+
+  // Lock background scroll while a mobile bottom sheet is open.
+  useEffect(() => {
+    const sheetOpen = filterSheetOpen || (isMobile && openRowMenu != null);
+    if (!sheetOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [filterSheetOpen, isMobile, openRowMenu]);
+
+  // Card list keeps its own scroll position — reset it when the page changes.
+  useEffect(() => {
+    cardsRef.current?.scrollTo({ top: 0 });
+  }, [page]);
 
   // Close row menu if the underlying rows change (defensive)
   useEffect(() => {
@@ -1255,6 +1318,119 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     emit(DATA_GRID_EVENTS.SELECTION_CHANGED, nextRows);
   };
 
+  const buildRowActions = (row: DataRecord): ResourceToolbarAction[] => [
+    ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
+      ? [
+          {
+            text: t('grid.buttonEdit'),
+            icon: 'ph-pencil-simple',
+            disabled: options.editDisabled,
+            onClick: () => {
+              if (options.onEdit) options.onEdit(row);
+              else emit(options.events!.EDIT!, { row });
+            },
+          },
+        ]
+      : []),
+    ...(options.allowView && options.onView
+      ? [
+          {
+            text: t('grid.buttonView'),
+            icon: 'ph-eye',
+            onClick: () => options.onView!(row),
+          },
+        ]
+      : []),
+    ...getResolvedRowActions(row, options.rowActions),
+    ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
+      ? [
+          {
+            text: t('grid.buttonDelete'),
+            icon: 'ph-trash',
+            type: 'danger' as const,
+            disabled: options.deleteDisabled,
+            onClick: () => setConfirmRow(row),
+          },
+        ]
+      : []),
+  ];
+
+  const openRow = (row: DataRecord) => {
+    if (options.allowEdit && (options.onEdit || options.events?.EDIT)) {
+      if (options.onEdit) options.onEdit(row);
+      else emit(options.events!.EDIT!, { row });
+      return;
+    }
+    if (options.allowView && options.onView) {
+      options.onView(row);
+    }
+  };
+
+  // Filter handlers shared by the desktop filter row, the mobile filter sheet
+  // and the mobile quick-search bar.
+  const applyFilterInputsImmediate = (nextInputs: Record<string, string>) => {
+    clearTimeout(filterDebounceRef.current);
+    setFilterInputs(nextInputs);
+    setFilters(nextInputs);
+    setPage(0);
+    options.onFilterChange?.(nextInputs);
+  };
+
+  const applyFilterInputDebounced = (field: Field, nextValue: string) => {
+    const nextInputs = { ...filterInputs, [field.name]: nextValue };
+    if (nextValue === '') delete nextInputs[field.name];
+    setFilterInputs(nextInputs);
+    clearTimeout(filterDebounceRef.current);
+    filterDebounceRef.current = setTimeout(() => {
+      setFilters(nextInputs);
+      setPage(0);
+      options.onFilterChange?.(nextInputs);
+    }, 300);
+  };
+
+  const renderFilterCell = (field: Field) => (
+    <FilterCell
+      field={field}
+      operator={filterOperators[field.name] ?? getDefaultFilterOperator(field)}
+      remoteOptions={filterRemoteOptions[field.name] ?? []}
+      value={filterInputs[field.name] ?? ''}
+      onInputChange={(nextValue) => applyFilterInputDebounced(field, nextValue)}
+      onBetweenInputChange={(start, end) => {
+        const nextValue = joinBetweenValue(start, end);
+        const nextInputs = { ...filterInputs, [field.name]: nextValue };
+        if (nextValue === '') delete nextInputs[field.name];
+        applyFilterInputsImmediate(nextInputs);
+      }}
+      onSelectChange={(nextValue) => {
+        const nextInputs = { ...filterInputs, [field.name]: nextValue };
+        if (nextValue === '') delete nextInputs[field.name];
+        applyFilterInputsImmediate(nextInputs);
+      }}
+      onOperatorChange={(nextOperator) => {
+        setFilterOperators((prev) => ({
+          ...prev,
+          [field.name]: nextOperator,
+        }));
+        const currentValue = filterInputs[field.name];
+        if (currentValue) {
+          const nextInputs = { ...filterInputs };
+          if (nextOperator === 'between' && !currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
+            nextInputs[field.name] = joinBetweenValue(currentValue, '');
+          }
+          if (nextOperator !== 'between' && currentValue.includes(BETWEEN_VALUE_SEPARATOR)) {
+            nextInputs[field.name] = splitBetweenValue(currentValue).find(Boolean) ?? '';
+          }
+          applyFilterInputsImmediate(nextInputs);
+        }
+      }}
+      onClear={() => {
+        const nextInputs = { ...filterInputs };
+        delete nextInputs[field.name];
+        applyFilterInputsImmediate(nextInputs);
+      }}
+    />
+  );
+
   const onAddClick = () => {
     if (options.onAdd) {
       options.onAdd();
@@ -1366,7 +1542,68 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   const tableLayoutStyle = {
     '--native-datagrid-layout-width': `${layoutWidth}px`,
   } as React.CSSProperties;
-  const toolbar = buildToolbar(options, t, onAddClick);
+
+  // Mobile card layout: first visible column becomes the card title, the next
+  // few become labelled meta rows. Filtering/sorting move to a bottom sheet.
+  const filterableFields = visibleFields.filter((field) => field.filterable);
+  const sortableFields = visibleFields.filter((field) => field.sortable);
+  const activeFilterCount = Object.values(filterInputs).filter(
+    (value) => value.trim() !== '',
+  ).length;
+  // Card field resolution: explicit `cardRole` hints win; otherwise the first
+  // non-date column becomes the title and the next four become primary rows.
+  const cardFields = visibleFields.filter((field) => field.cardRole !== 'hidden');
+  const cardTitleField =
+    cardFields.find((field) => field.cardRole === 'title') ??
+    cardFields.find((field) => field.cardRole !== 'secondary' && !isDateLikeField(field)) ??
+    cardFields[0];
+  const cardNonTitleFields = cardFields.filter((field) => field !== cardTitleField);
+  const explicitPrimaryFields = cardNonTitleFields.filter((field) => field.cardRole === 'primary');
+  const cardPrimaryFields =
+    explicitPrimaryFields.length > 0
+      ? explicitPrimaryFields
+      : cardNonTitleFields.filter((field) => field.cardRole !== 'secondary').slice(0, 4);
+  const cardSecondaryFields = cardNonTitleFields.filter(
+    (field) => !cardPrimaryFields.includes(field),
+  );
+  const isFullMode = options.mode === 'full' || !options.mode;
+  // On full-mode mobile grids the primary "New" action becomes a FAB so the
+  // toolbar stays a single compact row.
+  const showFab = Boolean(
+    isMobile && isFullMode && options.allowAdd && (options.toolbarVisible ?? true),
+  );
+  const toolbar = buildToolbar(options, t, onAddClick, !showFab);
+  // Quick search targets the first text-like filterable column. Columns with a
+  // formatter are skipped: their displayed text differs from the raw value, so
+  // a contains-filter on them would not match what the user sees.
+  const quickSearchField = isMobile
+    ? filterableFields.find(
+        (field) => getDefaultFilterOperator(field) === 'contains' && !field.formatter,
+      )
+    : undefined;
+
+  const renderRowMenuContent = () => {
+    if (!openRowMenu) return null;
+    const regular = openRowMenu.actions.filter((a) => a.type !== 'danger');
+    const danger = openRowMenu.actions.filter((a) => a.type === 'danger');
+    const closeCurrentRowMenu = () => setOpenRowMenu(null);
+
+    return (
+      <>
+        {regular.map((action, idx) =>
+          renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
+        )}
+        {danger.length > 0 && (
+          <div className="native-datagrid__actions-danger-group">
+            {danger.map((action, idx) =>
+              renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
+            )}
+          </div>
+        )}
+      </>
+    );
+  };
+
   const pageStart = totalCount > 0 ? page * pageSize + 1 : 0;
   const pageEnd = totalCount > 0 ? Math.min((page + 1) * pageSize, totalCount) : 0;
   const recordRangeLabel =
@@ -1395,7 +1632,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               {options.mode === 'full' || !options.mode ? (
                 <div className="grid-header">{options.title}</div>
               ) : null}
-              {options.beforeToolbar?.()}
+              {!isMobile && options.beforeToolbar?.()}
               <div className="native-datagrid__toolbar-spacer" />
               {toolbar.primary
                 ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
@@ -1409,6 +1646,20 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               {toolbar.utility
                 ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
                 .map((action, index) => renderToolbarButton(action, index, true))}
+              {isMobile && (options.filterRow ?? true) && filterableFields.length > 0 && (
+                <span className="native-datagrid__mobile-filter">
+                  <IconButton
+                    icon="ph ph-funnel"
+                    label={t('grid.filters')}
+                    onClick={() => setFilterSheetOpen(true)}
+                  />
+                  {activeFilterCount > 0 && (
+                    <span className="native-datagrid__mobile-filter-badge" aria-hidden="true">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </span>
+              )}
               {toolbar.showRefresh !== false && (
                 <IconButton
                   icon="ph ph-arrow-clockwise"
@@ -1418,7 +1669,214 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               )}
             </div>
           )}
+          {isMobile && quickSearchField && (options.filterRow ?? true) && (
+            <div className="native-datagrid__quick-search">
+              <i
+                className="ph ph-magnifying-glass native-datagrid__quick-search-icon"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                className="native-datagrid__quick-search-input"
+                placeholder={t('grid.searchPlaceholder', { column: quickSearchField.label })}
+                aria-label={t('grid.filterColumn', { column: quickSearchField.label })}
+                value={filterInputs[quickSearchField.name] ?? ''}
+                onChange={(event) => applyFilterInputDebounced(quickSearchField, event.target.value)}
+              />
+              {(filterInputs[quickSearchField.name] ?? '') !== '' && (
+                <button
+                  type="button"
+                  className="native-datagrid__quick-search-clear"
+                  aria-label={t('grid.clearFilter')}
+                  onClick={() => {
+                    const nextInputs = { ...filterInputs };
+                    delete nextInputs[quickSearchField.name];
+                    applyFilterInputsImmediate(nextInputs);
+                  }}
+                >
+                  <i className="ph ph-x" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
           <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
+            {isMobile ? (
+              <ul className="native-datagrid__cards" aria-label={options.title} ref={cardsRef}>
+                {rows.length === 0 && isGridLoading
+                  ? Array.from({ length: 6 }, (_, i) => (
+                      <li
+                        key={`card-skeleton-${i}`}
+                        className="native-datagrid__card native-datagrid__card--skeleton"
+                        aria-hidden="true"
+                      >
+                        <div className="native-datagrid__skeleton-cell" style={{ width: '55%' }} />
+                        <div className="native-datagrid__skeleton-cell" style={{ width: '85%' }} />
+                        <div className="native-datagrid__skeleton-cell" style={{ width: '70%' }} />
+                      </li>
+                    ))
+                  : rows.map((row, rowIndex) => {
+                      const key = row[idField] ?? rowIndex;
+                      const selected = selectedKeys.includes(key);
+                      const cardActions = buildRowActions(row).filter((a) =>
+                        isToolbarActionVisible(a, toolbarPermissions),
+                      );
+                      const detailFields =
+                        typeof options.detailFields === 'function'
+                          ? options.detailFields(row)
+                          : options.detailFields;
+                      const detailUrl = options.detailUrl?.replace('{id}', String(key));
+                      const expanded = expandedKeys.has(key);
+                      const cardExpanded = expandedCardKeys.has(key);
+                      const cardMetaFields = cardExpanded
+                        ? [...cardPrimaryFields, ...cardSecondaryFields]
+                        : cardPrimaryFields;
+
+                      return (
+                        <li
+                          key={String(key)}
+                          className={`native-datagrid__card${selected ? ' native-datagrid__card--selected' : ''}`}
+                        >
+                          <div
+                            className="native-datagrid__card-body"
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={selected}
+                            onClick={() => selectRow(row)}
+                            onDoubleClick={() => openRow(row)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') openRow(row);
+                            }}
+                          >
+                            {hasCheckbox && (
+                              <input
+                                type="checkbox"
+                                className="native-datagrid__card-check"
+                                checked={selected}
+                                readOnly
+                                aria-label={t('grid.selectRow')}
+                              />
+                            )}
+                            <div className="native-datagrid__card-content">
+                              {cardTitleField && (
+                                <div className="native-datagrid__card-title">
+                                  {renderCell(
+                                    cardTitleField,
+                                    row,
+                                    rowIndex,
+                                    0,
+                                    filterRemoteOptions[cardTitleField.name],
+                                    t('common.yes'),
+                                    t('common.no'),
+                                  )}
+                                </div>
+                              )}
+                              {cardMetaFields.length > 0 && (
+                                <dl className="native-datagrid__card-meta">
+                                  {cardMetaFields.map((field, metaIndex) => (
+                                    <div
+                                      key={field.name}
+                                      className="native-datagrid__card-meta-row"
+                                    >
+                                      <dt>{field.label}</dt>
+                                      <dd>
+                                        {renderCell(
+                                          field,
+                                          row,
+                                          rowIndex,
+                                          metaIndex + 1,
+                                          filterRemoteOptions[field.name],
+                                          t('common.yes'),
+                                          t('common.no'),
+                                        )}
+                                      </dd>
+                                    </div>
+                                  ))}
+                                </dl>
+                              )}
+                              {cardSecondaryFields.length > 0 && (
+                                <button
+                                  type="button"
+                                  className="native-datagrid__card-more"
+                                  aria-expanded={cardExpanded}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setExpandedCardKeys((current) => {
+                                      const next = new Set(current);
+                                      if (next.has(key)) next.delete(key);
+                                      else next.add(key);
+                                      return next;
+                                    });
+                                  }}
+                                  onDoubleClick={(event) => event.stopPropagation()}
+                                >
+                                  <i
+                                    className={`ph ${cardExpanded ? 'ph-caret-up' : 'ph-caret-down'}`}
+                                    aria-hidden="true"
+                                  />
+                                  <span>
+                                    {cardExpanded ? t('grid.showLess') : t('grid.showMore')}
+                                  </span>
+                                </button>
+                              )}
+                            </div>
+                            {(cardActions.length > 0 || Boolean(detailUrl && detailFields)) && (
+                              <div
+                                className="native-datagrid__card-side"
+                                onClick={(event) => event.stopPropagation()}
+                                onDoubleClick={(event) => event.stopPropagation()}
+                              >
+                                {cardActions.length > 0 && (
+                                  <IconButton
+                                    icon="ph ph-dots-three-vertical"
+                                    label={t('grid.buttonActions')}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      const rect = (
+                                        event.currentTarget as HTMLElement
+                                      ).getBoundingClientRect();
+                                      setOpenRowMenu((current) =>
+                                        current && current.key === key
+                                          ? null
+                                          : { key, rect, actions: cardActions },
+                                      );
+                                    }}
+                                  />
+                                )}
+                                {detailUrl && detailFields && (
+                                  <button
+                                    type="button"
+                                    className={`native-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
+                                    aria-label={
+                                      expanded ? t('grid.collapseDetail') : t('grid.expandDetail')
+                                    }
+                                    onClick={() => {
+                                      setExpandedKeys((current) => {
+                                        const next = new Set(current);
+                                        if (next.has(key)) next.delete(key);
+                                        else next.add(key);
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    <i
+                                      className={`ph ${expanded ? 'ph-caret-down' : 'ph-caret-right'}`}
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {expanded && detailUrl && detailFields && (
+                            <div className="native-datagrid__card-detail">
+                              <DetailRows fields={detailFields} url={detailUrl} />
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+              </ul>
+            ) : (
             <table
               className="native-datagrid__table"
               style={tableLayoutStyle}
@@ -1496,13 +1954,6 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     {hasCheckbox && <td className="native-datagrid__select-cell" />}
                     {visibleFields.map((field) => {
                       const filterCellWidth = getColumnWidth(field, resolvedColWidths);
-                      const applyImmediate = (nextInputs: Record<string, string>) => {
-                        clearTimeout(filterDebounceRef.current);
-                        setFilterInputs(nextInputs);
-                        setFilters(nextInputs);
-                        setPage(0);
-                        options.onFilterChange?.(nextInputs);
-                      };
                       return (
                         <td
                           key={field.name}
@@ -1520,67 +1971,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               .join(' ') || undefined
                           }
                         >
-                          {field.filterable ? (
-                            <FilterCell
-                              field={field}
-                              operator={
-                                filterOperators[field.name] ?? getDefaultFilterOperator(field)
-                              }
-                              remoteOptions={filterRemoteOptions[field.name] ?? []}
-                              value={filterInputs[field.name] ?? ''}
-                              onInputChange={(nextValue) => {
-                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                                if (nextValue === '') delete nextInputs[field.name];
-                                setFilterInputs(nextInputs);
-                                clearTimeout(filterDebounceRef.current);
-                                filterDebounceRef.current = setTimeout(() => {
-                                  setFilters(nextInputs);
-                                  setPage(0);
-                                  options.onFilterChange?.(nextInputs);
-                                }, 300);
-                              }}
-                              onBetweenInputChange={(start, end) => {
-                                const nextValue = joinBetweenValue(start, end);
-                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                                if (nextValue === '') delete nextInputs[field.name];
-                                applyImmediate(nextInputs);
-                              }}
-                              onSelectChange={(nextValue) => {
-                                const nextInputs = { ...filterInputs, [field.name]: nextValue };
-                                if (nextValue === '') delete nextInputs[field.name];
-                                applyImmediate(nextInputs);
-                              }}
-                              onOperatorChange={(nextOperator) => {
-                                setFilterOperators((prev) => ({
-                                  ...prev,
-                                  [field.name]: nextOperator,
-                                }));
-                                const currentValue = filterInputs[field.name];
-                                if (currentValue) {
-                                  const nextInputs = { ...filterInputs };
-                                  if (
-                                    nextOperator === 'between' &&
-                                    !currentValue.includes(BETWEEN_VALUE_SEPARATOR)
-                                  ) {
-                                    nextInputs[field.name] = joinBetweenValue(currentValue, '');
-                                  }
-                                  if (
-                                    nextOperator !== 'between' &&
-                                    currentValue.includes(BETWEEN_VALUE_SEPARATOR)
-                                  ) {
-                                    nextInputs[field.name] =
-                                      splitBetweenValue(currentValue).find(Boolean) ?? '';
-                                  }
-                                  applyImmediate(nextInputs);
-                                }
-                              }}
-                              onClear={() => {
-                                const nextInputs = { ...filterInputs };
-                                delete nextInputs[field.name];
-                                applyImmediate(nextInputs);
-                              }}
-                            />
-                          ) : null}
+                          {field.filterable ? renderFilterCell(field) : null}
                         </td>
                       );
                     })}
@@ -1643,42 +2034,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         : options.detailFields;
                     const detailUrl = options.detailUrl?.replace('{id}', String(key));
                     const expanded = expandedKeys.has(key);
-                    const rowActions: ResourceToolbarAction[] = [
-                      ...(options.allowEdit && (options.onEdit || options.events?.EDIT)
-                        ? [
-                            {
-                              text: t('grid.buttonEdit'),
-                              icon: 'ph-pencil-simple',
-                              disabled: options.editDisabled,
-                              onClick: () => {
-                                if (options.onEdit) options.onEdit(row);
-                                else emit(options.events!.EDIT!, { row });
-                              },
-                            },
-                          ]
-                        : []),
-                      ...(options.allowView && options.onView
-                        ? [
-                            {
-                              text: t('grid.buttonView'),
-                              icon: 'ph-eye',
-                              onClick: () => options.onView!(row),
-                            },
-                          ]
-                        : []),
-                      ...getResolvedRowActions(row, options.rowActions),
-                      ...(options.allowDelete && (options.onDelete || options.events?.DELETE)
-                        ? [
-                            {
-                              text: t('grid.buttonDelete'),
-                              icon: 'ph-trash',
-                              type: 'danger',
-                              disabled: options.deleteDisabled,
-                              onClick: () => setConfirmRow(row),
-                            },
-                          ]
-                        : []),
-                    ];
+                    const rowActions: ResourceToolbarAction[] = buildRowActions(row);
 
                     return (
                       <React.Fragment key={String(key)}>
@@ -1813,46 +2169,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                       const rowKey = key;
 
                                       // Resolve actions at click time (avoids fragile re-lookup later)
-                                      const actionsAtOpen: ResourceToolbarAction[] = [
-                                        ...(options.allowEdit &&
-                                        (options.onEdit || options.events?.EDIT)
-                                          ? [
-                                              {
-                                                text: t('grid.buttonEdit'),
-                                                icon: 'ph-pencil-simple',
-                                                disabled: options.editDisabled,
-                                                onClick: () => {
-                                                  if (options.onEdit) options.onEdit(row);
-                                                  else emit(options.events!.EDIT!, { row });
-                                                },
-                                              },
-                                            ]
-                                          : []),
-                                        ...(options.allowView && options.onView
-                                          ? [
-                                              {
-                                                text: t('grid.buttonView'),
-                                                icon: 'ph-eye',
-                                                onClick: () => options.onView!(row),
-                                              },
-                                            ]
-                                          : []),
-                                        ...getResolvedRowActions(row, options.rowActions),
-                                        ...(options.allowDelete &&
-                                        (options.onDelete || options.events?.DELETE)
-                                          ? [
-                                              {
-                                                text: t('grid.buttonDelete'),
-                                                icon: 'ph-trash',
-                                                type: 'danger' as const,
-                                                disabled: options.deleteDisabled,
-                                                onClick: () => setConfirmRow(row),
-                                              },
-                                            ]
-                                          : []),
-                                      ].filter((a) =>
-                                        isToolbarActionVisible(a, toolbarPermissions),
-                                      );
+                                      const actionsAtOpen: ResourceToolbarAction[] = buildRowActions(
+                                        row,
+                                      ).filter((a) => isToolbarActionVisible(a, toolbarPermissions));
 
                                       setOpenRowMenu((current) =>
                                         current && current.key === rowKey
@@ -1889,21 +2208,49 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 colWidths={resolvedColWidths}
               />
             </table>
+            )}
             {rows.length === 0 && !isGridLoading && (
               <GridEmptyStateView
                 emptyState={options.emptyState}
                 fallbackTitle={t('grid.noRecords')}
               />
             )}
-            <div
-              ref={hScrollRef}
-              className={`native-datagrid__hscroll${layoutWidth > containerWidth ? '' : ' native-datagrid__hscroll--hidden'}`}
-              aria-hidden="true"
-              tabIndex={-1}
-            >
-              <div className="native-datagrid__hscroll-inner" style={{ width: layoutWidth }} />
-            </div>
+            {!isMobile && (
+              <div
+                ref={hScrollRef}
+                className={`native-datagrid__hscroll${layoutWidth > containerWidth ? '' : ' native-datagrid__hscroll--hidden'}`}
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                <div className="native-datagrid__hscroll-inner" style={{ width: layoutWidth }} />
+              </div>
+            )}
           </div>
+          {isMobile && (options.summaryFields?.length ?? 0) > 0 && rows.length > 0 && (
+            <div className="native-datagrid__card-summary">
+              {options.summaryFields!.map((item, index) => (
+                <div key={index} className="native-datagrid__card-summary-item">
+                  {item.label && (
+                    <span className="native-datagrid__summary-label">{item.label}</span>
+                  )}
+                  <span className="native-datagrid__summary-value">
+                    {resolveSummaryText(rows, item)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          {showFab && (
+            <button
+              type="button"
+              className="native-datagrid__fab"
+              aria-label={t('grid.buttonNew')}
+              disabled={options.addDisabled}
+              onClick={onAddClick}
+            >
+              <i className="ph ph-plus" aria-hidden="true" />
+            </button>
+          )}
           {(options.paging ?? true) && (
             <div className="native-datagrid__pager">
               <div className="native-datagrid__pager-status" aria-live="polite">
@@ -1943,7 +2290,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     <button
                       key={pageNum}
                       type="button"
-                      className={`native-datagrid__pager-btn${pageNum === page ? ' is-current' : ''}`}
+                      className={`native-datagrid__pager-btn native-datagrid__pager-btn--page${pageNum === page ? ' is-current' : ''}`}
                       onClick={() => setPage(pageNum)}
                       aria-current={pageNum === page ? 'page' : undefined}
                     >
@@ -2015,53 +2362,140 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
 
           {openRowMenu &&
             createPortal(
+              isMobile ? (
+                <div className="native-datagrid__sheet-root">
+                  <button
+                    type="button"
+                    className="native-datagrid__sheet-scrim"
+                    aria-label={t('dialog.buttonCancel')}
+                    onClick={closeRowMenu}
+                  />
+                  <div
+                    className="native-datagrid__row-actions-popover native-datagrid__row-actions-popover--sheet"
+                    role="menu"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {renderRowMenuContent()}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="native-datagrid__row-actions-popover"
+                  role="menu"
+                  style={{
+                    position: 'fixed',
+                    // Anchor the right edge of the menu to the right edge of the ⋮ button.
+                    // This makes the menu open to the left, which is what we want when the
+                    // actions column is the last column on the right of a wide table.
+                    right: `${Math.max(0, window.innerWidth - openRowMenu.rect.right + 4)}px`,
+                    top: (() => {
+                      const menuHeightEstimate = 180;
+                      const wouldOverflowBottom =
+                        openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight;
+                      if (wouldOverflowBottom) {
+                        return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
+                      }
+                      return `${openRowMenu.rect.bottom + 4}px`;
+                    })(),
+                    zIndex: 'var(--z-popover)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {renderRowMenuContent()}
+                </div>
+              ),
+              document.body,
+            )}
+          {isMobile &&
+            filterSheetOpen &&
+            createPortal(
               <div
-                className="native-datagrid__row-actions-popover"
-                role="menu"
-                style={{
-                  position: 'fixed',
-                  // Anchor the right edge of the menu to the right edge of the ⋮ button.
-                  // This makes the menu open to the left, which is what we want when the
-                  // actions column is the last column on the right of a wide table.
-                  right: `${Math.max(0, window.innerWidth - openRowMenu.rect.right + 4)}px`,
-                  top: (() => {
-                    const menuHeightEstimate = 180;
-                    const wouldOverflowBottom =
-                      openRowMenu.rect.bottom + menuHeightEstimate > window.innerHeight;
-                    if (wouldOverflowBottom) {
-                      return `${openRowMenu.rect.top - menuHeightEstimate - 8}px`;
-                    }
-                    return `${openRowMenu.rect.bottom + 4}px`;
-                  })(),
-                  zIndex: 'var(--z-popover)',
-                }}
-                onClick={(e) => e.stopPropagation()}
+                className="native-datagrid__sheet-root"
+                role="dialog"
+                aria-modal="true"
+                aria-label={t('grid.filters')}
               >
-                {(() => {
-                  const regular = openRowMenu.actions.filter((a) => a.type !== 'danger');
-                  const danger = openRowMenu.actions.filter((a) => a.type === 'danger');
-                  const closeCurrentRowMenu = () => setOpenRowMenu(null);
-
-                  return (
-                    <>
-                      {regular.map((action, idx) =>
-                        renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
-                      )}
-                      {danger.length > 0 && (
-                        <div className="native-datagrid__actions-danger-group">
-                          {danger.map((action, idx) =>
-                            renderRowActionItem(
-                              action,
-                              idx,
-                              toolbarPermissions,
-                              closeCurrentRowMenu,
-                            ),
-                          )}
+                <button
+                  type="button"
+                  className="native-datagrid__sheet-scrim"
+                  aria-label={t('grid.done')}
+                  onClick={() => setFilterSheetOpen(false)}
+                />
+                <div className="native-datagrid__sheet">
+                  <div className="native-datagrid__sheet-header">
+                    <span className="native-datagrid__sheet-title">{t('grid.filters')}</span>
+                    <IconButton
+                      icon="ph ph-x"
+                      label={t('grid.done')}
+                      onClick={() => setFilterSheetOpen(false)}
+                    />
+                  </div>
+                  <div className="native-datagrid__sheet-body">
+                    {options.beforeToolbar && (
+                      <div className="native-datagrid__sheet-field native-datagrid__sheet-presets">
+                        {options.beforeToolbar()}
+                      </div>
+                    )}
+                    {sortableFields.length > 0 && (
+                      <div className="native-datagrid__sheet-field">
+                        <span className="native-datagrid__sheet-label">{t('grid.sortBy')}</span>
+                        <div className="native-datagrid__sheet-sort">
+                          <AppDropdown
+                            id="native-datagrid-mobile-sort"
+                            value={sort[0]?.selector ?? ''}
+                            options={[
+                              { value: '', label: t('grid.sortNone') },
+                              ...sortableFields.map((field) => ({
+                                value: field.name,
+                                label: field.label,
+                              })),
+                            ]}
+                            onChange={(value) => {
+                              setPage(0);
+                              setSort(
+                                value ? [{ selector: value, desc: sort[0]?.desc ?? false }] : [],
+                              );
+                            }}
+                            showFieldLabel={false}
+                          />
+                          <IconButton
+                            icon={`ph ${sort[0]?.desc ? 'ph-sort-descending' : 'ph-sort-ascending'}`}
+                            label={
+                              sort[0]?.desc ? t('grid.sortDescending') : t('grid.sortAscending')
+                            }
+                            disabled={!sort[0]}
+                            onClick={() => {
+                              setPage(0);
+                              setSort((current) =>
+                                current[0]
+                                  ? [{ selector: current[0].selector, desc: !current[0].desc }]
+                                  : current,
+                              );
+                            }}
+                          />
                         </div>
-                      )}
-                    </>
-                  );
-                })()}
+                      </div>
+                    )}
+                    {filterableFields.map((field) => (
+                      <div key={field.name} className="native-datagrid__sheet-field">
+                        <span className="native-datagrid__sheet-label">{field.label}</span>
+                        {renderFilterCell(field)}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="native-datagrid__sheet-footer">
+                    <Button
+                      variant="secondary"
+                      onClick={() => applyFilterInputsImmediate({})}
+                      disabled={activeFilterCount === 0}
+                    >
+                      {t('grid.clearFilters')}
+                    </Button>
+                    <Button variant="primary" onClick={() => setFilterSheetOpen(false)}>
+                      {t('grid.done')}
+                    </Button>
+                  </div>
+                </div>
               </div>,
               document.body,
             )}

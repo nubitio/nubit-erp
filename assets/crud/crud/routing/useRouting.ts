@@ -1,6 +1,11 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import type { ResourceRouting } from '../ResourceConfig';
+
+// Stable empty object — a fresh `{}` per render would invalidate every memo
+// downstream (CrudPage → DataGridView source) and trigger grid reloads on
+// unrelated re-renders such as form keystrokes.
+const NO_FILTERS: Record<string, string> = {};
 
 export interface RoutingState {
   /** id of record to open on mount, or null */
@@ -39,14 +44,15 @@ export function useRouting(routing: ResourceRouting | undefined): RoutingState {
     return value === 'new';
   })();
 
-  const initialFilters = (() => {
-    if (!routing?.syncFiltersToUrl) return {};
+  const syncFiltersToUrl = routing?.syncFiltersToUrl ?? false;
+  const initialFilters = useMemo(() => {
+    if (!syncFiltersToUrl) return NO_FILTERS;
     const filters: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       filters[key] = value;
     });
     return filters;
-  })();
+  }, [syncFiltersToUrl, searchParams]);
 
   const syncFilters = useCallback(
     (filters: Record<string, string>) => {

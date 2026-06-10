@@ -53,6 +53,16 @@ export interface CoreTranslationKeys {
   'grid.filterFrom': string;
   'grid.filterTo': string;
   'grid.sortColumn': string;
+  'grid.filters': string;
+  'grid.sortBy': string;
+  'grid.sortNone': string;
+  'grid.sortAscending': string;
+  'grid.sortDescending': string;
+  'grid.clearFilters': string;
+  'grid.done': string;
+  'grid.searchPlaceholder': string;
+  'grid.showMore': string;
+  'grid.showLess': string;
   'grid.filterOperator.contains': string;
   'grid.filterOperator.notcontains': string;
   'grid.filterOperator.startswith': string;

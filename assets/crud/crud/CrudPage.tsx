@@ -72,6 +72,11 @@ interface CrudPageProps<T extends DataRecord = DataRecord> {
   onOperationChange?: (operation: SmartCrudOperation | null) => void;
 }
 
+// Stable defaults — inline `{}` fallbacks would change identity on every
+// render and cascade into grid data reloads via the filter memos below.
+const EMPTY_INITIAL_FILTERS: Record<string, string> = {};
+const EMPTY_COMPUTED_VALUES: Record<string, unknown> = {};
+
 function inferFilterOperator(field: Field): NonNullable<Field['selectedFilterOperation']> {
   if (field.selectedFilterOperation) {
     return field.selectedFilterOperation;
@@ -145,8 +150,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
   onFormDataChange,
   initialRecordId = null,
   initialIsNew = false,
-  computedValues = {},
-  initialFilters = {},
+  computedValues = EMPTY_COMPUTED_VALUES as FormDataRecord,
+  initialFilters = EMPTY_INITIAL_FILTERS,
   onFiltersChange,
   formRef: externalFormRef,
   onSelectionChanged: externalOnSelectionChanged,

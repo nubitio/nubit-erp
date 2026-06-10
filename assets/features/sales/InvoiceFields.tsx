@@ -27,6 +27,7 @@ export const InvoiceFields = () => {
       .name('issueDate')
       .label('Fecha')
       .width(120)
+      .cardRole('primary')
       .defaultValue(undefined)
       .valueType('date')
       .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
@@ -45,6 +46,7 @@ export const InvoiceFields = () => {
       .name('customer')
       .label('Cliente')
       .width(200)
+      .cardRole('title')
       .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .build(),
   );
@@ -61,13 +63,14 @@ export const InvoiceFields = () => {
       )
       .build(),
   );
-  fields.push(textField().name('series').label('Serie').width(80).build());
-  fields.push(textField().name('number').label('Número').width(90).build());
+  fields.push(textField().name('series').label('Serie').width(80).cardRole('primary').build());
+  fields.push(textField().name('number').label('Número').width(90).cardRole('primary').build());
   fields.push(
     currencyField()
       .name('total')
       .label('Total')
       .width(130)
+      .cardRole('primary')
       .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
       )
@@ -96,6 +99,7 @@ export const InvoiceFields = () => {
       .name('sunatStatus')
       .label('Envio sunat')
       .width(140)
+      .cardRole('primary')
       .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined))
       .align('center')
       .build(),

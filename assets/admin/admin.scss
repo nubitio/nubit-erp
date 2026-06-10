@@ -64,6 +64,16 @@
     position: absolute;
   }
 
+  // The collapsed rail is absolutely positioned, so the content must reserve
+  // its width — otherwise the rail covers the left edge of the page content.
+  // Opening the menu expands the panel OVER the content (with scrim) while
+  // the content keeps the rail offset.
+  &:not(.is-xsmall) {
+    .side-nav-outer-toolbar__content {
+      margin-left: var(--side-panel-min-width, 48px);
+    }
+  }
+
   &.is-closed:not(.is-xsmall) {
     .side-nav-outer-toolbar__panel {
       width: var(--side-panel-min-width);

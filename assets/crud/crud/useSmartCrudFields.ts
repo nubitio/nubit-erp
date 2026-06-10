@@ -69,29 +69,41 @@ export function useSmartCrudFields(
   // 5. Merge conditional state back into field definitions
   const processedFields = useMemo(() => {
     const stateByName = new Map(fieldStates.map((s) => [s.name, s]));
-    return permissionFilteredFields.map((field) => {
+    let anyChanged = false;
+    const merged = permissionFilteredFields.map((field) => {
       if (field.isIdentity) return field;
 
       const state = stateByName.get(field.name);
       if (!state) return field;
 
+      // Identity-preserving merge: only clone when the conditional state
+      // actually differs from the field's current flags. Stable field objects
+      // keep downstream effects (lookup option fetches, grid reloads) from
+      // re-firing on every form keystroke.
+      const nextDisabled = state.disabled ? true : field.disabled;
+      const nextReadonly = state.computedValue !== undefined ? true : field.readonly;
+      if (
+        state.visible === field.visibleOnForm &&
+        nextDisabled === field.disabled &&
+        state.required === field.required &&
+        nextReadonly === field.readonly
+      ) {
+        return field;
+      }
+
+      anyChanged = true;
       const updated: Field = { ...field };
 
       // Conditional visibility affects the form only — never the grid columns.
       updated.visibleOnForm = state.visible;
-
-      if (state.disabled) {
-        updated.disabled = true;
-      }
-
+      updated.disabled = nextDisabled;
       updated.required = state.required;
-
-      if (state.computedValue !== undefined) {
-        updated.readonly = true;
-      }
+      updated.readonly = nextReadonly;
 
       return updated;
     });
+
+    return anyChanged ? merged : permissionFilteredFields;
   }, [permissionFilteredFields, fieldStates]);
 
   // 6. Collect computed values for form synchronization

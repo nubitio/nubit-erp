@@ -83,6 +83,17 @@ export interface Field {
   /** Column display order hint set via `x-crud.order` from Hydra metadata. */
   order?: number;
 
+  /**
+   * Mobile card layout hint:
+   * - 'title'     → rendered as the card title (bold, no label)
+   * - 'primary'   → always-visible labelled row
+   * - 'secondary' → collapsed behind the card's "show more" toggle
+   * - 'hidden'    → never shown on the card
+   * Without hints the grid uses the first non-date visible column as title
+   * and the next four columns as primary rows.
+   */
+  cardRole?: 'title' | 'primary' | 'secondary' | 'hidden';
+
   /** Optional visual layout hint for auto column resolution. */
   layoutHint?: FormLayoutHint;
 
