@@ -18,9 +18,11 @@ use App\Media\State\MediaSoftDeleteProcessor;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+#[SoftDeletable]
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 #[ApiResource(
     operations: [

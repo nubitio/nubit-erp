@@ -26,9 +26,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+#[SoftDeletable]
 #[ORM\Entity(repositoryClass: PurchaseRepository::class)]
 #[ORM\Table(name: 'goods_receipts')]
 #[ORM\HasLifecycleCallbacks]

@@ -6,6 +6,7 @@ namespace App\Identity\Auth;
 
 use Nubit\AdminBundle\Auth\CookieFactory;
 use Nubit\AdminBundle\Auth\LoginResponseDecoratorInterface;
+use Nubit\AdminBundle\Auth\MercureSubscriberTokenService;
 use Nubit\AdminBundle\Auth\TokenPair;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -39,7 +40,7 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
 
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             self::MERCURE_COOKIE,
-            $this->mercureTokenService->generateSubscriberToken($tenantOrigin),
+            $this->mercureTokenService->generateSubscriberToken([$tenantOrigin . '/api/*']),
             $tokenPair->accessTokenExpiresAt,
             '/.well-known/mercure',
             null,

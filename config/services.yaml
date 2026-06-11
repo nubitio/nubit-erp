@@ -53,10 +53,12 @@ services:
   # The bundle's authenticator/refresh need ONE UserProviderInterface; efact
   # has two providers (api users + control-plane admins), so alias the API one.
   Symfony\Component\Security\Core\User\UserProviderInterface: '@App\Identity\Auth\UserProvider'
-  App\Identity\Auth\MercureSubscriberTokenService:
+  # Bundle's Mercure token service, registered manually because efact uses
+  # its own tenant-scoped decorator instead of nubit_admin.mercure.enabled.
+  Nubit\AdminBundle\Auth\MercureSubscriberTokenService:
     arguments:
       $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
-      $accessTokenTtl: '%jwt_access_token_ttl%'
+      $tokenTtl: '%jwt_access_token_ttl%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'

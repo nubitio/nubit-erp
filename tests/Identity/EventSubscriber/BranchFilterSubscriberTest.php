@@ -174,7 +174,9 @@ final class BranchFilterSubscriberTest extends TestCase
         $params = $paramsProp->getValue($filter);
 
         self::assertArrayHasKey('branchId', $params);
-        self::assertSame('42', $params['branchId']['value']);
+        // doctrine/orm >= 3.6 stores Parameter objects; older versions arrays.
+        $param = $params['branchId'];
+        self::assertSame('42', \is_array($param) ? $param['value'] : $param->value);
     }
 
     public function testBranchSetAndFilterAlreadyEnabledSkipsEnableButSetsParameter(): void
@@ -201,6 +203,7 @@ final class BranchFilterSubscriberTest extends TestCase
         $params = $paramsProp->getValue($filter);
 
         self::assertArrayHasKey('branchId', $params);
-        self::assertSame('7', $params['branchId']['value']);
+        $param = $params['branchId'];
+        self::assertSame('7', \is_array($param) ? $param['value'] : $param->value);
     }
 }

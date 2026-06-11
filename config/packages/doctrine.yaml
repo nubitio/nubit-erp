@@ -35,9 +35,6 @@ doctrine:
       branch_filter:
         class: App\Efact\Doctrine\Filter\BranchFilter
         enabled: false
-      soft_delete:
-        class: App\Efact\Doctrine\Filter\SoftDeleteFilter
-        enabled: false
 
 when@test:
   doctrine:
