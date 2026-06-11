@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\Role;
 use App\Identity\Repository\UserRepository;
 use App\Identity\State\UserSoftDeleteProcessor;

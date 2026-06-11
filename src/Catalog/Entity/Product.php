@@ -17,7 +17,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;

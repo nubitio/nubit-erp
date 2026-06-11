@@ -37,12 +37,12 @@ services:
   # this creates a service per class whose id is the fully-qualified class name
   App\:
     resource: '../src/'
-    exclude:
-      - '../src/Platform/'
 
-  # Platform library — registered under Nubit\Platform\ namespace
+  # Platform library services (vendor classes are not autodiscovered)
   Nubit\Platform\:
-    resource: '../src/Platform/'
+    resource: '../vendor/nubitio/platform/src/'
+    exclude:
+      - '../vendor/nubitio/platform/src/{Exception,Tenant/Model,Messenger/TenantStamp.php,Messenger/ActorStamp.php,RateLimit/RateLimitResult.php,Http}'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -261,13 +261,24 @@ services:
   GuzzleHttp\ClientInterface:
     class: GuzzleHttp\Client
 
-  App\Efact\ApiPlatform\TranslatedDocumentationNormalizer:
+  Nubit\ApiPlatform\OpenApi\TranslatedDocumentationNormalizer:
     decorates: api_platform.hydra.normalizer.documentation
     arguments:
       $inner: '@.inner'
       $translator: '@translator'
       $requestStack: '@request_stack'
       $apiLocale: '%env(APP_API_LOCALE)%'
+
+  # nubitio/api-platform services (vendor classes are not autodiscovered).
+  # The listeners self-configure via #[AsEventListener]; the filter gets the
+  # api_platform.filter tag through autoconfiguration.
+  Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter: ~
+  Nubit\ApiPlatform\Http\ApiResponseListener: ~
+  Nubit\ApiPlatform\Http\ExceptionListener: ~
+
+  # Virtual grid fields consumed by Nubit\ApiPlatform DataGridFilter
+  App\Efact\Doctrine\Filter\SalesGridVirtualFields:
+    tags: ['nubit.api_platform.grid_virtual_field']
 
   App\Efact\Mercure\TenantAwareMercureHub:
     decorates: mercure.hub.default

@@ -7,8 +7,8 @@ namespace App\Tests\Efact\Domain;
 use App\Efact\Audit\AuditLogMessage;
 use App\Efact\Domain\AuditableEntity;
 use App\Efact\RateLimit\RateLimitResult;
-use App\Efact\Traits\SoftDeletableTrait;
-use App\Efact\Traits\TimestampableTrait;
+use Nubit\ApiPlatform\Doctrine\Traits\SoftDeletableTrait;
+use Nubit\ApiPlatform\Doctrine\Traits\TimestampableTrait;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 

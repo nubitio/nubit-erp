@@ -7,7 +7,7 @@ namespace App\Inventory\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\State\StockMovementProvider;
 use Symfony\Component\Serializer\Attribute\Groups;
 

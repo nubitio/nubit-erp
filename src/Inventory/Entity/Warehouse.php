@@ -14,7 +14,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\State\WarehouseCreateProcessor;
 use App\Inventory\State\WarehousesByBranchProvider;

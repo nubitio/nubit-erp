@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Port;
 
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

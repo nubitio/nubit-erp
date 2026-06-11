@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Enum\StockEntryType;
 use App\Inventory\Repository\StockEntryRepository;

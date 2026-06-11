@@ -11,7 +11,7 @@ use DateTimeImmutable;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;

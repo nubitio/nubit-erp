@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Application;
 
-use App\Efact\Http\BaseController;
+use Nubit\ApiPlatform\Http\BaseController;
 use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Export\PdfExporter;
 use App\Settings\Service\TenantSettingsService;

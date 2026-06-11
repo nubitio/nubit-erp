@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Domain;
 
-use App\Efact\Traits\TimestampableTrait;
+use Nubit\ApiPlatform\Doctrine\Traits\TimestampableTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\MappedSuperclass]

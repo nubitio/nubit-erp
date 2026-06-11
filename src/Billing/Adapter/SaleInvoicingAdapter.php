@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Billing\Adapter;
 
 use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Controller\PrintESCPOSController;
 use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\Sale\SaleVoidUseCase;

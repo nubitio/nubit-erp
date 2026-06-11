@@ -6,7 +6,7 @@ namespace App\Billing\Sale;
 
 use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;

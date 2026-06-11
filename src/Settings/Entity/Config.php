@@ -6,7 +6,7 @@ namespace App\Settings\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Settings\Repository\ConfigRepository;
 use Doctrine\ORM\Mapping as ORM;
 

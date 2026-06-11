@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Controller\Api;
 
 use App\Identity\Security\Security;
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use App\Sales\Domain\SaleException;
 use App\Sales\Port\SaleInvoicingPortInterface;
 use League\Flysystem\FilesystemException;

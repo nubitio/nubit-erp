@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller\Api;
 
-use App\Efact\Http\ApiResponse;
+use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Service\InvoiceCreationServiceInterface;
 use App\Billing\Service\SaleV2Loader;
 use App\Sales\State\DetractionCalculatorInterface;

@@ -16,7 +16,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Purchasing\Repository\PurchaseRepository;
 use App\Purchasing\State\PurchaseProcessor;
 use App\Purchasing\State\PurchaseProvider;

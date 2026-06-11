@@ -6,7 +6,7 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;

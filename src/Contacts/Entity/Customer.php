@@ -7,7 +7,7 @@ namespace App\Contacts\Entity;
 use App\Inventory\Entity\PriceList;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;

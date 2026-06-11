@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;

@@ -6,7 +6,7 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Efact\Doctrine\Filter\DataGridFilter;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Entity\VoucherType;
 use App\Organization\Entity\Branch;
