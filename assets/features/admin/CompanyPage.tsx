@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { SmartCrudPage, defineResource, type FormHandle } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
 import { companyEvents } from '@app/domainEvents';
 import { CompanyFields } from './CompanyFields';
 import { companyEndpoints } from './api/companyEndpoints';

@@ -1,2 +1,2 @@
-export { Badge } from '@nubit/ui';
-export type { BadgeProps, BadgeVariant } from '@nubit/ui';
+export { Badge } from '@nubitio/ui';
+export type { BadgeProps, BadgeVariant } from '@nubitio/ui';

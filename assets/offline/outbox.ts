@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { getCoreTimezone } from '@nubit/core';
+import { getCoreTimezone } from '@nubitio/core';
 
 import { offlineDb } from './db';
 import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';

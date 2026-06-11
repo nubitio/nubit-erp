@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Card } from '@shared/ui';
-import type { CardProps } from '@nubit/ui';
+import type { CardProps } from '@nubitio/ui';
 
 import './single-card.scss';
 

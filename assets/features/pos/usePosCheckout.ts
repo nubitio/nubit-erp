@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast, { getIRI } from '@shared/lib/SharedUtils';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import type { CartItem, PosItem } from './types';

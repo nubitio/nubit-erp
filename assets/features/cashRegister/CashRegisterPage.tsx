@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SmartCrudPage, defineResource, type ResourceToolbarContext } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { SmartCrudPage, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { CashRegisterFields } from './CashRegisterFields';

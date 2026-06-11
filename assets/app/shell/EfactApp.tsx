@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
-import { useScreenSizeClass } from '@nubit/admin';
-import { useTheme } from '@nubit/ui';
+import { useScreenSizeClass } from '@nubitio/admin';
+import { useTheme } from '@nubitio/ui';
 import { Content } from './Content';
 
 import '../../styles.scss';
@@ -12,7 +12,7 @@ import '../../theme/theme';
 import './custom.scss';
 import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
-import { MercureManager } from '@nubit/core';
+import { MercureManager } from '@nubitio/core';
 import { AppProviders } from '../AppProviders';
 
 const AppLoading = () => (

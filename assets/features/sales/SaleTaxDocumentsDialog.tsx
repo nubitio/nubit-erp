@@ -1,8 +1,8 @@
 import { useRef, useMemo } from 'react';
-import { AppDialog } from '@nubit/ui';
-import { useScreenSize } from '@nubit/admin';
-import { DataGridView, type GridHandle } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { AppDialog } from '@nubitio/ui';
+import { useScreenSize } from '@nubitio/admin';
+import { DataGridView, type GridHandle } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { InvoiceFields } from './InvoiceFields';

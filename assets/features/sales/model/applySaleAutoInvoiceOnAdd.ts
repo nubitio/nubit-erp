@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { FormHandle } from '@nubit/crud';
+import type { FormHandle } from '@nubitio/crud';
 import { Setting, settings } from '@app/Settings';
 
 export const applySaleAutoInvoiceOnAdd = async (formRef: RefObject<FormHandle | null>) => {

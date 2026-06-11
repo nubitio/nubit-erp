@@ -1,5 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 import { StorageUtils } from '../../../shared/lib/StorageUtils';
 
 const API = getCoreApiBaseUrl();

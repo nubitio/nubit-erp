@@ -1,5 +1,5 @@
 import { type RefObject } from 'react';
-import { Field } from '@nubit/crud';
+import { Field } from '@nubitio/crud';
 import {
   identityField,
   entityField,
@@ -7,14 +7,14 @@ import {
   enumField,
   textField,
   textareaField,
-} from '@nubit/crud';
-import type { FormHandle, DataRecord } from '@nubit/crud';
+} from '@nubitio/crud';
+import type { FormHandle, DataRecord } from '@nubitio/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { GridCellContext } from '@nubit/crud';
+import type { GridCellContext } from '@nubitio/crud';
 
 export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];

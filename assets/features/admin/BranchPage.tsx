@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
 import { branchEndpoints } from './api/adminEndpoints';
 
 interface BranchRecord extends DataRecord {

@@ -1,7 +1,6 @@
-// Static design tokens — single source of truth for theme-independent values.
-// Must be loaded before any dynamic theme stylesheet (Firefox FOUC fix included).
-// Tokens are owned by @nubit/ui; the app consumes them from the package.
-@use 'ui/theme/styles/tokens';
+// Static design tokens are owned by @nubitio/ui and arrive via
+// '@nubitio/react-admin/style.css' (imported in app.tsx). Theme-dependent
+// color tokens load at runtime from public/themes/ (copied from the package).
 @use 'variables' as *;
 
 html,

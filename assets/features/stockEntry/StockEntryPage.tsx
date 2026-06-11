@@ -1,8 +1,8 @@
-import { SmartCrudPage, defineResource } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { SmartCrudPage, defineResource } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { createCrudEvents } from '@nubit/crud';
+import { createCrudEvents } from '@nubitio/crud';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';

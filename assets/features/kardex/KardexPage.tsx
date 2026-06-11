@@ -1,6 +1,6 @@
 import './KardexPage.scss';
 import { useCallback } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 import {
   ColumnPresetSelector,
   DataGridView,
@@ -13,9 +13,9 @@ import {
   type Field,
   type DataRecord,
   type ResourceConfig,
-} from '@nubit/crud';
-import { useCoreTranslation } from '@nubit/core';
-import { Badge } from '@nubit/ui';
+} from '@nubitio/crud';
+import { useCoreTranslation } from '@nubitio/core';
+import { Badge } from '@nubitio/ui';
 
 const API = getCoreApiBaseUrl();
 

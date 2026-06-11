@@ -1,2 +1,2 @@
-export { ThemeSwitcher } from '@nubit/ui';
-export type { ThemeSwitcherProps } from '@nubit/ui';
+export { ThemeSwitcher } from '@nubitio/ui';
+export type { ThemeSwitcherProps } from '@nubitio/ui';

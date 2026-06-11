@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { StatCard } from '@nubit/ui';
+import { StatCard } from '@nubitio/ui';
 import './CardAnalytics.scss';
 
 type CardProps = {

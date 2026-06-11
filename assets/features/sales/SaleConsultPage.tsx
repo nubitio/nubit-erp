@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { AppDropdown } from '@nubit/ui';
+import { AppDropdown } from '@nubitio/ui';
 import {
   ColumnPresetSelector,
   DataGridView,
@@ -7,9 +7,9 @@ import {
   type DataGridViewOptions,
   type GridHandle,
   type ResourceConfig,
-} from '@nubit/crud';
-import { useCoreTranslation } from '@nubit/core';
-import { getCoreApiBaseUrl } from '@nubit/core';
+} from '@nubitio/crud';
+import { useCoreTranslation } from '@nubitio/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { SaleFields } from './SaleFields';
 import { saleEndpoints } from './api/saleEndpoints';

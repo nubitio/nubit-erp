@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import es from './locales/es.json';
 import en from './locales/en.json';
-import { initCoreI18n } from '../core/i18n';
+import { initCoreI18n } from '@nubitio/core';
 
 void i18n.use(initReactI18next).init({
   lng: (typeof navigator !== 'undefined' && navigator.language?.split('-')[0]) || 'es',

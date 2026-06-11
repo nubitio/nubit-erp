@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Badge, IconButton } from '@nubit/ui';
+import { Badge, IconButton } from '@nubitio/ui';
 import { useFeature } from '../hooks/useFeature';
 import './FeatureGate.scss';
 

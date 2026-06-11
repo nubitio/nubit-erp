@@ -1,7 +1,7 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { Field } from '@nubit/crud';
+import { Field } from '@nubitio/crud';
 import {
   identityField,
   entityField,
@@ -9,9 +9,9 @@ import {
   numberField,
   textareaField,
   textField,
-} from '@nubit/crud';
+} from '@nubitio/crud';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubit/crud';
+import type { GridCellContext } from '@nubitio/crud';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 

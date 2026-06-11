@@ -18,17 +18,9 @@ import react from '@vitejs/plugin-react';
 const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost';
 
 const frontendAliases = {
-  // Nubit package facades — prefer these over direct @core/* / @app/shell imports.
-  '@nubit/react-admin': fileURLToPath(new URL('./assets/react-admin/public.ts', import.meta.url)),
-  '@nubit/crud': fileURLToPath(new URL('./assets/crud/public.ts', import.meta.url)),
-  '@nubit/core': fileURLToPath(new URL('./assets/core/public.ts', import.meta.url)),
-  '@nubit/ui': fileURLToPath(new URL('./assets/ui/public.ts', import.meta.url)),
-  '@nubit/admin': fileURLToPath(new URL('./assets/admin/public.ts', import.meta.url)),
-  '@nubit/hydra': fileURLToPath(new URL('./assets/hydra/public.ts', import.meta.url)),
-
-  // Canonical frontend layer aliases (ADR-015)
+  // Canonical frontend layer aliases (ADR-015). The @nubitio/* packages are
+  // consumed from npm (no aliases) — develop them in the nubit-react repo.
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
-  '@core': fileURLToPath(new URL('./assets/core', import.meta.url)),
   '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
   '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
 
@@ -194,17 +186,9 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
-          // Keep the in-repo Nubit facades together while CRUD/Hydra are
-          // still being split. This avoids circular execution-order warnings
-          // between facade re-exports and implementation modules.
-          if (
-            id.includes('/assets/core/') ||
-            id.includes('/assets/crud/') ||
-            id.includes('/assets/ui/') ||
-            id.includes('/assets/admin/') ||
-            id.includes('/assets/hydra/') ||
-            id.includes('/assets/react-admin/')
-          ) {
+          // Keep the Nubit packages in one chunk to avoid circular
+          // execution-order warnings between facade re-exports.
+          if (id.includes('node_modules/@nubitio/')) {
             return 'nubit';
           }
         },

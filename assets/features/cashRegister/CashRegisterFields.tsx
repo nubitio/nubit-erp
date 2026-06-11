@@ -1,9 +1,9 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { Field } from '@nubit/crud';
-import { identityField, entityField, textField } from '@nubit/crud';
-import type { GridCellContext } from '@nubit/crud';
+import { Field } from '@nubitio/crud';
+import { identityField, entityField, textField } from '@nubitio/crud';
+import type { GridCellContext } from '@nubitio/crud';
 
 export const CashRegisterFields = () => {
   const fields: Field[] = [];

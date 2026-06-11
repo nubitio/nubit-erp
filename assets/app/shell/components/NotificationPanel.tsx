@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DateTime } from 'luxon';
 import { useNavigate } from 'react-router-dom';
-import { EmptyState, IconButton, Skeleton } from '@nubit/ui';
+import { EmptyState, IconButton, Skeleton } from '@nubitio/ui';
 
 import type {
   Notification,

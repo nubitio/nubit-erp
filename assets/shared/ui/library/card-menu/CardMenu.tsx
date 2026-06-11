@@ -1,4 +1,4 @@
-import { ContextMenu } from '@nubit/ui';
+import { ContextMenu } from '@nubitio/ui';
 
 interface CardMenuItem {
   text: string;

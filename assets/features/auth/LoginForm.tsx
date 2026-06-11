@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button, IconButton, TextField } from '@nubit/ui';
+import { Button, IconButton, TextField } from '@nubitio/ui';
 
 import './LoginForm.scss';
 import { authService } from '@features/auth';

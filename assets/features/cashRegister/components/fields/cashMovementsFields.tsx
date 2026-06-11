@@ -6,10 +6,10 @@ import {
   enumField,
   textareaField,
   type GridCellContext,
-} from '@nubit/crud';
-import { Badge } from '@nubit/ui';
+} from '@nubitio/crud';
+import { Badge } from '@nubitio/ui';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 

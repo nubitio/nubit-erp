@@ -1,5 +1,5 @@
 import toast from '@shared/lib/SharedUtils';
-import type { ResourceToolbarItems } from '@nubit/crud';
+import type { ResourceToolbarItems } from '@nubitio/crud';
 
 type CreateSaleToolbarParams = {
   getSelectedSaleId: () => string | undefined;

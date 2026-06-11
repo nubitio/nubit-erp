@@ -3,11 +3,11 @@ import { httpClient } from '@shared/api/HttpClient';
 import { httpRequest, httpRequestData } from '@shared/api/network';
 import GridData from '@shared/data/GridData';
 import ApiResponse from '@shared/api/ApiResponse';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { ProductStockDto } from '@features/product/types/product.stock.dto';
-import type { DataRecord } from '@nubit/core';
+import type { DataRecord } from '@nubitio/core';
 
 class ProductService {
   getAll(loadOptions: DataRecord): Promise<GridData<ProductDto>> {

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Avatar, useFloatingPanel } from '@nubit/ui';
+import { Avatar, useFloatingPanel } from '@nubitio/ui';
 
 import type { UserPanelProps } from '@app/types';
 import { useAuth } from '@app/contexts/auth';

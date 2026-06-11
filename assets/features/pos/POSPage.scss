@@ -689,8 +689,8 @@
 }
 
 // ─── Empty / error states ────────────────────────────────────────────────────
-// Handled by <EmptyState> from @nubit/ui. The .pos-state class is kept only
-// as a layout wrapper (min-height, centering) that @nubit/ui EmptyState doesn't own.
+// Handled by <EmptyState> from @nubitio/ui. The .pos-state class is kept only
+// as a layout wrapper (min-height, centering) that @nubitio/ui EmptyState doesn't own.
 .pos-state {
   min-height: 240px;
 }
@@ -1147,7 +1147,7 @@
   flex-shrink: 0;
 }
 
-// .pos-empty-cart removed — replaced by <EmptyState> from @nubit/ui
+// .pos-empty-cart removed — replaced by <EmptyState> from @nubitio/ui
 
 // ─── Cart line — rigid 3-column grid ─────────────────────────────────────────
 // Geometry contract:
@@ -1441,8 +1441,8 @@
 
 // .pos-payment__options removed — replaced by .pos-footer-options
 
-// .pos-toggle-row / .pos-toggle removed — replaced by <Toggle> from @nubit/ui
-// .pos-discount-preset / .pos-discount-presets removed — replaced by <Chip> from @nubit/ui
+// .pos-toggle-row / .pos-toggle removed — replaced by <Toggle> from @nubitio/ui
+// .pos-discount-preset / .pos-discount-presets removed — replaced by <Chip> from @nubitio/ui
 
 // Discount row — label on top, chips below
 .pos-discount-row {
@@ -1702,7 +1702,7 @@
 
 // ─── Focus rings ──────────────────────────────────────────────────────────────
 // Dead selectors removed: .pos-icon-btn, .pos-discount-preset, .pos-chip,
-// .pos-note-toggle, .pos-section-toggle__btn — replaced by @nubit/ui components
+// .pos-note-toggle, .pos-section-toggle__btn — replaced by @nubitio/ui components
 // that manage their own focus rings.
 .pos-operator-header__back:focus-visible,
 .pos-product-card__add:focus-visible,

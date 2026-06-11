@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Chip, EmptyState } from '@nubit/ui';
+import { Button, Chip, EmptyState } from '@nubitio/ui';
 import { POSItem } from './POSItem';
 import type { Category, PosItem } from './types';
 

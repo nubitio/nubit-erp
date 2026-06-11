@@ -1,7 +1,7 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { Field } from '@nubit/crud';
+import { Field } from '@nubitio/crud';
 import {
   identityField,
   entityField,
@@ -12,11 +12,11 @@ import {
   textField,
   noneField,
   switchField,
-} from '@nubit/crud';
+} from '@nubitio/crud';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubit/crud';
-import { Badge } from '@nubit/ui';
+import type { GridCellContext } from '@nubitio/crud';
+import { Badge } from '@nubitio/ui';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];

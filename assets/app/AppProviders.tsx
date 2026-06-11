@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 
-import { ThemeProvider, DensityProvider, useAccentColor } from '@nubit/ui';
+import { ThemeProvider, DensityProvider, useAccentColor } from '@nubitio/ui';
 import { AuthProvider } from '@app/contexts/auth';
 import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
 import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
-import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubit/core';
+import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubitio/core';
 // Single source of truth for this efact deployment's API base URL.
-// Everything else in the app should go through getCoreApiBaseUrl() from @nubit/core.
+// Everything else in the app should go through getCoreApiBaseUrl() from @nubitio/core.
 const EFECT_API_BASE_URL = '/api/';
 const EFACT_BUSINESS_LOCALE = 'es-PE';
 const EFACT_BUSINESS_TIMEZONE = 'America/Lima';

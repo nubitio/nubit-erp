@@ -1,7 +1,7 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { createCrudEvents } from '@nubit/crud';
+import { createCrudEvents } from '@nubitio/crud';
 
 export const customerEvents = createCrudEvents('customer');
 export const customerApiUrl = `${API}customers`;

@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { AppDialog, Button } from '@nubit/ui';
+import { AppDialog, Button } from '@nubitio/ui';
 import './SalePrintPreviewPopup.scss';
-import { useScreenSize } from '@nubit/admin';
+import { useScreenSize } from '@nubitio/admin';
 
 interface SalePrintPreviewPopupProps {
   saleId: any;

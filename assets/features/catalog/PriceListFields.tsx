@@ -1,4 +1,4 @@
-import { identityField, textField, type Field } from '@nubit/crud';
+import { identityField, textField, type Field } from '@nubitio/crud';
 
 export const PriceListFields = () => {
   const fields: Field[] = [];

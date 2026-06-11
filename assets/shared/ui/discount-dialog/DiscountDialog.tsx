@@ -1,7 +1,7 @@
-import { AppDialog, Button, FormField, TextField } from '@nubit/ui';
+import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 
 import './DiscountDialog.scss';
 

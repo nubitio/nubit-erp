@@ -91,7 +91,7 @@ const restrictedImportsRule = (severity, patterns, paths = baseRestrictedPaths) 
   },
 ];
 
-// eFact-specific @core/* paths that are NOT candidates for @nubit/* and should
+// eFact-specific @core/* paths that are NOT candidates for @nubitio/* and should
 // eventually move to @app/* or be replaced by i18n keys / injected services.
 const efactCoreDeprecationPaths = [
   {
@@ -109,7 +109,7 @@ const efactCoreDeprecationPaths = [
   },
 ];
 
-// Paths that have been promoted to @nubit/* facades and should no longer be
+// Paths that have been promoted to @nubitio/* facades and should no longer be
 // imported directly from their implementation location.
 const nubitFacadePatterns = [
   {
@@ -119,7 +119,7 @@ const nubitFacadePatterns = [
       '@core/**',
     ],
     message:
-      'Use `@nubit/core` for public core APIs. Inside assets/core, use relative imports instead of the app-level @core alias.',
+      'Use `@nubitio/core` for public core APIs. Inside assets/core, use relative imports instead of the app-level @core alias.',
   },
   {
     group: [
@@ -130,7 +130,7 @@ const nubitFacadePatterns = [
       '**/assets/core/ui/app-dialog/**',
       '**/assets/core/components/ConfirmDialog',
     ],
-    message: 'Use `@nubit/ui` for UI primitives (AppDialog, ConfirmDialog).',
+    message: 'Use `@nubitio/ui` for UI primitives (AppDialog, ConfirmDialog).',
   },
   {
     group: [
@@ -138,7 +138,7 @@ const nubitFacadePatterns = [
       '**/assets/admin/*',
       '**/assets/admin/**',
     ],
-    message: 'Use `@nubit/admin` instead of direct paths into assets/admin/.',
+    message: 'Use `@nubitio/admin` instead of direct paths into assets/admin/.',
   },
   {
     group: [
@@ -146,7 +146,7 @@ const nubitFacadePatterns = [
       '**/assets/react-admin/*',
       '**/assets/react-admin/**',
     ],
-    message: 'Use `@nubit/react-admin` instead of direct paths into assets/react-admin/.',
+    message: 'Use `@nubitio/react-admin` instead of direct paths into assets/react-admin/.',
   },
 ];
 
@@ -351,7 +351,7 @@ module.exports = {
       },
     },
     {
-      // @nubit/admin package internals: must not import @app/* or @features/*.
+      // @nubitio/admin package internals: must not import @app/* or @features/*.
       // Allowed to import @core/* and @shared/* during the internal extraction phase.
       files: ['assets/admin/**/*.{ts,tsx,js,jsx}'],
       rules: {
@@ -359,30 +359,30 @@ module.exports = {
           {
             group: layerImportPatterns('@app', 'app'),
             message:
-              'Layer violation: `@nubit/admin` must not depend on `@app` shell code. Inject app-specific behavior through props or slots.',
+              'Layer violation: `@nubitio/admin` must not depend on `@app` shell code. Inject app-specific behavior through props or slots.',
           },
           {
             group: layerImportPatterns('@features', 'features'),
             message:
-              'Layer violation: `@nubit/admin` must not depend on concrete feature code. Pass behavior through props, slots, or adapters.',
+              'Layer violation: `@nubitio/admin` must not depend on concrete feature code. Pass behavior through props, slots, or adapters.',
           },
         ]),
       },
     },
     {
-      // @nubit/ui package internals: must not import @app/*, @features/*, or @core/crud/*.
+      // @nubitio/ui package internals: must not import @app/*, @features/*, or @core/crud/*.
       files: ['assets/ui/**/*.{ts,tsx,js,jsx}'],
       rules: {
         'no-restricted-imports': restrictedImportsRule('error', [
           {
             group: layerImportPatterns('@app', 'app'),
             message:
-              'Layer violation: `@nubit/ui` primitives must not depend on `@app` shell code.',
+              'Layer violation: `@nubitio/ui` primitives must not depend on `@app` shell code.',
           },
           {
             group: layerImportPatterns('@features', 'features'),
             message:
-              'Layer violation: `@nubit/ui` primitives must not depend on concrete feature code.',
+              'Layer violation: `@nubitio/ui` primitives must not depend on concrete feature code.',
           },
         ]),
       },

@@ -1,4 +1,4 @@
-import { type EventSubscription } from '../../core/event/EventHook';
+import { type EventSubscription } from '@nubitio/core';
 
 type Handler = () => void;
 const handlers = new Set<Handler>();

@@ -2,7 +2,7 @@ import './ReportsPage.scss';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { AppToolbar, StatCard } from '@nubit/ui';
+import { AppToolbar, StatCard } from '@nubitio/ui';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 

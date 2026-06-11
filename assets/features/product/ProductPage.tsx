@@ -7,8 +7,8 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+} from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import React, { useCallback, useRef, useState } from 'react';

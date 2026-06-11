@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { EmptyState, StatCard } from '@nubit/ui';
+import { EmptyState, StatCard } from '@nubitio/ui';
 import { CashRegisterStatus, LowStockProduct } from '../types';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';
 

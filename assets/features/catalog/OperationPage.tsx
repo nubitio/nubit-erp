@@ -6,8 +6,8 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
-} from '@nubit/crud';
-import { Badge } from '@nubit/ui';
+} from '@nubitio/crud';
+import { Badge } from '@nubitio/ui';
 import React from 'react';
 import { operationEndpoints } from './api/catalogEndpoints';
 

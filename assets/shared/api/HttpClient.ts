@@ -1,13 +1,11 @@
 import ApiResponse from './ApiResponse';
 import { HttpCode } from './HttpCode';
 import toast from '../lib/SharedUtils';
-import { dispatch } from '../../core/event/EventHook';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { dispatch, getCoreApiBaseUrl, MercureManager as mercureManager } from '@nubitio/core';
+import type { DataRecord } from '@nubitio/core';
 
 const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client only
 import { handleSessionExpired } from '../lib/sessionExpiredEvent';
-import mercureManager from '../../core/mercure/MercureManager';
-import type { DataRecord } from '../../core/data/DataRecord';
 
 /**
  * Serializes request params to bracket-notation query strings.

@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { getCoreTimezone, getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreTimezone, getCoreApiBaseUrl } from '@nubitio/core';
 
 import type { PaymentMethodOption, PosItem, SunatTaxType } from './types';
 

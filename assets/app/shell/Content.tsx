@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { appRoutes } from './app-routes';
 import { EfactAdminShell } from './EfactAdminShell';
 import { userInformation } from '@app/userInformation';
-import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubit/hydra';
+import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubitio/hydra';
 import { RouteErrorBoundary } from '@shared/components/RouteErrorBoundary';
 
 const RouteLoading = () => (

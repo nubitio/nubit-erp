@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 import cashRegisterService from './services/cashRegisterService';
-import { ConfirmDialog } from '@nubit/ui';
+import { ConfirmDialog } from '@nubitio/ui';
 import {
   CashClosureGrid,
   type CashClosureGridHandle,

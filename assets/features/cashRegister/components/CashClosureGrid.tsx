@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Button } from '@nubit/ui';
+import { Button } from '@nubitio/ui';
 import NumberUtils from '@shared/lib/NumberUtils';
 
 export type CashClosureRow = {

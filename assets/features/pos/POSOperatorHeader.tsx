@@ -5,7 +5,7 @@ import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
-import { AppDialog, AppDropdown, ConfirmDialog } from '@nubit/ui';
+import { AppDialog, AppDropdown, ConfirmDialog } from '@nubitio/ui';
 
 interface POSOperatorHeaderProps {
   branchName: string;

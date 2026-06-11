@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useTheme } from '@nubit/ui';
+import { useTheme } from '@nubitio/ui';
 
 import '@assets/styles.scss';
 import '@theme/theme';

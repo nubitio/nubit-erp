@@ -1,5 +1,5 @@
-import { identityField, currencyField, textField, type Field, type GridCellContext } from '@nubit/crud';
-import { Badge, Button, IconButton } from '@nubit/ui';
+import { identityField, currencyField, textField, type Field, type GridCellContext } from '@nubitio/crud';
+import { Badge, Button, IconButton } from '@nubitio/ui';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {

@@ -1,8 +1,8 @@
 import { useMemo, useRef } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubit/crud';
+import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import type { InvoiceRow } from './lib/invoiceActions';
 import {

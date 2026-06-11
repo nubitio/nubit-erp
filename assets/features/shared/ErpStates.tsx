@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { EmptyState } from '@nubit/ui';
-import { Button } from '@nubit/ui';
+import { EmptyState } from '@nubitio/ui';
+import { Button } from '@nubitio/ui';
 
 interface RetryProps {
   onRetry?: () => void;

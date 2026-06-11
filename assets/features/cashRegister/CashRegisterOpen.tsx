@@ -1,4 +1,4 @@
-import { Button, Card, FormField, TextField } from '@nubit/ui';
+import { Button, Card, FormField, TextField } from '@nubitio/ui';
 import { useRef, useState } from 'react';
 import cashRegisterService from './services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';

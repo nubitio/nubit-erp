@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
-import { SmartCrudPage, defineResource, type FormHandle } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 
 const API = getCoreApiBaseUrl();

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import {
@@ -8,10 +8,10 @@ import {
   type DataRecord,
   type FormHandle,
   type GridHandle,
-} from '@nubit/crud';
+} from '@nubitio/crud';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
 import toast from '@shared/lib/SharedUtils';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import type { CreditNoteRow } from './lib/creditNoteActions';
 import {
   runOpenCreditNoteReceiptAction,

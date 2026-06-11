@@ -1,7 +1,7 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
-import { Badge } from '@nubit/ui';
-import type { DataRecord } from '@nubit/core';
+import { Badge } from '@nubitio/ui';
+import type { DataRecord } from '@nubitio/core';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 type ToastPosition = 'top left' | 'top right' | 'bottom left' | 'bottom right';

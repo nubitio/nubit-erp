@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Badge, Chip, EmptyState, IconButton, TextField } from '@nubit/ui';
+import { Badge, Chip, EmptyState, IconButton, TextField } from '@nubitio/ui';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import {
   formatPosQuantity,

@@ -1,13 +1,13 @@
 import { type RefObject } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { FormHandle } from '@nubit/crud';
-import { Field } from '@nubit/crud';
-import { entityField, textField, textareaField } from '@nubit/crud';
+import type { FormHandle } from '@nubitio/crud';
+import { Field } from '@nubitio/crud';
+import { entityField, textField, textareaField } from '@nubitio/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubit/crud';
+import type { GridCellContext } from '@nubitio/crud';
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];

@@ -1,4 +1,4 @@
-import { EmptyState, StatCard } from '@nubit/ui';
+import { EmptyState, StatCard } from '@nubitio/ui';
 import { TopProduct, TopCustomer, TopPurchasedProduct, PurchasesSummaryStats } from '../types';
 import { DashboardMetrics } from '../hooks/useDashboardMetrics';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';

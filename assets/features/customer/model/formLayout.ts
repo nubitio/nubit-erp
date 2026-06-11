@@ -1,4 +1,4 @@
-import type { FormLayout } from '@nubit/crud';
+import type { FormLayout } from '@nubitio/crud';
 
 export const customerFormLayout: FormLayout = {
   type: 'sections',

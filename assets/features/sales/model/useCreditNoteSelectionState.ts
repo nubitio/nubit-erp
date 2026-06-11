@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DataRecord } from '@nubit/crud';
+import type { DataRecord } from '@nubitio/crud';
 
 export const useCreditNoteSelectionState = () => {
   const [editDisabled, setEditDisabled] = useState(true);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar } from '@nubit/ui';
+import { Avatar } from '@nubitio/ui';
 import { useAuth } from '@app/contexts/auth';
 import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@app/types';

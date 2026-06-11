@@ -1,12 +1,12 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { permissionEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from './api/roleEndpoints';
 import { RoleFields } from './RoleFields';
 import toast from '@shared/lib/SharedUtils';
 import { useRoleObservers } from './model/useRoleObservers';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import {
   PermissionTreeView,
   type PermissionTreeHandle,

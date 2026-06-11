@@ -55,6 +55,11 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
 
+    // The app resolves its language from the browser locale (Spanish-first
+    // deployment). Pin it so selectors on Spanish labels don't depend on the
+    // machine's locale (headless Chromium defaults to en-US).
+    locale: 'es-PE',
+
     // ── Trace (step-by-step screenshots + network) ──────────────────────
     // 'on-first-retry' → only captured when a test fails and is retried.
     // Change to 'on' while debugging to always get a trace.

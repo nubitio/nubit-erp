@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, EmptyState } from '@nubit/ui';
+import { Button, EmptyState } from '@nubitio/ui';
 
 type ErrorBoundaryProps = {
   children: ReactNode;

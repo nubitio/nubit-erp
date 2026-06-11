@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useScreenSize } from '@nubit/admin';
-import { Button } from '@nubit/ui';
+import { useScreenSize } from '@nubitio/admin';
+import { Button } from '@nubitio/ui';
 
 import { useAuth } from '@app/contexts/auth';
 import { SESSION_EXPIRED_EVENT } from '@shared/lib/sessionExpiredEvent';

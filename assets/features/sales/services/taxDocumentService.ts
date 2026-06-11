@@ -1,6 +1,6 @@
 import { httpClient } from '@shared/api/HttpClient';
 import AppResponse from '@shared/api/AppResponse';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 

@@ -1,5 +1,5 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 

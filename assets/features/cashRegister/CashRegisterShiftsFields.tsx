@@ -1,13 +1,13 @@
-import { Field } from '@nubit/crud';
+import { Field } from '@nubitio/crud';
 import {
   identityField,
   currencyField,
   datetimeField,
   enumField,
   textareaField,
-} from '@nubit/crud';
-import type { GridCellContext } from '@nubit/crud';
-import { Badge } from '@nubit/ui';
+} from '@nubitio/crud';
+import type { GridCellContext } from '@nubitio/crud';
+import { Badge } from '@nubitio/ui';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashRegisterShiftsFields = () => {

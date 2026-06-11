@@ -1,4 +1,4 @@
-export { ThemeContext, ThemeProvider, useTheme } from '@nubit/ui';
-export type { Theme, ThemeMode, ThemeContextValue, ThemeProviderProps } from '@nubit/ui';
+export { ThemeContext, ThemeProvider, useTheme } from '@nubitio/ui';
+export type { Theme, ThemeMode, ThemeContextValue, ThemeProviderProps } from '@nubitio/ui';
 
-export { useTheme as useThemeContext } from '@nubit/ui';
+export { useTheme as useThemeContext } from '@nubitio/ui';

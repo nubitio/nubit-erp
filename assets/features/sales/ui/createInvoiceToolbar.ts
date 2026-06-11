@@ -1,4 +1,4 @@
-import type { ResourceToolbarItems } from '@nubit/crud';
+import type { ResourceToolbarItems } from '@nubitio/crud';
 
 type CreateInvoiceToolbarParams = {
   onSendSunat: () => void;

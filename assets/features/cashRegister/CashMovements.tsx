@@ -1,13 +1,13 @@
 import './CashMovements.scss';
-import { DataGridView, DialogView, FormView } from '@nubit/crud';
+import { DataGridView, DialogView, FormView } from '@nubitio/crud';
 import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEffect, useState } from 'react';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import cashMovementsFields from './components/fields/cashMovementsFields';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 type CashMovementsParams = {

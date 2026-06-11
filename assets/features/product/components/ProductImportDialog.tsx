@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useScreenSize } from '@nubit/admin';
-import { MercureManager, useMercureHub } from '@nubit/core';
-import { AppDialog, Button } from '@nubit/ui';
+import { useScreenSize } from '@nubitio/admin';
+import { MercureManager, useMercureHub } from '@nubitio/core';
+import { AppDialog, Button } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 
 import './ProductImportDialog.scss';

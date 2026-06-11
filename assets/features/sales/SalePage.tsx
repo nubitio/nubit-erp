@@ -11,8 +11,8 @@ import {
   type FormHandle,
   type GridHandle,
   type ResourceConfig,
-} from '@nubit/crud';
-import { useCoreTranslation } from '@nubit/core';
+} from '@nubitio/crud';
+import { useCoreTranslation } from '@nubitio/core';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, SaleFieldStateRef, setTotal } from './SaleFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
@@ -29,10 +29,10 @@ import { createSaleToolbar, useSalePrintPreview } from './ui';
 import { CustomerPage, CustomerFields, customerFormLayout } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
-import type { DataRecord } from '@nubit/crud';
+import type { DataRecord } from '@nubitio/crud';
 
 const SALE_COLUMN_PRESETS = [
   {

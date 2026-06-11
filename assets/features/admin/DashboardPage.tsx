@@ -1,10 +1,10 @@
 import './DashboardPage.scss';
-import { AppToolbar } from '@nubit/ui';
+import { AppToolbar } from '@nubitio/ui';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
-import { useScreenSize } from '@nubit/admin';
+import { useScreenSize } from '@nubitio/admin';
 import { DashboardStatusBar } from './components/DashboardStatusBar';
 import { DashboardHero } from './components/DashboardHero';
 import { DashboardOperations } from './components/DashboardOperations';

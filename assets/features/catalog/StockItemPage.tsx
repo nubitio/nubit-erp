@@ -6,8 +6,8 @@ import {
   defineResource,
   type DataRecord,
   type GridCellContext,
-} from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+} from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 

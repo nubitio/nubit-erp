@@ -6,8 +6,8 @@ import {
   useColumnPreset,
   type GridHandle,
   type ResourceConfig,
-} from '@nubit/crud';
-import { getCoreApiBaseUrl, useCoreTranslation } from '@nubit/core';
+} from '@nubitio/crud';
+import { getCoreApiBaseUrl, useCoreTranslation } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { createCashRegisterShiftsToolbar } from '@features/cashRegister';

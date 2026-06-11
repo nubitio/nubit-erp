@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { DataRecord } from '@nubit/crud';
+import type { DataRecord } from '@nubitio/crud';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import { priceListEndpoints } from '../api/priceListEndpoints';

@@ -1,4 +1,4 @@
-import { defineFields, defineResource, passwordField, type DataRecord } from '@nubit/crud';
+import { defineFields, defineResource, passwordField, type DataRecord } from '@nubitio/crud';
 import { userEndpoints } from './api/adminEndpoints';
 
 interface UserRecord extends DataRecord {

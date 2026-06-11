@@ -5,7 +5,7 @@ import {
   defineResource,
   type DataRecord,
   type FormHandle,
-} from '@nubit/crud';
+} from '@nubitio/crud';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';

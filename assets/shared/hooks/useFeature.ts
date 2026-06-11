@@ -1,5 +1,5 @@
 import { useEntitlements } from './useEntitlements';
-import type { DataRecord } from '@nubit/core';
+import type { DataRecord } from '@nubitio/core';
 
 /**
  * Returns true when the active tenant's plan (or an active override) has the

@@ -1,4 +1,4 @@
-import { EmptyState } from '@nubit/ui';
+import { EmptyState } from '@nubitio/ui';
 import { SummaryStats, PaymentMethodToday, RecentSaleToday } from '../types';
 import { DashboardMetrics } from '../hooks/useDashboardMetrics';
 import { currencyFormatter, decimalFormatter } from '@shared/ui/dashboard/formatters';

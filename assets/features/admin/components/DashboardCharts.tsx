@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { StatCard } from '@nubit/ui';
+import { StatCard } from '@nubitio/ui';
 import { SalesByMonth, SalesByDay } from '../types';
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 

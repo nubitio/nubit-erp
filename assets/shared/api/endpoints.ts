@@ -1,4 +1,4 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 // Uses the apiBaseUrl configured in CoreConfigProvider (single source of truth).
 const BASE = getCoreApiBaseUrl();

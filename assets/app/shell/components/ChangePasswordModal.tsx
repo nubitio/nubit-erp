@@ -2,8 +2,8 @@ import React, { useCallback, useState } from 'react';
 
 import { authService } from '@features/auth';
 import toast from '@shared/lib/SharedUtils';
-import { useScreenSize } from '@nubit/admin';
-import { Button, IconButton, TextField } from '@nubit/ui';
+import { useScreenSize } from '@nubitio/admin';
+import { Button, IconButton, TextField } from '@nubitio/ui';
 
 import { AppDialog } from './AppDialog';
 

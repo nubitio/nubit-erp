@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { AppDialog, Button, TextField } from '@nubit/ui';
-import { useScreenSize } from '@nubit/admin';
+import { AppDialog, Button, TextField } from '@nubitio/ui';
+import { useScreenSize } from '@nubitio/admin';
 import './VoidDialog.scss';
 
 export type VoidDialogResult = {

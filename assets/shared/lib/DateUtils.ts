@@ -1,3 +1,3 @@
-// Re-exports from @nubit/core — use these instead of duplicating DateUtils logic.
+// Re-exports from @nubitio/core — use these instead of duplicating DateUtils logic.
 // DateUtils methods now respect the locale/timezone set via CoreConfigProvider.
-export { DateUtils, getCoreLocale, getCoreTimezone } from '@nubit/core';
+export { DateUtils, getCoreLocale, getCoreTimezone } from '@nubitio/core';

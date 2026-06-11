@@ -1,6 +1,6 @@
 import { ConsultInfoDto } from '@shared/api/consult.info.dto';
 import { httpClient } from '@shared/api/HttpClient';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 

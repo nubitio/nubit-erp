@@ -1,9 +1,9 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubit/crud';
+import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import { usePriceListObservers } from './model/usePriceListObservers';
 import { priceEvents } from '@app/domainEvents';
 import {

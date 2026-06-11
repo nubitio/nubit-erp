@@ -1,2 +1,2 @@
-export { Card } from '@nubit/ui';
-export type { CardProps } from '@nubit/ui';
+export { Card } from '@nubitio/ui';
+export type { CardProps } from '@nubitio/ui';

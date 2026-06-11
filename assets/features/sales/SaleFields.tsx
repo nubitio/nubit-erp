@@ -1,9 +1,9 @@
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import type { MutableRefObject } from 'react';
-import type { FormHandle } from '@nubit/crud';
-import { Field } from '@nubit/crud';
+import type { FormHandle } from '@nubitio/crud';
+import { Field } from '@nubitio/crud';
 import {
   identityField,
   entityField,
@@ -15,7 +15,7 @@ import {
   selectField,
   textareaField,
   noneField,
-} from '@nubit/crud';
+} from '@nubitio/crud';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { httpClient } from '@shared/api/HttpClient';
@@ -25,8 +25,8 @@ import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
 import { Setting, settings } from '@app/Settings';
-import type { GridCellContext } from '@nubit/crud';
-import type { DataRecord } from '@nubit/crud';
+import type { GridCellContext } from '@nubitio/crud';
+import type { DataRecord } from '@nubitio/crud';
 
 /**
  * Mutable state shared between SaleFields (header) and SaleDetailFields (lines).

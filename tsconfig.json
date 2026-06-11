@@ -14,17 +14,8 @@
     "noImplicitAny": true,
     "baseUrl": ".",
     "paths": {
-      // Nubit package facades — prefer these over direct @core/* / @app/shell imports.
-      "@nubit/react-admin": ["assets/react-admin/public.ts"],
-      "@nubit/crud": ["assets/crud/public.ts"],
-      "@nubit/core": ["assets/core/public.ts"],
-      "@nubit/ui": ["assets/ui/public.ts"],
-      "@nubit/admin": ["assets/admin/public.ts"],
-      "@nubit/hydra": ["assets/hydra/public.ts"],
-
       // Canonical frontend layer aliases (ADR-015)
       "@app/*": ["assets/app/*"],
-      "@core/*": ["assets/core/*"],
       "@shared/*": ["assets/shared/*"],
       "@features/*": ["assets/features/*"],
 

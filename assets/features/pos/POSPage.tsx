@@ -15,7 +15,7 @@ import { usePosCatalogData } from './usePosCatalogData';
 import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
-import { ConfirmDialog } from '@nubit/ui';
+import { ConfirmDialog } from '@nubitio/ui';
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);

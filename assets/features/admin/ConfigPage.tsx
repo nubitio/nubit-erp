@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AppDropdown, Button, TextField, Toggle } from '@nubit/ui';
+import { AppDropdown, Button, TextField, Toggle } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import {
   ConfigKey,

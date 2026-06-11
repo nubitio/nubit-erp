@@ -1,7 +1,7 @@
 import React, { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
-import { AppToolbar, IconButton } from '@nubit/ui';
+import { AppToolbar, IconButton } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';

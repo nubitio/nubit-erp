@@ -3,15 +3,15 @@
  * AdminShell to eFact services (menuService, auth, notifications, assistant,
  * theme switcher, branch picker).
  *
- * This file is intentionally the single place that couples @nubit/admin to
- * eFact domain concerns. Keep business logic out of @nubit/admin and in here.
+ * This file is intentionally the single place that couples @nubitio/admin to
+ * eFact domain concerns. Keep business logic out of @nubitio/admin and in here.
  */
 import React, { useEffect, useState } from 'react';
-import { AdminShell, type AdminMenuItem } from '@nubit/admin';
+import { AdminShell, type AdminMenuItem } from '@nubitio/admin';
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
-import { Drawer, SettingsPanel } from '@nubit/ui';
+import { Drawer, SettingsPanel } from '@nubitio/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';

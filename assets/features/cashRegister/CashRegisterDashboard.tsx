@@ -1,12 +1,12 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
-import { DataGridView, type GridHandle } from '@nubit/crud';
-import { getCoreApiBaseUrl } from '@nubit/core';
+import { DataGridView, type GridHandle } from '@nubitio/crud';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import { useEvents } from '@nubit/core';
+import { useEvents } from '@nubitio/core';
 import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 export const CashRegisterDashboard = () => {

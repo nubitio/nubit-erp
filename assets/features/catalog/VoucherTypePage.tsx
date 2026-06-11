@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineResource, defineFieldContract } from '@nubit/crud';
+import { SmartCrudPage, defineResource, defineFieldContract } from '@nubitio/crud';
 import { voucherTypeEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource(voucherTypeEndpoints.list(), {
