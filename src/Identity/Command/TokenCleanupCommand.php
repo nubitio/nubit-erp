@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Identity\Command;
 
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
-use App\Identity\Auth\RefreshTokenService;
+use Nubit\AdminBundle\Auth\RefreshTokenStoreInterface;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +21,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
 class TokenCleanupCommand extends PerTenantCommand
 {
     public function __construct(
-        private readonly RefreshTokenService $refreshTokenService,
+        private readonly RefreshTokenStoreInterface $refreshTokenStore,
     ) {
         parent::__construct();
     }
@@ -32,7 +32,7 @@ class TokenCleanupCommand extends PerTenantCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $count = $this->refreshTokenService->cleanExpiredTokens();
+            $count = $this->refreshTokenStore->purgeExpired();
 
             $io->success(sprintf('Successfully cleaned up %d expired/revoked refresh tokens', $count));
 

@@ -2343,8 +2343,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type MercureConfig = array{
  *     hubs?: array<string, array{ // Default: []
- *         url?: scalar|Param|null, // URL of the hub's publish endpoint
- *         public_url?: scalar|Param|null, // URL of the hub's public endpoint // Default: null
+ *         url?: scalar|Param|null, // URL of the hub's publish endpoint // Default: null
+ *         public_url?: scalar|Param|null, // URL of the hub's public endpoint
  *         jwt?: string|array{ // JSON Web Token configuration.
  *             value?: scalar|Param|null, // JSON Web Token to use to publish to this hub.
  *             provider?: scalar|Param|null, // The ID of a service to call to provide the JSON Web Token.
@@ -2361,6 +2361,19 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     default_hub?: scalar|Param|null,
  *     default_cookie_lifetime?: int|Param, // Default lifetime of the cookie containing the JWT, in seconds. Defaults to the value of "framework.session.cookie_lifetime". // Default: null
  *     enable_profiler?: bool|Param, // Deprecated: The child node "enable_profiler" at path "mercure.enable_profiler" is deprecated. // Enable Symfony Web Profiler integration.
+ * }
+ * @psalm-type NubitAdminConfig = array{
+ *     auth?: array{
+ *         secret?: scalar|Param|null, // Secret used to sign JWTs. Defaults to %env(APP_SECRET)%. // Default: "%env(APP_SECRET)%"
+ *         access_token_ttl?: int|Param, // Default: 3600
+ *         refresh_token_ttl?: int|Param, // Default: 1209600
+ *         cookie_secure?: bool|Param, // Default: true
+ *     },
+ *     api?: array{
+ *         translated_docs?: bool|Param, // Decorate the Hydra docs normalizer to translate labels and forward x-crud hints. // Default: true
+ *         docs_locale?: scalar|Param|null, // Locale used when translating API docs. Reads APP_API_LOCALE, falling back to "en". // Default: "%env(default:nubit_admin.api.default_docs_locale:APP_API_LOCALE)%"
+ *     },
+ *     single_tenant_defaults?: bool|Param, // Bind noop single-tenant implementations of the Nubit\Platform contracts. // Default: true
  * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
@@ -2379,6 +2392,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     mcp?: McpConfig,
  *     ai?: AiConfig,
  *     mercure?: MercureConfig,
+ *     nubit_admin?: NubitAdminConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -2399,6 +2413,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
+ *         nubit_admin?: NubitAdminConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -2417,6 +2432,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
+ *         nubit_admin?: NubitAdminConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -2436,6 +2452,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
+ *         nubit_admin?: NubitAdminConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

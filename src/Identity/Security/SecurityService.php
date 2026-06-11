@@ -6,9 +6,9 @@ namespace App\Identity\Security;
 
 use Override;
 use App\Identity\Security\Security;
-use App\Identity\Auth\JWTAuthenticationToken;
-use App\Identity\Auth\JWTManager;
-use App\Identity\Auth\JWTManagerInterface;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManager;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;

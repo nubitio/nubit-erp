@@ -1290,8 +1290,8 @@ final class SaleProcessorTest extends TestCase
     private function buildBranchContextStubWithRealToken(string $branchId): BranchContextService
     {
         // 1. Build a real JWTManager with a test secret (bypassing constructor to avoid empty-secret check)
-        $jwtManagerRc = new ReflectionClass(\App\Identity\Auth\JWTManager::class);
-        /** @var \App\Identity\Auth\JWTManager $jwtManager */
+        $jwtManagerRc = new ReflectionClass(\Nubit\AdminBundle\Auth\JWTManager::class);
+        /** @var \Nubit\AdminBundle\Auth\JWTManager $jwtManager */
         $jwtManager = $jwtManagerRc->newInstanceWithoutConstructor();
         $jwtManagerRc->getProperty('secret')->setValue($jwtManager, 'test-secret-for-unit-tests-32bytes');
         $jwtManagerRc->getProperty('logger')->setValue($jwtManager, $this->logger);
@@ -1300,8 +1300,8 @@ final class SaleProcessorTest extends TestCase
         $encodedToken = $jwtManager->encode(['branchId' => $branchId, 'sub' => 'test-user']);
 
         // 3. Build JWTAuthenticationToken with the encoded token as credentials
-        $jwtTokenRc = new ReflectionClass(\App\Identity\Auth\JWTAuthenticationToken::class);
-        /** @var \App\Identity\Auth\JWTAuthenticationToken $jwtToken */
+        $jwtTokenRc = new ReflectionClass(\Nubit\AdminBundle\Auth\JWTAuthenticationToken::class);
+        /** @var \Nubit\AdminBundle\Auth\JWTAuthenticationToken $jwtToken */
         $jwtToken = $jwtTokenRc->newInstanceWithoutConstructor();
         // Set the 'token' property on JWTAuthenticationToken itself
         $jwtTokenRc->getProperty('token')->setValue($jwtToken, $encodedToken);

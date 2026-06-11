@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Security;
 
-use App\Identity\EventListener\AppSecretBootListener;
-use App\Identity\Auth\JWTManager;
+use Nubit\AdminBundle\Auth\JWTManager;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -17,7 +16,6 @@ use Symfony\Component\Yaml\Yaml;
  * Covers:
  *  - AC-1/AC-2: /api/settings and /api/sales/report require ROLE_USER (not PUBLIC_ACCESS)
  *  - AC-5:      JWTManager rejects empty APP_SECRET at construction time
- *  - AC-5:      AppSecretBootListener exists and forces eager JWTManager instantiation
  */
 final class AccessControlTest extends TestCase
 {
@@ -88,27 +86,7 @@ final class AccessControlTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // AC-5 — AppSecretBootListener exists (eager boot check)
-    // -------------------------------------------------------------------------
 
-    public function testAppSecretBootListenerExists(): void
-    {
-        self::assertTrue(
-            class_exists(AppSecretBootListener::class),
-            'AppSecretBootListener must exist at App\Identity\EventListener\AppSecretBootListener.',
-        );
-    }
-
-    public function testAppSecretBootListenerThrowsWithEmptySecret(): void
-    {
-        $this->expectException(LogicException::class);
-
-        // Constructing the listener with a JWTManager that has empty secret
-        // must propagate the LogicException — this simulates what happens at
-        // kernel boot when APP_SECRET is empty.
-        $listener = new AppSecretBootListener(new JWTManager('', new NullLogger()));
-        unset($listener);
-    }
 
     // -------------------------------------------------------------------------
     // Helpers

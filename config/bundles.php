@@ -17,4 +17,5 @@ return [
     Symfony\AI\McpBundle\McpBundle::class => ['all' => true],
     Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
+    Nubit\AdminBundle\NubitAdminBundle::class => ['all' => true],
 ];

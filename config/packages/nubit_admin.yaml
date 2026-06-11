@@ -1,0 +1,11 @@
+nubit_admin:
+    auth:
+        secret: '%env(APP_SECRET)%'
+        access_token_ttl: '%env(int:AUTH_TOKEN_TTL)%'
+        refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
+        cookie_secure: '%env(bool:APP_COOKIE_SECURE)%'
+    api:
+        docs_locale: '%env(APP_API_LOCALE)%'
+    # efact is multi-tenant: the ControlPlane services bound in services.yaml
+    # implement the Nubit\Platform contracts, so skip the noop defaults.
+    single_tenant_defaults: false

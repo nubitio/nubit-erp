@@ -4,33 +4,35 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Identity\Auth\ClientDetectorService;
-use App\Identity\Auth\CookieFactoryService;
-use App\Identity\Auth\JWTAuthenticator;
-use App\Identity\Auth\MercureSubscriberTokenService;
-use App\Identity\Auth\TokenGeneratorService;
-use App\Organization\Entity\Branch;
+use App\Identity\Auth\SelectedBranchContext;
 use App\Identity\Entity\User;
+use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
+use Nubit\AdminBundle\Auth\JWTAuthenticator;
+use Nubit\AdminBundle\Auth\ResponseModeResolver;
+use Nubit\AdminBundle\Auth\TokenGenerator;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Issues a fresh token pair bound to the selected branch. Uses the bundle's
+ * TokenGenerator: the branch lands in the JWT via EfactTokenClaimsProvider,
+ * and the cookie response (incl. the Mercure cookie decorator) comes from the
+ * bundle authenticator.
+ */
 class AuthSelectBranchController extends AbstractController
 {
     public function __construct(
         private readonly SecurityComponent $security,
         private readonly BranchRepository $branchRepository,
-        private readonly TokenGeneratorService $tokenGenerator,
-        private readonly ClientDetectorService $clientDetector,
-        private readonly CookieFactoryService $cookieFactory,
-        private readonly MercureSubscriberTokenService $mercureTokenService,
-        private readonly TenantContext $tenantContext,
+        private readonly TokenGenerator $tokenGenerator,
+        private readonly SelectedBranchContext $selectedBranch,
+        private readonly ResponseModeResolver $responseModeResolver,
+        private readonly JWTAuthenticator $authenticator,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -56,7 +58,8 @@ class AuthSelectBranchController extends AbstractController
         }
 
         try {
-            $tokenPair = $this->tokenGenerator->generateTokenPair($user, $branch);
+            $this->selectedBranch->set($branch);
+            $tokenPair = $this->tokenGenerator->generateTokenPair($user);
         } catch (\Throwable $e) {
             $this->logger->error('Failed to generate token pair for branch selection', [
                 'user_id' => $user->getId(),
@@ -65,41 +68,22 @@ class AuthSelectBranchController extends AbstractController
             ]);
 
             return new JsonResponse(['message' => 'Error al generar tokens'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } finally {
+            $this->selectedBranch->set(null);
         }
 
-        $isMobileClient = $this->clientDetector->isMobileClient($request);
-        $responseData = $tokenPair->toArray($isMobileClient);
-        $response = new JsonResponse($responseData);
+        if ($this->responseModeResolver->wantsJsonTokens($request)) {
+            $payload = $tokenPair->toArray(includeTokens: true);
+            $payload['branch'] = ['id' => $branch->getId(), 'name' => $branch->getName()];
 
-        if (!$isMobileClient) {
-            $response->headers->setCookie(
-                $this->cookieFactory->createSecureCookie(
-                    JWTAuthenticator::AUTH_COOKIE,
-                    $tokenPair->accessToken,
-                    $tokenPair->accessTokenExpiresAt
-                )
-            );
-            $response->headers->setCookie(
-                $this->cookieFactory->createSecureCookie(
-                    JWTAuthenticator::REFRESH_COOKIE,
-                    $tokenPair->refreshToken,
-                    $tokenPair->refreshTokenExpiresAt
-                )
-            );
-
-            $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
-            $tenantOrigin = $tenantDomain !== '' ? 'https://' . $tenantDomain : '';
-            $response->headers->setCookie(
-                $this->cookieFactory->createSecureCookie(
-                    JWTAuthenticator::MERCURE_COOKIE,
-                    $this->mercureTokenService->generateSubscriberToken($tenantOrigin),
-                    $tokenPair->accessTokenExpiresAt,
-                    '/.well-known/mercure',
-                    null,
-                    Cookie::SAMESITE_LAX
-                )
-            );
+            return new JsonResponse($payload);
         }
+
+        $response = $this->authenticator->buildCookieResponse($request, $user, $tokenPair);
+
+        $payload = $tokenPair->toArray(includeTokens: false);
+        $payload['branch'] = ['id' => $branch->getId(), 'name' => $branch->getName()];
+        $response->setData($payload);
 
         return $response;
     }

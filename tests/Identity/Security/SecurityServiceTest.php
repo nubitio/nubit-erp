@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Security;
 
-use App\Identity\Auth\JWTAuthenticationToken;
-use App\Identity\Auth\JWTManagerInterface;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;

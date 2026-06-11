@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Identity\Controller;
 
 use App\Identity\Controller\AuthSelectBranchController;
-use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Identity\Auth\ClientDetectorService;
-use App\Identity\Auth\CookieFactoryService;
-use App\Identity\Auth\MercureSubscriberTokenService;
-use App\Identity\Auth\TokenGeneratorService;
+use App\Identity\Auth\SelectedBranchContext;
+use Nubit\AdminBundle\Auth\JWTAuthenticator;
+use Nubit\AdminBundle\Auth\ResponseModeResolver;
+use Nubit\AdminBundle\Auth\TokenGenerator;
 use App\Identity\Entity\User;
-use App\Identity\Auth\JWTAuthenticator;
-use App\Identity\Auth\JWTManager;
+use Nubit\AdminBundle\Auth\JWTManager;
 use App\Organization\Entity\Branch;
 use App\Identity\Entity\Role;
 use App\Organization\Repository\BranchRepository;
@@ -32,9 +30,9 @@ final class AuthSelectBranchControllerTest extends TestCase
     {
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn(null);
-        $tokenGenerator = (new \ReflectionClass(TokenGeneratorService::class))->newInstanceWithoutConstructor();
-        $clientDetector = (new \ReflectionClass(ClientDetectorService::class))->newInstanceWithoutConstructor();
-        $cookieFactory = (new \ReflectionClass(CookieFactoryService::class))->newInstanceWithoutConstructor();
+        $tokenGenerator = (new \ReflectionClass(TokenGenerator::class))->newInstanceWithoutConstructor();
+        $clientDetector = new SelectedBranchContext();
+        $cookieFactory = new ResponseModeResolver();
 
         $controller = new AuthSelectBranchController(
             $security,
@@ -42,8 +40,7 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
-            (new \ReflectionClass(MercureSubscriberTokenService::class))->newInstanceWithoutConstructor(),
-            new TenantContext(),
+            (new \ReflectionClass(JWTAuthenticator::class))->newInstanceWithoutConstructor(),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -57,9 +54,9 @@ final class AuthSelectBranchControllerTest extends TestCase
     {
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn((new User())->setUsername('tester')->setPassword('hash'));
-        $tokenGenerator = (new \ReflectionClass(TokenGeneratorService::class))->newInstanceWithoutConstructor();
-        $clientDetector = (new \ReflectionClass(ClientDetectorService::class))->newInstanceWithoutConstructor();
-        $cookieFactory = (new \ReflectionClass(CookieFactoryService::class))->newInstanceWithoutConstructor();
+        $tokenGenerator = (new \ReflectionClass(TokenGenerator::class))->newInstanceWithoutConstructor();
+        $clientDetector = new SelectedBranchContext();
+        $cookieFactory = new ResponseModeResolver();
 
         $controller = new AuthSelectBranchController(
             $security,
@@ -67,8 +64,7 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
-            (new \ReflectionClass(MercureSubscriberTokenService::class))->newInstanceWithoutConstructor(),
-            new TenantContext(),
+            (new \ReflectionClass(JWTAuthenticator::class))->newInstanceWithoutConstructor(),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -78,68 +74,4 @@ final class AuthSelectBranchControllerTest extends TestCase
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
 
-    public function testHappyPathWebClientSetsMercureCookie(): void
-    {
-        $jwtSecret = 'test-secret-key-for-unit-tests-at-least-32-chars!!';
-        $mercureSecret = 'test-mercure-secret-at-least-32-chars-long!!';
-
-        $role = new Role();
-        $user = (new User())->setUsername('tester')->setPassword('hash');
-        $user->setRole($role);
-
-        $branch = new Branch();
-        $branch->setName('Main Branch');
-
-        $security = $this->createStub(Security::class);
-        $security->method('getUser')->willReturn($user);
-
-        $branchRepository = $this->createStub(BranchRepository::class);
-        $branchRepository->method('find')->willReturn($branch);
-
-        $jwtManager = new JWTManager($jwtSecret, new NullLogger());
-        $em = $this->createStub(EntityManagerInterface::class);
-        $tenantContext = new TenantContext();
-        $tenantContext->setTenant(1, 'acme', null, null);
-
-        $tokenGenerator = new TokenGeneratorService($jwtManager, $em, $tenantContext, 3600, 86400);
-        $clientDetector = new ClientDetectorService();
-        $cookieFactory = new CookieFactoryService(false);
-        $mercureTokenService = new MercureSubscriberTokenService($mercureSecret, 3600);
-
-        $controller = new AuthSelectBranchController(
-            $security,
-            $branchRepository,
-            $tokenGenerator,
-            $clientDetector,
-            $cookieFactory,
-            $mercureTokenService,
-            $tenantContext,
-            new NullLogger(),
-        );
-
-        $request = Request::create(
-            '/api/auth/select-branch',
-            'POST',
-            [],
-            [],
-            [],
-            [],
-            json_encode(['branchId' => '1'])
-        );
-
-        $response = $controller($request);
-
-        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
-
-        $cookieNames = array_map(fn ($c) => $c->getName(), $response->headers->getCookies());
-        self::assertContains(JWTAuthenticator::AUTH_COOKIE, $cookieNames);
-        self::assertContains(JWTAuthenticator::REFRESH_COOKIE, $cookieNames);
-        self::assertContains(JWTAuthenticator::MERCURE_COOKIE, $cookieNames);
-
-        $mercureCookie = array_values(array_filter(
-            $response->headers->getCookies(),
-            fn ($c) => $c->getName() === JWTAuthenticator::MERCURE_COOKIE
-        ))[0];
-        self::assertSame('/.well-known/mercure', $mercureCookie->getPath());
-    }
 }

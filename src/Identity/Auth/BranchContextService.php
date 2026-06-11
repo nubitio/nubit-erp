@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Auth;
 
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Throwable;
 
