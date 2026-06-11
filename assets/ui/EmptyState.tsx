@@ -42,10 +42,10 @@ export const EmptyState = ({
   const iconName = icon ?? DEFAULT_ICONS[variant];
 
   const classes = [
-    'app-empty-state',
-    `app-empty-state--${variant}`,
-    `app-empty-state--${size}`,
-    fill && 'app-empty-state--fill',
+    'nb-empty-state',
+    `nb-empty-state--${variant}`,
+    `nb-empty-state--${size}`,
+    fill && 'nb-empty-state--fill',
     className,
   ]
     .filter(Boolean)
@@ -53,15 +53,15 @@ export const EmptyState = ({
 
   return (
     <div className={classes} role="status" aria-live="polite">
-      <div className="app-empty-state__icon-wrap">
+      <div className="nb-empty-state__icon-wrap">
         <i className={`ph ph-${iconName}`} aria-hidden="true" />
       </div>
-      <p className="app-empty-state__title">{title}</p>
+      <p className="nb-empty-state__title">{title}</p>
       {description && (
-        <p className="app-empty-state__description">{description}</p>
+        <p className="nb-empty-state__description">{description}</p>
       )}
       {action && (
-        <div className="app-empty-state__action">{action}</div>
+        <div className="nb-empty-state__action">{action}</div>
       )}
     </div>
   );

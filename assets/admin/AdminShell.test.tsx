@@ -76,13 +76,13 @@ describe('AdminShell menu state — large screen', () => {
 
   it('starts with menu open on large screens', () => {
     render(<Shell />);
-    const body = document.querySelector('.side-nav-outer-toolbar__body');
+    const body = document.querySelector('.nb-admin-shell__body');
     expect(body?.classList.contains('is-open')).toBe(true);
   });
 
   it('toggle button closes the menu', () => {
     render(<Shell />);
-    const body = document.querySelector('.side-nav-outer-toolbar__body');
+    const body = document.querySelector('.nb-admin-shell__body');
     expect(body?.classList.contains('is-open')).toBe(true);
     act(() => { fireEvent.click(screen.getByLabelText('Toggle menu')); });
     expect(body?.classList.contains('is-closed')).toBe(true);
@@ -93,7 +93,7 @@ describe('AdminShell menu state — large screen', () => {
     const btn = screen.getByLabelText('Toggle menu');
     act(() => fireEvent.click(btn));
     act(() => fireEvent.click(btn));
-    const body = document.querySelector('.side-nav-outer-toolbar__body');
+    const body = document.querySelector('.nb-admin-shell__body');
     expect(body?.classList.contains('is-open')).toBe(true);
   });
 });
@@ -105,22 +105,22 @@ describe('AdminShell menu state — small screen', () => {
 
   it('starts with menu closed on small screens', () => {
     render(<Shell />);
-    const body = document.querySelector('.side-nav-outer-toolbar__body');
+    const body = document.querySelector('.nb-admin-shell__body');
     expect(body?.classList.contains('is-closed')).toBe(true);
   });
 
   it('scrim overlay is shown when menu is open on small screen', () => {
     render(<Shell />);
     act(() => { fireEvent.click(screen.getByLabelText('Toggle menu')); });
-    expect(document.querySelector('.side-nav-outer-toolbar__scrim')).not.toBeNull();
+    expect(document.querySelector('.nb-admin-shell__scrim')).not.toBeNull();
   });
 
   it('scrim click closes the menu', () => {
     render(<Shell />);
     act(() => fireEvent.click(screen.getByLabelText('Toggle menu')));
-    const scrim = document.querySelector('.side-nav-outer-toolbar__scrim') as HTMLElement;
+    const scrim = document.querySelector('.nb-admin-shell__scrim') as HTMLElement;
     act(() => fireEvent.click(scrim));
-    const body = document.querySelector('.side-nav-outer-toolbar__body');
+    const body = document.querySelector('.nb-admin-shell__body');
     expect(body?.classList.contains('is-closed')).toBe(true);
   });
 });

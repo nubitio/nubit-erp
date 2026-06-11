@@ -271,6 +271,16 @@ interface Field {
   sendAsString: boolean;
   /** Column display order hint set via `x-crud.order` from Hydra metadata. */
   order?: number;
+  /**
+   * Mobile card layout hint:
+   * - 'title'     → rendered as the card title (bold, no label)
+   * - 'primary'   → always-visible labelled row
+   * - 'secondary' → collapsed behind the card's "show more" toggle
+   * - 'hidden'    → never shown on the card
+   * Without hints the grid uses the first non-date visible column as title
+   * and the next four columns as primary rows.
+   */
+  cardRole?: 'title' | 'primary' | 'secondary' | 'hidden';
   /** Optional visual layout hint for auto column resolution. */
   layoutHint?: FormLayoutHint;
   /** Preferred grid span when auto layout is active. */
@@ -976,6 +986,7 @@ declare class BaseFieldBuilder<TRecord extends DataRecord$1 = DataRecord$1> {
   isIdentity(isIdentity: boolean): this;
   col(col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12): this;
   layoutHint(value: FormLayoutHint): this;
+  cardRole(value: 'title' | 'primary' | 'secondary' | 'hidden'): this;
   preferredColSpan(value: 6 | 12): this;
   minColSpan(value: 6 | 12): this;
   forceFullWidth(value?: boolean): this;

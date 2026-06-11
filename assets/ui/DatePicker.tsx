@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useUiStrings } from './UiStrings';
 import './DatePicker.scss';
 
 export interface DatePickerProps {
@@ -163,7 +164,7 @@ export const applyDateMask = (rawValue: string, prevValue: string): string => {
  * Returns null if not a valid date.
  */
 export const parseDisplayDate = (text: string, locale?: string): string | null => {
-  const match = text.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  const match = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (match) {
     const [, a, b, year] = match;
     // Locale heuristic: US → mm/dd, rest → dd/mm
@@ -203,6 +204,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
 ) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
+  const strings = useUiStrings();
 
   const selectedDate = parseIsoDate(value);
   const resolvedLocale = getLocale(locale);
@@ -419,18 +421,18 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
   const todayIso = toIsoDate(new Date());
 
   return (
-    <div ref={rootRef} className={cx('app-date-picker', className)}>
+    <div ref={rootRef} className={cx('nb-date-picker', className)}>
       <input type="hidden" name={name} value={value ?? ''} required={required} />
 
       {/* ── Trigger ── */}
       <div
         ref={triggerRef}
         className={cx(
-          'app-date-picker__trigger',
-          invalid && 'app-date-picker__trigger--invalid',
-          readOnly && 'app-date-picker__trigger--readonly',
-          open && 'app-date-picker__trigger--open',
-          disabled && 'app-date-picker__trigger--disabled',
+          'nb-date-picker__trigger',
+          invalid && 'nb-date-picker__trigger--invalid',
+          readOnly && 'nb-date-picker__trigger--readonly',
+          open && 'nb-date-picker__trigger--open',
+          disabled && 'nb-date-picker__trigger--disabled',
         )}
       >
         <input
@@ -438,7 +440,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
           id={inputId}
           type="text"
           inputMode="numeric"
-          className={cx('app-date-picker__input', !isEditing && !displayValue && 'app-date-picker__input--placeholder')}
+          className={cx('nb-date-picker__input', !isEditing && !displayValue && 'nb-date-picker__input--placeholder')}
           value={isEditing ? inputText : displayValue}
           placeholder={placeholder}
           disabled={disabled}
@@ -454,13 +456,13 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
           onChange={handleInputChange}
           onKeyDown={handleInputKeyDown}
         />
-        <span className="app-date-picker__icons">
+        <span className="nb-date-picker__icons">
           {clearable && displayValue && !disabled && !readOnly && (
             <span
               role="button"
               tabIndex={-1}
-              className="app-date-picker__clear"
-              aria-label="Limpiar fecha"
+              className="nb-date-picker__clear"
+              aria-label={strings.clearDate}
               onPointerDown={handleClear}
             >
               <i className="ph ph-x" aria-hidden="true" />
@@ -469,8 +471,8 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
           <span
             role="button"
             tabIndex={-1}
-            className="app-date-picker__calendar-btn"
-            aria-label="Abrir calendario"
+            className="nb-date-picker__calendar-btn"
+            aria-label={strings.openCalendar}
             onPointerDown={handleCalendarPointerDown}
           >
             <i className="ph ph-calendar-blank" aria-hidden="true" />
@@ -482,45 +484,45 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
       {open && createPortal(
         <div
           ref={panelRef}
-          className="app-date-picker__panel"
+          className="nb-date-picker__panel"
           role="dialog"
-          aria-label="Seleccionar fecha"
+          aria-label={strings.selectDate}
           style={panelStyle}
         >
           {/* Days view */}
           {viewMode === 'days' && (
             <>
-              <div className="app-date-picker__header">
-                <button type="button" className="app-date-picker__nav" aria-label="Mes anterior" onClick={() => setMonth((m) => addMonths(m, -1))}>
+              <div className="nb-date-picker__header">
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.previousMonth} onClick={() => setMonth((m) => addMonths(m, -1))}>
                   <i className="ph ph-caret-left" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
-                  className="app-date-picker__month app-date-picker__month--clickable"
-                  aria-label="Seleccionar mes y año"
+                  className="nb-date-picker__month nb-date-picker__month--clickable"
+                  aria-label={strings.selectMonthAndYear}
                   onClick={() => setViewMode('months')}
                 >
                 {formatMonthLabel(month, resolvedLocale)}
-                  <i className="ph ph-caret-down app-date-picker__month-caret" aria-hidden="true" />
+                  <i className="ph ph-caret-down nb-date-picker__month-caret" aria-hidden="true" />
                 </button>
-                <button type="button" className="app-date-picker__nav" aria-label="Mes siguiente" onClick={() => setMonth((m) => addMonths(m, 1))}>
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.nextMonth} onClick={() => setMonth((m) => addMonths(m, 1))}>
                   <i className="ph ph-caret-right" aria-hidden="true" />
                 </button>
               </div>
-              <div className="app-date-picker__weekdays" aria-hidden="true">
+              <div className="nb-date-picker__weekdays" aria-hidden="true">
                 {weekdayLabels.map((label, i) => <span key={`${label}-${i}`}>{label}</span>)}
               </div>
-              <div className="app-date-picker__days" role="grid" aria-label={formatMonthLabel(month, resolvedLocale)}>
+              <div className="nb-date-picker__days" role="grid" aria-label={formatMonthLabel(month, resolvedLocale)}>
                 {days.map((day) => (
                   <button
                     key={day.iso}
                     data-iso={day.iso}
                     type="button"
                     className={cx(
-                      'app-date-picker__day',
-                      !day.inCurrentMonth && 'app-date-picker__day--muted',
-                      day.iso === selectedIso && 'app-date-picker__day--selected',
-                      day.iso === todayIso && 'app-date-picker__day--today',
+                      'nb-date-picker__day',
+                      !day.inCurrentMonth && 'nb-date-picker__day--muted',
+                      day.iso === selectedIso && 'nb-date-picker__day--selected',
+                      day.iso === todayIso && 'nb-date-picker__day--today',
                     )}
                     disabled={day.disabled}
                     role="gridcell"
@@ -533,9 +535,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
                   </button>
                 ))}
               </div>
-              <div className="app-date-picker__footer">
-                <button type="button" className="app-date-picker__text-button" onClick={() => commitValue('')}>Limpiar</button>
-                <button type="button" className="app-date-picker__text-button" onClick={handleToday}>Hoy</button>
+              <div className="nb-date-picker__footer">
+                <button type="button" className="nb-date-picker__text-button" onClick={() => commitValue('')}>{strings.clear}</button>
+                <button type="button" className="nb-date-picker__text-button" onClick={handleToday}>{strings.today}</button>
               </div>
             </>
           )}
@@ -543,27 +545,27 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
           {/* Months view */}
           {viewMode === 'months' && (
             <>
-              <div className="app-date-picker__header">
-                <button type="button" className="app-date-picker__nav" aria-label="Año anterior" onClick={() => setMonth((m) => new Date(m.getFullYear() - 1, m.getMonth(), 1))}>
+              <div className="nb-date-picker__header">
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.previousYear} onClick={() => setMonth((m) => new Date(m.getFullYear() - 1, m.getMonth(), 1))}>
                   <i className="ph ph-caret-left" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
-                  className="app-date-picker__month app-date-picker__month--clickable"
-                  aria-label="Seleccionar año"
+                  className="nb-date-picker__month nb-date-picker__month--clickable"
+                  aria-label={strings.selectYear}
                   onClick={() => {
                     setYearRangeStart(getYearRangeStart(month.getFullYear()));
                     setViewMode('years');
                   }}
                 >
                   {month.getFullYear()}
-                  <i className="ph ph-caret-down app-date-picker__month-caret" aria-hidden="true" />
+                  <i className="ph ph-caret-down nb-date-picker__month-caret" aria-hidden="true" />
                 </button>
-                <button type="button" className="app-date-picker__nav" aria-label="Año siguiente" onClick={() => setMonth((m) => new Date(m.getFullYear() + 1, m.getMonth(), 1))}>
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.nextYear} onClick={() => setMonth((m) => new Date(m.getFullYear() + 1, m.getMonth(), 1))}>
                   <i className="ph ph-caret-right" aria-hidden="true" />
                 </button>
               </div>
-              <div className="app-date-picker__months-grid" role="grid" aria-label={`${month.getFullYear()}`}>
+              <div className="nb-date-picker__months-grid" role="grid" aria-label={`${month.getFullYear()}`}>
                 {monthLabels.map((label, i) => {
                   const isSelected = selectedDate
                     ? selectedDate.getMonth() === i && selectedDate.getFullYear() === month.getFullYear()
@@ -574,9 +576,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
                       key={i}
                       type="button"
                       className={cx(
-                        'app-date-picker__month-cell',
-                        isSelected && 'app-date-picker__month-cell--selected',
-                        isCurrent && 'app-date-picker__month-cell--current',
+                        'nb-date-picker__month-cell',
+                        isSelected && 'nb-date-picker__month-cell--selected',
+                        isCurrent && 'nb-date-picker__month-cell--current',
                       )}
                       role="gridcell"
                       aria-selected={isSelected}
@@ -587,9 +589,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
                   );
                 })}
               </div>
-              <div className="app-date-picker__footer">
-                <button type="button" className="app-date-picker__text-button" onClick={() => setViewMode('days')}>
-                  <i className="ph ph-arrow-left" aria-hidden="true" /> Volver
+              <div className="nb-date-picker__footer">
+                <button type="button" className="nb-date-picker__text-button" onClick={() => setViewMode('days')}>
+                  <i className="ph ph-arrow-left" aria-hidden="true" /> {strings.back}
                 </button>
               </div>
             </>
@@ -598,18 +600,18 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
           {/* Years view */}
           {viewMode === 'years' && (
             <>
-              <div className="app-date-picker__header">
-                <button type="button" className="app-date-picker__nav" aria-label="Rango anterior" onClick={() => setYearRangeStart((y) => y - 12)}>
+              <div className="nb-date-picker__header">
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.previousYears} onClick={() => setYearRangeStart((y) => y - 12)}>
                   <i className="ph ph-caret-left" aria-hidden="true" />
                 </button>
-                <div className="app-date-picker__month">
+                <div className="nb-date-picker__month">
                   {yearRangeStart}–{yearRangeStart + 11}
                 </div>
-                <button type="button" className="app-date-picker__nav" aria-label="Rango siguiente" onClick={() => setYearRangeStart((y) => y + 12)}>
+                <button type="button" className="nb-date-picker__nav" aria-label={strings.nextYears} onClick={() => setYearRangeStart((y) => y + 12)}>
                   <i className="ph ph-caret-right" aria-hidden="true" />
                 </button>
               </div>
-              <div className="app-date-picker__years-grid" role="grid" aria-label={`${yearRangeStart}–${yearRangeStart + 11}`}>
+              <div className="nb-date-picker__years-grid" role="grid" aria-label={`${yearRangeStart}–${yearRangeStart + 11}`}>
                 {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map((year) => {
                   const isSelected = selectedDate ? selectedDate.getFullYear() === year : false;
                   const isCurrent = new Date().getFullYear() === year;
@@ -618,9 +620,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
                       key={year}
                       type="button"
                       className={cx(
-                        'app-date-picker__year-cell',
-                        isSelected && 'app-date-picker__year-cell--selected',
-                        isCurrent && 'app-date-picker__year-cell--current',
+                        'nb-date-picker__year-cell',
+                        isSelected && 'nb-date-picker__year-cell--selected',
+                        isCurrent && 'nb-date-picker__year-cell--current',
                       )}
                       role="gridcell"
                       aria-selected={isSelected}
@@ -631,9 +633,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(function
                   );
                 })}
               </div>
-              <div className="app-date-picker__footer">
-                <button type="button" className="app-date-picker__text-button" onClick={() => setViewMode('months')}>
-                  <i className="ph ph-arrow-left" aria-hidden="true" /> Volver
+              <div className="nb-date-picker__footer">
+                <button type="button" className="nb-date-picker__text-button" onClick={() => setViewMode('months')}>
+                  <i className="ph ph-arrow-left" aria-hidden="true" /> {strings.back}
                 </button>
               </div>
             </>

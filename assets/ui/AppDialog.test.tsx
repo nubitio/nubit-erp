@@ -87,7 +87,7 @@ describe('AppDialog close button', () => {
         c
       </AppDialog>,
     );
-    expect(screen.getByLabelText('Cerrar')).toBeDefined();
+    expect(screen.getByLabelText('Close')).toBeDefined();
   });
 
   it('hides close button when showCloseButton=false', () => {
@@ -96,7 +96,7 @@ describe('AppDialog close button', () => {
         c
       </AppDialog>,
     );
-    expect(screen.queryByLabelText('Cerrar')).toBeNull();
+    expect(screen.queryByLabelText('Close')).toBeNull();
   });
 
   it('calls onClose when close button is clicked', () => {
@@ -106,7 +106,7 @@ describe('AppDialog close button', () => {
         c
       </AppDialog>,
     );
-    fireEvent.click(screen.getByLabelText('Cerrar'));
+    fireEvent.click(screen.getByLabelText('Close'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 });
@@ -147,7 +147,7 @@ describe('AppDialog scrim click', () => {
         c
       </AppDialog>,
     );
-    fireEvent.click(screen.getByLabelText('Cerrar diálogo'));
+    fireEvent.click(screen.getByLabelText('Close dialog'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -158,7 +158,7 @@ describe('AppDialog scrim click', () => {
         c
       </AppDialog>,
     );
-    fireEvent.click(screen.getByLabelText('Cerrar diálogo'));
+    fireEvent.click(screen.getByLabelText('Close dialog'));
     expect(onClose).not.toHaveBeenCalled();
   });
 });
@@ -166,14 +166,14 @@ describe('AppDialog scrim click', () => {
 // ── fullScreen ────────────────────────────────────────────────────────────────
 
 describe('AppDialog fullScreen', () => {
-  it('applies app-dialog--fullscreen class when fullScreen=true', () => {
+  it('applies nb-dialog--fullscreen class when fullScreen=true', () => {
     render(
       <AppDialog title="T" visible fullScreen onClose={noop}>
         c
       </AppDialog>,
     );
     const dialog = screen.getByRole('dialog');
-    expect(dialog.classList.contains('app-dialog--fullscreen')).toBe(true);
+    expect(dialog.classList.contains('nb-dialog--fullscreen')).toBe(true);
   });
 
   it('does not apply fullscreen class when fullScreen=false', () => {
@@ -183,7 +183,7 @@ describe('AppDialog fullScreen', () => {
       </AppDialog>,
     );
     const dialog = screen.getByRole('dialog');
-    expect(dialog.classList.contains('app-dialog--fullscreen')).toBe(false);
+    expect(dialog.classList.contains('nb-dialog--fullscreen')).toBe(false);
   });
 });
 
@@ -205,6 +205,6 @@ describe('AppDialog footer', () => {
         c
       </AppDialog>,
     );
-    expect(container.querySelector('.app-dialog__footer')).toBeNull();
+    expect(container.querySelector('.nb-dialog__footer')).toBeNull();
   });
 });

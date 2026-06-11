@@ -9,7 +9,7 @@
 //
 // All colors reference CSS custom properties — theme-aware in light/dark mode.
 
-.app-badge {
+.nb-badge {
   align-items: center;
   border: 1px solid transparent;
   border-radius: var(--radius-xs);   // 2px — rectangular, reads as a state indicator
@@ -101,27 +101,27 @@
   }
 
   // Dot variants — explicit selectors because & mid-selector is invalid in Sass
-  &--dot.app-badge--primary   { background: var(--accent-color); }
-  &--dot.app-badge--success   { background: var(--success-color); }
-  &--dot.app-badge--danger    { background: var(--error-color); }
-  &--dot.app-badge--warning   { background: var(--warning-color); }
-  &--dot.app-badge--info      { background: var(--info-color); }
-  &--dot.app-badge--secondary { background: var(--text-secondary); }
+  &--dot.nb-badge--primary   { background: var(--accent-color); }
+  &--dot.nb-badge--success   { background: var(--success-color); }
+  &--dot.nb-badge--danger    { background: var(--error-color); }
+  &--dot.nb-badge--warning   { background: var(--warning-color); }
+  &--dot.nb-badge--info      { background: var(--info-color); }
+  &--dot.nb-badge--secondary { background: var(--text-secondary); }
 
   // ── Outlined variant — transparent bg, colored border + text ───────────────
   &--outlined {
-    &.app-badge--primary   { background: transparent; border-color: var(--accent-color);   color: var(--accent-color); }
-    &.app-badge--success   { background: transparent; border-color: var(--success-color);  color: var(--success-color); }
-    &.app-badge--danger    { background: transparent; border-color: var(--error-color);    color: var(--error-color); }
-    &.app-badge--warning   { background: transparent; border-color: var(--warning-color);  color: color-mix(in srgb, var(--warning-color) 90%, #000); }
-    &.app-badge--info      { background: transparent; border-color: var(--info-color);     color: var(--info-color); }
-    &.app-badge--secondary { background: transparent; border-color: var(--text-secondary); color: var(--text-secondary); }
-    &.app-badge--light     { background: transparent; border-color: var(--border-color);   color: var(--text-primary); }
-    &.app-badge--dark      { background: transparent; border-color: var(--text-primary);   color: var(--text-primary); }
+    &.nb-badge--primary   { background: transparent; border-color: var(--accent-color);   color: var(--accent-color); }
+    &.nb-badge--success   { background: transparent; border-color: var(--success-color);  color: var(--success-color); }
+    &.nb-badge--danger    { background: transparent; border-color: var(--error-color);    color: var(--error-color); }
+    &.nb-badge--warning   { background: transparent; border-color: var(--warning-color);  color: color-mix(in srgb, var(--warning-color) 90%, #000); }
+    &.nb-badge--info      { background: transparent; border-color: var(--info-color);     color: var(--info-color); }
+    &.nb-badge--secondary { background: transparent; border-color: var(--text-secondary); color: var(--text-secondary); }
+    &.nb-badge--light     { background: transparent; border-color: var(--border-color);   color: var(--text-primary); }
+    &.nb-badge--dark      { background: transparent; border-color: var(--text-primary);   color: var(--text-primary); }
   }
 }
 
-html[data-density="compact"] .app-badge {
+html[data-density="compact"] .nb-badge {
   font-size: 10px;
   min-height: 16px;
   padding: 1px var(--space-1);

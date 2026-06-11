@@ -2,14 +2,14 @@
 // Fluent-inspired action primitives for toolbar and form contexts.
 //
 // Height system:
-//   .app-button         min-height: --control-height (28px) — toolbar buttons
-//   .app-button--form   min-height: --control-height-form (34px) — form submit actions
-//   .app-button--sm     min-height: 22px — compact auxiliary actions
+//   .nb-button         min-height: --control-height (28px) — toolbar buttons
+//   .nb-button--form   min-height: --control-height-form (34px) — form submit actions
+//   .nb-button--sm     min-height: 22px — compact auxiliary actions
 //
 // Border-radius: --radius-md (6px) — unified with input controls for visual harmony.
 // Font-size: --font-size-md (14px) — matches form labels, clear scan at arm's length.
 
-.app-button {
+.nb-button {
   align-items: center;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -43,7 +43,7 @@
 // ── Secondary (default outlined) ───────────────────────────────────────────────
 // Used for secondary actions in toolbars and dialogs.
 
-.app-button--secondary {
+.nb-button--secondary {
   background: var(--surface-1);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -59,7 +59,7 @@
 // ── Ghost (no border) ──────────────────────────────────────────────────────────
 // Use for low-emphasis actions where the button should blend into the surface.
 
-.app-button--ghost {
+.nb-button--ghost {
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary);
@@ -75,7 +75,7 @@
 // ── Primary (accent filled) ────────────────────────────────────────────────────
 // Use for the single most important action on a surface or in a toolbar.
 
-.app-button--primary {
+.nb-button--primary {
   background: var(--accent-color);
   border: 1px solid var(--accent-color);
   color: var(--on-accent-color);
@@ -89,7 +89,7 @@
 
 // ── Success ────────────────────────────────────────────────────────────────────
 
-.app-button--success {
+.nb-button--success {
   background: var(--success-color);
   border: 1px solid var(--success-color);
   color: var(--on-success-color);
@@ -103,7 +103,7 @@
 
 // ── Danger ─────────────────────────────────────────────────────────────────────
 
-.app-button--danger {
+.nb-button--danger {
   background: var(--error-color);
   border: 1px solid var(--error-color);
   color: var(--on-error-color);
@@ -119,13 +119,13 @@
 
 // Form context — taller to match --control-height-form and standalone inputs.
 // Use for submit/cancel actions inside dialog footers and form panels.
-.app-button--form {
+.nb-button--form {
   min-height: var(--control-height-form);
   padding: 0 var(--space-4);
 }
 
 // Small — for compact auxiliary actions, table action cells, badge-level buttons.
-.app-button--sm {
+.nb-button--sm {
   font-size: var(--font-size-xs);
   letter-spacing: 0;
   min-height: 22px;
@@ -135,14 +135,14 @@
 // Primary actions should remain visually discoverable even when a caller adds
 // --sm inside a toolbar. This keeps "New" / "Crear" at the control rhythm
 // while allowing secondary compact actions to stay 22px.
-.app-button--primary.app-button--sm,
-.app-button--success.app-button--sm,
-.app-button--danger.app-button--sm {
+.nb-button--primary.nb-button--sm,
+.nb-button--success.nb-button--sm,
+.nb-button--danger.nb-button--sm {
   min-height: var(--control-height);
 }
 
 // Full-width — stretches to fill its container.
-.app-button--full {
+.nb-button--full {
   width: 100%;
 }
 
@@ -150,7 +150,7 @@
 // Square button for icon-only actions in toolbars, table headers, and cell actions.
 // Size matches --control-height so it aligns with adjacent text buttons.
 
-.app-icon-button {
+.nb-icon-button {
   align-items: center;
   background: transparent;
   border: 0;
@@ -190,20 +190,20 @@
   }
 }
 
-.app-icon-button--danger:hover {
+.nb-icon-button--danger:hover {
   background: color-mix(in srgb, var(--error-color) 12%, transparent);
   color: var(--error-color);
 }
 
 // Larger icon button for form-context — matches --control-height-form.
-.app-icon-button--form {
+.nb-icon-button--form {
   height: var(--control-height-form);
   min-width: var(--control-height-form);
 }
 
 // ── Loading spinner ────────────────────────────────────────────────────────────
 
-.app-button-spinner {
+.nb-button-spinner {
   animation: app-spinner-rotate 700ms linear infinite;
   border: 2px solid color-mix(in srgb, currentcolor 25%, transparent);
   border-radius: 50%;

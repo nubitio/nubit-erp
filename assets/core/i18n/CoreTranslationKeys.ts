@@ -21,6 +21,9 @@ export interface CoreTranslationKeys {
   'auditTrail.action.delete': string;
   'form.detailRequired': string;
   'form.detailEmpty': string;
+  'form.detailEmptyHint': string;
+  'form.detailAdd': string;
+  'form.detailRemove': string;
   'form.validationError': string;
   'form.loading': string;
   'form.groupOther': string;
@@ -76,6 +79,7 @@ export interface CoreTranslationKeys {
   'grid.filterOperator.reset': string;
   'dialog.buttonCancel': string;
   'dialog.buttonSave': string;
+  'dialog.close': string;
   'dialog.confirmDelete': string;
   'dialog.confirmDeleteTitle': string;
   'common.yes': string;

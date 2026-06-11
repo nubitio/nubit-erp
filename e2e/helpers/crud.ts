@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 /** Wait for the native datagrid loading overlay to finish (if it appears). */
 export async function waitForGridLoad(page: Page) {
-  const overlay = page.locator('.native-datagrid__loading-overlay').first();
+  const overlay = page.locator('.nb-datagrid__loading-overlay').first();
   try {
     await overlay.waitFor({ state: 'visible', timeout: 2000 });
     await overlay.waitFor({ state: 'hidden', timeout: 15000 });
@@ -13,14 +13,14 @@ export async function waitForGridLoad(page: Page) {
 
 /** Returns the active CRUD shell — drawer/dialog or inline page form.
  * Matches by role+name when the shell exposes "nuevo|new|..." (or caller-provided name).
- * Always includes structural containers (.crud-drawer, .crud-page-shell) so that
+ * Always includes structural containers (.crud-drawer, .nb-crud-page-shell) so that
  * page-mode resources (aria-label = resource title like "Compras") are discoverable
  * regardless of the exact accessible name.
  */
 export function crudShell(page: Page, name: RegExp = /nuevo|new|editar|edit/i): Locator {
   const named = page.getByRole('dialog', { name }).or(page.getByRole('region', { name }));
   const structural = page.locator(
-    '.crud-drawer-root--open .crud-drawer, .ef-drawer-root--open .ef-drawer, .crud-page-shell, .app-dialog:visible, .crud-dialog:visible',
+    '.crud-drawer-root--open .crud-drawer, .nb-drawer-root--open .nb-drawer, .nb-crud-page-shell, .nb-dialog:visible, .nb-crud-dialog:visible',
   );
   // structural first so page shells are found even if name doesn't include "new";
   // .last() selects the most recently attached / topmost shell in DOM order.
@@ -29,7 +29,7 @@ export function crudShell(page: Page, name: RegExp = /nuevo|new|editar|edit/i): 
 
 export function crudShellBody(page: Page, name?: RegExp): Locator {
   return crudShell(page, name).locator(
-    '.crud-drawer__body, .ef-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body',
+    '.crud-drawer__body, .nb-drawer__body, .nb-crud-page-shell__body, .nb-dialog__body, .nb-crud-dialog__body',
   );
 }
 
@@ -41,7 +41,7 @@ export async function clickGridToolbarButton(page: Page, buttonText: string) {
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
   const btn = page
-    .locator('.native-datagrid__toolbar .app-button')
+    .locator('.nb-datagrid__toolbar .nb-button')
     .filter({ hasText: text })
     .first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
@@ -55,7 +55,7 @@ export async function openNewCrudForm(page: Page, route: string, toolbarTitle?: 
 
   if (toolbarTitle) {
     await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: toolbarTitle }).first(),
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: toolbarTitle }).first(),
     ).toBeVisible({ timeout: 15000 });
   }
 
@@ -78,7 +78,7 @@ export async function dismissDevToolbar(page: Page) {
 export async function clickCrudSave(shell: Locator) {
   const save = shell
     .locator(
-      '.crud-drawer__footer .dialog-save-button, .ef-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button, .crud-dialog__footer .dialog-save-button, .app-dialog__footer .dialog-save-button',
+      '.crud-drawer__footer .nb-dialog-save-button, .nb-drawer__footer .nb-dialog-save-button, .nb-crud-page-shell__footer .nb-dialog-save-button, .nb-crud-dialog__footer .nb-dialog-save-button, .nb-dialog__footer .nb-dialog-save-button',
     )
     .first();
   await save.waitFor({ state: 'visible', timeout: 8000 });
@@ -86,7 +86,7 @@ export async function clickCrudSave(shell: Locator) {
 }
 
 export async function closeCrudShell(shell: Locator) {
-  const backOrClose = shell.locator('.crud-page-shell__back, .ef-drawer__close').first();
+  const backOrClose = shell.locator('.nb-crud-page-shell__back, .nb-drawer__close').first();
   if (await backOrClose.isVisible({ timeout: 1500 }).catch(() => false)) {
     await backOrClose.click();
   } else {
@@ -108,10 +108,10 @@ export async function switchFormTab(body: Locator, tabName: RegExp | string) {
 
 /** Expand a collapsible section inside a sectioned CRUD form (NativeFormView). */
 export async function expandFormSection(body: Locator, sectionName: RegExp | string) {
-  const section = body.locator('.native-form__section').filter({ hasText: sectionName }).first();
+  const section = body.locator('.nb-form__section').filter({ hasText: sectionName }).first();
   await section.waitFor({ state: 'visible', timeout: 8000 });
 
-  const summary = section.locator('summary.native-form__section-summary');
+  const summary = section.locator('summary.nb-form__section-summary');
   if (await summary.isVisible({ timeout: 500 }).catch(() => false)) {
     const isOpen = await section.evaluate((el) => (el as HTMLDetailsElement).open);
     if (!isOpen) {
@@ -128,7 +128,7 @@ export async function waitForSaleFormReady(body: Locator) {
 
 /** Column preset control rendered by ColumnPresetSelector (segment buttons). */
 export function columnPresetControl(page: Page) {
-  return page.locator('.native-datagrid__preset-control').first();
+  return page.locator('.nb-datagrid__preset-control').first();
 }
 
 export async function selectColumnPreset(page: Page, presetLabel: RegExp | string) {

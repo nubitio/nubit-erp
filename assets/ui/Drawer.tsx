@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './Button';
+import { useUiStrings } from './UiStrings';
 import './Drawer.scss';
 
 export type DrawerSide = 'right' | 'left';
@@ -26,6 +27,10 @@ export interface DrawerProps {
   children: React.ReactNode;
   /** Optional sticky footer (e.g. action buttons). */
   footer?: React.ReactNode;
+  /** Accessible label for the close button. Defaults to UiStrings `close`. */
+  closeLabel?: string;
+  /** Accessible label for the backdrop scrim. Defaults to UiStrings `closePanel`. */
+  scrimLabel?: string;
   /** Extra class applied to the panel element. */
   className?: string;
   /** aria-label for the dialog when no title is provided. */
@@ -46,9 +51,14 @@ export const Drawer: React.FC<DrawerProps> = ({
   scrim = 'subtle',
   children,
   footer,
+  closeLabel,
+  scrimLabel,
   className,
   'aria-label': ariaLabel,
 }) => {
+  const strings = useUiStrings();
+  const resolvedCloseLabel = closeLabel ?? strings.close;
+  const resolvedScrimLabel = scrimLabel ?? strings.closePanel;
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const lastFocusRef = useRef<HTMLElement | null>(null);
@@ -82,18 +92,18 @@ export const Drawer: React.FC<DrawerProps> = ({
   return createPortal(
     <div
       className={[
-        'ef-drawer-root',
-        isOpen && 'ef-drawer-root--open',
-        `ef-drawer-root--${side}`,
+        'nb-drawer-root',
+        isOpen && 'nb-drawer-root--open',
+        `nb-drawer-root--${side}`,
       ].filter(Boolean).join(' ')}
       aria-hidden={!isOpen}
       style={{ pointerEvents: isOpen ? undefined : 'none' }}
     >
       {/* Scrim */}
       <button
-        className={`ef-drawer__scrim ef-drawer__scrim--${scrim}`}
+        className={`nb-drawer__scrim nb-drawer__scrim--${scrim}`}
         type="button"
-        aria-label="Cerrar panel"
+        aria-label={resolvedScrimLabel}
         tabIndex={-1}
         onClick={onClose}
       />
@@ -101,7 +111,7 @@ export const Drawer: React.FC<DrawerProps> = ({
       {/* Panel */}
       <aside
         ref={panelRef}
-        className={['ef-drawer', className].filter(Boolean).join(' ')}
+        className={['nb-drawer', className].filter(Boolean).join(' ')}
         role="dialog"
         aria-modal="false"
         aria-labelledby={title ? titleId : undefined}
@@ -110,22 +120,22 @@ export const Drawer: React.FC<DrawerProps> = ({
       >
         {/* Header */}
         {(title !== undefined) && (
-          <header className="ef-drawer__header">
-            <h2 className="ef-drawer__title" id={titleId}>{title}</h2>
+          <header className="nb-drawer__header">
+            <h2 className="nb-drawer__title" id={titleId}>{title}</h2>
             <IconButton
-              className="ef-drawer__close"
+              className="nb-drawer__close"
               icon="ph ph-x"
-              label="Cerrar"
+              label={resolvedCloseLabel}
               onClick={onClose}
             />
           </header>
         )}
 
         {/* Body */}
-        <div className="ef-drawer__body">{children}</div>
+        <div className="nb-drawer__body">{children}</div>
 
         {/* Footer */}
-        {footer && <footer className="ef-drawer__footer">{footer}</footer>}
+        {footer && <footer className="nb-drawer__footer">{footer}</footer>}
       </aside>
     </div>,
     document.body,

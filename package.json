@@ -38,8 +38,9 @@
   "scripts": {
     "dev": "vite",
     "build": "yarn build:themes && vite build",
-    "build:packages": "tsdown && node scripts/bundle-nubit-css.mjs",
-    "build:themes": "sass assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
+    "build:packages": "tsdown && node scripts/bundle-nubit-css.mjs && yarn build:package-themes",
+    "build:package-themes": "sass assets/ui/theme/styles/theme-dark.scss assets/ui/dist/themes/nb-theme-dark.css --no-source-map && sass assets/ui/theme/styles/theme-light.scss assets/ui/dist/themes/nb-theme-light.css --no-source-map",
+    "build:themes": "sass assets/ui/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass assets/ui/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
     "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
     "postinstall": "yarn build:themes",
     "test:unit": "vitest run",

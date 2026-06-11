@@ -10,7 +10,7 @@
 
 // CrudPage renders <div id="wrapper"> as its root — it has no class and no
 // existing CSS. We must make it a flex column that fills main so that all
-// flex children below (view.datagrid-list → native-datagrid → table-wrap)
+// flex children below (view.datagrid-list → nb-datagrid → table-wrap)
 // can use flex-grow / height:100% correctly.
 #wrapper {
   display: flex;
@@ -27,8 +27,8 @@
   overflow: hidden;
 }
 
-.native-datagrid {
-  --native-datagrid-header-height: var(--grid-header-height, 34px);
+.nb-datagrid {
+  --nb-datagrid-header-height: var(--grid-header-height, 34px);
 
   display: flex;
   flex-direction: column;
@@ -50,7 +50,7 @@
 // ── Toolbar ────────────────────────────────────────────────────────────────────
 // Matches AppToolbar visual weight — same surface, border, shadow tier.
 
-.native-datagrid__toolbar {
+.nb-datagrid__toolbar {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
@@ -64,18 +64,18 @@
   padding: 4px 10px; // 4px vertical: toolbar(36) − 4−4 = 28px inner = --control-height
 }
 
-.native-datagrid__toolbar .grid-header {
+.nb-datagrid__toolbar .grid-header {
   color: var(--text-primary);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.01em;
 }
 
-.native-datagrid__toolbar-spacer {
+.nb-datagrid__toolbar-spacer {
   flex: 1 1 auto;
 }
 
-.native-datagrid__actions-menu {
+.nb-datagrid__actions-menu {
   position: relative;
 
   summary {
@@ -93,7 +93,7 @@
   }
 }
 
-.native-datagrid__actions-popover {
+.nb-datagrid__actions-popover {
   background: var(--surface-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -106,14 +106,14 @@
   z-index: 20;
 }
 
-.native-datagrid__actions-group:has(.native-datagrid__actions-group-label)
-  + .native-datagrid__actions-group:has(.native-datagrid__actions-group-label) {
+.nb-datagrid__actions-group:has(.nb-datagrid__actions-group-label)
+  + .nb-datagrid__actions-group:has(.nb-datagrid__actions-group-label) {
   border-top: 1px solid var(--border-subtle);
   margin-top: var(--space-2);
   padding-top: var(--space-2);
 }
 
-.native-datagrid__actions-group-label {
+.nb-datagrid__actions-group-label {
   color: var(--text-tertiary);
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);
@@ -122,7 +122,7 @@
   text-transform: uppercase;
 }
 
-.native-datagrid__actions-item {
+.nb-datagrid__actions-item {
   align-items: center;
   background: transparent;
   border: 0;
@@ -147,7 +147,7 @@
   }
 }
 
-.native-datagrid__actions-item--danger {
+.nb-datagrid__actions-item--danger {
   color: var(--status-danger-text, var(--error-color));
 
   &:hover:not(:disabled) {
@@ -155,20 +155,20 @@
   }
 }
 
-.native-datagrid__actions-danger-group {
+.nb-datagrid__actions-danger-group {
   border-top: 1px solid var(--border-subtle);
   margin-top: var(--space-2);
   padding-top: var(--space-2);
 }
 
-.native-datagrid__toolbar-icon-action + .app-icon-button[aria-label] {
+.nb-datagrid__toolbar-icon-action + .nb-icon-button[aria-label] {
   margin-left: var(--space-1);
 }
 
 // ── Column preset selector (Fluent segmented control) ───────────────────────────
 // Toolbar-height control that matches secondary buttons and DevExtreme view modes.
 
-.native-datagrid__preset-control {
+.nb-datagrid__preset-control {
   align-items: center;
   display: inline-flex;
   flex: 0 1 auto;
@@ -177,7 +177,7 @@
   min-width: 0;
 }
 
-.native-datagrid__preset-label {
+.nb-datagrid__preset-label {
   align-items: center;
   color: var(--text-secondary);
   display: inline-flex;
@@ -194,7 +194,7 @@
   }
 }
 
-.native-datagrid__preset-segments {
+.nb-datagrid__preset-segments {
   background: var(--surface-0);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -209,7 +209,7 @@
   scrollbar-width: thin;
 }
 
-.native-datagrid__preset-segment {
+.nb-datagrid__preset-segment {
   background: transparent;
   border: 0;
   border-radius: calc(var(--radius-md) - 2px);
@@ -227,7 +227,7 @@
     box-shadow var(--transition-base),
     color var(--transition-base);
 
-  &:hover:not(.native-datagrid__preset-segment--active) {
+  &:hover:not(.nb-datagrid__preset-segment--active) {
     background: var(--control-bg-hover);
     color: var(--text-primary);
   }
@@ -247,14 +247,14 @@
 }
 
 @media (max-width: 720px) {
-  .native-datagrid__preset-control {
+  .nb-datagrid__preset-control {
     align-items: stretch;
     flex-direction: column;
     margin-left: 0;
     width: 100%;
   }
 
-  .native-datagrid__preset-segments {
+  .nb-datagrid__preset-segments {
     width: 100%;
   }
 }
@@ -262,7 +262,7 @@
 // ── Table wrapper ──────────────────────────────────────────────────────────────
 // Rounded container that clips the table's first/last rows to the border radius.
 
-.native-datagrid__table-wrap {
+.nb-datagrid__table-wrap {
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -278,7 +278,7 @@
 
 // Single table that fills the wrap and acts as a flex column:
 // thead + tfoot are fixed (flex: 0), tbody scrolls (flex: 1).
-.native-datagrid__table {
+.nb-datagrid__table {
   border-collapse: separate;
   border-spacing: 0;
   display: flex;
@@ -292,22 +292,22 @@
 
 // thead/tfoot are block-level scroll containers synced to tbody.scrollLeft so
 // column headers stay aligned while the body scrolls horizontally.
-.native-datagrid__table > thead {
+.nb-datagrid__table > thead {
   display: block;
   flex: 0 0 auto;
   overflow: hidden;
 }
 
-.native-datagrid__table > thead > tr,
-.native-datagrid__table > tbody > tr,
-.native-datagrid__table > tfoot > tr {
+.nb-datagrid__table > thead > tr,
+.nb-datagrid__table > tbody > tr,
+.nb-datagrid__table > tfoot > tr {
   display: table;
   table-layout: fixed;
-  width: var(--native-datagrid-layout-width, 100%);
+  width: var(--nb-datagrid-layout-width, 100%);
 }
 
 // tbody scrolls vertically; horizontal scroll syncs with the footer bar.
-.native-datagrid__table > tbody {
+.nb-datagrid__table > tbody {
   display: block;
   flex: 1 1 auto;
   min-height: 0;
@@ -319,46 +319,46 @@
   }
 }
 
-.native-datagrid__detail-col {
+.nb-datagrid__detail-col {
   width: 36px;
 }
 
-.native-datagrid__checkbox-col {
+.nb-datagrid__checkbox-col {
   width: 36px;
 }
 
-.native-datagrid__actions-col {
+.nb-datagrid__actions-col {
   width: 44px;
 }
 
 // tfoot is always visible at the bottom of the wrap (outside the vertical scroll).
-.native-datagrid__table > tfoot {
+.nb-datagrid__table > tfoot {
   display: block;
   flex: 0 0 auto;
   overflow: hidden;
 }
 
 // Shared horizontal scrollbar below the grid body (DevExtreme-style).
-.native-datagrid__hscroll {
+.nb-datagrid__hscroll {
   flex: 0 0 auto;
   margin-top: 2px;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.native-datagrid__hscroll-inner {
+.nb-datagrid__hscroll-inner {
   height: 1px;
   pointer-events: none;
 }
 
-.native-datagrid__hscroll--hidden {
+.nb-datagrid__hscroll--hidden {
   display: none;
 }
 
 // ── Cells ──────────────────────────────────────────────────────────────────────
 
-.native-datagrid__table th,
-.native-datagrid__table td {
+.nb-datagrid__table th,
+.nb-datagrid__table td {
   border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
   padding: var(--grid-cell-padding-y, 0) var(--grid-cell-padding-x, var(--space-3));
@@ -367,12 +367,12 @@
   white-space: nowrap;
 }
 
-.native-datagrid__table td {
+.nb-datagrid__table td {
   height: var(--row-height); // explicit height (not min-height) enforces row density
   line-height: 1; // prevents line-height from fighting with cell height
 }
 
-.native-datagrid__table td .app-badge {
+.nb-datagrid__table td .nb-badge {
   font-size: var(--font-size-xxs);
   line-height: 1;
   padding: 0.2em 0.5em;
@@ -382,13 +382,13 @@
 // Neutral surface — do NOT use accent tint here; blue headers in Fluent are
 // reserved for selected-column indicators, not the baseline header row.
 
-.native-datagrid__table > thead > tr > th {
+.nb-datagrid__table > thead > tr > th {
   background: var(--grid-header-bg, var(--surface-0));
   border-bottom: 1px solid var(--border-subtle); // stronger than cell borders
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  height: var(--native-datagrid-header-height);
+  height: var(--nb-datagrid-header-height);
   letter-spacing: 0.02em;
   position: sticky;
   text-align: left;
@@ -397,16 +397,16 @@
   z-index: 3;
 }
 
-.native-datagrid__header-cell--sorted,
-.native-datagrid__header-cell--filtered {
+.nb-datagrid__header-cell--sorted,
+.nb-datagrid__header-cell--filtered {
   color: var(--text-primary) !important;
 }
 
-.native-datagrid__header-cell--sorted {
+.nb-datagrid__header-cell--sorted {
   box-shadow: inset 0 -1px 0 var(--border-color) !important;
 }
 
-.native-datagrid__header-cell--filtered::after {
+.nb-datagrid__header-cell--filtered::after {
   background: color-mix(in srgb, var(--accent-color) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent-color) 28%, transparent);
   border-radius: 999px;
@@ -418,11 +418,11 @@
   width: 5px;
 }
 
-.native-datagrid__table > thead > tr:first-child > th {
+.nb-datagrid__table > thead > tr:first-child > th {
   box-shadow: inset 0 -1px 0 var(--border-color);
 }
 
-.native-datagrid__col-resize {
+.nb-datagrid__col-resize {
   background: transparent;
   bottom: 0;
   cursor: col-resize;
@@ -454,7 +454,7 @@
   }
 }
 
-.native-datagrid__table > thead > tr:first-child > th {
+.nb-datagrid__table > thead > tr:first-child > th {
   // top rounding clips to container border radius
   &:first-child {
     border-top-left-radius: calc(var(--radius-lg) - 1px);
@@ -466,7 +466,7 @@
 
 // ── Data rows ──────────────────────────────────────────────────────────────────
 
-.native-datagrid__row {
+.nb-datagrid__row {
   cursor: pointer;
   font-size: var(--font-size-sm);
   outline: 0;
@@ -474,7 +474,7 @@
     background var(--transition-fast),
     box-shadow var(--transition-fast);
 
-  .native-datagrid--zebra &:nth-child(even) td {
+  .nb-datagrid--zebra &:nth-child(even) td {
     // Use the explicit zebra token — ~3.5% darker than white, clearly visible at 13px.
     // The old inline color-mix formula produced ~#fbfbfc which was imperceptible.
     background: var(--grid-row-alt-bg);
@@ -489,20 +489,20 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 34%, transparent);
   }
 
-  &.native-datagrid__row--selected td {
+  &.nb-datagrid__row--selected td {
     background: var(--grid-row-selected-bg, var(--surface-2));
   }
 
-  &.native-datagrid__row--selected td:first-child {
+  &.nb-datagrid__row--selected td:first-child {
     box-shadow: inset 2px 0 0 var(--grid-row-selected-border, var(--accent-color));
   }
 
-  &.native-datagrid__row--selected .native-datagrid__actions-cell,
-  &.native-datagrid__row--selected .native-datagrid__detail-cell {
+  &.nb-datagrid__row--selected .nb-datagrid__actions-cell,
+  &.nb-datagrid__row--selected .nb-datagrid__detail-cell {
     background: var(--grid-row-selected-bg, var(--surface-2));
   }
 
-  &.native-datagrid__row--expanded td {
+  &.nb-datagrid__row--expanded td {
     background: var(--surface-2);
     border-bottom-color: var(--border-color);
   }
@@ -515,8 +515,8 @@
 
 // ── Sort controls ──────────────────────────────────────────────────────────────
 
-.native-datagrid__sort-button,
-.native-datagrid__column-label {
+.nb-datagrid__sort-button,
+.nb-datagrid__column-label {
   align-items: center;
   color: inherit;
   display: inline-flex;
@@ -528,7 +528,7 @@
   width: 100%;
 }
 
-.native-datagrid__sort-button {
+.nb-datagrid__sort-button {
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -546,55 +546,55 @@
   }
 }
 
-.native-datagrid__column-label {
+.nb-datagrid__column-label {
   cursor: default;
 }
 
-.native-datagrid__sort-icon {
+.nb-datagrid__sort-icon {
   color: var(--accent-color);
   flex: 0 0 auto;
   font-size: 10px;
   opacity: 1;
 }
 
-.native-datagrid__sort-hint {
+.nb-datagrid__sort-hint {
   flex: 0 0 auto;
   font-size: 10px;
   opacity: 0;
   transition: opacity var(--transition-base);
 
-  .native-datagrid__sort-button:hover & {
+  .nb-datagrid__sort-button:hover & {
     opacity: 0.45;
   }
 }
 
 // ── Filter row ─────────────────────────────────────────────────────────────────
 
-.native-datagrid__filter-row > td {
+.nb-datagrid__filter-row > td {
   background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
   border-bottom: 1px solid var(--border-subtle);
   overflow: visible;
   padding: 0;
   position: sticky;
-  top: var(--native-datagrid-header-height);
+  top: var(--nb-datagrid-header-height);
   z-index: 2;
 }
 
-.native-datagrid__filter-row > .native-datagrid__filter-cell--active {
+.nb-datagrid__filter-row > .nb-datagrid__filter-cell--active {
   background: color-mix(in srgb, var(--accent-color) 5%, var(--surface-1));
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent-color) 65%, transparent);
 }
 
-.native-datagrid__filter-row {
-  .native-form__lookup {
+.nb-datagrid__filter-row {
+  .nb-form__lookup {
     width: 100%;
 
-    .native-datagrid__filter-select {
+    .nb-datagrid__filter-select {
       padding-right: var(--control-height, 30px);
       transition: padding-right var(--transition-fast);
     }
 
-    &.has-value .native-datagrid__filter-select {
+    &.has-value .nb-datagrid__filter-select {
       padding-right: calc(
         var(--control-height, 30px) + var(--control-icon-size, 20px) + var(--space-1)
       );
@@ -602,17 +602,17 @@
   }
 }
 
-.native-datagrid__filter-wrap {
+.nb-datagrid__filter-wrap {
   align-items: center;
   display: flex;
   position: relative;
 }
 
-.native-datagrid__filter-wrap--between {
+.nb-datagrid__filter-wrap--between {
   align-items: stretch;
 }
 
-.native-datagrid__filter-icon {
+.nb-datagrid__filter-icon {
   color: var(--text-tertiary);
   flex: 0 0 auto;
   font-size: var(--font-size-xxs);
@@ -623,7 +623,7 @@
   transform: translateY(-50%);
 }
 
-.native-datagrid__filter-input {
+.nb-datagrid__filter-input {
   background: transparent;
   border: none;
   border-radius: 0;
@@ -646,8 +646,8 @@
   }
 }
 
-.native-datagrid__filter-date {
-  .app-date-picker__trigger {
+.nb-datagrid__filter-date {
+  .nb-date-picker__trigger {
     background: transparent;
     border: 0;
     border-radius: 0;
@@ -670,16 +670,16 @@
     }
   }
 
-  .app-date-picker__icon {
+  .nb-date-picker__icon {
     font-size: var(--font-size-xs);
   }
 }
 
-.native-datagrid__filter-range {
+.nb-datagrid__filter-range {
   min-width: 0;
   width: 100%;
 
-  .app-date-range-picker__trigger {
+  .nb-date-range-picker__trigger {
     background: transparent;
     border: 0;
     border-radius: 0;
@@ -689,39 +689,39 @@
     min-height: var(--grid-filter-height, 32px);
     padding: 4px 22px 4px 42px;
 
-    &:hover:not(.app-date-range-picker__trigger--disabled) {
+    &:hover:not(.nb-date-range-picker__trigger--disabled) {
       background: transparent;
     }
 
-    &:focus-within:not(.app-date-range-picker__trigger--disabled):not(
-        .app-date-range-picker__trigger--readonly
+    &:focus-within:not(.nb-date-range-picker__trigger--disabled):not(
+        .nb-date-range-picker__trigger--readonly
       ),
-    &.app-date-range-picker__trigger--open {
+    &.nb-date-range-picker__trigger--open {
       background: color-mix(in srgb, var(--accent-color) 6%, var(--surface-1));
       border-color: transparent;
       box-shadow: inset 0 -2px 0 var(--accent-color);
     }
   }
 
-  .app-date-range-picker__input {
+  .nb-date-range-picker__input {
     font-size: var(--font-size-xs);
     min-width: 0;
   }
 
-  .app-date-range-picker__sep {
+  .nb-date-range-picker__sep {
     font-size: 10px;
   }
 
-  .app-date-range-picker__icons {
+  .nb-date-range-picker__icons {
     margin-right: -18px;
   }
 
-  .app-date-range-picker__calendar-btn {
+  .nb-date-range-picker__calendar-btn {
     font-size: var(--font-size-xs);
   }
 }
 
-.native-datagrid__filter-operator {
+.nb-datagrid__filter-operator {
   left: 5px;
   position: absolute;
   top: 50%;
@@ -729,7 +729,7 @@
   width: 30px;
   z-index: 2;
 
-  &.app-dropdown .app-dropdown__trigger {
+  &.nb-dropdown .nb-dropdown__trigger {
     appearance: none;
     background: color-mix(in srgb, var(--accent-color) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
@@ -746,48 +746,48 @@
     width: 30px;
   }
 
-  &.app-dropdown .app-dropdown__caret {
+  &.nb-dropdown .nb-dropdown__caret {
     display: none;
   }
 }
 
-.native-datagrid__filter-operator + .native-datagrid__filter-input {
+.nb-datagrid__filter-operator + .nb-datagrid__filter-input {
   padding-left: 42px;
 }
 
-.native-datagrid__filter-operator + .native-datagrid__filter-date .app-date-picker__trigger {
+.nb-datagrid__filter-operator + .nb-datagrid__filter-date .nb-date-picker__trigger {
   padding-left: 42px;
 }
 
-.native-datagrid__filter-operator + .native-datagrid__filter-range .app-date-range-picker__trigger {
+.nb-datagrid__filter-operator + .nb-datagrid__filter-range .nb-date-range-picker__trigger {
   padding-left: 42px;
 }
 
-.native-datagrid__filter-between-inputs {
+.nb-datagrid__filter-between-inputs {
   display: grid;
   gap: 2px;
   grid-template-rows: repeat(2, minmax(24px, auto));
   padding-left: 42px;
   width: 100%;
 
-  .native-datagrid__filter-input {
+  .nb-datagrid__filter-input {
     min-width: 0;
   }
 
-  .native-datagrid__filter-date .app-date-picker__trigger {
+  .nb-datagrid__filter-date .nb-date-picker__trigger {
     min-width: 0;
   }
 }
 
-.native-datagrid__filter-operator + .native-datagrid__filter-between-inputs {
+.nb-datagrid__filter-operator + .nb-datagrid__filter-between-inputs {
   padding-left: 42px;
 }
 
-.native-datagrid__filter-select {
+.nb-datagrid__filter-select {
   width: 100%;
 
   // AppDropdown-based filter (enum / select fields)
-  &.app-dropdown .app-dropdown__trigger {
+  &.nb-dropdown .nb-dropdown__trigger {
     background: transparent;
     border: none;
     border-radius: 0;
@@ -802,8 +802,8 @@
     width: 100%;
   }
 
-  &.app-dropdown--open .app-dropdown__trigger,
-  &.app-dropdown .app-dropdown__trigger:focus-visible {
+  &.nb-dropdown--open .nb-dropdown__trigger,
+  &.nb-dropdown .nb-dropdown__trigger:focus-visible {
     background: color-mix(in srgb, var(--accent-color) 6%, var(--surface-1));
     border-color: transparent;
     box-shadow: inset 0 -2px 0 var(--accent-color);
@@ -832,13 +832,13 @@
   }
 }
 
-.native-datagrid__filter-operator:focus {
+.nb-datagrid__filter-operator:focus {
   border-color: var(--accent-color);
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 1px;
 }
 
-.native-datagrid__filter-clear {
+.nb-datagrid__filter-clear {
   align-items: center;
   background: transparent;
   border: 0;
@@ -877,7 +877,7 @@
   }
 }
 
-.native-datagrid__error-row td {
+.nb-datagrid__error-row td {
   background: color-mix(in srgb, var(--error-color, #d9534f) 8%, var(--surface-1));
   border-bottom-color: color-mix(in srgb, var(--error-color, #d9534f) 24%, var(--border-subtle));
   color: var(--error-color, #d9534f);
@@ -886,7 +886,7 @@
   white-space: normal;
 }
 
-.native-datagrid__error-message {
+.nb-datagrid__error-message {
   align-items: center;
   display: flex;
   gap: var(--space-2);
@@ -898,7 +898,7 @@
   }
 }
 
-.native-datagrid__error-close {
+.nb-datagrid__error-close {
   align-items: center;
   background: transparent;
   border: 0;
@@ -919,13 +919,13 @@
 
 // ── Select / expand cells ──────────────────────────────────────────────────────
 
-.native-datagrid__select-cell,
-.native-datagrid__detail-cell {
+.nb-datagrid__select-cell,
+.nb-datagrid__detail-cell {
   text-align: center;
   width: 36px;
 }
 
-.native-datagrid__detail-cell {
+.nb-datagrid__detail-cell {
   background: var(--surface-1);
   box-shadow: 1px 0 0 var(--border-subtle);
   left: 0;
@@ -934,26 +934,26 @@
   z-index: 2;
 }
 
-.native-datagrid__table > thead > tr > .native-datagrid__detail-cell {
+.nb-datagrid__table > thead > tr > .nb-datagrid__detail-cell {
   background: var(--grid-header-bg, var(--surface-0));
   z-index: 5;
 }
 
-.native-datagrid__filter-row > .native-datagrid__detail-cell {
+.nb-datagrid__filter-row > .nb-datagrid__detail-cell {
   background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
   z-index: 4;
 }
 
-.native-datagrid__summary-footer .native-datagrid__detail-cell {
+.nb-datagrid__summary-footer .nb-datagrid__detail-cell {
   z-index: 4;
 }
 
-.native-datagrid__table td.native-datagrid__detail-cell,
-.native-datagrid__table td.native-datagrid__select-cell {
+.nb-datagrid__table td.nb-datagrid__detail-cell,
+.nb-datagrid__table td.nb-datagrid__select-cell {
   text-overflow: clip;
 }
 
-.native-datagrid__expand-button {
+.nb-datagrid__expand-button {
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
@@ -971,44 +971,44 @@
   width: 24px;
 }
 
-.native-datagrid__expand-button:hover,
-.native-datagrid__expand-button.is-expanded {
+.nb-datagrid__expand-button:hover,
+.nb-datagrid__expand-button.is-expanded {
   background: color-mix(in srgb, var(--accent-color) 12%, transparent);
   border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
   color: var(--accent-color);
 }
 
-.native-datagrid__expand-button.is-expanded {
+.nb-datagrid__expand-button.is-expanded {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 10%, transparent);
 }
 
-.native-datagrid__select-cell input {
+.nb-datagrid__select-cell input {
   accent-color: var(--accent-color);
 }
 
 // ── Detail / expanded row ──────────────────────────────────────────────────────
 
-.native-datagrid__detail-row td {
+.nb-datagrid__detail-row td {
   background: var(--surface-0);
   border-bottom-color: var(--border-subtle);
   padding: var(--space-3) var(--space-4);
 }
 
-.native-datagrid__detail-content {
+.nb-datagrid__detail-content {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-.native-datagrid__detail-table {
+.nb-datagrid__detail-table {
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
   width: 100%;
 }
 
-.native-datagrid__detail-table th,
-.native-datagrid__detail-table td {
+.nb-datagrid__detail-table th,
+.nb-datagrid__detail-table td {
   border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
   padding: var(--space-2) var(--space-3);
@@ -1018,7 +1018,7 @@
   white-space: nowrap;
 }
 
-.native-datagrid__detail-table th {
+.nb-datagrid__detail-table th {
   background: var(--surface-0);
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
@@ -1027,33 +1027,33 @@
   text-transform: uppercase;
 }
 
-.native-datagrid__detail-table th:first-child {
+.nb-datagrid__detail-table th:first-child {
   border-top-left-radius: calc(var(--radius-lg) - 1px);
 }
 
-.native-datagrid__detail-table th:last-child {
+.nb-datagrid__detail-table th:last-child {
   border-top-right-radius: calc(var(--radius-lg) - 1px);
 }
 
-.native-datagrid__detail-table tbody tr:last-child td {
+.nb-datagrid__detail-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.native-datagrid__detail-table td {
+.nb-datagrid__detail-table td {
   font-size: var(--font-size-sm);
 }
 
-.native-datagrid__detail-table td:first-child {
+.nb-datagrid__detail-table td:first-child {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
 
 // ── Badges in grid ─────────────────────────────────────────────────────────────
-// Status badges in grid cells use the base .app-badge letter-spacing (0.05em).
+// Status badges in grid cells use the base .nb-badge letter-spacing (0.05em).
 // No override needed — the base component is already correct for grid usage.
 
-.native-datagrid .app-badge {
+.nb-datagrid .nb-badge {
   border-width: 1px;
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);
@@ -1061,7 +1061,7 @@
   padding: 0.2em 0.5em;
 }
 
-html[data-density='compact'] .native-datagrid .app-badge {
+html[data-density='compact'] .nb-datagrid .nb-badge {
   font-size: 9px;
   min-height: 14px;
   padding: 0 5px;
@@ -1071,7 +1071,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 // Always visible and sticky on the right so actions remain reachable in wide
 // tables with horizontal scrolling.
 
-.native-datagrid__actions-cell {
+.nb-datagrid__actions-cell {
   background: var(--surface-1);
   box-shadow: -1px 0 0 var(--border-subtle);
   min-width: 44px;
@@ -1082,21 +1082,21 @@ html[data-density='compact'] .native-datagrid .app-badge {
   z-index: 2;
 }
 
-.native-datagrid__table > thead > tr > .native-datagrid__actions-cell {
+.nb-datagrid__table > thead > tr > .nb-datagrid__actions-cell {
   background: var(--grid-header-bg, var(--surface-0));
   z-index: 5;
 }
 
-.native-datagrid__filter-row > .native-datagrid__actions-cell {
+.nb-datagrid__filter-row > .nb-datagrid__actions-cell {
   background: var(--grid-filter-bg, color-mix(in srgb, var(--surface-0) 70%, var(--surface-1)));
   z-index: 4;
 }
 
-.native-datagrid__summary-footer .native-datagrid__actions-cell {
+.nb-datagrid__summary-footer .nb-datagrid__actions-cell {
   z-index: 4;
 }
 
-.native-datagrid__row-actions {
+.nb-datagrid__row-actions {
   align-items: center;
   display: flex;
   gap: 2px;
@@ -1105,13 +1105,13 @@ html[data-density='compact'] .native-datagrid .app-badge {
   transition: opacity var(--transition-fast);
 }
 
-.native-datagrid__row:hover .native-datagrid__row-actions,
-.native-datagrid__row:focus-visible .native-datagrid__row-actions,
-.native-datagrid__row--selected .native-datagrid__row-actions {
+.nb-datagrid__row:hover .nb-datagrid__row-actions,
+.nb-datagrid__row:focus-visible .nb-datagrid__row-actions,
+.nb-datagrid__row--selected .nb-datagrid__row-actions {
   opacity: 1;
 }
 
-.native-datagrid__row-actions-menu {
+.nb-datagrid__row-actions-menu {
   position: relative;
 
   summary {
@@ -1124,7 +1124,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__row-actions-popover {
+.nb-datagrid__row-actions-popover {
   background: var(--surface-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -1139,12 +1139,12 @@ html[data-density='compact'] .native-datagrid .app-badge {
 // relative). This lets it fill the full available height without fighting
 // table layout constraints.
 
-.native-datagrid__empty-td {
+.nb-datagrid__empty-td {
   padding: 0 !important;
   border-bottom: 0 !important;
 }
 
-.native-datagrid__empty {
+.nb-datagrid__empty {
   align-items: center;
   bottom: 0;
   box-sizing: border-box;
@@ -1156,13 +1156,13 @@ html[data-density='compact'] .native-datagrid .app-badge {
   right: 0;
   top: 0;
 
-  .app-empty-state {
+  .nb-empty-state {
     padding-block: var(--space-5);
     pointer-events: auto;
   }
 }
 
-.native-datagrid__loading {
+.nb-datagrid__loading {
   color: var(--text-tertiary);
   padding: var(--space-5);
   text-align: center;
@@ -1170,11 +1170,11 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Skeleton loading rows ──────────────────────────────────────────────────────
 
-.native-datagrid__skeleton-row td {
+.nb-datagrid__skeleton-row td {
   padding: var(--space-2) var(--space-3);
 }
 
-.native-datagrid__skeleton-cell {
+.nb-datagrid__skeleton-cell {
   animation: skeleton-pulse 1.8s ease-in-out infinite;
   background: linear-gradient(
     90deg,
@@ -1190,16 +1190,16 @@ html[data-density='compact'] .native-datagrid .app-badge {
 }
 
 // Vary widths per column position to simulate real content lengths
-.native-datagrid__skeleton-row td:nth-child(3n+1) .native-datagrid__skeleton-cell { max-width: 75%; }
-.native-datagrid__skeleton-row td:nth-child(3n+2) .native-datagrid__skeleton-cell { max-width: 55%; }
-.native-datagrid__skeleton-row td:nth-child(3n)   .native-datagrid__skeleton-cell { max-width: 90%; }
+.nb-datagrid__skeleton-row td:nth-child(3n+1) .nb-datagrid__skeleton-cell { max-width: 75%; }
+.nb-datagrid__skeleton-row td:nth-child(3n+2) .nb-datagrid__skeleton-cell { max-width: 55%; }
+.nb-datagrid__skeleton-row td:nth-child(3n)   .nb-datagrid__skeleton-cell { max-width: 90%; }
 // Stagger the animation so rows shimmer at slightly different phases
-.native-datagrid__skeleton-row:nth-child(2) .native-datagrid__skeleton-cell { animation-delay: -0.3s; }
-.native-datagrid__skeleton-row:nth-child(3) .native-datagrid__skeleton-cell { animation-delay: -0.6s; }
-.native-datagrid__skeleton-row:nth-child(4) .native-datagrid__skeleton-cell { animation-delay: -0.9s; }
-.native-datagrid__skeleton-row:nth-child(5) .native-datagrid__skeleton-cell { animation-delay: -0.4s; }
-.native-datagrid__skeleton-row:nth-child(6) .native-datagrid__skeleton-cell { animation-delay: -1.1s; }
-.native-datagrid__skeleton-row:nth-child(7) .native-datagrid__skeleton-cell { animation-delay: -0.7s; }
+.nb-datagrid__skeleton-row:nth-child(2) .nb-datagrid__skeleton-cell { animation-delay: -0.3s; }
+.nb-datagrid__skeleton-row:nth-child(3) .nb-datagrid__skeleton-cell { animation-delay: -0.6s; }
+.nb-datagrid__skeleton-row:nth-child(4) .nb-datagrid__skeleton-cell { animation-delay: -0.9s; }
+.nb-datagrid__skeleton-row:nth-child(5) .nb-datagrid__skeleton-cell { animation-delay: -0.4s; }
+.nb-datagrid__skeleton-row:nth-child(6) .nb-datagrid__skeleton-cell { animation-delay: -1.1s; }
+.nb-datagrid__skeleton-row:nth-child(7) .nb-datagrid__skeleton-cell { animation-delay: -0.7s; }
 
 @keyframes skeleton-pulse {
   0% {
@@ -1214,7 +1214,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Pager ──────────────────────────────────────────────────────────────────────
 
-.native-datagrid__pager {
+.nb-datagrid__pager {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
@@ -1229,7 +1229,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-1) var(--space-2);
 }
 
-.native-datagrid__pager-status {
+.nb-datagrid__pager-status {
   align-items: center;
   display: inline-flex;
   flex-wrap: wrap;
@@ -1237,14 +1237,14 @@ html[data-density='compact'] .native-datagrid .app-badge {
   min-width: 0;
 }
 
-.native-datagrid__pager-info {
+.nb-datagrid__pager-info {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
 
-.native-datagrid__pager-selected,
-.native-datagrid__pager-page-status {
+.nb-datagrid__pager-selected,
+.nb-datagrid__pager-page-status {
   align-items: center;
   border-left: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
@@ -1254,18 +1254,18 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding-left: var(--space-2);
 }
 
-.native-datagrid__pager-selected {
+.nb-datagrid__pager-selected {
   color: var(--accent-color);
   font-weight: var(--font-weight-semibold);
 }
 
-.native-datagrid__pager-nav {
+.nb-datagrid__pager-nav {
   align-items: center;
   display: flex;
   gap: 2px;
 }
 
-.native-datagrid__pager-btn {
+.nb-datagrid__pager-btn {
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
@@ -1305,7 +1305,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__pager-ellipsis {
+.nb-datagrid__pager-ellipsis {
   align-items: center;
   color: var(--text-tertiary);
   display: inline-flex;
@@ -1317,7 +1317,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Summary footer ─────────────────────────────────────────────────────────────
 
-.native-datagrid__summary-footer td {
+.nb-datagrid__summary-footer td {
   background: var(--surface-0);
   border-bottom: 0;
   border-top: 2px solid var(--border-color);
@@ -1327,25 +1327,25 @@ html[data-density='compact'] .native-datagrid .app-badge {
   height: 36px;
 }
 
-.native-datagrid__summary-footer tr {
+.nb-datagrid__summary-footer tr {
   box-shadow: 0 -1px 0 var(--border-color);
 }
 
-.native-datagrid__summary-footer tr,
-.native-datagrid__summary-footer td.native-datagrid__actions-cell,
-.native-datagrid__summary-footer td.native-datagrid__detail-cell,
-.native-datagrid__summary-footer td.native-datagrid__select-cell {
+.nb-datagrid__summary-footer tr,
+.nb-datagrid__summary-footer td.nb-datagrid__actions-cell,
+.nb-datagrid__summary-footer td.nb-datagrid__detail-cell,
+.nb-datagrid__summary-footer td.nb-datagrid__select-cell {
   background: var(--surface-0);
 }
 
-.native-datagrid__summary-cell {
+.nb-datagrid__summary-cell {
   align-items: baseline;
   display: inline-flex;
   gap: var(--space-2);
   min-width: 100%;
 }
 
-.native-datagrid__summary-label {
+.nb-datagrid__summary-label {
   color: var(--text-secondary);
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-medium);
@@ -1353,19 +1353,19 @@ html[data-density='compact'] .native-datagrid .app-badge {
   text-transform: uppercase;
 }
 
-.native-datagrid__summary-value {
+.nb-datagrid__summary-value {
   white-space: nowrap;
 }
 
 // ── Page size selector ─────────────────────────────────────────────────────────
 
-.native-datagrid__pager-size {
+.nb-datagrid__pager-size {
   align-items: center;
   display: flex;
   gap: var(--space-2);
 }
 
-.native-datagrid__pager-size-label {
+.nb-datagrid__pager-size-label {
   color: var(--text-tertiary);
   font-size: var(--font-size-xs);
   white-space: nowrap;
@@ -1373,7 +1373,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
-.native-datagrid__loading-overlay {
+.nb-datagrid__loading-overlay {
   align-items: center;
   background: color-mix(in srgb, var(--overlay-bg-subtle) 60%, transparent);
   display: flex;
@@ -1383,7 +1383,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   z-index: 3;
 }
 
-.native-datagrid__loading-card {
+.nb-datagrid__loading-card {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-color);
@@ -1394,8 +1394,8 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-3) var(--space-4);
 }
 
-.native-datagrid__loading-card::before {
-  animation: native-datagrid-spinner 0.8s linear infinite;
+.nb-datagrid__loading-card::before {
+  animation: nb-datagrid-spinner 0.8s linear infinite;
   border: 2px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
   border-top-color: var(--accent-color);
   border-radius: 50%;
@@ -1404,7 +1404,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   width: 14px;
 }
 
-@keyframes native-datagrid-spinner {
+@keyframes nb-datagrid-spinner {
   to {
     transform: rotate(360deg);
   }
@@ -1414,23 +1414,23 @@ html[data-density='compact'] .native-datagrid .app-badge {
 // Numbered page buttons and the page-size selector are desktop affordances.
 // (Placed after the pager base styles so the cascade favours these overrides.)
 @media (max-width: 767.98px) {
-  .native-datagrid__pager {
+  .nb-datagrid__pager {
     flex-wrap: nowrap;
   }
 
-  .native-datagrid__pager-btn--page,
-  .native-datagrid__pager-ellipsis,
-  .native-datagrid__pager-selected,
-  .native-datagrid__pager-size {
+  .nb-datagrid__pager-btn--page,
+  .nb-datagrid__pager-ellipsis,
+  .nb-datagrid__pager-selected,
+  .nb-datagrid__pager-size {
     display: none;
   }
 
-  .native-datagrid__pager-btn {
+  .nb-datagrid__pager-btn {
     height: 36px;
     min-width: 36px;
   }
 
-  .native-datagrid__pager-status {
+  .nb-datagrid__pager-status {
     flex-wrap: nowrap;
     white-space: nowrap;
   }
@@ -1438,7 +1438,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Mobile card list (rendered instead of the table below 768px) ──────────────
 
-.native-datagrid__cards {
+.nb-datagrid__cards {
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex: 1 1 auto;
@@ -1451,7 +1451,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: 0;
 }
 
-.native-datagrid__card {
+.nb-datagrid__card {
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -1463,24 +1463,24 @@ html[data-density='compact'] .native-datagrid .app-badge {
     box-shadow var(--transition-fast);
 }
 
-.native-datagrid__card--selected {
+.nb-datagrid__card--selected {
   background: var(--grid-row-selected-bg, var(--surface-2));
   border-color: color-mix(in srgb, var(--accent-color) 45%, var(--border-subtle));
   box-shadow: inset 2px 0 0 var(--grid-row-selected-border, var(--accent-color));
 }
 
-.native-datagrid__card--skeleton {
+.nb-datagrid__card--skeleton {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
 
-  .native-datagrid__skeleton-cell {
+  .nb-datagrid__skeleton-cell {
     max-width: none;
   }
 }
 
-.native-datagrid__card-body {
+.nb-datagrid__card-body {
   align-items: flex-start;
   cursor: pointer;
   display: flex;
@@ -1493,19 +1493,19 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__card-check {
+.nb-datagrid__card-check {
   flex: 0 0 auto;
   height: 18px;
   margin-top: 1px;
   width: 18px;
 }
 
-.native-datagrid__card-content {
+.nb-datagrid__card-content {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.native-datagrid__card-title {
+.nb-datagrid__card-title {
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -1513,14 +1513,14 @@ html[data-density='compact'] .native-datagrid .app-badge {
   overflow-wrap: anywhere;
 }
 
-.native-datagrid__card-meta {
+.nb-datagrid__card-meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
   margin: 0;
 }
 
-.native-datagrid__card-meta-row {
+.nb-datagrid__card-meta-row {
   display: flex;
   font-size: var(--font-size-xs);
   gap: var(--space-3);
@@ -1541,7 +1541,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__card-side {
+.nb-datagrid__card-side {
   align-items: center;
   display: flex;
   flex: 0 0 auto;
@@ -1549,20 +1549,20 @@ html[data-density='compact'] .native-datagrid .app-badge {
   gap: var(--space-1);
 }
 
-.native-datagrid__card-detail {
+.nb-datagrid__card-detail {
   border-top: 1px solid var(--border-subtle);
   padding: var(--space-2) var(--space-3);
 }
 
 // Master-detail rows render as stacked label/value blocks on mobile — a wide
 // nested table inside a card is unreadable and awkward to scroll.
-.native-datagrid__detail-cards {
+.nb-datagrid__detail-cards {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.native-datagrid__detail-card {
+.nb-datagrid__detail-card {
   background: var(--surface-0, var(--surface-2));
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md, 6px);
@@ -1572,27 +1572,27 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-2) var(--space-3);
 }
 
-.native-datagrid__detail-card-row {
+.nb-datagrid__detail-card-row {
   display: flex;
   font-size: var(--font-size-xs);
   gap: var(--space-3);
   justify-content: space-between;
 }
 
-.native-datagrid__detail-card-label {
+.nb-datagrid__detail-card-label {
   color: var(--text-tertiary);
   flex: 0 0 auto;
   font-weight: var(--font-weight-medium);
 }
 
-.native-datagrid__detail-card-value {
+.nb-datagrid__detail-card-value {
   color: var(--text-secondary);
   min-width: 0;
   overflow-wrap: anywhere;
   text-align: right;
 }
 
-.native-datagrid__card-more {
+.nb-datagrid__card-more {
   align-items: center;
   background: transparent;
   border: 0;
@@ -1607,7 +1607,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-1) 0;
 }
 
-.native-datagrid__card-summary {
+.nb-datagrid__card-summary {
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -1620,7 +1620,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-2) var(--space-3);
 }
 
-.native-datagrid__card-summary-item {
+.nb-datagrid__card-summary-item {
   align-items: baseline;
   display: flex;
   gap: var(--space-2);
@@ -1628,12 +1628,12 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Mobile toolbar additions ───────────────────────────────────────────────────
 
-.native-datagrid__mobile-filter {
+.nb-datagrid__mobile-filter {
   display: inline-flex;
   position: relative;
 }
 
-.native-datagrid__mobile-filter-badge {
+.nb-datagrid__mobile-filter-badge {
   align-items: center;
   background: var(--accent-color);
   border-radius: 999px;
@@ -1652,20 +1652,20 @@ html[data-density='compact'] .native-datagrid .app-badge {
 }
 
 @media (max-width: 767.98px) {
-  .native-datagrid__toolbar {
+  .nb-datagrid__toolbar {
     flex-wrap: wrap;
   }
 }
 
 // ── Bottom sheets (mobile filter sheet + row actions) ─────────────────────────
 
-.native-datagrid__sheet-root {
+.nb-datagrid__sheet-root {
   inset: 0;
   position: fixed;
   z-index: var(--z-popover);
 }
 
-.native-datagrid__sheet-scrim {
+.nb-datagrid__sheet-scrim {
   background: color-mix(in srgb, #000 40%, transparent);
   border: 0;
   cursor: default;
@@ -1675,8 +1675,8 @@ html[data-density='compact'] .native-datagrid .app-badge {
   width: 100%;
 }
 
-%native-datagrid-sheet-panel {
-  animation: native-datagrid-sheet-in 0.18s ease-out;
+%nb-datagrid-sheet-panel {
+  animation: nb-datagrid-sheet-in 0.18s ease-out;
   border-bottom: 0;
   border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
   bottom: 0;
@@ -1686,19 +1686,19 @@ html[data-density='compact'] .native-datagrid .app-badge {
   right: 0;
 }
 
-.native-datagrid__row-actions-popover--sheet {
-  @extend %native-datagrid-sheet-panel;
+.nb-datagrid__row-actions-popover--sheet {
+  @extend %nb-datagrid-sheet-panel;
 
   overflow-y: auto;
   padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
 
-  .native-datagrid__actions-item {
+  .nb-datagrid__actions-item {
     min-height: 44px;
   }
 }
 
-.native-datagrid__sheet {
-  @extend %native-datagrid-sheet-panel;
+.nb-datagrid__sheet {
+  @extend %nb-datagrid-sheet-panel;
 
   background: var(--surface-elevated);
   border: 1px solid var(--border-subtle);
@@ -1706,7 +1706,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   flex-direction: column;
 }
 
-.native-datagrid__sheet-header {
+.nb-datagrid__sheet-header {
   align-items: center;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
@@ -1715,13 +1715,13 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-2) var(--space-3);
 }
 
-.native-datagrid__sheet-title {
+.nb-datagrid__sheet-title {
   color: var(--text-primary);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
 }
 
-.native-datagrid__sheet-body {
+.nb-datagrid__sheet-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -1730,36 +1730,36 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-3);
 }
 
-.native-datagrid__sheet-field {
+.nb-datagrid__sheet-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 
   // FilterCell is styled for borderless table cells — give it a bordered,
   // touch-sized container inside the sheet.
-  .native-datagrid__filter-wrap,
-  .native-datagrid__filter-select {
+  .nb-datagrid__filter-wrap,
+  .nb-datagrid__filter-select {
     background: var(--surface-1);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md, 6px);
     width: 100%;
   }
 
-  .native-datagrid__filter-input,
-  .native-datagrid__filter-date .app-date-picker__trigger {
+  .nb-datagrid__filter-input,
+  .nb-datagrid__filter-date .nb-date-picker__trigger {
     font-size: var(--font-size-sm);
     height: 38px;
     min-height: 38px;
   }
 }
 
-.native-datagrid__sheet-label {
+.nb-datagrid__sheet-label {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
 
-.native-datagrid__sheet-sort {
+.nb-datagrid__sheet-sort {
   align-items: center;
   display: flex;
   gap: var(--space-2);
@@ -1769,7 +1769,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__sheet-footer {
+.nb-datagrid__sheet-footer {
   border-top: 1px solid var(--border-subtle);
   display: flex;
   flex: 0 0 auto;
@@ -1778,7 +1778,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
 }
 
-@keyframes native-datagrid-sheet-in {
+@keyframes nb-datagrid-sheet-in {
   from {
     transform: translateY(24px);
     opacity: 0.6;
@@ -1792,7 +1792,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Mobile quick search bar ────────────────────────────────────────────────────
 
-.native-datagrid__quick-search {
+.nb-datagrid__quick-search {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
@@ -1804,12 +1804,12 @@ html[data-density='compact'] .native-datagrid .app-badge {
   padding: 0 var(--space-3);
 }
 
-.native-datagrid__quick-search-icon {
+.nb-datagrid__quick-search-icon {
   color: var(--text-tertiary);
   flex: 0 0 auto;
 }
 
-.native-datagrid__quick-search-input {
+.nb-datagrid__quick-search-input {
   background: transparent;
   border: 0;
   color: var(--text-primary);
@@ -1825,7 +1825,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
   }
 }
 
-.native-datagrid__quick-search-clear {
+.nb-datagrid__quick-search-clear {
   align-items: center;
   background: transparent;
   border: 0;
@@ -1846,7 +1846,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // ── Mobile FAB (primary "New" action) ──────────────────────────────────────────
 
-.native-datagrid__fab {
+.nb-datagrid__fab {
   align-items: center;
   background: var(--accent-color);
   border: 0;
@@ -1877,15 +1877,15 @@ html[data-density='compact'] .native-datagrid .app-badge {
 
 // Column presets relocate into the filter sheet on mobile — make the
 // segmented control stack full-width there.
-.native-datagrid__sheet-presets {
-  .native-datagrid__preset-control {
+.nb-datagrid__sheet-presets {
+  .nb-datagrid__preset-control {
     align-items: stretch;
     flex-direction: column;
     margin-left: 0;
     width: 100%;
   }
 
-  .native-datagrid__preset-segments {
+  .nb-datagrid__preset-segments {
     width: 100%;
   }
 }
@@ -1893,7 +1893,7 @@ html[data-density='compact'] .native-datagrid .app-badge {
 // On mobile the cards carry their own surface — drop the table-wrap chrome so
 // they sit directly on the app background (no double border).
 @media (max-width: 767.98px) {
-  .native-datagrid__table-wrap {
+  .nb-datagrid__table-wrap {
     background: transparent;
     border: 0;
     border-radius: 0;

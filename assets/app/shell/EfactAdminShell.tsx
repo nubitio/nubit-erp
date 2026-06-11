@@ -68,7 +68,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
-        footer={<span className="footer-copyright">© {new Date().getFullYear()} Nubit Labs</span>}
+        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Nubit Labs</span>}
       >
         {children}
       </AdminShell>

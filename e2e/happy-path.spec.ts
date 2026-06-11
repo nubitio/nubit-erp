@@ -72,7 +72,7 @@ let posProductName = productName; // product to use in POS test (may fall back t
  * Complementa waitForLoadState para grids que hacen fetch adicional.
  */
 async function waitForGridLoad(page: Page) {
-  const loadPanel = page.locator('.native-datagrid__loading-overlay').first();
+  const loadPanel = page.locator('.nb-datagrid__loading-overlay').first();
   // Sólo esperamos si llega a aparecer; si nunca aparece, continuamos de inmediato.
   try {
     await loadPanel.waitFor({ state: 'visible', timeout: 2000 });
@@ -122,7 +122,7 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
  * Hace click en un botón de la toolbar del DxDataGrid identificado por texto.
  */
 async function clickGridToolbarButton(page: Page, buttonText: string) {
-  // NativeDataGridView renderiza la toolbar en .native-datagrid__toolbar con botones .app-button.
+  // NativeDataGridView renderiza la toolbar en .nb-datagrid__toolbar con botones .nb-button.
   // The current UI can render translated or English labels depending on locale.
   const alternatives: Record<string, RegExp> = {
     Nuevo: /^(Nuevo|New)$/i,
@@ -131,7 +131,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
     Guardar: /^(Guardar|Save)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.native-datagrid__toolbar .app-button').filter({ hasText: text }).first();
+  const btn = page.locator('.nb-datagrid__toolbar .nb-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -155,7 +155,7 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-drawer__body, .crud-page-shell__body, .app-dialog__body, .crud-dialog__body');
+  return crudDialog(page, name).locator('.crud-drawer__body, .nb-crud-page-shell__body, .nb-dialog__body, .nb-crud-dialog__body');
 }
 
 /**
@@ -172,7 +172,7 @@ async function filterGridByName(page: Page, name: string) {
     await nameFilterInput.fill(name);
     await page.waitForTimeout(500); // wait for 300ms debounce + re-render
   } catch {
-    const filterInputs = page.locator('.native-datagrid__filter-row input[type="text"]');
+    const filterInputs = page.locator('.nb-datagrid__filter-row input[type="text"]');
     const count = await filterInputs.count();
     if (count > 0) {
       await filterInputs.first().click({ clickCount: 3 });
@@ -476,7 +476,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await filterGridByName(page, SEED_PRODUCT_NAME);
     await waitForGridLoad(page);
 
-    const productRow = page.locator('.native-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
+    const productRow = page.locator('.nb-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
     await productRow.waitFor({ state: 'visible', timeout: 15000 });
     await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
 
@@ -490,13 +490,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
     // Navigate to cashbox dashboard
     await gotoProtectedRoute(page, 'cashbox');
     await waitForGridLoad(page);
-    // Check that the native-datagrid toolbar with "Cajas" title is visible
-    await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+    // Check that the nb-datagrid toolbar with "Cajas" title is visible
+    await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
       timeout: 15000,
     });
 
     // Wait for at least one data row to appear before checking button state
-    await page.locator('.native-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.locator('.nb-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
 
     // Check if there is a closed cash register (Abrir button) or an open one (Ver Movimientos)
     const openBtn = page.getByTestId('cash-btn-open').first();
@@ -564,7 +564,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     // Verify we are on the movements page
     await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -575,10 +575,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Navegar a /#/customer', async () => {
       await gotoProtectedRoute(page, 'customer');
       await waitForGridLoad(page);
-      // Check native-datagrid toolbar for "Customers" / "Clientes" title
+      // Check nb-datagrid toolbar for "Customers" / "Clientes" title
       await expect(
         page
-          .locator('.native-datagrid__toolbar')
+          .locator('.nb-datagrid__toolbar')
           .filter({ hasText: /cliente|customers?/i })
           .first(),
       ).toBeVisible({ timeout: 15000 });
@@ -586,7 +586,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
       // NativeDataGridView: RUC/DNI is the first text filter input (nth(0))
-      const rucFilterInput = page.locator('.native-datagrid__filter-row input[type="text"]').nth(0);
+      const rucFilterInput = page.locator('.nb-datagrid__filter-row input[type="text"]').nth(0);
       try {
         await rucFilterInput.waitFor({ state: 'visible', timeout: 5000 });
         await rucFilterInput.click({ clickCount: 3 });
@@ -595,7 +595,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await waitForGridLoad(page);
       } catch {
         // fallback: try any text filter input
-        const inputs = page.locator('.native-datagrid__filter-row input[type="text"]');
+        const inputs = page.locator('.nb-datagrid__filter-row input[type="text"]');
         const count = await inputs.count();
         if (count > 0) {
           await inputs.nth(0).click({ clickCount: 3 });
@@ -606,7 +606,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       }
 
       await expect(
-        page.locator('.native-datagrid__row').filter({ hasText: SEED_CUSTOMER_NAME }),
+        page.locator('.nb-datagrid__row').filter({ hasText: SEED_CUSTOMER_NAME }),
       ).toBeVisible({
         timeout: 15000,
       });
@@ -729,7 +729,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await gotoProtectedRoute(page, 'sale');
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
-      await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
+      await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
         timeout: 15000,
       });
     });
@@ -745,7 +745,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Seleccionar almacén si es visible', async () => {
       const body = crudShellBody(page);
       const almacenInput = body
-        .locator('#native-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
+        .locator('#nb-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
         .first();
       const almacenVisible = await almacenInput.isVisible({ timeout: 5000 }).catch(() => false);
 
@@ -754,7 +754,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         if (currentVal.trim().length === 0) {
           await almacenInput.click();
           await page.waitForTimeout(300);
-          const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
+          const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
           const optVisible = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
           if (optVisible) {
             await firstOption.click();
@@ -773,7 +773,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await addRowBtn.click();
 
       // The new row appears immediately in the native detail table
-      const detailTable = saleDialog.locator('.native-form__detail-table').first();
+      const detailTable = saleDialog.locator('.nb-form__detail-table').first();
       const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -789,7 +789,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // NativeEntitySelect dropdown
       const seedProductOption = page
-        .locator('.native-form__lookup-menu button[role="option"]')
+        .locator('.nb-form__lookup-menu button[role="option"]')
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
       await seedProductOption.first().click();
@@ -916,9 +916,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
       await waitForGridLoad(page);
-      // Check native-datagrid toolbar for movements title
+      // Check nb-datagrid toolbar for movements title
       await expect(
-        page.locator('.native-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
+        page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
       ).toBeVisible({ timeout: 15000 });
     });
 
@@ -934,16 +934,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // cashMovementsFields: name('category').label('Categoría') — DxSelectBox ENTITY required
       // Requiere categorías de movimiento en BD (seed de datos de prueba)
       await test.step('Seleccionar categoría de movimiento', async () => {
-        // NativeFormView: entity field renders NativeEntitySelect with id="native-form-category"
+        // NativeFormView: entity field renders NativeEntitySelect with id="nb-form-category"
         const categoryInput = dialogBody
-          .locator('#native-form-category, input[role="combobox"]')
+          .locator('#nb-form-category, input[role="combobox"]')
           .first();
         await categoryInput.waitFor({ state: 'visible', timeout: 5000 });
         await categoryInput.click();
 
         // NativeEntitySelect dropdown — wait for options to load
         const firstOption = page
-          .locator('.native-form__lookup-menu button[role="option"]')
+          .locator('.nb-form__lookup-menu button[role="option"]')
           .first();
         await firstOption.waitFor({ state: 'visible', timeout: 8000 });
         await firstOption.click();
@@ -958,16 +958,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const movementDescription = `Movimiento test ${ts}`;
       createdMovementRowText = movementDescription; // guardamos para el paso 8
 
-      // NativeFormView: textarea with id="native-form-description" (label Descripcion)
+      // NativeFormView: textarea with id="nb-form-description" (label Descripcion)
       const descInput = dialogBody
-        .locator('#native-form-description, [aria-label="Descripcion"]')
+        .locator('#nb-form-description, [aria-label="Descripcion"]')
         .first();
       await descInput.waitFor({ state: 'visible', timeout: 6000 });
       await descInput.fill(movementDescription);
       await page.keyboard.press('Tab');
 
-      // NativeFormView: number input with id="native-form-amount"
-      const montoInput = dialogBody.locator('#native-form-amount, input[aria-label="Monto"]').first();
+      // NativeFormView: number input with id="nb-form-amount"
+      const montoInput = dialogBody.locator('#nb-form-amount, input[aria-label="Monto"]').first();
       await montoInput.fill('50');
       await page.keyboard.press('Tab');
     });
@@ -980,7 +980,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Verificar que el movimiento aparece en el grid
       await expect(
-        page.locator('.native-datagrid__row').filter({ hasText: createdMovementRowText! }),
+        page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! }),
       ).toBeVisible({ timeout: 15000 });
     });
   });
@@ -990,12 +990,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('09 - Editar movimiento de caja', async () => {
     await test.step('Seleccionar el movimiento en el grid', async () => {
-      const movementRow = page.locator('.native-datagrid__row').filter({ hasText: createdMovementRowText! });
+      const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
       await movementRow.waitFor({ state: 'visible', timeout: 10000 });
       await movementRow.click();
       // NativeDataGridView: selection is a synchronous React state update; row gets
-      // .native-datagrid__row--selected class after the next render.
-      await expect(movementRow).toHaveClass(/native-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
+      // .nb-datagrid__row--selected class after the next render.
+      await expect(movementRow).toHaveClass(/nb-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
     });
 
     await test.step('Abrir formulario de edición', async () => {
@@ -1006,13 +1006,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
       let opened = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
           const rowActionsButton = page
-            .locator('.native-datagrid__row')
+            .locator('.nb-datagrid__row')
             .filter({ hasText: createdMovementRowText! })
-            .locator('.native-datagrid__row-actions button')
+            .locator('.nb-datagrid__row-actions button')
             .first();
           await rowActionsButton.click();
           await page
-            .locator('.native-datagrid__row-actions-popover')
+            .locator('.nb-datagrid__row-actions-popover')
             .locator('button')
             .filter({ hasText: /editar|edit/i })
             .click();
@@ -1026,10 +1026,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
           await page.keyboard.press('Escape');
           await page.waitForTimeout(300);
           const movementRow = page
-            .locator('.native-datagrid__row')
+            .locator('.nb-datagrid__row')
             .filter({ hasText: createdMovementRowText! });
           await movementRow.click();
-          await expect(movementRow).toHaveClass(/native-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
+          await expect(movementRow).toHaveClass(/nb-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
           await page.waitForTimeout(300);
         }
       }
@@ -1040,7 +1040,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Modificar el monto y guardar', async () => {
       // Cambiar el monto de 50 a 75
-      const montoInput = crudDialogBody(page, /editar|edit/i).locator('#native-form-amount, input[aria-label="Monto"]').first();
+      const montoInput = crudDialogBody(page, /editar|edit/i).locator('#nb-form-amount, input[aria-label="Monto"]').first();
       await montoInput.waitFor({ state: 'visible', timeout: 6000 });
       await montoInput.click({ clickCount: 3 });
       await montoInput.fill('75');
@@ -1052,7 +1052,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Verificar que el monto actualizado aparece en el grid', async () => {
-      const movementRow = page.locator('.native-datagrid__row').filter({ hasText: createdMovementRowText! });
+      const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
       await expect(movementRow).toBeVisible({ timeout: 10000 });
       // El formatter de amount muestra en formato moneda; "75" debe aparecer en la fila
       await expect(movementRow).toContainText('75');
@@ -1155,8 +1155,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
         )
         .catch(() => {});
       await waitForGridLoad(page);
-      // Check native-datagrid toolbar for cashbox dashboard
-      await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+      // Check nb-datagrid toolbar for cashbox dashboard
+      await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
         timeout: 15000,
       });
 
@@ -1164,7 +1164,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForGridLoad(page);
       await expect(
         page
-          .locator('.native-datagrid__row')
+          .locator('.nb-datagrid__row')
           .filter({ hasText: /cerrada|abierta|ci e2e branch|caja/i })
           .first(),
       ).toBeVisible({ timeout: 15000 });

@@ -13,7 +13,7 @@
 
 /* stylelint-disable */
 :root,
-.app-theme-dark {
+[data-theme='dark'] {
 
   // ── Color base ──────────────────────────────────────────────────────────────
   // True neutral dark — no blue tint. Breaks association with VS Code / Tailwind dark.
@@ -114,4 +114,4 @@
 }
 
 // Sentinel — allows JS/SCSS to detect the active theme class.
-.app-theme-dark { content: ''; }
+[data-theme='dark'] { content: ''; }

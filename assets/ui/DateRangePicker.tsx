@@ -20,6 +20,7 @@ import {
   parseDisplayDate,
   weekDayLabels,
 } from './DatePicker';
+import { useUiStrings } from './UiStrings';
 import './DateRangePicker.scss';
 
 export interface DateRangePickerProps {
@@ -138,6 +139,7 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const startId = useId();
   const endId = useId();
+  const strings = useUiStrings();
 
   // ── Derived display values ────────────────────────────────────────────────
   const resolvedLocale = getLocale(locale);
@@ -199,6 +201,14 @@ export function DateRangePicker({
     };
   }, [open]);
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const closePanel = useCallback(() => {
+    setOpen(false);
+    setPhase('idle');
+    setPendingStart(null);
+    setHoverIso(null);
+  }, []);
+
   // ── Outside click / Escape ────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
@@ -223,15 +233,7 @@ export function DateRangePicker({
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  const closePanel = useCallback(() => {
-    setOpen(false);
-    setPhase('idle');
-    setPendingStart(null);
-    setHoverIso(null);
-  }, []);
+  }, [open, closePanel]);
 
   const commitRange = useCallback((start: string, end: string) => {
     // Normalize: ensure start <= end
@@ -365,17 +367,17 @@ export function DateRangePicker({
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div ref={rootRef} className={cx('app-date-range-picker', className)}>
+    <div ref={rootRef} className={cx('nb-date-range-picker', className)}>
 
       {/* ── Trigger ── */}
       <div
         ref={triggerRef}
         className={cx(
-          'app-date-range-picker__trigger',
-          invalid && 'app-date-range-picker__trigger--invalid',
-          readOnly && 'app-date-range-picker__trigger--readonly',
-          open && 'app-date-range-picker__trigger--open',
-          disabled && 'app-date-range-picker__trigger--disabled',
+          'nb-date-range-picker__trigger',
+          invalid && 'nb-date-range-picker__trigger--invalid',
+          readOnly && 'nb-date-range-picker__trigger--readonly',
+          open && 'nb-date-range-picker__trigger--open',
+          disabled && 'nb-date-range-picker__trigger--disabled',
         )}
         aria-label={ariaLabel}
       >
@@ -386,8 +388,8 @@ export function DateRangePicker({
           type="text"
           inputMode="numeric"
           className={cx(
-            'app-date-range-picker__input',
-            !editingField && !startDisplay && 'app-date-range-picker__input--placeholder',
+            'nb-date-range-picker__input',
+            !editingField && !startDisplay && 'nb-date-range-picker__input--placeholder',
           )}
           value={editingField === 'start' ? startText : startDisplay}
           placeholder={placeholder}
@@ -403,7 +405,7 @@ export function DateRangePicker({
         />
 
         {/* Separator */}
-        <span className="app-date-range-picker__sep" aria-hidden="true">
+        <span className="nb-date-range-picker__sep" aria-hidden="true">
           <i className="ph ph-arrow-right" />
         </span>
 
@@ -414,8 +416,8 @@ export function DateRangePicker({
           type="text"
           inputMode="numeric"
           className={cx(
-            'app-date-range-picker__input',
-            !editingField && !endDisplay && 'app-date-range-picker__input--placeholder',
+            'nb-date-range-picker__input',
+            !editingField && !endDisplay && 'nb-date-range-picker__input--placeholder',
           )}
           value={editingField === 'end' ? endText : endDisplay}
           placeholder={placeholder}
@@ -430,13 +432,13 @@ export function DateRangePicker({
         />
 
         {/* Trailing actions */}
-        <span className="app-date-range-picker__icons">
+        <span className="nb-date-range-picker__icons">
           {(startDisplay || endDisplay) && !disabled && !readOnly && (
             <span
               role="button"
               tabIndex={-1}
-              className="app-date-range-picker__clear"
-              aria-label="Limpiar rango"
+              className="nb-date-range-picker__clear"
+              aria-label={strings.clearDateRange}
               onPointerDown={handleClear}
             >
               <i className="ph ph-x" aria-hidden="true" />
@@ -445,8 +447,8 @@ export function DateRangePicker({
           <span
             role="button"
             tabIndex={-1}
-            className="app-date-range-picker__calendar-btn"
-            aria-label="Abrir calendario"
+            className="nb-date-range-picker__calendar-btn"
+            aria-label={strings.openCalendar}
             onPointerDown={handleCalendarPointerDown}
           >
             <i className="ph ph-calendar-blank" aria-hidden="true" />
@@ -456,7 +458,7 @@ export function DateRangePicker({
 
       {/* Phase indicator while selecting end */}
       {phase === 'selecting-end' && (
-        <div className="app-date-range-picker__hint" role="status" aria-live="polite">
+        <div className="nb-date-range-picker__hint" role="status" aria-live="polite">
           Selecciona la fecha de fin
         </div>
       )}
@@ -465,28 +467,28 @@ export function DateRangePicker({
       {open && createPortal(
         <div
           ref={panelRef}
-          className="app-date-range-picker__panel"
+          className="nb-date-range-picker__panel"
           role="dialog"
-          aria-label="Seleccionar rango de fechas"
+          aria-label={strings.selectDateRange}
           style={panelStyle}
         >
           {/* Header */}
-          <div className="app-date-range-picker__header">
+          <div className="nb-date-range-picker__header">
             <button
               type="button"
-              className="app-date-range-picker__nav"
-              aria-label="Mes anterior"
+              className="nb-date-range-picker__nav"
+              aria-label={strings.previousMonth}
               onClick={() => setMonth((m) => addMonths(m, -1))}
             >
               <i className="ph ph-caret-left" aria-hidden="true" />
             </button>
-            <div className="app-date-range-picker__month" aria-live="polite">
+            <div className="nb-date-range-picker__month" aria-live="polite">
               {formatMonthLabel(month, resolvedLocale)}
             </div>
             <button
               type="button"
-              className="app-date-range-picker__nav"
-              aria-label="Mes siguiente"
+              className="nb-date-range-picker__nav"
+              aria-label={strings.nextMonth}
               onClick={() => setMonth((m) => addMonths(m, 1))}
             >
               <i className="ph ph-caret-right" aria-hidden="true" />
@@ -494,13 +496,13 @@ export function DateRangePicker({
           </div>
 
           {/* Weekdays */}
-          <div className="app-date-range-picker__weekdays" aria-hidden="true">
+          <div className="nb-date-range-picker__weekdays" aria-hidden="true">
             {weekdayLbls.map((label, i) => <span key={`${label}-${i}`}>{label}</span>)}
           </div>
 
           {/* Phase banner */}
           {phase === 'selecting-end' && (
-            <div className="app-date-range-picker__phase-banner">
+            <div className="nb-date-range-picker__phase-banner">
               <i className="ph ph-info" aria-hidden="true" />
               Ahora selecciona la fecha de fin
             </div>
@@ -508,7 +510,7 @@ export function DateRangePicker({
 
           {/* Day grid */}
           <div
-            className="app-date-range-picker__days"
+            className="nb-date-range-picker__days"
             role="grid"
             aria-label={formatMonthLabel(month, resolvedLocale)}
           >
@@ -519,14 +521,14 @@ export function DateRangePicker({
                   key={day.iso}
                   type="button"
                   className={cx(
-                    'app-date-range-picker__day',
-                    !day.inCurrentMonth && 'app-date-range-picker__day--muted',
-                    day.iso === todayIso && 'app-date-range-picker__day--today',
-                    role === 'start' && 'app-date-range-picker__day--range-start',
-                    role === 'end' && 'app-date-range-picker__day--range-end',
-                    role === 'in-range' && 'app-date-range-picker__day--in-range',
-                    role === 'single' && 'app-date-range-picker__day--range-single',
-                    phase === 'selecting-end' && 'app-date-range-picker__day--selecting',
+                    'nb-date-range-picker__day',
+                    !day.inCurrentMonth && 'nb-date-range-picker__day--muted',
+                    day.iso === todayIso && 'nb-date-range-picker__day--today',
+                    role === 'start' && 'nb-date-range-picker__day--range-start',
+                    role === 'end' && 'nb-date-range-picker__day--range-end',
+                    role === 'in-range' && 'nb-date-range-picker__day--in-range',
+                    role === 'single' && 'nb-date-range-picker__day--range-single',
+                    phase === 'selecting-end' && 'nb-date-range-picker__day--selecting',
                   )}
                   disabled={day.disabled}
                   role="gridcell"
@@ -535,33 +537,33 @@ export function DateRangePicker({
                   onMouseLeave={() => phase === 'selecting-end' && setHoverIso(null)}
                   onClick={() => !day.disabled && handleDayClick(day.iso)}
                 >
-                  <span className="app-date-range-picker__day-inner">{day.date.getDate()}</span>
+                  <span className="nb-date-range-picker__day-inner">{day.date.getDate()}</span>
                 </button>
               );
             })}
           </div>
 
           {/* Footer */}
-          <div className="app-date-range-picker__footer">
+          <div className="nb-date-range-picker__footer">
             <button
               type="button"
-              className="app-date-range-picker__text-button"
+              className="nb-date-range-picker__text-button"
               onClick={() => { onChange?.('', ''); closePanel(); }}
             >
-              Limpiar
+              {strings.clear}
             </button>
             {phase === 'selecting-end' ? (
               <button
                 type="button"
-                className="app-date-range-picker__text-button"
+                className="nb-date-range-picker__text-button"
                 onClick={() => { setPendingStart(null); setPhase('idle'); setHoverIso(null); }}
               >
-                Cancelar
+                {strings.cancel}
               </button>
             ) : (
               <button
                 type="button"
-                className="app-date-range-picker__text-button"
+                className="nb-date-range-picker__text-button"
                 onClick={() => {
                   const today = toIsoDate(new Date());
                   setMonth(startOfMonth(new Date()));
@@ -571,7 +573,7 @@ export function DateRangePicker({
                   closePanel();
                 }}
               >
-                Hoy
+                {strings.today}
               </button>
             )}
           </div>

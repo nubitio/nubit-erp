@@ -10,7 +10,7 @@
 //
 // Border-radius: --radius-md (6px) — unified with buttons for visual harmony.
 
-.app-form-field {
+.nb-form-field {
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
@@ -18,35 +18,35 @@
   gap: var(--space-1);
 }
 
-.app-form-field__label {
+.nb-form-field__label {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.01em;
 }
 
-.app-form-field__label--required::after {
+.nb-form-field__label--required::after {
   color: var(--error-color);
   content: ' *';
 }
 
-.app-form-field__error,
-.app-form-field__help {
+.nb-form-field__error,
+.nb-form-field__help {
   font-size: var(--font-size-xs);
   line-height: var(--line-height-tight);
 }
 
-.app-form-field__error {
+.nb-form-field__error {
   color: var(--error-color);
 }
 
-.app-form-field__help {
+.nb-form-field__help {
   color: var(--text-tertiary);
 }
 
 // ── Input ──────────────────────────────────────────────────────────────────────
 
-.app-input {
+.nb-input {
   appearance: none;
   background: var(--surface-1);   // clean white — Fluent pattern (not gray fill)
   border: 1px solid var(--border-color);
@@ -109,8 +109,8 @@
 
 // ── Validation states ──────────────────────────────────────────────────────────
 
-.app-input--invalid,
-.app-form-field--error .app-input {
+.nb-input--invalid,
+.nb-form-field--error .nb-input {
   border-color: var(--error-color);
 
   &:focus {
@@ -120,12 +120,12 @@
 
 // ── Variants ───────────────────────────────────────────────────────────────────
 
-.app-select {
+.nb-select {
   appearance: auto;
   padding-right: var(--space-5);
 }
 
-.app-textarea {
+.nb-textarea {
   line-height: var(--line-height-normal);
   min-height: 96px;
   padding: var(--space-2) var(--space-3);

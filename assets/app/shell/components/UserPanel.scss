@@ -23,8 +23,8 @@
   width: var(--toolbar-height);
 
   // Avatar ring on hover/focus — accent ring indicates interactive state
-  &:hover .app-avatar,
-  &:focus-visible .app-avatar {
+  &:hover .nb-avatar,
+  &:focus-visible .nb-avatar {
     box-shadow: 0 0 0 2px var(--accent-color);
     outline: none;
   }

@@ -782,27 +782,34 @@ function normalizeUrl(url) {
 }
 function useResourceSchema(apiUrl) {
 	const { data, isLoading, error } = useSchemaContext();
-	if (!data) return {
-		fields: [],
+	return useMemo(() => {
+		if (!data) return {
+			fields: [],
+			isLoading,
+			error,
+			supportedOperations: []
+		};
+		const resourceMap = data.format === "hydra" ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
+		const normalizedInput = normalizeUrl(apiUrl);
+		const resourceSchema = Object.values(resourceMap).find((r) => normalizeUrl(r.apiUrl) === normalizedInput);
+		if (!resourceSchema) return {
+			fields: [],
+			isLoading: false,
+			error: /* @__PURE__ */ new Error(`No schema found for ${apiUrl} in API doc`),
+			supportedOperations: []
+		};
+		return {
+			fields: mapHydraSchemaToFields(resourceSchema, (className) => resourceMap[className]?.apiUrl, (className) => resourceMap[className]),
+			isLoading: false,
+			error: void 0,
+			supportedOperations: resourceSchema.supportedOperations ?? []
+		};
+	}, [
+		data,
 		isLoading,
 		error,
-		supportedOperations: []
-	};
-	const resourceMap = data.format === "hydra" ? parseHydraDoc(data.doc) : parseOpenApiDoc(data.doc);
-	const normalizedInput = normalizeUrl(apiUrl);
-	const resourceSchema = Object.values(resourceMap).find((r) => normalizeUrl(r.apiUrl) === normalizedInput);
-	if (!resourceSchema) return {
-		fields: [],
-		isLoading: false,
-		error: /* @__PURE__ */ new Error(`No schema found for ${apiUrl} in API doc`),
-		supportedOperations: []
-	};
-	return {
-		fields: mapHydraSchemaToFields(resourceSchema, (className) => resourceMap[className]?.apiUrl, (className) => resourceMap[className]),
-		isLoading: false,
-		error: void 0,
-		supportedOperations: resourceSchema.supportedOperations ?? []
-	};
+		apiUrl
+	]);
 }
 //#endregion
 //#region assets/hydra/HydraResourceSchemaProvider.tsx

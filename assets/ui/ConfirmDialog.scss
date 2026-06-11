@@ -1,6 +1,6 @@
 @use 'variables' as *;
 
-.confirm-dialog__message {
+.nb-confirm-dialog__message {
   margin: var(--space-2) 0 var(--space-4);
   line-height: var(--line-height-relaxed);
   color: var(--text-primary);

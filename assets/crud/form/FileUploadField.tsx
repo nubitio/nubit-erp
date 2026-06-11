@@ -223,42 +223,42 @@ export function FileUploadField({
   return (
     <div
       className={cx(
-        'native-form__file-upload',
-        imageMode && 'native-form__file-upload--image',
-        invalid && 'native-form__file-upload--invalid',
+        'nb-form__file-upload',
+        imageMode && 'nb-form__file-upload--image',
+        invalid && 'nb-form__file-upload--invalid',
       )}
     >
       <div
         {...getRootProps({
           className: cx(
-            'native-form__file-upload-zone',
-            isDragActive && 'native-form__file-upload-zone--active',
-            hasContent && 'native-form__file-upload-zone--filled',
-            status === 'uploading' && 'native-form__file-upload-zone--uploading',
-            !isInteractive && 'native-form__file-upload-zone--disabled',
+            'nb-form__file-upload-zone',
+            isDragActive && 'nb-form__file-upload-zone--active',
+            hasContent && 'nb-form__file-upload-zone--filled',
+            status === 'uploading' && 'nb-form__file-upload-zone--uploading',
+            !isInteractive && 'nb-form__file-upload-zone--disabled',
           ),
         })}
       >
-        <input {...getInputProps({ id: `native-form-${field.name}`, 'aria-label': field.label })} />
+        <input {...getInputProps({ id: `nb-form-${field.name}`, 'aria-label': field.label })} />
 
         {hasContent ? (
           <>
             {previewUrl ? (
               <img
-                className="native-form__file-upload-preview"
+                className="nb-form__file-upload-preview"
                 src={previewUrl}
                 alt={field.label}
               />
             ) : (
-              <div className="native-form__file-upload-file">
-                <span className="native-form__file-upload-file-icon" aria-hidden="true">
+              <div className="nb-form__file-upload-file">
+                <span className="nb-form__file-upload-file-icon" aria-hidden="true">
                   <i className="ph ph-file" />
                 </span>
-                <div className="native-form__file-upload-file-meta">
-                  <span className="native-form__file-upload-file-name">{fileName}</span>
+                <div className="nb-form__file-upload-file-meta">
+                  <span className="nb-form__file-upload-file-name">{fileName}</span>
                   {fileUrl && (
                     <a
-                      className="native-form__file-upload-file-link"
+                      className="nb-form__file-upload-file-link"
                       href={fileUrl}
                       target="_blank"
                       rel="noreferrer"
@@ -272,17 +272,17 @@ export function FileUploadField({
             )}
 
             {status === 'uploading' && (
-              <div className="native-form__file-upload-overlay" aria-live="polite">
-                <span className="native-form__file-upload-spinner" aria-hidden="true" />
+              <div className="nb-form__file-upload-overlay" aria-live="polite">
+                <span className="nb-form__file-upload-spinner" aria-hidden="true" />
                 <span>{t('form.fileUploading')}</span>
               </div>
             )}
 
             {isInteractive && status !== 'uploading' && (
-              <div className="native-form__file-upload-actions">
+              <div className="nb-form__file-upload-actions">
                 <button
                   type="button"
-                  className="native-form__file-upload-action"
+                  className="nb-form__file-upload-action"
                   onClick={(event) => {
                     event.stopPropagation();
                     open();
@@ -293,7 +293,7 @@ export function FileUploadField({
                 </button>
                 <button
                   type="button"
-                  className="native-form__file-upload-action native-form__file-upload-action--danger"
+                  className="nb-form__file-upload-action nb-form__file-upload-action--danger"
                   onClick={(event) => {
                     event.stopPropagation();
                     handleClear();
@@ -306,18 +306,18 @@ export function FileUploadField({
             )}
           </>
         ) : (
-          <div className="native-form__file-upload-placeholder">
-            <span className="native-form__file-upload-icon" aria-hidden="true">
+          <div className="nb-form__file-upload-placeholder">
+            <span className="nb-form__file-upload-icon" aria-hidden="true">
               <i className={`ph ${placeholderIcon}`} />
             </span>
-            <span className="native-form__file-upload-title">{placeholderTitle}</span>
-            <span className="native-form__file-upload-hint">{placeholderHint}</span>
+            <span className="nb-form__file-upload-title">{placeholderTitle}</span>
+            <span className="nb-form__file-upload-hint">{placeholderHint}</span>
           </div>
         )}
       </div>
 
       {errorMessage && (
-        <span className="native-form__file-upload-error" role="alert">
+        <span className="nb-form__file-upload-error" role="alert">
           <i className="ph ph-warning-circle" aria-hidden="true" />
           {errorMessage}
         </span>
@@ -332,6 +332,6 @@ export function isImageFileField(field: Field): boolean {
   return accept === '' || accept.includes('image');
 }
 
-export function isUploadableFileField(field: Field): boolean {
+export function isUploadableFileField(field: Field): field is Field & { url: string } {
   return field.type === FieldType.FILE && !!field.url;
 }

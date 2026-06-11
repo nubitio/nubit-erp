@@ -69,7 +69,7 @@ export async function completePosCashPayment(page: Page) {
     }
 
     const exactoChip = page
-      .locator('.pos-payment__cash .app-chip')
+      .locator('.pos-payment__cash .nb-chip')
       .filter({ hasText: /^Exacto$/ })
       .first();
     if (await exactoChip.isVisible({ timeout: 2000 }).catch(() => false)) {

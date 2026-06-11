@@ -159,7 +159,7 @@
 .pos-operator-header__warehouse-dropdown {
   max-width: 160px;
 
-  .app-dropdown__trigger {
+  .nb-dropdown__trigger {
     appearance: auto;
     border: 1.5px solid var(--pos-primary-border);
     background: var(--pos-primary-soft);
@@ -173,7 +173,7 @@
     transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
 
     &:hover:not(:disabled),
-    .app-dropdown--open & {
+    .nb-dropdown--open & {
       border-color: var(--pos-primary);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-focus-ring) 15%, transparent);
     }
@@ -1457,7 +1457,7 @@
   gap: var(--space-1);
   flex-wrap: wrap;
 
-  .app-chip { flex: 1; min-width: 2.8rem; justify-content: center; }
+  .nb-chip { flex: 1; min-width: 2.8rem; justify-content: center; }
 }
 
 .pos-discount-label {
@@ -1597,7 +1597,7 @@
 
   .pos-discount-presets {
     flex-wrap: nowrap;
-    .app-chip { flex: 0 0 auto; min-width: 2.5rem; }
+    .nb-chip { flex: 0 0 auto; min-width: 2.5rem; }
   }
 }
 
@@ -2339,7 +2339,7 @@ html[data-density="compact"] {
   // Discount row
   .pos-footer-option-row {
     .pos-discount-label { font-size: var(--font-size-xs); }
-    .app-chip           { font-size: var(--font-size-xs); min-width: 2rem; padding: 0.1rem 0.4rem; }
+    .nb-chip           { font-size: var(--font-size-xs); min-width: 2rem; padding: 0.1rem 0.4rem; }
   }
 }
 

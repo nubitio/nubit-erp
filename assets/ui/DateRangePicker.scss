@@ -2,14 +2,14 @@
 // Single trigger with two text inputs (start → end) sharing one calendar panel.
 // Range days use a continuous band highlight with pill caps at start and end.
 
-.app-date-range-picker {
+.nb-date-range-picker {
   display: block;
   min-width: 0;
   width: 100%;
 }
 
 // ── Trigger ───────────────────────────────────────────────────────────────────
-.app-date-range-picker__trigger {
+.nb-date-range-picker__trigger {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-color);
@@ -26,41 +26,41 @@
     background-color var(--transition-base);
   width: 100%;
 
-  &:hover:not(.app-date-range-picker__trigger--disabled) {
+  &:hover:not(.nb-date-range-picker__trigger--disabled) {
     background: var(--surface-1);
   }
 
-  &.app-date-range-picker__trigger--open {
+  &.nb-date-range-picker__trigger--open {
     background: var(--surface-1);
     border-color: var(--accent-color);
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
 }
 
-.app-date-range-picker__trigger:focus-within:not(.app-date-range-picker__trigger--disabled):not(.app-date-range-picker__trigger--readonly) {
+.nb-date-range-picker__trigger:focus-within:not(.nb-date-range-picker__trigger--disabled):not(.nb-date-range-picker__trigger--readonly) {
   background: var(--surface-1);
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px var(--focus-ring-color);
 }
 
-.app-date-range-picker__trigger--invalid {
+.nb-date-range-picker__trigger--invalid {
   background: color-mix(in srgb, var(--error-color) 4%, var(--surface-1));
   border-color: var(--error-color);
 }
 
-.app-date-range-picker__trigger--readonly {
+.nb-date-range-picker__trigger--readonly {
   background: var(--surface-subtle);
   cursor: not-allowed;
   opacity: 0.72;
 }
 
-.app-date-range-picker__trigger--disabled {
+.nb-date-range-picker__trigger--disabled {
   cursor: not-allowed;
   opacity: 0.72;
 }
 
 // ── Inputs ────────────────────────────────────────────────────────────────────
-.app-date-range-picker__input {
+.nb-date-range-picker__input {
   background: transparent;
   border: none;
   caret-color: var(--accent-color);
@@ -74,7 +74,7 @@
 
   &::placeholder { color: var(--text-secondary); }
 
-  &.app-date-range-picker__input--placeholder {
+  &.nb-date-range-picker__input--placeholder {
     color: var(--text-secondary);
   }
 
@@ -82,7 +82,7 @@
 }
 
 // ── Separator ─────────────────────────────────────────────────────────────────
-.app-date-range-picker__sep {
+.nb-date-range-picker__sep {
   color: var(--text-tertiary);
   flex: 0 0 auto;
   font-size: 0.75rem;
@@ -91,14 +91,14 @@
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-.app-date-range-picker__icons {
+.nb-date-range-picker__icons {
   align-items: center;
   display: flex;
   flex: 0 0 auto;
   gap: 2px;
 }
 
-.app-date-range-picker__calendar-btn {
+.nb-date-range-picker__calendar-btn {
   align-items: center;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
@@ -114,7 +114,7 @@
   &:hover { color: var(--text-secondary); }
 }
 
-.app-date-range-picker__clear {
+.nb-date-range-picker__clear {
   align-items: center;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
@@ -133,14 +133,14 @@
   }
 }
 
-.app-date-range-picker__trigger:hover .app-date-range-picker__clear,
-.app-date-range-picker__trigger--open .app-date-range-picker__clear,
-.app-date-range-picker__trigger:focus-within .app-date-range-picker__clear {
+.nb-date-range-picker__trigger:hover .nb-date-range-picker__clear,
+.nb-date-range-picker__trigger--open .nb-date-range-picker__clear,
+.nb-date-range-picker__trigger:focus-within .nb-date-range-picker__clear {
   opacity: 1;
 }
 
 // ── Phase hint (below trigger) ────────────────────────────────────────────────
-.app-date-range-picker__hint {
+.nb-date-range-picker__hint {
   color: var(--accent-color);
   font-size: var(--font-size-xs);
   margin-top: var(--space-1);
@@ -148,7 +148,7 @@
 }
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
-.app-date-range-picker__panel {
+.nb-date-range-picker__panel {
   animation: date-picker-in var(--transition-base) ease;
   background: var(--surface-1);
   border: 1px solid var(--border-color);
@@ -162,7 +162,7 @@
   z-index: var(--z-picker-panel, 3000);
 }
 
-.app-date-range-picker__header {
+.nb-date-range-picker__header {
   align-items: center;
   display: grid;
   gap: var(--space-2);
@@ -170,7 +170,7 @@
   margin-bottom: var(--space-3);
 }
 
-.app-date-range-picker__month {
+.nb-date-range-picker__month {
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -179,7 +179,7 @@
   text-transform: capitalize;
 }
 
-.app-date-range-picker__nav {
+.nb-date-range-picker__nav {
   align-items: center;
   appearance: none;
   background: transparent;
@@ -200,13 +200,13 @@
   }
 }
 
-.app-date-range-picker__weekdays,
-.app-date-range-picker__days {
+.nb-date-range-picker__weekdays,
+.nb-date-range-picker__days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
 
-.app-date-range-picker__weekdays {
+.nb-date-range-picker__weekdays {
   color: var(--text-tertiary);
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-semibold);
@@ -217,7 +217,7 @@
 }
 
 // ── Phase banner ──────────────────────────────────────────────────────────────
-.app-date-range-picker__phase-banner {
+.nb-date-range-picker__phase-banner {
   align-items: center;
   background: color-mix(in srgb, var(--accent-color) 8%, transparent);
   border-radius: var(--radius-sm);
@@ -231,7 +231,7 @@
 }
 
 // ── Day cells with range highlight ────────────────────────────────────────────
-.app-date-range-picker__day {
+.nb-date-range-picker__day {
   appearance: none;
   background: transparent;
   border: 0;
@@ -263,11 +263,11 @@
   }
 }
 
-.app-date-range-picker__day--muted {
-  .app-date-range-picker__day-inner { color: var(--text-tertiary); }
+.nb-date-range-picker__day--muted {
+  .nb-date-range-picker__day-inner { color: var(--text-tertiary); }
 }
 
-.app-date-range-picker__day-inner {
+.nb-date-range-picker__day-inner {
   align-items: center;
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -282,14 +282,14 @@
 }
 
 // Hover on non-selected day
-.app-date-range-picker__day:not(:disabled):hover .app-date-range-picker__day-inner,
-.app-date-range-picker__day:not(:disabled):focus-visible .app-date-range-picker__day-inner {
+.nb-date-range-picker__day:not(:disabled):hover .nb-date-range-picker__day-inner,
+.nb-date-range-picker__day:not(:disabled):focus-visible .nb-date-range-picker__day-inner {
   background: color-mix(in srgb, var(--accent-color) 10%, transparent);
   color: var(--accent-color);
 }
 
 // Today dot
-.app-date-range-picker__day--today .app-date-range-picker__day-inner::after {
+.nb-date-range-picker__day--today .nb-date-range-picker__day-inner::after {
   background: var(--accent-color);
   border-radius: 999px;
   bottom: 1px;
@@ -302,64 +302,64 @@
 }
 
 // ── Range: in-range band ──────────────────────────────────────────────────────
-.app-date-range-picker__day--in-range::before {
+.nb-date-range-picker__day--in-range::before {
   background: color-mix(in srgb, var(--accent-color) 12%, transparent);
 }
 
 // ── Range: start cap ──────────────────────────────────────────────────────────
-.app-date-range-picker__day--range-start {
+.nb-date-range-picker__day--range-start {
   &::before {
     background: color-mix(in srgb, var(--accent-color) 12%, transparent);
     left: 50%;
   }
 
-  .app-date-range-picker__day-inner {
+  .nb-date-range-picker__day-inner {
     background: var(--accent-color);
     border-radius: var(--radius-sm);
     color: var(--on-accent-color);
     font-weight: var(--font-weight-semibold);
   }
 
-  &:not(:disabled):hover .app-date-range-picker__day-inner,
-  &:not(:disabled):focus-visible .app-date-range-picker__day-inner {
+  &:not(:disabled):hover .nb-date-range-picker__day-inner,
+  &:not(:disabled):focus-visible .nb-date-range-picker__day-inner {
     background: var(--accent-hover);
     color: var(--on-accent-color);
   }
 
   // Today dot override on selected
-  &.app-date-range-picker__day--today .app-date-range-picker__day-inner::after {
+  &.nb-date-range-picker__day--today .nb-date-range-picker__day-inner::after {
     background: var(--on-accent-color);
   }
 }
 
 // ── Range: end cap ────────────────────────────────────────────────────────────
-.app-date-range-picker__day--range-end {
+.nb-date-range-picker__day--range-end {
   &::before {
     background: color-mix(in srgb, var(--accent-color) 12%, transparent);
     right: 50%;
   }
 
-  .app-date-range-picker__day-inner {
+  .nb-date-range-picker__day-inner {
     background: var(--accent-color);
     border-radius: var(--radius-sm);
     color: var(--on-accent-color);
     font-weight: var(--font-weight-semibold);
   }
 
-  &:not(:disabled):hover .app-date-range-picker__day-inner,
-  &:not(:disabled):focus-visible .app-date-range-picker__day-inner {
+  &:not(:disabled):hover .nb-date-range-picker__day-inner,
+  &:not(:disabled):focus-visible .nb-date-range-picker__day-inner {
     background: var(--accent-hover);
     color: var(--on-accent-color);
   }
 
-  &.app-date-range-picker__day--today .app-date-range-picker__day-inner::after {
+  &.nb-date-range-picker__day--today .nb-date-range-picker__day-inner::after {
     background: var(--on-accent-color);
   }
 }
 
 // ── Single-day selection (start = end) ────────────────────────────────────────
-.app-date-range-picker__day--range-single {
-  .app-date-range-picker__day-inner {
+.nb-date-range-picker__day--range-single {
+  .nb-date-range-picker__day-inner {
     background: var(--accent-color);
     border-radius: var(--radius-sm);
     color: var(--on-accent-color);
@@ -368,12 +368,12 @@
 }
 
 // ── Cursor change while selecting end ─────────────────────────────────────────
-.app-date-range-picker__day--selecting:not(:disabled) {
+.nb-date-range-picker__day--selecting:not(:disabled) {
   cursor: crosshair;
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────
-.app-date-range-picker__footer {
+.nb-date-range-picker__footer {
   align-items: center;
   border-top: 1px solid var(--border-subtle);
   display: flex;
@@ -382,7 +382,7 @@
   padding-top: var(--space-2);
 }
 
-.app-date-range-picker__text-button {
+.nb-date-range-picker__text-button {
   align-items: center;
   appearance: none;
   background: transparent;
@@ -409,22 +409,22 @@
 }
 
 html[data-density="compact"] {
-  .app-date-range-picker__panel {
+  .nb-date-range-picker__panel {
     padding: var(--space-2);
     width: var(--calendar-width, 260px);
   }
 
-  .app-date-range-picker__header {
+  .nb-date-range-picker__header {
     grid-template-columns: var(--control-height-form) 1fr var(--control-height-form);
     margin-bottom: var(--space-2);
   }
 
-  .app-date-range-picker__nav {
+  .nb-date-range-picker__nav {
     height: var(--control-height-form);
     width: var(--control-height-form);
   }
 
-  .app-date-range-picker__phase-banner {
+  .nb-date-range-picker__phase-banner {
     margin-bottom: var(--space-1);
   }
 }

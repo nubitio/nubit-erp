@@ -65,29 +65,29 @@ export const CollapsibleSection = ({
 
   return (
     <div
-      className={['app-collapsible', open && 'app-collapsible--open', className].filter(Boolean).join(' ')}
+      className={['nb-collapsible', open && 'nb-collapsible--open', className].filter(Boolean).join(' ')}
       data-testid={testId}
     >
-      <div className="app-collapsible__header">
+      <div className="nb-collapsible__header">
         <button
           type="button"
-          className="app-collapsible__trigger"
+          className="nb-collapsible__trigger"
           aria-expanded={open}
           aria-controls={bodyId}
           onClick={onToggle}
         >
           {icon && <i className={icon} aria-hidden="true" />}
-          <span className="app-collapsible__label">{label}</span>
-          <i className="ph ph-caret-down app-collapsible__chevron" aria-hidden="true" />
+          <span className="nb-collapsible__label">{label}</span>
+          <i className="ph ph-caret-down nb-collapsible__chevron" aria-hidden="true" />
         </button>
         {trailing && (
-          <div className="app-collapsible__trailing">{trailing}</div>
+          <div className="nb-collapsible__trailing">{trailing}</div>
         )}
       </div>
 
       <div
         id={bodyId}
-        className={['app-collapsible__body', bodyClassName].filter(Boolean).join(' ')}
+        className={['nb-collapsible__body', bodyClassName].filter(Boolean).join(' ')}
         role="region"
         aria-labelledby={undefined}
         hidden={!open}

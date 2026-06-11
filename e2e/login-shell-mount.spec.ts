@@ -88,7 +88,7 @@ test.describe('Post-login shell entry regression', () => {
 
     await expect.poll(() => page.url(), { timeout: 20_000 }).toBe(`${BASE_URL}/#/user`);
     await expect(page.locator('form.login-form')).toBeHidden({ timeout: 10_000 });
-    await expect(page.locator('.side-nav-outer-toolbar')).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('.nb-admin-shell')).toBeVisible({ timeout: 20_000 });
 
     await expect
       .poll(async () => page.evaluate(() => window.location.hash), { timeout: 5_000 })
@@ -117,7 +117,7 @@ test.describe('Post-login shell entry regression', () => {
     await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
     await completeBranchSelectionIfVisible(page);
 
-    await expect(page.locator('.side-nav-outer-toolbar')).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('.nb-admin-shell')).toBeVisible({ timeout: 20_000 });
     await expect
       .poll(async () => page.evaluate(() => localStorage.getItem('selectedBranchId')), {
         timeout: 5_000,

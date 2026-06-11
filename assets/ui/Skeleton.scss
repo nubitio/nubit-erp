@@ -3,12 +3,12 @@
 // Works correctly in both light and dark themes because surface-2 is
 // theme-aware and will be the appropriate subtle shade in each mode.
 
-@keyframes app-skeleton-shimmer {
+@keyframes nb-skeleton-shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-.app-skeleton {
+.nb-skeleton {
   display: block;
   border-radius: var(--radius-sm);
   background: linear-gradient(
@@ -18,7 +18,7 @@
     var(--surface-2) 75%
   );
   background-size: 200% 100%;
-  animation: app-skeleton-shimmer 1.5s ease-in-out infinite;
+  animation: nb-skeleton-shimmer 1.5s ease-in-out infinite;
 
   // ── Variants ─────────────────────────────────────────────────────────────
   &--circle {
@@ -41,7 +41,7 @@
 }
 
 // Multi-line text skeleton container
-.app-skeleton-lines {
+.nb-skeleton-lines {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);

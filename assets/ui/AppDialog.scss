@@ -19,7 +19,7 @@
 
 // ── Root ───────────────────────────────────────────────────────────────────────
 
-.app-dialog-root {
+.nb-dialog-root {
   inset: 0;
   position: fixed;
   z-index: var(--z-dialog);
@@ -27,7 +27,7 @@
 
 // ── Scrim (backdrop) ───────────────────────────────────────────────────────────
 
-.app-dialog__scrim {
+.nb-dialog__scrim {
   animation: scrim-enter var(--transition-slow) both;
   background: var(--overlay-bg);
   border: 0;
@@ -43,7 +43,7 @@
 // border-radius: radius-lg (8px) — tighter than a card, crisper than a sheet.
 // shadow-lg provides maximum elevation — dialogs float above everything.
 
-.app-dialog {
+.nb-dialog {
   animation: dialog-enter var(--transition-slow) both;
   background: var(--surface-1);
   border: 1px solid var(--border-color);
@@ -63,7 +63,7 @@
 }
 
 // Full-screen variant — used for mobile or detail views.
-.app-dialog--fullscreen {
+.nb-dialog--fullscreen {
   animation: none;
   border: 0;
   border-radius: 0;
@@ -79,7 +79,7 @@
 // Matches the admin shell header height so dialogs feel like part of the system.
 // Uses border-subtle (not border-color) — keeps it light, avoids heavy dividers.
 
-.app-dialog__header {
+.nb-dialog__header {
   align-items: center;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border-subtle);
@@ -92,7 +92,7 @@
   z-index: 1;
 }
 
-.app-dialog__title {
+.nb-dialog__title {
   color: var(--text-primary);
   flex: 1;
   font-size: var(--font-size-md);
@@ -106,13 +106,13 @@
   white-space: nowrap;
 }
 
-.app-dialog__close {
+.nb-dialog__close {
   flex: 0 0 auto;
 }
 
 // ── Body ───────────────────────────────────────────────────────────────────────
 
-.app-dialog__body {
+.nb-dialog__body {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -122,7 +122,7 @@
 // ── Footer ─────────────────────────────────────────────────────────────────────
 // Action buttons live here. border-subtle keeps it subordinate to the header.
 
-.app-dialog__footer {
+.nb-dialog__footer {
   border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-shrink: 0;
@@ -133,26 +133,26 @@
   z-index: 1;
 }
 
-.app-dialog__footer .app-button {
+.nb-dialog__footer .nb-button {
   min-height: var(--control-height-form);
 }
 
 html[data-density="compact"] {
-  .app-dialog {
+  .nb-dialog {
     max-height: calc(100dvh - var(--space-5));
     max-width: calc(100vw - var(--space-5));
   }
 
-  .app-dialog__header {
+  .nb-dialog__header {
     min-height: var(--toolbar-height);
     padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   }
 
-  .app-dialog__body {
+  .nb-dialog__body {
     padding: var(--space-3);
   }
 
-  .app-dialog__footer {
+  .nb-dialog__footer {
     gap: var(--space-1);
     padding: var(--space-2) var(--space-3);
   }

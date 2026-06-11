@@ -93,7 +93,7 @@ function fieldSearchExpr(field: Field): string[] {
 }
 
 function colSpanStyle(span: ColSpan): React.CSSProperties {
-  return { '--native-form-col': String(span) } as React.CSSProperties;
+  return { '--nb-form-col': String(span) } as React.CSSProperties;
 }
 
 function useViewportWidth(): number | undefined {
@@ -308,7 +308,7 @@ function LookupDropdown({
   const blurTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   return (
-    <div ref={containerRef} className={`native-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
+    <div ref={containerRef} className={`nb-form__lookup${normalizedValue !== '' ? ' has-value' : ''}`}>
       <input
         autoComplete="off"
         className={className}
@@ -332,17 +332,17 @@ function LookupDropdown({
         onKeyDown={onKeyDown}
       />
       {!disabled && !readOnly && normalizedValue !== '' && (
-        <button type="button" className="native-form__lookup-clear" aria-label={`Limpiar ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={onClear}>
+        <button type="button" className="nb-form__lookup-clear" aria-label={`Limpiar ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={onClear}>
           <i className="ph ph-x" aria-hidden="true" />
         </button>
       )}
       {!disabled && !readOnly && (
-        <button type="button" className="native-form__lookup-toggle" aria-label={`Abrir ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { clearTimeout(blurTimer.current); setOpen((prev) => !prev); }}>
+        <button type="button" className="nb-form__lookup-toggle" aria-label={`Abrir ${label}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { clearTimeout(blurTimer.current); setOpen((prev) => !prev); }}>
           <i className="ph ph-caret-down" aria-hidden="true" style={{ transition: 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
         </button>
       )}
       {open && !disabled && !readOnly && createPortal(
-        <div ref={menuRef} className="native-form__lookup-menu" id={`${id}-listbox`} role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
+        <div ref={menuRef} className="nb-form__lookup-menu" id={`${id}-listbox`} role="listbox" style={menuStyle} onScroll={onScroll} onMouseDown={(e) => e.preventDefault()}>
           {children}
         </div>,
         document.body,
@@ -516,18 +516,18 @@ export function NativeEntitySelect({
       setDraftQuery={setDraftQuery}
       setOpen={setOpen}
     >
-      {loading && items.length === 0 && <div className="native-form__lookup-status">{t('form.lookupSearching')}</div>}
-      {!loading && items.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
+      {loading && items.length === 0 && <div className="nb-form__lookup-status">{t('form.lookupSearching')}</div>}
+      {!loading && items.length === 0 && <div className="nb-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {!loading && items.map((item) => {
         const itemValue = fieldKeyValue(field, item);
         const isActive = items[activeOptionIndex] === item;
         return (
-          <button key={String(itemValue)} id={`${controlId}-option-${String(itemValue)}`} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className={`native-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
+          <button key={String(itemValue)} id={`${controlId}-option-${String(itemValue)}`} type="button" role="option" aria-selected={String(itemValue ?? '') === normalizedValue} className={`nb-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
             {fieldTextValue(field, item)}
           </button>
         );
       })}
-      {loadingMore && <div className="native-form__lookup-status">{t('form.lookupLoadingMore')}</div>}
+      {loadingMore && <div className="nb-form__lookup-status">{t('form.lookupLoadingMore')}</div>}
     </LookupDropdown>
   );
 }
@@ -619,12 +619,12 @@ function NativeEnumSelect({
       setDraftQuery={setDraftQuery}
       setOpen={setOpen}
     >
-      {visibleItems.length === 0 && <div className="native-form__lookup-status">{t('form.lookupNoResults')}</div>}
+      {visibleItems.length === 0 && <div className="nb-form__lookup-status">{t('form.lookupNoResults')}</div>}
       {visibleItems.map((item) => {
         const itemValue = String(item['value'] ?? '');
         const isActive = visibleItems[activeOptionIndex] === item;
         return (
-          <button key={itemValue} id={`${controlId}-option-${itemValue}`} type="button" role="option" aria-selected={itemValue === normalizedValue} className={`native-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
+          <button key={itemValue} id={`${controlId}-option-${itemValue}`} type="button" role="option" aria-selected={itemValue === normalizedValue} className={`nb-form__lookup-option${isActive ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={() => selectItem(item)}>
             {String(item['text'] ?? item['value'] ?? '')}
           </button>
         );
@@ -693,7 +693,7 @@ function DetailColumnGroup({
         const width = colWidths[field.name] ?? field.width;
         return <col key={field.name} style={width ? { width } : undefined} />;
       })}
-      {allowDeleting && <col className="native-form__col-actions-col" />}
+      {allowDeleting && <col className="nb-form__col-actions-col" />}
     </colgroup>
   );
 }
@@ -718,10 +718,10 @@ function DetailSummaryFooter({
   const itemsByColumn = new Map(summary.items.filter((item) => item.column).map((item) => [item.column, item]));
 
   return (
-    <div ref={scrollRef} className="native-form__detail-summary-wrap" aria-hidden="true">
-      <table className="native-form__detail-table native-form__detail-summary-table">
+    <div ref={scrollRef} className="nb-form__detail-summary-wrap" aria-hidden="true">
+      <table className="nb-form__detail-table nb-form__detail-summary-table">
         <DetailColumnGroup allowDeleting={allowDeleting} colWidths={colWidths} fields={fields} />
-        <tbody className="native-form__detail-summary">
+        <tbody className="nb-form__detail-summary">
           <tr>
             {fields.map((field) => {
               const item = itemsByColumn.get(field.name);
@@ -730,15 +730,15 @@ function DetailSummaryFooter({
               return (
                 <td key={field.name} style={align ? { textAlign: align } : undefined}>
                   {item && (
-                    <div className="native-form__detail-summary-cell" style={{ justifyContent }}>
-                      {item.label && <span className="native-form__detail-summary-label">{item.label}</span>}
-                      <span className="native-form__detail-summary-value">{resolveSummaryText(rows, item)}</span>
+                    <div className="nb-form__detail-summary-cell" style={{ justifyContent }}>
+                      {item.label && <span className="nb-form__detail-summary-label">{item.label}</span>}
+                      <span className="nb-form__detail-summary-value">{resolveSummaryText(rows, item)}</span>
                     </div>
                   )}
                 </td>
               );
             })}
-            {allowDeleting && <td className="native-form__col-actions" />}
+            {allowDeleting && <td className="nb-form__col-actions" />}
           </tr>
         </tbody>
       </table>
@@ -870,7 +870,7 @@ function NativeDetailGrid({
     if (field.type === FieldType.ENTITY) {
       return (
         <NativeEntitySelect
-          className={`native-form__control${errorClass}`}
+          className={`nb-form__control${errorClass}`}
           disabled={!allowUpdating || field.disabled}
           field={field}
           httpClient={httpClient}
@@ -884,7 +884,7 @@ function NativeDetailGrid({
     if (field.type === FieldType.SELECT || field.type === FieldType.ENUM) {
       return (
         <NativeEnumSelect
-          className={`native-form__control${errorClass}`}
+          className={`nb-form__control${errorClass}`}
           disabled={!allowUpdating || field.disabled}
           field={field}
           value={value}
@@ -894,7 +894,7 @@ function NativeDetailGrid({
     }
     return (
       <input
-        className={`native-form__control${errorClass}`}
+        className={`nb-form__control${errorClass}`}
         value={inputValue(value)}
         readOnly={!allowUpdating || field.readonly}
         disabled={field.disabled}
@@ -905,16 +905,16 @@ function NativeDetailGrid({
   };
 
   return (
-    <div className="native-form__detail">
-      <div className="native-form__detail-heading">
-        <h3 className="native-form__detail-title">{t('form.detailTitle')}</h3>
+    <div className="nb-form__detail">
+      <div className="nb-form__detail-heading">
+        <h3 className="nb-form__detail-title">{t('form.detailTitle')}</h3>
         {allowAdding && (
-          <IconButton icon="ph ph-plus" label="Agregar detalle" onClick={addRow} />
+          <IconButton icon="ph ph-plus" label={t('form.detailAdd')} onClick={addRow} />
         )}
       </div>
-      <div className="native-form__detail-table-wrap">
-        <div ref={tableScrollRef} className="native-form__detail-table-scroll">
-          <table className="native-form__detail-table">
+      <div className="nb-form__detail-table-wrap">
+        <div ref={tableScrollRef} className="nb-form__detail-table-scroll">
+          <table className="nb-form__detail-table">
             <DetailColumnGroup allowDeleting={allowDeleting} colWidths={colWidths} fields={visibleFields} />
             <thead>
               <tr>
@@ -923,25 +923,25 @@ function NativeDetailGrid({
                       key={field.name}
                       style={field.align ? { textAlign: field.align } : undefined}
                     >
-                      <span className="native-form__col-header-text">{field.label}</span>
+                      <span className="nb-form__col-header-text">{field.label}</span>
                       <span
-                        className="native-form__col-resize"
+                        className="nb-form__col-resize"
                         onMouseDown={handleResizeMouseDown(field.name)}
-                        title="Arrastrar para redimensionar"
+                        title={t('grid.resizeColumn')}
                       />
                     </th>
                 ))}
-                {allowDeleting && <th className="native-form__col-actions" />}
+                {allowDeleting && <th className="nb-form__col-actions" />}
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="native-form__detail-empty">
-                    <i className="ph ph-package native-form__detail-empty-icon" aria-hidden="true" />
-                    <span className="native-form__detail-empty-text">{t('form.detailEmpty')}</span>
+                  <td colSpan={visibleFields.length + (allowDeleting ? 1 : 0)} className="nb-form__detail-empty">
+                    <i className="ph ph-package nb-form__detail-empty-icon" aria-hidden="true" />
+                    <span className="nb-form__detail-empty-text">{t('form.detailEmpty')}</span>
                     {allowAdding && (
-                      <span className="native-form__detail-empty-hint">{t('form.detailEmptyHint')}</span>
+                      <span className="nb-form__detail-empty-hint">{t('form.detailEmptyHint')}</span>
                     )}
                   </td>
                 </tr>
@@ -954,12 +954,12 @@ function NativeDetailGrid({
                   {visibleFields.map((field) => (
                     <td key={field.name} style={field.align ? { textAlign: field.align } : undefined}>
                       {renderDetailControl(row, rowIndex, field)}
-                      {detailErrors[rowIndex]?.[field.name] && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
+                      {detailErrors[rowIndex]?.[field.name] && <span className="nb-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{detailErrors[rowIndex][field.name]}</span>}
                     </td>
                   ))}
                   {allowDeleting && (
-                    <td className="native-form__col-actions">
-                      <IconButton icon="ph ph-trash" label="Eliminar detalle" onClick={() => removeRow(rowIndex)} />
+                    <td className="nb-form__col-actions">
+                      <IconButton icon="ph ph-trash" label={t('form.detailRemove')} onClick={() => removeRow(rowIndex)} />
                     </td>
                   )}
                 </tr>
@@ -1319,11 +1319,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     const disabled = state.disabled ?? field.disabled;
     const error = errors[field.name];
     const errorClass = error ? ' is-error' : '';
-    const actionClass = field.onClick ? ' native-form__control--action' : '';
+    const actionClass = field.onClick ? ' nb-form__control--action' : '';
     const commonProps = {
-      className: `native-form__control${actionClass}${errorClass}`,
+      className: `nb-form__control${actionClass}${errorClass}`,
       disabled,
-      id: `native-form-${field.name}`,
+      id: `nb-form-${field.name}`,
       name: field.name,
       onClick: field.onClick,
       readOnly,
@@ -1334,21 +1334,21 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     if (field.contentRender && typeof field.contentRender === 'function') {
       control = field.contentRender({ data: formData, value });
     } else if (field.type === FieldType.TEXTAREA || field.type === FieldType.HTML) {
-      control = <textarea {...commonProps} className={`native-form__control native-form__textarea${errorClass}`} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
+      control = <textarea {...commonProps} className={`nb-form__control nb-form__textarea${errorClass}`} value={inputValue(value)} onChange={(event) => setFieldValue(field.name, event.target.value)} />;
     } else if (field.type === FieldType.CHECKBOX || field.type === FieldType.SWITCH) {
       const isSwitch = field.type === FieldType.SWITCH;
       control = (
-        <label className={isSwitch ? 'native-form__switch' : 'native-form__checkbox'}>
+        <label className={isSwitch ? 'nb-form__switch' : 'nb-form__checkbox'}>
           <input type="checkbox" checked={Boolean(value)} disabled={disabled || readOnly} onChange={(event) => setFieldValue(field.name, event.target.checked)} />
-          <span className={isSwitch ? 'native-form__toggle-label' : undefined}>{field.label}</span>
+          <span className={isSwitch ? 'nb-form__toggle-label' : undefined}>{field.label}</span>
         </label>
       );
     } else if (field.type === FieldType.RADIO) {
       control = (
-        <div className="native-form__radio-list">
+        <div className="nb-form__radio-list">
           {(field.data ?? []).map((item) => {
             const itemValue = item['value'];
-            return <label key={String(itemValue)} className="native-form__radio-item"><input type="radio" checked={value === itemValue} disabled={disabled || readOnly} onChange={() => setFieldValue(field.name, itemValue)} />{String(item['text'] ?? itemValue)}</label>;
+            return <label key={String(itemValue)} className="nb-form__radio-item"><input type="radio" checked={value === itemValue} disabled={disabled || readOnly} onChange={() => setFieldValue(field.name, itemValue)} />{String(item['text'] ?? itemValue)}</label>;
           })}
         </div>
       );
@@ -1356,11 +1356,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       const items = remoteOptions[field.name] ?? field.data ?? [];
       control = (
         <NativeEntitySelect
-          className={`native-form__control${errorClass}`}
+          className={`nb-form__control${errorClass}`}
           disabled={disabled}
           field={field}
           httpClient={httpClient}
-          id={`native-form-${field.name}`}
+          id={`nb-form-${field.name}`}
           options={items}
           prependData={prependDataRef.current.get(field.name)}
           readOnly={readOnly}
@@ -1375,10 +1375,10 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     } else if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
       control = (
         <NativeEnumSelect
-          className={`native-form__control${errorClass}`}
+          className={`nb-form__control${errorClass}`}
           disabled={disabled}
           field={field}
-          id={`native-form-${field.name}`}
+          id={`nb-form-${field.name}`}
           readOnly={readOnly}
           required={field.required}
           value={value}
@@ -1424,9 +1424,9 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     } else if (field.type === FieldType.DATE) {
       control = (
         <DatePicker
-          className={`native-form__date-control${errorClass}`}
+          className={`nb-form__date-control${errorClass}`}
           disabled={disabled}
-          id={`native-form-${field.name}`}
+          id={`nb-form-${field.name}`}
           invalid={!!error}
           locale={getCoreLocale()}
           name={field.name}
@@ -1446,9 +1446,9 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           setFieldValue,
         };
         control = (
-          <div className="native-form__input-group">
+          <div className="nb-form__input-group">
             {inputControl}
-            <div className="native-form__input-actions">
+            <div className="nb-form__input-actions">
               {fieldButtons.map((button, index) => {
                 const buttonOptions = button.options ?? {};
                 const buttonLabel = button.name === 'search' ? t('form.searchButton') : String(button.name ?? t('form.actionButton'));
@@ -1456,7 +1456,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
                   <button
                     key={String(button.name ?? index)}
                     type="button"
-                    className="native-form__input-button"
+                    className="nb-form__input-button"
                     disabled={disabled || readOnly}
                     aria-label={buttonLabel}
                     title={buttonLabel}
@@ -1475,11 +1475,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     }
 
     return (
-      <div key={field.name} className="native-form__field" style={colSpanStyle(span)}>
-        {field.type !== FieldType.CHECKBOX && field.type !== FieldType.SWITCH && <label className={`native-form__label${field.required ? ' native-form__label--required' : ''}`} htmlFor={`native-form-${field.name}`}>{field.label}</label>}
+      <div key={field.name} className="nb-form__field" style={colSpanStyle(span)}>
+        {field.type !== FieldType.CHECKBOX && field.type !== FieldType.SWITCH && <label className={`nb-form__label${field.required ? ' nb-form__label--required' : ''}`} htmlFor={`nb-form-${field.name}`}>{field.label}</label>}
         {control}
-        {field.helpText && <span className="native-form__hint">{field.helpText}</span>}
-        {error && <span className="native-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{error}</span>}
+        {field.helpText && <span className="nb-form__hint">{field.helpText}</span>}
+        {error && <span className="nb-form__error"><i className="ph ph-warning-circle" aria-hidden="true" />{error}</span>}
       </div>
     );
   };
@@ -1490,7 +1490,7 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       ...layoutContext,
     });
     return (
-      <div className="native-form__grid">
+      <div className="nb-form__grid">
         {visibleFields.map((field) => renderField(field, spans.get(field.name) ?? 12))}
       </div>
     );
@@ -1501,22 +1501,22 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
       return (
         <details
           key={group.label}
-          className="native-form__section native-form__section--collapsible"
+          className="nb-form__section nb-form__section--collapsible"
           open={!group.defaultCollapsed}
         >
-          <summary className="native-form__section-summary">
-            <span className="native-form__section-title">{group.label}</span>
-            <i className="ph ph-caret-down native-form__section-caret" aria-hidden="true" />
+          <summary className="nb-form__section-summary">
+            <span className="nb-form__section-title">{group.label}</span>
+            <i className="ph ph-caret-down nb-form__section-caret" aria-hidden="true" />
           </summary>
-          <div className="native-form__section-body">
+          <div className="nb-form__section-body">
             {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
           </div>
         </details>
       );
     }
     return (
-      <section key={group.label} className="native-form__section">
-        <h3 className="native-form__section-title">{group.label}</h3>
+      <section key={group.label} className="nb-form__section">
+        <h3 className="nb-form__section-title">{group.label}</h3>
         {renderFields(group.fields, { avoidOrphanFields: group.avoidOrphanFields })}
       </section>
     );
@@ -1526,11 +1526,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
     if (layout.type === 'tabs') {
       const groups = [...layout.tabs, ...(layout.overflow ? [layout.overflow] : [])];
       const current = groups[activeTab] ?? groups[0];
-      const tabPanelId = current ? `native-form-tabpanel-${current.label}` : undefined;
+      const tabPanelId = current ? `nb-form-tabpanel-${current.label}` : undefined;
 
       return (
-        <div className="native-form__tabs">
-          <div className="native-form__tabs-nav" role="tablist" aria-label="Secciones del formulario">
+        <div className="nb-form__tabs">
+          <div className="nb-form__tabs-nav" role="tablist" aria-label="Secciones del formulario">
             {groups.map((group, index) => {
               const tabIcon = resolveTabIcon(group.icon);
               const isActive = index === activeTab;
@@ -1540,10 +1540,10 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
                   key={group.label}
                   type="button"
                   role="tab"
-                  id={`native-form-tab-${group.label}`}
+                  id={`nb-form-tab-${group.label}`}
                   aria-selected={isActive}
                   aria-controls={isActive ? tabPanelId : undefined}
-                  className={`native-form__tab-button${isActive ? ' native-form__tab-button--active' : ''}`}
+                  className={`nb-form__tab-button${isActive ? ' nb-form__tab-button--active' : ''}`}
                   onClick={() => setActiveTab(index)}
                 >
                   {tabIcon && <i className={tabIcon} aria-hidden="true" />}
@@ -1554,10 +1554,10 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
           </div>
           {current && (
             <div
-              className="native-form__tabs-body"
+              className="nb-form__tabs-body"
               role="tabpanel"
               id={tabPanelId}
-              aria-labelledby={`native-form-tab-${current.label}`}
+              aria-labelledby={`nb-form-tab-${current.label}`}
             >
               {renderFields(current.fields)}
             </div>
@@ -1590,11 +1590,11 @@ export const NativeFormView = forwardRef<FormHandle, FormViewOptions>((options, 
   ) : null;
 
   return (
-    <div className={`native-form${options.detailFields ? ' native-form--with-detail' : ''} ${options.className ?? ''}`}>
+    <div className={`nb-form${options.detailFields ? ' nb-form--with-detail' : ''} ${options.className ?? ''}`}>
       {options.detailFields ? (
-        <div className="native-form__master-detail">
-          <div className="native-form__master-panel">{renderLayout(formLayoutModel)}</div>
-          <div className="native-form__detail-panel">{detailGrid}</div>
+        <div className="nb-form__master-detail">
+          <div className="nb-form__master-panel">{renderLayout(formLayoutModel)}</div>
+          <div className="nb-form__detail-panel">{detailGrid}</div>
         </div>
       ) : (
         renderLayout(formLayoutModel)

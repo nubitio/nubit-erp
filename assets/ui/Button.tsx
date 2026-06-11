@@ -32,14 +32,14 @@ export const Button = ({
     disabled={disabled || loading}
     aria-busy={loading || undefined}
     className={cx(
-      'app-button',
-      `app-button--${variant}`,
-      size === 'sm' && 'app-button--sm',
-      fullWidth && 'app-button--full',
+      'nb-button',
+      `nb-button--${variant}`,
+      size === 'sm' && 'nb-button--sm',
+      fullWidth && 'nb-button--full',
       className,
     )}
   >
-    {loading ? <span className="app-button-spinner" aria-hidden="true" /> : icon ? <i className={icon} aria-hidden="true" /> : null}
+    {loading ? <span className="nb-button-spinner" aria-hidden="true" /> : icon ? <i className={icon} aria-hidden="true" /> : null}
     {children}
   </button>
 );
@@ -56,7 +56,7 @@ export const IconButton = ({ icon, label, variant = 'default', className, ...pro
     type={props.type ?? 'button'}
     aria-label={props['aria-label'] ?? label}
     title={props.title ?? label}
-    className={cx('app-icon-button', variant === 'danger' && 'app-icon-button--danger', className)}
+    className={cx('nb-icon-button', variant === 'danger' && 'nb-icon-button--danger', className)}
   >
     <i className={icon} aria-hidden="true" />
   </button>

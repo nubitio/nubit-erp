@@ -75,7 +75,7 @@ test.describe('Reorder page — alertas de reabastecimiento', () => {
     await waitForGridLoad(page);
 
     await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: 'Alertas de reabastecimiento' }).first(),
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Alertas de reabastecimiento' }).first(),
     ).toBeVisible({ timeout: 15000 });
 
     const presetControl = columnPresetControl(page);
@@ -88,8 +88,8 @@ test.describe('Reorder page — alertas de reabastecimiento', () => {
     await page.goto(`${BASE_URL}/#/reorder`);
     await waitForGridLoad(page);
 
-    const rows = page.locator('.native-datagrid__row');
-    const emptyState = page.locator('.native-datagrid__empty').first();
+    const rows = page.locator('.nb-datagrid__row');
+    const emptyState = page.locator('.nb-datagrid__empty').first();
 
     const rowCount = await rows.count();
     if (rowCount > 0) {

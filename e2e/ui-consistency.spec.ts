@@ -76,13 +76,13 @@ const CRUD_PAGES: CrudPageSpec[] = [
 ];
 
 const shellClassPattern: Record<NonNullable<CrudPageSpec['shell']>, RegExp> = {
-  drawer: /ef-drawer|crud-drawer/,
-  dialog: /crud-dialog|app-dialog/,
-  page: /crud-page-shell/,
+  drawer: /nb-drawer|crud-drawer/,
+  dialog: /nb-crud-dialog|nb-dialog/,
+  page: /nb-crud-page-shell/,
 };
 
 function datagridSurface(page: Page) {
-  return page.locator('.native-datagrid').first();
+  return page.locator('.nb-datagrid').first();
 }
 
 test.describe('UI consistency — patrones CRUD enterprise', () => {
@@ -113,7 +113,7 @@ test.describe('UI consistency — patrones CRUD enterprise', () => {
       const grid = datagridSurface(page);
       await expect(grid).toBeVisible({ timeout: 15000 });
       await expect(
-        page.locator('.native-datagrid__toolbar').filter({ hasText: spec.toolbar }).first(),
+        page.locator('.nb-datagrid__toolbar').filter({ hasText: spec.toolbar }).first(),
       ).toBeVisible({ timeout: 15000 });
 
       if (spec.hasPresets) {
@@ -128,7 +128,7 @@ test.describe('UI consistency — patrones CRUD enterprise', () => {
 
       // Enum/operator filters use AppDropdown (compact), never native <select>.
       const enumFilterDropdowns = grid.locator(
-        '.native-datagrid__filter-row .app-dropdown, .native-datagrid__filter-operator .app-dropdown',
+        '.nb-datagrid__filter-row .nb-dropdown, .nb-datagrid__filter-operator .nb-dropdown',
       );
       if ((await enumFilterDropdowns.count()) > 0) {
         await expect(enumFilterDropdowns.first()).toBeVisible();

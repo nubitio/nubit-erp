@@ -2,11 +2,11 @@
 
 // ─── ContextMenu ──────────────────────────────────────────────────────────────
 // Three-dot overflow menu. Trigger button + floating dropdown list.
-// BEM: .app-context-menu  /  .app-context-menu__trigger
-//      .app-context-menu__dropdown  /  .app-context-menu__item
-//      .app-context-menu__separator
+// BEM: .nb-context-menu  /  .nb-context-menu__trigger
+//      .nb-context-menu__dropdown  /  .nb-context-menu__item
+//      .nb-context-menu__separator
 
-.app-context-menu {
+.nb-context-menu {
   position: relative;
   display: inline-flex;
 
@@ -25,7 +25,7 @@
     padding: var(--space-1);
 
     // enter animation
-    animation: app-context-menu-enter 100ms ease both;
+    animation: nb-context-menu-enter 100ms ease both;
   }
 
   &__item {
@@ -84,7 +84,7 @@
   }
 }
 
-html[data-density="compact"] .app-context-menu {
+html[data-density="compact"] .nb-context-menu {
   &__dropdown {
     min-width: 170px;
     padding: var(--space-1);
@@ -97,7 +97,7 @@ html[data-density="compact"] .app-context-menu {
   }
 }
 
-@keyframes app-context-menu-enter {
+@keyframes nb-context-menu-enter {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.97);

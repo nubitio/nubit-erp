@@ -1,6 +1,7 @@
 // Static design tokens — single source of truth for theme-independent values.
 // Must be loaded before any dynamic theme stylesheet (Firefox FOUC fix included).
-@use 'theme/styles/tokens';
+// Tokens are owned by @nubit/ui; the app consumes them from the package.
+@use 'ui/theme/styles/tokens';
 @use 'variables' as *;
 
 html,

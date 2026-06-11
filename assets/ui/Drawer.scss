@@ -8,24 +8,24 @@
 // (notifications, settings panels).
 // ─────────────────────────────────────────────────────────────────────────────
 
-@keyframes ef-drawer-slide-in-right {
+@keyframes nb-drawer-slide-in-right {
   from { transform: translateX(100%); }
   to   { transform: translateX(0); }
 }
 
-@keyframes ef-drawer-slide-in-left {
+@keyframes nb-drawer-slide-in-left {
   from { transform: translateX(-100%); }
   to   { transform: translateX(0); }
 }
 
-@keyframes ef-drawer-scrim-enter {
+@keyframes nb-drawer-scrim-enter {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 // ── Root portal container ─────────────────────────────────────────────────────
 
-.ef-drawer-root {
+.nb-drawer-root {
   inset: 0;
   position: fixed;
   visibility: hidden;
@@ -34,17 +34,17 @@
   &--open {
     visibility: visible;
 
-    .ef-drawer__scrim {
-      animation: ef-drawer-scrim-enter var(--transition-slow) both;
+    .nb-drawer__scrim {
+      animation: nb-drawer-scrim-enter var(--transition-slow) both;
     }
 
-    &.ef-drawer-root--right .ef-drawer {
-      animation: ef-drawer-slide-in-right var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1) both;
+    &.nb-drawer-root--right .nb-drawer {
+      animation: nb-drawer-slide-in-right var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1) both;
       right: 0;
     }
 
-    &.ef-drawer-root--left .ef-drawer {
-      animation: ef-drawer-slide-in-left var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1) both;
+    &.nb-drawer-root--left .nb-drawer {
+      animation: nb-drawer-slide-in-left var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1) both;
       left: 0;
     }
   }
@@ -52,7 +52,7 @@
 
 // ── Scrim ─────────────────────────────────────────────────────────────────────
 
-.ef-drawer__scrim {
+.nb-drawer__scrim {
   border: 0;
   cursor: default;
   inset: 0;
@@ -66,7 +66,7 @@
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
 
-.ef-drawer {
+.nb-drawer {
   background: var(--surface-1);
   bottom: 0;
   box-shadow: var(--shadow-lg);
@@ -77,18 +77,18 @@
   top: 0;
   z-index: 2;
 
-  .ef-drawer-root--right & {
+  .nb-drawer-root--right & {
     border-left: 1px solid var(--border-color);
   }
 
-  .ef-drawer-root--left & {
+  .nb-drawer-root--left & {
     border-right: 1px solid var(--border-color);
   }
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
-.ef-drawer__header {
+.nb-drawer__header {
   align-items: center;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border-color);
@@ -99,7 +99,7 @@
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
 }
 
-.ef-drawer__title {
+.nb-drawer__title {
   color: var(--text-primary);
   flex: 1;
   font-size: var(--font-size-md);
@@ -113,13 +113,13 @@
   white-space: nowrap;
 }
 
-.ef-drawer__close {
+.nb-drawer__close {
   flex: 0 0 auto;
 }
 
 // ── Body ──────────────────────────────────────────────────────────────────────
 
-.ef-drawer__body {
+.nb-drawer__body {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -127,7 +127,7 @@
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 
-.ef-drawer__footer {
+.nb-drawer__footer {
   background: var(--surface-1);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -139,7 +139,7 @@
   bottom: 0;
   z-index: 2;
 
-  .app-button {
+  .nb-button {
     min-height: var(--control-height-form);
   }
 }
@@ -147,10 +147,10 @@
 // ── Density overrides ─────────────────────────────────────────────────────────
 
 html[data-density='compact'] {
-  .ef-drawer__header {
+  .nb-drawer__header {
     padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
   }
-  .ef-drawer__footer {
+  .nb-drawer__footer {
     gap: var(--space-1);
     padding: var(--space-2) var(--space-3);
   }
@@ -159,7 +159,7 @@ html[data-density='compact'] {
 // ── Mobile: full-screen sheet ─────────────────────────────────────────────────
 
 @media (max-width: 768px) {
-  .ef-drawer {
+  .nb-drawer {
     animation: none !important;
     border: 0 !important;
     inset: 0;

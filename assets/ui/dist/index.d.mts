@@ -46,6 +46,10 @@ interface AppDialogProps {
   height?: number | string;
   fullScreen?: boolean;
   showCloseButton?: boolean;
+  /** Accessible label for the close button. Defaults to UiStrings `close`. */
+  closeLabel?: string;
+  /** Accessible label for the backdrop scrim. Defaults to UiStrings `closeDialog`. */
+  scrimLabel?: string;
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
   restoreFocus?: boolean;
@@ -70,6 +74,8 @@ declare const AppDialog: ({
   height,
   fullScreen,
   showCloseButton,
+  closeLabel,
+  scrimLabel,
   closeOnOutsideClick,
   closeOnEscape,
   restoreFocus,
@@ -440,8 +446,8 @@ interface ToggleProps {
  * Accessible toggle switch. Always controlled — pass `checked` + `onChange`.
  * Renders a visually-hidden `<input type="checkbox">` with a custom track.
  *
- * With `label`: wraps in `.app-toggle-row` for a label ↔ toggle layout.
- * Without `label`: renders bare `.app-toggle`.
+ * With `label`: wraps in `.nb-toggle-row` for a label ↔ toggle layout.
+ * Without `label`: renders bare `.nb-toggle`.
  */
 declare const Toggle: ({
   checked,
@@ -699,6 +705,10 @@ interface DrawerProps {
   children: React$1.ReactNode;
   /** Optional sticky footer (e.g. action buttons). */
   footer?: React$1.ReactNode;
+  /** Accessible label for the close button. Defaults to UiStrings `close`. */
+  closeLabel?: string;
+  /** Accessible label for the backdrop scrim. Defaults to UiStrings `closePanel`. */
+  scrimLabel?: string;
   /** Extra class applied to the panel element. */
   className?: string;
   /** aria-label for the dialog when no title is provided. */
@@ -706,4 +716,63 @@ interface DrawerProps {
 }
 declare const Drawer: React$1.FC<DrawerProps>;
 //#endregion
-export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppDropdown, type AppDropdownOption, type AppDropdownProps, type AppDropdownVariant, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, Drawer, type DrawerProps, type DrawerSide, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme };
+//#region assets/ui/UiStrings.d.ts
+/**
+ * Built-in UI strings for @nubit/ui components (aria-labels, tooltips).
+ *
+ * English is the default. Localize once at the app root:
+ *
+ *   <UiStringsProvider strings={ES_UI_STRINGS}>...</UiStringsProvider>
+ *
+ * or override per key: `strings={{ close: 'Cerrar' }}`. Individual components
+ * also accept label props (e.g. `closeLabel`) that win over the provider.
+ */
+interface UiStrings {
+  /** Generic close action (dialog/drawer close buttons). */
+  close: string;
+  /** Backdrop scrim of a modal dialog. */
+  closeDialog: string;
+  /** Backdrop scrim of a side drawer. */
+  closePanel: string;
+  /** DatePicker: clear the selected date. */
+  clearDate: string;
+  /** DateRangePicker: clear the selected range. */
+  clearDateRange: string;
+  /** Date pickers: open the calendar popover. */
+  openCalendar: string;
+  /** DatePicker: label for the date text input. */
+  selectDate: string;
+  /** DateRangePicker: label for the range text inputs. */
+  selectDateRange: string;
+  previousMonth: string;
+  nextMonth: string;
+  previousYear: string;
+  nextYear: string;
+  /** DatePicker: header button that switches to month/year selection. */
+  selectMonthAndYear: string;
+  /** DatePicker: header button that switches to year selection. */
+  selectYear: string;
+  /** Date pickers: footer button that clears the value. */
+  clear: string;
+  /** Date pickers: footer button that jumps to today. */
+  today: string;
+  /** Generic cancel action. */
+  cancel: string;
+  /** DatePicker: footer button returning to the previous view. */
+  back: string;
+  /** DatePicker years view: previous 12-year range. */
+  previousYears: string;
+  /** DatePicker years view: next 12-year range. */
+  nextYears: string;
+}
+declare const EN_UI_STRINGS: UiStrings;
+declare const ES_UI_STRINGS: UiStrings;
+interface UiStringsProviderProps {
+  /** Full or partial string set; missing keys fall back to English. */
+  strings: Partial<UiStrings>;
+  children: React$1.ReactNode;
+}
+declare const UiStringsProvider: React$1.FC<UiStringsProviderProps>;
+declare const useUiStrings: () => UiStrings;
+//#endregion
+export { ACCENT_PRESETS, type AccentPreset, AppDialog, type AppDialogProps, AppDropdown, type AppDropdownOption, type AppDropdownProps, type AppDropdownVariant, AppToolbar, type AppToolbarProps, Avatar, type AvatarProps, type AvatarShape, type AvatarSize, Badge, type BadgeProps, type BadgeSize, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Chip, type ChipProps, CollapsibleSection, type CollapsibleSectionProps, ConfirmDialog, type ConfirmDialogProps, ContextMenu, type ContextMenuItem, type ContextMenuProps, DatePicker, type DatePickerProps, DateRangePicker, type DateRangePickerProps, type Density, DensityContext, type DensityContextValue, DensityProvider, Drawer, type DrawerProps, type DrawerSide, EN_UI_STRINGS, ES_UI_STRINGS, EmptyState, type EmptyStateProps, FormField, type FormFieldProps, IconButton, type IconButtonProps, Popover, type PopoverAlign, type PopoverProps, SelectField, type SelectFieldProps, SettingsPanel, type SettingsPanelProps, Skeleton, type SkeletonProps, StatCard, type StatCardProps, TextAreaField, type TextAreaFieldProps, TextField, type TextFieldProps, type Theme, ThemeContext, type ThemeContextValue, type ThemeMode, ThemeProvider, type ThemeProviderProps, ThemeSwitcher, type ThemeSwitcherProps, Toggle, type ToggleProps, type UiStrings, UiStringsProvider, type UiStringsProviderProps, type UseFloatingPanelOptions, type UseFloatingPanelResult, getAvatarHue, getAvatarInitials, useAccentColor, useDensity, useFloatingPanel, useTheme, useUiStrings };

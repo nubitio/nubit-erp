@@ -61,7 +61,7 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-drawer__body, .app-dialog__body, .crud-dialog__body');
+  return crudDialog(page, name).locator('.crud-drawer__body, .nb-dialog__body, .nb-crud-dialog__body');
 }
 
 async function login(page: Page) {
@@ -101,7 +101,7 @@ async function login(page: Page) {
 async function ensureCashOpen(page: Page): Promise<string> {
   await page.goto(`${BASE_URL}/#/cashbox`);
   await waitForGridLoad(page);
-  await page.locator('.native-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.nb-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
 
   const openBtn = page.getByTestId('cash-btn-open').first();
   const isOpen = !(await openBtn.isVisible({ timeout: 5000 }).catch(() => false));
@@ -192,7 +192,7 @@ async function createSaleViaPOS(page: Page, opts: { withDiscount?: boolean } = {
   // Apply sale-level discount if requested (10% preset chips)
   if (opts.withDiscount) {
     const discountChip = page
-      .locator('[role="group"][aria-label="Descuento"] .app-chip')
+      .locator('[role="group"][aria-label="Descuento"] .nb-chip')
       .filter({ hasText: /^10%$/ })
       .first();
     await discountChip.waitFor({ state: 'visible', timeout: 5000 });
@@ -532,12 +532,12 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await page.goto(`${BASE_URL}/#/sale`);
     await dismissDevToolbar(page);
     await waitForGridLoad(page);
-    await expect(page.locator('.native-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
+    await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
       timeout: 15000,
     });
 
     const newBtn = page
-      .locator('.native-datagrid__toolbar .app-button')
+      .locator('.nb-datagrid__toolbar .nb-button')
       .filter({ hasText: /nuevo|new/i })
       .first();
     await newBtn.waitFor({ state: 'visible', timeout: 10000 });
@@ -549,14 +549,14 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await waitForSaleFormReady(body);
 
     const almacenInput = body
-      .locator('#native-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
+      .locator('#nb-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
       .first();
     if (await almacenInput.isVisible({ timeout: 5000 }).catch(() => false)) {
       const val = await almacenInput.inputValue().catch(() => '');
       if (val.trim() === '') {
         await almacenInput.click();
         await page.waitForTimeout(300);
-        const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
+        const firstOpt = page.locator('.nb-form__lookup-menu button[role="option"]').first();
         await firstOpt.waitFor({ state: 'visible', timeout: 8000 });
         await firstOpt.click();
         await page.waitForTimeout(300);
@@ -564,7 +564,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     }
 
     const ts = Date.now();
-    const noteInput = body.locator('#native-form-note, textarea[aria-label="Nota"], input[aria-label="Nota"]').first();
+    const noteInput = body.locator('#nb-form-note, textarea[aria-label="Nota"], input[aria-label="Nota"]').first();
     await noteInput.waitFor({ state: 'visible', timeout: 8000 });
     await noteInput.fill(`ORM validation ${ts}`);
     await page.keyboard.press('Tab');
@@ -574,7 +574,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const detailTable = saleDialog.locator('.native-form__detail-table').first();
+    const detailTable = saleDialog.locator('.nb-form__detail-table').first();
     const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -586,7 +586,7 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
 
     const seedOption = page
-      .locator('.native-form__lookup-menu button[role="option"]')
+      .locator('.nb-form__lookup-menu button[role="option"]')
       .filter({ hasText: SEED_PRODUCT_NAME });
     await seedOption.first().waitFor({ state: 'visible', timeout: 15000 });
     await seedOption.first().click();

@@ -101,8 +101,8 @@ export const CrudPageView = forwardRef<CrudPageViewEvents, CrudPageViewOptions>(
       >
         {options.children}
         {isProcessing && (
-          <div className="crud-dialog__loading" aria-hidden="true">
-            <span className="crud-dialog__loading-indicator" />
+          <div className="nb-crud-dialog__loading" aria-hidden="true">
+            <span className="nb-crud-dialog__loading-indicator" />
           </div>
         )}
       </CrudPageShell>

@@ -472,8 +472,8 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
       }
     >
       {(resolvedResource.bulkActions?.length ?? 0) > 0 && selectionState.hasSelection && (
-        <div className="bulk-toolbar" role="toolbar" aria-label="Acciones en lote">
-          <span className="bulk-toolbar__count">
+        <div className="nb-bulk-toolbar" role="toolbar" aria-label="Acciones en lote">
+          <span className="nb-bulk-toolbar__count">
             {t('crudPage.selectedCount', { count: selectionState.selectedCount })}
           </span>
           {resolvedResource.bulkActions!.map((action: BulkAction) => (
@@ -490,12 +490,11 @@ const CrudPageInner = <T extends DataRecord = DataRecord>({
         </div>
       )}
       {hasAuditTrail && (
-        <div className="audit-trail-toolbar" style={{ marginBottom: 8 }}>
+        <div className="nb-audit-trail-toolbar" style={{ marginBottom: 8 }}>
           <button
             type="button"
             onClick={() => setAuditOpen((prev) => !prev)}
             aria-pressed={auditOpen}
-            aria-label="Mostrar historial de cambios"
           >
             {t('crudPage.auditTrailButton')}
           </button>

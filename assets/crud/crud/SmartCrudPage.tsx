@@ -7,7 +7,7 @@ import type { FieldOverride } from './resolveSmartCrudFields';
 import { useRouting } from './routing/useRouting';
 import { logDevHint } from './devHint';
 import { useCoreTranslation, useMercureSubscription } from '@nubit/core';
-import { Button } from '@nubit/ui';
+import { Button, Skeleton } from '@nubit/ui';
 import { resolveCrudResource } from './resolveCrudResource';
 import { useSmartCrudRoles } from './SmartCrudRolesContext';
 import { useSmartCrudOperation } from './useSmartCrudOperation';
@@ -16,12 +16,13 @@ import type { DataRecord } from '@nubit/core';
 import type { FormHandle } from '../form/FormHandle';
 import type { GridHandle } from '../datagrid/GridHandle';
 import { useResolvedResourceFields } from '../schema/ResourceSchema';
+import './SmartCrudPage.scss';
 
 function CrudSkeleton() {
   return (
-    <div className="p-6 space-y-4 animate-pulse">
-      <div className="h-8 bg-gray-200 rounded w-1/3" />
-      <div className="h-64 bg-gray-200 rounded" />
+    <div className="nb-smart-crud-fallback">
+      <Skeleton variant="rect" height={32} width="33%" />
+      <Skeleton variant="rect" height={256} />
     </div>
   );
 }
@@ -30,12 +31,12 @@ function CrudError({ message, onRetry }: { message: string; onRetry: () => void 
   const { t } = useCoreTranslation();
 
   return (
-    <div className="p-6 space-y-3 text-sm text-secondary" role="alert">
-      <p className="m-0 text-base font-semibold text-primary">{t('crudPage.schemaErrorTitle')}</p>
-      <p className="m-0 max-w-2xl">{t('crudPage.schemaErrorMessage')}</p>
-      <details className="max-w-2xl text-xs">
-        <summary className="cursor-pointer text-secondary">{t('crudPage.schemaErrorDetails')}</summary>
-        <pre className="mt-2 overflow-auto rounded border border-default p-2 whitespace-pre-wrap">{message}</pre>
+    <div className="nb-smart-crud-fallback nb-smart-crud-fallback--error" role="alert">
+      <p className="nb-smart-crud-fallback__title">{t('crudPage.schemaErrorTitle')}</p>
+      <p className="nb-smart-crud-fallback__message">{t('crudPage.schemaErrorMessage')}</p>
+      <details className="nb-smart-crud-fallback__details">
+        <summary>{t('crudPage.schemaErrorDetails')}</summary>
+        <pre>{message}</pre>
       </details>
       <Button onClick={onRetry} variant="secondary" size="sm">
         {t('crudPage.schemaErrorRetry')}

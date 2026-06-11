@@ -109,6 +109,7 @@ export const CrudDrawerView = forwardRef<CrudDrawerViewEvents, CrudDrawerViewOpt
     return (
       <CrudDrawerShell
         isOpen={visible}
+        mode="add"
         title={title}
         drawerWidth={resolveDrawerWidth({
           drawerSize: options.drawerSize,
@@ -121,8 +122,8 @@ export const CrudDrawerView = forwardRef<CrudDrawerViewEvents, CrudDrawerViewOpt
       >
         {options.children}
         {isProcessing && (
-          <div className="crud-dialog__loading" aria-hidden="true">
-            <span className="crud-dialog__loading-indicator" />
+          <div className="nb-crud-dialog__loading" aria-hidden="true">
+            <span className="nb-crud-dialog__loading-indicator" />
           </div>
         )}
       </CrudDrawerShell>

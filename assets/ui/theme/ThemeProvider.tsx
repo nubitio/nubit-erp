@@ -68,16 +68,16 @@ function setThemeToDOM(href: string): Promise<void> {
   });
 }
 
-function applyThemeAttributes(theme: Theme): void {
+function applyThemeAttributes(theme: Theme, themePrefix: string): void {
   const root = document.documentElement;
   root.dataset.theme = theme;
-  themeValues.forEach((value) => root.classList.remove(`app-theme-${value}`));
-  root.classList.add(`app-theme-${theme}`);
+  themeValues.forEach((value) => root.classList.remove(`${themePrefix}${value}`));
+  root.classList.add(`${themePrefix}${theme}`);
 }
 
 export const ThemeProvider = ({
-  storageKey = 'app-theme',
-  themePrefix = 'app-theme-',
+  storageKey = 'nb-theme',
+  themePrefix = 'nb-theme-',
   basePath = '/themes/',
   children,
 }: ThemeProviderProps) => {
@@ -92,7 +92,7 @@ export const ThemeProvider = ({
   const theme = useMemo(() => resolveTheme(mode, systemTheme), [mode, systemTheme]);
 
   useEffect(() => {
-    applyThemeAttributes(theme);
+    applyThemeAttributes(theme, themePrefix);
     void setThemeToDOM(`${basePath}${themePrefix}${theme}.css`).then(() => setIsLoaded(true));
   }, [theme, basePath, themePrefix]);
 

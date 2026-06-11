@@ -75,7 +75,7 @@ export const ContextMenu = ({
   return (
     <div
       ref={containerRef}
-      className={`app-context-menu${className ? ` ${className}` : ''}`}
+      className={`nb-context-menu${className ? ` ${className}` : ''}`}
     >
       {trigger ? (
         <span onClick={() => setOpen((v) => !v)}>{trigger}</span>
@@ -91,7 +91,7 @@ export const ContextMenu = ({
 
       {open && (
         <ul
-          className="app-context-menu__dropdown"
+          className="nb-context-menu__dropdown"
           role="menu"
           style={dropdownStyle}
         >
@@ -99,7 +99,7 @@ export const ContextMenu = ({
             <React.Fragment key={idx}>
               {item.separator && (
                 <li role="none" aria-hidden="true">
-                  <div className="app-context-menu__separator" />
+                  <div className="nb-context-menu__separator" />
                 </li>
               )}
               <li role="none">
@@ -108,7 +108,7 @@ export const ContextMenu = ({
                   role="menuitem"
                   disabled={item.disabled}
                   aria-disabled={item.disabled}
-                  className={`app-context-menu__item${item.danger ? ' app-context-menu__item--danger' : ''}`}
+                  className={`nb-context-menu__item${item.danger ? ' nb-context-menu__item--danger' : ''}`}
                   onClick={() => {
                     setOpen(false);
                     item.onClick?.();

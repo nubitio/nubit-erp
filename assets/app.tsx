@@ -2,6 +2,7 @@ import { Settings } from 'luxon';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { UiStringsProvider, ES_UI_STRINGS } from '@nubit/ui';
 import { EfactApp } from '@app/shell/EfactApp';
 import { ErrorBoundary } from '@shared/components';
 import './i18n';
@@ -28,9 +29,11 @@ window.addEventListener('load', () => {
   root.render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-          <EfactApp />
-        </ErrorBoundary>
+        <UiStringsProvider strings={ES_UI_STRINGS}>
+          <ErrorBoundary>
+            <EfactApp />
+          </ErrorBoundary>
+        </UiStringsProvider>
         {import.meta.env.DEV && (
           <React.Suspense fallback={null}>
             <DevtoolsLoader />

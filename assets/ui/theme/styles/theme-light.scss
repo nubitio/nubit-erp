@@ -15,7 +15,7 @@
 
 /* stylelint-disable */
 :root,
-.app-theme-light {
+[data-theme='light'] {
 
   // ── Color base ──────────────────────────────────────────────────────────────
   --base-bg:               #ffffff;
@@ -115,4 +115,4 @@
 }
 
 // Sentinel — allows JS/SCSS to detect the active theme class.
-.app-theme-light { content: ''; }
+[data-theme='light'] { content: ''; }

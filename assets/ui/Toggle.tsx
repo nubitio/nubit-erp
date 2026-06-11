@@ -19,8 +19,8 @@ export interface ToggleProps {
  * Accessible toggle switch. Always controlled — pass `checked` + `onChange`.
  * Renders a visually-hidden `<input type="checkbox">` with a custom track.
  *
- * With `label`: wraps in `.app-toggle-row` for a label ↔ toggle layout.
- * Without `label`: renders bare `.app-toggle`.
+ * With `label`: wraps in `.nb-toggle-row` for a label ↔ toggle layout.
+ * Without `label`: renders bare `.nb-toggle`.
  */
 export const Toggle = ({
   checked,
@@ -32,10 +32,10 @@ export const Toggle = ({
   className = '',
 }: ToggleProps) => {
   const id = useId();
-  const sizeClass = size === 'sm' ? ' app-toggle--sm' : '';
+  const sizeClass = size === 'sm' ? ' nb-toggle--sm' : '';
 
   const input = (
-    <span className={`app-toggle${sizeClass}${className ? ` ${className}` : ''}`}>
+    <span className={`nb-toggle${sizeClass}${className ? ` ${className}` : ''}`}>
       <input
         id={id}
         type="checkbox"
@@ -44,14 +44,14 @@ export const Toggle = ({
         aria-label={!label ? ariaLabel : undefined}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <span className="app-toggle__track" aria-hidden="true" />
+      <span className="nb-toggle__track" aria-hidden="true" />
     </span>
   );
 
   if (!label) return input;
 
   return (
-    <label htmlFor={id} className="app-toggle-row">
+    <label htmlFor={id} className="nb-toggle-row">
       <span>{label}</span>
       {input}
     </label>

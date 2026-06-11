@@ -2,7 +2,7 @@
 // Reusable placeholder for empty lists, error screens, and state transitions.
 // All values are token-based — fully theme-aware.
 
-.app-empty-state {
+.nb-empty-state {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -61,18 +61,18 @@
     gap: var(--space-2);
     padding: var(--space-5) var(--space-4);
 
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       font-size: 1.75rem;
       height: 40px;
       width: 40px;
     }
 
-    .app-empty-state__title { font-size: var(--font-size-sm); }
-    .app-empty-state__description { font-size: var(--font-size-xs); }
+    .nb-empty-state__title { font-size: var(--font-size-sm); }
+    .nb-empty-state__description { font-size: var(--font-size-xs); }
   }
 
   &--md {
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       font-size: 2.25rem;
       height: 56px;
       width: 56px;
@@ -83,40 +83,40 @@
     gap: var(--space-4);
     padding: var(--space-10) var(--space-8);
 
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       font-size: 3rem;
       height: 72px;
       width: 72px;
     }
 
-    .app-empty-state__title { font-size: var(--font-size-xl); }
-    .app-empty-state__description { font-size: var(--font-size-md); }
+    .nb-empty-state__title { font-size: var(--font-size-xl); }
+    .nb-empty-state__description { font-size: var(--font-size-md); }
   }
 
   // ── Variants ──────────────────────────────────────────────────────────────────
   &--default {
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       background: var(--surface-2);
       color: var(--text-secondary);
     }
   }
 
   &--danger {
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       background: color-mix(in srgb, var(--error-color) 12%, transparent);
       color: var(--error-color);
     }
   }
 
   &--warning {
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       background: color-mix(in srgb, var(--warning-color) 14%, transparent);
       color: var(--warning-color);
     }
   }
 
   &--success {
-    .app-empty-state__icon-wrap {
+    .nb-empty-state__icon-wrap {
       background: color-mix(in srgb, var(--success-color) 12%, transparent);
       color: var(--success-color);
     }

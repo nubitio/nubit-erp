@@ -32,7 +32,7 @@ export const Chip = ({
   onClick,
   className = '',
 }: ChipProps) => {
-  const sizeClass = size !== 'md' ? ` app-chip--${size}` : '';
+  const sizeClass = size !== 'md' ? ` nb-chip--${size}` : '';
   const activeClass = active ? ' is-active' : '';
 
   return (
@@ -42,13 +42,13 @@ export const Chip = ({
       aria-checked={active}
       aria-pressed={active}
       disabled={disabled}
-      className={`app-chip${sizeClass}${activeClass}${className ? ` ${className}` : ''}`}
+      className={`nb-chip${sizeClass}${activeClass}${className ? ` ${className}` : ''}`}
       onClick={onClick}
     >
       {icon && <i className={icon} aria-hidden="true" />}
       {label}
       {count !== undefined && (
-        <span className="app-chip__count">{count}</span>
+        <span className="nb-chip__count">{count}</span>
       )}
     </button>
   );

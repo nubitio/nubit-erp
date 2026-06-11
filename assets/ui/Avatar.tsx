@@ -81,8 +81,8 @@ export const Avatar = ({
   const hue = getAvatarHue(owner);
 
   const classes = [
-    'app-avatar',
-    shape === 'square' && 'app-avatar--square',
+    'nb-avatar',
+    shape === 'square' && 'nb-avatar--square',
     className,
   ]
     .filter(Boolean)

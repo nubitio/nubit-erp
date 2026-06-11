@@ -82,7 +82,7 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
     Eliminar: /^(Eliminar|Delete)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.native-datagrid__toolbar .app-button').filter({ hasText: text }).first();
+  const btn = page.locator('.nb-datagrid__toolbar .nb-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -175,7 +175,7 @@ async function gotoProtectedRoute(page: Page, hashPath: string) {
 
 async function ensurePurchasesGrid(page: Page) {
   // If a purchases datagrid toolbar is already visible, stay here (avoid re-goto that may redirect to POS when cash open)
-  const toolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+  const toolbar = page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first();
   const visible = await toolbar.isVisible({ timeout: 3000 }).catch(() => false);
   if (visible) {
     await waitForGridLoad(page).catch(() => {});
@@ -268,7 +268,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await waitForGridLoad(page);
 
     await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
     ).toBeVisible({ timeout: 15000 });
 
     // Capturar warehouseId y productId del seed via API para poder verificar stock después.
@@ -333,22 +333,22 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await ensurePurchasesGrid(page);
 
     // Scope the "Nuevo" click to the purchases grid toolbar (avoid .first() matching other grids)
-    const purchasesToolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
-    const nuevoBtn = purchasesToolbar.locator('.app-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
+    const purchasesToolbar = page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+    const nuevoBtn = purchasesToolbar.locator('.nb-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
     await nuevoBtn.waitFor({ state: 'visible', timeout: 8000 });
     await nuevoBtn.click();
 
-    // Page-mode form for "Compras" mounts .crud-page-shell (aria-label may be "Compras", not "Nuevo").
+    // Page-mode form for "Compras" mounts .nb-crud-page-shell (aria-label may be "Compras", not "Nuevo").
     // Wait for either our shell locator or a concrete stable element from the form (warehouse or Cabecera tab).
     await Promise.race([
       expect(crudShell(page, /nuevo|new|compras/i)).toBeVisible({ timeout: 30000 }),
       expect(page.getByRole('tab', { name: /Cabecera/i }).first()).toBeVisible({ timeout: 30000 }),
-      expect(page.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
+      expect(page.locator('#nb-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
     ]);
 
     const body = crudShellBody(page);
     await switchFormTab(body, /Cabecera/i);
-    await expect(body.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 8000 });
+    await expect(body.locator('#nb-form-warehouse').first()).toBeVisible({ timeout: 8000 });
 
     await switchFormTab(body, /Notas/i);
     await expect(body.getByLabel(/Glosa/i).first()).toBeVisible({ timeout: 8000 });
@@ -366,7 +366,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await waitForGridLoad(page);
 
     await expect(
-      page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
     ).toBeVisible({ timeout: 15000 });
 
     // ── Capturar stock ANTES ──────────────────────────────────────────────────
@@ -386,8 +386,8 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     // ── Abrir formulario de nueva compra ─────────────────────────────────────
     await test.step('Abrir formulario de nueva compra', async () => {
       // Scope to the purchases toolbar
-      const purchasesToolbar = page.locator('.native-datagrid__toolbar').filter({ hasText: /compras/i }).first();
-      const nuevoBtn = purchasesToolbar.locator('.app-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
+      const purchasesToolbar = page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first();
+      const nuevoBtn = purchasesToolbar.locator('.nb-button').filter({ hasText: /^(Nuevo|New)$/i }).first();
       await nuevoBtn.waitFor({ state: 'visible', timeout: 8000 });
       await nuevoBtn.click();
 
@@ -395,7 +395,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       await Promise.race([
         expect(crudShell(page, /nuevo|new|compras/i)).toBeVisible({ timeout: 30000 }),
         expect(page.getByRole('tab', { name: /Cabecera/i }).first()).toBeVisible({ timeout: 30000 }),
-        expect(page.locator('#native-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
+        expect(page.locator('#nb-form-warehouse').first()).toBeVisible({ timeout: 30000 }),
       ]);
     });
 
@@ -404,15 +404,15 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       const body = crudShellBody(page);
       await switchFormTab(body, /Cabecera/i);
 
-      // NativeFormView: warehouse field has id="native-form-warehouse"
-      const almacenInput = body.locator('#native-form-warehouse').first();
+      // NativeFormView: warehouse field has id="nb-form-warehouse"
+      const almacenInput = body.locator('#nb-form-warehouse').first();
       await almacenInput.waitFor({ state: 'visible', timeout: 8000 });
 
       const currentVal = await almacenInput.inputValue().catch(() => '');
       if (currentVal.trim().length === 0) {
         // NOTE: NativeEntitySelect portals its dropdown menu to document.body, so
         // scoping the option locator to the field container does NOT work. Use page-level.
-        const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
+        const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
 
         // Click to open, then type to trigger filtered search. Try a specific term
         // first (seed warehouse name substring), then empty (load-all) as fallback.
@@ -443,13 +443,13 @@ test.describe('Compras — crear compra e incremento de stock', () => {
       const body = crudShellBody(page);
       await switchFormTab(body, /Cabecera/i);
 
-      // NativeFormView: supplier field has id="native-form-supplier"
-      const supplierInput = body.locator('#native-form-supplier').first();
+      // NativeFormView: supplier field has id="nb-form-supplier"
+      const supplierInput = body.locator('#nb-form-supplier').first();
       const supplierVisible = await supplierInput.isVisible({ timeout: 3000 }).catch(() => false);
 
       if (supplierVisible) {
         // NOTE: NativeEntitySelect portals the dropdown to document.body — use page-level locator.
-        const firstOption = page.locator('.native-form__lookup-menu button[role="option"]').first();
+        const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
 
         // Open the dropdown (click to focus, which triggers search)
         await supplierInput.click({ force: true });
@@ -475,7 +475,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       // The new row appears immediately in the native detail table
       const dialog = crudShell(page, /nuevo|new/i);
-      const detailTable = dialog.locator('.native-form__detail-table').first();
+      const detailTable = dialog.locator('.nb-form__detail-table').first();
       const insertedRow = detailTable.locator('tbody tr').last();
       await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -489,7 +489,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
       // NativeEntitySelect dropdown
       const seedProductOption = page
-        .locator('.native-form__lookup-menu button[role="option"]')
+        .locator('.nb-form__lookup-menu button[role="option"]')
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
       const productLoadPromise = page

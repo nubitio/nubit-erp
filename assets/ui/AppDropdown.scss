@@ -1,15 +1,15 @@
 // ── AppDropdown — generic Fluent select (toolbar + form contexts) ─────────────
 
-.app-dropdown {
+.nb-dropdown {
   min-width: 0;
   position: relative;
 }
 
-.app-dropdown--form {
+.nb-dropdown--form {
   width: 100%;
 }
 
-.app-dropdown--toolbar {
+.nb-dropdown--toolbar {
   align-items: center;
   display: inline-flex;
   flex: 0 1 auto;
@@ -17,7 +17,7 @@
   margin-left: var(--space-2);
 }
 
-.app-dropdown__toolbar-label {
+.nb-dropdown__toolbar-label {
   align-items: center;
   color: var(--text-secondary);
   display: inline-flex;
@@ -33,7 +33,7 @@
   }
 }
 
-.app-dropdown__trigger {
+.nb-dropdown__trigger {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-color);
@@ -56,7 +56,7 @@
   }
 
   &:focus-visible,
-  .app-dropdown--open & {
+  .nb-dropdown--open & {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 2px var(--focus-ring-color);
   }
@@ -67,13 +67,13 @@
   }
 }
 
-.app-dropdown--form .app-dropdown__trigger {
+.nb-dropdown--form .nb-dropdown__trigger {
   font-size: var(--font-size-md);
   min-height: var(--control-height-form);
   padding: 0 var(--space-3);
 }
 
-.app-dropdown--toolbar .app-dropdown__trigger {
+.nb-dropdown--toolbar .nb-dropdown__trigger {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   max-width: min(280px, 42vw);
@@ -82,12 +82,12 @@
   padding: 0 var(--space-2);
 }
 
-.app-dropdown--compact {
+.nb-dropdown--compact {
   display: inline-flex;
   width: auto;
 }
 
-.app-dropdown--compact .app-dropdown__trigger {
+.nb-dropdown--compact .nb-dropdown__trigger {
   font-size: var(--font-size-xs);
   min-height: var(--control-height);
   min-width: 56px;
@@ -95,31 +95,31 @@
   width: auto;
 }
 
-.app-dropdown__menu--compact {
+.nb-dropdown__menu--compact {
   max-width: min(280px, 80vw);
   min-width: 72px;
 }
 
-.app-dropdown__menu--compact .app-dropdown__option {
+.nb-dropdown__menu--compact .nb-dropdown__option {
   font-size: var(--font-size-xs);
   min-height: 30px;
   padding: var(--space-1) var(--space-2);
 }
 
-.app-dropdown__value {
+.nb-dropdown__value {
   overflow: hidden;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.app-dropdown__caret {
+.nb-dropdown__caret {
   flex: 0 0 auto;
   font-size: 12px;
   opacity: 0.7;
 }
 
-.app-dropdown__menu {
+.nb-dropdown__menu {
   background: var(--surface-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -133,7 +133,7 @@
   /* position/top/left/z-index come from inline styles set by the portal */
 }
 
-.app-dropdown__option {
+.nb-dropdown__option {
   background: transparent;
   border: 0;
   border-radius: var(--radius-md);
@@ -162,14 +162,14 @@
   }
 }
 
-.app-dropdown__option-content {
+.nb-dropdown__option-content {
   align-items: center;
   display: inline-flex;
   gap: var(--space-3);
   min-width: 0;
 }
 
-.app-dropdown__option-icon {
+.nb-dropdown__option-icon {
   color: var(--text-tertiary);
   flex: 0 0 28px;
   font-family: var(--font-family-sans);
@@ -179,19 +179,19 @@
   text-align: center;
 }
 
-.app-dropdown__option--active .app-dropdown__option-icon {
+.nb-dropdown__option--active .nb-dropdown__option-icon {
   color: var(--accent-color);
 }
 
 @media (max-width: 720px) {
-  .app-dropdown--toolbar {
+  .nb-dropdown--toolbar {
     align-items: stretch;
     flex-direction: column;
     margin-left: 0;
     width: 100%;
   }
 
-  .app-dropdown--toolbar .app-dropdown__trigger {
+  .nb-dropdown--toolbar .nb-dropdown__trigger {
     max-width: none;
     min-width: 0;
     width: 100%;

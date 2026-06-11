@@ -22,15 +22,15 @@ export const AppToolbar = ({
 }: AppToolbarProps & React.PropsWithChildren) => {
   return (
     <div className="view-wrapper view-wrapper-dashboard">
-      <div className="app-toolbar theme-dependent">
-        <div className="app-toolbar__start">
+      <div className="nb-toolbar theme-dependent">
+        <div className="nb-toolbar__start">
           {icon && <i className={icon} aria-hidden="true" />}
           <span className="toolbar-header">{title}</span>
         </div>
-        <div className="app-toolbar__center">
+        <div className="nb-toolbar__center">
           {additionalToolbarContent}
         </div>
-        <div className="app-toolbar__end">
+        <div className="nb-toolbar__end">
           {showRefreshButton && (
             <IconButton
               icon="ph ph-arrow-clockwise"

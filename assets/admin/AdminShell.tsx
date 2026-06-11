@@ -111,7 +111,7 @@ export const AdminShell = ({
   const isCompact = menuOpenState === MenuOpenState.Closed;
 
   const bodyClassName = [
-    'side-nav-outer-toolbar__body layout-body',
+    'nb-admin-shell__body nb-admin-layout-body',
     isMenuOpen ? 'is-open' : 'is-closed',
     isCompact ? 'is-compact' : '',
     isLarge ? 'is-large' : 'is-overlay',
@@ -121,9 +121,9 @@ export const AdminShell = ({
     .join(' ');
 
   return (
-    <div className="side-nav-outer-toolbar">
+    <div className="nb-admin-shell">
       <AdminHeader
-        className="layout-header"
+        className="nb-admin-layout-header"
         menuToggleEnabled
         toggleMenu={toggleMenu}
         title={title}
@@ -132,7 +132,7 @@ export const AdminShell = ({
         renderThemeSwitcher={renderThemeSwitcher}
       />
       <div className={bodyClassName}>
-        <aside className="side-nav-outer-toolbar__panel" aria-label="Main menu">
+        <aside className="nb-admin-shell__panel" aria-label="Main menu">
           <AdminSidebarMenu
             items={menuItems}
             compactMode={isCompact}
@@ -143,13 +143,13 @@ export const AdminShell = ({
         </aside>
         {!isLarge && isMenuOpen && (
           <button
-            className="side-nav-outer-toolbar__scrim"
+            className="nb-admin-shell__scrim"
             type="button"
             aria-label="Close menu"
             onClick={closeMenuFromOverlay}
           />
         )}
-        <main className="side-nav-outer-toolbar__content content">
+        <main className="nb-admin-shell__content content">
           {children}
         </main>
       </div>

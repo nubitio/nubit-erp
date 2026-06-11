@@ -34,7 +34,7 @@
 // This means buttons at --control-height (28px) sit flush in the toolbar
 // with 4px breathing room above and below, matching Fluent CommandBar precision.
 
-.app-toolbar {
+.nb-toolbar {
   align-items: center;
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);

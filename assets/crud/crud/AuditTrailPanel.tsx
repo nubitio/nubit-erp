@@ -118,7 +118,7 @@ export function AuditTrailPanel({
 
   return (
     <aside
-      className="audit-trail-panel"
+      className="nb-audit-trail-panel"
       style={{
         border: '1px solid #e0e0e0',
         borderRadius: 4,

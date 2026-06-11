@@ -4,9 +4,9 @@
 // Pill-shaped interactive filter tokens. Use for category filters, tag lists,
 // and multi-select inputs. Press state = .is-active or aria-pressed="true".
 //
-// BEM: .app-chip  /  .app-chip__count
+// BEM: .nb-chip  /  .nb-chip__count
 
-.app-chip {
+.nb-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -54,7 +54,7 @@
     background: color-mix(in srgb, var(--accent-color) 12%, transparent);
     color: var(--accent-color);
 
-    .app-chip__count {
+    .nb-chip__count {
       background: color-mix(in srgb, var(--accent-color) 14%, transparent);
     }
   }
@@ -68,14 +68,14 @@
 
   // icon slot
   > i,
-  > .app-chip__icon {
+  > .nb-chip__icon {
     font-size: 1em;
     line-height: 1;
     flex-shrink: 0;
   }
 }
 
-.app-chip__count {
+.nb-chip__count {
   font-size: 0.72rem;
   font-weight: 700;
   background: color-mix(in srgb, currentColor 10%, transparent);

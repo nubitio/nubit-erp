@@ -30,18 +30,18 @@ export const StatCard = ({
   className = '',
   children,
 }: StatCardProps) => (
-  <div className={`stat-card${className ? ` ${className}` : ''}`}>
-    <div className="stat-card__header">
+  <div className={`nb-stat-card${className ? ` ${className}` : ''}`}>
+    <div className="nb-stat-card__header">
       <div>
-        {title && <span className="stat-card__title">{title}</span>}
-        {headerExtra && <span className="stat-card__extra">{headerExtra}</span>}
+        {title && <span className="nb-stat-card__title">{title}</span>}
+        {headerExtra && <span className="nb-stat-card__extra">{headerExtra}</span>}
       </div>
       {menuVisible && (
-        <span className="stat-card__menu">
+        <span className="nb-stat-card__menu">
           <ContextMenu items={menuItems} />
         </span>
       )}
     </div>
-    {!isLoading && <div className="stat-card__body">{children}</div>}
+    {!isLoading && <div className="nb-stat-card__body">{children}</div>}
   </div>
 );

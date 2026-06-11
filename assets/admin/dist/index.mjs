@@ -6,7 +6,7 @@ import { jsx, jsxs } from "react/jsx-runtime";
 function ActionPopover({ action }) {
 	const { open, toggle, setOpen, containerRef } = useFloatingPanel();
 	if (action.onClick) return /* @__PURE__ */ jsxs("div", {
-		className: "messages",
+		className: "nb-admin-messages",
 		children: [/* @__PURE__ */ jsx(IconButton, {
 			icon: action.icon,
 			label: action.label,
@@ -20,10 +20,10 @@ function ActionPopover({ action }) {
 		})]
 	});
 	return /* @__PURE__ */ jsxs("div", {
-		className: "header-popover",
+		className: "nb-admin-header-popover",
 		ref: containerRef,
 		children: [/* @__PURE__ */ jsxs("div", {
-			className: "messages",
+			className: "nb-admin-messages",
 			children: [/* @__PURE__ */ jsx(IconButton, {
 				icon: action.icon,
 				label: action.label,
@@ -37,7 +37,7 @@ function ActionPopover({ action }) {
 				children: action.badge > 99 ? "99+" : action.badge
 			})]
 		}), open && action.renderPanel && /* @__PURE__ */ jsx("div", {
-			className: "header-popover__panel",
+			className: "nb-admin-header-popover__panel",
 			role: "dialog",
 			"aria-label": action.label,
 			children: action.renderPanel({ close: () => setOpen(false) })
@@ -47,7 +47,7 @@ function ActionPopover({ action }) {
 function UserMenuPopover({ renderUserMenu }) {
 	const { open, toggle, setOpen, containerRef } = useFloatingPanel();
 	return /* @__PURE__ */ jsxs("div", {
-		className: "header-popover",
+		className: "nb-admin-header-popover",
 		ref: containerRef,
 		children: [/* @__PURE__ */ jsx(IconButton, {
 			icon: "ph ph-user-circle",
@@ -55,7 +55,7 @@ function UserMenuPopover({ renderUserMenu }) {
 			"aria-expanded": open,
 			onClick: toggle
 		}), open && /* @__PURE__ */ jsx("div", {
-			className: "header-popover__panel",
+			className: "nb-admin-header-popover__panel",
 			role: "dialog",
 			"aria-label": "User menu",
 			children: renderUserMenu({ close: () => setOpen(false) })
@@ -63,24 +63,24 @@ function UserMenuPopover({ renderUserMenu }) {
 	});
 }
 const AdminHeader = ({ title, menuToggleEnabled, toggleMenu, className, actions = [], renderUserMenu, renderThemeSwitcher }) => /* @__PURE__ */ jsx("header", {
-	className: ["header-component", className].filter(Boolean).join(" "),
+	className: ["nb-admin-header-component", className].filter(Boolean).join(" "),
 	children: /* @__PURE__ */ jsxs("div", {
-		className: "header-toolbar",
+		className: "nb-admin-header-toolbar",
 		role: "toolbar",
 		"aria-label": "Main toolbar",
 		children: [/* @__PURE__ */ jsxs("div", {
-			className: "header-toolbar__before",
+			className: "nb-admin-header-toolbar__before",
 			children: [menuToggleEnabled && /* @__PURE__ */ jsx(IconButton, {
-				className: "menu-button",
+				className: "nb-admin-menu-button",
 				icon: "ph ph-list",
 				label: "Toggle menu",
 				onClick: toggleMenu
 			}), title && /* @__PURE__ */ jsx("div", {
-				className: "header-title",
+				className: "nb-admin-header-title",
 				children: title
 			})]
 		}), /* @__PURE__ */ jsxs("div", {
-			className: "header-toolbar__after",
+			className: "nb-admin-header-toolbar__after",
 			children: [
 				renderThemeSwitcher?.(),
 				actions.map((action) => /* @__PURE__ */ jsx(ActionPopover, { action }, action.id)),
@@ -198,12 +198,12 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 		});
 	}, [selectedItemChanged]);
 	return /* @__PURE__ */ jsxs("div", {
-		className: `side-navigation-menu${compactMode ? " compact" : ""}`,
+		className: `nb-admin-menu${compactMode ? " compact" : ""}`,
 		onPointerDown: openMenu,
 		children: [/* @__PURE__ */ jsx("div", {
-			className: "menu-container theme-dependent",
+			className: "nb-admin-menu-container theme-dependent",
 			children: /* @__PURE__ */ jsx("nav", {
-				className: "side-navigation-menu__nav",
+				className: "nb-admin-menu__nav",
 				"aria-label": "Main navigation",
 				children: items.map((item) => {
 					const selected = isSelected(item.path);
@@ -212,9 +212,9 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 					const hasChildren = (item.items?.length ?? 0) > 0;
 					const expanded = !compactMode && hasChildren && expandedItemKeys.has(itemKey);
 					return /* @__PURE__ */ jsxs("section", {
-						className: `side-navigation-menu__section${containsSelected ? " has-selected-child" : ""}`,
+						className: `nb-admin-menu__section${containsSelected ? " has-selected-child" : ""}`,
 						children: [/* @__PURE__ */ jsxs("button", {
-							className: `side-navigation-menu__item side-navigation-menu__item--parent${selected ? " is-selected" : ""}`,
+							className: `nb-admin-menu__item nb-admin-menu__item--parent${selected ? " is-selected" : ""}`,
 							type: "button",
 							"aria-current": selected ? "page" : void 0,
 							"aria-expanded": hasChildren ? expanded : void 0,
@@ -227,29 +227,29 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 							},
 							children: [
 								/* @__PURE__ */ jsx("span", {
-									className: `side-navigation-menu__icon ${getIconClassName(item.icon)}`,
+									className: `nb-admin-menu__icon ${getIconClassName(item.icon)}`,
 									"aria-hidden": "true"
 								}),
 								/* @__PURE__ */ jsx("span", {
-									className: "side-navigation-menu__text",
+									className: "nb-admin-menu__text",
 									children: item.text
 								}),
 								hasChildren && /* @__PURE__ */ jsx("span", {
-									className: `side-navigation-menu__chevron${expanded ? " is-expanded" : ""}`,
+									className: `nb-admin-menu__chevron${expanded ? " is-expanded" : ""}`,
 									"aria-hidden": "true"
 								})
 							]
 						}), expanded && (item.items?.length ?? 0) > 0 && /* @__PURE__ */ jsx("div", {
-							className: "side-navigation-menu__children",
+							className: "nb-admin-menu__children",
 							children: item.items.map((subItem) => {
 								const childSelected = isSelected(subItem.path);
 								return /* @__PURE__ */ jsx("button", {
-									className: `side-navigation-menu__item side-navigation-menu__item--child${childSelected ? " is-selected" : ""}`,
+									className: `nb-admin-menu__item nb-admin-menu__item--child${childSelected ? " is-selected" : ""}`,
 									type: "button",
 									"aria-current": childSelected ? "page" : void 0,
 									onClick: (event) => handleSelect(subItem.path, childSelected, event),
 									children: /* @__PURE__ */ jsx("span", {
-										className: "side-navigation-menu__text",
+										className: "nb-admin-menu__text",
 										children: subItem.text
 									})
 								}, subItem.path || subItem.text);
@@ -259,7 +259,7 @@ const AdminSidebarMenu = ({ items, compactMode = false, selectedItemChanged, ope
 				})
 			})
 		}), footer && /* @__PURE__ */ jsx("footer", {
-			className: "footer",
+			className: "nb-admin-footer",
 			children: footer
 		})]
 	});
@@ -314,16 +314,16 @@ const AdminShell = ({ title, menuItems, headerActions, renderUserMenu, renderThe
 	const isMenuOpen = menuOpenState !== 1;
 	const isCompact = menuOpenState === 1;
 	const bodyClassName = [
-		"side-nav-outer-toolbar__body layout-body",
+		"nb-admin-shell__body nb-admin-layout-body",
 		isMenuOpen ? "is-open" : "is-closed",
 		isCompact ? "is-compact" : "",
 		isLarge ? "is-large" : "is-overlay",
 		isXSmall ? "is-xsmall" : ""
 	].filter(Boolean).join(" ");
 	return /* @__PURE__ */ jsxs("div", {
-		className: "side-nav-outer-toolbar",
+		className: "nb-admin-shell",
 		children: [/* @__PURE__ */ jsx(AdminHeader, {
-			className: "layout-header",
+			className: "nb-admin-layout-header",
 			menuToggleEnabled: true,
 			toggleMenu,
 			title,
@@ -334,7 +334,7 @@ const AdminShell = ({ title, menuItems, headerActions, renderUserMenu, renderThe
 			className: bodyClassName,
 			children: [
 				/* @__PURE__ */ jsx("aside", {
-					className: "side-nav-outer-toolbar__panel",
+					className: "nb-admin-shell__panel",
 					"aria-label": "Main menu",
 					children: /* @__PURE__ */ jsx(AdminSidebarMenu, {
 						items: menuItems,
@@ -345,13 +345,13 @@ const AdminShell = ({ title, menuItems, headerActions, renderUserMenu, renderThe
 					})
 				}),
 				!isLarge && isMenuOpen && /* @__PURE__ */ jsx("button", {
-					className: "side-nav-outer-toolbar__scrim",
+					className: "nb-admin-shell__scrim",
 					type: "button",
 					"aria-label": "Close menu",
 					onClick: closeMenuFromOverlay
 				}),
 				/* @__PURE__ */ jsx("main", {
-					className: "side-nav-outer-toolbar__content content",
+					className: "nb-admin-shell__content content",
 					children
 				})
 			]

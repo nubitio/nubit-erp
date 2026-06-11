@@ -1,13 +1,13 @@
 // ── Settings panel ─────────────────────────────────────────────────────────────
 // Compact popover for display preferences (accent color + density).
-// Designed to sit inside the existing header-popover__panel container.
+// Designed to sit inside the existing nb-admin-header-popover__panel container.
 
-.settings-panel {
+.nb-settings-panel {
   padding: var(--space-4);
   width: 236px;
 }
 
-.settings-panel__heading {
+.nb-settings-panel__heading {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
@@ -18,14 +18,14 @@
 
 // ── Accent color section ───────────────────────────────────────────────────────
 
-.settings-panel__swatches {
+.nb-settings-panel__swatches {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
-.settings-panel__swatch {
+.nb-settings-panel__swatch {
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -54,12 +54,12 @@
 
 // ── Density section ────────────────────────────────────────────────────────────
 
-.settings-panel__density {
+.nb-settings-panel__density {
   display: flex;
   gap: var(--space-1);
 }
 
-.settings-panel__density-btn {
+.nb-settings-panel__density-btn {
   align-items: center;
   background: transparent;
   border: 1px solid var(--border-color);
@@ -100,7 +100,7 @@
 
 // ── Divider ────────────────────────────────────────────────────────────────────
 
-.settings-panel__divider {
+.nb-settings-panel__divider {
   background: var(--border-subtle);
   border: 0;
   height: 1px;

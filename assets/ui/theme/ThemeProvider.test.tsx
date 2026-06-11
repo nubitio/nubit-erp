@@ -12,7 +12,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   delete document.documentElement.dataset.theme;
-  document.documentElement.classList.remove('app-theme-light', 'app-theme-dark');
+  document.documentElement.classList.remove('nb-theme-light', 'nb-theme-dark');
   localStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -90,7 +90,7 @@ describe('ThemeProvider initial state', () => {
 
   it('reads persisted mode from localStorage', () => {
     stubMatchMedia(false);
-    localStorage.setItem('app-theme', 'dark');
+    localStorage.setItem('nb-theme', 'dark');
     render(
       <TestThemeProvider>
         <CurrentMode />
@@ -112,7 +112,7 @@ describe('ThemeProvider initial state', () => {
 
   it('falls back to auto when localStorage has an invalid value', () => {
     stubMatchMedia(false);
-    localStorage.setItem('app-theme', 'invalid-mode');
+    localStorage.setItem('nb-theme', 'invalid-mode');
     render(
       <TestThemeProvider>
         <CurrentMode />
@@ -139,7 +139,7 @@ describe('ThemeProvider initial state', () => {
 
     expect(screen.getByTestId('mode').textContent).toBe('auto:dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(document.documentElement.classList.contains('app-theme-dark')).toBe(true);
+    expect(document.documentElement.classList.contains('nb-theme-dark')).toBe(true);
   });
 });
 
@@ -172,12 +172,12 @@ describe('ThemeProvider switchTheme', () => {
   it('persists the new mode to localStorage', () => {
     stubMatchMedia(false);
     render(
-      <TestThemeProvider storageKey="app-theme">
+      <TestThemeProvider>
         <SwitchButton />
       </TestThemeProvider>,
     );
     act(() => fireEvent.click(screen.getByText('switch')));
-    expect(localStorage.getItem('app-theme')).toBe('light');
+    expect(localStorage.getItem('nb-theme')).toBe('light');
   });
 });
 
@@ -219,7 +219,7 @@ describe('ThemeSwitcher', () => {
 
   it('applies overridden labels via labelByMode prop', () => {
     stubMatchMedia(false);
-    localStorage.setItem('app-theme', 'light');
+    localStorage.setItem('nb-theme', 'light');
     render(
       <TestThemeProvider>
         <ThemeSwitcher labelByMode={{ light: 'Tema: Claro' }} />

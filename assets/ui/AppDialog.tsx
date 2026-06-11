@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './Button';
+import { useUiStrings } from './UiStrings';
 
 import './AppDialog.scss';
 
@@ -16,6 +17,10 @@ export interface AppDialogProps {
   height?: number | string;
   fullScreen?: boolean;
   showCloseButton?: boolean;
+  /** Accessible label for the close button. Defaults to UiStrings `close`. */
+  closeLabel?: string;
+  /** Accessible label for the backdrop scrim. Defaults to UiStrings `closeDialog`. */
+  scrimLabel?: string;
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
   restoreFocus?: boolean;
@@ -49,6 +54,8 @@ export const AppDialog = ({
   height,
   fullScreen = false,
   showCloseButton = true,
+  closeLabel,
+  scrimLabel,
   closeOnOutsideClick = true,
   closeOnEscape = true,
   restoreFocus = true,
@@ -61,6 +68,9 @@ export const AppDialog = ({
   footerClassName,
   role = 'dialog',
 }: AppDialogProps) => {
+  const strings = useUiStrings();
+  const resolvedCloseLabel = closeLabel ?? strings.close;
+  const resolvedScrimLabel = scrimLabel ?? strings.closeDialog;
   const isVisible = visible ?? open ?? false;
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +117,7 @@ export const AppDialog = ({
 
   return createPortal(
     <div
-      className={joinClassNames('app-dialog-root', rootClassName)}
+      className={joinClassNames('nb-dialog-root', rootClassName)}
       aria-hidden={!isVisible}
       style={{
         pointerEvents: isVisible ? undefined : 'none',
@@ -115,13 +125,13 @@ export const AppDialog = ({
       }}
     >
       <button
-        className="app-dialog__scrim"
+        className="nb-dialog__scrim"
         type="button"
-        aria-label="Cerrar diálogo"
+        aria-label={resolvedScrimLabel}
         onClick={closeOnOutsideClick ? onClose : undefined}
       />
       <div
-        className={joinClassNames('app-dialog', fullScreen && 'app-dialog--fullscreen', className)}
+        className={joinClassNames('nb-dialog', fullScreen && 'nb-dialog--fullscreen', className)}
         role={role}
         aria-modal="true"
         aria-labelledby={titleId}
@@ -138,22 +148,22 @@ export const AppDialog = ({
           height: formatSize(height),
         }}
       >
-        <div className={joinClassNames('app-dialog__header', headerClassName)}>
-          <h2 className={joinClassNames('app-dialog__title', titleClassName)} id={titleId}>
+        <div className={joinClassNames('nb-dialog__header', headerClassName)}>
+          <h2 className={joinClassNames('nb-dialog__title', titleClassName)} id={titleId}>
             {title}
           </h2>
           {showCloseButton && (
             <IconButton
-              className="app-dialog__close"
+              className="nb-dialog__close"
               icon="ph ph-x"
-              label="Cerrar"
+              label={resolvedCloseLabel}
               onClick={onClose}
             />
           )}
         </div>
-        <div className={joinClassNames('app-dialog__body', bodyClassName)}>{children}</div>
+        <div className={joinClassNames('nb-dialog__body', bodyClassName)}>{children}</div>
         {footer && (
-          <div className={joinClassNames('app-dialog__footer', footerClassName)}>{footer}</div>
+          <div className={joinClassNames('nb-dialog__footer', footerClassName)}>{footer}</div>
         )}
       </div>
     </div>,

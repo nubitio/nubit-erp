@@ -3,10 +3,10 @@
 // the panel is position: absolute below it.
 //
 // Alignment variants:
-//   .app-popover--end  (default) — right edge of panel = right edge of container
-//   .app-popover--start          — left edge of panel = left edge of container
+//   .nb-popover--end  (default) — right edge of panel = right edge of container
+//   .nb-popover--start          — left edge of panel = left edge of container
 
-.app-popover {
+.nb-popover {
   position: relative;
   display: inline-flex;
   align-items: center;

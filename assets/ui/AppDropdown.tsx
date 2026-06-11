@@ -47,7 +47,7 @@ function getMenuStyle(
   menuMinWidth = 72,
 ): CSSProperties {
   if (!containerRef.current) return { position: 'fixed', visibility: 'hidden', margin: 0 };
-  const trigger = containerRef.current.querySelector<HTMLElement>('.app-dropdown__trigger');
+  const trigger = containerRef.current.querySelector<HTMLElement>('.nb-dropdown__trigger');
   const rect = (trigger ?? containerRef.current).getBoundingClientRect();
   const menuWidth = Math.max(rect.width, menuMinWidth);
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
@@ -155,41 +155,41 @@ export function AppDropdown({
     <div
       ref={containerRef}
       className={cx(
-        'app-dropdown',
-        `app-dropdown--${variant}`,
-        open && 'app-dropdown--open',
-        disabled && 'app-dropdown--disabled',
+        'nb-dropdown',
+        `nb-dropdown--${variant}`,
+        open && 'nb-dropdown--open',
+        disabled && 'nb-dropdown--disabled',
         className,
       )}
       role="group"
       aria-labelledby={label ? `${id}-label` : undefined}
     >
       {variant === 'toolbar' && label && (
-        <span className="app-dropdown__toolbar-label" id={`${id}-label`}>
+        <span className="nb-dropdown__toolbar-label" id={`${id}-label`}>
           {icon && <i className={normalizeIcon(icon)} aria-hidden="true" />}
           <span>{label}</span>
         </span>
       )}
       <button
         type="button"
-        className="app-dropdown__trigger"
+        className="nb-dropdown__trigger"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-labelledby={label ? `${id}-label ${id}-value` : `${id}-value`}
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : openMenu())}
       >
-        <span className="app-dropdown__value" id={`${id}-value`}>
+        <span className="nb-dropdown__value" id={`${id}-value`}>
           {selected?.selectedLabel ?? selected?.label ?? placeholder}
         </span>
-        <i className="ph ph-caret-down app-dropdown__caret" aria-hidden="true" />
+        <i className="ph ph-caret-down nb-dropdown__caret" aria-hidden="true" />
       </button>
       {open &&
         !disabled &&
         createPortal(
           <ul
             ref={menuRef}
-            className={cx('app-dropdown__menu', `app-dropdown__menu--${variant}`)}
+            className={cx('nb-dropdown__menu', `nb-dropdown__menu--${variant}`)}
             role="listbox"
             aria-labelledby={label ? `${id}-label` : undefined}
             style={menuStyle}
@@ -204,8 +204,8 @@ export function AppDropdown({
                     aria-selected={isActive}
                     disabled={option.disabled}
                     className={cx(
-                      'app-dropdown__option',
-                      isActive && 'app-dropdown__option--active',
+                      'nb-dropdown__option',
+                      isActive && 'nb-dropdown__option--active',
                     )}
                     onClick={() => {
                       if (option.disabled) return;
@@ -213,9 +213,9 @@ export function AppDropdown({
                       setOpen(false);
                     }}
                   >
-                    <span className="app-dropdown__option-content">
+                    <span className="nb-dropdown__option-content">
                       {option.iconText && (
-                        <span className="app-dropdown__option-icon" aria-hidden="true">
+                        <span className="nb-dropdown__option-icon" aria-hidden="true">
                           {option.iconText}
                         </span>
                       )}
@@ -236,19 +236,19 @@ export function AppDropdown({
   }
 
   return (
-    <label className={cx('app-form-field', !!error && 'app-form-field--error')} htmlFor={id}>
+    <label className={cx('nb-form-field', !!error && 'nb-form-field--error')} htmlFor={id}>
       {label && (
-        <span className="app-form-field__label" id={`${id}-label`}>
+        <span className="nb-form-field__label" id={`${id}-label`}>
           {label}
         </span>
       )}
       {control}
       {error ? (
-        <span className="app-form-field__error" role="alert">
+        <span className="nb-form-field__error" role="alert">
           {error}
         </span>
       ) : helpText ? (
-        <span className="app-form-field__help">{helpText}</span>
+        <span className="nb-form-field__help">{helpText}</span>
       ) : null}
     </label>
   );

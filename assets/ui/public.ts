@@ -1,4 +1,7 @@
 // @nubit/ui — visual primitives facade.
+// Static design tokens ship inside dist/style.css; theme-dependent color
+// tokens load at runtime via ThemeProvider (dist/themes/nb-theme-*.css).
+import './theme/styles/tokens.scss';
 import './foundations/scrollbars.scss';
 
 export { Avatar, getAvatarInitials, getAvatarHue } from './Avatar';
@@ -53,3 +56,5 @@ export { useFloatingPanel } from './useFloatingPanel';
 export type { UseFloatingPanelOptions, UseFloatingPanelResult } from './useFloatingPanel';
 export { Drawer } from './Drawer';
 export type { DrawerProps, DrawerSide } from './Drawer';
+export { UiStringsProvider, useUiStrings, EN_UI_STRINGS, ES_UI_STRINGS } from './UiStrings';
+export type { UiStrings, UiStringsProviderProps } from './UiStrings';

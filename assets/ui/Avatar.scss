@@ -5,9 +5,9 @@
 // Light theme: medium-saturation, mid-lightness (readable with white text)
 // Dark theme: slightly desaturated, similar lightness (auto via oklch)
 //
-// The `.app-avatar` element sets --avatar-hue; this file renders the color.
+// The `.nb-avatar` element sets --avatar-hue; this file renders the color.
 
-.app-avatar {
+.nb-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -32,13 +32,12 @@
 
 // Dark mode: reduce saturation slightly to avoid visual noise
 @media (prefers-color-scheme: dark) {
-  .app-avatar {
+  .nb-avatar {
     background: oklch(48% 0.10 calc(var(--avatar-hue, 218) * 1deg));
   }
 }
 
-// Explicit dark theme class (matches ThemeProvider's data-theme approach)
-[data-theme='dark'] .app-avatar,
-.app-theme-dark .app-avatar {
+// Dark theme — keyed off ThemeProvider's data-theme attribute (prefix-independent)
+[data-theme='dark'] .nb-avatar {
   background: oklch(48% 0.10 calc(var(--avatar-hue, 218) * 1deg));
 }

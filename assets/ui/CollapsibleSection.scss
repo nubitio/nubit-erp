@@ -2,7 +2,7 @@
 // Full-width disclosure component with a header trigger and collapsible body.
 // Uses the HTML `hidden` attribute for accessibility (screen readers skip it).
 
-.app-collapsible {
+.nb-collapsible {
   // No outer border by default — let the consumer add one if needed
 
   &__header {

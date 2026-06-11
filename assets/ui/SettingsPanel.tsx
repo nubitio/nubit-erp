@@ -12,14 +12,14 @@ export const SettingsPanel = ({ onClose: _onClose }: SettingsPanelProps) => {
   const { accent, changeAccent, presets } = useAccentColor();
 
   return (
-    <div className="settings-panel" role="menu" aria-label="Display settings">
+    <div className="nb-settings-panel" role="menu" aria-label="Display settings">
       {/* ── Accent color ─────────────────────────────── */}
-      <p className="settings-panel__heading">Color de acento</p>
-      <div className="settings-panel__swatches" role="group" aria-label="Colores de acento">
+      <p className="nb-settings-panel__heading">Color de acento</p>
+      <div className="nb-settings-panel__swatches" role="group" aria-label="Colores de acento">
         {presets.map((preset) => (
           <button
             key={preset.value}
-            className="settings-panel__swatch"
+            className="nb-settings-panel__swatch"
             type="button"
             aria-label={preset.label}
             aria-pressed={accent === preset.value}
@@ -30,13 +30,13 @@ export const SettingsPanel = ({ onClose: _onClose }: SettingsPanelProps) => {
         ))}
       </div>
 
-      <hr className="settings-panel__divider" />
+      <hr className="nb-settings-panel__divider" />
 
       {/* ── Density ──────────────────────────────────── */}
-      <p className="settings-panel__heading">Densidad</p>
-      <div className="settings-panel__density" role="group" aria-label="Densidad de interfaz">
+      <p className="nb-settings-panel__heading">Densidad</p>
+      <div className="nb-settings-panel__density" role="group" aria-label="Densidad de interfaz">
         <button
-          className="settings-panel__density-btn"
+          className="nb-settings-panel__density-btn"
           type="button"
           aria-pressed={density === 'normal'}
           onClick={() => density !== 'normal' && toggleDensity()}
@@ -45,7 +45,7 @@ export const SettingsPanel = ({ onClose: _onClose }: SettingsPanelProps) => {
           Normal
         </button>
         <button
-          className="settings-panel__density-btn"
+          className="nb-settings-panel__density-btn"
           type="button"
           aria-pressed={density === 'compact'}
           onClick={() => density !== 'compact' && toggleDensity()}

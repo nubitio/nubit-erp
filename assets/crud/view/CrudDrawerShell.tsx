@@ -31,13 +31,14 @@ export const CrudDrawerShell: React.FC<CrudFormShellProps> = ({
       width={drawerWidth}
       side={drawerSide}
       scrim="subtle"
+      closeLabel={t('dialog.close')}
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>
             {t('dialog.buttonCancel')}
           </Button>
           {mode !== 'view' && (
-            <Button variant="primary" className="dialog-save-button" onClick={onSave}>
+            <Button variant="primary" className="nb-dialog-save-button" onClick={onSave}>
               {t('dialog.buttonSave')}
             </Button>
           )}

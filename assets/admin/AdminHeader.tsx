@@ -31,7 +31,7 @@ function ActionPopover({ action }: { action: AdminHeaderAction }) {
   // If the action has its own onClick, bypass the panel entirely.
   if (action.onClick) {
     return (
-      <div className="messages">
+      <div className="nb-admin-messages">
         <IconButton
           icon={action.icon}
           label={action.label}
@@ -53,10 +53,10 @@ function ActionPopover({ action }: { action: AdminHeaderAction }) {
 
   return (
     <div
-      className="header-popover"
+      className="nb-admin-header-popover"
       ref={containerRef}
     >
-      <div className="messages">
+      <div className="nb-admin-messages">
         <IconButton
           icon={action.icon}
           label={action.label}
@@ -76,7 +76,7 @@ function ActionPopover({ action }: { action: AdminHeaderAction }) {
       </div>
       {open && action.renderPanel && (
         <div
-          className="header-popover__panel"
+          className="nb-admin-header-popover__panel"
           role="dialog"
           aria-label={action.label}
         >
@@ -98,7 +98,7 @@ function UserMenuPopover({
   const { open, toggle, setOpen, containerRef } = useFloatingPanel();
 
   return (
-    <div className="header-popover" ref={containerRef}>
+    <div className="nb-admin-header-popover" ref={containerRef}>
       <IconButton
         icon="ph ph-user-circle"
         label="User menu"
@@ -107,7 +107,7 @@ function UserMenuPopover({
       />
       {open && (
         <div
-          className="header-popover__panel"
+          className="nb-admin-header-popover__panel"
           role="dialog"
           aria-label="User menu"
         >
@@ -130,20 +130,20 @@ export const AdminHeader = ({
   renderUserMenu,
   renderThemeSwitcher,
 }: AdminHeaderProps) => (
-  <header className={['header-component', className].filter(Boolean).join(' ')}>
-    <div className="header-toolbar" role="toolbar" aria-label="Main toolbar">
-      <div className="header-toolbar__before">
+  <header className={['nb-admin-header-component', className].filter(Boolean).join(' ')}>
+    <div className="nb-admin-header-toolbar" role="toolbar" aria-label="Main toolbar">
+      <div className="nb-admin-header-toolbar__before">
         {menuToggleEnabled && (
           <IconButton
-            className="menu-button"
+            className="nb-admin-menu-button"
             icon="ph ph-list"
             label="Toggle menu"
             onClick={toggleMenu}
           />
         )}
-        {title && <div className="header-title">{title}</div>}
+        {title && <div className="nb-admin-header-title">{title}</div>}
       </div>
-      <div className="header-toolbar__after">
+      <div className="nb-admin-header-toolbar__after">
         {renderThemeSwitcher?.()}
         {actions.map((action) => (
           <ActionPopover key={action.id} action={action} />

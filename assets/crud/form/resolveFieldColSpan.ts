@@ -173,7 +173,8 @@ function resolveHeuristicColSpan(field: Field, context: FieldColSpanContext): Co
   if (field.layoutHint) {
     if (FULL_WIDTH_HINTS.has(field.layoutHint)) return 12;
     if (SHORT_HINTS.has(field.layoutHint) && canUseHalfColumn(context)) {
-      return field.preferredColSpan === 6 || field.minColSpan !== 12 ? 6 : 12;
+      // minColSpan === 12 already returned above, so a short hint always fits half.
+      return 6;
     }
   }
 

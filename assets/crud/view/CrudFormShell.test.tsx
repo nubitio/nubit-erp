@@ -107,7 +107,7 @@ describe('CrudFormShell dispatch', () => {
         <span>FORM BODY</span>
       </CrudFormShell>,
     );
-    expect(document.body.querySelector('.crud-dialog')).toBeTruthy();
+    expect(document.body.querySelector('.nb-crud-dialog')).toBeTruthy();
   });
 
   it('renders drawer shell for viewMode: drawer', () => {
@@ -124,8 +124,8 @@ describe('CrudFormShell dispatch', () => {
         <span>FORM BODY</span>
       </CrudFormShell>,
     );
-    expect(document.body.querySelector('.crud-drawer')).toBeTruthy();
-    expect(document.body.querySelector('.crud-drawer-root--right')).toBeTruthy();
+    expect(document.body.querySelector('.nb-drawer')).toBeTruthy();
+    expect(document.body.querySelector('.nb-drawer-root--right')).toBeTruthy();
   });
 
   it('renders page shell for viewMode: page', () => {
@@ -160,7 +160,7 @@ describe('CrudFormShell dispatch', () => {
         <span>FORM BODY</span>
       </CrudFormShell>,
     );
-    expect(container.querySelector('.crud-page-shell')).toBeNull();
+    expect(container.querySelector('.nb-crud-page-shell')).toBeNull();
   });
 
   it('drawer shell reflects a left-side configuration', () => {
@@ -177,6 +177,6 @@ describe('CrudFormShell dispatch', () => {
         <span>FORM BODY</span>
       </CrudFormShell>,
     );
-    expect(document.body.querySelector('.crud-drawer-root--left')).toBeTruthy();
+    expect(document.body.querySelector('.nb-drawer-root--left')).toBeTruthy();
   });
 });

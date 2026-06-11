@@ -2,22 +2,22 @@
 
 // ── Shell layout ───────────────────────────────────────────────────────────────
 
-.side-nav-outer-toolbar {
+.nb-admin-shell {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
 }
 
-.layout-header {
+.nb-admin-layout-header {
   z-index: var(--z-shell-header);
 }
 
-.layout-body {
+.nb-admin-layout-body {
   background-color: var(--surface-0);
 }
 
-.side-nav-outer-toolbar__body {
+.nb-admin-shell__body {
   display: flex;
   flex: 1;
   min-height: 0;
@@ -26,7 +26,7 @@
 }
 
 // Sidebar panel — structural border, not subtle, so it's clearly visible in light mode.
-.side-nav-outer-toolbar__panel {
+.nb-admin-shell__panel {
   background-color: var(--side-panel-background);
   border-right: 1px solid var(--border-color);
   flex: 0 0 240px;
@@ -41,7 +41,7 @@
   z-index: var(--z-shell-panel);
 }
 
-.side-nav-outer-toolbar__scrim {
+.nb-admin-shell__scrim {
   background: var(--overlay-bg);
   border: 0;
   cursor: pointer;
@@ -51,15 +51,15 @@
   z-index: var(--z-shell-scrim);
 }
 
-.side-nav-outer-toolbar__body.is-large.is-compact {
-  .side-nav-outer-toolbar__panel {
+.nb-admin-shell__body.is-large.is-compact {
+  .nb-admin-shell__panel {
     flex-basis: var(--side-panel-min-width);
     width: var(--side-panel-min-width);
   }
 }
 
-.side-nav-outer-toolbar__body.is-overlay {
-  .side-nav-outer-toolbar__panel {
+.nb-admin-shell__body.is-overlay {
+  .nb-admin-shell__panel {
     inset: 0 auto 0 0;
     position: absolute;
   }
@@ -69,19 +69,19 @@
   // Opening the menu expands the panel OVER the content (with scrim) while
   // the content keeps the rail offset.
   &:not(.is-xsmall) {
-    .side-nav-outer-toolbar__content {
+    .nb-admin-shell__content {
       margin-left: var(--side-panel-min-width, 48px);
     }
   }
 
   &.is-closed:not(.is-xsmall) {
-    .side-nav-outer-toolbar__panel {
+    .nb-admin-shell__panel {
       width: var(--side-panel-min-width);
     }
   }
 
   &.is-closed.is-xsmall {
-    .side-nav-outer-toolbar__panel {
+    .nb-admin-shell__panel {
       transform: translateX(-100%);
     }
   }
@@ -99,7 +99,7 @@
 // Structural border + shadow so the header clearly lifts above the content area.
 // border-color (not border-subtle) ensures visibility in light mode.
 
-.header-component {
+.nb-admin-header-component {
   background: var(--surface-1);
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 1px 0 var(--border-subtle);
@@ -108,7 +108,7 @@
   z-index: var(--z-shell-header);
 }
 
-.header-toolbar {
+.nb-admin-header-toolbar {
   align-items: center;
   display: flex;
   gap: var(--space-2);
@@ -116,25 +116,25 @@
   padding: 0 var(--space-4) 0 0;
 }
 
-.header-toolbar__before,
-.header-toolbar__after {
+.nb-admin-header-toolbar__before,
+.nb-admin-header-toolbar__after {
   align-items: center;
   display: flex;
 }
 
-.header-toolbar__before {
+.nb-admin-header-toolbar__before {
   flex: 1;
   min-width: 0;
   gap: var(--space-1);
 }
 
-.header-toolbar__after {
+.nb-admin-header-toolbar__after {
   flex: 0 0 auto;
   gap: var(--space-1);
 }
 
 // App title — Syne gives it a distinctive brand feel at a legible size.
-.header-title {
+.nb-admin-header-title {
   color: var(--text-primary);
   font-family: var(--font-family-display);
   font-size: var(--font-size-lg);
@@ -146,21 +146,21 @@
   white-space: nowrap;
 }
 
-.menu-button {
+.nb-admin-menu-button {
   flex: 0 0 var(--side-panel-min-width);
   width: var(--side-panel-min-width);
 }
 
-.messages {
+.nb-admin-messages {
   position: relative;
 }
 
 // Popover panel — floats above the page; uses the full shadow tier.
-.header-popover {
+.nb-admin-header-popover {
   position: relative;
 }
 
-.header-popover__panel {
+.nb-admin-header-popover__panel {
   background: var(--surface-1);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -174,7 +174,7 @@
 
 
 // Notification badge — sits on top of header icon buttons.
-.messages > .app-badge {
+.nb-admin-messages > .nb-badge {
   align-items: center;
   background: var(--accent-color);
   border: 2px solid var(--surface-1);
@@ -194,14 +194,14 @@
 
 // ── Sidebar menu ───────────────────────────────────────────────────────────────
 
-.side-navigation-menu {
+.nb-admin-menu {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 100%;
   width: 240px !important;
 
-  .menu-container {
+  .nb-admin-menu-container {
     background-color: var(--side-panel-background);
     display: flex;
     flex: 1;
@@ -322,7 +322,7 @@
     font-size: var(--font-size-xs);
     min-height: 32px;
 
-    .side-navigation-menu__text {
+    .nb-admin-menu__text {
       font-weight: var(--font-weight-regular);
       padding-left: var(--side-panel-min-width);
     }
@@ -341,7 +341,7 @@
 
   // Compact (icon-only) mode — hide text, center icon.
   &.compact {
-    .side-navigation-menu__item {
+    .nb-admin-menu__item {
       border-left-color: transparent;
 
       &.is-selected {
@@ -350,13 +350,13 @@
       }
     }
 
-    .side-navigation-menu__text,
-    .side-navigation-menu__chevron {
+    .nb-admin-menu__text,
+    .nb-admin-menu__chevron {
       opacity: 0;
       pointer-events: none;
     }
 
-    .side-navigation-menu__icon {
+    .nb-admin-menu__icon {
       opacity: 1;
     }
   }
@@ -364,7 +364,7 @@
 
 // ── Footer ─────────────────────────────────────────────────────────────────────
 
-.footer {
+.nb-admin-footer {
   background-color: var(--side-panel-background);
   border-top: 1px solid var(--border-subtle);
   bottom: 0;
@@ -376,13 +376,13 @@
   right: 0;
   transition: opacity var(--transition-slow);
 
-  .side-nav-outer-toolbar__body.is-open & {
+  .nb-admin-shell__body.is-open & {
     opacity: 1;
   }
 }
 
 // Footer nav items — same visual rhythm as sidebar nav items.
-.footer-nav {
+.nb-admin-footer-nav {
   display: flex;
   flex-direction: column;
 
@@ -442,7 +442,7 @@
 }
 
 // Copyright line inside footer.
-.footer-copyright {
+.nb-admin-footer-copyright {
   color: var(--text-tertiary);
   font-size: var(--font-size-xxs);
   height: var(--footer-height);
@@ -452,7 +452,7 @@
 }
 
 // Compact (icon-only) mode — hide footer text.
-.side-nav-outer-toolbar__body.is-compact .footer-nav {
+.nb-admin-shell__body.is-compact .nb-admin-footer-nav {
   &__text {
     opacity: 0;
     pointer-events: none;

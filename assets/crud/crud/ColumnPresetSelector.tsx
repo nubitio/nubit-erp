@@ -32,20 +32,20 @@ export function ColumnPresetSelector({
 
   return (
     <div
-      className="native-datagrid__preset-control"
+      className="nb-datagrid__preset-control"
       role="group"
       aria-labelledby={labelId}
     >
-      <span className="native-datagrid__preset-label" id={labelId}>
+      <span className="nb-datagrid__preset-label" id={labelId}>
         <i className={normalizeIcon('ph-columns')} aria-hidden="true" />
         <span>{columnsLabel}</span>
       </span>
-      <div className="native-datagrid__preset-segments">
+      <div className="nb-datagrid__preset-segments">
         <button
           type="button"
           className={cx(
-            'native-datagrid__preset-segment',
-            activePreset === null && 'native-datagrid__preset-segment--active',
+            'nb-datagrid__preset-segment',
+            activePreset === null && 'nb-datagrid__preset-segment--active',
           )}
           onClick={() => onPresetChange(null)}
           aria-pressed={activePreset === null}
@@ -57,8 +57,8 @@ export function ColumnPresetSelector({
             key={preset.key}
             type="button"
             className={cx(
-              'native-datagrid__preset-segment',
-              activePreset === preset.key && 'native-datagrid__preset-segment--active',
+              'nb-datagrid__preset-segment',
+              activePreset === preset.key && 'nb-datagrid__preset-segment--active',
             )}
             onClick={() => onPresetChange(preset.key)}
             aria-pressed={activePreset === preset.key}

@@ -10,10 +10,10 @@
 //   __subtitle   → context   xs / tertiary                        (time period, unit)
 //   __body       → freeform  sm                                   (charts, sparklines)
 //
-// BEM: .stat-card  /  __header  /  __title  /  __value  /  __delta
+// BEM: .nb-stat-card  /  __header  /  __title  /  __value  /  __delta
 //                      __subtitle  /  __extra  /  __menu  /  __body
 
-.stat-card {
+.nb-stat-card {
   background: var(--surface-1);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);

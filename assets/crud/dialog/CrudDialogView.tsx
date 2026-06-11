@@ -134,15 +134,16 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
         height={options.height ?? 'auto'}
         maxWidth={options.width ?? undefined}
         onClose={handleClose}
+        closeLabel={t('dialog.close')}
         closeOnEscape={!isProcessing}
         closeOnOutsideClick={false}
         keepMounted
-        rootClassName="crud-dialog-root"
-        className={['crud-dialog', options.fitContent ? 'fit-content' : 'form-popup'].join(' ')}
-        headerClassName="crud-dialog__header"
-        titleClassName="crud-dialog__title"
-        bodyClassName="crud-dialog__body"
-        footerClassName="crud-dialog__footer"
+        rootClassName="nb-crud-dialog-root"
+        className={['nb-crud-dialog', options.fitContent ? 'fit-content' : 'form-popup'].join(' ')}
+        headerClassName="nb-crud-dialog__header"
+        titleClassName="nb-crud-dialog__title"
+        bodyClassName="nb-crud-dialog__body"
+        footerClassName="nb-crud-dialog__footer"
         footer={
           (options.footerVisible ?? true) ? (
             <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
@@ -156,7 +157,7 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
               {(options.saveVisible ?? true) && (
                 <Button
                   variant="primary"
-                  className="dialog-save-button"
+                  className="nb-dialog-save-button"
                   onClick={onSaveClick}
                   loading={isProcessing}
                 >
@@ -169,8 +170,8 @@ export const CrudDialogView = forwardRef<CrudDialogViewEvents, CrudDialogViewOpt
       >
         {options.children}
         {isProcessing && (
-          <div className="crud-dialog__loading" aria-hidden="true">
-            <span className="crud-dialog__loading-indicator" />
+          <div className="nb-crud-dialog__loading" aria-hidden="true">
+            <span className="nb-crud-dialog__loading-indicator" />
           </div>
         )}
       </AppDialog>

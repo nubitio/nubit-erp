@@ -4,16 +4,16 @@
 // Used primarily for auth/single-card layouts (login, password reset, setup).
 // Sits centered on the surface-0 page background.
 
-.app-card {
+.nb-card {
   display: flex;
   height: 100%;
 
   button,
-  .app-button {
+  .nb-button {
     text-transform: none;
   }
 
-  .app-card__content {
+  .nb-card__content {
     background: var(--surface-1);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);

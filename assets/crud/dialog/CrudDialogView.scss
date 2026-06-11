@@ -5,30 +5,30 @@
 // nested dialogs (e.g. a lookup dialog opened from within a form dialog).
 // ─────────────────────────────────────────────────────────────────────────────
 
-.crud-dialog-root {
+.nb-crud-dialog-root {
   z-index: 2500;
 }
 
-.crud-dialog {
+.nb-crud-dialog {
   // Override header border to use the stronger structural colour — the form
   // content below has many subtle borders, so the dialog header needs weight.
-  .app-dialog__header {
+  .nb-dialog__header {
     border-bottom-color: var(--border-color);
   }
 
-  .app-dialog__title {
+  .nb-dialog__title {
     border-bottom: 0;
     padding-bottom: 0;
   }
 
-  .app-dialog__body {
+  .nb-dialog__body {
     overflow: auto;
     padding: var(--space-4);
     position: relative;
   }
 
   // Tabbed forms are flush with the dialog — tabs own their own inset padding.
-  .app-dialog__body:has(.native-form__tabs) {
+  .nb-dialog__body:has(.nb-form__tabs) {
     overflow: hidden;
     padding: 0;
   }
@@ -36,7 +36,7 @@
   // fit-content variant — used when the body is a self-contained view
   // (e.g. a datagrid lookup). Remove padding so the view fills edge-to-edge.
   &.fit-content {
-    .app-dialog__body {
+    .nb-dialog__body {
       padding: 0;
 
       .view-wrapper {
@@ -50,17 +50,17 @@
 // When the form inside has a master-detail layout, let the dialog
 // size to content (AppDialog's max-height still caps it), and
 // enable body scroll for overflow.
-.crud-dialog:has(.native-form--with-detail) {
+.nb-crud-dialog:has(.nb-form--with-detail) {
   overflow: hidden;
 
-  .app-dialog__body {
+  .nb-dialog__body {
     overflow: auto;
   }
 }
 
 // ── Footer ─────────────────────────────────────────────────────────────────────
 
-.crud-dialog__footer {
+.nb-crud-dialog__footer {
   .form-popup-buttons-container {
     align-items: center;
     display: flex;
@@ -79,7 +79,7 @@
 
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
-.crud-dialog__loading {
+.nb-crud-dialog__loading {
   align-items: center;
   background: var(--overlay-bg-subtle);
   display: flex;
@@ -89,8 +89,8 @@
   z-index: 3;
 }
 
-.crud-dialog__loading-indicator {
-  animation: crud-dialog-spin 700ms linear infinite;
+.nb-crud-dialog__loading-indicator {
+  animation: nb-crud-dialog-spin 700ms linear infinite;
   border: 3px solid rgb(255 255 255 / 30%);
   border-radius: 999px;
   border-top-color: var(--accent-color);
@@ -98,6 +98,6 @@
   width: 28px;
 }
 
-@keyframes crud-dialog-spin {
+@keyframes nb-crud-dialog-spin {
   to { transform: rotate(360deg); }
 }

@@ -23,8 +23,8 @@ export const Skeleton = ({
   className,
 }: SkeletonProps) => {
   const base = [
-    'app-skeleton',
-    `app-skeleton--${variant}`,
+    'nb-skeleton',
+    `nb-skeleton--${variant}`,
     className,
   ]
     .filter(Boolean)
@@ -32,7 +32,7 @@ export const Skeleton = ({
 
   if (variant === 'text' && lines > 1) {
     return (
-      <div className="app-skeleton-lines">
+      <div className="nb-skeleton-lines">
         {Array.from({ length: lines }).map((_, i) => (
           <span
             key={i}

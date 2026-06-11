@@ -97,12 +97,12 @@ function GridColumnGroup({
 }) {
   return (
     <colgroup>
-      {hasDetail && <col className="native-datagrid__detail-col" />}
-      {hasCheckbox && <col className="native-datagrid__checkbox-col" />}
+      {hasDetail && <col className="nb-datagrid__detail-col" />}
+      {hasCheckbox && <col className="nb-datagrid__checkbox-col" />}
       {fields.map((field) => (
         <col key={field.name} style={{ width: getColumnWidth(field, colWidths) }} />
       ))}
-      {hasRowActions && <col className="native-datagrid__actions-col" />}
+      {hasRowActions && <col className="nb-datagrid__actions-col" />}
     </colgroup>
   );
 }
@@ -131,7 +131,7 @@ function GridEmptyStateView({
   fallbackTitle: string;
 }) {
   return (
-    <div className="native-datagrid__empty" aria-live="polite">
+    <div className="nb-datagrid__empty" aria-live="polite">
       <EmptyState
         title={emptyState?.title ?? fallbackTitle}
         description={emptyState?.description}
@@ -254,7 +254,7 @@ function renderToolbarButton(action: ResourceToolbarAction, index: number, iconO
     return (
       <IconButton
         key={getToolbarKey(action, index)}
-        className="native-datagrid__toolbar-icon-action"
+        className="nb-datagrid__toolbar-icon-action"
         icon={icon ? `ph ${icon}` : 'ph ph-circle'}
         label={action.hint ?? action.text ?? ''}
         onClick={action.onClick}
@@ -296,7 +296,7 @@ function renderSelectionActionItem(
     <button
       key={getToolbarKey(action, index)}
       type="button"
-      className={`native-datagrid__actions-item${action.type === 'danger' ? ' native-datagrid__actions-item--danger' : ''}`}
+      className={`nb-datagrid__actions-item${action.type === 'danger' ? ' nb-datagrid__actions-item--danger' : ''}`}
       onClick={() => {
         onBeforeClick?.();
         action.onClick?.();
@@ -395,7 +395,7 @@ function SelectionActionsMenu({
   };
 
   return (
-    <div ref={containerRef} className="native-datagrid__actions-menu">
+    <div ref={containerRef} className="nb-datagrid__actions-menu">
       <Button
         variant="secondary"
         aria-disabled={disabled}
@@ -406,11 +406,11 @@ function SelectionActionsMenu({
         <i className="ph ph-caret-down" aria-hidden="true" />
       </Button>
       {open && !disabled && (
-        <div className="native-datagrid__actions-popover" role="menu">
+        <div className="nb-datagrid__actions-popover" role="menu">
           {Object.entries(groups).map(([group, items]) => (
-            <div key={group} className="native-datagrid__actions-group">
+            <div key={group} className="nb-datagrid__actions-group">
               {items.length > 1 && items[0]?.groupLabel && (
-                <div className="native-datagrid__actions-group-label">{items[0].groupLabel}</div>
+                <div className="nb-datagrid__actions-group-label">{items[0].groupLabel}</div>
               )}
               {items.map((action, index) =>
                 renderSelectionActionItem(action, index, disabled, () => setOpen(false)),
@@ -418,7 +418,7 @@ function SelectionActionsMenu({
             </div>
           ))}
           {dangerActions.length > 0 && (
-            <div className="native-datagrid__actions-danger-group">
+            <div className="nb-datagrid__actions-danger-group">
               {dangerActions.map((action, index) =>
                 renderSelectionActionItem(action, index, disabled, () => setOpen(false)),
               )}
@@ -694,7 +694,7 @@ function FilterCell({
   if (field.type === FieldType.ENTITY) {
     return (
       <NativeEntitySelect
-        className="native-datagrid__filter-select"
+        className="nb-datagrid__filter-select"
         field={field}
         httpClient={httpClient}
         options={remoteOptions}
@@ -713,9 +713,9 @@ function FilterCell({
     const items = field.data ?? [];
     return (
       <FilterValueDropdown
-        id={`native-datagrid-filter-${field.name}`}
+        id={`nb-datagrid-filter-${field.name}`}
         value={value}
-        className="native-datagrid__filter-select"
+        className="nb-datagrid__filter-select"
         placeholder={t('grid.allFilter')}
         options={items.map((item) => ({
           value: String(item['value'] ?? ''),
@@ -734,11 +734,11 @@ function FilterCell({
 
   return (
     <div
-      className={`native-datagrid__filter-wrap${isBetween ? ' native-datagrid__filter-wrap--between' : ''}`}
+      className={`nb-datagrid__filter-wrap${isBetween ? ' nb-datagrid__filter-wrap--between' : ''}`}
     >
       {operators.length > 1 ? (
         <AppDropdown
-          id={`native-datagrid-filter-op-${field.name}`}
+          id={`nb-datagrid-filter-op-${field.name}`}
           value={operator}
           options={[
             ...operators.map((op) => ({
@@ -767,14 +767,14 @@ function FilterCell({
           variant="compact"
           showFieldLabel={false}
           menuMinWidth={220}
-          className="native-datagrid__filter-operator"
+          className="nb-datagrid__filter-operator"
         />
       ) : (
-        <i className="ph ph-magnifying-glass native-datagrid__filter-icon" aria-hidden="true" />
+        <i className="ph ph-magnifying-glass nb-datagrid__filter-icon" aria-hidden="true" />
       )}
       {isBetween ? (
         <DateRangePicker
-          className="native-datagrid__filter-range"
+          className="nb-datagrid__filter-range"
           locale={getCoreLocale()}
           startValue={betweenStart}
           endValue={betweenEnd}
@@ -783,7 +783,7 @@ function FilterCell({
         />
       ) : isDateLikeField(field) ? (
         <DatePicker
-          className="native-datagrid__filter-date"
+          className="nb-datagrid__filter-date"
           clearable={false}
           locale={getCoreLocale()}
           value={value}
@@ -793,7 +793,7 @@ function FilterCell({
       ) : (
         <input
           type={inputType}
-          className="native-datagrid__filter-input"
+          className="nb-datagrid__filter-input"
           value={value}
           aria-label={t('grid.filterColumn', { column: field.label })}
           onChange={(e) => onInputChange(e.target.value)}
@@ -801,7 +801,7 @@ function FilterCell({
       )}
       <button
         type="button"
-        className={`native-datagrid__filter-clear${value ? ' is-active' : ''}`}
+        className={`nb-datagrid__filter-clear${value ? ' is-active' : ''}`}
         aria-label={t('grid.clearFilter')}
         tabIndex={value ? 0 : -1}
         onClick={onClear}
@@ -840,10 +840,10 @@ function SummaryFooter({
   const fallbackFieldName = fields[fields.length - 1]?.name;
 
   return (
-    <tfoot ref={footerRef} className="native-datagrid__summary-footer">
+    <tfoot ref={footerRef} className="nb-datagrid__summary-footer">
       <tr>
-        {hasDetail && <td className="native-datagrid__detail-cell" />}
-        {hasCheckbox && <td className="native-datagrid__select-cell" />}
+        {hasDetail && <td className="nb-datagrid__detail-cell" />}
+        {hasCheckbox && <td className="nb-datagrid__select-cell" />}
         {fields.map((field) => {
           const item =
             itemsByColumn.get(field.name) ??
@@ -857,11 +857,11 @@ function SummaryFooter({
               style={{ width: getColumnWidth(field, colWidths), textAlign: align }}
             >
               {item && (
-                <div className="native-datagrid__summary-cell" style={{ justifyContent }}>
+                <div className="nb-datagrid__summary-cell" style={{ justifyContent }}>
                   {item.label && (
-                    <span className="native-datagrid__summary-label">{item.label}</span>
+                    <span className="nb-datagrid__summary-label">{item.label}</span>
                   )}
-                  <span className="native-datagrid__summary-value">
+                  <span className="nb-datagrid__summary-value">
                     {resolveSummaryText(rows, item)}
                   </span>
                 </div>
@@ -869,7 +869,7 @@ function SummaryFooter({
             </td>
           );
         })}
-        {hasRowActions && <td className="native-datagrid__actions-cell" />}
+        {hasRowActions && <td className="nb-datagrid__actions-cell" />}
       </tr>
     </tfoot>
   );
@@ -892,22 +892,22 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
       .finally(() => setLoading(false));
   }, [fields, httpClient, resourceStoreFactory, url]);
 
-  if (loading) return <div className="native-datagrid__loading">{t('grid.loading')}</div>;
+  if (loading) return <div className="nb-datagrid__loading">{t('grid.loading')}</div>;
   if (rows.length === 0) return <GridEmptyStateView fallbackTitle={t('grid.noRecords')} />;
 
   if (isMobile) {
     const visibleDetailFields = fields.filter((field) => field.visible && !field.hidden);
     return (
-      <div className="native-datagrid__detail-cards">
+      <div className="nb-datagrid__detail-cards">
         {rows.map((row, rowIndex) => (
           <div
             key={String(row[getIdField(fields)] ?? rowIndex)}
-            className="native-datagrid__detail-card"
+            className="nb-datagrid__detail-card"
           >
             {visibleDetailFields.map((field, columnIndex) => (
-              <div key={field.name} className="native-datagrid__detail-card-row">
-                <span className="native-datagrid__detail-card-label">{field.label}</span>
-                <span className="native-datagrid__detail-card-value">
+              <div key={field.name} className="nb-datagrid__detail-card-row">
+                <span className="nb-datagrid__detail-card-label">{field.label}</span>
+                <span className="nb-datagrid__detail-card-value">
                   {renderCell(
                     field,
                     row,
@@ -927,8 +927,8 @@ function DetailRows({ fields, url }: { fields: Field[]; url: string }) {
   }
 
   return (
-    <div className="native-datagrid__detail-content">
-      <table className="native-datagrid__detail-table">
+    <div className="nb-datagrid__detail-content">
+      <table className="nb-datagrid__detail-table">
         <thead>
           <tr>
             {fields
@@ -1108,7 +1108,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
     };
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.native-datagrid__row-actions-popover')) {
+      if (!target.closest('.nb-datagrid__row-actions-popover')) {
         closeRowMenu();
       }
     };
@@ -1540,7 +1540,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
   }, [visibleFields, colWidths, hasCheckbox, hasDetail, hasRowActions, containerWidth]);
 
   const tableLayoutStyle = {
-    '--native-datagrid-layout-width': `${layoutWidth}px`,
+    '--nb-datagrid-layout-width': `${layoutWidth}px`,
   } as React.CSSProperties;
 
   // Mobile card layout: first visible column becomes the card title, the next
@@ -1594,7 +1594,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
         )}
         {danger.length > 0 && (
-          <div className="native-datagrid__actions-danger-group">
+          <div className="nb-datagrid__actions-danger-group">
             {danger.map((action, idx) =>
               renderRowActionItem(action, idx, toolbarPermissions, closeCurrentRowMenu),
             )}
@@ -1619,9 +1619,9 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
       <div
         className={`view-wrapper ${options.mode === 'full' || !options.mode ? 'view-wrapper-datagrid-list list-page' : ''}`}
       >
-        <div className={`grid theme-dependent native-datagrid${options.zebraRows ? ' native-datagrid--zebra' : ''}`}>
+        <div className={`grid theme-dependent nb-datagrid${options.zebraRows ? ' nb-datagrid--zebra' : ''}`}>
           {(options.toolbarVisible ?? true) && options.mode !== 'minimal' && (
-            <div className="native-datagrid__toolbar">
+            <div className="nb-datagrid__toolbar">
               {options.hasBackButton && (
                 <IconButton
                   icon="ph ph-arrow-left"
@@ -1633,7 +1633,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 <div className="grid-header">{options.title}</div>
               ) : null}
               {!isMobile && options.beforeToolbar?.()}
-              <div className="native-datagrid__toolbar-spacer" />
+              <div className="nb-datagrid__toolbar-spacer" />
               {toolbar.primary
                 ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
                 .map((action, index) => renderToolbarButton(action, index))}
@@ -1647,14 +1647,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 ?.filter((action) => isToolbarActionVisible(action, toolbarPermissions))
                 .map((action, index) => renderToolbarButton(action, index, true))}
               {isMobile && (options.filterRow ?? true) && filterableFields.length > 0 && (
-                <span className="native-datagrid__mobile-filter">
+                <span className="nb-datagrid__mobile-filter">
                   <IconButton
                     icon="ph ph-funnel"
                     label={t('grid.filters')}
                     onClick={() => setFilterSheetOpen(true)}
                   />
                   {activeFilterCount > 0 && (
-                    <span className="native-datagrid__mobile-filter-badge" aria-hidden="true">
+                    <span className="nb-datagrid__mobile-filter-badge" aria-hidden="true">
                       {activeFilterCount}
                     </span>
                   )}
@@ -1670,14 +1670,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             </div>
           )}
           {isMobile && quickSearchField && (options.filterRow ?? true) && (
-            <div className="native-datagrid__quick-search">
+            <div className="nb-datagrid__quick-search">
               <i
-                className="ph ph-magnifying-glass native-datagrid__quick-search-icon"
+                className="ph ph-magnifying-glass nb-datagrid__quick-search-icon"
                 aria-hidden="true"
               />
               <input
                 type="search"
-                className="native-datagrid__quick-search-input"
+                className="nb-datagrid__quick-search-input"
                 placeholder={t('grid.searchPlaceholder', { column: quickSearchField.label })}
                 aria-label={t('grid.filterColumn', { column: quickSearchField.label })}
                 value={filterInputs[quickSearchField.name] ?? ''}
@@ -1686,7 +1686,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               {(filterInputs[quickSearchField.name] ?? '') !== '' && (
                 <button
                   type="button"
-                  className="native-datagrid__quick-search-clear"
+                  className="nb-datagrid__quick-search-clear"
                   aria-label={t('grid.clearFilter')}
                   onClick={() => {
                     const nextInputs = { ...filterInputs };
@@ -1699,19 +1699,19 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               )}
             </div>
           )}
-          <div className="native-datagrid__table-wrap" ref={tableWrapRef}>
+          <div className="nb-datagrid__table-wrap" ref={tableWrapRef}>
             {isMobile ? (
-              <ul className="native-datagrid__cards" aria-label={options.title} ref={cardsRef}>
+              <ul className="nb-datagrid__cards" aria-label={options.title} ref={cardsRef}>
                 {rows.length === 0 && isGridLoading
                   ? Array.from({ length: 6 }, (_, i) => (
                       <li
                         key={`card-skeleton-${i}`}
-                        className="native-datagrid__card native-datagrid__card--skeleton"
+                        className="nb-datagrid__card nb-datagrid__card--skeleton"
                         aria-hidden="true"
                       >
-                        <div className="native-datagrid__skeleton-cell" style={{ width: '55%' }} />
-                        <div className="native-datagrid__skeleton-cell" style={{ width: '85%' }} />
-                        <div className="native-datagrid__skeleton-cell" style={{ width: '70%' }} />
+                        <div className="nb-datagrid__skeleton-cell" style={{ width: '55%' }} />
+                        <div className="nb-datagrid__skeleton-cell" style={{ width: '85%' }} />
+                        <div className="nb-datagrid__skeleton-cell" style={{ width: '70%' }} />
                       </li>
                     ))
                   : rows.map((row, rowIndex) => {
@@ -1734,10 +1734,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       return (
                         <li
                           key={String(key)}
-                          className={`native-datagrid__card${selected ? ' native-datagrid__card--selected' : ''}`}
+                          className={`nb-datagrid__card${selected ? ' nb-datagrid__card--selected' : ''}`}
                         >
                           <div
-                            className="native-datagrid__card-body"
+                            className="nb-datagrid__card-body"
                             role="button"
                             tabIndex={0}
                             aria-pressed={selected}
@@ -1750,15 +1750,15 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             {hasCheckbox && (
                               <input
                                 type="checkbox"
-                                className="native-datagrid__card-check"
+                                className="nb-datagrid__card-check"
                                 checked={selected}
                                 readOnly
                                 aria-label={t('grid.selectRow')}
                               />
                             )}
-                            <div className="native-datagrid__card-content">
+                            <div className="nb-datagrid__card-content">
                               {cardTitleField && (
-                                <div className="native-datagrid__card-title">
+                                <div className="nb-datagrid__card-title">
                                   {renderCell(
                                     cardTitleField,
                                     row,
@@ -1771,11 +1771,11 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                 </div>
                               )}
                               {cardMetaFields.length > 0 && (
-                                <dl className="native-datagrid__card-meta">
+                                <dl className="nb-datagrid__card-meta">
                                   {cardMetaFields.map((field, metaIndex) => (
                                     <div
                                       key={field.name}
-                                      className="native-datagrid__card-meta-row"
+                                      className="nb-datagrid__card-meta-row"
                                     >
                                       <dt>{field.label}</dt>
                                       <dd>
@@ -1796,7 +1796,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               {cardSecondaryFields.length > 0 && (
                                 <button
                                   type="button"
-                                  className="native-datagrid__card-more"
+                                  className="nb-datagrid__card-more"
                                   aria-expanded={cardExpanded}
                                   onClick={(event) => {
                                     event.stopPropagation();
@@ -1821,7 +1821,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             </div>
                             {(cardActions.length > 0 || Boolean(detailUrl && detailFields)) && (
                               <div
-                                className="native-datagrid__card-side"
+                                className="nb-datagrid__card-side"
                                 onClick={(event) => event.stopPropagation()}
                                 onDoubleClick={(event) => event.stopPropagation()}
                               >
@@ -1845,7 +1845,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                                 {detailUrl && detailFields && (
                                   <button
                                     type="button"
-                                    className={`native-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
+                                    className={`nb-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
                                     aria-label={
                                       expanded ? t('grid.collapseDetail') : t('grid.expandDetail')
                                     }
@@ -1868,7 +1868,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             )}
                           </div>
                           {expanded && detailUrl && detailFields && (
-                            <div className="native-datagrid__card-detail">
+                            <div className="nb-datagrid__card-detail">
                               <DetailRows fields={detailFields} url={detailUrl} />
                             </div>
                           )}
@@ -1878,7 +1878,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               </ul>
             ) : (
             <table
-              className="native-datagrid__table"
+              className="nb-datagrid__table"
               style={tableLayoutStyle}
               aria-label={options.title}
               aria-rowcount={totalCount || rows.length}
@@ -1892,15 +1892,15 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               />
               <thead ref={theadRef}>
                 <tr>
-                  {options.detailFields && <th className="native-datagrid__detail-cell" />}
-                  {hasCheckbox && <th className="native-datagrid__select-cell" />}
+                  {options.detailFields && <th className="nb-datagrid__detail-cell" />}
+                  {hasCheckbox && <th className="nb-datagrid__select-cell" />}
                   {visibleFields.map((field) => {
                     const sortRule = sort.find((rule) => rule.selector === field.name);
                     const width = getColumnWidth(field, resolvedColWidths);
                     const hasActiveFilter = Boolean((filterInputs[field.name] ?? '').trim());
                     const headerClassName = [
-                      sortRule ? 'native-datagrid__header-cell--sorted' : '',
-                      hasActiveFilter ? 'native-datagrid__header-cell--filtered' : '',
+                      sortRule ? 'nb-datagrid__header-cell--sorted' : '',
+                      hasActiveFilter ? 'nb-datagrid__header-cell--filtered' : '',
                     ]
                       .filter(Boolean)
                       .join(' ');
@@ -1917,28 +1917,28 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         {field.sortable ? (
                           <button
                             type="button"
-                            className="native-datagrid__sort-button"
+                            className="nb-datagrid__sort-button"
                             aria-label={t('grid.sortColumn', { column: field.label })}
                             onClick={() => toggleSort(field)}
                           >
                             <span>{field.label}</span>
                             {sortRule ? (
                               <i
-                                className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} native-datagrid__sort-icon`}
+                                className={`ph ${sortRule.desc ? 'ph-caret-down' : 'ph-caret-up'} nb-datagrid__sort-icon`}
                                 aria-hidden="true"
                               />
                             ) : (
                               <i
-                                className="ph ph-caret-up-down native-datagrid__sort-hint"
+                                className="ph ph-caret-up-down nb-datagrid__sort-hint"
                                 aria-hidden="true"
                               />
                             )}
                           </button>
                         ) : (
-                          <span className="native-datagrid__column-label">{field.label}</span>
+                          <span className="nb-datagrid__column-label">{field.label}</span>
                         )}
                         <span
-                          className="native-datagrid__col-resize"
+                          className="nb-datagrid__col-resize"
                           onMouseDown={handleResizeMouseDown(field.name)}
                           onClick={(event) => event.stopPropagation()}
                           title={t('grid.resizeColumn')}
@@ -1946,12 +1946,12 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       </th>
                     );
                   })}
-                  {hasRowActions && <th className="native-datagrid__actions-cell" />}
+                  {hasRowActions && <th className="nb-datagrid__actions-cell" />}
                 </tr>
                 {(options.filterRow ?? true) && (
-                  <tr className="native-datagrid__filter-row">
-                    {options.detailFields && <td className="native-datagrid__detail-cell" />}
-                    {hasCheckbox && <td className="native-datagrid__select-cell" />}
+                  <tr className="nb-datagrid__filter-row">
+                    {options.detailFields && <td className="nb-datagrid__detail-cell" />}
+                    {hasCheckbox && <td className="nb-datagrid__select-cell" />}
                     {visibleFields.map((field) => {
                       const filterCellWidth = getColumnWidth(field, resolvedColWidths);
                       return (
@@ -1961,10 +1961,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           className={
                             [
                               field.filterable === false
-                                ? 'native-datagrid__filter-cell--noop'
+                                ? 'nb-datagrid__filter-cell--noop'
                                 : '',
                               (filterInputs[field.name] ?? '').trim()
-                                ? 'native-datagrid__filter-cell--active'
+                                ? 'nb-datagrid__filter-cell--active'
                                 : '',
                             ]
                               .filter(Boolean)
@@ -1975,20 +1975,20 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                         </td>
                       );
                     })}
-                    {hasRowActions && <td className="native-datagrid__actions-cell" />}
+                    {hasRowActions && <td className="nb-datagrid__actions-cell" />}
                   </tr>
                 )}
                 {options.errorMessage && (
-                  <tr className="native-datagrid__error-row">
+                  <tr className="nb-datagrid__error-row">
                     <td colSpan={colSpan}>
-                      <div className="native-datagrid__error-message" role="alert">
+                      <div className="nb-datagrid__error-message" role="alert">
                         <i className="ph ph-warning-circle" aria-hidden="true" />
                         <span>{options.errorMessage}</span>
                         {options.onDismissError && (
                           <button
                             type="button"
-                            className="native-datagrid__error-close"
-                            aria-label="Cerrar error"
+                            className="nb-datagrid__error-close"
+                            aria-label={t('dialog.close')}
                             onClick={options.onDismissError}
                           >
                             <i className="ph ph-x" aria-hidden="true" />
@@ -2002,27 +2002,27 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
               <tbody ref={tbodyRef}>
                 {rows.length === 0 && isGridLoading ? (
                   Array.from({ length: 7 }, (_, i) => (
-                    <tr key={`skeleton-${i}`} className="native-datagrid__skeleton-row">
-                      {options.detailFields && <td className="native-datagrid__detail-cell" />}
+                    <tr key={`skeleton-${i}`} className="nb-datagrid__skeleton-row">
+                      {options.detailFields && <td className="nb-datagrid__detail-cell" />}
                       {hasCheckbox && (
-                        <td className="native-datagrid__select-cell">
+                        <td className="nb-datagrid__select-cell">
                           <div
-                            className="native-datagrid__skeleton-cell"
+                            className="nb-datagrid__skeleton-cell"
                             style={{ width: 16, height: 16 }}
                           />
                         </td>
                       )}
                       {visibleFields.map((field) => (
                         <td key={field.name}>
-                          <div className="native-datagrid__skeleton-cell" />
+                          <div className="nb-datagrid__skeleton-cell" />
                         </td>
                       ))}
-                      {hasRowActions && <td className="native-datagrid__actions-cell" />}
+                      {hasRowActions && <td className="nb-datagrid__actions-cell" />}
                     </tr>
                   ))
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={colSpan} className="native-datagrid__empty-td" />
+                    <td colSpan={colSpan} className="nb-datagrid__empty-td" />
                   </tr>
                 ) : (
                   rows.map((row, rowIndex) => {
@@ -2039,7 +2039,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                     return (
                       <React.Fragment key={String(key)}>
                         <tr
-                          className={`native-datagrid__row ${expanded ? 'native-datagrid__row--expanded' : ''} ${selected ? 'native-datagrid__row--selected' : ''}`}
+                          className={`nb-datagrid__row ${expanded ? 'nb-datagrid__row--expanded' : ''} ${selected ? 'nb-datagrid__row--selected' : ''}`}
                           tabIndex={0}
                           aria-selected={selected}
                           onClick={() => selectRow(row)}
@@ -2077,7 +2077,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                               event.preventDefault();
                               const allRows = event.currentTarget
                                 .closest('tbody')
-                                ?.querySelectorAll<HTMLTableRowElement>('tr.native-datagrid__row');
+                                ?.querySelectorAll<HTMLTableRowElement>('tr.nb-datagrid__row');
                               if (!allRows) return;
                               const idx = Array.from(allRows).indexOf(event.currentTarget);
                               const next = allRows[event.key === 'ArrowUp' ? idx - 1 : idx + 1];
@@ -2089,11 +2089,11 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           }}
                         >
                           {options.detailFields && (
-                            <td className="native-datagrid__detail-cell">
+                            <td className="nb-datagrid__detail-cell">
                               {detailUrl && detailFields && (
                                 <button
                                   type="button"
-                                  className={`native-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
+                                  className={`nb-datagrid__expand-button${expanded ? ' is-expanded' : ''}`}
                                   aria-label={
                                     expanded ? t('grid.collapseDetail') : t('grid.expandDetail')
                                   }
@@ -2116,7 +2116,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                             </td>
                           )}
                           {hasCheckbox && (
-                            <td className="native-datagrid__select-cell">
+                            <td className="nb-datagrid__select-cell">
                               <input
                                 type="checkbox"
                                 checked={selected}
@@ -2153,10 +2153,10 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           })}
                           {hasRowActions && (
                             <td
-                              className="native-datagrid__actions-cell"
+                              className="nb-datagrid__actions-cell"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="native-datagrid__row-actions">
+                              <div className="nb-datagrid__row-actions">
                                 {rowActions.length > 0 && (
                                   <IconButton
                                     icon="ph ph-dots-three-vertical"
@@ -2186,7 +2186,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                           )}
                         </tr>
                         {expanded && detailUrl && detailFields && (
-                          <tr className="native-datagrid__detail-row">
+                          <tr className="nb-datagrid__detail-row">
                             <td colSpan={colSpan}>
                               <DetailRows fields={detailFields} url={detailUrl} />
                             </td>
@@ -2218,22 +2218,22 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             {!isMobile && (
               <div
                 ref={hScrollRef}
-                className={`native-datagrid__hscroll${layoutWidth > containerWidth ? '' : ' native-datagrid__hscroll--hidden'}`}
+                className={`nb-datagrid__hscroll${layoutWidth > containerWidth ? '' : ' nb-datagrid__hscroll--hidden'}`}
                 aria-hidden="true"
                 tabIndex={-1}
               >
-                <div className="native-datagrid__hscroll-inner" style={{ width: layoutWidth }} />
+                <div className="nb-datagrid__hscroll-inner" style={{ width: layoutWidth }} />
               </div>
             )}
           </div>
           {isMobile && (options.summaryFields?.length ?? 0) > 0 && rows.length > 0 && (
-            <div className="native-datagrid__card-summary">
+            <div className="nb-datagrid__card-summary">
               {options.summaryFields!.map((item, index) => (
-                <div key={index} className="native-datagrid__card-summary-item">
+                <div key={index} className="nb-datagrid__card-summary-item">
                   {item.label && (
-                    <span className="native-datagrid__summary-label">{item.label}</span>
+                    <span className="nb-datagrid__summary-label">{item.label}</span>
                   )}
-                  <span className="native-datagrid__summary-value">
+                  <span className="nb-datagrid__summary-value">
                     {resolveSummaryText(rows, item)}
                   </span>
                 </div>
@@ -2243,7 +2243,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           {showFab && (
             <button
               type="button"
-              className="native-datagrid__fab"
+              className="nb-datagrid__fab"
               aria-label={t('grid.buttonNew')}
               disabled={options.addDisabled}
               onClick={onAddClick}
@@ -2252,20 +2252,20 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             </button>
           )}
           {(options.paging ?? true) && (
-            <div className="native-datagrid__pager">
-              <div className="native-datagrid__pager-status" aria-live="polite">
-                <span className="native-datagrid__pager-info">{recordRangeLabel}</span>
+            <div className="nb-datagrid__pager">
+              <div className="nb-datagrid__pager-status" aria-live="polite">
+                <span className="nb-datagrid__pager-info">{recordRangeLabel}</span>
                 {selectedCountLabel && (
-                  <span className="native-datagrid__pager-selected">{selectedCountLabel}</span>
+                  <span className="nb-datagrid__pager-selected">{selectedCountLabel}</span>
                 )}
                 {pageStatusLabel && (
-                  <span className="native-datagrid__pager-page-status">{pageStatusLabel}</span>
+                  <span className="nb-datagrid__pager-page-status">{pageStatusLabel}</span>
                 )}
               </div>
-              <div className="native-datagrid__pager-nav">
+              <div className="nb-datagrid__pager-nav">
                 <button
                   type="button"
-                  className="native-datagrid__pager-btn"
+                  className="nb-datagrid__pager-btn"
                   onClick={() => setPage(0)}
                   disabled={page === 0}
                   aria-label={t('grid.firstPage')}
@@ -2274,7 +2274,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </button>
                 <button
                   type="button"
-                  className="native-datagrid__pager-btn"
+                  className="nb-datagrid__pager-btn"
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={page === 0}
                   aria-label={t('grid.previousPage')}
@@ -2283,14 +2283,14 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </button>
                 {getPageRange(page, totalPages).map((pageNum, i) =>
                   pageNum === null ? (
-                    <span key={`ellipsis-${i}`} className="native-datagrid__pager-ellipsis">
+                    <span key={`ellipsis-${i}`} className="nb-datagrid__pager-ellipsis">
                       …
                     </span>
                   ) : (
                     <button
                       key={pageNum}
                       type="button"
-                      className={`native-datagrid__pager-btn native-datagrid__pager-btn--page${pageNum === page ? ' is-current' : ''}`}
+                      className={`nb-datagrid__pager-btn nb-datagrid__pager-btn--page${pageNum === page ? ' is-current' : ''}`}
                       onClick={() => setPage(pageNum)}
                       aria-current={pageNum === page ? 'page' : undefined}
                     >
@@ -2300,7 +2300,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 )}
                 <button
                   type="button"
-                  className="native-datagrid__pager-btn"
+                  className="nb-datagrid__pager-btn"
                   onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                   disabled={page + 1 >= totalPages}
                   aria-label={t('grid.nextPage')}
@@ -2309,7 +2309,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </button>
                 <button
                   type="button"
-                  className="native-datagrid__pager-btn"
+                  className="nb-datagrid__pager-btn"
                   onClick={() => setPage(totalPages - 1)}
                   disabled={page + 1 >= totalPages}
                   aria-label={t('grid.lastPage')}
@@ -2318,18 +2318,18 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </button>
               </div>
               <div
-                className="native-datagrid__pager-size"
+                className="nb-datagrid__pager-size"
                 role="group"
-                aria-labelledby="native-datagrid-page-size-label"
+                aria-labelledby="nb-datagrid-page-size-label"
               >
                 <span
-                  className="native-datagrid__pager-size-label"
-                  id="native-datagrid-page-size-label"
+                  className="nb-datagrid__pager-size-label"
+                  id="nb-datagrid-page-size-label"
                 >
                   {t('grid.rowsPerPage')}
                 </span>
                 <AppDropdown
-                  id="native-datagrid-page-size"
+                  id="nb-datagrid-page-size"
                   value={String(pageSize)}
                   options={PAGE_SIZE_OPTIONS.map((n) => ({ value: String(n), label: String(n) }))}
                   onChange={(value) => {
@@ -2353,8 +2353,8 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             onConfirm={confirmDelete}
           />
           {isGridLoading && rows.length > 0 && (
-            <div className="native-datagrid__loading-overlay" aria-live="polite">
-              <div className="native-datagrid__loading-card">
+            <div className="nb-datagrid__loading-overlay" aria-live="polite">
+              <div className="nb-datagrid__loading-card">
                 {loadingMessage || t('grid.loading')}
               </div>
             </div>
@@ -2363,15 +2363,15 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
           {openRowMenu &&
             createPortal(
               isMobile ? (
-                <div className="native-datagrid__sheet-root">
+                <div className="nb-datagrid__sheet-root">
                   <button
                     type="button"
-                    className="native-datagrid__sheet-scrim"
+                    className="nb-datagrid__sheet-scrim"
                     aria-label={t('dialog.buttonCancel')}
                     onClick={closeRowMenu}
                   />
                   <div
-                    className="native-datagrid__row-actions-popover native-datagrid__row-actions-popover--sheet"
+                    className="nb-datagrid__row-actions-popover nb-datagrid__row-actions-popover--sheet"
                     role="menu"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -2380,7 +2380,7 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                 </div>
               ) : (
                 <div
-                  className="native-datagrid__row-actions-popover"
+                  className="nb-datagrid__row-actions-popover"
                   role="menu"
                   style={{
                     position: 'fixed',
@@ -2410,38 +2410,38 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
             filterSheetOpen &&
             createPortal(
               <div
-                className="native-datagrid__sheet-root"
+                className="nb-datagrid__sheet-root"
                 role="dialog"
                 aria-modal="true"
                 aria-label={t('grid.filters')}
               >
                 <button
                   type="button"
-                  className="native-datagrid__sheet-scrim"
+                  className="nb-datagrid__sheet-scrim"
                   aria-label={t('grid.done')}
                   onClick={() => setFilterSheetOpen(false)}
                 />
-                <div className="native-datagrid__sheet">
-                  <div className="native-datagrid__sheet-header">
-                    <span className="native-datagrid__sheet-title">{t('grid.filters')}</span>
+                <div className="nb-datagrid__sheet">
+                  <div className="nb-datagrid__sheet-header">
+                    <span className="nb-datagrid__sheet-title">{t('grid.filters')}</span>
                     <IconButton
                       icon="ph ph-x"
                       label={t('grid.done')}
                       onClick={() => setFilterSheetOpen(false)}
                     />
                   </div>
-                  <div className="native-datagrid__sheet-body">
+                  <div className="nb-datagrid__sheet-body">
                     {options.beforeToolbar && (
-                      <div className="native-datagrid__sheet-field native-datagrid__sheet-presets">
+                      <div className="nb-datagrid__sheet-field nb-datagrid__sheet-presets">
                         {options.beforeToolbar()}
                       </div>
                     )}
                     {sortableFields.length > 0 && (
-                      <div className="native-datagrid__sheet-field">
-                        <span className="native-datagrid__sheet-label">{t('grid.sortBy')}</span>
-                        <div className="native-datagrid__sheet-sort">
+                      <div className="nb-datagrid__sheet-field">
+                        <span className="nb-datagrid__sheet-label">{t('grid.sortBy')}</span>
+                        <div className="nb-datagrid__sheet-sort">
                           <AppDropdown
-                            id="native-datagrid-mobile-sort"
+                            id="nb-datagrid-mobile-sort"
                             value={sort[0]?.selector ?? ''}
                             options={[
                               { value: '', label: t('grid.sortNone') },
@@ -2477,13 +2477,13 @@ export const NativeDataGridView = forwardRef<GridHandle, DataGridViewOptions>((o
                       </div>
                     )}
                     {filterableFields.map((field) => (
-                      <div key={field.name} className="native-datagrid__sheet-field">
-                        <span className="native-datagrid__sheet-label">{field.label}</span>
+                      <div key={field.name} className="nb-datagrid__sheet-field">
+                        <span className="nb-datagrid__sheet-label">{field.label}</span>
                         {renderFilterCell(field)}
                       </div>
                     ))}
                   </div>
-                  <div className="native-datagrid__sheet-footer">
+                  <div className="nb-datagrid__sheet-footer">
                     <Button
                       variant="secondary"
                       onClick={() => applyFilterInputsImmediate({})}

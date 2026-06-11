@@ -136,7 +136,7 @@ async function selectCurrency(page: Page, dialog: Locator, currencyValue: string
   await page.waitForTimeout(200);
 
   const option = page
-    .locator('.native-form__lookup-menu button[role="option"], .dx-list-item, [role="option"]')
+    .locator('.nb-form__lookup-menu button[role="option"], .dx-list-item, [role="option"]')
     .filter({ hasText: currencyValue === 'USD' ? 'USD' : 'PEN' })
     .first();
   await option.waitFor({ state: 'visible', timeout: 5000 });
@@ -204,7 +204,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await expect(body.getByLabel(/Moneda/i).first()).toBeVisible({ timeout: 8000 });
 
     // Detail section must be present
-    await expect(body.locator('table, .native-form__detail-table').first()).toBeVisible({ timeout: 8000 });
+    await expect(body.locator('table, .nb-form__detail-table').first()).toBeVisible({ timeout: 8000 });
 
     await closeCrudShell(shell);
   });
@@ -309,7 +309,7 @@ test.describe('Sale form — mejoras de UX', () => {
       if (val.trim() === '') {
         await almacenInput.click();
         await page.waitForTimeout(300);
-        const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
+        const firstOpt = page.locator('.nb-form__lookup-menu button[role="option"]').first();
         if (await firstOpt.isVisible({ timeout: 5000 }).catch(() => false)) {
           await firstOpt.click();
           await page.waitForTimeout(300);
@@ -322,7 +322,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const detailTable = shell.locator('.native-form__detail-table').first();
+    const detailTable = shell.locator('.nb-form__detail-table').first();
     const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -335,7 +335,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
 
     const option = page
-      .locator('.native-form__lookup-menu button[role="option"]')
+      .locator('.nb-form__lookup-menu button[role="option"]')
       .filter({ hasText: SEED_PRODUCT_NAME });
     await option.first().waitFor({ state: 'visible', timeout: 15000 });
     await option.first().click();
@@ -406,7 +406,7 @@ test.describe('Sale form — mejoras de UX', () => {
     if (almacenVal.trim() === '') {
       await almacenInput.click();
       await page.waitForTimeout(300);
-      const firstOpt = page.locator('.native-form__lookup-menu button[role="option"]').first();
+      const firstOpt = page.locator('.nb-form__lookup-menu button[role="option"]').first();
       await firstOpt.waitFor({ state: 'visible', timeout: 8000 });
       await firstOpt.click();
       await page.waitForTimeout(300);
@@ -420,7 +420,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
     await addRowBtn.click();
 
-    const detailTable = shell.locator('.native-form__detail-table').first();
+    const detailTable = shell.locator('.nb-form__detail-table').first();
     const insertedRow = detailTable.locator('tbody tr').last();
     await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
 
@@ -432,7 +432,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
 
     const option = page
-      .locator('.native-form__lookup-menu button[role="option"]')
+      .locator('.nb-form__lookup-menu button[role="option"]')
       .filter({ hasText: SEED_PRODUCT_NAME });
     await option.first().waitFor({ state: 'visible', timeout: 15000 });
     await option.first().click();
@@ -441,7 +441,7 @@ test.describe('Sale form — mejoras de UX', () => {
     await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
 
     const footerSave = shell.locator(
-      '.crud-drawer__footer .dialog-save-button, .ef-drawer__footer .dialog-save-button, .crud-page-shell__footer .dialog-save-button',
+      '.crud-drawer__footer .nb-dialog-save-button, .nb-drawer__footer .nb-dialog-save-button, .nb-crud-page-shell__footer .nb-dialog-save-button',
     );
     await expect(footerSave).toBeEnabled({ timeout: 5000 });
 
@@ -455,7 +455,7 @@ test.describe('Sale form — mejoras de UX', () => {
     const shell = await openNewSaleDrawer(page);
     const body = crudShellBody(page);
 
-    await expect(body.locator('.native-form__section').filter({ hasText: /Datos principales/i })).toBeVisible();
+    await expect(body.locator('.nb-form__section').filter({ hasText: /Datos principales/i })).toBeVisible();
     await expect(body.getByLabel(/Cliente/i).first()).toBeVisible({ timeout: 8000 });
     await expect(body.getByLabel(/Nota/i).first()).toBeVisible({ timeout: 8000 });
 

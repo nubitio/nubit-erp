@@ -1,6 +1,6 @@
 @use 'variables' as *;
 
-.footer {
+.nb-admin-footer {
   display: block;
   color: var(--text-disabled);
   padding: 20px 0 16px var(--footer-left-padding);
@@ -12,7 +12,7 @@
   right: 0;
   opacity: 0;
 
-  .side-nav-outer-toolbar__body.is-open & {
+  .nb-admin-shell__body.is-open & {
     opacity: 1;
     transition: opacity var(--transition-slow);
   }

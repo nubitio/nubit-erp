@@ -12,10 +12,10 @@ export interface FormFieldProps extends LabelHTMLAttributes<HTMLLabelElement> {
 }
 
 export const FormField = ({ label, error, helpText, children, className, ...props }: FormFieldProps) => (
-  <label {...props} className={cx('app-form-field', !!error && 'app-form-field--error', className)}>
-    {label && <span className="app-form-field__label">{label}</span>}
+  <label {...props} className={cx('nb-form-field', !!error && 'nb-form-field--error', className)}>
+    {label && <span className="nb-form-field__label">{label}</span>}
     {children}
-    {error ? <span className="app-form-field__error" role="alert">{error}</span> : helpText ? <span className="app-form-field__help">{helpText}</span> : null}
+    {error ? <span className="nb-form-field__error" role="alert">{error}</span> : helpText ? <span className="nb-form-field__help">{helpText}</span> : null}
   </label>
 );
 
@@ -27,7 +27,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
   { className, invalid, ...props },
   ref,
 ) {
-  return <input {...props} ref={ref} className={cx('app-input', invalid && 'app-input--invalid', className)} />;
+  return <input {...props} ref={ref} className={cx('nb-input', invalid && 'nb-input--invalid', className)} />;
 });
 
 export interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -39,7 +39,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(funct
   ref,
 ) {
   return (
-    <select {...props} ref={ref} className={cx('app-input', 'app-select', invalid && 'app-input--invalid', className)}>
+    <select {...props} ref={ref} className={cx('nb-input', 'nb-select', invalid && 'nb-input--invalid', className)}>
       {children}
     </select>
   );
@@ -53,5 +53,5 @@ export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>
   { className, invalid, ...props },
   ref,
 ) {
-  return <textarea {...props} ref={ref} className={cx('app-input', 'app-textarea', invalid && 'app-input--invalid', className)} />;
+  return <textarea {...props} ref={ref} className={cx('nb-input', 'nb-textarea', invalid && 'nb-input--invalid', className)} />;
 });

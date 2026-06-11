@@ -50,7 +50,7 @@ export function ConfirmDialog({
         </>
       )}
     >
-      <p className="confirm-dialog__message">{message}</p>
+      <p className="nb-confirm-dialog__message">{message}</p>
     </AppDialog>
   );
 }

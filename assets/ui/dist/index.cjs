@@ -67,8 +67,8 @@ const Avatar = ({ owner = "", size, variant = "md", shape = "circle", alt, class
 	const hue = getAvatarHue(owner);
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 		className: [
-			"app-avatar",
-			shape === "square" && "app-avatar--square",
+			"nb-avatar",
+			shape === "square" && "nb-avatar--square",
 			className
 		].filter(Boolean).join(" "),
 		role: "img",
@@ -90,9 +90,9 @@ const Button = ({ variant = "secondary", size = "md", fullWidth = false, icon, l
 	type: props.type ?? "button",
 	disabled: disabled || loading,
 	"aria-busy": loading || void 0,
-	className: cx$4("app-button", `app-button--${variant}`, size === "sm" && "app-button--sm", fullWidth && "app-button--full", className),
+	className: cx$4("nb-button", `nb-button--${variant}`, size === "sm" && "nb-button--sm", fullWidth && "nb-button--full", className),
 	children: [loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-		className: "app-button-spinner",
+		className: "nb-button-spinner",
 		"aria-hidden": "true"
 	}) : icon ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 		className: icon,
@@ -104,12 +104,70 @@ const IconButton = ({ icon, label, variant = "default", className, ...props }) =
 	type: props.type ?? "button",
 	"aria-label": props["aria-label"] ?? label,
 	title: props.title ?? label,
-	className: cx$4("app-icon-button", variant === "danger" && "app-icon-button--danger", className),
+	className: cx$4("nb-icon-button", variant === "danger" && "nb-icon-button--danger", className),
 	children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 		className: icon,
 		"aria-hidden": "true"
 	})
 });
+//#endregion
+//#region assets/ui/UiStrings.tsx
+const EN_UI_STRINGS = {
+	close: "Close",
+	closeDialog: "Close dialog",
+	closePanel: "Close panel",
+	clearDate: "Clear date",
+	clearDateRange: "Clear date range",
+	openCalendar: "Open calendar",
+	selectDate: "Select date",
+	selectDateRange: "Select date range",
+	previousMonth: "Previous month",
+	nextMonth: "Next month",
+	previousYear: "Previous year",
+	nextYear: "Next year",
+	selectMonthAndYear: "Select month and year",
+	selectYear: "Select year",
+	clear: "Clear",
+	today: "Today",
+	cancel: "Cancel",
+	back: "Back",
+	previousYears: "Previous years",
+	nextYears: "Next years"
+};
+const ES_UI_STRINGS = {
+	close: "Cerrar",
+	closeDialog: "Cerrar diálogo",
+	closePanel: "Cerrar panel",
+	clearDate: "Limpiar fecha",
+	clearDateRange: "Limpiar rango",
+	openCalendar: "Abrir calendario",
+	selectDate: "Seleccionar fecha",
+	selectDateRange: "Seleccionar rango de fechas",
+	previousMonth: "Mes anterior",
+	nextMonth: "Mes siguiente",
+	previousYear: "Año anterior",
+	nextYear: "Año siguiente",
+	selectMonthAndYear: "Seleccionar mes y año",
+	selectYear: "Seleccionar año",
+	clear: "Limpiar",
+	today: "Hoy",
+	cancel: "Cancelar",
+	back: "Volver",
+	previousYears: "Años anteriores",
+	nextYears: "Años siguientes"
+};
+const UiStringsContext = (0, react.createContext)(EN_UI_STRINGS);
+const UiStringsProvider = ({ strings, children }) => {
+	const value = (0, react.useMemo)(() => ({
+		...EN_UI_STRINGS,
+		...strings
+	}), [strings]);
+	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(UiStringsContext.Provider, {
+		value,
+		children
+	});
+};
+const useUiStrings = () => (0, react.useContext)(UiStringsContext);
 //#endregion
 //#region assets/ui/AppDialog.tsx
 const formatSize = (value) => {
@@ -117,7 +175,10 @@ const formatSize = (value) => {
 	return typeof value === "number" ? `${value}px` : value;
 };
 const joinClassNames = (...values) => values.filter(Boolean).join(" ");
-const AppDialog = ({ visible, open, title, onClose, children, footer, width, maxWidth, height, fullScreen = false, showCloseButton = true, closeOnOutsideClick = true, closeOnEscape = true, restoreFocus = true, keepMounted = false, rootClassName, className, headerClassName, titleClassName, bodyClassName, footerClassName, role = "dialog" }) => {
+const AppDialog = ({ visible, open, title, onClose, children, footer, width, maxWidth, height, fullScreen = false, showCloseButton = true, closeLabel, scrimLabel, closeOnOutsideClick = true, closeOnEscape = true, restoreFocus = true, keepMounted = false, rootClassName, className, headerClassName, titleClassName, bodyClassName, footerClassName, role = "dialog" }) => {
+	const strings = useUiStrings();
+	const resolvedCloseLabel = closeLabel ?? strings.close;
+	const resolvedScrimLabel = scrimLabel ?? strings.closeDialog;
 	const isVisible = visible ?? open ?? false;
 	const titleId = (0, react.useId)();
 	const dialogRef = (0, react.useRef)(null);
@@ -153,19 +214,19 @@ const AppDialog = ({ visible, open, title, onClose, children, footer, width, max
 	]);
 	if (!isVisible && !keepMounted) return null;
 	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: joinClassNames("app-dialog-root", rootClassName),
+		className: joinClassNames("nb-dialog-root", rootClassName),
 		"aria-hidden": !isVisible,
 		style: {
 			pointerEvents: isVisible ? void 0 : "none",
 			visibility: isVisible ? void 0 : "hidden"
 		},
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			className: "app-dialog__scrim",
+			className: "nb-dialog__scrim",
 			type: "button",
-			"aria-label": "Cerrar diálogo",
+			"aria-label": resolvedScrimLabel,
 			onClick: closeOnOutsideClick ? onClose : void 0
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: joinClassNames("app-dialog", fullScreen && "app-dialog--fullscreen", className),
+			className: joinClassNames("nb-dialog", fullScreen && "nb-dialog--fullscreen", className),
 			role,
 			"aria-modal": "true",
 			"aria-labelledby": titleId,
@@ -183,24 +244,24 @@ const AppDialog = ({ visible, open, title, onClose, children, footer, width, max
 			},
 			children: [
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: joinClassNames("app-dialog__header", headerClassName),
+					className: joinClassNames("nb-dialog__header", headerClassName),
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-						className: joinClassNames("app-dialog__title", titleClassName),
+						className: joinClassNames("nb-dialog__title", titleClassName),
 						id: titleId,
 						children: title
 					}), showCloseButton && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconButton, {
-						className: "app-dialog__close",
+						className: "nb-dialog__close",
 						icon: "ph ph-x",
-						label: "Cerrar",
+						label: resolvedCloseLabel,
 						onClick: onClose
 					})]
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: joinClassNames("app-dialog__body", bodyClassName),
+					className: joinClassNames("nb-dialog__body", bodyClassName),
 					children
 				}),
 				footer && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: joinClassNames("app-dialog__footer", footerClassName),
+					className: joinClassNames("nb-dialog__footer", footerClassName),
 					children: footer
 				})
 			]
@@ -229,7 +290,7 @@ function ConfirmDialog({ open, title, message, onConfirm, onCancel, confirmLabel
 			children: resolvedConfirmLabel
 		})] }),
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-			className: "confirm-dialog__message",
+			className: "nb-confirm-dialog__message",
 			children: message
 		})
 	});
@@ -240,10 +301,10 @@ const AppToolbar = ({ title, additionalToolbarContent, showRefreshButton = true,
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		className: "view-wrapper view-wrapper-dashboard",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: "app-toolbar theme-dependent",
+			className: "nb-toolbar theme-dependent",
 			children: [
 				/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: "app-toolbar__start",
+					className: "nb-toolbar__start",
 					children: [icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 						className: icon,
 						"aria-hidden": "true"
@@ -253,11 +314,11 @@ const AppToolbar = ({ title, additionalToolbarContent, showRefreshButton = true,
 					})]
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: "app-toolbar__center",
+					className: "nb-toolbar__center",
 					children: additionalToolbarContent
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: "app-toolbar__end",
+					className: "nb-toolbar__end",
 					children: showRefreshButton && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconButton, {
 						icon: "ph ph-arrow-clockwise",
 						label: refreshLabel,
@@ -272,9 +333,9 @@ const AppToolbar = ({ title, additionalToolbarContent, showRefreshButton = true,
 //#region assets/ui/Card.tsx
 const Card = ({ title, description, children }) => {
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-		className: "app-card",
+		className: "nb-card",
 		children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: "app-card__content content",
+			className: "nb-card__content content",
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: "header",
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -293,19 +354,19 @@ const Card = ({ title, description, children }) => {
 const cx$3 = (...values) => values.filter(Boolean).join(" ");
 const FormField = ({ label, error, helpText, children, className, ...props }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 	...props,
-	className: cx$3("app-form-field", !!error && "app-form-field--error", className),
+	className: cx$3("nb-form-field", !!error && "nb-form-field--error", className),
 	children: [
 		label && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "app-form-field__label",
+			className: "nb-form-field__label",
 			children: label
 		}),
 		children,
 		error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "app-form-field__error",
+			className: "nb-form-field__error",
 			role: "alert",
 			children: error
 		}) : helpText ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "app-form-field__help",
+			className: "nb-form-field__help",
 			children: helpText
 		}) : null
 	]
@@ -314,14 +375,14 @@ const TextField = (0, react.forwardRef)(function TextField({ className, invalid,
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 		...props,
 		ref,
-		className: cx$3("app-input", invalid && "app-input--invalid", className)
+		className: cx$3("nb-input", invalid && "nb-input--invalid", className)
 	});
 });
 const SelectField = (0, react.forwardRef)(function SelectField({ className, invalid, children, ...props }, ref) {
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
 		...props,
 		ref,
-		className: cx$3("app-input", "app-select", invalid && "app-input--invalid", className),
+		className: cx$3("nb-input", "nb-select", invalid && "nb-input--invalid", className),
 		children
 	});
 });
@@ -329,7 +390,7 @@ const TextAreaField = (0, react.forwardRef)(function TextAreaField({ className, 
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 		...props,
 		ref,
-		className: cx$3("app-input", "app-textarea", invalid && "app-input--invalid", className)
+		className: cx$3("nb-input", "nb-textarea", invalid && "nb-input--invalid", className)
 	});
 });
 //#endregion
@@ -349,7 +410,7 @@ function getMenuStyle(containerRef, menuMinWidth = 72) {
 		visibility: "hidden",
 		margin: 0
 	};
-	const rect = (containerRef.current.querySelector(".app-dropdown__trigger") ?? containerRef.current).getBoundingClientRect();
+	const rect = (containerRef.current.querySelector(".nb-dropdown__trigger") ?? containerRef.current).getBoundingClientRect();
 	const menuWidth = Math.max(rect.width, menuMinWidth);
 	const left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8));
 	const spaceBelow = window.innerHeight - rect.bottom;
@@ -425,12 +486,12 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 	}, [computeMenuStyle]);
 	const control = /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: containerRef,
-		className: cx$2("app-dropdown", `app-dropdown--${variant}`, open && "app-dropdown--open", disabled && "app-dropdown--disabled", className),
+		className: cx$2("nb-dropdown", `nb-dropdown--${variant}`, open && "nb-dropdown--open", disabled && "nb-dropdown--disabled", className),
 		role: "group",
 		"aria-labelledby": label ? `${id}-label` : void 0,
 		children: [
 			variant === "toolbar" && label && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-				className: "app-dropdown__toolbar-label",
+				className: "nb-dropdown__toolbar-label",
 				id: `${id}-label`,
 				children: [icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 					className: normalizeIcon(icon),
@@ -439,24 +500,24 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				type: "button",
-				className: "app-dropdown__trigger",
+				className: "nb-dropdown__trigger",
 				"aria-haspopup": "listbox",
 				"aria-expanded": open,
 				"aria-labelledby": label ? `${id}-label ${id}-value` : `${id}-value`,
 				disabled,
 				onClick: () => open ? setOpen(false) : openMenu(),
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-					className: "app-dropdown__value",
+					className: "nb-dropdown__value",
 					id: `${id}-value`,
 					children: selected?.selectedLabel ?? selected?.label ?? placeholder
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-					className: "ph ph-caret-down app-dropdown__caret",
+					className: "ph ph-caret-down nb-dropdown__caret",
 					"aria-hidden": "true"
 				})]
 			}),
 			open && !disabled && (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
 				ref: menuRef,
-				className: cx$2("app-dropdown__menu", `app-dropdown__menu--${variant}`),
+				className: cx$2("nb-dropdown__menu", `nb-dropdown__menu--${variant}`),
 				role: "listbox",
 				"aria-labelledby": label ? `${id}-label` : void 0,
 				style: menuStyle,
@@ -469,16 +530,16 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 							role: "option",
 							"aria-selected": isActive,
 							disabled: option.disabled,
-							className: cx$2("app-dropdown__option", isActive && "app-dropdown__option--active"),
+							className: cx$2("nb-dropdown__option", isActive && "nb-dropdown__option--active"),
 							onClick: () => {
 								if (option.disabled) return;
 								onChange(option.value);
 								setOpen(false);
 							},
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-								className: "app-dropdown__option-content",
+								className: "nb-dropdown__option-content",
 								children: [option.iconText && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: "app-dropdown__option-icon",
+									className: "nb-dropdown__option-icon",
 									"aria-hidden": "true",
 									children: option.iconText
 								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: option.label })]
@@ -491,21 +552,21 @@ function AppDropdown({ id: idProp, label, icon, value, options, onChange, disabl
 	});
 	if (!showFieldLabel || variant === "toolbar") return control;
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
-		className: cx$2("app-form-field", !!error && "app-form-field--error"),
+		className: cx$2("nb-form-field", !!error && "nb-form-field--error"),
 		htmlFor: id,
 		children: [
 			label && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-				className: "app-form-field__label",
+				className: "nb-form-field__label",
 				id: `${id}-label`,
 				children: label
 			}),
 			control,
 			error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-				className: "app-form-field__error",
+				className: "nb-form-field__error",
 				role: "alert",
 				children: error
 			}) : helpText ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-				className: "app-form-field__help",
+				className: "nb-form-field__help",
 				children: helpText
 			}) : null
 		]
@@ -559,13 +620,13 @@ function setThemeToDOM(href) {
 		link.onload = () => resolve();
 	});
 }
-function applyThemeAttributes(theme) {
+function applyThemeAttributes(theme, themePrefix) {
 	const root = document.documentElement;
 	root.dataset.theme = theme;
-	themeValues.forEach((value) => root.classList.remove(`app-theme-${value}`));
-	root.classList.add(`app-theme-${theme}`);
+	themeValues.forEach((value) => root.classList.remove(`${themePrefix}${value}`));
+	root.classList.add(`${themePrefix}${theme}`);
 }
-const ThemeProvider = ({ storageKey = "app-theme", themePrefix = "app-theme-", basePath = "/themes/", children }) => {
+const ThemeProvider = ({ storageKey = "nb-theme", themePrefix = "nb-theme-", basePath = "/themes/", children }) => {
 	const getPersistedMode = () => {
 		const persisted = window.localStorage.getItem(storageKey);
 		return persisted && themeModes.includes(persisted) ? persisted : "auto";
@@ -575,7 +636,7 @@ const ThemeProvider = ({ storageKey = "app-theme", themePrefix = "app-theme-", b
 	const [isLoaded, setIsLoaded] = (0, react.useState)(false);
 	const theme = (0, react.useMemo)(() => resolveTheme(mode, systemTheme), [mode, systemTheme]);
 	(0, react.useEffect)(() => {
-		applyThemeAttributes(theme);
+		applyThemeAttributes(theme, themePrefix);
 		setThemeToDOM(`${basePath}${themePrefix}${theme}.css`).then(() => setIsLoaded(true));
 	}, [
 		theme,
@@ -732,20 +793,20 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 	const { density, toggleDensity } = useDensity();
 	const { accent, changeAccent, presets } = useAccentColor();
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: "settings-panel",
+		className: "nb-settings-panel",
 		role: "menu",
 		"aria-label": "Display settings",
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "settings-panel__heading",
+				className: "nb-settings-panel__heading",
 				children: "Color de acento"
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: "settings-panel__swatches",
+				className: "nb-settings-panel__swatches",
 				role: "group",
 				"aria-label": "Colores de acento",
 				children: presets.map((preset) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-					className: "settings-panel__swatch",
+					className: "nb-settings-panel__swatch",
 					type: "button",
 					"aria-label": preset.label,
 					"aria-pressed": accent === preset.value,
@@ -757,17 +818,17 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 					onClick: () => changeAccent(preset.value)
 				}, preset.value))
 			}),
-			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("hr", { className: "settings-panel__divider" }),
+			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("hr", { className: "nb-settings-panel__divider" }),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "settings-panel__heading",
+				className: "nb-settings-panel__heading",
 				children: "Densidad"
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: "settings-panel__density",
+				className: "nb-settings-panel__density",
 				role: "group",
 				"aria-label": "Densidad de interfaz",
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-					className: "settings-panel__density-btn",
+					className: "nb-settings-panel__density-btn",
 					type: "button",
 					"aria-pressed": density === "normal",
 					onClick: () => density !== "normal" && toggleDensity(),
@@ -776,7 +837,7 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 						"aria-hidden": "true"
 					}), "Normal"]
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-					className: "settings-panel__density-btn",
+					className: "nb-settings-panel__density-btn",
 					type: "button",
 					"aria-pressed": density === "compact",
 					onClick: () => density !== "compact" && toggleDensity(),
@@ -794,12 +855,12 @@ const SettingsPanel = ({ onClose: _onClose }) => {
 const Badge = ({ variant = "primary", size = "md", outlined = false, pill = true, dot = false, children, className }) => {
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 		className: [
-			"app-badge",
-			`app-badge--${variant}`,
-			size === "sm" && "app-badge--sm",
-			outlined && "app-badge--outlined",
-			pill && "app-badge--pill",
-			dot && "app-badge--dot",
+			"nb-badge",
+			`nb-badge--${variant}`,
+			size === "sm" && "nb-badge--sm",
+			outlined && "nb-badge--outlined",
+			pill && "nb-badge--pill",
+			dot && "nb-badge--dot",
 			className
 		].filter(Boolean).join(" "),
 		children: dot ? null : children
@@ -810,12 +871,12 @@ const Badge = ({ variant = "primary", size = "md", outlined = false, pill = true
 const fmtSize = (v) => v === void 0 ? void 0 : typeof v === "number" ? `${v}px` : v;
 const Skeleton = ({ variant = "rect", width, height, lines = 1, className }) => {
 	const base = [
-		"app-skeleton",
-		`app-skeleton--${variant}`,
+		"nb-skeleton",
+		`nb-skeleton--${variant}`,
 		className
 	].filter(Boolean).join(" ");
 	if (variant === "text" && lines > 1) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-		className: "app-skeleton-lines",
+		className: "nb-skeleton-lines",
 		children: Array.from({ length: lines }).map((_, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 			className: base,
 			style: { width: i === lines - 1 ? "70%" : fmtSize(width) ?? "100%" },
@@ -843,32 +904,32 @@ const EmptyState = ({ icon, variant = "default", title, description, action, siz
 	const iconName = icon ?? DEFAULT_ICONS[variant];
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		className: [
-			"app-empty-state",
-			`app-empty-state--${variant}`,
-			`app-empty-state--${size}`,
-			fill && "app-empty-state--fill",
+			"nb-empty-state",
+			`nb-empty-state--${variant}`,
+			`nb-empty-state--${size}`,
+			fill && "nb-empty-state--fill",
 			className
 		].filter(Boolean).join(" "),
 		role: "status",
 		"aria-live": "polite",
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: "app-empty-state__icon-wrap",
+				className: "nb-empty-state__icon-wrap",
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 					className: `ph ph-${iconName}`,
 					"aria-hidden": "true"
 				})
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "app-empty-state__title",
+				className: "nb-empty-state__title",
 				children: title
 			}),
 			description && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-				className: "app-empty-state__description",
+				className: "nb-empty-state__description",
 				children: description
 			}),
 			action && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: "app-empty-state__action",
+				className: "nb-empty-state__action",
 				children: action
 			})
 		]
@@ -887,7 +948,7 @@ const Chip = ({ label, active = false, count, icon, size = "md", disabled = fals
 		"aria-checked": active,
 		"aria-pressed": active,
 		disabled,
-		className: `app-chip${size !== "md" ? ` app-chip--${size}` : ""}${active ? " is-active" : ""}${className ? ` ${className}` : ""}`,
+		className: `nb-chip${size !== "md" ? ` nb-chip--${size}` : ""}${active ? " is-active" : ""}${className ? ` ${className}` : ""}`,
 		onClick,
 		children: [
 			icon && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
@@ -896,7 +957,7 @@ const Chip = ({ label, active = false, count, icon, size = "md", disabled = fals
 			}),
 			label,
 			count !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-				className: "app-chip__count",
+				className: "nb-chip__count",
 				children: count
 			})
 		]
@@ -908,13 +969,13 @@ const Chip = ({ label, active = false, count, icon, size = "md", disabled = fals
 * Accessible toggle switch. Always controlled — pass `checked` + `onChange`.
 * Renders a visually-hidden `<input type="checkbox">` with a custom track.
 *
-* With `label`: wraps in `.app-toggle-row` for a label ↔ toggle layout.
-* Without `label`: renders bare `.app-toggle`.
+* With `label`: wraps in `.nb-toggle-row` for a label ↔ toggle layout.
+* Without `label`: renders bare `.nb-toggle`.
 */
 const Toggle = ({ checked, onChange, label, size = "md", disabled = false, "aria-label": ariaLabel, className = "" }) => {
 	const id = (0, react.useId)();
 	const input = /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-		className: `app-toggle${size === "sm" ? " app-toggle--sm" : ""}${className ? ` ${className}` : ""}`,
+		className: `nb-toggle${size === "sm" ? " nb-toggle--sm" : ""}${className ? ` ${className}` : ""}`,
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 			id,
 			type: "checkbox",
@@ -923,14 +984,14 @@ const Toggle = ({ checked, onChange, label, size = "md", disabled = false, "aria
 			"aria-label": !label ? ariaLabel : void 0,
 			onChange: (e) => onChange(e.target.checked)
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "app-toggle__track",
+			className: "nb-toggle__track",
 			"aria-hidden": "true"
 		})]
 	});
 	if (!label) return input;
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 		htmlFor: id,
-		className: "app-toggle-row",
+		className: "nb-toggle-row",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label }), input]
 	});
 };
@@ -973,7 +1034,7 @@ const ContextMenu = ({ items, visible = true, trigger, triggerLabel = "Opciones"
 	} : {};
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: containerRef,
-		className: `app-context-menu${className ? ` ${className}` : ""}`,
+		className: `nb-context-menu${className ? ` ${className}` : ""}`,
 		children: [trigger ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 			onClick: () => setOpen((v) => !v),
 			children: trigger
@@ -984,13 +1045,13 @@ const ContextMenu = ({ items, visible = true, trigger, triggerLabel = "Opciones"
 			"aria-expanded": open,
 			onClick: () => setOpen((v) => !v)
 		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
-			className: "app-context-menu__dropdown",
+			className: "nb-context-menu__dropdown",
 			role: "menu",
 			style: dropdownStyle,
 			children: items.map((item, idx) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react.default.Fragment, { children: [item.separator && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", {
 				role: "none",
 				"aria-hidden": "true",
-				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: "app-context-menu__separator" })
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { className: "nb-context-menu__separator" })
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", {
 				role: "none",
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
@@ -998,7 +1059,7 @@ const ContextMenu = ({ items, visible = true, trigger, triggerLabel = "Opciones"
 					role: "menuitem",
 					disabled: item.disabled,
 					"aria-disabled": item.disabled,
-					className: `app-context-menu__item${item.danger ? " app-context-menu__item--danger" : ""}`,
+					className: `nb-context-menu__item${item.danger ? " nb-context-menu__item--danger" : ""}`,
 					onClick: () => {
 						setOpen(false);
 						item.onClick?.();
@@ -1020,21 +1081,21 @@ const ContextMenu = ({ items, visible = true, trigger, triggerLabel = "Opciones"
 * Uses `ContextMenu` from `@nubit/ui` for the overflow menu.
 */
 const StatCard = ({ title, headerExtra, menuVisible = true, menuItems = [{ label: "Configure" }, { label: "Remove" }], isLoading = false, className = "", children }) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-	className: `stat-card${className ? ` ${className}` : ""}`,
+	className: `nb-stat-card${className ? ` ${className}` : ""}`,
 	children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-		className: "stat-card__header",
+		className: "nb-stat-card__header",
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [title && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "stat-card__title",
+			className: "nb-stat-card__title",
 			children: title
 		}), headerExtra && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "stat-card__extra",
+			className: "nb-stat-card__extra",
 			children: headerExtra
 		})] }), menuVisible && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-			className: "stat-card__menu",
+			className: "nb-stat-card__menu",
 			children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ContextMenu, { items: menuItems })
 		})]
 	}), !isLoading && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-		className: "stat-card__body",
+		className: "nb-stat-card__body",
 		children
 	})]
 });
@@ -1052,16 +1113,16 @@ const CollapsibleSection = ({ label, icon, open, onToggle, children, trailing, c
 	const bodyId = (0, react.useId)();
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		className: [
-			"app-collapsible",
-			open && "app-collapsible--open",
+			"nb-collapsible",
+			open && "nb-collapsible--open",
 			className
 		].filter(Boolean).join(" "),
 		"data-testid": testId,
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-			className: "app-collapsible__header",
+			className: "nb-collapsible__header",
 			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				type: "button",
-				className: "app-collapsible__trigger",
+				className: "nb-collapsible__trigger",
 				"aria-expanded": open,
 				"aria-controls": bodyId,
 				onClick: onToggle,
@@ -1071,21 +1132,21 @@ const CollapsibleSection = ({ label, icon, open, onToggle, children, trailing, c
 						"aria-hidden": "true"
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-						className: "app-collapsible__label",
+						className: "nb-collapsible__label",
 						children: label
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-						className: "ph ph-caret-down app-collapsible__chevron",
+						className: "ph ph-caret-down nb-collapsible__chevron",
 						"aria-hidden": "true"
 					})
 				]
 			}), trailing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: "app-collapsible__trailing",
+				className: "nb-collapsible__trailing",
 				children: trailing
 			})]
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 			id: bodyId,
-			className: ["app-collapsible__body", bodyClassName].filter(Boolean).join(" "),
+			className: ["nb-collapsible__body", bodyClassName].filter(Boolean).join(" "),
 			role: "region",
 			"aria-labelledby": void 0,
 			hidden: !open,
@@ -1212,7 +1273,7 @@ const applyDateMask = (rawValue, prevValue) => {
 * Returns null if not a valid date.
 */
 const parseDisplayDate = (text, locale) => {
-	const match = text.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+	const match = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
 	if (match) {
 		const [, a, b, year] = match;
 		const [dd, mm] = (getLocale$1(locale).split("-")[1] ?? "").toUpperCase() === "US" ? [b, a] : [a, b];
@@ -1225,6 +1286,7 @@ const parseDisplayDate = (text, locale) => {
 const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, placeholder = "dd/mm/yyyy", disabled = false, readOnly = false, required = false, invalid = false, clearable = true, locale, min, max, className, ariaLabel, onChange, onBlur }, ref) {
 	const generatedId = (0, react.useId)();
 	const inputId = id ?? generatedId;
+	const strings = useUiStrings();
 	const selectedDate = parseIsoDate$1(value);
 	const resolvedLocale = getLocale$1(locale);
 	const displayValue = formatDisplayDate$1(value, resolvedLocale);
@@ -1415,7 +1477,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 	const todayIso = toIsoDate$1(/* @__PURE__ */ new Date());
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: rootRef,
-		className: cx$1("app-date-picker", className),
+		className: cx$1("nb-date-picker", className),
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 				type: "hidden",
@@ -1425,13 +1487,13 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 			}),
 			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				ref: triggerRef,
-				className: cx$1("app-date-picker__trigger", invalid && "app-date-picker__trigger--invalid", readOnly && "app-date-picker__trigger--readonly", open && "app-date-picker__trigger--open", disabled && "app-date-picker__trigger--disabled"),
+				className: cx$1("nb-date-picker__trigger", invalid && "nb-date-picker__trigger--invalid", readOnly && "nb-date-picker__trigger--readonly", open && "nb-date-picker__trigger--open", disabled && "nb-date-picker__trigger--disabled"),
 				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 					ref: setInputRef,
 					id: inputId,
 					type: "text",
 					inputMode: "numeric",
-					className: cx$1("app-date-picker__input", !isEditing && !displayValue && "app-date-picker__input--placeholder"),
+					className: cx$1("nb-date-picker__input", !isEditing && !displayValue && "nb-date-picker__input--placeholder"),
 					value: isEditing ? inputText : displayValue,
 					placeholder,
 					disabled,
@@ -1447,12 +1509,12 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 					onChange: handleInputChange,
 					onKeyDown: handleInputKeyDown
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-					className: "app-date-picker__icons",
+					className: "nb-date-picker__icons",
 					children: [clearable && displayValue && !disabled && !readOnly && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 						role: "button",
 						tabIndex: -1,
-						className: "app-date-picker__clear",
-						"aria-label": "Limpiar fecha",
+						className: "nb-date-picker__clear",
+						"aria-label": strings.clearDate,
 						onPointerDown: handleClear,
 						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 							className: "ph ph-x",
@@ -1461,8 +1523,8 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 						role: "button",
 						tabIndex: -1,
-						className: "app-date-picker__calendar-btn",
-						"aria-label": "Abrir calendario",
+						className: "nb-date-picker__calendar-btn",
+						"aria-label": strings.openCalendar,
 						onPointerDown: handleCalendarPointerDown,
 						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 							className: "ph ph-calendar-blank",
@@ -1473,19 +1535,19 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 			}),
 			open && (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				ref: panelRef,
-				className: "app-date-picker__panel",
+				className: "nb-date-picker__panel",
 				role: "dialog",
-				"aria-label": "Seleccionar fecha",
+				"aria-label": strings.selectDate,
 				style: panelStyle,
 				children: [
 					viewMode === "days" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "app-date-picker__header",
+							className: "nb-date-picker__header",
 							children: [
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Mes anterior",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.previousMonth,
 									onClick: () => setMonth((m) => addMonths$1(m, -1)),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-left",
@@ -1494,18 +1556,18 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									type: "button",
-									className: "app-date-picker__month app-date-picker__month--clickable",
-									"aria-label": "Seleccionar mes y año",
+									className: "nb-date-picker__month nb-date-picker__month--clickable",
+									"aria-label": strings.selectMonthAndYear,
 									onClick: () => setViewMode("months"),
 									children: [formatMonthLabel$1(month, resolvedLocale), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-										className: "ph ph-caret-down app-date-picker__month-caret",
+										className: "ph ph-caret-down nb-date-picker__month-caret",
 										"aria-hidden": "true"
 									})]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Mes siguiente",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.nextMonth,
 									onClick: () => setMonth((m) => addMonths$1(m, 1)),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-right",
@@ -1515,18 +1577,18 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__weekdays",
+							className: "nb-date-picker__weekdays",
 							"aria-hidden": "true",
 							children: weekdayLabels.map((label, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label }, `${label}-${i}`))
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__days",
+							className: "nb-date-picker__days",
 							role: "grid",
 							"aria-label": formatMonthLabel$1(month, resolvedLocale),
 							children: days.map((day) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								"data-iso": day.iso,
 								type: "button",
-								className: cx$1("app-date-picker__day", !day.inCurrentMonth && "app-date-picker__day--muted", day.iso === selectedIso && "app-date-picker__day--selected", day.iso === todayIso && "app-date-picker__day--today"),
+								className: cx$1("nb-date-picker__day", !day.inCurrentMonth && "nb-date-picker__day--muted", day.iso === selectedIso && "nb-date-picker__day--selected", day.iso === todayIso && "nb-date-picker__day--today"),
 								disabled: day.disabled,
 								role: "gridcell",
 								"aria-selected": day.iso === selectedIso,
@@ -1537,28 +1599,28 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							}, day.iso))
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "app-date-picker__footer",
+							className: "nb-date-picker__footer",
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: "app-date-picker__text-button",
+								className: "nb-date-picker__text-button",
 								onClick: () => commitValue(""),
-								children: "Limpiar"
+								children: strings.clear
 							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: "app-date-picker__text-button",
+								className: "nb-date-picker__text-button",
 								onClick: handleToday,
-								children: "Hoy"
+								children: strings.today
 							})]
 						})
 					] }),
 					viewMode === "months" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "app-date-picker__header",
+							className: "nb-date-picker__header",
 							children: [
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Año anterior",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.previousYear,
 									onClick: () => setMonth((m) => new Date(m.getFullYear() - 1, m.getMonth(), 1)),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-left",
@@ -1567,21 +1629,21 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									type: "button",
-									className: "app-date-picker__month app-date-picker__month--clickable",
-									"aria-label": "Seleccionar año",
+									className: "nb-date-picker__month nb-date-picker__month--clickable",
+									"aria-label": strings.selectYear,
 									onClick: () => {
 										setYearRangeStart(getYearRangeStart(month.getFullYear()));
 										setViewMode("years");
 									},
 									children: [month.getFullYear(), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-										className: "ph ph-caret-down app-date-picker__month-caret",
+										className: "ph ph-caret-down nb-date-picker__month-caret",
 										"aria-hidden": "true"
 									})]
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Año siguiente",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.nextYear,
 									onClick: () => setMonth((m) => new Date(m.getFullYear() + 1, m.getMonth(), 1)),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-right",
@@ -1591,7 +1653,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__months-grid",
+							className: "nb-date-picker__months-grid",
 							role: "grid",
 							"aria-label": `${month.getFullYear()}`,
 							children: monthLabels.map((label, i) => {
@@ -1599,7 +1661,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 								const isCurrent = (/* @__PURE__ */ new Date()).getMonth() === i && (/* @__PURE__ */ new Date()).getFullYear() === month.getFullYear();
 								return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: cx$1("app-date-picker__month-cell", isSelected && "app-date-picker__month-cell--selected", isCurrent && "app-date-picker__month-cell--current"),
+									className: cx$1("nb-date-picker__month-cell", isSelected && "nb-date-picker__month-cell--selected", isCurrent && "nb-date-picker__month-cell--current"),
 									role: "gridcell",
 									"aria-selected": isSelected,
 									onClick: () => handleMonthSelect(i),
@@ -1608,26 +1670,30 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							})
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__footer",
+							className: "nb-date-picker__footer",
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 								type: "button",
-								className: "app-date-picker__text-button",
+								className: "nb-date-picker__text-button",
 								onClick: () => setViewMode("days"),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-									className: "ph ph-arrow-left",
-									"aria-hidden": "true"
-								}), " Volver"]
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+										className: "ph ph-arrow-left",
+										"aria-hidden": "true"
+									}),
+									" ",
+									strings.back
+								]
 							})
 						})
 					] }),
 					viewMode === "years" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: "app-date-picker__header",
+							className: "nb-date-picker__header",
 							children: [
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Rango anterior",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.previousYears,
 									onClick: () => setYearRangeStart((y) => y - 12),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-left",
@@ -1635,7 +1701,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 									})
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-									className: "app-date-picker__month",
+									className: "nb-date-picker__month",
 									children: [
 										yearRangeStart,
 										"–",
@@ -1644,8 +1710,8 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: "app-date-picker__nav",
-									"aria-label": "Rango siguiente",
+									className: "nb-date-picker__nav",
+									"aria-label": strings.nextYears,
 									onClick: () => setYearRangeStart((y) => y + 12),
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 										className: "ph ph-caret-right",
@@ -1655,7 +1721,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__years-grid",
+							className: "nb-date-picker__years-grid",
 							role: "grid",
 							"aria-label": `${yearRangeStart}–${yearRangeStart + 11}`,
 							children: Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map((year) => {
@@ -1663,7 +1729,7 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 								const isCurrent = (/* @__PURE__ */ new Date()).getFullYear() === year;
 								return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: cx$1("app-date-picker__year-cell", isSelected && "app-date-picker__year-cell--selected", isCurrent && "app-date-picker__year-cell--current"),
+									className: cx$1("nb-date-picker__year-cell", isSelected && "nb-date-picker__year-cell--selected", isCurrent && "nb-date-picker__year-cell--current"),
 									role: "gridcell",
 									"aria-selected": isSelected,
 									onClick: () => handleYearSelect(year),
@@ -1672,15 +1738,19 @@ const DatePicker = (0, react.forwardRef)(function DatePicker({ id, name, value, 
 							})
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-							className: "app-date-picker__footer",
+							className: "nb-date-picker__footer",
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 								type: "button",
-								className: "app-date-picker__text-button",
+								className: "nb-date-picker__text-button",
 								onClick: () => setViewMode("months"),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
-									className: "ph ph-arrow-left",
-									"aria-hidden": "true"
-								}), " Volver"]
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+										className: "ph ph-arrow-left",
+										"aria-hidden": "true"
+									}),
+									" ",
+									strings.back
+								]
 							})
 						})
 					] })
@@ -1762,6 +1832,7 @@ const getDayRoleInRange = (iso, startIso, endIso) => {
 function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", disabled = false, readOnly = false, required = false, invalid = false, locale, min, max, className, ariaLabel, onChange, onBlur }) {
 	const startId = (0, react.useId)();
 	const endId = (0, react.useId)();
+	const strings = useUiStrings();
 	const resolvedLocale = getLocale(locale);
 	const startDisplay = formatDisplayDate(startValue, resolvedLocale);
 	const endDisplay = formatDisplayDate(endValue, resolvedLocale);
@@ -1814,6 +1885,12 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 			window.removeEventListener("scroll", update, true);
 		};
 	}, [open]);
+	const closePanel = (0, react.useCallback)(() => {
+		setOpen(false);
+		setPhase("idle");
+		setPendingStart(null);
+		setHoverIso(null);
+	}, []);
 	(0, react.useEffect)(() => {
 		if (!open) return;
 		const handlePointerDown = (e) => {
@@ -1834,13 +1911,7 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 			document.removeEventListener("pointerdown", handlePointerDown);
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [open]);
-	const closePanel = (0, react.useCallback)(() => {
-		setOpen(false);
-		setPhase("idle");
-		setPendingStart(null);
-		setHoverIso(null);
-	}, []);
+	}, [open, closePanel]);
 	const commitRange = (0, react.useCallback)((start, end) => {
 		const [a, b] = start <= end ? [start, end] : [end, start];
 		onChange?.(a, b);
@@ -1951,11 +2022,11 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 	};
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: rootRef,
-		className: cx("app-date-range-picker", className),
+		className: cx("nb-date-range-picker", className),
 		children: [
 			/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				ref: triggerRef,
-				className: cx("app-date-range-picker__trigger", invalid && "app-date-range-picker__trigger--invalid", readOnly && "app-date-range-picker__trigger--readonly", open && "app-date-range-picker__trigger--open", disabled && "app-date-range-picker__trigger--disabled"),
+				className: cx("nb-date-range-picker__trigger", invalid && "nb-date-range-picker__trigger--invalid", readOnly && "nb-date-range-picker__trigger--readonly", open && "nb-date-range-picker__trigger--open", disabled && "nb-date-range-picker__trigger--disabled"),
 				"aria-label": ariaLabel,
 				children: [
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
@@ -1963,7 +2034,7 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						id: startId,
 						type: "text",
 						inputMode: "numeric",
-						className: cx("app-date-range-picker__input", !editingField && !startDisplay && "app-date-range-picker__input--placeholder"),
+						className: cx("nb-date-range-picker__input", !editingField && !startDisplay && "nb-date-range-picker__input--placeholder"),
 						value: editingField === "start" ? startText : startDisplay,
 						placeholder,
 						disabled,
@@ -1977,7 +2048,7 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						onKeyDown: handleStartKeyDown
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-						className: "app-date-range-picker__sep",
+						className: "nb-date-range-picker__sep",
 						"aria-hidden": "true",
 						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", { className: "ph ph-arrow-right" })
 					}),
@@ -1986,7 +2057,7 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						id: endId,
 						type: "text",
 						inputMode: "numeric",
-						className: cx("app-date-range-picker__input", !editingField && !endDisplay && "app-date-range-picker__input--placeholder"),
+						className: cx("nb-date-range-picker__input", !editingField && !endDisplay && "nb-date-range-picker__input--placeholder"),
 						value: editingField === "end" ? endText : endDisplay,
 						placeholder,
 						disabled,
@@ -1999,12 +2070,12 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						onKeyDown: handleEndKeyDown
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-						className: "app-date-range-picker__icons",
+						className: "nb-date-range-picker__icons",
 						children: [(startDisplay || endDisplay) && !disabled && !readOnly && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							role: "button",
 							tabIndex: -1,
-							className: "app-date-range-picker__clear",
-							"aria-label": "Limpiar rango",
+							className: "nb-date-range-picker__clear",
+							"aria-label": strings.clearDateRange,
 							onPointerDown: handleClear,
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 								className: "ph ph-x",
@@ -2013,8 +2084,8 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							role: "button",
 							tabIndex: -1,
-							className: "app-date-range-picker__calendar-btn",
-							"aria-label": "Abrir calendario",
+							className: "nb-date-range-picker__calendar-btn",
+							"aria-label": strings.openCalendar,
 							onPointerDown: handleCalendarPointerDown,
 							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 								className: "ph ph-calendar-blank",
@@ -2025,25 +2096,25 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 				]
 			}),
 			phase === "selecting-end" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-				className: "app-date-range-picker__hint",
+				className: "nb-date-range-picker__hint",
 				role: "status",
 				"aria-live": "polite",
 				children: "Selecciona la fecha de fin"
 			}),
 			open && (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				ref: panelRef,
-				className: "app-date-range-picker__panel",
+				className: "nb-date-range-picker__panel",
 				role: "dialog",
-				"aria-label": "Seleccionar rango de fechas",
+				"aria-label": strings.selectDateRange,
 				style: panelStyle,
 				children: [
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: "app-date-range-picker__header",
+						className: "nb-date-range-picker__header",
 						children: [
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: "app-date-range-picker__nav",
-								"aria-label": "Mes anterior",
+								className: "nb-date-range-picker__nav",
+								"aria-label": strings.previousMonth,
 								onClick: () => setMonth((m) => addMonths(m, -1)),
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 									className: "ph ph-caret-left",
@@ -2051,14 +2122,14 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 								})
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: "app-date-range-picker__month",
+								className: "nb-date-range-picker__month",
 								"aria-live": "polite",
 								children: formatMonthLabel(month, resolvedLocale)
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: "app-date-range-picker__nav",
-								"aria-label": "Mes siguiente",
+								className: "nb-date-range-picker__nav",
+								"aria-label": strings.nextMonth,
 								onClick: () => setMonth((m) => addMonths(m, 1)),
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 									className: "ph ph-caret-right",
@@ -2068,26 +2139,26 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 						]
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: "app-date-range-picker__weekdays",
+						className: "nb-date-range-picker__weekdays",
 						"aria-hidden": "true",
 						children: weekdayLbls.map((label, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label }, `${label}-${i}`))
 					}),
 					phase === "selecting-end" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: "app-date-range-picker__phase-banner",
+						className: "nb-date-range-picker__phase-banner",
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 							className: "ph ph-info",
 							"aria-hidden": "true"
 						}), "Ahora selecciona la fecha de fin"]
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-						className: "app-date-range-picker__days",
+						className: "nb-date-range-picker__days",
 						role: "grid",
 						"aria-label": formatMonthLabel(month, resolvedLocale),
 						children: days.map((day) => {
 							const role = getDayRoleInRange(day.iso, effectiveStart, effectiveEnd);
 							return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
-								className: cx("app-date-range-picker__day", !day.inCurrentMonth && "app-date-range-picker__day--muted", day.iso === todayIso && "app-date-range-picker__day--today", role === "start" && "app-date-range-picker__day--range-start", role === "end" && "app-date-range-picker__day--range-end", role === "in-range" && "app-date-range-picker__day--in-range", role === "single" && "app-date-range-picker__day--range-single", phase === "selecting-end" && "app-date-range-picker__day--selecting"),
+								className: cx("nb-date-range-picker__day", !day.inCurrentMonth && "nb-date-range-picker__day--muted", day.iso === todayIso && "nb-date-range-picker__day--today", role === "start" && "nb-date-range-picker__day--range-start", role === "end" && "nb-date-range-picker__day--range-end", role === "in-range" && "nb-date-range-picker__day--in-range", role === "single" && "nb-date-range-picker__day--range-single", phase === "selecting-end" && "nb-date-range-picker__day--selecting"),
 								disabled: day.disabled,
 								role: "gridcell",
 								"aria-selected": role !== "none",
@@ -2095,34 +2166,34 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 								onMouseLeave: () => phase === "selecting-end" && setHoverIso(null),
 								onClick: () => !day.disabled && handleDayClick(day.iso),
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: "app-date-range-picker__day-inner",
+									className: "nb-date-range-picker__day-inner",
 									children: day.date.getDate()
 								})
 							}, day.iso);
 						})
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: "app-date-range-picker__footer",
+						className: "nb-date-range-picker__footer",
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
-							className: "app-date-range-picker__text-button",
+							className: "nb-date-range-picker__text-button",
 							onClick: () => {
 								onChange?.("", "");
 								closePanel();
 							},
-							children: "Limpiar"
+							children: strings.clear
 						}), phase === "selecting-end" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
-							className: "app-date-range-picker__text-button",
+							className: "nb-date-range-picker__text-button",
 							onClick: () => {
 								setPendingStart(null);
 								setPhase("idle");
 								setHoverIso(null);
 							},
-							children: "Cancelar"
+							children: strings.cancel
 						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
-							className: "app-date-range-picker__text-button",
+							className: "nb-date-range-picker__text-button",
 							onClick: () => {
 								const today = toIsoDate(/* @__PURE__ */ new Date());
 								setMonth(startOfMonth(/* @__PURE__ */ new Date()));
@@ -2131,7 +2202,7 @@ function DateRangePicker({ startValue, endValue, placeholder = "dd/mm/yyyy", dis
 								else onChange?.(today, today);
 								closePanel();
 							},
-							children: "Hoy"
+							children: strings.today
 						})]
 					})
 				]
@@ -2181,16 +2252,16 @@ const Popover = ({ trigger, panel, align = "end", ariaLabel, className }) => {
 	return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		ref: containerRef,
 		className: [
-			"app-popover",
-			`app-popover--${align}`,
-			open && "app-popover--open",
+			"nb-popover",
+			`nb-popover--${align}`,
+			open && "nb-popover--open",
 			className
 		].filter(Boolean).join(" "),
 		children: [trigger({
 			open,
 			toggle
 		}), open && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-			className: "app-popover__panel",
+			className: "nb-popover__panel",
 			role: "dialog",
 			"aria-label": ariaLabel,
 			children: panel({ close: () => setOpen(false) })
@@ -2203,7 +2274,10 @@ const formatWidth = (value) => {
 	if (value === void 0) return void 0;
 	return typeof value === "number" ? `${value}px` : value;
 };
-const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle", children, footer, className, "aria-label": ariaLabel }) => {
+const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle", children, footer, closeLabel, scrimLabel, className, "aria-label": ariaLabel }) => {
+	const strings = useUiStrings();
+	const resolvedCloseLabel = closeLabel ?? strings.close;
+	const resolvedScrimLabel = scrimLabel ?? strings.closePanel;
 	const titleId = (0, react.useId)();
 	const panelRef = (0, react.useRef)(null);
 	const lastFocusRef = (0, react.useRef)(null);
@@ -2231,21 +2305,21 @@ const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle
 	}, [isOpen, onClose]);
 	return (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 		className: [
-			"ef-drawer-root",
-			isOpen && "ef-drawer-root--open",
-			`ef-drawer-root--${side}`
+			"nb-drawer-root",
+			isOpen && "nb-drawer-root--open",
+			`nb-drawer-root--${side}`
 		].filter(Boolean).join(" "),
 		"aria-hidden": !isOpen,
 		style: { pointerEvents: isOpen ? void 0 : "none" },
 		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-			className: `ef-drawer__scrim ef-drawer__scrim--${scrim}`,
+			className: `nb-drawer__scrim nb-drawer__scrim--${scrim}`,
 			type: "button",
-			"aria-label": "Cerrar panel",
+			"aria-label": resolvedScrimLabel,
 			tabIndex: -1,
 			onClick: onClose
 		}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("aside", {
 			ref: panelRef,
-			className: ["ef-drawer", className].filter(Boolean).join(" "),
+			className: ["nb-drawer", className].filter(Boolean).join(" "),
 			role: "dialog",
 			"aria-modal": "false",
 			"aria-labelledby": title ? titleId : void 0,
@@ -2253,24 +2327,24 @@ const Drawer = ({ isOpen, onClose, title, width, side = "right", scrim = "subtle
 			style: { width: formatWidth(width) },
 			children: [
 				title !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
-					className: "ef-drawer__header",
+					className: "nb-drawer__header",
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-						className: "ef-drawer__title",
+						className: "nb-drawer__title",
 						id: titleId,
 						children: title
 					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconButton, {
-						className: "ef-drawer__close",
+						className: "nb-drawer__close",
 						icon: "ph ph-x",
-						label: "Cerrar",
+						label: resolvedCloseLabel,
 						onClick: onClose
 					})]
 				}),
 				/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-					className: "ef-drawer__body",
+					className: "nb-drawer__body",
 					children
 				}),
 				footer && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("footer", {
-					className: "ef-drawer__footer",
+					className: "nb-drawer__footer",
 					children: footer
 				})
 			]
@@ -2295,6 +2369,8 @@ exports.DateRangePicker = DateRangePicker;
 exports.DensityContext = DensityContext;
 exports.DensityProvider = DensityProvider;
 exports.Drawer = Drawer;
+exports.EN_UI_STRINGS = EN_UI_STRINGS;
+exports.ES_UI_STRINGS = ES_UI_STRINGS;
 exports.EmptyState = EmptyState;
 exports.FormField = FormField;
 exports.IconButton = IconButton;
@@ -2309,9 +2385,11 @@ exports.ThemeContext = ThemeContext;
 exports.ThemeProvider = ThemeProvider;
 exports.ThemeSwitcher = ThemeSwitcher;
 exports.Toggle = Toggle;
+exports.UiStringsProvider = UiStringsProvider;
 exports.getAvatarHue = getAvatarHue;
 exports.getAvatarInitials = getAvatarInitials;
 exports.useAccentColor = useAccentColor;
 exports.useDensity = useDensity;
 exports.useFloatingPanel = useFloatingPanel;
 exports.useTheme = useTheme;
+exports.useUiStrings = useUiStrings;

@@ -26,23 +26,23 @@ export const CrudPageShell: React.FC<CrudFormShellProps> = ({
   if (!isOpen) return null;
 
   return (
-    <section className="crud-page-shell" aria-label={title}>
-      <header className="crud-page-shell__header">
+    <section className="nb-crud-page-shell" aria-label={title}>
+      <header className="nb-crud-page-shell__header">
         <IconButton
-          className="crud-page-shell__back"
+          className="nb-crud-page-shell__back"
           icon="ph ph-arrow-left"
           label={t('dialog.buttonCancel')}
           onClick={onClose}
         />
-        <h1 className="crud-page-shell__title">{title}</h1>
+        <h1 className="nb-crud-page-shell__title">{title}</h1>
       </header>
-      <div className="crud-page-shell__body">{children}</div>
-      <footer className="crud-page-shell__footer">
+      <div className="nb-crud-page-shell__body">{children}</div>
+      <footer className="nb-crud-page-shell__footer">
         <Button variant="secondary" onClick={onCancel}>
           {t('dialog.buttonCancel')}
         </Button>
         {mode !== 'view' && (
-          <Button variant="primary" className="dialog-save-button" onClick={onSave}>
+          <Button variant="primary" className="nb-dialog-save-button" onClick={onSave}>
             <span>{saveLabel ?? t('dialog.buttonSave')}</span>
           </Button>
         )}

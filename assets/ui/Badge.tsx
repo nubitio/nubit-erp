@@ -38,12 +38,12 @@ export const Badge = ({
   className,
 }: BadgeProps) => {
   const classes = [
-    'app-badge',
-    `app-badge--${variant}`,
-    size === 'sm' && 'app-badge--sm',
-    outlined && 'app-badge--outlined',
-    pill && 'app-badge--pill',
-    dot && 'app-badge--dot',
+    'nb-badge',
+    `nb-badge--${variant}`,
+    size === 'sm' && 'nb-badge--sm',
+    outlined && 'nb-badge--outlined',
+    pill && 'nb-badge--pill',
+    dot && 'nb-badge--dot',
     className,
   ]
     .filter(Boolean)

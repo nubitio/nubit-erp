@@ -8,8 +8,8 @@ export interface CardProps {
 
 export const Card = ({ title, description, children }: React.PropsWithChildren<CardProps>) => {
   return (
-    <div className="app-card">
-      <div className="app-card__content content">
+    <div className="nb-card">
+      <div className="nb-card__content content">
         <div className="header">
           <div className="title">{title}</div>
           <div className="description">{description}</div>

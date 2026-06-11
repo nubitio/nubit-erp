@@ -119,11 +119,11 @@ export const AdminSidebarMenu = ({
 
   return (
     <div
-      className={`side-navigation-menu${compactMode ? ' compact' : ''}`}
+      className={`nb-admin-menu${compactMode ? ' compact' : ''}`}
       onPointerDown={openMenu}
     >
-      <div className="menu-container theme-dependent">
-        <nav className="side-navigation-menu__nav" aria-label="Main navigation">
+      <div className="nb-admin-menu-container theme-dependent">
+        <nav className="nb-admin-menu__nav" aria-label="Main navigation">
           {items.map((item) => {
             const selected = isSelected(item.path);
             const containsSelected = parentContainsSelected(item);
@@ -133,11 +133,11 @@ export const AdminSidebarMenu = ({
 
             return (
               <section
-                className={`side-navigation-menu__section${containsSelected ? ' has-selected-child' : ''}`}
+                className={`nb-admin-menu__section${containsSelected ? ' has-selected-child' : ''}`}
                 key={itemKey}
               >
                 <button
-                  className={`side-navigation-menu__item side-navigation-menu__item--parent${selected ? ' is-selected' : ''}`}
+                  className={`nb-admin-menu__item nb-admin-menu__item--parent${selected ? ' is-selected' : ''}`}
                   type="button"
                   aria-current={selected ? 'page' : undefined}
                   aria-expanded={hasChildren ? expanded : undefined}
@@ -150,30 +150,30 @@ export const AdminSidebarMenu = ({
                   }}
                 >
                   <span
-                    className={`side-navigation-menu__icon ${getIconClassName(item.icon)}`}
+                    className={`nb-admin-menu__icon ${getIconClassName(item.icon)}`}
                     aria-hidden="true"
                   />
-                  <span className="side-navigation-menu__text">{item.text}</span>
+                  <span className="nb-admin-menu__text">{item.text}</span>
                   {hasChildren && (
                     <span
-                      className={`side-navigation-menu__chevron${expanded ? ' is-expanded' : ''}`}
+                      className={`nb-admin-menu__chevron${expanded ? ' is-expanded' : ''}`}
                       aria-hidden="true"
                     />
                   )}
                 </button>
                 {expanded && (item.items?.length ?? 0) > 0 && (
-                  <div className="side-navigation-menu__children">
+                  <div className="nb-admin-menu__children">
                     {item.items!.map((subItem) => {
                       const childSelected = isSelected(subItem.path);
                       return (
                         <button
-                          className={`side-navigation-menu__item side-navigation-menu__item--child${childSelected ? ' is-selected' : ''}`}
+                          className={`nb-admin-menu__item nb-admin-menu__item--child${childSelected ? ' is-selected' : ''}`}
                           type="button"
                           key={subItem.path || subItem.text}
                           aria-current={childSelected ? 'page' : undefined}
                           onClick={(event) => handleSelect(subItem.path, childSelected, event)}
                         >
-                          <span className="side-navigation-menu__text">{subItem.text}</span>
+                          <span className="nb-admin-menu__text">{subItem.text}</span>
                         </button>
                       );
                     })}
@@ -184,7 +184,7 @@ export const AdminSidebarMenu = ({
           })}
         </nav>
       </div>
-      {footer && <footer className="footer">{footer}</footer>}
+      {footer && <footer className="nb-admin-footer">{footer}</footer>}
     </div>
   );
 };

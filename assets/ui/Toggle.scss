@@ -2,10 +2,10 @@
 
 // ─── Toggle / Switch ──────────────────────────────────────────────────────────
 // Accessible toggle switch wrapping a hidden <input type="checkbox">.
-// BEM: .app-toggle  /  .app-toggle__track  /  .app-toggle__row
+// BEM: .nb-toggle  /  .nb-toggle__track  /  .nb-toggle__row
 
 // Optional label row
-.app-toggle-row {
+.nb-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,7 +17,7 @@
   user-select: none;
 }
 
-.app-toggle {
+.nb-toggle {
   position: relative;
   flex-shrink: 0;
   display: inline-flex;
@@ -59,7 +59,7 @@
   }
 
   // checked state — accent fill
-  input[type='checkbox']:checked + .app-toggle__track {
+  input[type='checkbox']:checked + .nb-toggle__track {
     background: var(--accent-color);
 
     &::after {
@@ -68,20 +68,20 @@
   }
 
   // focus ring
-  input[type='checkbox']:focus-visible + .app-toggle__track {
+  input[type='checkbox']:focus-visible + .nb-toggle__track {
     outline: 2px solid var(--focus-ring-color);
     outline-offset: 2px;
   }
 
   // disabled
-  input[type='checkbox']:disabled + .app-toggle__track {
+  input[type='checkbox']:disabled + .nb-toggle__track {
     opacity: 0.45;
     cursor: not-allowed;
   }
 
   // sm size
   &--sm {
-    .app-toggle__track {
+    .nb-toggle__track {
       width: 1.8rem;
       height: 1rem;
 
@@ -93,7 +93,7 @@
       }
     }
 
-    input[type='checkbox']:checked + .app-toggle__track::after {
+    input[type='checkbox']:checked + .nb-toggle__track::after {
       left: calc(100% - 0.85rem);
     }
   }

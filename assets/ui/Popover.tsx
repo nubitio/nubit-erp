@@ -56,9 +56,9 @@ export const Popover = ({
     <div
       ref={containerRef}
       className={[
-        'app-popover',
-        `app-popover--${align}`,
-        open && 'app-popover--open',
+        'nb-popover',
+        `nb-popover--${align}`,
+        open && 'nb-popover--open',
         className,
       ]
         .filter(Boolean)
@@ -68,7 +68,7 @@ export const Popover = ({
 
       {open && (
         <div
-          className="app-popover__panel"
+          className="nb-popover__panel"
           role="dialog"
           aria-label={ariaLabel}
         >
