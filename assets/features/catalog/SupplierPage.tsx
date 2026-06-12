@@ -43,7 +43,11 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
     enabled: true,
     apiUrl: (id) => `/api/audit-trail/supplier/${id}`,
     recordSubtitle: (row) => {
-      const parts = [row.businessName, row.ruc ? `RUC ${row.ruc}` : null].filter(Boolean);
+      const name =
+        (typeof row.businessName === 'string' && row.businessName) ||
+        (typeof row.razon_social === 'string' && row.razon_social) ||
+        null;
+      const parts = [name, row.ruc ? `RUC ${row.ruc}` : null].filter(Boolean);
       return parts.length > 0 ? parts.join(' · ') : undefined;
     },
   },
