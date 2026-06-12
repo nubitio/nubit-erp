@@ -370,7 +370,7 @@ export function ProductPage() {
       auditTrail: {
         enabled: true,
         apiUrl: (id: string | number) => `/api/audit-trail/product/${id}`,
-        recordSubtitle: (row) => {
+        recordSubtitle: (row: DataRecord) => {
           const name = typeof row.name === 'string' ? row.name : null;
           const code = typeof row.code === 'string' ? row.code : null;
           const parts = [name, code ? `Cód. ${code}` : null].filter(Boolean);
