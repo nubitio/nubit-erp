@@ -165,21 +165,19 @@ function crudDialogBody(page: Page, name?: RegExp) {
  */
 async function filterGridByName(page: Page, name: string) {
   // Product grid "Básico" preset exposes a Name filter with a stable aria-label.
-  const nameFilterInput = page.getByRole('textbox', { name: /Filtrar (Name|Nombre)/i });
-  try {
-    await nameFilterInput.waitFor({ state: 'visible', timeout: 3000 });
-    await nameFilterInput.click({ clickCount: 3 });
-    await nameFilterInput.fill(name);
-    await page.waitForTimeout(500); // wait for 300ms debounce + re-render
-  } catch {
-    const filterInputs = page.locator('.nb-datagrid__filter-row input[type="text"]');
-    const count = await filterInputs.count();
-    if (count > 0) {
-      await filterInputs.first().click({ clickCount: 3 });
-      await filterInputs.first().fill(name);
-      await page.waitForTimeout(500);
-    }
+  let input = page.getByRole('textbox', { name: /Filtrar (Name|Nombre)/i });
+  if (!(await input.isVisible({ timeout: 3000 }).catch(() => false))) {
+    input = page.locator('.nb-datagrid__filter-row input[type="text"]').first();
+    await input.waitFor({ state: 'visible', timeout: 5000 });
   }
+
+  await input.click({ clickCount: 3 });
+  await input.fill(name);
+  // A grid re-render right after load can wipe the filter value — that race
+  // was the historical flakiness of "02 - Verificar producto seed". Confirm
+  // the value stuck (re-filling if not) before trusting the filtered rows.
+  await expect(input).toHaveValue(name, { timeout: 2000 });
+  await page.waitForTimeout(500); // 300ms debounce + re-render
 }
 
 /**
@@ -473,11 +471,15 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await waitForGridLoad(page);
     await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
 
-    await filterGridByName(page, SEED_PRODUCT_NAME);
-    await waitForGridLoad(page);
-
+    // Retry the whole filter→row cycle: re-applies the filter when a late
+    // grid re-render swallowed it instead of waiting 15s for a row that can
+    // no longer appear.
     const productRow = page.locator('.nb-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
-    await productRow.waitFor({ state: 'visible', timeout: 15000 });
+    await expect(async () => {
+      await filterGridByName(page, SEED_PRODUCT_NAME);
+      await waitForGridLoad(page);
+      await expect(productRow.first()).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 30000 });
     await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
 
     posProductName = SEED_PRODUCT_NAME;
