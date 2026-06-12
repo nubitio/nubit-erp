@@ -19,6 +19,10 @@
   margin: 0;
 }
 
+.nb-document-status-drawer .nb-drawer__body {
+  padding: var(--space-4) var(--space-5) var(--space-6);
+}
+
 .nb-document-status-drawer .nb-timeline-panel--card {
   border: 0;
   box-shadow: none;

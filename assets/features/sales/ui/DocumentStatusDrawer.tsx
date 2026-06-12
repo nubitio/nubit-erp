@@ -36,7 +36,7 @@ export function DocumentStatusDrawer({
       {document && (
         <DocumentStatusTimeline
           document={document}
-          description="Ciclo de vida del comprobante."
+          description="Etapas del comprobante. Las fechas de envío y respuesta SUNAT se mostrarán cuando estén disponibles en el registro."
         />
       )}
     </Drawer>

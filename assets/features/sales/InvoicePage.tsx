@@ -130,7 +130,6 @@ export const InvoicePage = () => {
             text: 'Estado SUNAT',
             icon: 'ph-path',
             hint: 'Ciclo de vida SUNAT del comprobante seleccionado',
-            disabled: selectedInvoice == null,
             onClick: openStatusDrawer,
           },
         ],
@@ -173,7 +172,7 @@ export const InvoicePage = () => {
         ],
       },
     }),
-    [actionDeps, openStatusDrawer, selectedInvoice],
+    [actionDeps, openStatusDrawer],
   );
 
   return (
