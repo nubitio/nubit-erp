@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -12,7 +12,9 @@ import {
   runSendInvoiceEmailAction,
   runSendInvoiceToSunatAction,
 } from './lib/invoiceActions';
+import { DocumentStatusTimeline } from './ui/DocumentStatusTimeline';
 import toast from '@shared/lib/SharedUtils';
+import './InvoicePage.scss';
 
 const API_URL = API + 'tax-documents';
 const fields = InvoiceFields();
@@ -87,6 +89,7 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
 
 export const InvoicePage = () => {
   const gridRef = useRef<GridHandle | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null);
 
   const actionDeps = useMemo(
     () => ({
@@ -146,5 +149,29 @@ export const InvoicePage = () => {
     [actionDeps],
   );
 
-  return <SmartCrudPage resource={resource} gridRef={gridRef} />;
+  return (
+    <div className="nb-invoice-page">
+      <div className="nb-invoice-page__main">
+        <SmartCrudPage
+          resource={resource}
+          gridRef={gridRef}
+          onSelectionChanged={(rows) => {
+            const row = (rows[0] as InvoiceRow | undefined) ?? null;
+            setSelectedInvoice(row);
+          }}
+        />
+      </div>
+      {selectedInvoice && (
+        <aside className="nb-invoice-page__aside" aria-label="Estado SUNAT del comprobante">
+          <DocumentStatusTimeline
+            className="nb-document-status-timeline"
+            document={{
+              createdAt: selectedInvoice.createdAt,
+              sunatStatus: selectedInvoice.sunatStatus,
+            }}
+          />
+        </aside>
+      )}
+    </div>
+  );
 };

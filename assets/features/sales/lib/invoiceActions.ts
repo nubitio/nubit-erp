@@ -2,6 +2,7 @@ import { taxDocumentService } from '../services/taxDocumentService';
 
 export type InvoiceRow = {
   id: string;
+  createdAt?: string;
   sunatStatus?: string;
   publicReceiptUrl?: string;
 };
