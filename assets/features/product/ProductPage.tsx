@@ -367,6 +367,10 @@ export function ProductPage() {
   const productResourceWithImport = React.useMemo(
     () => ({
       ...productResource,
+      auditTrail: {
+        enabled: true,
+        apiUrl: (id: string | number) => `/api/audit-trail/product/${id}`,
+      },
       toolbar: {
         utility: [
           {

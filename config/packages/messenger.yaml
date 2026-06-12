@@ -22,6 +22,11 @@ framework:
       App\Efact\Audit\AuditLogMessage: async
       App\Billing\Message\SendInvoiceMessage: async
       App\Catalog\Message\ProductImportMessage: async
+      # Mercure updates publish in the worker: a dead hub never blocks the
+      # HTTP write and delivery gets the retry strategy. In the worker the
+      # bundle FailSafeHub rethrows on failure so retries actually happen
+      # (in HTTP context it would log-and-continue instead).
+      Symfony\Component\Mercure\Update: async
 
 # when@test:
 #    framework:

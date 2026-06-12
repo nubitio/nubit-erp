@@ -39,6 +39,10 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   defaultPreset: 'basic',
   columnPresets: SUPPLIER_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },
+  auditTrail: {
+    enabled: true,
+    apiUrl: (id) => `/api/audit-trail/supplier/${id}`,
+  },
   formLayout: {
     type: 'sections',
     sections: [

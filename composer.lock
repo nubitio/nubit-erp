@@ -3458,16 +3458,16 @@
         },
         {
             "name": "nubitio/admin-bundle",
-            "version": "v0.6.4",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/admin-bundle.git",
-                "reference": "a1d4bb944842b1c44df80dec407b871da20144ee"
+                "reference": "443624a2233f6344f6bce2ee2762e8ecfd0836da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/a1d4bb944842b1c44df80dec407b871da20144ee",
-                "reference": "a1d4bb944842b1c44df80dec407b871da20144ee",
+                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/443624a2233f6344f6bce2ee2762e8ecfd0836da",
+                "reference": "443624a2233f6344f6bce2ee2762e8ecfd0836da",
                 "shasum": ""
             },
             "require": {
@@ -3498,7 +3498,11 @@
             },
             "require-dev": {
                 "league/flysystem-memory": "^3.0",
-                "phpunit/phpunit": "^12.0"
+                "phpunit/phpunit": "^12.0",
+                "symfony/mercure": "^0.6"
+            },
+            "suggest": {
+                "symfony/mercure-bundle": "Live grid updates; the bundle adds a fail-safe hub decorator and the subscriber cookie"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -3525,20 +3529,20 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-12T09:45:05+00:00"
+            "time": "2026-06-12T11:16:00+00:00"
         },
         {
             "name": "nubitio/api-platform",
-            "version": "v0.6.4",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/api-platform.git",
-                "reference": "6778c2f0019440247900b8a04d44d0ce8b4dc551"
+                "reference": "b532c5e38e5119f20455ba5755d0151d53f4afad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/api-platform/zipball/6778c2f0019440247900b8a04d44d0ce8b4dc551",
-                "reference": "6778c2f0019440247900b8a04d44d0ce8b4dc551",
+                "url": "https://api.github.com/repos/nubitio/api-platform/zipball/b532c5e38e5119f20455ba5755d0151d53f4afad",
+                "reference": "b532c5e38e5119f20455ba5755d0151d53f4afad",
                 "shasum": ""
             },
             "require": {
@@ -3584,11 +3588,11 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-11T19:28:14+00:00"
+            "time": "2026-06-12T11:15:59+00:00"
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.6.4",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/platform.git",

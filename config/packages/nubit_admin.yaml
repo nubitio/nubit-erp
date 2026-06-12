@@ -15,6 +15,10 @@ nubit_admin:
         storage:
             filesystem: 'oneup_flysystem.default_filesystem_filesystem'
         directory: images
+    # Audit trail: #[Auditable] entities (Supplier, Product) record
+    # field-level diffs, served at /api/audit-trail/{resource}/{id}.
+    audit:
+        enabled: true
     # efact is multi-tenant: the ControlPlane services bound in services.yaml
     # implement the Nubit\Platform contracts, so skip the noop defaults.
     single_tenant_defaults: false

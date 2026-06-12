@@ -1,7 +1,9 @@
 SHELL := /bin/bash
 
 DC := docker compose
-SERVICES := database redis otel-collector web vite
+# mercure must be here: resources with mercure:true publish post-flush, so a
+# missing hub turns every create into a 500 (row persisted, response failed).
+SERVICES := database redis otel-collector web vite mercure
 EXEC_WEB := $(DC) exec -T web sh -lc
 EXEC_VITE := $(DC) exec -T --user root vite sh -lc
 PHP_DEV := php -d memory_limit=256M
