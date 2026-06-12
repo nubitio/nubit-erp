@@ -11,6 +11,7 @@ import { MercureProvider, CoreConfigProvider, CoreProvider } from '@nubitio/core
 const EFECT_API_BASE_URL = '/api/';
 const EFACT_BUSINESS_LOCALE = 'es-PE';
 const EFACT_BUSINESS_TIMEZONE = 'America/Lima';
+const EFACT_BUSINESS_CURRENCY = 'PEN';
 import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
@@ -54,6 +55,7 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
           <CoreConfigProvider
             locale={EFACT_BUSINESS_LOCALE}
             timezone={EFACT_BUSINESS_TIMEZONE}
+            currency={EFACT_BUSINESS_CURRENCY}
             apiBaseUrl={EFECT_API_BASE_URL}
           >
             <AuthProvider>

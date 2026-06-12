@@ -2380,6 +2380,15 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         topics?: list<scalar|Param|null>,
  *         hub_path?: scalar|Param|null, // Default: "/.well-known/mercure"
  *     },
+ *     media?: array{
+ *         enabled?: bool|Param, // Expose the media library: POST /api/media (multipart), Media entity, streaming route, purge command. // Default: false
+ *         storage?: array{
+ *             filesystem?: scalar|Param|null, // Service id of a League\Flysystem FilesystemOperator (e.g. an S3 filesystem from oneup/flysystem-bundle). Overrides local_directory. // Default: null
+ *             local_directory?: scalar|Param|null, // Root directory of the default local storage. // Default: "%kernel.project_dir%/var/uploads"
+ *         },
+ *         directory?: scalar|Param|null, // Sub-directory inside the storage where uploads land. // Default: "media"
+ *         purge_retention_days?: int|Param, // nubit:media:purge removes media soft-deleted longer ago than this. // Default: 30
+ *     },
  *     soft_delete?: bool|Param, // Register the Doctrine filter hiding #[SoftDeletable] rows. // Default: true
  *     single_tenant_defaults?: bool|Param, // Bind noop single-tenant implementations of the Nubit\Platform contracts. // Default: true
  * }

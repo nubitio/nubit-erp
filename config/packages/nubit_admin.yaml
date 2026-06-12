@@ -6,6 +6,15 @@ nubit_admin:
         cookie_secure: '%env(bool:APP_COOKIE_SECURE)%'
     api:
         docs_locale: '%env(APP_API_LOCALE)%'
+    # Media library on the existing S3 storage. directory keeps the legacy
+    # object layout ({tenant}/images/... — the tenant prefix comes from the
+    # FileManager). URLs resolve straight to S3/CDN via
+    # App\Efact\Filesystem\S3MediaUrlResolver (aliased in services.yaml).
+    media:
+        enabled: true
+        storage:
+            filesystem: 'oneup_flysystem.default_filesystem_filesystem'
+        directory: images
     # efact is multi-tenant: the ControlPlane services bound in services.yaml
     # implement the Nubit\Platform contracts, so skip the noop defaults.
     single_tenant_defaults: false

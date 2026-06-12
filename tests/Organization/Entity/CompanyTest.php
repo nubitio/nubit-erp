@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Organization\Entity;
 
 use App\Organization\Entity\Company;
-use App\Media\Entity\Media;
+use Nubit\AdminBundle\Media\Entity\Media;
 use PHPUnit\Framework\TestCase;
 
 final class CompanyTest extends TestCase

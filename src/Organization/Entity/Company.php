@@ -7,7 +7,7 @@ namespace App\Organization\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use App\Media\Entity\Media;
+use Nubit\AdminBundle\Media\Entity\Media;
 use App\Organization\Repository\CompanyRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -64,7 +64,7 @@ class Company
     private ?string $phone = null;
 
     #[Groups(['company:read'])]
-    #[ApiProperty(description: 'company.logo.label')]
+    #[ApiProperty(readableLink: true, description: 'company.logo.label')]
     #[ORM\OneToOne]
     #[ORM\JoinColumn(name: 'logo', referencedColumnName: 'id', nullable: true)]
     private ?Media $logo = null;

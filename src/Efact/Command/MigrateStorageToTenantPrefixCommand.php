@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Media\Command;
+namespace App\Efact\Command;
 
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;

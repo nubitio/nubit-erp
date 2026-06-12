@@ -143,17 +143,25 @@ export async function getE2ESeed(): Promise<E2ESeedPayload> {
     return envSeed;
   }
 
-  const runtimeSeed = await readRuntimeSeed();
-  if (runtimeSeed) {
-    process.env.E2E_USERNAME = runtimeSeed.username;
-    process.env.E2E_PASSWORD = runtimeSeed.password;
-    process.env.E2E_SALE_ID = runtimeSeed.saleId;
-
-    return runtimeSeed;
-  }
-
+  // Always re-seed via the API: the endpoint is idempotent (fixed
+  // credentials, purges previous e2e sales, resets the seed product stock to
+  // 100) while the cached seed.json only carries credentials — reusing it
+  // across runs lets sales drain the seed stock until STRICT policy rejects
+  // every new sale. The runtime file is only a fallback for stacks where the
+  // seed endpoint is unavailable (E2E_SEED_ENABLED unset).
   if (!seedPromise) {
-    seedPromise = seedFromApi();
+    seedPromise = seedFromApi().catch(async (error: unknown) => {
+      const runtimeSeed = await readRuntimeSeed();
+      if (runtimeSeed) {
+        process.env.E2E_USERNAME = runtimeSeed.username;
+        process.env.E2E_PASSWORD = runtimeSeed.password;
+        process.env.E2E_SALE_ID = runtimeSeed.saleId;
+
+        return runtimeSeed;
+      }
+
+      throw error;
+    });
   }
 
   return seedPromise;

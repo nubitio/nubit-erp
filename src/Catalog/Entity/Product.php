@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Entity;
 
-use App\Media\Entity\Media;
+use Nubit\AdminBundle\Media\Entity\Media;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Catalog\Entity\Category;
@@ -174,7 +174,7 @@ class Product
     private Collection $stocks;
 
     #[Groups(['product:read', 'product:write'])]
-    #[ApiProperty(description: 'product.photo.label')]
+    #[ApiProperty(readableLink: true, description: 'product.photo.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'imagen', referencedColumnName: 'id')]
     private ?Media $photo = null;

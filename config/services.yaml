@@ -53,6 +53,9 @@ services:
   # The bundle's authenticator/refresh need ONE UserProviderInterface; efact
   # has two providers (api users + control-plane admins), so alias the API one.
   Symfony\Component\Security\Core\User\UserProviderInterface: '@App\Identity\Auth\UserProvider'
+
+  # Media URLs go straight to S3/CDN instead of the bundle streaming route.
+  Nubit\AdminBundle\Media\MediaUrlResolverInterface: '@App\Efact\Filesystem\S3MediaUrlResolver'
   # Bundle's Mercure token service, registered manually because efact uses
   # its own tenant-scoped decorator instead of nubit_admin.mercure.enabled.
   Nubit\AdminBundle\Auth\MercureSubscriberTokenService:
