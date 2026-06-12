@@ -370,6 +370,12 @@ export function ProductPage() {
       auditTrail: {
         enabled: true,
         apiUrl: (id: string | number) => `/api/audit-trail/product/${id}`,
+        recordSubtitle: (row) => {
+          const name = typeof row.name === 'string' ? row.name : null;
+          const code = typeof row.code === 'string' ? row.code : null;
+          const parts = [name, code ? `Cód. ${code}` : null].filter(Boolean);
+          return parts.length > 0 ? parts.join(' · ') : undefined;
+        },
       },
       toolbar: {
         utility: [

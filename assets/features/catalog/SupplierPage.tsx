@@ -42,6 +42,10 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   auditTrail: {
     enabled: true,
     apiUrl: (id) => `/api/audit-trail/supplier/${id}`,
+    recordSubtitle: (row) => {
+      const parts = [row.businessName, row.ruc ? `RUC ${row.ruc}` : null].filter(Boolean);
+      return parts.length > 0 ? parts.join(' · ') : undefined;
+    },
   },
   formLayout: {
     type: 'sections',
