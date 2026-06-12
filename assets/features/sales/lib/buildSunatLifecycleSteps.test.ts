@@ -18,12 +18,12 @@ describe('buildSunatLifecycleSteps', () => {
   it('marks accepted when SUNAT returns code 0', () => {
     const steps = buildSunatLifecycleSteps({ sunatStatus: '0' }, format);
     expect(steps.find((step) => step.key === 'accepted')?.status).toBe('complete');
-    expect(steps.find((step) => step.key === 'accepted')?.title).toBe('Aceptado');
+    expect(steps.find((step) => step.key === 'accepted')?.title).toBe('Aceptado por SUNAT');
   });
 
   it('marks rejected for SUNAT error codes', () => {
     const steps = buildSunatLifecycleSteps({ sunatStatus: '2300' }, format);
     expect(steps.find((step) => step.key === 'accepted')?.status).toBe('error');
-    expect(steps.find((step) => step.key === 'accepted')?.title).toBe('Rechazado');
+    expect(steps.find((step) => step.key === 'accepted')?.title).toBe('Rechazado · código 2300');
   });
 });

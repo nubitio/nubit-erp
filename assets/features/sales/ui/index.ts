@@ -3,3 +3,4 @@ export { useSalePrintPreview } from './useSalePrintPreview';
 export { createInvoiceToolbar } from './createInvoiceToolbar';
 export { createCreditNoteToolbar } from './createCreditNoteToolbar';
 export { DocumentStatusTimeline } from './DocumentStatusTimeline';
+export { DocumentStatusDrawer } from './DocumentStatusDrawer';

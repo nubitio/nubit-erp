@@ -21,15 +21,15 @@ function isSunatRejection(status: string): boolean {
 
 function resolveAcceptedStep(sunatStatus: string): Pick<DocumentLifecycleStep, 'status' | 'title'> {
   if (sunatStatus === '0') {
-    return { status: 'complete', title: 'Aceptado' };
+    return { status: 'complete', title: 'Aceptado por SUNAT' };
   }
   if (isSunatRejection(sunatStatus)) {
-    return { status: 'error', title: 'Rechazado' };
+    return { status: 'error', title: `Rechazado · código ${sunatStatus}` };
   }
   if (sunatStatus && sunatStatus !== 'pendiente') {
-    return { status: 'error', title: 'Rechazado' };
+    return { status: 'error', title: `Rechazado · ${sunatStatus}` };
   }
-  return { status: 'pending', title: 'Aceptado' };
+  return { status: 'pending', title: 'Aceptado por SUNAT' };
 }
 
 export function buildSunatLifecycleSteps(

@@ -22,8 +22,8 @@ function formatLifecycleTimestamp(iso: string): string {
 
 export function DocumentStatusTimeline({
   document,
-  title = 'Estado SUNAT',
-  description = 'Ciclo de vida del comprobante.',
+  title,
+  description,
   className,
 }: DocumentStatusTimelineProps) {
   const steps = useMemo(
@@ -37,7 +37,7 @@ export function DocumentStatusTimeline({
       title={title}
       description={description}
       className={className}
-      aria-label={title}
+      aria-label={title ?? 'Estado SUNAT'}
     >
       {steps.map((step) => (
         <TimelineItem

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -12,10 +12,8 @@ import {
   runSendInvoiceEmailAction,
   runSendInvoiceToSunatAction,
 } from './lib/invoiceActions';
-import { DocumentStatusTimeline } from './ui/DocumentStatusTimeline';
+import { DocumentStatusDrawer } from './ui/DocumentStatusDrawer';
 import toast from '@shared/lib/SharedUtils';
-import './InvoicePage.scss';
-
 const API_URL = API + 'tax-documents';
 const fields = InvoiceFields();
 
@@ -64,6 +62,14 @@ const INVOICE_COLUMN_PRESETS = [
   },
 ];
 
+function formatInvoiceSubtitle(row: InvoiceRow): string | undefined {
+  const doc =
+    row.series && row.number != null ? `${row.series}-${String(row.number).padStart(3, '0')}` : null;
+  const customer = typeof row.customer === 'string' ? row.customer : null;
+  const parts = [doc, customer].filter(Boolean);
+  return parts.length > 0 ? parts.join(' · ') : undefined;
+}
+
 const baseResource = defineResource(API_URL + '?type=invoice', {
   id: 'invoice',
   title: 'Comprobantes',
@@ -90,6 +96,7 @@ const baseResource = defineResource(API_URL + '?type=invoice', {
 export const InvoicePage = () => {
   const gridRef = useRef<GridHandle | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null);
+  const [statusDrawerOpen, setStatusDrawerOpen] = useState(false);
 
   const actionDeps = useMemo(
     () => ({
@@ -103,10 +110,30 @@ export const InvoicePage = () => {
     [],
   );
 
+  const openStatusDrawer = useCallback(() => {
+    const row = gridRef.current?.getSelectedRow() as InvoiceRow | undefined;
+    if (!row) {
+      toast('Seleccione un comprobante', 'warning');
+      return;
+    }
+    setSelectedInvoice(row);
+    setStatusDrawerOpen(true);
+  }, []);
+
   const resource = useMemo(
     () => ({
       ...baseResource,
       toolbar: {
+        utility: [
+          {
+            key: 'sunat-status',
+            text: 'Estado SUNAT',
+            icon: 'ph-path',
+            hint: 'Ciclo de vida SUNAT del comprobante seleccionado',
+            disabled: selectedInvoice == null,
+            onClick: openStatusDrawer,
+          },
+        ],
         selection: [
           {
             text: 'Ver',
@@ -146,32 +173,33 @@ export const InvoicePage = () => {
         ],
       },
     }),
-    [actionDeps],
+    [actionDeps, openStatusDrawer, selectedInvoice],
   );
 
   return (
-    <div className="nb-invoice-page">
-      <div className="nb-invoice-page__main">
-        <SmartCrudPage
-          resource={resource}
-          gridRef={gridRef}
-          onSelectionChanged={(rows) => {
-            const row = (rows[0] as InvoiceRow | undefined) ?? null;
-            setSelectedInvoice(row);
-          }}
-        />
-      </div>
-      {selectedInvoice && (
-        <aside className="nb-invoice-page__aside" aria-label="Estado SUNAT del comprobante">
-          <DocumentStatusTimeline
-            className="nb-document-status-timeline"
-            document={{
-              createdAt: selectedInvoice.createdAt,
-              sunatStatus: selectedInvoice.sunatStatus,
-            }}
-          />
-        </aside>
-      )}
-    </div>
+    <>
+      <SmartCrudPage
+        resource={resource}
+        gridRef={gridRef}
+        onSelectionChanged={(rows) => {
+          const row = (rows[0] as InvoiceRow | undefined) ?? null;
+          setSelectedInvoice(row);
+          setStatusDrawerOpen(row != null);
+        }}
+      />
+      <DocumentStatusDrawer
+        isOpen={statusDrawerOpen}
+        onClose={() => setStatusDrawerOpen(false)}
+        subtitle={selectedInvoice ? formatInvoiceSubtitle(selectedInvoice) : undefined}
+        document={
+          selectedInvoice
+            ? {
+                createdAt: selectedInvoice.createdAt,
+                sunatStatus: selectedInvoice.sunatStatus,
+              }
+            : null
+        }
+      />
+    </>
   );
 };

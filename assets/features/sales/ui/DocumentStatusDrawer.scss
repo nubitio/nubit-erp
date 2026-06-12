@@ -1,0 +1,30 @@
+.nb-document-status-drawer__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nb-document-status-drawer__record {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.nb-document-status-drawer__label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.nb-document-status-drawer .nb-timeline-panel--card {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.nb-document-status-drawer .nb-timeline-panel__header {
+  display: none;
+}

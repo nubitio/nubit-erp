@@ -5,6 +5,9 @@ export type InvoiceRow = {
   createdAt?: string;
   sunatStatus?: string;
   publicReceiptUrl?: string;
+  series?: string;
+  number?: string | number;
+  customer?: string;
 };
 
 import type { ActionDeps } from './actionDeps';
