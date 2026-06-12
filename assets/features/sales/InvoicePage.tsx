@@ -184,7 +184,6 @@ export const InvoicePage = () => {
         onSelectionChanged={(rows) => {
           const row = (rows[0] as InvoiceRow | undefined) ?? null;
           setSelectedInvoice(row);
-          setStatusDrawerOpen(row != null);
         }}
       />
       <DocumentStatusDrawer

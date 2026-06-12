@@ -86,7 +86,7 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
             {
               type: 'custom',
               options: {
-                validationCallback: (value) => {
+                validationCallback: ({ value }) => {
                   const doc = String(value ?? '');
                   return doc.length === 8 ? true : SharedUtils.validateRUC(doc);
                 },

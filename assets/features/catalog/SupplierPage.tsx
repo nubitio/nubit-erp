@@ -90,7 +90,7 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
             {
               type: 'custom',
               options: {
-                validationCallback: (value) => {
+                validationCallback: ({ value }) => {
                   const doc = String(value ?? '').trim();
                   return SharedUtils.validateRUC(doc);
                 },
