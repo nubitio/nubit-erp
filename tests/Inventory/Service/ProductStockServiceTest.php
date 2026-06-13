@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace App\Tests\Inventory\Service;
 
 use App\Catalog\Entity\Product;
+use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Inventory\Core\Contract\UnitConversionServiceInterface;
+use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\ProductStockRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\Service\ProductStockService;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ProductStockServiceTest extends TestCase
@@ -53,6 +59,31 @@ final class ProductStockServiceTest extends TestCase
         self::assertInstanceOf(ProductStock::class, $stock);
         self::assertSame(10.0, $stock->getStock());
         self::assertCount(1, $persisted);
+    }
+
+    public function testUpdateStockWithIdsRecordsInventoryAdjustmentOnly(): void
+    {
+        $product = $this->productWithId('prod-1');
+        $warehouse = $this->warehouseWithId('wh-1');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('persist');
+        $entityManager->expects(self::never())->method('flush');
+
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())->method('fetchOne')->willReturn('4.000000');
+        $connection->expects(self::once())->method('beginTransaction');
+        $connection->expects(self::once())->method('commit');
+        $connection->expects(self::never())->method('rollBack');
+        $connection->method('getDatabasePlatform')->willReturn(new SQLitePlatform());
+        $connection->expects(self::exactly(3))->method('executeStatement')->willReturn(1);
+
+        $service = $this->newService(entityManager: $entityManager);
+        $service->setInventoryService($this->newInventoryService($connection));
+
+        $stock = $service->updateStockForProductInWarehouse($product, $warehouse, 10.0);
+
+        self::assertSame(10.0, $stock->getStock());
     }
 
     public function testTransferStockRejectsInvalidOrInsufficientQuantity(): void
@@ -158,5 +189,34 @@ final class ProductStockServiceTest extends TestCase
             $warehouseRepository ?? $this->createMock(WarehouseRepository::class),
             $logger ?? $this->createMock(LoggerInterface::class),
         );
+    }
+
+    private function newInventoryService(Connection $connection): InventoryService
+    {
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->method('dispatch')->willReturnArgument(0);
+
+        return new InventoryService(
+            $connection,
+            $this->createStub(StockValidationPolicyInterface::class),
+            $this->createStub(UnitConversionServiceInterface::class),
+            $dispatcher,
+        );
+    }
+
+    private function productWithId(string $id): Product
+    {
+        $product = new Product();
+        (new \ReflectionProperty(Product::class, 'id'))->setValue($product, $id);
+
+        return $product;
+    }
+
+    private function warehouseWithId(string $id): Warehouse
+    {
+        $warehouse = new Warehouse();
+        (new \ReflectionProperty(Warehouse::class, 'id'))->setValue($warehouse, $id);
+
+        return $warehouse;
     }
 }

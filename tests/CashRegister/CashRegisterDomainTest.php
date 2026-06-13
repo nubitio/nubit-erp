@@ -30,6 +30,7 @@ final class CashRegisterDomainTest extends TestCase
         $dto = new CashRegisterDashboardDto(
             id: 1,
             name: 'Caja Principal',
+            cashSessionId: 42,
             cashShiftId: 42,
             openedAt: $openedAt,
             closedAt: null,
@@ -55,6 +56,7 @@ final class CashRegisterDomainTest extends TestCase
         $dto = new CashRegisterDashboardDto(
             id: 2,
             name: 'Caja 2',
+            cashSessionId: null,
             cashShiftId: null,
             openedAt: null,
             closedAt: null,

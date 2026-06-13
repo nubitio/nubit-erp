@@ -302,7 +302,7 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
     let navigated = false;
     try {
       await Promise.all([
-        page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 8000 }),
+        page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
         movementsBtn.click(),
       ]);
       navigated = true;
@@ -316,16 +316,17 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const openReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => r.status === 'open' && r.cashShiftId)
+        ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
         : null;
-      if (openReg?.cashShiftId) {
-        await page.goto(`${BASE_URL}/#/cash-shift/${openReg.cashShiftId}/movements`);
+      const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
+      if (cashSessionId) {
+        await page.goto(`${BASE_URL}/#/cash-session/${cashSessionId}/movements`);
       }
     }
 
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     const url = page.url();
-    const match = url.match(/cash-shift\/(\d+)\/movements/);
+    const match = url.match(/cash-session\/(\d+)\/movements/);
     return match ? match[1] : null;
   }
 
@@ -336,7 +337,7 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
       return resp.ok ? resp.json() : [];
     }, BASE_URL);
     const closedReg = Array.isArray(dashData)
-      ? dashData.find((r: any) => r.cashShiftId == null)
+      ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
       : null;
     if (!closedReg?.id) return null;
 
@@ -347,11 +348,11 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
 
     await abrirCajaBtn.click();
 
-    await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
+    await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
     const url = page.url();
-    const match = url.match(/cash-shift\/(\d+)\/movements/);
+    const match = url.match(/cash-session\/(\d+)\/movements/);
     return match ? match[1] : null;
   } catch {
     return null;
@@ -511,7 +512,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       let navigated = false;
       try {
         await Promise.all([
-          page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 8000 }),
+          page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
           movementsBtn.click(),
         ]);
         navigated = true;
@@ -524,10 +525,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
           return resp.ok ? resp.json() : [];
         }, BASE_URL);
         const openReg = Array.isArray(dashData)
-          ? dashData.find((r: any) => r.status === 'open' && r.cashShiftId)
+          ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
           : null;
-        if (openReg?.cashShiftId) {
-          await page.goto(`${BASE_URL}/#/cash-shift/${openReg.cashShiftId}/movements`);
+        const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
+        if (cashSessionId) {
+          await page.goto(`${BASE_URL}/#/cash-session/${cashSessionId}/movements`);
         }
       }
     } else {
@@ -537,7 +539,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const closedReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => r.cashShiftId == null)
+        ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
         : null;
       if (closedReg?.id) {
         await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
@@ -552,7 +554,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await abrirCajaBtn.click();
 
       // Wait for redirect to movements page
-      await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
+      await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
     }
 
     // Wait for the page to settle before reading URL
@@ -560,7 +562,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     // Capture the cashShiftId from the URL
     const url = page.url();
-    const match = url.match(/cash-shift\/(\d+)\/movements/);
+    const match = url.match(/cash-session\/(\d+)\/movements/);
     openedCashShiftId = match ? match[1] : null;
     expect(openedCashShiftId).not.toBeNull();
 
@@ -908,13 +910,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
         openedCashShiftId = await recoverCashShiftId(page);
       }
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-shift/${openedCashShiftId}/movements`);
+      await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/movements`);
       // Re-authenticate if the session was lost (e.g. JWT refresh failed during test 06)
       await ensureLoggedIn(page);
       // Wait for auth to fully settle before checking URL or navigating
       await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      if (!page.url().includes(`/cash-shift/${openedCashShiftId}/movements`)) {
-        await page.goto(`${BASE_URL}/#/cash-shift/${openedCashShiftId}/movements`);
+      if (!page.url().includes(`/cash-session/${openedCashShiftId}/movements`)) {
+        await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/movements`);
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
       await waitForGridLoad(page);
@@ -1072,7 +1074,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         openedCashShiftId = await recoverCashShiftId(page);
       }
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-register/${openedCashShiftId}/close`);
+      await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/close`);
       // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
       await expect(
         page.locator('h1.cash-close__title'),

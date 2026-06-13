@@ -12,8 +12,12 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Version\Direction;
+use Doctrine\Migrations\Version\ExecutionResult;
 
 #[AsCommand(
     name: 'app:tenants:migrate',
@@ -29,6 +33,19 @@ class TenantMigrateCommand extends PerTenantCommand
         parent::__construct();
     }
 
+    #[Override]
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption(
+            'baseline-existing-schema',
+            null,
+            InputOption::VALUE_NONE,
+            'Mark all available tenant migrations as executed without running SQL. Use only after loading a baseline schema dump.',
+        );
+    }
+
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -38,6 +55,13 @@ class TenantMigrateCommand extends PerTenantCommand
         );
 
         $dependencyFactory->getMetadataStorage()->ensureInitialized();
+
+        if ($input->getOption('baseline-existing-schema')) {
+            $marked = $this->markAvailableMigrationsExecuted($dependencyFactory);
+            $io->writeln(sprintf('Baseline recorded. %d migration(s) marked as executed.', $marked));
+
+            return Command::SUCCESS;
+        }
 
         $targetVersion = $dependencyFactory
             ->getVersionAliasResolver()
@@ -62,5 +86,28 @@ class TenantMigrateCommand extends PerTenantCommand
         $io->writeln('Migrations executed.');
 
         return Command::SUCCESS;
+    }
+
+    private function markAvailableMigrationsExecuted(DependencyFactory $dependencyFactory): int
+    {
+        $metadataStorage = $dependencyFactory->getMetadataStorage();
+        $executedMigrations = $metadataStorage->getExecutedMigrations();
+        $marked = 0;
+
+        foreach ($dependencyFactory->getMigrationRepository()->getMigrations()->getItems() as $availableMigration) {
+            $version = $availableMigration->getVersion();
+            if ($executedMigrations->hasMigration($version)) {
+                continue;
+            }
+
+            $metadataStorage->complete(new ExecutionResult(
+                $version,
+                Direction::UP,
+                new \DateTimeImmutable(),
+            ));
+            ++$marked;
+        }
+
+        return $marked;
     }
 }

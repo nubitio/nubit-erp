@@ -53,6 +53,7 @@ class TenantProvisionCommand extends Command
             ->addOption('provisioning-url', null, InputOption::VALUE_OPTIONAL, 'Provisioning database URL')
             ->addOption('seed-initial', null, InputOption::VALUE_NONE, 'Run initial data seed')
             ->addOption('seed-test', null, InputOption::VALUE_NONE, 'Run test data seed')
+            ->addOption('baseline-existing-schema', null, InputOption::VALUE_NONE, 'Mark tenant migrations as executed instead of running them. Use only after loading a baseline schema dump.')
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
             ->addOption('admin-password', null, InputOption::VALUE_OPTIONAL, 'Admin password for initial setup (prefer TENANT_ADMIN_PASSWORD env)')
@@ -180,7 +181,12 @@ class TenantProvisionCommand extends Command
 
         $io->section('Running migrations');
         $this->tenantConnectionSwitcher->switchConnection($tenant);
-        $migrate = new Process([PHP_BINARY, 'bin/console', 'app:tenants:migrate', '--tenant=' . $tenant]);
+        $migrateCommand = [PHP_BINARY, 'bin/console', 'app:tenants:migrate', '--tenant=' . $tenant];
+        if ($input->getOption('baseline-existing-schema')) {
+            $migrateCommand[] = '--baseline-existing-schema';
+        }
+
+        $migrate = new Process($migrateCommand);
         $migrate->setTimeout(300);
         $migrate->run($this->processOutputCallback($io));
 
@@ -190,7 +196,7 @@ class TenantProvisionCommand extends Command
 
         if ($input->getOption('seed-initial')) {
             $io->section('Running initial seed');
-            $seed = new Process([PHP_BINARY, 'bin/console', 'app:seed:initial', '--tenant=' . $tenant]);
+            $seed = new Process([PHP_BINARY, 'bin/console', 'app:seed:initial-data', '--tenant=' . $tenant]);
             $seed->setTimeout(120);
             $seed->run($this->processOutputCallback($io));
         }

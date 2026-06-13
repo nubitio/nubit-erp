@@ -58,6 +58,14 @@ const reasonCodes: { value: string; text: string }[] = [
     value: '10',
     text: 'Otros Conceptos',
   },
+  {
+    value: '11',
+    text: 'Ajustes de operaciones de exportación',
+  },
+  {
+    value: '12',
+    text: 'Ajustes afectos al IVAP',
+  },
 ];
 
 export const CreditNoteFields = () => {

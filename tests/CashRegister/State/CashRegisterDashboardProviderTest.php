@@ -20,7 +20,7 @@ final class CashRegisterDashboardProviderTest extends TestCase
             [
                 'id' => 1,
                 'name' => 'Caja 1',
-                'cashShiftId' => '42',
+                'cashSessionId' => '42',
                 'openedAt' => '2026-04-30 08:00:00',
                 'closedAt' => null,
                 'cashier' => 'juan',
@@ -31,7 +31,7 @@ final class CashRegisterDashboardProviderTest extends TestCase
             [
                 'id' => 2,
                 'name' => 'Caja 2',
-                'cashShiftId' => null,
+                'cashSessionId' => null,
                 'openedAt' => null,
                 'closedAt' => null,
                 'cashier' => null,

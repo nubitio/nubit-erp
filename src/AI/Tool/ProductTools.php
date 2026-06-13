@@ -9,9 +9,9 @@ use App\AI\Dto\ProductSearchResultDto;
 use App\AI\Dto\ProductStockDto;
 use App\AI\Dto\ProductWarehouseStockDto;
 use App\Catalog\Entity\Product;
-use App\Inventory\Entity\ProductStock;
 use App\Catalog\Repository\ProductRepository;
-use App\Inventory\Repository\ProductStockRepository;
+use App\Inventory\Repository\WarehouseRepository;
+use App\Inventory\Service\ProductStockService;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -28,7 +28,8 @@ final readonly class ProductTools
 {
     public function __construct(
         private ProductRepository $productRepository,
-        private ProductStockRepository $productStockRepository,
+        private WarehouseRepository $warehouseRepository,
+        private ProductStockService $productStockService,
     ) {
     }
 
@@ -48,19 +49,27 @@ final readonly class ProductTools
             throw ServiceException::create('Producto no encontrado.');
         }
 
-        $stocks = $this->productStockRepository->findByProduct($product);
+        $warehouses = [];
+        $totalStock = 0.0;
+
+        foreach ($this->warehouseRepository->findAll() as $warehouse) {
+            $stock = $this->productStockService->getStockForProductInWarehouse($product, $warehouse);
+            $totalStock += $stock;
+
+            $warehouses[] = new ProductWarehouseStockDto(
+                (string) $warehouse->getId(),
+                $warehouse->getName(),
+                $stock,
+                (float) ($product->getMinStock() ?? 0),
+            );
+        }
 
         return new ProductStockDto(
             (string) $product->getId(),
             $product->getCode(),
             $product->getName(),
-            $this->productStockRepository->getTotalStockForProduct($product),
-            array_map(static fn (ProductStock $stock): ProductWarehouseStockDto => new ProductWarehouseStockDto(
-                (string) $stock->getWarehouse()->getId(),
-                $stock->getWarehouse()->getName(),
-                $stock->getStock(),
-                $stock->getMinStock(),
-            ), $stocks),
+            $totalStock,
+            $warehouses,
         );
     }
 }

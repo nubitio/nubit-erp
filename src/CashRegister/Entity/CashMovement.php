@@ -59,9 +59,8 @@ class CashMovement
     private ?CashShift $cashShift = null;
 
     /**
-     * V2 FK to cash_sessions. The DB column (cash_session_id) does NOT yet exist
-     * on the legacy cash_movement table — it will be added in T-CASH-07.
-     * This property is intentionally kept PHP-only (no ORM column mapping) for now.
+     * V2 FK to cash_sessions. Cash movements are written/read from cash_movements
+     * through DBAL providers, while this mixed legacy DTO still maps cash_movement.
      */
     #[Groups(['cash_movement:read'])]
     #[ApiProperty(description: 'cash_movement.cash_session.label')]

@@ -15,6 +15,8 @@ class CashRegisterDashboardDto
         #[Groups(['cash_register_dashboard:read'])]
         public string $name,
         #[Groups(['cash_register_dashboard:read'])]
+        public ?int $cashSessionId,
+        #[Groups(['cash_register_dashboard:read'])]
         public ?int $cashShiftId,
         #[Groups(['cash_register_dashboard:read'])]
         public ?DateTimeImmutable $openedAt,

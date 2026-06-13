@@ -6,6 +6,7 @@ const API = getCoreApiBaseUrl();
 export interface CashRegisterDashboardDto {
   id: number;
   name: string;
+  cashSessionId: number | null;
   cashShiftId: number | null;
   openedAt: string | null;
   closedAt: string | null;

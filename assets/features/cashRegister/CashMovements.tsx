@@ -39,7 +39,7 @@ export const CashMovements = () => {
         icon: 'ph-lock-simple',
         type: 'secondary' as const,
         onClick: () => {
-          navigate(`/cash-register/${id}/close`);
+          navigate(`/cash-session/${id}/close`);
         },
       },
     ],

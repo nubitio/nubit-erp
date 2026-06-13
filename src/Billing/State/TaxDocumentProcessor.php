@@ -16,6 +16,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceLineInput;
+use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Sales\State\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
 use DateTime;
@@ -28,18 +29,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 readonly class TaxDocumentProcessor implements ProcessorInterface
 {
-    /**
-     * Reason codes that represent a full cancellation of the affected document.
-     * When a credit note is created with one of these codes, the linked sale is
-     * automatically marked as VOIDED (same behaviour as a Comunicación de Baja).
-     *
-     * SUNAT catalog 09:
-     *   01 — Anulación de la operación
-     *   02 — Anulación por error en el RUC
-     *   06 — Devolución total
-     */
-    private const VOID_REASON_CODES = ['01', '02', '06'];
-
     /**
      * @param ProcessorInterface<mixed, mixed> $persistProcessor
      * @param ProcessorInterface<mixed, mixed> $removeProcessor
@@ -79,6 +68,16 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         if ($isNew && $data->getReasonCode() != null) {
+            $reason = CreditNoteReason::tryFrom((string) $data->getReasonCode());
+            if ($reason === null) {
+                throw new ServiceException('El motivo de la nota de crédito no es válido (catálogo SUNAT 09).');
+            }
+            // Source the official description from catalog 09 when the caller did
+            // not provide one, so the value sent to SUNAT is always canonical.
+            if (in_array(trim((string) $data->getReasonDescription()), ['', '0'], true)) {
+                $data->setReasonDescription($reason->description());
+            }
+
             $related = $data->getRelatedTaxDocument();
             $data->setDocumentType('07');
             $data->setAffectedDocument($related->getFullNumber());
@@ -280,7 +279,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
      */
     private function voidSaleIfCreditNoteAnnuls(TaxDocument $creditNote): void
     {
-        if (!in_array($creditNote->getReasonCode(), self::VOID_REASON_CODES, true)) {
+        $reason = CreditNoteReason::tryFrom((string) $creditNote->getReasonCode());
+        if ($reason === null || !$reason->annulsDocument()) {
             return;
         }
 

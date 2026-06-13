@@ -72,14 +72,13 @@ final class InventoryServiceTest extends TestCase
         self::assertSame('12.500000', $service->getOnHand('wh-1', 'prod-1'));
     }
 
-    public function testGetOnHandFallsBackToStockBalances(): void
+    public function testGetOnHandReturnsZeroWhenStockItemIsMissing(): void
     {
         $conn = $this->createStub(Connection::class);
-        // first call (stock_items) → false, second call (stock_balances) → value
-        $conn->method('fetchOne')->willReturnOnConsecutiveCalls(false, '5.000000');
+        $conn->method('fetchOne')->willReturn(false);
 
         $service = $this->makeService($conn);
-        self::assertSame('5.000000', $service->getOnHand('wh-1', 'prod-1'));
+        self::assertSame('0', $service->getOnHand('wh-1', 'prod-1'));
     }
 
     public function testGetOnHandReturnsZeroWhenNothingFound(): void

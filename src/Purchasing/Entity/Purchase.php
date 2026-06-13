@@ -133,6 +133,27 @@ class Purchase
     #[ApiProperty(description: 'purchase.note.label')]
     private ?string $note = null;
 
+    /**
+     * Tipo de comprobante del proveedor (SUNAT Tabla 10: 01 factura, 03 boleta,
+     * etc.). Necesario para el Registro de Compras electrónico (PLE 8.1).
+     */
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
+    #[ORM\Column(name: 'supplier_doc_type', type: 'string', length: 2, nullable: true)]
+    #[ApiProperty(description: 'purchase.supplier_doc_type.label')]
+    private ?string $supplierDocType = null;
+
+    /** Serie del comprobante del proveedor (p. ej. F001). */
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
+    #[ORM\Column(name: 'supplier_doc_series', type: 'string', length: 20, nullable: true)]
+    #[ApiProperty(description: 'purchase.supplier_doc_series.label')]
+    private ?string $supplierDocSeries = null;
+
+    /** Número del comprobante del proveedor. */
+    #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
+    #[ORM\Column(name: 'supplier_doc_number', type: 'string', length: 20, nullable: true)]
+    #[ApiProperty(description: 'purchase.supplier_doc_number.label')]
+    private ?string $supplierDocNumber = null;
+
     #[Groups(['purchase:read', 'purchase:write', 'purchase:admin_patch'])]
     #[ORM\Column(name: 'issued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     #[ApiProperty(description: 'purchase.issued_at.label')]
@@ -386,6 +407,42 @@ class Purchase
     public function setNote(?string $note): static
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getSupplierDocType(): ?string
+    {
+        return $this->supplierDocType;
+    }
+
+    public function setSupplierDocType(?string $supplierDocType): static
+    {
+        $this->supplierDocType = $supplierDocType;
+
+        return $this;
+    }
+
+    public function getSupplierDocSeries(): ?string
+    {
+        return $this->supplierDocSeries;
+    }
+
+    public function setSupplierDocSeries(?string $supplierDocSeries): static
+    {
+        $this->supplierDocSeries = $supplierDocSeries;
+
+        return $this;
+    }
+
+    public function getSupplierDocNumber(): ?string
+    {
+        return $this->supplierDocNumber;
+    }
+
+    public function setSupplierDocNumber(?string $supplierDocNumber): static
+    {
+        $this->supplierDocNumber = $supplierDocNumber;
 
         return $this;
     }

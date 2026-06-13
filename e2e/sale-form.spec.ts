@@ -95,7 +95,7 @@ async function ensureCashOpen(page: Page): Promise<void> {
   }, BASE_URL);
 
   const closedReg = Array.isArray(dashData)
-    ? dashData.find((r: any) => r.cashShiftId == null)
+    ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
     : null;
 
   if (!closedReg?.id) return;
@@ -104,7 +104,7 @@ async function ensureCashOpen(page: Page): Promise<void> {
   await expect(page.locator('text=Apertura de caja')).toBeVisible({ timeout: 10000 });
   await page.getByLabel('Saldo inicial').fill('100');
   await page.getByTestId('cash-open-submit-btn').first().click();
-  await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
+  await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
 }
 
 /** Navigate to the sale list and open the new-sale page form (sections layout). */

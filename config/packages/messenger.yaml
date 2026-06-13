@@ -21,6 +21,7 @@ framework:
       Symfony\Component\Notifier\Message\SmsMessage: async
       App\Efact\Audit\AuditLogMessage: async
       App\Billing\Message\SendInvoiceMessage: async
+      App\Billing\Despatch\Message\SendDespatchMessage: async
       App\Catalog\Message\ProductImportMessage: async
       # Mercure updates publish in the worker: a dead hub never blocks the
       # HTTP write and delivery gets the retry strategy. In the worker the

@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Inventory\Service;
 
 use App\Catalog\Entity\Product;
+use App\Inventory\Core\Dto\MovementDraft;
+use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\StockMovementType;
+use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\ProductStockRepository;
 use App\Inventory\Repository\WarehouseRepository;
-use App\Inventory\Core\Service\InventoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Service\Attribute\Required;
 
 class ProductStockService
@@ -54,6 +58,31 @@ class ProductStockService
         Warehouse $warehouse,
         float $newStock
     ): ProductStock {
+        if ($this->inventoryService instanceof InventoryService && $product->getId() !== null && $warehouse->getId() !== null) {
+            $currentStock = $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
+            $targetStock = number_format($newStock, 6, '.', '');
+            $delta = bcsub($targetStock, $currentStock, 6);
+
+            if (bccomp($delta, '0', 6) !== 0) {
+                $this->inventoryService->recordMovement(
+                    new MovementDraft(
+                        warehouseId: (string) $warehouse->getId(),
+                        productId: (string) $product->getId(),
+                        movementType: StockMovementType::ADJUSTMENT,
+                        qtyDeltaBase: $delta,
+                        unitId: 0,
+                        qtyOriginal: ltrim(ltrim($delta, '+'), '-'),
+                        sourceType: 'PRODUCT_STOCK_ADJUSTMENT',
+                        sourceId: Uuid::v7()->toRfc4122(),
+                        note: 'Ajuste manual de stock',
+                    ),
+                    behavior: InventoryBehavior::tryFrom($product->getInventoryBehavior()) ?? InventoryBehavior::TRACKED,
+                );
+            }
+
+            return $this->buildStockSnapshot($product, $warehouse, $newStock);
+        }
+
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
         if (!$productStock instanceof ProductStock) {
@@ -91,6 +120,72 @@ class ProductStockService
             ]);
 
             return false;
+        }
+
+        if (
+            $this->inventoryService instanceof InventoryService
+            && $product->getId() !== null
+            && $sourceWarehouse->getId() !== null
+            && $targetWarehouse->getId() !== null
+        ) {
+            $sourceStock = (float) $this->inventoryService->getOnHand(
+                (string) $sourceWarehouse->getId(),
+                (string) $product->getId(),
+            );
+
+            if ($sourceStock < $quantity) {
+                $this->logger->error('Insufficient stock for transfer', [
+                    'product' => $product->getId(),
+                    'sourceWarehouse' => $sourceWarehouse->getId(),
+                    'availableStock' => $sourceStock,
+                    'requestedQuantity' => $quantity,
+                ]);
+
+                return false;
+            }
+
+            $transferId = Uuid::v7()->toRfc4122();
+            $qty = number_format($quantity, 6, '.', '');
+            $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior()) ?? InventoryBehavior::TRACKED;
+
+            $this->inventoryService->recordMovement(
+                new MovementDraft(
+                    warehouseId: (string) $sourceWarehouse->getId(),
+                    productId: (string) $product->getId(),
+                    movementType: StockMovementType::TRANSFER_OUT,
+                    qtyDeltaBase: '-' . $qty,
+                    unitId: 0,
+                    qtyOriginal: $qty,
+                    sourceType: 'PRODUCT_STOCK_TRANSFER',
+                    sourceId: $transferId . ':out',
+                    note: 'Traslado a ' . $targetWarehouse->getName(),
+                ),
+                behavior: $behavior,
+            );
+
+            $this->inventoryService->recordMovement(
+                new MovementDraft(
+                    warehouseId: (string) $targetWarehouse->getId(),
+                    productId: (string) $product->getId(),
+                    movementType: StockMovementType::TRANSFER_IN,
+                    qtyDeltaBase: $qty,
+                    unitId: 0,
+                    qtyOriginal: $qty,
+                    sourceType: 'PRODUCT_STOCK_TRANSFER',
+                    sourceId: $transferId . ':in',
+                    note: 'Traslado desde ' . $sourceWarehouse->getName(),
+                ),
+                behavior: $behavior,
+            );
+
+            $this->logger->info('Stock transferred successfully', [
+                'product' => $product->getId(),
+                'sourceWarehouse' => $sourceWarehouse->getId(),
+                'targetWarehouse' => $targetWarehouse->getId(),
+                'quantity' => $quantity,
+            ]);
+
+            return true;
         }
 
         $sourceStock = $this->getStockForProductInWarehouse($product, $sourceWarehouse);
@@ -151,5 +246,17 @@ class ProductStockService
     public function distributeGlobalStockToWarehouses(Product $product): void
     {
         // No-op: producto.stock column no longer exists.
+    }
+
+    private function buildStockSnapshot(Product $product, Warehouse $warehouse, float $stock): ProductStock
+    {
+        $productStock = new ProductStock();
+        $productStock->setProduct($product);
+        $productStock->setWarehouse($warehouse);
+        $productStock->setMinStock((float) ($product->getMinStock() ?? 0));
+        $productStock->setStock($stock);
+        $productStock->updateTimestamps();
+
+        return $productStock;
     }
 }

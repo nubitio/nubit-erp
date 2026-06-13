@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Scans all product_stock rows across every tenant and emits a stock_low
+ * Scans all stock_items rows across every tenant and emits a stock_low
  * in-app notification for ROLE_ADMIN / ROLE_SUPER_ADMIN users whenever a
  * product is at or below its configured minimum stock level.
  *

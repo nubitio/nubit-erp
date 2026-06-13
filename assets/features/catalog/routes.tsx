@@ -22,6 +22,7 @@ const VoucherSeriesPage = lazyNamed(() => import('./VoucherSeriesPage'), 'Vouche
 const VoucherTypePage = lazyNamed(() => import('./VoucherTypePage'), 'VoucherTypePage');
 const PaymentMethodPage = lazyNamed(() => import('./PaymentMethodPage'), 'PaymentMethodPage');
 const OperationPage = lazyNamed(() => import('./OperationPage'), 'OperationPage');
+const DespatchGuidePage = lazyNamed(() => import('./DespatchGuidePage'), 'DespatchGuidePage');
 
 export const catalogRoutes: AppRouteDefinition[] = [
   ...productRoutes,
@@ -41,4 +42,5 @@ export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/voucher-type', element: VoucherTypePage },
   { path: '/payment-method', element: PaymentMethodPage },
   { path: '/operation', element: OperationPage },
+  { path: '/despatch-guide', element: DespatchGuidePage },
 ];

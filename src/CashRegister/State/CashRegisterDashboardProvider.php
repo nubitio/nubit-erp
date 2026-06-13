@@ -44,7 +44,7 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
 SELECT
     c.id,
     c.name,
-    cs.id AS cashShiftId,
+    cs.id AS cashSessionId,
     cs.opened_at AS openedAt,
     cs.closed_at AS closedAt,
     u.username AS cashier,
@@ -69,7 +69,8 @@ SQL;
         return array_map(fn (array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
             id: (int)$row['id'],
             name: $row['name'],
-            cashShiftId: $row['cashShiftId'] ? (int)$row['cashShiftId'] : null,
+            cashSessionId: $row['cashSessionId'] ? (int)$row['cashSessionId'] : null,
+            cashShiftId: $row['cashSessionId'] ? (int)$row['cashSessionId'] : null,
             openedAt: $row['openedAt'] ? new DateTimeImmutable($row['openedAt']) : null,
             closedAt: $row['closedAt'] ? new DateTimeImmutable($row['closedAt']) : null,
             cashier: $row['cashier'],

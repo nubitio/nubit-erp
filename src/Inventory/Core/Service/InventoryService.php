@@ -136,22 +136,12 @@ final class InventoryService
 
     /**
      * Get on-hand quantity for a product in a warehouse.
-     * Read chain: stock_items → stock_balances → product_stock (legacy).
+     * stock_items is the canonical V2 read model; missing rows mean zero stock.
      */
     public function getOnHand(string $warehouseId, string $productId): string
     {
-        // Try stock_items first (v2 read model)
         $qty = $this->connection->fetchOne(
             'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-            ['w' => $warehouseId, 'p' => $productId]
-        );
-        if ($qty !== false) {
-            return (string) $qty;
-        }
-
-        // Fallback: stock_balances
-        $qty = $this->connection->fetchOne(
-            'SELECT on_hand_qty FROM stock_balances WHERE warehouse_id = :w AND product_id = :p',
             ['w' => $warehouseId, 'p' => $productId]
         );
         if ($qty !== false) {

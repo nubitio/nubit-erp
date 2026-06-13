@@ -112,7 +112,7 @@ async function ensureCashOpen(page: Page): Promise<string> {
     let navigated = false;
     try {
       await Promise.all([
-        page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 8000 }),
+        page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
         movBtn.click(),
       ]);
       navigated = true;
@@ -125,10 +125,11 @@ async function ensureCashOpen(page: Page): Promise<string> {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const openReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => r.status === 'open' && r.cashShiftId)
+        ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
         : null;
-      if (openReg?.cashShiftId) {
-        await page.goto(`${BASE_URL}/#/cash-shift/${openReg.cashShiftId}/movements`);
+      const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
+      if (cashSessionId) {
+        await page.goto(`${BASE_URL}/#/cash-session/${cashSessionId}/movements`);
       }
     }
   } else {
@@ -138,7 +139,7 @@ async function ensureCashOpen(page: Page): Promise<string> {
       return resp.ok ? resp.json() : [];
     }, BASE_URL);
     const closedReg = Array.isArray(dashData)
-      ? dashData.find((r: any) => r.cashShiftId == null)
+      ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
       : null;
     if (closedReg?.id) {
       await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
@@ -146,11 +147,11 @@ async function ensureCashOpen(page: Page): Promise<string> {
     await expect(page.locator('text=Apertura de caja')).toBeVisible({ timeout: 10000 });
     await page.getByLabel('Saldo inicial').fill('100');
     await page.getByTestId('cash-open-submit-btn').first().click();
-    await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
+    await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
   }
 
   const url = page.url();
-  const match = url.match(/cash-shift\/(\d+)\/movements/);
+  const match = url.match(/cash-session\/(\d+)\/movements/);
   const id = match?.[1] ?? null;
   expect(id, 'cashShiftId must be captured').not.toBeNull();
   return id as string;

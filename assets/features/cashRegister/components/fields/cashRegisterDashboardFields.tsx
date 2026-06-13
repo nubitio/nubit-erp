@@ -45,20 +45,22 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
       .filterable(false)
       .formatter((cell: GridCellContext) => {
         if (cell.data.status === 'open') {
+          const cashSessionId = cell.data.cashSessionId ?? cell.data.cashShiftId;
+
           return (
             <div style={{ display: 'flex', gap: '8px' }}>
               <IconButton
                 icon="ph ph-eye"
                 label="Ver Movimientos"
                 data-testid="cash-btn-movements"
-                onClick={() => navigate(`/cash-shift/${cell.data.cashShiftId}/movements`)}
+                onClick={() => navigate(`/cash-session/${cashSessionId}/movements`)}
               />
               <IconButton
                 icon="ph ph-cash-register"
                 label="Cerrar Caja"
                 variant="danger"
                 data-testid="cash-btn-close"
-                onClick={() => navigate(`/cash-register/${cell.data.cashShiftId}/close`)}
+                onClick={() => navigate(`/cash-session/${cashSessionId}/close`)}
               />
             </div>
           );

@@ -39,7 +39,7 @@ class CashSession
     private ?int $legacyCashShiftId = null;
 
     #[Groups(['cash_session:read'])]
-    #[ORM\ManyToOne(targetEntity: CashRegister::class)]
+    #[ORM\ManyToOne(targetEntity: CashRegister::class, inversedBy: 'cashSessions')]
     #[ORM\JoinColumn(name: 'cash_register_id', referencedColumnName: 'id', nullable: false)]
     #[ApiProperty(description: 'cash_session.cash_register.label')]
     private CashRegister $cashRegister;
