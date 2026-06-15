@@ -9,8 +9,22 @@ use App\Organization\Entity\Branch;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\Dto\CashRegisterCloseResponseDto;
+use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Repository\CashSessionRepository;
+use App\CashRegister\State\CashRegisterCloseProcessor;
+use App\CashRegister\State\CashSessionClosureSummaryProvider;
+use App\CashRegister\State\CashSessionMovementsProvider;
+use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -18,6 +32,48 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: CashSessionRepository::class)]
 #[ORM\Table(name: 'cash_sessions')]
 #[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Patch(),
+        new Delete(),
+        new GetCollection(
+            uriTemplate: '/cash-sessions/{id}/movements',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: CashSession::class,
+                ),
+            ],
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_movement:read']],
+            output: CashMovement::class,
+            provider: CashSessionMovementsProvider::class,
+        ),
+        new GetCollection(
+            uriTemplate: '/cash-sessions/{id}/summary',
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_closure_summary:read']],
+            output: CashSessionClosureSummaryDto::class,
+            provider: CashSessionClosureSummaryProvider::class,
+        ),
+        new Get(
+            uriTemplate: '/cash-sessions/{id}/x-report',
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_x_report:read']],
+            output: CashSessionXReportDto::class,
+            provider: CashSessionXReportProvider::class,
+        ),
+        new Post(
+            uriTemplate: '/cash-sessions/{id}/close',
+            status: 200,
+            input: CashRegisterCloseDto::class,
+            output: CashRegisterCloseResponseDto::class,
+            normalizationContext: ['groups' => ['cash_register_close:read']],
+            processor: CashRegisterCloseProcessor::class,
+        ),
+    ],
     normalizationContext: ['groups' => ['cash_session:read']],
     filters: [DataGridFilter::class],
     mercure: true,

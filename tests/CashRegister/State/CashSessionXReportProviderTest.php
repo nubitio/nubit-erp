@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
-use App\CashRegister\Dto\CashShiftXReportDto;
-use App\CashRegister\State\CashShiftXReportProvider;
+use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
-final class CashShiftXReportProviderTest extends TestCase
+final class CashSessionXReportProviderTest extends TestCase
 {
     /** @var Connection&MockObject */
     private Connection $connection;
 
-    private CashShiftXReportProvider $provider;
+    private CashSessionXReportProvider $provider;
 
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->provider = new CashShiftXReportProvider($this->connection);
+        $this->provider = new CashSessionXReportProvider($this->connection);
     }
 
     /**
@@ -85,7 +85,7 @@ final class CashShiftXReportProviderTest extends TestCase
             ['id' => $cashShiftId],
         );
 
-        $this->assertInstanceOf(CashShiftXReportDto::class, $result);
+        $this->assertInstanceOf(CashSessionXReportDto::class, $result);
         $this->assertSame('200.00', $result->openingBalance);
         $this->assertSame('500.00', $result->totalSales);
         $this->assertSame('50.00', $result->cashIn);
@@ -95,12 +95,12 @@ final class CashShiftXReportProviderTest extends TestCase
 
         $this->assertCount(2, $result->salesByPaymentMethod);
 
-        $this->assertSame(1, $result->salesByPaymentMethod[0]['paymentMethodId']);
-        $this->assertSame('Efectivo', $result->salesByPaymentMethod[0]['paymentMethod']);
-        $this->assertSame('300.00', $result->salesByPaymentMethod[0]['amount']);
+        $this->assertSame(1, $result->salesByPaymentMethod[0]->paymentMethodId);
+        $this->assertSame('Efectivo', $result->salesByPaymentMethod[0]->paymentMethod);
+        $this->assertSame('300.00', $result->salesByPaymentMethod[0]->amount);
 
-        $this->assertSame(2, $result->salesByPaymentMethod[1]['paymentMethodId']);
-        $this->assertSame('Tarjeta', $result->salesByPaymentMethod[1]['paymentMethod']);
-        $this->assertSame('200.00', $result->salesByPaymentMethod[1]['amount']);
+        $this->assertSame(2, $result->salesByPaymentMethod[1]->paymentMethodId);
+        $this->assertSame('Tarjeta', $result->salesByPaymentMethod[1]->paymentMethod);
+        $this->assertSame('200.00', $result->salesByPaymentMethod[1]->amount);
     }
 }

@@ -9,13 +9,13 @@ use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
-use App\CashRegister\State\CashShiftMovementsProvider;
+use App\CashRegister\State\CashSessionMovementsProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class CashShiftMovementsProviderTest extends TestCase
+final class CashSessionMovementsProviderTest extends TestCase
 {
     /** @return array<string, mixed>[] */
     private static function movementRows(): array
@@ -46,7 +46,7 @@ final class CashShiftMovementsProviderTest extends TestCase
         bool $sessionFound = true,
         bool $sessionByLegacy = false,
         ?CashSession $sessionEntity = null,
-    ): CashShiftMovementsProvider {
+    ): CashSessionMovementsProvider {
         $conn = $this->createStub(Connection::class);
 
         if (!$sessionFound) {
@@ -74,7 +74,7 @@ final class CashShiftMovementsProviderTest extends TestCase
             }
         );
 
-        return new CashShiftMovementsProvider($conn, $em);
+        return new CashSessionMovementsProvider($conn, $em);
     }
 
     // ── Happy path ────────────────────────────────────────────────────────────

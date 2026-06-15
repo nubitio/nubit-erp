@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\GetCollection;
-use App\CashRegister\Dto\CashShiftClosureSummaryDto;
-use App\CashRegister\State\CashShiftClosureSummaryProvider;
+use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -14,17 +14,17 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
-final class CashShiftClosureSummaryProviderTest extends TestCase
+final class CashSessionClosureSummaryProviderTest extends TestCase
 {
     /** @var Connection&MockObject */
     private Connection $connection;
 
-    private CashShiftClosureSummaryProvider $provider;
+    private CashSessionClosureSummaryProvider $provider;
 
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->provider = new CashShiftClosureSummaryProvider($this->connection);
+        $this->provider = new CashSessionClosureSummaryProvider($this->connection);
     }
 
     /**
@@ -85,16 +85,16 @@ final class CashShiftClosureSummaryProviderTest extends TestCase
 
         $this->assertCount(2, $result);
 
-        /** @var CashShiftClosureSummaryDto $cashRow */
+        /** @var CashSessionClosureSummaryDto $cashRow */
         $cashRow = $result[0];
-        $this->assertInstanceOf(CashShiftClosureSummaryDto::class, $cashRow);
+        $this->assertInstanceOf(CashSessionClosureSummaryDto::class, $cashRow);
         $this->assertSame(1, $cashRow->paymentMethodId);
         $this->assertSame('Efectivo', $cashRow->paymentMethod);
         $this->assertSame('340.00', $cashRow->expectedAmount);
 
-        /** @var CashShiftClosureSummaryDto $cardRow */
+        /** @var CashSessionClosureSummaryDto $cardRow */
         $cardRow = $result[1];
-        $this->assertInstanceOf(CashShiftClosureSummaryDto::class, $cardRow);
+        $this->assertInstanceOf(CashSessionClosureSummaryDto::class, $cardRow);
         $this->assertSame(2, $cardRow->paymentMethodId);
         $this->assertSame('Tarjeta', $cardRow->paymentMethod);
         $this->assertSame('150.00', $cardRow->expectedAmount);

@@ -7,8 +7,9 @@ namespace App\Tests\CashRegister;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterDashboardDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
-use App\CashRegister\Dto\CashShiftClosureSummaryDto;
-use App\CashRegister\Dto\CashShiftXReportDto;
+use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Dto\CashSessionPaymentMethodSalesDto;
+use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\Role;
@@ -68,12 +69,12 @@ final class CashRegisterDomainTest extends TestCase
         self::assertSame('0.00', $dto->todaySales);
     }
 
-    public function testCashShiftXReportDtoHoldsFields(): void
+    public function testCashSessionXReportDtoHoldsFields(): void
     {
         $salesByPM = [
-            ['paymentMethodId' => 1, 'paymentMethod' => 'Efectivo', 'amount' => '800.00'],
+            new CashSessionPaymentMethodSalesDto(1, 'Efectivo', '800.00'),
         ];
-        $dto = new CashShiftXReportDto(
+        $dto = new CashSessionXReportDto(
             openingBalance: '200.00',
             totalSales: '1000.00',
             cashIn: '50.00',
@@ -90,7 +91,7 @@ final class CashRegisterDomainTest extends TestCase
         self::assertSame('1220.00', $dto->currentBalance);
         self::assertSame(480, $dto->shiftDurationMinutes);
         self::assertCount(1, $dto->salesByPaymentMethod);
-        self::assertSame('Efectivo', $dto->salesByPaymentMethod[0]['paymentMethod']);
+        self::assertSame('Efectivo', $dto->salesByPaymentMethod[0]->paymentMethod);
     }
 
     public function testCashRegisterCloseDtoDefaults(): void
@@ -117,9 +118,9 @@ final class CashRegisterDomainTest extends TestCase
         self::assertSame('-1.50', $dto->difference);
     }
 
-    public function testCashShiftClosureSummaryDtoHoldsFields(): void
+    public function testCashSessionClosureSummaryDtoHoldsFields(): void
     {
-        $dto = new CashShiftClosureSummaryDto(
+        $dto = new CashSessionClosureSummaryDto(
             paymentMethodId: 1,
             paymentMethod: 'Efectivo',
             expectedAmount: '1500.00',

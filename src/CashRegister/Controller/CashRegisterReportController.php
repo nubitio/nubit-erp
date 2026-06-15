@@ -29,6 +29,7 @@ class CashRegisterReportController extends AbstractController
      * @throws Exception
      */
     #[RequiresFeature('pdf_bulk_download')]
+    #[Route('/api/cash-sessions/{id}/closure-report', name: 'cash_session_closure_report', methods: ['GET'])]
     #[Route('/api/cash-shifts/{id}/closure-report', name: 'cash_shift_closure_report', methods: ['GET'])]
     public function __invoke(int $id): Response
     {

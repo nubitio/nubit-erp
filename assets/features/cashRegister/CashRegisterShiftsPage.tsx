@@ -59,7 +59,7 @@ export const CashRegisterShiftsPage = () => {
     onExportPdf: () => {
       const row = gridRef.current?.getSelectedRow();
       if (!row) return;
-      window.open(`${API}cash-shifts/${row.id}/closure-report`, '_blank');
+      window.open(`${API}cash-sessions/${row.id}/closure-report`, '_blank');
     },
   });
 

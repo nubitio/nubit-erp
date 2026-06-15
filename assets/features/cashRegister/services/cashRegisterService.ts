@@ -18,7 +18,7 @@ export interface XReportDto {
 }
 
 export interface CashRegisterClosureItem {
-  cashShift: string;
+  cashSession: string;
   paymentMethod: string;
   expectedAmount: number;
   countedAmount: number | undefined;
@@ -36,7 +36,7 @@ const cashRegisterService = () => {
   };
 
   const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
-    return httpClient.post<any>(API + `cash-registers/${id}/close`, {
+    return httpClient.post<any>(API + `cash-sessions/${id}/close`, {
       closureItems: closureData,
     });
   };
@@ -45,8 +45,8 @@ const cashRegisterService = () => {
     return httpClient.get<unknown>(API + `cash-registers/${id}/movements`);
   };
 
-  const getXReport = (shiftId: string | number) => {
-    return httpClient.get<XReportDto>(API + `cash-shifts/${shiftId}/x-report`);
+  const getXReport = (sessionId: string | number) => {
+    return httpClient.get<XReportDto>(API + `cash-sessions/${sessionId}/x-report`);
   };
 
   return {

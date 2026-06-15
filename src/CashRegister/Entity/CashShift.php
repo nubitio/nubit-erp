@@ -18,10 +18,11 @@ use ApiPlatform\Metadata\Post;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashShiftRepository;
-use App\CashRegister\Dto\CashShiftXReportDto;
-use App\CashRegister\State\CashShiftClosureSummaryProvider;
-use App\CashRegister\State\CashShiftMovementsProvider;
-use App\CashRegister\State\CashShiftXReportProvider;
+use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\State\CashSessionClosureSummaryProvider;
+use App\CashRegister\State\CashSessionMovementsProvider;
+use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -45,18 +46,21 @@ use Symfony\Component\Serializer\Attribute\Groups;
             paginationEnabled: false,
             normalizationContext: ['groups' => ['cash_movement:read']],
             output: CashMovement::class,
-            provider: CashShiftMovementsProvider::class,
+            provider: CashSessionMovementsProvider::class,
         ),
         new GetCollection(
             uriTemplate: '/cash-shifts/{id}/summary',
             paginationEnabled: false,
-            provider: CashShiftClosureSummaryProvider::class,
+            normalizationContext: ['groups' => ['cash_closure_summary:read']],
+            output: CashSessionClosureSummaryDto::class,
+            provider: CashSessionClosureSummaryProvider::class,
         ),
         new Get(
             uriTemplate: '/cash-shifts/{id}/x-report',
             paginationEnabled: false,
-            output: CashShiftXReportDto::class,
-            provider: CashShiftXReportProvider::class,
+            normalizationContext: ['groups' => ['cash_x_report:read']],
+            output: CashSessionXReportDto::class,
+            provider: CashSessionXReportProvider::class,
         ),
     ],
     filters: [DataGridFilter::class],

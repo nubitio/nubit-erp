@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-
-const API = getCoreApiBaseUrl();
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
 import cashRegisterService from './services/cashRegisterService';
+import { cashboxService } from './services/cashboxService';
 import { ConfirmDialog } from '@nubitio/ui';
 import {
   CashClosureGrid,
@@ -14,27 +13,32 @@ import {
 } from './components/CashClosureGrid';
 import './CashRegisterClose.scss';
 
+const API = getCoreApiBaseUrl();
+
 type CashClosureParams = {
   id: string;
 };
 
 export const CashRegisterClose = () => {
   const { id } = useParams<CashClosureParams>();
+  const location = useLocation();
   const gridRef = useRef<CashClosureGridHandle | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [cashSessionId, setCashSessionId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const isLegacyCashRegisterRoute = location.pathname.startsWith('/cash-register/');
 
   const closeCashRegister = () => {
     const closureData = gridRef.current?.getRows();
     const differences = gridRef.current?.getDifferences() ?? [];
-    if (id === undefined || closureData === undefined) {
+    if (cashSessionId === null || closureData === undefined) {
       toast('Error al cerrar la caja', 'error');
       return;
     }
 
     const data = closureData.map((item) => ({
-      cashShift: API + 'cash-shifts/' + id,
+      cashSession: API + 'cash-sessions/' + cashSessionId,
       paymentMethod: API + 'payment-methods/' + item.paymentMethodId,
       expectedAmount: Number(item.expectedAmount),
       countedAmount: item.countedAmount,
@@ -53,7 +57,7 @@ export const CashRegisterClose = () => {
 
     setIsClosing(true);
     cashRegisterService()
-      .closeCashRegister(id, data)
+      .closeCashRegister(cashSessionId, data)
       .then(() => {
         toast('Caja cerrada correctamente', 'success');
         navigate('/cashbox');
@@ -63,17 +67,70 @@ export const CashRegisterClose = () => {
   };
 
   useEffect(() => {
+    if (id === undefined) {
+      return;
+    }
+
+    let cancelled = false;
+    let summaryRequested = false;
+
+    const loadSummary = (sessionId: string) => {
+      summaryRequested = true;
+      setCashSessionId(sessionId);
+      gridRef.current?.showLoading('Cargando datos...');
+      httpClient
+        .get<CashClosureRow[]>(API + 'cash-sessions/' + sessionId + '/summary')
+        .then((response) => {
+          if (!cancelled) {
+            gridRef.current?.setRows(response.data);
+          }
+        })
+        .catch(() => toast('No se pudo cargar el resumen de la caja', 'error'))
+        .finally(() => {
+          if (!cancelled) {
+            gridRef.current?.hideLoading();
+          }
+        });
+    };
+
     gridRef.current?.showLoading('Cargando datos...');
-    httpClient
-      .get<CashClosureRow[]>(API + 'cash-shifts/' + id + '/summary')
+    setCashSessionId(null);
+
+    if (!isLegacyCashRegisterRoute) {
+      loadSummary(id);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    cashboxService
+      .getDashboard()
       .then((response) => {
-        gridRef.current?.setRows(response.data);
+        if (cancelled) {
+          return;
+        }
+
+        const cashRegister = response.data.find((item) => item.id === Number(id));
+        const sessionId = cashRegister?.cashSessionId ?? cashRegister?.cashShiftId;
+        if (sessionId === null || sessionId === undefined) {
+          toast('No hay una sesión abierta para cerrar esta caja', 'error');
+          navigate('/cashbox');
+          return;
+        }
+
+        loadSummary(String(sessionId));
       })
       .catch(() => toast('No se pudo cargar el resumen de la caja', 'error'))
       .finally(() => {
-        gridRef.current?.hideLoading();
+        if (!cancelled && !summaryRequested) {
+          gridRef.current?.hideLoading();
+        }
       });
-  }, [id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isLegacyCashRegisterRoute, navigate]);
 
   return (
     <div className="cash-close-page">

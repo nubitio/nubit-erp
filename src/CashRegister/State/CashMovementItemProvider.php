@@ -53,7 +53,7 @@ readonly class CashMovementItemProvider implements ProviderInterface
 
         $movement = new CashMovement();
 
-        // Set the ID via reflection — same pattern as CashShiftMovementsProvider
+        // Set the ID via reflection, matching the collection provider pattern.
         $idProp = new \ReflectionProperty(CashMovement::class, 'id');
         $idProp->setValue($movement, (int) $row['id']);
 

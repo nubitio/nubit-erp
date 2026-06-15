@@ -10,8 +10,8 @@ use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\Identity\Security\Security;
-use Nubit\Platform\Http\ApiResponse;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
 use App\Identity\Entity\User;
@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
- * @implements ProcessorInterface<CashRegisterCloseDto, ApiResponse>
+ * @implements ProcessorInterface<CashRegisterCloseDto, CashRegisterCloseResponseDto>
  */
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
@@ -44,7 +44,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
-    ): ApiResponse {
+    ): CashRegisterCloseResponseDto {
         $closureItems = $data->closureItems ?? [];
         $notes = [];
 
@@ -106,14 +106,14 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             $this->entityManager->persist($cashSession);
             $this->entityManager->flush();
         } catch (ORMException $ormException) {
-            return new ApiResponse(
+            return new CashRegisterCloseResponseDto(
                 success: false,
                 message: 'Error al cerrar la caja',
-                payload: $ormException->getMessage(),
+                data: $ormException->getMessage(),
             );
         }
 
-        return new ApiResponse(
+        return new CashRegisterCloseResponseDto(
             success: true,
             message: 'Caja cerrada correctamente',
         );

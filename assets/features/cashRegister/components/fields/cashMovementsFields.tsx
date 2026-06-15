@@ -13,7 +13,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 
-const cashMovementsFields = (cashShiftId: string | undefined) => {
+const cashMovementsFields = (cashSessionId: string | undefined) => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -22,7 +22,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .name('cashSession')
       .label('Sesión')
       .valueType('number')
-      .defaultValue(Number(cashShiftId))
+      .defaultValue(Number(cashSessionId))
       .required(true)
       .visible(false)
       .hidden(true)

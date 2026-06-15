@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * @implements ProviderInterface<CashMovement>
  */
-readonly class CashShiftMovementsProvider implements ProviderInterface
+readonly class CashSessionMovementsProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
@@ -36,24 +36,22 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
-        $cashShiftId = $uriVariables['id'];
+        $cashSessionId = $uriVariables['id'];
 
-        // Step 1: try direct v2 session ID
         $session = $this->connection->fetchAssociative(
             'SELECT id FROM cash_sessions WHERE id = ?',
-            [$cashShiftId]
+            [$cashSessionId]
         );
 
-        // Step 2: fallback — treat URI id as a legacy_cash_shift_id
         if ($session === false) {
             $session = $this->connection->fetchAssociative(
                 'SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-                [$cashShiftId]
+                [$cashSessionId]
             );
         }
 
         if ($session === false) {
-            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashShiftId));
+            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));
         }
 
         $sessionId = (int) $session['id'];
@@ -67,17 +65,15 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
         );
 
         $idProp = new \ReflectionProperty(CashMovement::class, 'id');
-
-        // Pre-load the CashSession entity once for all rows
         $cashSessionEntity = $this->entityManager->find(CashSession::class, $sessionId);
 
         /** @var CashMovement[] $movements */
         $movements = [];
         foreach ($rows as $row) {
             $movement = new CashMovement();
-            $type     = match ($row['movement_type']) {
+            $type = match ($row['movement_type']) {
                 'CASH_OUT' => CashMovementType::EXPENSE,
-                default    => CashMovementType::INCOME,
+                default => CashMovementType::INCOME,
             };
             $movement->setType($type);
             $movement->setAmount((string) $row['amount']);

@@ -13,9 +13,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\Platform\Http\ApiResponse;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
@@ -49,8 +49,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(
             uriTemplate: '/cash-registers/{id}/close',
             paginationEnabled: false,
+            status: 200,
             input: CashRegisterCloseDto::class,
-            output: ApiResponse::class,
+            output: CashRegisterCloseResponseDto::class,
+            normalizationContext: ['groups' => ['cash_register_close:read']],
             processor: CashRegisterCloseProcessor::class,
         ),
         new GetCollection(

@@ -7,6 +7,7 @@ export interface CashRegisterDashboardDto {
   id: number;
   name: string;
   cashSessionId: number | null;
+  /** @deprecated Use cashSessionId. Kept while legacy consumers are removed. */
   cashShiftId: number | null;
   openedAt: string | null;
   closedAt: string | null;

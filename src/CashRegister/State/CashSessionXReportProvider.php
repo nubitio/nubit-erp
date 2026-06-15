@@ -9,15 +9,16 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\CashRegister\Dto\CashShiftXReportDto;
+use App\CashRegister\Dto\CashSessionPaymentMethodSalesDto;
+use App\CashRegister\Dto\CashSessionXReportDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * @implements ProviderInterface<CashShiftXReportDto>
+ * @implements ProviderInterface<CashSessionXReportDto>
  */
-readonly class CashShiftXReportProvider implements ProviderInterface
+readonly class CashSessionXReportProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
@@ -29,32 +30,29 @@ readonly class CashShiftXReportProvider implements ProviderInterface
      * @throws Exception
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): CashShiftXReportDto
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): CashSessionXReportDto
     {
-        $cashShiftId = $uriVariables['id'];
+        $cashSessionId = $uriVariables['id'];
 
-        // Step 1: try direct v2 session ID
         $session = $this->connection->fetchAssociative(
             'SELECT id, opening_amount, opened_at FROM cash_sessions WHERE id = ?',
-            [$cashShiftId]
+            [$cashSessionId]
         );
 
-        // Step 2: fallback — treat URI id as a legacy_cash_shift_id
         if ($session === false) {
             $session = $this->connection->fetchAssociative(
                 'SELECT id, opening_amount, opened_at FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-                [$cashShiftId]
+                [$cashSessionId]
             );
         }
 
         if ($session === false) {
-            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashShiftId));
+            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));
         }
 
-        $sessionId      = (int) $session['id'];
+        $sessionId = (int) $session['id'];
         $openingBalance = BigDecimal::of((string) $session['opening_amount']);
 
-        // Total SALE_IN
         $totalSalesRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
@@ -62,7 +60,6 @@ readonly class CashShiftXReportProvider implements ProviderInterface
         );
         $totalSales = BigDecimal::of((string) ($totalSalesRaw ?: '0'));
 
-        // CASH_IN total
         $cashInRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
@@ -70,7 +67,6 @@ readonly class CashShiftXReportProvider implements ProviderInterface
         );
         $cashIn = BigDecimal::of((string) ($cashInRaw ?: '0'));
 
-        // CASH_OUT total
         $cashOutRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
@@ -78,7 +74,6 @@ readonly class CashShiftXReportProvider implements ProviderInterface
         );
         $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));
 
-        // Sales by payment method
         $salesRows = $this->connection->fetchAllAssociative(
             "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount
              FROM cash_movements cm
@@ -88,7 +83,6 @@ readonly class CashShiftXReportProvider implements ProviderInterface
             [$sessionId]
         );
 
-        // Shift duration in minutes from v2 cash_sessions
         $shiftDurationMinutes = (int) ($this->connection->fetchOne(
             'SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_sessions WHERE id = ?',
             [$sessionId]
@@ -97,17 +91,17 @@ readonly class CashShiftXReportProvider implements ProviderInterface
         $currentBalance = $openingBalance->plus($totalSales)->plus($cashIn)->minus($cashOut);
 
         $salesByPaymentMethod = array_map(
-            static fn (array $row): array => [
-                'paymentMethodId' => (int) $row['paymentMethodId'],
-                'paymentMethod'   => (string) $row['paymentMethod'],
-                'amount'          => BigDecimal::of((string) $row['amount'])
+            static fn (array $row): CashSessionPaymentMethodSalesDto => new CashSessionPaymentMethodSalesDto(
+                paymentMethodId: (int) $row['paymentMethodId'],
+                paymentMethod: (string) $row['paymentMethod'],
+                amount: BigDecimal::of((string) $row['amount'])
                     ->toScale(2, RoundingMode::HALF_UP)
                     ->__toString(),
-            ],
+            ),
             $salesRows
         );
 
-        return new CashShiftXReportDto(
+        return new CashSessionXReportDto(
             openingBalance: $openingBalance->toScale(2, RoundingMode::HALF_UP)->__toString(),
             totalSales: $totalSales->toScale(2, RoundingMode::HALF_UP)->__toString(),
             cashIn: $cashIn->toScale(2, RoundingMode::HALF_UP)->__toString(),

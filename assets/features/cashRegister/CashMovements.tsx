@@ -61,7 +61,7 @@ export const CashMovements = () => {
         id="cash-movements"
         title="Movimientos de caja"
         toolbar={toolbar}
-        url={API + 'cash-shifts/' + id + '/movements'}
+        url={API + 'cash-sessions/' + id + '/movements'}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
