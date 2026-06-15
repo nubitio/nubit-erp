@@ -110,6 +110,7 @@ final readonly class CspNonceListener
                 // localhost HTTP for efact-hardware-agent;
                 // localhost ws/wss for QZ Tray desktop print agent.
                 "connect-src 'self' {$connectSrcExtra} http://127.0.0.1:8765 http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+                "frame-src 'self'",
                 "worker-src 'self' blob:",
             ])
         );

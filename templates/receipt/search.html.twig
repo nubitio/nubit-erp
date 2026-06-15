@@ -1,149 +1,228 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Buscar Comprobante Electrónico</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        html, body {
-            height: 100%;
-            background-color: #f5f5f5;
-        }
-        .search-container {
-            max-width: 500px;
-        }
-    </style>
-</head>
-<body>
-<nav class="navbar bg-primary" data-bs-theme="dark">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="{{ path('voucher_search') }}">
-            <img src="{{ logo() }}" alt="Logo" width="30" class="d-inline-block align-text-top me-2">
-            <span>Consulta de Comprobantes</span>
-        </a>
-    </div>
-</nav>
+{% extends 'receipt/base.html.twig' %}
 
-<div class="container py-5">
-    <div class="search-container mx-auto">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Buscar Comprobante Electrónico</h5>
+{% block title %}Consulta de comprobantes · {{ company_name }}{% endblock %}
+
+{% block meta %}
+    <meta name="description" content="Consulte y valide comprobantes electrónicos emitidos por {{ company_name }}.">
+{% endblock %}
+
+{% block body_class %}receipt-public--search{% if result %} receipt-public--has-result{% endif %}{% endblock %}
+
+{% block body %}
+<div class="receipt-shell">
+    <aside class="receipt-brand" aria-hidden="true">
+        <div class="receipt-brand__content">
+            <img src="{{ logo() }}" alt="" class="receipt-brand__logo">
+            <div>
+                <h1 class="receipt-brand__title">Consulta de comprobantes</h1>
+                <p class="receipt-brand__text">
+                    Valide facturas, boletas y notas electrónicas emitidas por {{ company_name }}.
+                </p>
             </div>
-            <div class="card-body">
-                <form method="post" action="{{ path('voucher_search') }}">
-                    <div class="mb-3">
-                        <label for="ruc" class="form-label">RUC del Emisor</label>
-                        <input type="text" class="form-control" id="ruc" name="ruc"
-                               value="{{ form_data.ruc }}"
-                               maxlength="11" pattern="\d{11}" required
-                               placeholder="Ej: 20123456789">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="voucher_type" class="form-label">Tipo de Comprobante</label>
-                        <select class="form-select" id="voucher_type" name="voucher_type" required>
-                            {% for code, label in voucher_types %}
-                                <option value="{{ code }}" {{ form_data.voucher_type == code ? 'selected' : '' }}>
-                                    {{ label }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-5 mb-3">
-                            <label for="series" class="form-label">Serie</label>
-                            <input type="text" class="form-control text-uppercase" id="series" name="series"
-                                   value="{{ form_data.series }}"
-                                   maxlength="4" pattern="[A-Za-z0-9]{4}" required
-                                   placeholder="Ej: F001">
-                        </div>
-                        <div class="col-7 mb-3">
-                            <label for="number" class="form-label">Número</label>
-                            <input type="text" class="form-control" id="number" name="number"
-                                   value="{{ form_data.number }}"
-                                   maxlength="8" pattern="\d{1,8}" required
-                                   placeholder="Ej: 12345">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="date" class="form-label">Fecha de Emisión</label>
-                        <input type="date" class="form-control" id="date" name="date"
-                               value="{{ form_data.date }}" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="total" class="form-label">Monto Total</label>
-                        <div class="input-group">
-                            <span class="input-group-text">{{ result ? result.currency_symbol : 'S/' }}</span>
-                            <input type="text" class="form-control" id="total" name="total"
-                                   value="{{ form_data.total }}"
-                                   pattern="[0-9]+(\.[0-9]{1,2})?" required
-                                   placeholder="Ej: 150.00">
-                        </div>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Buscar</button>
-                    </div>
-                </form>
-            </div>
+            <ul class="receipt-brand__features">
+                <li>
+                    <i class="ph ph-shield-check" aria-hidden="true"></i>
+                    Verificación con datos oficiales del comprobante
+                </li>
+                <li>
+                    <i class="ph ph-file-pdf" aria-hidden="true"></i>
+                    Acceso a representación impresa y archivos XML/CDR
+                </li>
+                <li>
+                    <i class="ph ph-buildings" aria-hidden="true"></i>
+                    RUC {{ company_ruc }}
+                </li>
+            </ul>
         </div>
+    </aside>
 
-        {% if error %}
-            <div class="alert alert-warning mt-4" role="alert">
-                {{ error }}
+    <main class="receipt-main">
+        <div class="receipt-main__inner">
+            <div class="receipt-mobile-brand">
+                <img src="{{ logo() }}" alt="Logo de {{ company_name }}">
             </div>
-        {% endif %}
 
-        {% if result %}
-            <div class="card mt-4 shadow-sm">
-                <div class="card-header bg-success text-white">
-                    Comprobante Encontrado
+            <section class="receipt-card">
+                <div class="receipt-card__header">
+                    <h2>Buscar comprobante</h2>
+                    <p>Ingrese los datos impresos en el comprobante para localizarlo.</p>
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ result.type }} {{ result.series }}-{{ result.number }}</h5>
-                    <table class="table table-sm mb-3">
-                        <tr>
-                            <th>Fecha de emisión:</th>
-                            <td>{{ result.date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Monto total:</th>
-                            <td>{{ result.currency_symbol }} {{ result.total|number_format(2, '.', ',') }}</td>
-                        </tr>
-                        <tr>
-                            <th>Estado:</th>
-                            <td>
-                                {% if result.status == 'VIGENTE' %}
-                                    <span class="badge bg-success">{{ result.status }}</span>
-                                {% else %}
-                                    <span class="badge bg-danger">{{ result.status }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% if result.hash %}
-                            <tr>
-                                <th>Hash:</th>
-                                <td><small class="text-muted">{{ result.hash }}</small></td>
-                            </tr>
-                        {% endif %}
-                    </table>
-                    <a href="{{ result.pdf_url }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                        Ver Comprobante
+                <div class="receipt-card__body">
+                    <form method="post" action="{{ path('voucher_search') }}" class="receipt-form">
+                        <div class="receipt-field">
+                            <label for="ruc">RUC del emisor</label>
+                            <input
+                                type="text"
+                                class="receipt-input"
+                                id="ruc"
+                                name="ruc"
+                                value="{{ form_data.ruc }}"
+                                maxlength="11"
+                                pattern="\d{11}"
+                                required
+                                placeholder="Ej: 20123456789"
+                                inputmode="numeric"
+                                autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="receipt-field">
+                            <label for="voucher_type">Tipo de comprobante</label>
+                            <select class="receipt-select" id="voucher_type" name="voucher_type" required>
+                                {% for code, label in voucher_types %}
+                                    <option value="{{ code }}" {{ form_data.voucher_type == code ? 'selected' : '' }}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="receipt-form__row">
+                            <div class="receipt-field">
+                                <label for="series">Serie</label>
+                                <input
+                                    type="text"
+                                    class="receipt-input text-uppercase"
+                                    id="series"
+                                    name="series"
+                                    value="{{ form_data.series }}"
+                                    maxlength="4"
+                                    pattern="[A-Za-z0-9]{4}"
+                                    required
+                                    placeholder="F001"
+                                    autocomplete="off"
+                                >
+                            </div>
+                            <div class="receipt-field">
+                                <label for="number">Número</label>
+                                <input
+                                    type="text"
+                                    class="receipt-input"
+                                    id="number"
+                                    name="number"
+                                    value="{{ form_data.number }}"
+                                    maxlength="8"
+                                    pattern="\d{1,8}"
+                                    required
+                                    placeholder="12345"
+                                    inputmode="numeric"
+                                    autocomplete="off"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="receipt-field">
+                            <label for="date">Fecha de emisión</label>
+                            <input
+                                type="date"
+                                class="receipt-input"
+                                id="date"
+                                name="date"
+                                value="{{ form_data.date }}"
+                                required
+                            >
+                        </div>
+
+                        <div class="receipt-field">
+                            <label for="total">Monto total</label>
+                            <div class="receipt-input-group">
+                                <span class="receipt-input-group__prefix">{{ result ? result.currency_symbol : 'S/' }}</span>
+                                <input
+                                    type="text"
+                                    class="receipt-input"
+                                    id="total"
+                                    name="total"
+                                    value="{{ form_data.total }}"
+                                    pattern="[0-9]+(\.[0-9]{1,2})?"
+                                    required
+                                    placeholder="150.00"
+                                    inputmode="decimal"
+                                    autocomplete="off"
+                                >
+                            </div>
+                        </div>
+
+                        <button type="submit" class="receipt-btn receipt-btn--primary">
+                            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+                            Buscar comprobante
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            {% if error %}
+                <div class="receipt-alert receipt-alert--warning" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <p class="receipt-footnote">
+                <strong>Consulta pública de comprobantes electrónicos.</strong>
+                Los datos deben coincidir exactamente con los impresos en el documento emitido por {{ company_name }}.
+            </p>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block overlays %}
+{% if result %}
+    <div
+        class="receipt-search-overlay"
+        id="receipt-search-result"
+        role="presentation"
+        style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;"
+    >
+        <a href="{{ search_clear_url }}" class="receipt-search-overlay__scrim" aria-label="Cerrar resultado"></a>
+        <div
+            class="receipt-search-overlay__dialog receipt-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="receipt-result-title"
+        >
+            <div class="receipt-search-overlay__header">
+                <div class="receipt-search-overlay__heading">
+                    <span class="receipt-badge {{ result.status == 'ACEPTADO' ? 'receipt-badge--success' : 'receipt-badge--danger' }}">
+                        {{ result.status }}
+                    </span>
+                    <h2 id="receipt-result-title">
+                        {{ result.type }} {{ result.series }}-{{ result.number }}
+                    </h2>
+                    <p>Comprobante encontrado en los registros de {{ company_name }}.</p>
+                </div>
+                <a href="{{ search_clear_url }}" class="receipt-search-overlay__close" aria-label="Cerrar">
+                    <i class="ph ph-x" aria-hidden="true"></i>
+                </a>
+            </div>
+            <div class="receipt-card__body">
+                <dl class="receipt-meta">
+                    <div class="receipt-meta__row">
+                        <dt>Fecha de emisión</dt>
+                        <dd>{{ result.date }}</dd>
+                    </div>
+                    <div class="receipt-meta__row">
+                        <dt>Monto total</dt>
+                        <dd>{{ result.currency_symbol }} {{ result.total|number_format(2, '.', ',') }}</dd>
+                    </div>
+                    {% if result.hash %}
+                        <div class="receipt-meta__row">
+                            <dt>Hash</dt>
+                            <dd class="receipt-meta__hash">{{ result.hash }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+                <div class="receipt-search-overlay__actions">
+                    <a href="{{ result.pdf_url }}" class="receipt-btn receipt-btn--primary">
+                        <i class="ph ph-eye" aria-hidden="true"></i>
+                        Ver comprobante
+                    </a>
+                    <a href="{{ search_clear_url }}" class="receipt-btn receipt-btn--secondary">
+                        Cerrar
                     </a>
                 </div>
             </div>
-        {% endif %}
+        </div>
     </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-</body>
-</html>
+    <script src="{{ asset('js/receipt-search-overlay.js') }}" defer></script>
+{% endif %}
+{% endblock %}

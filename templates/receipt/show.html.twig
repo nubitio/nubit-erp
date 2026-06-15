@@ -1,38 +1,104 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ type }} ELECTRONÍCA {{ series }}-{{ number }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        html, body {
-            height: 100%;
-        }
-    </style>
-</head>
-<body class="d-flex flex-column h-100">
-<nav class="navbar bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="{{ logo() }}" alt="Logo" width="30"
-                 class="d-inline-block align-text-top">
-            <span style="margin-left: 1rem;">{{ company_name }}</span>
-        </a>
+{% extends 'receipt/base.html.twig' %}
+
+{% block title %}{{ type }} {{ series }}-{{ number }} · {{ company_name }}{% endblock %}
+
+{% block meta %}
+    <meta name="description" content="Comprobante electrónico {{ type }} {{ series }}-{{ number }} emitido por {{ company_name }}.">
+{% endblock %}
+
+{% block body %}
+<main class="receipt-public__page receipt-public__page--show">
+    <div class="receipt-show-layout">
+        <section class="receipt-card receipt-summary-card">
+            <div class="receipt-summary">
+                <span class="receipt-badge receipt-badge--info">
+                    <i class="ph ph-receipt" aria-hidden="true"></i>
+                    {{ type }} electrónica
+                </span>
+                <h1 class="receipt-doc-number">{{ series }}-{{ number }}</h1>
+
+                <dl class="receipt-meta receipt-meta--compact">
+                    <div class="receipt-meta__row">
+                        <dt>Emisor</dt>
+                        <dd>{{ company_name }}</dd>
+                    </div>
+                    <div class="receipt-meta__row">
+                        <dt>Fecha</dt>
+                        <dd>{{ date }}</dd>
+                    </div>
+                    <div class="receipt-meta__row">
+                        <dt>Moneda</dt>
+                        <dd>{{ currency_code }}</dd>
+                    </div>
+                </dl>
+
+                <div class="receipt-total receipt-total--inline">
+                    <span class="receipt-total__label">Importe total</span>
+                    <strong class="receipt-total__value">{{ currency_symbol }} {{ total|number_format(2, '.', ',') }}</strong>
+                </div>
+            </div>
+
+            <div class="receipt-actions">
+                <p class="receipt-actions__title">Descargar y compartir</p>
+
+                <a class="receipt-action receipt-action--primary" href="{{ pdf }}">
+                    <span class="receipt-action__icon">
+                        <i class="ph ph-download-simple" aria-hidden="true"></i>
+                    </span>
+                    <span class="receipt-action__copy">
+                        <strong>Descargar PDF</strong>
+                        <span>Archivo PDF</span>
+                    </span>
+                </a>
+
+                <a class="receipt-action" href="{{ xml }}">
+                    <span class="receipt-action__icon">
+                        <i class="ph ph-file-code" aria-hidden="true"></i>
+                    </span>
+                    <span class="receipt-action__copy">
+                        <strong>Descargar XML</strong>
+                        <span>Firmado digitalmente</span>
+                    </span>
+                </a>
+
+                <a class="receipt-action" href="{{ cdr }}">
+                    <span class="receipt-action__icon">
+                        <i class="ph ph-folder-notch" aria-hidden="true"></i>
+                    </span>
+                    <span class="receipt-action__copy">
+                        <strong>Descargar CDR</strong>
+                        <span>Constancia SUNAT</span>
+                    </span>
+                </a>
+
+            </div>
+        </section>
+
+        <section class="receipt-card receipt-preview" aria-label="Vista previa del comprobante">
+            <div class="receipt-preview__header">
+                <div>
+                    <h2>Vista previa</h2>
+                    <p>{{ type }} {{ series }}-{{ number }}</p>
+                </div>
+                <a class="receipt-preview__open" href="{{ pdf_preview }}" target="_blank" rel="noopener">
+                    Abrir completo
+                    <i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+                </a>
+            </div>
+            <div class="receipt-preview__frame">
+                <iframe
+                    class="receipt-preview__embed"
+                    src="{{ pdf_preview }}#toolbar=0&view=Fit"
+                    title="Vista previa PDF de {{ type }} {{ series }}-{{ number }}"
+                ></iframe>
+            </div>
+        </section>
     </div>
-</nav>
-<div class="d-flex align-items-center justify-content-center" style="height: calc(100vh - 50px);">
-    <div class="card text-center">
-        <div class="card-body">
-            <h3 class="card-title">{{ type }} ELECTRONÍCA {{ series }}-{{ number }}</h3>
-            <h6 class="card-subtitle mt-4 text-muted">Fecha de emisión: {{ date }}</h6>
-            <p class="card-text mt-4">{{ currency_symbol }} {{ total|number_format(2, '.', '') }}</p>
-            <a href="{{ pdf }}" class="card-link" target="_blank">PDF</a>
-            <a href="{{ xml }}" class="card-link" target="_blank">XML</a>
-            <a href="{{ cdr }}" class="card-link" target="_blank">CDR</a>
-        </div>
-    </div>
-</div>
-</body>
-</html>
+
+    <p class="receipt-footnote">
+        <strong>Comprobante de pago electrónico.</strong>
+        Puede validar este documento en el portal de la SUNAT o descargar el XML y el CDR para verificar su autenticidad.
+        Los archivos corresponden al comprobante emitido por {{ company_name }} con RUC {{ company_ruc }}.
+    </p>
+</main>
+{% endblock %}

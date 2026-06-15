@@ -5,91 +5,118 @@ export type InvoiceRow = {
   createdAt?: string;
   sunatStatus?: string;
   publicReceiptUrl?: string;
+  documentType?: string;
   series?: string;
   number?: string | number;
-  customer?: string;
+  customer?: string | { businessName?: string };
+  total?: number;
+  currency?: string;
 };
 
-import type { ActionDeps } from './actionDeps';
+const resolvePublicReceiptUrl = (url: string): string =>
+  url.startsWith('http') ? url : `${window.location.origin}${url}`;
 
-const withSelectedRow = (
-  getSelectedRow: () => InvoiceRow | undefined,
-  notify: ActionDeps<InvoiceRow>['notify'],
-  action: (row: InvoiceRow) => void,
+export const buildInvoiceWhatsAppShareUrl = (row: InvoiceRow): string | null => {
+  if (!row.publicReceiptUrl) {
+    return null;
+  }
+
+  const receiptUrl = resolvePublicReceiptUrl(row.publicReceiptUrl);
+  const docLabel = row.documentType === '03' ? 'Boleta' : 'Factura';
+  const customerName =
+    typeof row.customer === 'string'
+      ? row.customer
+      : row.customer?.businessName;
+  const amount =
+    row.total != null
+      ? `${row.currency === 'USD' ? '$' : row.currency === 'EUR' ? '€' : 'S/'} ${Number(row.total).toFixed(2)}`
+      : null;
+
+  const parts = [
+    `Comprobante electrónico ${docLabel} ${row.series ?? ''}-${row.number ?? ''}`.trim(),
+    customerName ? `para ${customerName}` : null,
+    amount ? `por ${amount}` : null,
+    receiptUrl,
+  ].filter(Boolean);
+
+  return `https://wa.me/?text=${encodeURIComponent(parts.join(' '))}`;
+};
+
+export type InvoiceActionHandlers = {
+  showLoading: (message?: string) => void;
+  hideLoading: () => void;
+  refreshGrid: () => void;
+  notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+};
+
+export const openInvoiceReceipt = (
+  row: InvoiceRow,
+  notify: InvoiceActionHandlers['notify'],
 ) => {
-  const row = getSelectedRow();
-  if (!row) {
-    notify('Debe seleccionar un comprobante', 'warning');
+  if (!row.publicReceiptUrl) {
+    notify('El comprobante no tiene URL pública disponible', 'warning');
     return;
   }
-  action(row);
+  window.open(resolvePublicReceiptUrl(row.publicReceiptUrl), '_blank');
 };
 
-export const runSendInvoiceToSunatAction = (deps: ActionDeps<InvoiceRow>) => {
-  withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
-    if (selectedRow.sunatStatus === '0') {
-      deps.notify('El comprobante ya fue enviado a SUNAT', 'warning');
-      return;
-    }
-
-    deps.showLoading('Enviando comprobante a SUNAT...');
-    taxDocumentService
-      .sendDocument(selectedRow.id)
-      .then((response) => {
-        deps.notify(response.data.message, response.data.success ? 'success' : 'error');
-        deps.refreshGrid();
-      })
-      .finally(() => deps.hideLoading());
-  });
-};
-
-export const runSendInvoiceEmailAction = (deps: ActionDeps<InvoiceRow>) => {
-  withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
-    deps.showLoading('Enviando comprobante por correo...');
-    taxDocumentService
-      .sendEmail(selectedRow.id)
-      .then(() => {
-        deps.notify('El comprobante fue enviado por correo', 'success');
-        deps.refreshGrid();
-      })
-      .finally(() => deps.hideLoading());
-  });
-};
-
-export const runOpenInvoiceReceiptAction = (
-  deps: Pick<ActionDeps<InvoiceRow>, 'getSelectedRow' | 'notify'>,
+export const shareInvoiceWhatsApp = (
+  row: InvoiceRow,
+  notify: InvoiceActionHandlers['notify'],
 ) => {
-  withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
-    if (!selectedRow.publicReceiptUrl) {
-      deps.notify('El comprobante no tiene URL pública disponible', 'warning');
-      return;
-    }
-    window.open(selectedRow.publicReceiptUrl, '_blank');
-  });
+  const shareUrl = buildInvoiceWhatsAppShareUrl(row);
+  if (!shareUrl) {
+    notify('El comprobante no tiene URL pública disponible', 'warning');
+    return;
+  }
+  window.open(shareUrl, '_blank', 'noopener,noreferrer');
 };
 
-export const runConsultInvoiceCdrAction = (deps: ActionDeps<InvoiceRow>) => {
-  withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
-    deps.showLoading('Consultando CDR...');
-    taxDocumentService
-      .consultDocument(selectedRow.id)
-      .then((response) => {
-        deps.notify(response.data.message, response.data.success ? 'success' : 'error');
-        deps.refreshGrid();
-      })
-      .finally(() => deps.hideLoading());
-  });
+export const sendInvoiceToSunat = (row: InvoiceRow, handlers: InvoiceActionHandlers) => {
+  if (row.sunatStatus === '0') {
+    handlers.notify('El comprobante ya fue enviado a SUNAT', 'warning');
+    return;
+  }
+
+  handlers.showLoading('Enviando comprobante a SUNAT...');
+  taxDocumentService
+    .sendDocument(row.id)
+    .then((response) => {
+      handlers.notify(response.data.message, response.data.success ? 'success' : 'error');
+      handlers.refreshGrid();
+    })
+    .finally(() => handlers.hideLoading());
 };
 
-export const runConsultInvoiceCpeAction = (deps: ActionDeps<InvoiceRow>) => {
-  withSelectedRow(deps.getSelectedRow, deps.notify, (selectedRow) => {
-    deps.showLoading('Consultando CPE...');
-    taxDocumentService
-      .validateDocument(selectedRow.id)
-      .then((response) => {
-        deps.notify(response.data.message, response.data.success ? 'success' : 'error');
-        deps.refreshGrid();
-      })
-      .finally(() => deps.hideLoading());
-  });
+export const sendInvoiceEmail = (row: InvoiceRow, handlers: InvoiceActionHandlers) => {
+  handlers.showLoading('Enviando comprobante por correo...');
+  taxDocumentService
+    .sendEmail(row.id)
+    .then(() => {
+      handlers.notify('El comprobante fue enviado por correo', 'success');
+      handlers.refreshGrid();
+    })
+    .finally(() => handlers.hideLoading());
+};
+
+export const consultInvoiceCdr = (row: InvoiceRow, handlers: InvoiceActionHandlers) => {
+  handlers.showLoading('Consultando CDR...');
+  taxDocumentService
+    .consultDocument(row.id)
+    .then((response) => {
+      handlers.notify(response.data.message, response.data.success ? 'success' : 'error');
+      handlers.refreshGrid();
+    })
+    .finally(() => handlers.hideLoading());
+};
+
+export const consultInvoiceCpe = (row: InvoiceRow, handlers: InvoiceActionHandlers) => {
+  handlers.showLoading('Consultando CPE...');
+  taxDocumentService
+    .validateDocument(row.id)
+    .then((response) => {
+      handlers.notify(response.data.message, response.data.success ? 'success' : 'error');
+      handlers.refreshGrid();
+    })
+    .finally(() => handlers.hideLoading());
 };

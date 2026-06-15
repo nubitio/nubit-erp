@@ -2,6 +2,8 @@
 
 {% block title %}{{ voucher.voucher_series }} - {{ voucher.voucher_number }}{% endblock %}
 
+{% block body_class %}{{ embedded|default(false) ? 'embedded-preview' : '' }}{% endblock %}
+
 {% block stylesheets %}
     {{ parent() }}
     <style>
@@ -26,6 +28,33 @@
             color: var(--ink);
             font-size: 12px;
         }
+
+        {% if embedded %}
+        html,
+        body.embedded-preview {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
+            height: auto !important;
+            background: #fff !important;
+        }
+
+        body.embedded-preview {
+            width: 210mm;
+            max-width: none;
+            transform-origin: top left;
+            transform: scale(var(--embed-scale, 1));
+        }
+
+        body.embedded-preview .container-fluid,
+        body.embedded-preview .invoice {
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        {% endif %}
 
         .invoice {
             border: none;

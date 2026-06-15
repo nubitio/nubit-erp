@@ -7,6 +7,7 @@ namespace App\Billing\Receipt\Application;
 use Nubit\ApiPlatform\Http\BaseController;
 use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Export\PdfExporter;
+use App\Efact\Service\CompanyContext;
 use App\Settings\Service\TenantSettingsService;
 use App\Billing\Receipt\Domain\ReceiptCdrUseCase;
 use App\Billing\Receipt\Domain\ReceiptPdfUseCase;
@@ -37,19 +38,27 @@ class ReceiptController extends BaseController
      * @throws ServiceException
      */
     #[Route('/receipt/{payload}', name: 'receipt_show', methods: ['GET'])]
-    public function show(ReceiptShowUseCase $receiptShowUseCase, string $payload): Response
-    {
-        $receipt = $receiptShowUseCase($this->getReceiptRequest($payload));
+    public function show(
+        ReceiptShowUseCase $receiptShowUseCase,
+        CompanyContext $companyContext,
+        string $payload,
+    ): Response {
+        $receiptRequest = $this->getReceiptRequest($payload);
+        $receipt = $receiptShowUseCase($receiptRequest);
+        $currencySymbol = self::CURRENCY_SYMBOLS[$receipt->currency] ?? $receipt->currency;
 
         return $this->render('receipt/show.html.twig', [
             'company_name' => $receipt->company,
+            'company_ruc' => $companyContext->getId(),
             'type' => $receipt->type,
             'series' => $receipt->series,
             'number' => $receipt->number,
             'date' => date('d/m/Y', intval(strtotime($receipt->date))),
             'total' => $receipt->total,
-            'currency_symbol' => self::CURRENCY_SYMBOLS[$receipt->currency] ?? $receipt->currency,
+            'currency_symbol' => $currencySymbol,
+            'currency_code' => $receipt->currency,
             'pdf' => $this->generateUrl('receipt_pdf', ['payload' => $payload]),
+            'pdf_preview' => $this->generateUrl('receipt_pdf', ['payload' => $payload, 'preview' => 1]),
             'xml' => $this->generateUrl('receipt_xml', ['payload' => $payload]),
             'cdr' => $this->generateUrl('receipt_cdr', ['payload' => $payload]),
         ]);
@@ -67,13 +76,16 @@ class ReceiptController extends BaseController
         TenantSettingsService $tenantSettings,
         PdfExporter $pdfExporter,
     ): Response {
-        $voucher = $taxDocumentRepository->getVoucher($id);
+        $voucher = $taxDocumentRepository->find($id) !== null
+            ? $taxDocumentRepository->getVoucherByTaxDocumentId($id)
+            : $taxDocumentRepository->getVoucher($id);
         $qr = '';
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $qr = new QRCode()->render(strval($voucher->voucher_qr_data));
         }
 
         $shouldPrintLogo = $tenantSettings->isPrintLogo();
+        $preview = $request->get('preview');
 
         $format = strval($request->get('format', 'ticket'));
         $template = $format === 'a4'
@@ -84,9 +96,8 @@ class ReceiptController extends BaseController
             'voucher' => $voucher,
             'extraData' => null,
             'printLogo' => $shouldPrintLogo,
+            'embedded' => (bool) $preview,
         ]);
-
-        $preview = $request->get('preview');
 
         if ($preview) {
             return new Response($content);

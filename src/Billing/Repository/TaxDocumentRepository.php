@@ -203,7 +203,7 @@ SQL,
     {
         $saleId = $this->getEntityManager()->getConnection()->fetchOne(
             <<<'SQL'
-SELECT movimiento_id
+SELECT COALESCE(NULLIF(movimiento_id, ''), sale_id)
 FROM tax_document
 WHERE tax_document_id = :tax_document_id
 LIMIT 1

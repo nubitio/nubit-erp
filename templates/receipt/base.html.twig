@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Comprobante electrónico{% endblock %}</title>
+    {% block meta %}{% endblock %}
+    <link rel="icon" href="{{ logo() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="{{ asset('themes/app-theme-light.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/receipt-public.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body class="receipt-public {% block body_class %}{% endblock %}">
+{% block body %}{% endblock %}
+{% block overlays %}{% endblock %}
+</body>
+</html>

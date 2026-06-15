@@ -6,14 +6,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { InvoiceFields } from './InvoiceFields';
-import type { InvoiceRow } from './lib/invoiceActions';
-import {
-  runConsultInvoiceCdrAction,
-  runConsultInvoiceCpeAction,
-  runOpenInvoiceReceiptAction,
-  runSendInvoiceEmailAction,
-  runSendInvoiceToSunatAction,
-} from './lib/invoiceActions';
+import { createInvoiceRowActions } from './ui/createInvoiceRowActions';
 import toast from '@shared/lib/SharedUtils';
 
 interface Props {
@@ -28,9 +21,8 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
   const { isXSmall } = useScreenSize();
   const gridRef = useRef<GridHandle>(null);
 
-  const actionDeps = useMemo(
+  const actionHandlers = useMemo(
     () => ({
-      getSelectedRow: () => gridRef.current?.getSelectedRow() as InvoiceRow | undefined,
       showLoading: (message?: string) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
       refreshGrid: () => gridRef.current?.refresh(),
@@ -40,47 +32,9 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
     [],
   );
 
-  const toolbar = useMemo(
-    () => ({
-      selection: [
-        {
-          text: 'Ver',
-          type: 'primary',
-          group: 'view',
-          groupLabel: 'Consulta',
-          onClick: () => runOpenInvoiceReceiptAction(actionDeps),
-        },
-        {
-          text: 'Consulta CDR',
-          type: 'warning',
-          group: 'view',
-          groupLabel: 'Consulta',
-          onClick: () => runConsultInvoiceCdrAction(actionDeps),
-        },
-        {
-          text: 'Consulta CPE',
-          type: 'success',
-          group: 'view',
-          groupLabel: 'Consulta',
-          onClick: () => runConsultInvoiceCpeAction(actionDeps),
-        },
-        {
-          text: 'Enviar a SUNAT',
-          type: 'info',
-          group: 'delivery',
-          groupLabel: 'Envío',
-          onClick: () => runSendInvoiceToSunatAction(actionDeps),
-        },
-        {
-          text: 'Enviar por correo',
-          type: 'success',
-          group: 'delivery',
-          groupLabel: 'Envío',
-          onClick: () => runSendInvoiceEmailAction(actionDeps),
-        },
-      ],
-    }),
-    [actionDeps],
+  const rowActions = useMemo(
+    () => createInvoiceRowActions(actionHandlers),
+    [actionHandlers],
   );
 
   return (
@@ -102,7 +56,7 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
           title="Comprobantes"
           url={`${API}sales/${saleId}/tax-documents`}
           fields={fields}
-          toolbar={toolbar}
+          rowActions={rowActions}
           sort={[{ selector: 'createdAt', desc: true }]}
         />
       )}
