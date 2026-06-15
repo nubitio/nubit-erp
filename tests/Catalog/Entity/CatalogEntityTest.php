@@ -81,6 +81,14 @@ final class CatalogEntityTest extends TestCase
         self::assertNull($uom->getId());
     }
 
+    public function testUnitOfMeasureAcceptsNumericRatioFromApiInput(): void
+    {
+        $uom = new UnitOfMeasure();
+        $uom->setRatio(1);
+
+        self::assertSame('1', $uom->getRatio());
+    }
+
     public function testUnitOfMeasureIsReferenceDefault(): void
     {
         $uom = new UnitOfMeasure();

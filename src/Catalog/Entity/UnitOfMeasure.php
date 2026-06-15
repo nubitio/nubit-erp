@@ -99,9 +99,9 @@ class UnitOfMeasure
         return $this->ratio;
     }
 
-    public function setRatio(string $ratio): static
+    public function setRatio(string|int|float $ratio): static
     {
-        $this->ratio = $ratio;
+        $this->ratio = (string) $ratio;
 
         return $this;
     }

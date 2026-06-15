@@ -180,7 +180,7 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
           helpText: 'Relación con la unidad base',
           align: 'center',
           precision: 5,
-          defaultValue: 1,
+          defaultValue: '1.00',
           required: true,
           sendAsString: true,
         },
