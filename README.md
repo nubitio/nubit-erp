@@ -136,6 +136,30 @@ Notas:
 - Este comando crea DB tenant, registra tenant/domain en control plane, ejecuta migraciones y setup inicial.
 - Requiere `PROVISIONING_DATABASE_URL` y `TENANT_DB_PASS` cuando se usa `--create-user`.
 
+### Operaciones tenant existentes
+
+Para aplicar el menú MVP a un tenant ya existente sin resembrar configuración sensible:
+
+```bash
+docker compose exec -T web php bin/console app:menu:sync-mvp --tenant=demo --no-interaction
+```
+
+No uses `app:seed:initial-data` sobre tenants existentes salvo en un reset controlado: además del menú puede tocar `tenant_settings`, parámetros SUNAT, impresión y flags operativos.
+
+Si cargaste una base tenant desde dump o baseline schema y necesitas registrar migraciones como ya aplicadas sin ejecutar SQL:
+
+```bash
+docker compose exec -T web php bin/console app:tenants:migrate --baseline-existing-schema --tenant=demo --no-interaction
+```
+
+También está disponible durante provisioning:
+
+```bash
+docker compose exec -T web php bin/console app:tenant:provision demo --baseline-existing-schema --domain=demo.localhost
+```
+
+`--baseline-existing-schema` no crea tablas ni modifica esquema; solo marca las migraciones disponibles como ejecutadas. Úsalo únicamente después de cargar un esquema compatible.
+
 ## Acceso al admin (control plane)
 
 El panel admin está bajo `/admin` y usa `http_basic` con provider `control_plane_admin_provider`.

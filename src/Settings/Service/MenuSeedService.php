@@ -6,6 +6,7 @@ namespace App\Settings\Service;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ArrayParameterType;
 
 class MenuSeedService
 {
@@ -114,6 +115,49 @@ class MenuSeedService
         $this->connection->executeStatement(
             'INSERT INTO menu_rol (menu_id, role_id)
              SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r'
+        );
+    }
+
+    /**
+     * Apply the MVP menu to an existing tenant without touching tenant settings.
+     * Missing MVP role assignments are backfilled to match initial seed behavior.
+     *
+     * @throws Exception
+     */
+    public function syncMvpPreservingRoleAccess(): void
+    {
+        $menuIds = array_column(self::MENUS, 'id');
+
+        foreach (self::MENUS as $menu) {
+            $this->connection->executeStatement(
+                'INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
+                VALUES (:id, :order_index, :key_name, :type, :route, :icon, :parent_id)
+                ON DUPLICATE KEY UPDATE
+                    order_index = VALUES(order_index),
+                    key_name = VALUES(key_name),
+                    type = VALUES(type),
+                    route = VALUES(route),
+                    icon = VALUES(icon),
+                    parent_id = VALUES(parent_id)',
+                $menu
+            );
+        }
+
+        $this->connection->executeStatement(
+            'DELETE FROM menu_rol WHERE menu_id NOT IN (?)',
+            [$menuIds],
+            [ArrayParameterType::INTEGER],
+        );
+        $this->connection->executeStatement(
+            'DELETE FROM menu WHERE id NOT IN (?)',
+            [$menuIds],
+            [ArrayParameterType::INTEGER],
+        );
+        $this->connection->executeStatement(
+            'INSERT IGNORE INTO menu_rol (menu_id, role_id)
+             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r WHERE m.id IN (?)',
+            [$menuIds],
+            [ArrayParameterType::INTEGER],
         );
     }
 }
