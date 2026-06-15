@@ -57,7 +57,7 @@ const SEED_CUSTOMER_DNI = '20100000001';
 const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 
 // ── Persisted state between steps ─────────────────────────────────────────────
-let openedCashShiftId: string | null = null; // capturado al abrir caja
+let openedCashSessionId: string | null = null; // capturado al abrir caja
 let createdMovementRowText: string | null = null; // descripción del movimiento
 let salesModuleSaleId: string | null = null; // venta creada desde /sale
 let salesModuleProductName: string | null = null; // producto elegido en /sale
@@ -268,11 +268,11 @@ async function ensureLoggedIn(page: Page) {
 }
 
 /**
- * Attempts to recover the cash shift ID from the cashbox page.
+ * Attempts to recover the cash session ID from the cashbox page.
  * If the register is already open: clicks "Ver Movimientos" and extracts the ID from the URL.
  * If the register is closed: opens it (Saldo inicial = 100) and captures the ID.
  */
-async function recoverCashShiftId(page: Page): Promise<string | null> {
+async function recoverCashSessionId(page: Page): Promise<string | null> {
   // Navigate to cashbox and wait for SPA to fully settle BEFORE checking auth.
   // The SPA needs networkidle to complete the auth redirect (/#/login if not authenticated).
   await page.goto(`${BASE_URL}/#/cashbox`);
@@ -560,11 +560,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
     // Wait for the page to settle before reading URL
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
-    // Capture the cashShiftId from the URL
+    // Capture the cashSessionId from the URL
     const url = page.url();
     const match = url.match(/cash-session\/(\d+)\/movements/);
-    openedCashShiftId = match ? match[1] : null;
-    expect(openedCashShiftId).not.toBeNull();
+    openedCashSessionId = match ? match[1] : null;
+    expect(openedCashSessionId).not.toBeNull();
 
     // Verify we are on the movements page
     await expect(
@@ -722,11 +722,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
   test('07 - Registrar venta en módulo Ventas', async () => {
     await test.step('Asegurar caja abierta (prerequisito)', async () => {
       // Test 07 may run in isolation (e.g. --grep "07") without test 04 having opened the cash register.
-      // recoverCashShiftId opens the register if closed, or recovers the ID if already open.
-      if (!openedCashShiftId) {
-        openedCashShiftId = await recoverCashShiftId(page);
+      // recoverCashSessionId opens the register if closed, or recovers the ID if already open.
+      if (!openedCashSessionId) {
+        openedCashSessionId = await recoverCashSessionId(page);
       }
-      expect(openedCashShiftId, 'debe haber una caja abierta para registrar ventas').not.toBeNull();
+      expect(openedCashSessionId, 'debe haber una caja abierta para registrar ventas').not.toBeNull();
     });
 
     await test.step('Navegar a /#/sale', async () => {
@@ -904,19 +904,19 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('08 - Registrar movimiento de caja', async () => {
     await test.step('Navegar a los movimientos del turno abierto', async () => {
-      // Recover cashShiftId if test 04 didn't capture it (e.g. session was lost)
-      if (!openedCashShiftId) {
+      // Recover cashSessionId if test 04 didn't capture it (e.g. session was lost)
+      if (!openedCashSessionId) {
         await ensureLoggedIn(page);
-        openedCashShiftId = await recoverCashShiftId(page);
+        openedCashSessionId = await recoverCashSessionId(page);
       }
-      expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/movements`);
+      expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
+      await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/movements`);
       // Re-authenticate if the session was lost (e.g. JWT refresh failed during test 06)
       await ensureLoggedIn(page);
       // Wait for auth to fully settle before checking URL or navigating
       await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      if (!page.url().includes(`/cash-session/${openedCashShiftId}/movements`)) {
-        await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/movements`);
+      if (!page.url().includes(`/cash-session/${openedCashSessionId}/movements`)) {
+        await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/movements`);
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
       await waitForGridLoad(page);
@@ -1068,13 +1068,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('10 - Cerrar sesión de caja', async () => {
     await test.step('Navegar al cierre de caja', async () => {
-      // Recover cashShiftId if not available
-      if (!openedCashShiftId) {
+      // Recover cashSessionId if not available
+      if (!openedCashSessionId) {
         await ensureLoggedIn(page);
-        openedCashShiftId = await recoverCashShiftId(page);
+        openedCashSessionId = await recoverCashSessionId(page);
       }
-      expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-session/${openedCashShiftId}/close`);
+      expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
+      await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/close`);
       // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
       await expect(
         page.locator('h1.cash-close__title'),

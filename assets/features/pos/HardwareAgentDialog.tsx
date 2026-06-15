@@ -6,21 +6,18 @@ import {
   fetchAgentHealth,
   fetchAgentPrinters,
   fetchScalePorts,
-  fetchScaleProtocols,
   fetchScaleStatus,
   fetchScaleWeight,
   isLocalAgentAvailable,
   LocalAgentNotAvailableError,
   saveAgentConfig,
   type AgentConfig,
-  type ScaleProtocolInfo,
   type ScaleWeightReading,
   type SerialPortInfo,
 } from '@features/sales/lib/localAgentClient';
-import { HardwareWiringGuide } from './HardwareWiringGuide';
 import './HardwareAgentDialog.scss';
 
-type TabId = 'status' | 'printer' | 'scale' | 'wiring';
+type TabId = 'status' | 'printer' | 'scale';
 
 interface HardwareAgentDialogProps {
   open: boolean;
@@ -39,7 +36,6 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
   const [config, setConfig] = useState<AgentConfig | null>(null);
   const [printers, setPrinters] = useState<string[]>([]);
   const [ports, setPorts] = useState<SerialPortInfo[]>([]);
-  const [protocols, setProtocols] = useState<ScaleProtocolInfo[]>([]);
   const [scaleStatus, setScaleStatus] = useState<string>('');
   const [liveWeight, setLiveWeight] = useState<ScaleWeightReading | null>(null);
   const [saving, setSaving] = useState(false);
@@ -55,12 +51,11 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
         return;
       }
 
-      const [health, cfg, printerList, portList, protocolList] = await Promise.all([
+      const [health, cfg, printerList, portList] = await Promise.all([
         fetchAgentHealth(),
         fetchAgentConfig(),
         fetchAgentPrinters(),
         fetchScalePorts(),
-        fetchScaleProtocols(),
       ]);
 
       setVersion(health.version);
@@ -68,14 +63,13 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
       setConfig(cfg.config);
       setPrinters(printerList);
       setPorts(portList);
-      setProtocols(protocolList);
 
       try {
         const status = await fetchScaleStatus();
         setScaleStatus(
           status.enabled
             ? status.connected
-              ? `Conectada (${status.protocol} @ ${status.port ?? 'sin puerto'})`
+              ? `Conectada${status.port ? ` (${status.port})` : ''}`
               : `Sin conexión${status.last_error ? `: ${status.last_error}` : ''}`
             : 'Desactivada',
         );
@@ -116,10 +110,6 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
     return () => window.clearInterval(timer);
   }, [open, agentOnline, config?.scale.enabled]);
 
-  const updateConfig = (patch: Partial<AgentConfig>) => {
-    setConfig((prev) => (prev ? { ...prev, ...patch } : prev));
-  };
-
   const updatePrinter = (patch: Partial<AgentConfig['printer']>) => {
     setConfig((prev) =>
       prev ? { ...prev, printer: { ...prev.printer, ...patch } } : prev,
@@ -130,30 +120,62 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
     setConfig((prev) => (prev ? { ...prev, scale: { ...prev.scale, ...patch } } : prev));
   };
 
-  const handleSave = async () => {
-    if (!config) return;
+  const persistConfig = async (
+    next: AgentConfig,
+    successMessage?: string,
+  ): Promise<boolean> => {
     setSaving(true);
     try {
       const result = await saveAgentConfig({
-        printer: config.printer,
-        scale: config.scale,
+        printer: next.printer,
+        scale: { ...next.scale, protocol: 'generic' },
       });
       setConfig(result.config);
       setConfigPath(result.path);
-      toast(result.message ?? 'Configuración guardada', 'success');
+      if (successMessage) toast(successMessage, 'success');
       await refresh();
+      return true;
     } catch (err) {
       toast(err instanceof Error ? err.message : 'No se pudo guardar', 'error');
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePrinterToggle = async (checked: boolean) => {
+    if (!config) return;
+    const previous = config;
+    const next: AgentConfig = {
+      ...config,
+      printer: { ...config.printer, prefer_system_backend: checked },
+    };
+    setConfig(next);
+    const ok = await persistConfig(next);
+    if (!ok) setConfig(previous);
+  };
+
+  const handleScaleToggle = async (checked: boolean) => {
+    if (!config) return;
+    const previous = config;
+    const next: AgentConfig = {
+      ...config,
+      scale: { ...config.scale, enabled: checked },
+    };
+    setConfig(next);
+    const ok = await persistConfig(next);
+    if (!ok) setConfig(previous);
+  };
+
+  const handleSave = async () => {
+    if (!config) return;
+    await persistConfig(config, 'Configuración guardada');
   };
 
   const tabs: { id: TabId; label: string; icon: string }[] = [
     { id: 'status', label: 'Estado', icon: 'ph-heartbeat' },
     { id: 'printer', label: 'Impresora', icon: 'ph-printer' },
     { id: 'scale', label: 'Balanza', icon: 'ph-scales' },
-    { id: 'wiring', label: 'Cableado', icon: 'ph-plugs' },
   ];
 
   return (
@@ -221,6 +243,11 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
                 <dt>Configuración</dt>
                 <dd>
                   <code>{configPath}</code>
+                  <p className="hardware-agent-dialog__hint">
+                    Referencia técnica (inglés):{' '}
+                    <code>config.toml.example</code> en la misma carpeta — no se sobrescribe al
+                    guardar.
+                  </p>
                 </dd>
                 <dt>Balanza</dt>
                 <dd>{scaleStatus}</dd>
@@ -233,14 +260,13 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
 
           {tab === 'printer' && (
             <div className="hardware-agent-dialog__panel">
-              <div className="hardware-agent-dialog__toggle-row">
-                <span>Preferir impresora del sistema (spooler)</span>
-                <Toggle
-                  checked={Boolean(config.printer.prefer_system_backend)}
-                  onChange={(checked) => updatePrinter({ prefer_system_backend: checked })}
-                  aria-label="Preferir impresora del sistema"
-                />
-              </div>
+              <Toggle
+                label="Preferir impresora del sistema (spooler)"
+                checked={Boolean(config.printer.prefer_system_backend)}
+                onChange={(checked) => void handlePrinterToggle(checked)}
+                disabled={saving}
+                aria-label="Preferir impresora del sistema"
+              />
               <label className="hardware-agent-dialog__field">
                 <span>Nombre de impresora del sistema (opcional)</span>
                 <TextField
@@ -276,14 +302,13 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
 
           {tab === 'scale' && (
             <div className="hardware-agent-dialog__panel">
-              <div className="hardware-agent-dialog__toggle-row">
-                <span>Activar balanza RS-232</span>
-                <Toggle
-                  checked={config.scale.enabled}
-                  onChange={(checked) => updateScale({ enabled: checked })}
-                  aria-label="Activar balanza RS-232"
-                />
-              </div>
+              <Toggle
+                label="Activar balanza RS-232"
+                checked={config.scale.enabled}
+                onChange={(checked) => void handleScaleToggle(checked)}
+                disabled={saving}
+                aria-label="Activar balanza RS-232"
+              />
 
               <div className="hardware-agent-dialog__row">
                 <AppDropdown
@@ -306,54 +331,21 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
                 </Button>
               </div>
 
-              <AppDropdown
-                id="scale-protocol"
-                label="Protocolo / marca"
-                value={config.scale.protocol}
-                options={protocols.map((p) => ({
-                  value: p.id,
-                  label: `${p.name} — ${p.description}`,
-                }))}
-                onChange={(value) => updateScale({ protocol: value })}
-              />
-
-              <div className="hardware-agent-dialog__grid">
-                <label className="hardware-agent-dialog__field">
-                  <span>Baud rate</span>
-                  <TextField
-                    type="number"
-                    value={String(config.scale.baud_rate)}
-                    onChange={(e) => updateScale({ baud_rate: Number(e.target.value) || 9600 })}
-                  />
-                </label>
-                <label className="hardware-agent-dialog__field">
-                  <span>Lecturas estables</span>
-                  <TextField
-                    type="number"
-                    value={String(config.scale.stable_reads)}
-                    onChange={(e) => updateScale({ stable_reads: Number(e.target.value) || 3 })}
-                  />
-                </label>
-              </div>
-
               {config.scale.enabled && (
                 <div className="hardware-agent-dialog__live-weight">
                   <span className="hardware-agent-dialog__live-label">Peso en vivo</span>
                   <strong>
                     {liveWeight?.kg != null ? `${liveWeight.kg.toFixed(3)} kg` : '—'}
                   </strong>
-                  {liveWeight?.stable && <span className="hardware-agent-dialog__badge is-ok">Estable</span>}
-                  {liveWeight?.raw && (
-                    <code className="hardware-agent-dialog__raw">raw: {liveWeight.raw}</code>
+                  {liveWeight?.stable && (
+                    <span className="hardware-agent-dialog__badge is-ok">Estable</span>
                   )}
                 </div>
               )}
             </div>
           )}
 
-          {tab === 'wiring' && <HardwareWiringGuide />}
-
-          {tab !== 'wiring' && tab !== 'status' && (
+          {tab !== 'status' && (
             <div className="hardware-agent-dialog__footer">
               <Button variant="primary" onClick={() => void handleSave()} disabled={saving}>
                 {saving ? 'Guardando…' : 'Guardar configuración'}

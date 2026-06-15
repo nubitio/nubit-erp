@@ -96,7 +96,7 @@ async function login(page: Page) {
 
 /**
  * Ensure a cash register session is open.
- * Returns the cashShiftId.
+ * Returns the cashSessionId.
  */
 async function ensureCashOpen(page: Page): Promise<string> {
   await page.goto(`${BASE_URL}/#/cashbox`);
@@ -153,7 +153,7 @@ async function ensureCashOpen(page: Page): Promise<string> {
   const url = page.url();
   const match = url.match(/cash-session\/(\d+)\/movements/);
   const id = match?.[1] ?? null;
-  expect(id, 'cashShiftId must be captured').not.toBeNull();
+  expect(id, 'cashSessionId must be captured').not.toBeNull();
   return id as string;
 }
 

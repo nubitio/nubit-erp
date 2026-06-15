@@ -91,3 +91,6 @@ phpstan.neon
 # Local browser/debug artifacts
 .playwright-mcp/
 /menu-*.png
+
+# graphify (knowledge graph tool) - removed, slow and low value for this project
+graphify-out/

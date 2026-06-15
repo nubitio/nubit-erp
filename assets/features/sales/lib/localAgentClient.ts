@@ -44,6 +44,54 @@ export type AgentConfig = {
   scale: AgentScaleConfig;
 };
 
+/** Agent serializes printer fields flattened at the top level of `config`. */
+type RawAgentConfig = Partial<AgentConfig> &
+  Partial<AgentPrinterConfig> & {
+    usb_endpoint?: number;
+  };
+
+const DEFAULT_PRINTER: AgentPrinterConfig = {
+  usb_vendor_id: null,
+  usb_product_id: null,
+  system_printer_name: null,
+  prefer_system_backend: false,
+  chunk_size: 4096,
+};
+
+const DEFAULT_SCALE: AgentScaleConfig = {
+  enabled: false,
+  serial_port: null,
+  protocol: 'generic',
+  baud_rate: 9600,
+  data_bits: 8,
+  parity: 'none',
+  stop_bits: 1,
+  stable_reads: 3,
+  stable_window_ms: 200,
+};
+
+export const normalizeAgentConfig = (raw: RawAgentConfig): AgentConfig => {
+  if (raw.printer) {
+    return {
+      port: raw.port ?? 8765,
+      printer: { ...DEFAULT_PRINTER, ...raw.printer },
+      scale: { ...DEFAULT_SCALE, ...raw.scale, protocol: 'generic' },
+    };
+  }
+
+  return {
+    port: raw.port ?? 8765,
+    printer: {
+      usb_vendor_id: raw.usb_vendor_id ?? null,
+      usb_product_id: raw.usb_product_id ?? null,
+      system_printer_name: raw.system_printer_name ?? null,
+      prefer_system_backend: raw.prefer_system_backend ?? false,
+      chunk_size: raw.chunk_size ?? 4096,
+    },
+    scale: { ...DEFAULT_SCALE, ...raw.scale, protocol: 'generic' },
+  };
+};
+
 export type ScaleProtocolInfo = {
   id: string;
   name: string;
@@ -111,7 +159,8 @@ export const isLocalAgentAvailable = async (): Promise<boolean> => {
 export const fetchAgentConfig = async (): Promise<{ config: AgentConfig; path: string }> => {
   const res = await agentFetch('/config');
   if (!res.ok) throw new Error(`No se pudo leer la configuración (${res.status})`);
-  return res.json() as Promise<{ config: AgentConfig; path: string }>;
+  const data = (await res.json()) as { config: RawAgentConfig; path: string };
+  return { config: normalizeAgentConfig(data.config), path: data.path };
 };
 
 export const saveAgentConfig = async (update: {
@@ -127,7 +176,12 @@ export const saveAgentConfig = async (update: {
     const body = await res.text().catch(() => res.statusText);
     throw new Error(body || `Error ${res.status}`);
   }
-  return res.json() as Promise<{ config: AgentConfig; path: string; message?: string }>;
+  const data = (await res.json()) as {
+    config: RawAgentConfig;
+    path: string;
+    message?: string;
+  };
+  return { ...data, config: normalizeAgentConfig(data.config) };
 };
 
 export const fetchAgentPrinters = async (): Promise<string[]> => {
