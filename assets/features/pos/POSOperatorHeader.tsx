@@ -6,6 +6,7 @@ import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
 import { AppDialog, AppDropdown, ConfirmDialog } from '@nubitio/ui';
+import { HardwareAgentDialog } from './HardwareAgentDialog';
 
 interface POSOperatorHeaderProps {
   branchName: string;
@@ -44,6 +45,7 @@ export function POSOperatorHeader({
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showHardware, setShowHardware] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
   // ── Confirm dialogs state ──────────────────────────────────────────────────
@@ -210,6 +212,16 @@ export function POSOperatorHeader({
         <button
           type="button"
           className="pos-shortcuts-btn"
+          onClick={() => setShowHardware(true)}
+          aria-label="Hardware local"
+          title="Hardware local (impresora y balanza)"
+        >
+          <i className="ph ph-plugs" aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          className="pos-shortcuts-btn"
           onClick={(e) => {
             e.stopPropagation();
             setShowShortcuts(true);
@@ -220,6 +232,8 @@ export function POSOperatorHeader({
           <i className="ph ph-question" aria-hidden="true" />
         </button>
       </div>
+
+      <HardwareAgentDialog open={showHardware} onClose={() => setShowHardware(false)} />
 
       {/* ── Shortcuts modal ── */}
       <AppDialog

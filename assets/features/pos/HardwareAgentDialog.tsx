@@ -1,0 +1,367 @@
+import { useCallback, useEffect, useState } from 'react';
+import { AppDialog, AppDropdown, Button, TextField, Toggle } from '@nubitio/ui';
+import toast from '@shared/lib/SharedUtils';
+import {
+  fetchAgentConfig,
+  fetchAgentHealth,
+  fetchAgentPrinters,
+  fetchScalePorts,
+  fetchScaleProtocols,
+  fetchScaleStatus,
+  fetchScaleWeight,
+  isLocalAgentAvailable,
+  LocalAgentNotAvailableError,
+  saveAgentConfig,
+  type AgentConfig,
+  type ScaleProtocolInfo,
+  type ScaleWeightReading,
+  type SerialPortInfo,
+} from '@features/sales/lib/localAgentClient';
+import { HardwareWiringGuide } from './HardwareWiringGuide';
+import './HardwareAgentDialog.scss';
+
+type TabId = 'status' | 'printer' | 'scale' | 'wiring';
+
+interface HardwareAgentDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const INSTALL_CMD =
+  'curl -fsSL https://raw.githubusercontent.com/nubitio/efact-hardware-agent/main/install.sh | bash';
+
+export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps) {
+  const [tab, setTab] = useState<TabId>('status');
+  const [loading, setLoading] = useState(false);
+  const [agentOnline, setAgentOnline] = useState(false);
+  const [version, setVersion] = useState<string | null>(null);
+  const [configPath, setConfigPath] = useState('');
+  const [config, setConfig] = useState<AgentConfig | null>(null);
+  const [printers, setPrinters] = useState<string[]>([]);
+  const [ports, setPorts] = useState<SerialPortInfo[]>([]);
+  const [protocols, setProtocols] = useState<ScaleProtocolInfo[]>([]);
+  const [scaleStatus, setScaleStatus] = useState<string>('');
+  const [liveWeight, setLiveWeight] = useState<ScaleWeightReading | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const online = await isLocalAgentAvailable();
+      setAgentOnline(online);
+      if (!online) {
+        setConfig(null);
+        setLiveWeight(null);
+        return;
+      }
+
+      const [health, cfg, printerList, portList, protocolList] = await Promise.all([
+        fetchAgentHealth(),
+        fetchAgentConfig(),
+        fetchAgentPrinters(),
+        fetchScalePorts(),
+        fetchScaleProtocols(),
+      ]);
+
+      setVersion(health.version);
+      setConfigPath(health.config_path ?? cfg.path);
+      setConfig(cfg.config);
+      setPrinters(printerList);
+      setPorts(portList);
+      setProtocols(protocolList);
+
+      try {
+        const status = await fetchScaleStatus();
+        setScaleStatus(
+          status.enabled
+            ? status.connected
+              ? `Conectada (${status.protocol} @ ${status.port ?? 'sin puerto'})`
+              : `Sin conexión${status.last_error ? `: ${status.last_error}` : ''}`
+            : 'Desactivada',
+        );
+        if (status.enabled) {
+          setLiveWeight(await fetchScaleWeight());
+        } else {
+          setLiveWeight(null);
+        }
+      } catch {
+        setScaleStatus('No disponible');
+        setLiveWeight(null);
+      }
+    } catch (err) {
+      if (err instanceof LocalAgentNotAvailableError) {
+        setAgentOnline(false);
+      } else {
+        toast(err instanceof Error ? err.message : 'Error al cargar agente', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    void refresh();
+  }, [open, refresh]);
+
+  useEffect(() => {
+    if (!open || !agentOnline || !config?.scale.enabled) return;
+
+    const timer = window.setInterval(() => {
+      fetchScaleWeight()
+        .then(setLiveWeight)
+        .catch(() => undefined);
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [open, agentOnline, config?.scale.enabled]);
+
+  const updateConfig = (patch: Partial<AgentConfig>) => {
+    setConfig((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
+
+  const updatePrinter = (patch: Partial<AgentConfig['printer']>) => {
+    setConfig((prev) =>
+      prev ? { ...prev, printer: { ...prev.printer, ...patch } } : prev,
+    );
+  };
+
+  const updateScale = (patch: Partial<AgentConfig['scale']>) => {
+    setConfig((prev) => (prev ? { ...prev, scale: { ...prev.scale, ...patch } } : prev));
+  };
+
+  const handleSave = async () => {
+    if (!config) return;
+    setSaving(true);
+    try {
+      const result = await saveAgentConfig({
+        printer: config.printer,
+        scale: config.scale,
+      });
+      setConfig(result.config);
+      setConfigPath(result.path);
+      toast(result.message ?? 'Configuración guardada', 'success');
+      await refresh();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'No se pudo guardar', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tabs: { id: TabId; label: string; icon: string }[] = [
+    { id: 'status', label: 'Estado', icon: 'ph-heartbeat' },
+    { id: 'printer', label: 'Impresora', icon: 'ph-printer' },
+    { id: 'scale', label: 'Balanza', icon: 'ph-scales' },
+    { id: 'wiring', label: 'Cableado', icon: 'ph-plugs' },
+  ];
+
+  return (
+    <AppDialog
+      open={open}
+      title="Hardware local"
+      onClose={onClose}
+      className="hardware-agent-dialog"
+    >
+      <div className="hardware-agent-dialog__tabs" role="tablist">
+        {tabs.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === item.id}
+            className={`hardware-agent-dialog__tab${tab === item.id ? ' is-active' : ''}`}
+            onClick={() => setTab(item.id)}
+          >
+            <i className={item.icon} aria-hidden="true" />
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && <p className="hardware-agent-dialog__hint">Cargando…</p>}
+
+      {!loading && !agentOnline && tab === 'status' && (
+        <div className="hardware-agent-dialog__offline">
+          <p>
+            El agente <strong>efact-hardware-agent</strong> no está corriendo en esta computadora.
+          </p>
+          <p>Instálalo una vez en la caja (macOS / Linux):</p>
+          <pre className="hardware-agent-dialog__cmd">{INSTALL_CMD}</pre>
+          <p className="hardware-agent-dialog__hint">
+            También puedes abrir la configuración desde el icono del agente en la bandeja del
+            sistema (menú → Abrir configuración).
+          </p>
+          <Button variant="secondary" onClick={() => void refresh()}>
+            Reintentar conexión
+          </Button>
+        </div>
+      )}
+
+      {!loading && !agentOnline && tab !== 'status' && (
+        <p className="hardware-agent-dialog__hint">
+          Conecta el agente local para configurar esta sección. Ve a <strong>Estado</strong> para
+          instalarlo.
+        </p>
+      )}
+
+      {!loading && agentOnline && config && (
+        <div className="hardware-agent-dialog__body">
+          {tab === 'status' && (
+            <div className="hardware-agent-dialog__panel">
+              <dl className="hardware-agent-dialog__kv">
+                <dt>Agente</dt>
+                <dd>
+                  <span className="hardware-agent-dialog__badge is-ok">En línea</span> v{version}
+                </dd>
+                <dt>URL</dt>
+                <dd>
+                  <code>http://localhost:8765</code>
+                </dd>
+                <dt>Configuración</dt>
+                <dd>
+                  <code>{configPath}</code>
+                </dd>
+                <dt>Balanza</dt>
+                <dd>{scaleStatus}</dd>
+              </dl>
+              <Button variant="secondary" onClick={() => void refresh()}>
+                Actualizar estado
+              </Button>
+            </div>
+          )}
+
+          {tab === 'printer' && (
+            <div className="hardware-agent-dialog__panel">
+              <div className="hardware-agent-dialog__toggle-row">
+                <span>Preferir impresora del sistema (spooler)</span>
+                <Toggle
+                  checked={Boolean(config.printer.prefer_system_backend)}
+                  onChange={(checked) => updatePrinter({ prefer_system_backend: checked })}
+                  aria-label="Preferir impresora del sistema"
+                />
+              </div>
+              <label className="hardware-agent-dialog__field">
+                <span>Nombre de impresora del sistema (opcional)</span>
+                <TextField
+                  value={config.printer.system_printer_name ?? ''}
+                  onChange={(e) =>
+                    updatePrinter({
+                      system_printer_name: e.target.value || null,
+                    })
+                  }
+                  placeholder="Ej. POS_D_BASIC_230"
+                />
+              </label>
+              {printers.length > 0 && (
+                <div className="hardware-agent-dialog__list">
+                  <span className="hardware-agent-dialog__list-title">Detectadas</span>
+                  <ul>
+                    {printers.map((name) => (
+                      <li key={name}>
+                        <button
+                          type="button"
+                          className="hardware-agent-dialog__pick"
+                          onClick={() => updatePrinter({ system_printer_name: name })}
+                        >
+                          {name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'scale' && (
+            <div className="hardware-agent-dialog__panel">
+              <div className="hardware-agent-dialog__toggle-row">
+                <span>Activar balanza RS-232</span>
+                <Toggle
+                  checked={config.scale.enabled}
+                  onChange={(checked) => updateScale({ enabled: checked })}
+                  aria-label="Activar balanza RS-232"
+                />
+              </div>
+
+              <div className="hardware-agent-dialog__row">
+                <AppDropdown
+                  id="scale-port"
+                  label="Puerto serie"
+                  value={config.scale.serial_port ?? ''}
+                  options={[
+                    { value: '', label: 'Seleccionar puerto…' },
+                    ...ports.map((port) => ({
+                      value: port.name,
+                      label: port.description
+                        ? `${port.name} — ${port.description}`
+                        : port.name,
+                    })),
+                  ]}
+                  onChange={(value) => updateScale({ serial_port: value || null })}
+                />
+                <Button variant="secondary" onClick={() => void fetchScalePorts().then(setPorts)}>
+                  Actualizar
+                </Button>
+              </div>
+
+              <AppDropdown
+                id="scale-protocol"
+                label="Protocolo / marca"
+                value={config.scale.protocol}
+                options={protocols.map((p) => ({
+                  value: p.id,
+                  label: `${p.name} — ${p.description}`,
+                }))}
+                onChange={(value) => updateScale({ protocol: value })}
+              />
+
+              <div className="hardware-agent-dialog__grid">
+                <label className="hardware-agent-dialog__field">
+                  <span>Baud rate</span>
+                  <TextField
+                    type="number"
+                    value={String(config.scale.baud_rate)}
+                    onChange={(e) => updateScale({ baud_rate: Number(e.target.value) || 9600 })}
+                  />
+                </label>
+                <label className="hardware-agent-dialog__field">
+                  <span>Lecturas estables</span>
+                  <TextField
+                    type="number"
+                    value={String(config.scale.stable_reads)}
+                    onChange={(e) => updateScale({ stable_reads: Number(e.target.value) || 3 })}
+                  />
+                </label>
+              </div>
+
+              {config.scale.enabled && (
+                <div className="hardware-agent-dialog__live-weight">
+                  <span className="hardware-agent-dialog__live-label">Peso en vivo</span>
+                  <strong>
+                    {liveWeight?.kg != null ? `${liveWeight.kg.toFixed(3)} kg` : '—'}
+                  </strong>
+                  {liveWeight?.stable && <span className="hardware-agent-dialog__badge is-ok">Estable</span>}
+                  {liveWeight?.raw && (
+                    <code className="hardware-agent-dialog__raw">raw: {liveWeight.raw}</code>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'wiring' && <HardwareWiringGuide />}
+
+          {tab !== 'wiring' && tab !== 'status' && (
+            <div className="hardware-agent-dialog__footer">
+              <Button variant="primary" onClick={() => void handleSave()} disabled={saving}>
+                {saving ? 'Guardando…' : 'Guardar configuración'}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </AppDialog>
+  );
+}

@@ -107,7 +107,7 @@ final readonly class CspNonceListener
                 $imgSrc,
                 "font-src 'self' data: https://cdn.jsdelivr.net",
                 // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
-                // localhost HTTP for efact-printer-agent;
+                // localhost HTTP for efact-hardware-agent;
                 // localhost ws/wss for QZ Tray desktop print agent.
                 "connect-src 'self' {$connectSrcExtra} http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",

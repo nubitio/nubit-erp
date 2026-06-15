@@ -1235,6 +1235,16 @@
 }
 
 // Controls column: qty group as segmented control
+.pos-line__scale-btn {
+  margin-left: 0.25rem;
+  width: 1.7rem;
+  flex-shrink: 0;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-sm);
+  background: var(--pos-primary-soft);
+  color: var(--pos-primary);
+}
+
 .pos-line__qty {
   display: flex;
   align-items: stretch;

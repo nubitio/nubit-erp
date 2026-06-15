@@ -65,6 +65,7 @@ interface POSCheckoutPanelProps {
   onPrintLastSale?: () => void;
   syncSales?: LocalSale[];
   onRetrySale?: (saleId: string) => void;
+  onReadScaleWeight?: (itemId: string) => void;
 }
 
 const MAX_VISIBLE_PAYMENT_METHODS = 3;
@@ -135,6 +136,7 @@ export function POSCheckoutPanel({
   onPrintLastSale,
   syncSales: _syncSales = [],
   onRetrySale: _onRetrySale,
+  onReadScaleWeight,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -498,6 +500,17 @@ export function POSCheckoutPanel({
                     >
                       <i className="ph ph-plus" aria-hidden="true" />
                     </button>
+                    {isWeighted && onReadScaleWeight && (
+                      <button
+                        type="button"
+                        className="pos-line__scale-btn"
+                        onClick={() => onReadScaleWeight(item.id)}
+                        aria-label={`Leer peso de ${item.name} desde la balanza`}
+                        title="Leer balanza"
+                      >
+                        <i className="ph ph-scales" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
                   <strong className="pos-line__total">
                     {formatMoney(toNumber(item.salePrice) * item.quantity)}

@@ -7,8 +7,8 @@ const AGENT_BASE_URL = 'http://localhost:8765';
 export class LocalAgentNotAvailableError extends Error {
   constructor() {
     super(
-      'efact-printer-agent no está disponible. ' +
-        'Asegúrate de que el agente de impresión esté instalado y en ejecución.',
+      'efact-hardware-agent no está disponible. ' +
+        'Asegúrate de que el agente local esté instalado y en ejecución.',
     );
     this.name = 'LocalAgentNotAvailableError';
   }

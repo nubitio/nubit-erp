@@ -4,7 +4,11 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import type { CartItem, PosItem } from './types';
-import { nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import { isWeightUnitCode, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import {
+  LocalAgentNotAvailableError,
+  waitForStableWeight,
+} from '@features/sales/lib/localAgentClient';
 import { computeCartTotals } from '@shared/lib/saleCalculations';
 import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
@@ -100,6 +104,20 @@ export const usePosCheckout = ({
     visibleProducts,
   );
 
+  const readScaleQuantity = async (): Promise<number | null> => {
+    try {
+      toast('Coloque el producto en la balanza…', 'info');
+      return await waitForStableWeight({ timeoutMs: 12_000 });
+    } catch (err) {
+      if (err instanceof LocalAgentNotAvailableError) {
+        toast('Agente de hardware no disponible. Configure el cableado en Hardware local.', 'warning');
+      } else {
+        toast('No se obtuvo peso estable. Use el botón de balanza o ingrese manualmente.', 'warning');
+      }
+      return null;
+    }
+  };
+
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
     const warehouseStock = selectedWarehouseId
@@ -117,9 +135,32 @@ export const usePosCheckout = ({
       return;
     }
 
+    const isWeighted = isWeightUnitCode(item.saleUnitCode);
+    let initialQuantity = 1;
+    if (isWeighted) {
+      const weight = await readScaleQuantity();
+      if (weight != null) {
+        initialQuantity = Number(weight.toFixed(3));
+      } else {
+        initialQuantity = 0.001;
+      }
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
       if (existingItem) {
+        if (isWeighted) {
+          return prevCart.map((cartItem) =>
+            cartItem.id === item.id
+              ? {
+                  ...cartItem,
+                  saleUnitCode: cartItem.saleUnitCode ?? item.saleUnitCode,
+                  quantity: initialQuantity,
+                }
+              : cartItem,
+          );
+        }
+
         if (
           tracksInventory &&
           enforceStockCheck &&
@@ -141,8 +182,14 @@ export const usePosCheckout = ({
         );
       }
 
-      return [...prevCart, { ...item, stock: effectiveStock, quantity: 1 }];
+      return [...prevCart, { ...item, stock: effectiveStock, quantity: initialQuantity }];
     });
+  };
+
+  const readScaleForLine = async (id: string) => {
+    const weight = await readScaleQuantity();
+    if (weight == null) return;
+    await updateQuantity(id, Number(weight.toFixed(3)));
   };
 
   const removeFromCart = (id: string) => {
@@ -390,5 +437,6 @@ export const usePosCheckout = ({
     checkoutDisabled,
     handleCheckout,
     getEffectiveStock,
+    readScaleForLine,
   };
 };

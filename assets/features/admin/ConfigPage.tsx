@@ -52,7 +52,7 @@ const CONFIG_META: Record<string, ConfigMeta> = {
     group: 'general',
     options: [
       { value: 'WEBUSB', label: 'WebUSB (navegador, sin instalación)' },
-      { value: 'LOCAL_AGENT', label: 'Agente eFact (app local instalada)' },
+      { value: 'LOCAL_AGENT', label: 'Agente eFact (hardware local: impresora y balanza)' },
     ],
   },
   app_option_auto_invoice: {

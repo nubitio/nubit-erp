@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import './POSPage.scss';
+import './HardwareAgentDialog.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
@@ -109,6 +110,7 @@ const POSPage = () => {
     handleCheckout,
     getEffectiveStock,
     igvRate,
+    readScaleForLine,
   } = usePosCheckout({
     tenantId: window.location.hostname || 'default-tenant',
     storeId: branchId || 'default-store',
@@ -382,6 +384,9 @@ const POSPage = () => {
         syncSales={recentSales}
         onRetrySale={(saleId) => {
           void retrySale(saleId);
+        }}
+        onReadScaleWeight={(id) => {
+          void readScaleForLine(id);
         }}
       />
 

@@ -12,7 +12,7 @@ export type InvoicePrinter = {
  * the `print_method` config setting.
  *
  *   WEBUSB       → Web USB (browser API, no install required)
- *   LOCAL_AGENT  → efact-printer-agent (Rust, localhost:8765)
+ *   LOCAL_AGENT  → efact-hardware-agent (Rust, localhost:8765)
  *
  * Defaults to WEBUSB if the setting is missing or unrecognised.
  */
