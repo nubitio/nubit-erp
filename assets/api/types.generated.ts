@@ -24,86 +24,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/change-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Change own password
-         * @description Creates a Auth resource.
-         */
-        post: operations["auth_change_password"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Creates a Auth resource.
-         * @description Creates a Auth resource.
-         */
-        post: operations["auth_login"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Logout and revoke refresh token
-         * @description Creates a Auth resource.
-         */
-        post: operations["auth_logout"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Refresh access token
-         * @description Creates a Auth resource.
-         */
-        post: operations["auth_refresh"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/select-branch": {
         parameters: {
             query?: never;
@@ -462,6 +382,86 @@ export interface paths {
          * @description Updates the CashSession resource.
          */
         patch: operations["api_cash-sessions_id_patch"];
+        trace?: never;
+    };
+    "/api/cash-sessions/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a CashSession resource.
+         * @description Creates a CashSession resource.
+         */
+        post: operations["api_cash-sessions_idclose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash-sessions/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CashSession resources.
+         * @description Retrieves the collection of CashSession resources.
+         */
+        get: operations["api_cash-sessions_idmovements_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash-sessions/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CashSession resources.
+         * @description Retrieves the collection of CashSession resources.
+         */
+        get: operations["api_cash-sessions_idsummary_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash-sessions/{id}/x-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashSession resource.
+         * @description Retrieves a CashSession resource.
+         */
+        get: operations["api_cash-sessions_idx-report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/cash-shifts": {
@@ -844,6 +844,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/despatch-guides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of DespatchGuide resources.
+         * @description Retrieves the collection of DespatchGuide resources.
+         */
+        get: operations["api_despatch-guides_get_collection"];
+        put?: never;
+        /**
+         * Creates a DespatchGuide resource.
+         * @description Creates a DespatchGuide resource.
+         */
+        post: operations["api_despatch-guides_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/despatch-guides/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a DespatchGuide resource.
+         * @description Retrieves a DespatchGuide resource.
+         */
+        get: operations["api_despatch-guides_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/despatch_guides/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a DespatchGuide resource.
+         * @description Creates a DespatchGuide resource.
+         */
+        post: operations["despatch_guide_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/exchange-rate/{currency}": {
         parameters: {
             query?: never;
@@ -998,26 +1062,6 @@ export interface paths {
          * @description Updates the LogisticOperation resource.
          */
         patch: operations["api_logistic-operations_id_patch"];
-        trace?: never;
-    };
-    "/api/media": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Creates a Media resource.
-         * @description Creates a Media resource.
-         */
-        post: operations["api_media_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/media/{id}": {
@@ -1289,12 +1333,14 @@ export interface paths {
         };
         /**
          * Retrieves the collection of ProductStock resources.
+         * @deprecated
          * @description Retrieves the collection of ProductStock resources.
          */
         get: operations["api_product-stocks_get_collection"];
         put?: never;
         /**
          * Creates a ProductStock resource.
+         * @deprecated
          * @description Creates a ProductStock resource.
          */
         post: operations["api_product-stocks_post"];
@@ -1313,6 +1359,7 @@ export interface paths {
         };
         /**
          * Retrieves a ProductStock resource.
+         * @deprecated
          * @description Retrieves a ProductStock resource.
          */
         get: operations["api_product-stocks_id_get"];
@@ -1320,6 +1367,7 @@ export interface paths {
         post?: never;
         /**
          * Removes the ProductStock resource.
+         * @deprecated
          * @description Removes the ProductStock resource.
          */
         delete: operations["api_product-stocks_id_delete"];
@@ -1327,6 +1375,7 @@ export interface paths {
         head?: never;
         /**
          * Updates the ProductStock resource.
+         * @deprecated
          * @description Updates the ProductStock resource.
          */
         patch: operations["api_product-stocks_id_patch"];
@@ -1578,6 +1627,26 @@ export interface paths {
         get: operations["sale_print_invoice"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sales/{id}/replace-rejected": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a Sale resource.
+         * @description Creates a Sale resource.
+         */
+        post: operations["sale_replace_rejected"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1918,6 +1987,26 @@ export interface paths {
          * @description Updates the Supplier resource.
          */
         patch: operations["api_suppliers_id_patch"];
+        trace?: never;
+    };
+    "/api/sales/{saleId}/tax-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of TaxDocument resources.
+         * @description Retrieves the collection of TaxDocument resources.
+         */
+        get: operations["api_sales_saleIdtax-documents_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/tax-documents": {
@@ -2520,10 +2609,23 @@ export interface components {
             /** Format: uri */
             s3Url?: string | null;
         };
-        /** @description Change the authenticated user's own password. */
-        Auth: Record<string, never>;
-        /** @description Change the authenticated user's own password. */
-        "Auth.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        Auth: {
+            branchId?: string;
+        };
+        "Auth.AuthResponseDto": {
+            user?: components["schemas"]["AuthUserDto"];
+            branch?: components["schemas"]["AuthBranchDto"] | null;
+            token?: string | null;
+            refreshToken?: string | null;
+            expiresAt?: number | null;
+        };
+        "Auth.AuthResponseDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            user?: components["schemas"]["AuthUserDto.jsonld"];
+            branch?: components["schemas"]["AuthBranchDto.jsonld"] | null;
+            token?: string | null;
+            refreshToken?: string | null;
+            expiresAt?: number | null;
+        };
         AuthBranchDto: {
             id?: string;
             name?: string;
@@ -2531,49 +2633,6 @@ export interface components {
         "AuthBranchDto.jsonld": {
             id?: string;
             name?: string;
-        };
-        /** @description Revoke refresh token and clear authentication cookies. */
-        AuthLogoutResource: Record<string, never>;
-        /** @description Revoke refresh token and clear authentication cookies. */
-        "AuthLogoutResource.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
-        /** @description Refresh access token using the refresh token cookie. */
-        AuthRefreshResource: Record<string, never>;
-        /** @description Refresh access token using the refresh token cookie. */
-        "AuthRefreshResource.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
-        AuthResource: {
-            username?: string;
-            password?: string;
-        };
-        "AuthResource.AuthResponseDto": {
-            user?: components["schemas"]["AuthUserDto"];
-            branch?: components["schemas"]["AuthBranchDto"] | null;
-            token?: string | null;
-            refreshToken?: string | null;
-            expiresAt?: number | null;
-        };
-        "AuthResource.AuthResponseDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
-            user?: components["schemas"]["AuthUserDto.jsonld"];
-            branch?: components["schemas"]["AuthBranchDto.jsonld"] | null;
-            token?: string | null;
-            refreshToken?: string | null;
-            expiresAt?: number | null;
-        };
-        AuthSelectBranchResource: {
-            branchId?: string;
-        };
-        "AuthSelectBranchResource.AuthResponseDto": {
-            user?: components["schemas"]["AuthUserDto"];
-            branch?: components["schemas"]["AuthBranchDto"] | null;
-            token?: string | null;
-            refreshToken?: string | null;
-            expiresAt?: number | null;
-        };
-        "AuthSelectBranchResource.AuthResponseDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
-            user?: components["schemas"]["AuthUserDto.jsonld"];
-            branch?: components["schemas"]["AuthBranchDto.jsonld"] | null;
-            token?: string | null;
-            refreshToken?: string | null;
-            expiresAt?: number | null;
         };
         AuthUserDto: {
             userId?: number;
@@ -2931,8 +2990,6 @@ export interface components {
             } | null;
         };
         "CashRegister-cash_register_dashboard.read": Record<string, never>;
-        "CashRegister.ApiResponse-cash_register.read": Record<string, never>;
-        "CashRegister.ApiResponse.jsonld-cash_register.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "CashRegister.CashRegisterCloseDto": {
             expectedAmount?: string | null;
             countedAmount?: string | null;
@@ -2941,6 +2998,16 @@ export interface components {
             closureItems?: {
                 [key: string]: string;
             }[];
+        };
+        "CashRegister.CashRegisterCloseResponseDto-cash_register_close.read": {
+            success?: boolean;
+            message?: string;
+            data?: string | null;
+        };
+        "CashRegister.CashRegisterCloseResponseDto.jsonld-cash_register_close.read": components["schemas"]["HydraItemBaseSchema"] & {
+            success?: boolean;
+            message?: string;
+            data?: string | null;
         };
         "CashRegister.CashRegisterOpenDto": {
             id?: number;
@@ -3251,6 +3318,129 @@ export interface components {
              */
             updatedAt?: string | null;
         };
+        "CashSession.CashMovement-cash_movement.read": {
+            readonly id?: number;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.cash_shift.label
+             * @example https://example.com/
+             */
+            cashShift?: string | null;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.cash_session.label
+             * @example https://example.com/
+             */
+            cashSession?: string | null;
+            category?: components["schemas"]["CashMovementCategory-cash_movement.read"] | null;
+            /**
+             * @description cash_movement.type.label
+             * @enum {string}
+             */
+            type?: "income" | "expense";
+            /**
+             * @description cash_movement.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description cash_movement.description.label */
+            description?: string;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+        };
+        "CashSession.CashMovement.jsonld-cash_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.cash_shift.label
+             * @example https://example.com/
+             */
+            cashShift?: string | null;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.cash_session.label
+             * @example https://example.com/
+             */
+            cashSession?: string | null;
+            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"] | null;
+            /**
+             * @description cash_movement.type.label
+             * @enum {string}
+             */
+            type?: "income" | "expense";
+            /**
+             * @description cash_movement.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description cash_movement.description.label */
+            description?: string;
+            /**
+             * Format: iri-reference
+             * @description cash_movement.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+        };
+        "CashSession.CashRegisterCloseDto": {
+            expectedAmount?: string | null;
+            countedAmount?: string | null;
+            difference?: string | null;
+            note?: string | null;
+            closureItems?: {
+                [key: string]: string;
+            }[];
+        };
+        "CashSession.CashRegisterCloseResponseDto-cash_register_close.read": {
+            success?: boolean;
+            message?: string;
+            data?: string | null;
+        };
+        "CashSession.CashRegisterCloseResponseDto.jsonld-cash_register_close.read": components["schemas"]["HydraItemBaseSchema"] & {
+            success?: boolean;
+            message?: string;
+            data?: string | null;
+        };
+        "CashSession.CashSessionClosureSummaryDto-cash_closure_summary.read": {
+            paymentMethodId?: number;
+            paymentMethod?: string;
+            expectedAmount?: string;
+        };
+        "CashSession.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read": components["schemas"]["HydraItemBaseSchema"] & {
+            paymentMethodId?: number;
+            paymentMethod?: string;
+            expectedAmount?: string;
+        };
+        "CashSession.CashSessionXReportDto-cash_x_report.read": {
+            openingBalance?: string;
+            totalSales?: string;
+            cashIn?: string;
+            cashOut?: string;
+            currentBalance?: string;
+            shiftDurationMinutes?: number;
+            salesByPaymentMethod?: {
+                paymentMethodId: number;
+                paymentMethod: string;
+                amount: string;
+            }[];
+        };
+        "CashSession.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            openingBalance?: string;
+            totalSales?: string;
+            cashIn?: string;
+            cashOut?: string;
+            currentBalance?: string;
+            shiftDurationMinutes?: number;
+            salesByPaymentMethod?: {
+                paymentMethodId: number;
+                paymentMethod: string;
+                amount: string;
+            }[];
+        };
         "CashSession.jsonMergePatch": {
             readonly id?: number;
             /** @description cash_session.legacy_cash_shift_id.label */
@@ -3510,23 +3700,41 @@ export interface components {
              */
             branch?: string | null;
         };
-        "CashShift.CashShiftXReportDto": {
-            openingBalance?: string;
-            totalSales?: string;
-            cashIn?: string;
-            cashOut?: string;
-            currentBalance?: string;
-            shiftDurationMinutes?: number;
-            salesByPaymentMethod?: Record<string, never>[];
+        "CashShift.CashSessionClosureSummaryDto-cash_closure_summary.read": {
+            paymentMethodId?: number;
+            paymentMethod?: string;
+            expectedAmount?: string;
         };
-        "CashShift.CashShiftXReportDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+        "CashShift.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read": components["schemas"]["HydraItemBaseSchema"] & {
+            paymentMethodId?: number;
+            paymentMethod?: string;
+            expectedAmount?: string;
+        };
+        "CashShift.CashSessionXReportDto-cash_x_report.read": {
             openingBalance?: string;
             totalSales?: string;
             cashIn?: string;
             cashOut?: string;
             currentBalance?: string;
             shiftDurationMinutes?: number;
-            salesByPaymentMethod?: Record<string, never>[];
+            salesByPaymentMethod?: {
+                paymentMethodId: number;
+                paymentMethod: string;
+                amount: string;
+            }[];
+        };
+        "CashShift.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            openingBalance?: string;
+            totalSales?: string;
+            cashIn?: string;
+            cashOut?: string;
+            currentBalance?: string;
+            shiftDurationMinutes?: number;
+            salesByPaymentMethod?: {
+                paymentMethodId: number;
+                paymentMethod: string;
+                amount: string;
+            }[];
         };
         "CashShift.jsonMergePatch": {
             readonly id?: number;
@@ -3934,6 +4142,12 @@ export interface components {
              */
             priceList?: string | null;
         };
+        "Customer-invoice.read": {
+            /** @description customer.ruc.label */
+            ruc: string;
+            /** @description customer.business_name.label */
+            businessName: string;
+        };
         "Customer-invoice.read_creditnote.read": {
             /** @description customer.ruc.label */
             ruc: string;
@@ -3990,6 +4204,12 @@ export interface components {
              */
             priceList?: string | null;
         };
+        "Customer.jsonld-invoice.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description customer.ruc.label */
+            ruc: string;
+            /** @description customer.business_name.label */
+            businessName: string;
+        };
         "Customer.jsonld-invoice.read_creditnote.read": components["schemas"]["HydraItemBaseSchema"] & {
             /** @description customer.ruc.label */
             ruc: string;
@@ -4004,6 +4224,252 @@ export interface components {
         };
         Dashboard: Record<string, never>;
         "Dashboard.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description Guía de Remisión Electrónica — Remitente (comprobante tipo 09).
+         *
+         *     Modela el traslado de bienes que se envía a SUNAT a través de lycet. La
+         *     estructura cubre los dos modos de traslado (público/privado) y los datos del
+         *     destinatario, punto de partida y llegada exigidos por SUNAT.
+         *
+         *     El envío es asíncrono: el Post persiste la guía y la operación `/send`
+         *     encola {@see \App\Billing\Despatch\Message\SendDespatchMessage}.
+         */
+        "DespatchGuide-despatch.read": {
+            readonly id?: string;
+            /** @default 09 */
+            readonly documentType: string;
+            /** @default  */
+            series: string;
+            number?: string | null;
+            /** Format: date-time */
+            issueDate?: string;
+            /**
+             * Format: date-time
+             * @description Fecha de inicio del traslado.
+             */
+            transferDate?: string;
+            /**
+             * @description Motivo de traslado — SUNAT Catálogo 20 (01 venta, 04 traslado entre establecimientos, …).
+             * @default 01
+             */
+            transferReason: string;
+            transferReasonDescription?: string | null;
+            /**
+             * @description Modalidad de traslado — SUNAT Catálogo 18 (01 transporte público, 02 transporte privado).
+             * @default 02
+             */
+            transportMode: string;
+            /** @default 0.000 */
+            totalWeight: string;
+            /** @default KGM */
+            weightUnit: string;
+            packageCount?: number | null;
+            /** @default 6 */
+            recipientDocType: string;
+            /** @default  */
+            recipientDocNumber: string;
+            /** @default  */
+            recipientName: string;
+            /** @default  */
+            originUbigeo: string;
+            /** @default  */
+            originAddress: string;
+            /** @default  */
+            destinationUbigeo: string;
+            /** @default  */
+            destinationAddress: string;
+            carrierDocType?: string | null;
+            carrierDocNumber?: string | null;
+            carrierName?: string | null;
+            carrierMtc?: string | null;
+            vehiclePlate?: string | null;
+            driverDocType?: string | null;
+            driverDocNumber?: string | null;
+            driverNames?: string | null;
+            driverLastNames?: string | null;
+            driverLicense?: string | null;
+            sunatStatus?: string | null;
+            sunatMessage?: string | null;
+            sunatTicket?: string | null;
+            cdrPath?: string | null;
+            lines?: components["schemas"]["DespatchGuideItem-despatch.read"][];
+            /** Format: date-time */
+            createdAt?: string;
+            readonly fullNumber?: string;
+        };
+        /**
+         * @description Guía de Remisión Electrónica — Remitente (comprobante tipo 09).
+         *
+         *     Modela el traslado de bienes que se envía a SUNAT a través de lycet. La
+         *     estructura cubre los dos modos de traslado (público/privado) y los datos del
+         *     destinatario, punto de partida y llegada exigidos por SUNAT.
+         *
+         *     El envío es asíncrono: el Post persiste la guía y la operación `/send`
+         *     encola {@see \App\Billing\Despatch\Message\SendDespatchMessage}.
+         */
+        "DespatchGuide-despatch.write": {
+            /**
+             * Format: iri-reference
+             * @description Venta de origen (opcional, cuando el traslado es por venta).
+             * @example https://example.com/
+             */
+            saleRecord?: string | null;
+            /** @default  */
+            series: string;
+            /** Format: date-time */
+            issueDate?: string;
+            /**
+             * Format: date-time
+             * @description Fecha de inicio del traslado.
+             */
+            transferDate?: string;
+            /**
+             * @description Motivo de traslado — SUNAT Catálogo 20 (01 venta, 04 traslado entre establecimientos, …).
+             * @default 01
+             */
+            transferReason: string;
+            transferReasonDescription?: string | null;
+            /**
+             * @description Modalidad de traslado — SUNAT Catálogo 18 (01 transporte público, 02 transporte privado).
+             * @default 02
+             */
+            transportMode: string;
+            /** @default 0.000 */
+            totalWeight: string;
+            /** @default KGM */
+            weightUnit: string;
+            packageCount?: number | null;
+            /** @default 6 */
+            recipientDocType: string;
+            /** @default  */
+            recipientDocNumber: string;
+            /** @default  */
+            recipientName: string;
+            /** @default  */
+            originUbigeo: string;
+            /** @default  */
+            originAddress: string;
+            /** @default  */
+            destinationUbigeo: string;
+            /** @default  */
+            destinationAddress: string;
+            carrierDocType?: string | null;
+            carrierDocNumber?: string | null;
+            carrierName?: string | null;
+            carrierMtc?: string | null;
+            vehiclePlate?: string | null;
+            driverDocType?: string | null;
+            driverDocNumber?: string | null;
+            driverNames?: string | null;
+            driverLastNames?: string | null;
+            driverLicense?: string | null;
+            lines?: components["schemas"]["DespatchGuideItem-despatch.write"][];
+        };
+        /**
+         * @description Guía de Remisión Electrónica — Remitente (comprobante tipo 09).
+         *
+         *     Modela el traslado de bienes que se envía a SUNAT a través de lycet. La
+         *     estructura cubre los dos modos de traslado (público/privado) y los datos del
+         *     destinatario, punto de partida y llegada exigidos por SUNAT.
+         *
+         *     El envío es asíncrono: el Post persiste la guía y la operación `/send`
+         *     encola {@see \App\Billing\Despatch\Message\SendDespatchMessage}.
+         */
+        "DespatchGuide.jsonld-despatch.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @default 09 */
+            readonly documentType: string;
+            /** @default  */
+            series: string;
+            number?: string | null;
+            /** Format: date-time */
+            issueDate?: string;
+            /**
+             * Format: date-time
+             * @description Fecha de inicio del traslado.
+             */
+            transferDate?: string;
+            /**
+             * @description Motivo de traslado — SUNAT Catálogo 20 (01 venta, 04 traslado entre establecimientos, …).
+             * @default 01
+             */
+            transferReason: string;
+            transferReasonDescription?: string | null;
+            /**
+             * @description Modalidad de traslado — SUNAT Catálogo 18 (01 transporte público, 02 transporte privado).
+             * @default 02
+             */
+            transportMode: string;
+            /** @default 0.000 */
+            totalWeight: string;
+            /** @default KGM */
+            weightUnit: string;
+            packageCount?: number | null;
+            /** @default 6 */
+            recipientDocType: string;
+            /** @default  */
+            recipientDocNumber: string;
+            /** @default  */
+            recipientName: string;
+            /** @default  */
+            originUbigeo: string;
+            /** @default  */
+            originAddress: string;
+            /** @default  */
+            destinationUbigeo: string;
+            /** @default  */
+            destinationAddress: string;
+            carrierDocType?: string | null;
+            carrierDocNumber?: string | null;
+            carrierName?: string | null;
+            carrierMtc?: string | null;
+            vehiclePlate?: string | null;
+            driverDocType?: string | null;
+            driverDocNumber?: string | null;
+            driverNames?: string | null;
+            driverLastNames?: string | null;
+            driverLicense?: string | null;
+            sunatStatus?: string | null;
+            sunatMessage?: string | null;
+            sunatTicket?: string | null;
+            cdrPath?: string | null;
+            lines?: components["schemas"]["DespatchGuideItem.jsonld-despatch.read"][];
+            /** Format: date-time */
+            createdAt?: string;
+            readonly fullNumber?: string;
+        };
+        "DespatchGuideItem-despatch.read": {
+            readonly id?: string;
+            productCode?: string | null;
+            sunatProductCode?: string | null;
+            /** @default  */
+            description: string;
+            /** @default NIU */
+            unit: string;
+            /** @default 0.000 */
+            quantity: string;
+        };
+        "DespatchGuideItem-despatch.write": {
+            productCode?: string | null;
+            sunatProductCode?: string | null;
+            /** @default  */
+            description: string;
+            /** @default NIU */
+            unit: string;
+            /** @default 0.000 */
+            quantity: string;
+        };
+        "DespatchGuideItem.jsonld-despatch.read": {
+            readonly id?: string;
+            productCode?: string | null;
+            sunatProductCode?: string | null;
+            /** @default  */
+            description: string;
+            /** @default NIU */
+            unit: string;
+            /** @default 0.000 */
+            quantity: string;
+        };
         /** @description A representation of common errors. */
         Error: {
             /** @description A short, human-readable summary of the problem. */
@@ -4074,13 +4540,13 @@ export interface components {
                 "@id"?: string;
                 "@type"?: string;
                 /** Format: iri-reference */
-                first?: string;
+                first?: string | null;
                 /** Format: iri-reference */
-                last?: string;
+                last?: string | null;
                 /** Format: iri-reference */
-                previous?: string;
+                previous?: string | null;
                 /** Format: iri-reference */
-                next?: string;
+                next?: string | null;
             };
         };
         HydraCollectionBaseSchemaNoPagination: {
@@ -4129,6 +4595,7 @@ export interface components {
             voucher_series?: string | null;
             voucher_number?: string | null;
             voucher_payment_method?: number | null;
+            voucher_payment_method_name?: string | null;
             voucher_date?: string | null;
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
@@ -4179,6 +4646,7 @@ export interface components {
             voucher_series?: string | null;
             voucher_number?: string | null;
             voucher_payment_method?: number | null;
+            voucher_payment_method_name?: string | null;
             voucher_date?: string | null;
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
@@ -4232,40 +4700,56 @@ export interface components {
             /** @description logistic_operation.type.label */
             type?: number;
         };
+        /**
+         * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
+         *     field `file`) and referenced from other resources by IRI — the pattern
+         */
         Media: {
             readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
+            /**
+             * @description Storage filename relative to the configured media directory.
+             * @default
+             */
+            path: string;
+            originalName?: string | null;
+            mimeType?: string | null;
+            size?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
             /** Format: date-time */
             deletedAt?: string | null;
         };
-        "Media-company.read": {
-            readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
-        };
-        "Media-product.read": {
-            readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
-        };
+        "Media-company.read": Record<string, never>;
+        "Media-product.read": Record<string, never>;
+        /**
+         * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
+         *     field `file`) and referenced from other resources by IRI — the pattern
+         */
         "Media.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
+            /**
+             * @description Storage filename relative to the configured media directory.
+             * @default
+             */
+            path: string;
+            originalName?: string | null;
+            mimeType?: string | null;
+            size?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
             /** Format: date-time */
             deletedAt?: string | null;
         };
-        "Media.jsonld-company.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
-        };
-        "Media.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: string;
-            /** @description media.path.label */
-            path?: string;
-        };
+        /**
+         * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
+         *     field `file`) and referenced from other resources by IRI — the pattern
+         */
+        "Media.jsonld-company.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
+         *     field `file`) and referenced from other resources by IRI — the pattern
+         */
+        "Media.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         Menu: Record<string, never>;
         "Menu.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         PaymentMethod: {
@@ -4660,7 +5144,10 @@ export interface components {
             readonly id?: string;
             /** @description product.code.label */
             code?: string | null;
-            /** @description product.type.label */
+            /**
+             * @description product.type.label
+             * @default 1
+             */
             type: number;
             /**
              * @description product.product_type.label
@@ -4715,7 +5202,10 @@ export interface components {
             detractionCatalog?: components["schemas"]["SunatCatalog-product.read"] | null;
         };
         "Product-product.write": {
-            /** @description product.type.label */
+            /**
+             * @description product.type.label
+             * @default 1
+             */
             type: number;
             /**
              * @description product.product_kind.label
@@ -4776,8 +5266,11 @@ export interface components {
             detractionCatalog?: string | null;
         };
         "Product-product.write.jsonMergePatch": {
-            /** @description product.type.label */
-            type?: number;
+            /**
+             * @description product.type.label
+             * @default 1
+             */
+            type: number;
             /**
              * @description product.product_kind.label
              * @default GOOD
@@ -4857,7 +5350,10 @@ export interface components {
             readonly id?: string;
             /** @description product.code.label */
             code?: string | null;
-            /** @description product.type.label */
+            /**
+             * @description product.type.label
+             * @default 1
+             */
             type: number;
             /**
              * @description product.product_type.label
@@ -4928,6 +5424,7 @@ export interface components {
             /** @description product.name.label */
             name: string;
         };
+        /** @deprecated */
         ProductStock: {
             readonly id?: number;
             /**
@@ -4963,6 +5460,7 @@ export interface components {
              */
             updatedAt?: string | null;
         };
+        /** @deprecated */
         "ProductStock-product_stock.read": {
             readonly id?: number;
             /**
@@ -4998,6 +5496,7 @@ export interface components {
              */
             updatedAt?: string | null;
         };
+        /** @deprecated */
         "ProductStock.jsonMergePatch": {
             readonly id?: number;
             /**
@@ -5078,6 +5577,12 @@ export interface components {
             supplier?: string | null;
             /** @description purchase.note.label */
             note?: string | null;
+            /** @description purchase.supplier_doc_type.label */
+            supplierDocType?: string | null;
+            /** @description purchase.supplier_doc_series.label */
+            supplierDocSeries?: string | null;
+            /** @description purchase.supplier_doc_number.label */
+            supplierDocNumber?: string | null;
             /**
              * Format: date-time
              * @description purchase.issued_at.label
@@ -5135,6 +5640,12 @@ export interface components {
             grandTotal: string;
             /** @description purchase.note.label */
             note?: string | null;
+            /** @description purchase.supplier_doc_type.label */
+            supplierDocType?: string | null;
+            /** @description purchase.supplier_doc_series.label */
+            supplierDocSeries?: string | null;
+            /** @description purchase.supplier_doc_number.label */
+            supplierDocNumber?: string | null;
             /**
              * Format: date-time
              * @description purchase.issued_at.label
@@ -5235,6 +5746,12 @@ export interface components {
             grandTotal: string;
             /** @description purchase.note.label */
             note?: string | null;
+            /** @description purchase.supplier_doc_type.label */
+            supplierDocType?: string | null;
+            /** @description purchase.supplier_doc_series.label */
+            supplierDocSeries?: string | null;
+            /** @description purchase.supplier_doc_number.label */
+            supplierDocNumber?: string | null;
             /**
              * Format: date-time
              * @description purchase.issued_at.label
@@ -5319,6 +5836,12 @@ export interface components {
             grandTotal: string;
             /** @description purchase.note.label */
             note?: string | null;
+            /** @description purchase.supplier_doc_type.label */
+            supplierDocType?: string | null;
+            /** @description purchase.supplier_doc_series.label */
+            supplierDocSeries?: string | null;
+            /** @description purchase.supplier_doc_number.label */
+            supplierDocNumber?: string | null;
             /**
              * Format: date-time
              * @description purchase.issued_at.label
@@ -5695,6 +6218,11 @@ export interface components {
             issuedAt?: string | null;
             /**
              * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
+             * Format: date-time
              * @description sale_record.created_at.label
              */
             createdAt?: string | null;
@@ -5703,6 +6231,16 @@ export interface components {
              * @description sale_record.updated_at.label
              */
             updatedAt?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
             /** @description sale_record.tax_document_id.label */
             taxDocumentId?: string | null;
             /**
@@ -5764,6 +6302,11 @@ export interface components {
              */
             issuedAt?: string | null;
             /**
+             * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
              * Format: iri-reference
              * @description sale_record.payment_method.label
              * @example https://example.com/
@@ -5776,7 +6319,7 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
-            /** @description Items for write path (mapped to SaleItem entities by processor). */
+            /** @description Items for write path (mapped to SaleItemRecord entities by processor). */
             writeItems?: (string | null)[];
         };
         "Sale-sale_record.write.jsonMergePatch": {
@@ -5821,6 +6364,11 @@ export interface components {
              */
             issuedAt?: string | null;
             /**
+             * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
              * Format: iri-reference
              * @description sale_record.payment_method.label
              * @example https://example.com/
@@ -5833,7 +6381,7 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
-            /** @description Items for write path (mapped to SaleItem entities by processor). */
+            /** @description Items for write path (mapped to SaleItemRecord entities by processor). */
             writeItems?: (string | null)[];
         };
         "Sale.ApiResponse-sale_record.read": Record<string, never>;
@@ -5913,6 +6461,11 @@ export interface components {
             issuedAt?: string | null;
             /**
              * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
+             * Format: date-time
              * @description sale_record.created_at.label
              */
             createdAt?: string | null;
@@ -5921,6 +6474,16 @@ export interface components {
              * @description sale_record.updated_at.label
              */
             updatedAt?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
             /** @description sale_record.tax_document_id.label */
             taxDocumentId?: string | null;
             /**
@@ -5980,6 +6543,19 @@ export interface components {
              * @default 0.00
              */
             netAmount: string;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
         };
         "SaleItemRecord.jsonld-sale_item_record.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -6021,6 +6597,19 @@ export interface components {
              * @default 0.00
              */
             netAmount: string;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
         };
         "SaleReport.StreamedResponse": {
             /** @description Sets the PHP callback associated with this Response. */
@@ -6713,9 +7302,35 @@ export interface components {
          *
          *     Recommended filters: warehouse (UUID), product (UUID), from/to (date), type.
          *
-         *     Security: ROLE_ADMIN or ROLE_SUPER_ADMIN only.
+         *     Security: authenticated users can read Kardex; stock writes remain protected
+         *     by the StockEntry resource.
          */
-        "StockMovement-stock_movement.read": Record<string, never>;
+        "StockMovement-stock_movement.read": {
+            id?: string;
+            warehouse?: {
+                [key: string]: string;
+            } | null;
+            product?: {
+                [key: string]: string | null;
+            } | null;
+            occurredAt?: string | null;
+            movementType?: string | null;
+            movementTypeLabel?: string | null;
+            /** @description Positive qty when movement is an inbound (null when outbound). */
+            qtyIn?: string | null;
+            /** @description Positive qty when movement is an outbound (null when inbound). */
+            qtyOut?: string | null;
+            qtyDeltaBase?: string | null;
+            unit?: {
+                [key: string]: number | string;
+            } | null;
+            sourceType?: string | null;
+            sourceId?: string | null;
+            note?: string | null;
+            /** @description Cumulative balance after this movement (running sum over time). */
+            runningBalance?: string | null;
+            createdAt?: string | null;
+        };
         /**
          * @description Read-only Kardex resource.
          *
@@ -6724,9 +7339,35 @@ export interface components {
          *
          *     Recommended filters: warehouse (UUID), product (UUID), from/to (date), type.
          *
-         *     Security: ROLE_ADMIN or ROLE_SUPER_ADMIN only.
+         *     Security: authenticated users can read Kardex; stock writes remain protected
+         *     by the StockEntry resource.
          */
-        "StockMovement.jsonld-stock_movement.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "StockMovement.jsonld-stock_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
+            id?: string;
+            warehouse?: {
+                [key: string]: string;
+            } | null;
+            product?: {
+                [key: string]: string | null;
+            } | null;
+            occurredAt?: string | null;
+            movementType?: string | null;
+            movementTypeLabel?: string | null;
+            /** @description Positive qty when movement is an inbound (null when outbound). */
+            qtyIn?: string | null;
+            /** @description Positive qty when movement is an outbound (null when inbound). */
+            qtyOut?: string | null;
+            qtyDeltaBase?: string | null;
+            unit?: {
+                [key: string]: number | string;
+            } | null;
+            sourceType?: string | null;
+            sourceId?: string | null;
+            note?: string | null;
+            /** @description Cumulative balance after this movement (running sum over time). */
+            runningBalance?: string | null;
+            createdAt?: string | null;
+        };
         SunatCatalog: {
             readonly id?: number;
             /** @description sunat_catalog.catalog.label */
@@ -6941,6 +7582,36 @@ export interface components {
             /** @description supplier.business_name.label */
             businessName: string;
         };
+        "TaxDocument-invoice.read": {
+            readonly id?: string;
+            customer?: components["schemas"]["Customer-invoice.read"] | null;
+            /** @description tax_document.series.label */
+            series?: string;
+            /** @description tax_document.number.label */
+            number?: string;
+            /** @description tax_document.currency.label */
+            currency?: string | null;
+            /**
+             * @description tax_document.total.label
+             * @default 0.00
+             */
+            total: string;
+            /** @description tax_document.void_ticket.label */
+            voidTicket?: string | null;
+            /** @description tax_document.void_correlation.label */
+            voidCorrelation?: string | null;
+            /** @description tax_document.sunat_status.label */
+            sunatStatus?: string | null;
+            /** @description tax_document.sunat_message.label */
+            sunatMessage?: string | null;
+            /** @description tax_document.digest.label */
+            digest?: string | null;
+            /** @description tax_document.cdr_path.label */
+            cdrPath?: string | null;
+            readonly fullNumber?: string;
+            readonly publicReceiptUrl?: string;
+            readonly voided?: boolean;
+        };
         "TaxDocument-invoice.read_creditnote.read": {
             readonly id?: string;
             customer?: components["schemas"]["Customer-invoice.read_creditnote.read"] | null;
@@ -7009,6 +7680,36 @@ export interface components {
             /** @description tax_document.reason_description.label */
             reasonDescription?: string | null;
             lines?: components["schemas"]["TaxDocumentLine-invoice.write_creditnote.write"][];
+        };
+        "TaxDocument.jsonld-invoice.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            customer?: components["schemas"]["Customer.jsonld-invoice.read"] | null;
+            /** @description tax_document.series.label */
+            series?: string;
+            /** @description tax_document.number.label */
+            number?: string;
+            /** @description tax_document.currency.label */
+            currency?: string | null;
+            /**
+             * @description tax_document.total.label
+             * @default 0.00
+             */
+            total: string;
+            /** @description tax_document.void_ticket.label */
+            voidTicket?: string | null;
+            /** @description tax_document.void_correlation.label */
+            voidCorrelation?: string | null;
+            /** @description tax_document.sunat_status.label */
+            sunatStatus?: string | null;
+            /** @description tax_document.sunat_message.label */
+            sunatMessage?: string | null;
+            /** @description tax_document.digest.label */
+            digest?: string | null;
+            /** @description tax_document.cdr_path.label */
+            cdrPath?: string | null;
+            readonly fullNumber?: string;
+            readonly publicReceiptUrl?: string;
+            readonly voided?: boolean;
         };
         "TaxDocument.jsonld-invoice.read_creditnote.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
@@ -7514,6 +8215,7 @@ export interface components {
             voucher_series?: string | null;
             voucher_number?: string | null;
             voucher_payment_method?: number | null;
+            voucher_payment_method_name?: string | null;
             voucher_date?: string | null;
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
@@ -7564,6 +8266,7 @@ export interface components {
             voucher_series?: string | null;
             voucher_number?: string | null;
             voucher_payment_method?: number | null;
+            voucher_payment_method_name?: string | null;
             voucher_date?: string | null;
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
@@ -7825,233 +8528,6 @@ export interface operations {
             };
         };
     };
-    auth_change_password: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": {
-                    currentPassword: string;
-                    newPassword: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Password changed successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Auth resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Auth"];
-                    "application/ld+json": components["schemas"]["Auth.jsonld"];
-                };
-            };
-            /** @description Current password is incorrect */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
-    auth_login: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description The new Auth resource */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AuthResource"];
-                "application/ld+json": components["schemas"]["AuthResource"];
-            };
-        };
-        responses: {
-            /** @description Auth resource created */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthResource.AuthResponseDto"];
-                    "application/ld+json": components["schemas"]["AuthResource.AuthResponseDto.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
-    auth_logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Logout successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Auth resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthLogoutResource"];
-                    "application/ld+json": components["schemas"]["AuthLogoutResource.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
-    auth_refresh: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Access and refresh tokens rotated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Auth resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthRefreshResource"];
-                    "application/ld+json": components["schemas"]["AuthRefreshResource.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Invalid or expired refresh token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
     "api_authselect-branch_post": {
         parameters: {
             query?: never;
@@ -8062,8 +8538,8 @@ export interface operations {
         /** @description The new Auth resource */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AuthSelectBranchResource"];
-                "application/ld+json": components["schemas"]["AuthSelectBranchResource"];
+                "application/json": components["schemas"]["Auth"];
+                "application/ld+json": components["schemas"]["Auth"];
             };
         };
         responses: {
@@ -8073,8 +8549,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthSelectBranchResource.AuthResponseDto"];
-                    "application/ld+json": components["schemas"]["AuthSelectBranchResource.AuthResponseDto.jsonld"];
+                    "application/json": components["schemas"]["Auth.AuthResponseDto"];
+                    "application/ld+json": components["schemas"]["Auth.AuthResponseDto.jsonld"];
                 };
             };
             /** @description Invalid input */
@@ -9013,13 +9489,13 @@ export interface operations {
         };
         responses: {
             /** @description CashRegister resource created */
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CashRegister.ApiResponse-cash_register.read"];
-                    "application/ld+json": components["schemas"]["CashRegister.ApiResponse.jsonld-cash_register.read"];
+                    "application/json": components["schemas"]["CashRegister.CashRegisterCloseResponseDto-cash_register_close.read"];
+                    "application/ld+json": components["schemas"]["CashRegister.CashRegisterCloseResponseDto.jsonld-cash_register_close.read"];
                 };
             };
             /** @description Invalid input */
@@ -9351,6 +9827,163 @@ export interface operations {
             };
         };
     };
+    "api_cash-sessions_idclose_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CashSession identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new CashSession resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashSession.CashRegisterCloseDto"];
+                "application/ld+json": components["schemas"]["CashSession.CashRegisterCloseDto"];
+            };
+        };
+        responses: {
+            /** @description CashSession resource created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashRegisterCloseResponseDto-cash_register_close.read"];
+                    "application/ld+json": components["schemas"]["CashSession.CashRegisterCloseResponseDto.jsonld-cash_register_close.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_cash-sessions_idmovements_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path: {
+                /** @description CashSession identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashSession collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashMovement-cash_movement.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["CashSession.CashMovement.jsonld-cash_movement.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_cash-sessions_idsummary_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path: {
+                /** @description CashSession identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashSession collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashSessionClosureSummaryDto-cash_closure_summary.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["CashSession.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_cash-sessions_idx-report_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CashSession identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashSession resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashSessionXReportDto-cash_x_report.read"];
+                    "application/ld+json": components["schemas"]["CashSession.CashSessionXReportDto.jsonld-cash_x_report.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_cash-shifts_get_collection": {
         parameters: {
             query?: {
@@ -9627,9 +10260,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CashShift"][];
+                    "application/json": components["schemas"]["CashShift.CashSessionClosureSummaryDto-cash_closure_summary.read"][];
                     "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
-                        member: components["schemas"]["CashShift.jsonld"][];
+                        member: components["schemas"]["CashShift.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read"][];
                     };
                 };
             };
@@ -9653,8 +10286,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CashShift.CashShiftXReportDto"];
-                    "application/ld+json": components["schemas"]["CashShift.CashShiftXReportDto.jsonld"];
+                    "application/json": components["schemas"]["CashShift.CashSessionXReportDto-cash_x_report.read"];
+                    "application/ld+json": components["schemas"]["CashShift.CashSessionXReportDto.jsonld-cash_x_report.read"];
                 };
             };
             /** @description Not found */
@@ -10631,6 +11264,200 @@ export interface operations {
             };
         };
     };
+    "api_despatch-guides_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description DespatchGuide collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DespatchGuide-despatch.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["DespatchGuide.jsonld-despatch.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_despatch-guides_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new DespatchGuide resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DespatchGuide-despatch.write"];
+                "application/ld+json": components["schemas"]["DespatchGuide-despatch.write"];
+            };
+        };
+        responses: {
+            /** @description DespatchGuide resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DespatchGuide-despatch.read"];
+                    "application/ld+json": components["schemas"]["DespatchGuide.jsonld-despatch.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_despatch-guides_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description DespatchGuide identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description DespatchGuide resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DespatchGuide-despatch.read"];
+                    "application/ld+json": components["schemas"]["DespatchGuide.jsonld-despatch.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    despatch_guide_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description DespatchGuide identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new DespatchGuide resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DespatchGuide-despatch.write"];
+                "application/ld+json": components["schemas"]["DespatchGuide-despatch.write"];
+            };
+        };
+        responses: {
+            /** @description DespatchGuide resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DespatchGuide-despatch.read"];
+                    "application/ld+json": components["schemas"]["DespatchGuide.jsonld-despatch.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     "api_exchange-rate_currency_get": {
         parameters: {
             query?: never;
@@ -11092,57 +11919,6 @@ export interface operations {
             };
             /** @description Not found */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
-    api_media_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description The new Media resource */
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file?: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Media resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Media"];
-                    "application/ld+json": components["schemas"]["Media.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12448,7 +13224,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description PurchaseItem identifier */
+                /** @description Purchase identifier */
                 id: string;
             };
             cookie?: never;
@@ -13030,6 +13806,58 @@ export interface operations {
             };
         };
     };
+    sale_replace_rejected: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Sale identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new Sale resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Sale-sale_record.write"];
+                "application/ld+json": components["schemas"]["Sale-sale_record.write"];
+            };
+        };
+        responses: {
+            /** @description Sale resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sale-sale_record.read"];
+                    "application/ld+json": components["schemas"]["Sale.jsonld-sale_record.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     sale_void: {
         parameters: {
             query?: never;
@@ -13090,7 +13918,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description SaleItemRecord identifier */
+                /** @description SaleRecord identifier */
                 id: string;
             };
             cookie?: never;
@@ -14092,6 +14920,45 @@ export interface operations {
             };
         };
     };
+    "api_sales_saleIdtax-documents_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path: {
+                /** @description SaleRecord identifier */
+                saleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description TaxDocument collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxDocument-invoice.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["TaxDocument.jsonld-invoice.read"][];
+                    };
+                };
+            };
+        };
+    };
     "api_tax-documents_get_collection": {
         parameters: {
             query?: {
@@ -14505,7 +15372,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description TaxDocumentLine identifier */
+                /** @description TaxDocument identifier */
                 id: string;
             };
             cookie?: never;
@@ -15897,7 +16764,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description Warehouse identifier */
+                /** @description Branch identifier */
                 id: string;
             };
             cookie?: never;

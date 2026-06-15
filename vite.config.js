@@ -34,6 +34,7 @@ const frontendAliases = {
 export default defineConfig({
   resolve: {
     alias: frontendAliases,
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
   test: {
     environment: 'happy-dom',
