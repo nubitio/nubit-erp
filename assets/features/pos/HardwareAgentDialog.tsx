@@ -243,11 +243,6 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
                 <dt>Configuración</dt>
                 <dd>
                   <code>{configPath}</code>
-                  <p className="hardware-agent-dialog__hint">
-                    Referencia técnica (inglés):{' '}
-                    <code>config.toml.example</code> en la misma carpeta — no se sobrescribe al
-                    guardar.
-                  </p>
                 </dd>
                 <dt>Balanza</dt>
                 <dd>{scaleStatus}</dd>

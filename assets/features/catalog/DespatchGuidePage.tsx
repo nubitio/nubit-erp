@@ -1,6 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
 
 const API = getCoreApiBaseUrl();
@@ -11,8 +13,34 @@ interface DespatchGuideRecord extends DataRecord {
   sunatStatus?: string | null;
 }
 
+type DespatchSendResponse = {
+  message?: string;
+  detail?: string;
+};
+
 export function DespatchGuidePage() {
   const gridRef = useRef<GridHandle | null>(null);
+
+  const sendSelectedGuide = useCallback(async () => {
+    const row = gridRef.current?.getSelectedRow() as DespatchGuideRecord | undefined;
+    if (!row?.id) {
+      toast('Selecciona una guía de remisión.', 'warning');
+      return;
+    }
+
+    gridRef.current?.showLoading('Encolando guía de remisión...');
+    try {
+      const payload = await httpRequestData<DespatchSendResponse>(
+        httpClient.post<DespatchSendResponse>(`${API}despatch_guides/${row.id}/send`),
+      );
+      toast(payload?.message ?? 'Guía de remisión encolada para envío.', 'success');
+      gridRef.current?.refresh();
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'No se pudo enviar la guía.', 'error');
+    } finally {
+      gridRef.current?.hideLoading();
+    }
+  }, []);
 
   const resource = useMemo(
     () => defineResource<DespatchGuideRecord>(API + 'despatch_guides', {
@@ -31,36 +59,12 @@ export function DespatchGuidePage() {
             type: 'info',
             group: 'delivery',
             groupLabel: 'Envío',
-            onClick: async () => {
-              const row = gridRef.current?.getSelectedRow() as DespatchGuideRecord | undefined;
-              if (!row?.id) {
-                toast('Selecciona una guía de remisión.', 'warning');
-                return;
-              }
-
-              gridRef.current?.showLoading('Encolando guía de remisión...');
-              try {
-                const response = await fetch(`${API}despatch_guides/${row.id}/send`, {
-                  method: 'POST',
-                  credentials: 'include',
-                });
-                const payload = await response.json().catch(() => null) as { message?: string; detail?: string } | null;
-                if (!response.ok) {
-                  throw new Error(payload?.detail ?? payload?.message ?? 'No se pudo enviar la guía.');
-                }
-                toast(payload?.message ?? 'Guía de remisión encolada para envío.', 'success');
-                gridRef.current?.refresh();
-              } catch (error) {
-                toast(error instanceof Error ? error.message : 'No se pudo enviar la guía.', 'error');
-              } finally {
-                gridRef.current?.hideLoading();
-              }
-            },
+            onClick: sendSelectedGuide,
           },
         ],
       },
     }),
-    [],
+    [sendSelectedGuide],
   );
 
   return <SmartCrudPage resource={resource} gridRef={gridRef} />;
