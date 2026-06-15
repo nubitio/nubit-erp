@@ -1,6 +1,7 @@
 import { exceptionalFetch } from '@shared/api/network';
 
-export const AGENT_BASE_URL = 'http://localhost:8765';
+/** Use 127.0.0.1 — on macOS, localhost (::1) may hit Docker/Symfony on :8765 instead of the agent. */
+export const AGENT_BASE_URL = 'http://127.0.0.1:8765';
 
 export type AgentHealth = {
   status: string;

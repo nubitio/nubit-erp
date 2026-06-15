@@ -109,7 +109,7 @@ final readonly class CspNonceListener
                 // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
                 // localhost HTTP for efact-hardware-agent;
                 // localhost ws/wss for QZ Tray desktop print agent.
-                "connect-src 'self' {$connectSrcExtra} http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+                "connect-src 'self' {$connectSrcExtra} http://127.0.0.1:8765 http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",
             ])
         );

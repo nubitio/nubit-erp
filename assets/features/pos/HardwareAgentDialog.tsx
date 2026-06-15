@@ -216,7 +216,7 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
                 </dd>
                 <dt>URL</dt>
                 <dd>
-                  <code>http://localhost:8765</code>
+                  <code>http://127.0.0.1:8765</code>
                 </dd>
                 <dt>Configuración</dt>
                 <dd>

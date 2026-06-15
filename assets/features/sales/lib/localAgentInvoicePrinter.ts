@@ -1,8 +1,7 @@
 import { exceptionalFetch } from '@shared/api/network';
+import { AGENT_BASE_URL } from './localAgentClient';
 import { saleService } from '../services/saleService';
 import type { InvoicePrinter } from './invoicePrinter';
-
-const AGENT_BASE_URL = 'http://localhost:8765';
 
 export class LocalAgentNotAvailableError extends Error {
   constructor() {
