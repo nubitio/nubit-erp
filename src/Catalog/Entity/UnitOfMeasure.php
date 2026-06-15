@@ -10,7 +10,9 @@ use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[ORM\Entity(repositoryClass: UnitOfMeasureRepository::class)]
 #[ORM\Table(name: 'unidad')]
@@ -45,8 +47,9 @@ class UnitOfMeasure
 
     #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
     #[ApiProperty(description: 'unit_of_measure.ratio.label')]
+    #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private string $ratio = '1.00';
+    private string|int|float $ratio = '1.00';
 
     #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
     #[ApiProperty(description: 'unit_of_measure.reference.label')]
