@@ -26,6 +26,7 @@ use App\Catalog\Repository\ProductRepository;
 use App\Contacts\Repository\SupplierRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Inventory\Repository\WarehouseRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class TestDataSeeder
@@ -205,6 +206,7 @@ final readonly class TestDataSeeder
 
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private Connection $connection,
         private WarehouseRepository $warehouseRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
         private CategoryRepository $categoryRepository,
@@ -451,8 +453,25 @@ final readonly class TestDataSeeder
 
         $this->entityManager->flush();
         $this->entityManager->clear();
+        $this->syncLegacyProductStockMirrorToStockItems();
 
         return $created;
+    }
+
+    private function syncLegacyProductStockMirrorToStockItems(): void
+    {
+        $this->connection->executeStatement(
+            <<<'SQL'
+            INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+            SELECT CAST(ps.warehouse_id AS CHAR), CAST(ps.product_id AS CHAR), ps.stock, 0, NOW(), 1
+            FROM product_stock ps
+            ON DUPLICATE KEY UPDATE
+                qty_on_hand = VALUES(qty_on_hand),
+                qty_reserved = 0,
+                updated_at = NOW(),
+                version = version + 1
+            SQL
+        );
     }
 
     /**

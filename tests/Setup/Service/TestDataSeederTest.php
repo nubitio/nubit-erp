@@ -237,6 +237,7 @@ final class TestDataSeederTest extends TestCase
 
         return new TestDataSeeder(
             $entityManager ?? $this->createMock(EntityManagerInterface::class),
+            $this->createMock(\Doctrine\DBAL\Connection::class),
             $warehouseRepository,
             $unitOfMeasureRepository ?? $this->createMock(UnitOfMeasureRepository::class),
             $categoryRepository ?? $this->createMock(CategoryRepository::class),

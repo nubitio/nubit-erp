@@ -172,8 +172,14 @@ HELP
         $connection->executeStatement('TRUNCATE TABLE movimiento');
         $io->progressAdvance();
 
-        // Truncate products and stock
+        // Truncate products and canonical stock tables plus the legacy mirror.
         $io->text('Truncating products...');
+        $this->truncateIfExists($connection, 'stock_lots');
+        $this->truncateIfExists($connection, 'stock_items');
+        $this->truncateIfExists($connection, 'stock_balances');
+        $this->truncateIfExists($connection, 'stock_movements');
+        $this->truncateIfExists($connection, 'stock_entry_items');
+        $this->truncateIfExists($connection, 'stock_entries');
         $connection->executeStatement('TRUNCATE TABLE product_stock');
         $connection->executeStatement('TRUNCATE TABLE producto');
         $io->progressAdvance();

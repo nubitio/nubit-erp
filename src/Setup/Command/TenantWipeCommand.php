@@ -130,9 +130,9 @@ final class TenantWipeCommand extends Command
                 $this->wipeCatalog($io);
             }
 
-            $io->section('Reseteando stock a 0…');
+            $io->section('Reseteando espejo legacy de stock a 0…');
             $affected = $this->connection->executeStatement('UPDATE product_stock SET stock = 0, updated_at = NOW()');
-            $io->text("  product_stock: {$affected} filas actualizadas");
+            $io->text("  product_stock legacy: {$affected} filas actualizadas");
         } finally {
             $this->connection->executeStatement('SET foreign_key_checks = 1');
         }

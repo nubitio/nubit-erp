@@ -12,11 +12,15 @@ use App\Inventory\Repository\ProductStockRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+/**
+ * @deprecated Legacy stock mirror kept for existing API/UI consumers. Canonical stock lives in stock_items.
+ */
 #[ORM\Entity(repositoryClass: ProductStockRepository::class)]
 #[ORM\Table(name: 'product_stock')]
 #[ORM\UniqueConstraint(name: 'product_warehouse_unique', columns: ['product_id', 'warehouse_id'])]
 #[ApiResource(
     normalizationContext: ['groups' => ['product_stock:read']],
+    deprecationReason: 'Legacy stock mirror. Use stock_items via InventoryService/ProductStockService as the source of truth.',
     mercure: true,
 )]
 class ProductStock
