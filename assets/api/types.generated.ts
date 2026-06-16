@@ -8012,12 +8012,12 @@ export interface components {
         "UnitOfMeasure-product.read": {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
-            name?: string;
+            name: string;
         };
         "UnitOfMeasure-unit-of-measure.read": {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
-            name?: string;
+            name: string;
             /** @description unit_of_measure.code.label */
             code?: string;
             /** @description unit_of_measure.type.label */
@@ -8034,6 +8034,8 @@ export interface components {
             reference: boolean;
         };
         "UnitOfMeasure-unit-of-measure.write": {
+            /** @description unit_of_measure.name.label */
+            name: string;
             /** @description unit_of_measure.code.label */
             code?: string;
             /** @description unit_of_measure.type.label */
@@ -8050,6 +8052,8 @@ export interface components {
             reference: boolean;
         };
         "UnitOfMeasure-unit-of-measure.write.jsonMergePatch": {
+            /** @description unit_of_measure.name.label */
+            name?: string;
             /** @description unit_of_measure.code.label */
             code?: string;
             /** @description unit_of_measure.type.label */
@@ -8068,12 +8072,12 @@ export interface components {
         "UnitOfMeasure.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
-            name?: string;
+            name: string;
         };
         "UnitOfMeasure.jsonld-unit-of-measure.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
-            name?: string;
+            name: string;
             /** @description unit_of_measure.code.label */
             code?: string;
             /** @description unit_of_measure.type.label */

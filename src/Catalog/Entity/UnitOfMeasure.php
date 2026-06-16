@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UnitOfMeasureRepository::class)]
 #[ORM\Table(name: 'unidad')]
@@ -30,7 +31,8 @@ class UnitOfMeasure
     #[ORM\Column(name: 'unidad_id')]
     private ?int $id = null;
 
-    #[Groups(['unit-of-measure:read', 'product:read'])]
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write', 'product:read'])]
+    #[Assert\NotBlank]
     #[ApiProperty(description: 'unit_of_measure.name.label')]
     #[ORM\Column(length: 255)]
     private string $name;

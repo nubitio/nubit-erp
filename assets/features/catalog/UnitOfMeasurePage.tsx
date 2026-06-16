@@ -169,7 +169,7 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { order: 0, width: 260, label: 'Nombre' } },
+      { kind: 'override', key: 'name', patch: { order: 0, width: 260, label: 'Nombre', required: true } },
       { kind: 'override', key: 'code', patch: codePatch },
       { kind: 'override', key: 'type', patch: typePatch },
       {

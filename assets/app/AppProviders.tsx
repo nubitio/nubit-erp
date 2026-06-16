@@ -16,6 +16,16 @@ import toast from '@shared/lib/SharedUtils';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
 
+function notifyServerError(error: unknown) {
+  const status = typeof error === 'object' && error !== null && 'status' in error
+    ? Number(error.status)
+    : undefined;
+
+  if (status !== undefined && status >= 500) {
+    toast('Error interno del servidor. No se pudo completar la operación.', 'error', 6000);
+  }
+}
+
 // Mounts inside DensityProvider; applies the persisted accent color on every
 // page load — even when the SettingsPanel has never been opened.
 const AccentColorApplier = () => {
@@ -36,6 +46,7 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
     refreshPath: 'auth/refresh',
     loginPath: 'auth/login',
     onUnauthorized: handleSessionExpired,
+    onError: notifyServerError,
   }), []);
 
   const runtimeConfig = useMemo(() => ({
