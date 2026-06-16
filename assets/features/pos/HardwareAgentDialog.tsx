@@ -27,6 +27,14 @@ interface HardwareAgentDialogProps {
 const INSTALL_CMD =
   'curl -fsSL https://raw.githubusercontent.com/nubitio/efact-hardware-agent/main/install.sh | bash';
 
+function getSerialPortLabel(port: SerialPortInfo): string {
+  const comPort = port.name.match(/COM\d+/i)?.[0];
+
+  if (comPort) return comPort.toUpperCase();
+
+  return port.name.replace(/^\/dev\//, '');
+}
+
 export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps) {
   const [tab, setTab] = useState<TabId>('status');
   const [loading, setLoading] = useState(false);
@@ -314,9 +322,7 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
                     { value: '', label: 'Seleccionar puerto…' },
                     ...ports.map((port) => ({
                       value: port.name,
-                      label: port.description
-                        ? `${port.name} — ${port.description}`
-                        : port.name,
+                      label: getSerialPortLabel(port),
                     })),
                   ]}
                   onChange={(value) => updateScale({ serial_port: value || null })}
