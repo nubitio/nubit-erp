@@ -278,28 +278,20 @@ El sistema integra un asistente IA y herramientas MCP sobre la misma base Symfon
 | Modelo LLM | OpenAI `gpt-4o-mini` (requiere `OPENAI_API_KEY`) |
 | RAG | Pipeline TF-IDF (`KnowledgeIndex` + `KnowledgeRetriever`) — búsqueda por similitud de coseno |
 | `symfony/mcp-bundle` | Expone herramientas MCP: `SaleTools`, `ProductTools`, `CashRegisterTools`, `DocumentationTools` |
-| Frontend AI | `openai ^6.x` + pipeline de renderizado Markdown (`marked` + `remark`/`rehype`) |
+| Frontend AI | Cliente HTTP interno (`assets/shared/api/HttpClient.ts`) + renderizado Markdown con `marked` |
 
 Las herramientas MCP se registran mediante atributos `#[AsTool]` en `src/AI/Tool/*.php`.
-**Nota:** No existe `config/packages/mcp.yaml`; el bundle usa configuración por defecto y la ruta MCP se declara en `config/routes/mcp.yaml`.
-
-## Arquitectura técnica detallada
-
-Ver documento técnico estratégico:
-
-- `docs/ai/EFACT_TECHNICAL_ARCHITECTURE.md`
+La configuración HTTP de MCP vive en `config/packages/mcp.yaml` y la ruta se declara en `config/routes/mcp.yaml`.
 
 ## Plan de producto
 
 - `docs/PRD.md` — PRD operacional actualizado.
 - `PRD.md` — north-star para agentes y contributors.
-- `docs/product-next-level-plan.md` — plan de 90 dias para llevar eFact al siguiente nivel como producto SaaS.
 
 ## Inconsistencias / pendientes detectados (código actual)
 
 1. No existe `assets/admin` como raíz; lo real está en `assets/features/admin`.
-2. Existe módulo mock legacy `assets/api/auth.tsx` coexistiendo con login real en `assets/features/auth/services/authService.ts`.
-3. `docs/PRD.md` es el PRD operacional actualizado; `PRD.md` sigue siendo el north-star para agentes y contributors.
+2. `docs/PRD.md` es el PRD operacional actualizado; `PRD.md` sigue siendo el north-star para agentes y contributors.
 
 ## Licencia
 

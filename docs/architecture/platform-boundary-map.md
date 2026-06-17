@@ -6,28 +6,30 @@ Referencia rápida de qué código es portable (`Nubit\Platform`) vs qué perman
 
 ## Namespaces
 
-| Namespace | Ubicación actual → objetivo | Publicable |
+| Namespace | Ubicación actual | Publicable |
 |-----------|----------------------------|------------|
-| `Nubit\Platform\` | `src/Platform/` → `packages/platform/` | Sí (`nubit/platform`) |
-| `Nubit\ApiPlatform\` | `src/Efact/` (bridge) → `packages/api-platform/` | Sí (`nubit/api-platform`) |
-| `Nubit\AdminBundle\` | nuevo → `packages/admin-bundle/` | Sí (`nubit/admin-bundle`) |
+| `Nubit\Platform\` | `vendor/nubitio/platform/src/` | Sí (`nubitio/platform`) |
+| `Nubit\ApiPlatform\` | `vendor/nubitio/api-platform/src/` | Sí (`nubitio/api-platform`) |
+| `Nubit\AdminBundle\` | `vendor/nubitio/admin-bundle/src/` | Sí (`nubitio/admin-bundle`) |
 | `App\Efact\` | infra efact-specific post-migración | No |
 | `App\ControlPlane\` | SaaS multi-tenant | No |
 | `App\Identity\` | efact prod; lógica genérica → bundle | Parcial |
 | `App\{Billing,Sales,Catalog,...}\` | Dominio | No |
 
-`src/Core/` está retirado; ver `src/Core/README.md`.
+`src/Core/` está retirado; ver `src/Core/README.md`. Los aliases `App\Core\*` que sigan en `config/services.yaml` son compatibilidad transitoria, no una ubicación activa de código.
 
 ---
 
 ## Reglas (guard automático)
 
-El script `php scripts/architecture/check-platform-boundary.php` falla si rutas candidatas importan:
+El script `php scripts/architecture/check-platform-boundary.php` es un guard legacy de la extracción y hoy escanea rutas candidatas locales si existen. La frontera runtime efectiva está en los paquetes Composer `nubitio/*` y los bindings de `config/services.yaml`.
+
+El guard falla si rutas candidatas importan:
 
 - `App\Entity\`, `App\Repository\`, dominios concretos (`Billing`, `Inventory`, …)
-- En `src/Platform` además: `App\Efact\Config\`, `App\Core\Doctrine\`, etc.
+- En una ruta Platform local, además: `App\Efact\Config\`, `App\Core\Doctrine\`, etc.
 
-**Ejecutar en CI** tras cada cambio en `packages/platform`.
+**Ejecutar en CI** tras cambios de frontera o antes de reintroducir shims locales.
 
 ---
 
@@ -47,7 +49,7 @@ Bindings en `config/services.yaml` (sección SPEC-004/005).
 
 ## Bridge CRUD (no es Platform)
 
-Estos componentes **no** viven en `Nubit\Platform`; pasan a `nubit/api-platform`:
+Estos componentes **no** viven en `Nubit\Platform`; viven en `nubitio/api-platform`:
 
 - `DataGridFilter`
 - `TranslatedDocumentationNormalizer` (`x-crud`)
@@ -61,9 +63,9 @@ Sin ellos, `@nubit/hydra` y el grid de `@nubit/crud` no coinciden con el backend
 
 ```mermaid
 flowchart TB
-  PLAT["nubit/platform"]
-  API["nubit/api-platform"]
-  BUNDLE["nubit/admin-bundle"]
+  PLAT["nubitio/platform"]
+  API["nubitio/api-platform"]
+  BUNDLE["nubitio/admin-bundle"]
   APP["App dominio efact"]
   CP["App ControlPlane"]
 

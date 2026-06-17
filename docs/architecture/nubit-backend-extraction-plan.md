@@ -2,24 +2,24 @@
 
 Documento de diseño acordado para publicar el stack CRUD de efact como librerías PHP reutilizables, alineadas con los paquetes npm `@nubit/*`.
 
-**Estado:** aprobado para implementación (big bang)  
-**Última revisión:** 2026-06-05
+**Estado:** implementado parcialmente en efact mediante dependencias Composer `nubitio/*`; este documento queda como diseño histórico y guía de frontera.
+**Última revisión:** 2026-06-16
 
 ---
 
 ## 1. Resumen ejecutivo
 
-El backend portable vive hoy en tres capas dentro del monolito:
+El backend portable se separa hoy en tres capas; en el runtime actual de efact las dos primeras ya llegan por Composer:
 
 | Capa actual | Namespace / ruta | Rol |
 |-------------|-------------------|-----|
-| Plataforma | `Nubit\Platform\` → `src/Platform/` | Contratos, excepciones, tenant context, features, infra compartida |
-| Bridge CRUD | `App\Efact\` → `src/Efact/` | Contrato API Platform ↔ `@nubit/hydra` (grid, `x-crud`, paginación) |
+| Plataforma | `Nubit\Platform\` desde `vendor/nubitio/platform/src/` | Contratos, excepciones, tenant context, features, infra compartida |
+| Bridge CRUD | `Nubit\ApiPlatform\` desde `vendor/nubitio/api-platform/src/` + adaptadores `App\Efact` | Contrato API Platform ↔ `@nubit/hydra` (grid, `x-crud`, paginación) |
 | Producto | `App\{ControlPlane,Identity,Billing,...}\` | SaaS, dominio Perú, auth de producción |
 
-**Objetivo v1:** monorepo `packages/` con tres publicables MIT + skeleton full-stack. El consumidor principal instala **un solo bundle** (`nubit/admin-bundle`), al estilo EasyAdmin, no tres paquetes a mano.
+**Objetivo v1:** tres paquetes Composer publicables + skeleton full-stack. El consumidor principal instala **un solo bundle** (`nubitio/admin-bundle`), al estilo EasyAdmin, no tres paquetes a mano.
 
-**Migración en efact:** big bang (un PR que mueve código, actualiza Composer y elimina duplicados).
+**Migración en efact:** el runtime actual ya consume `nubitio/admin-bundle`, `nubitio/api-platform` y `nubitio/platform`; quedan aliases legacy `App\Core\*` en `config/services.yaml` como transición.
 
 **Tenant en v1 del starter:** single-tenant; multi-tenant real sigue en ControlPlane de efact.
 
@@ -34,7 +34,7 @@ Otros proyectos (web + Android) necesitan:
 3. Auth alineada con `@nubit/core` (cookies en web, Bearer en móvil).
 4. Arranque en horas, no semanas de copiar `DataGridFilter` y listeners desde efact.
 
-La extracción no es “sacar `src/Platform`” sola: sin el bridge API Platform, el frontend Nubit no genera pantallas CRUD útiles.
+La extracción no fue solo separar Platform: sin el bridge API Platform, el frontend Nubit no genera pantallas CRUD útiles.
 
 ---
 
@@ -46,8 +46,8 @@ La extracción no es “sacar `src/Platform`” sola: sin el bridge API Platform
 | 2 | Multi-tenant en starter | **Single-tenant**; implementaciones noop de contratos `Nubit\Platform\Tenant\*` |
 | 3 | Repositorio | **Monorepo** `packages/` dentro de efact; publicación Packagist después |
 | 4 | Auth | **Cookie + Bearer** — un `JWTAuthenticator`; login con `response_mode: cookie \| json` |
-| 5 | Nombres Composer | `nubit/platform`, `nubit/api-platform`, `nubit/admin-bundle` |
-| 6 | DX consumidor | **Un bundle** como entrada (`composer require nubit/admin-bundle`) |
+| 5 | Nombres Composer | `nubitio/platform`, `nubitio/api-platform`, `nubitio/admin-bundle` |
+| 6 | DX consumidor | **Un bundle** como entrada (`composer require nubitio/admin-bundle`) |
 | 7 | Onboarding | **Skeleton primero**; el template ya incluye el bundle |
 | 8 | Skeleton | **Full-stack** (Symfony + Vite/React + `@nubit/react-admin` + entidad ejemplo) |
 | 9 | Migración efact | **Big bang** — un PR grande, CI verde antes de merge |
@@ -69,9 +69,9 @@ flowchart TB
   end
 
   subgraph php["Backend (Composer)"]
-    BUNDLE["nubit/admin-bundle"]
-    API["nubit/api-platform"]
-    PLAT["nubit/platform"]
+    BUNDLE["nubitio/admin-bundle"]
+    API["nubitio/api-platform"]
+    PLAT["nubitio/platform"]
   end
 
   subgraph app["Aplicación consumidora"]
@@ -90,9 +90,9 @@ flowchart TB
   HYDRA --> CRUD
 ```
 
-### 4.1 `nubit/platform`
+### 4.1 `nubitio/platform`
 
-**Origen:** `src/Platform/` (ya namespace `Nubit\Platform\`).
+**Ubicación actual en efact:** `vendor/nubitio/platform/src/` (namespace `Nubit\Platform\`).
 
 **Contenido:**
 
@@ -106,11 +106,11 @@ flowchart TB
 
 **No incluye:** API Platform, Doctrine filters, JWT, entidades de negocio.
 
-**Guard de frontera:** `scripts/architecture/check-platform-boundary.php` (SPEC-004) — debe seguir pasando en CI.
+**Guard de frontera:** `scripts/architecture/check-platform-boundary.php` (SPEC-004) permanece como guard legacy para rutas locales candidatas; revisar antes de reintroducir shims o mover código portable.
 
-### 4.2 `nubit/api-platform`
+### 4.2 `nubitio/api-platform`
 
-**Origen:** piezas de `src/Efact/` que definen el contrato con el frontend.
+**Ubicación actual en efact:** `vendor/nubitio/api-platform/src/`; `src/Efact/` conserva adaptadores e infraestructura propia de la app.
 
 | Componente actual | Responsabilidad |
 |-------------------|-----------------|
@@ -119,7 +119,7 @@ flowchart TB
 | `Efact\Http\ApiResponseListener` | Headers `X-Total-Count`, `X-Total-Pages`, `X-Current-Page` |
 | Traits / `AuditableEntity` (si aplica) | Convenciones de entidad reutilizables |
 
-**Dependencias:** `nubit/platform`, `api-platform/core`, Doctrine, Symfony Serializer/Translation.
+**Dependencias:** `nubitio/platform`, `api-platform/core`, Doctrine, Symfony Serializer/Translation.
 
 **Convención de entidad** (documentar en README del paquete):
 
@@ -135,11 +135,11 @@ flowchart TB
 )]
 ```
 
-### 4.3 `nubit/admin-bundle`
+### 4.3 `nubitio/admin-bundle`
 
 **Rol:** única dependencia Composer que pide el 80% de consumidores (patrón EasyAdmin).
 
-**Depende de:** `nubit/platform`, `nubit/api-platform`, API Platform, Security, JWT (firebase/php-jwt o equivalente ya usado en efact).
+**Depende de:** `nubitio/platform`, `nubitio/api-platform`, API Platform, Security, JWT (firebase/php-jwt o equivalente ya usado en efact).
 
 **Registra automáticamente:**
 
@@ -163,7 +163,7 @@ flowchart TB
 
 **Incluye:**
 
-- App Symfony que solo requiere `nubit/admin-bundle`.
+- App Symfony que solo requiere `nubitio/admin-bundle`.
 - `docker-compose`: MariaDB/PostgreSQL + Mercure (**Mercure on**).
 - Entidades ejemplo: `User`, `Role`, `Product` con `DataGridFilter` + `x-crud`.
 - Frontend Vite: `@nubit/react-admin`, una página `SmartCrudPage`, `CoreProvider` con cookie auth.
@@ -244,19 +244,21 @@ ControlPlane **no** se extrae en v1.
 
 ---
 
-## 8. Estructura de directorios (objetivo)
+## 8. Estructura de directorios
+
+El objetivo original era un monorepo `packages/`. En el estado actual de efact, esos componentes se consumen desde `vendor/nubitio/*`; la estructura siguiente se mantiene como referencia histórica del diseño:
 
 ```
 efact/
 ├── packages/
 │   ├── platform/
-│   │   ├── composer.json          # nubit/platform
+│   │   ├── composer.json          # nubitio/platform
 │   │   └── src/                   # Nubit\Platform\
 │   ├── api-platform/
-│   │   ├── composer.json          # nubit/api-platform
+│   │   ├── composer.json          # nubitio/api-platform
 │   │   └── src/                   # Nubit\ApiPlatform\
 │   └── admin-bundle/
-│       ├── composer.json          # nubit/admin-bundle
+│       ├── composer.json          # nubitio/admin-bundle
 │       ├── src/                   # Nubit\AdminBundle\
 │       └── config/                # services, routes, schema
 ├── skeleton/
@@ -267,17 +269,14 @@ efact/
     └── nubit-backend-extraction-plan.md  # este documento
 ```
 
-**Composer raíz efact** (durante transición):
+**Composer raíz efact** (estado actual):
 
 ```json
 {
-  "repositories": [
-    { "type": "path", "url": "packages/*", "options": { "symlink": true } }
-  ],
   "require": {
-    "nubit/platform": "@dev",
-    "nubit/api-platform": "@dev",
-    "nubit/admin-bundle": "@dev"
+    "nubitio/platform": "0.*",
+    "nubitio/api-platform": "0.*",
+    "nubitio/admin-bundle": "0.*"
   }
 }
 ```
@@ -288,9 +287,9 @@ efact/
 
 ### 9.1 Orden de trabajo en el PR
 
-1. Crear `packages/platform` — mover `src/Platform` → eliminar carpeta vacía o README en `src/Platform`.
-2. Crear `packages/api-platform` — mover bridge desde `Efact`; namespace `Nubit\ApiPlatform\`.
-3. Crear `packages/admin-bundle` — Identity + wiring + `NubitAdminBundle`.
+1. Consumir `nubitio/platform` desde Composer y eliminar rutas locales duplicadas.
+2. Consumir `nubitio/api-platform` desde Composer y mover el bridge reusable al namespace `Nubit\ApiPlatform\`.
+3. Consumir `nubitio/admin-bundle` desde Composer — Identity + wiring + `NubitAdminBundle`.
 4. Actualizar `composer.json` raíz + `config/bundles.php` + `services.yaml` (overrides ControlPlane).
 5. Buscar/reemplazar imports `App\Efact\{Doctrine\ApiPlatform,Http}\*` → `Nubit\ApiPlatform\*`.
 6. Eliminar código muerto y aliases `App\Core\*` legacy cuando el bundle cubra el caso.
@@ -324,9 +323,9 @@ efact/
 
 | Paquete PHP | Paquete npm relacionado |
 |-------------|-------------------------|
-| `nubit/api-platform` | `@nubit/hydra`, `@nubit/crud` |
-| `nubit/admin-bundle` | `@nubit/react-admin` (umbrella) |
-| `nubit/platform` | `@nubit/core` (tipos/eventos; sin dependencia npm directa) |
+| `nubitio/api-platform` | `@nubit/hydra`, `@nubit/crud` |
+| `nubitio/admin-bundle` | `@nubit/react-admin` (umbrella) |
+| `nubitio/platform` | `@nubit/core` (tipos/eventos; sin dependencia npm directa) |
 
 El skeleton full-stack es el equivalente a instalar `@nubit/react-admin` + tema CSS en el mismo repo que el Symfony app.
 
@@ -360,7 +359,7 @@ Documentación frontend: `assets/crud/README.md`, `assets/core/README.md` — ma
 
 1. Tres paquetes en `packages/` con `composer.json` MIT y tests mínimos.
 2. efact consume solo paquetes (sin bridge duplicado en `App\Efact` para grid/docs/headers).
-3. `nubit/admin-bundle` instalable con una línea + config por defecto funcional.
+3. `nubitio/admin-bundle` instalable con una línea + config por defecto funcional.
 4. Skeleton full-stack arranca con `docker compose up` + login web + página CRUD de ejemplo.
 5. Documentación auth web/Android en README del bundle.
 6. CI incluye boundary check + smoke auth/grid.

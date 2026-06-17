@@ -95,16 +95,16 @@ The eFact platform consists of three interconnected products:
 |-------|-----------|
 | Language | PHP 8.5 |
 | Framework | Symfony 7.4 |
-| API layer | API Platform 4.1 (REST + JSON-LD/Hydra) |
+| API layer | API Platform 4.1 (REST + JSON-LD/Hydra) + `nubitio/api-platform` bridge |
 | ORM | Doctrine ORM + Doctrine Migrations |
-| Server | FrankenPHP (PHP worker mode, `php-runtime/frankenphp-symfony`) |
+| Server | FrankenPHP (`runtime/frankenphp-symfony`; worker mode disabled in dev compose) |
 | Async messaging | Symfony Messenger 7.4 (Redis transport) |
 | Auth | Custom JWT (`firebase/php-jwt`) + HttpOnly cookie + refresh tokens |
 | E-invoicing | `greenter/core` 5.x (UBL 2.1 XML, SUNAT web services), `greenter/consulta-cpe` |
 | AI / LLM | `symfony/ai-bundle` + OpenAI GPT-4o-mini |
 | MCP | `symfony/mcp-bundle` — MCP endpoint at `/mcp` |
 | File storage | Flysystem + AWS S3 (`league/flysystem-aws-s3-v3`, `oneup/flysystem-bundle`) |
-| Exports | PHPSpreadsheet, PHPWord, WeasyPrint (PDF) |
+| Exports | PHPSpreadsheet, WeasyPrint (PDF), Nubit Platform export helpers |
 | Printing | `mike42/escpos-php` (ESC/POS thermal), QZ Tray (browser bridge) |
 | Observability | OpenTelemetry SDK (OTLP exporter, auto-instrumentation for Symfony + Doctrine + Monolog) |
 | Math | `brick/math` (exact decimal arithmetic for tax calculations) |
@@ -122,9 +122,9 @@ The eFact platform consists of three interconnected products:
 | PWA | `vite-plugin-pwa` (Workbox service worker) |
 | Routing | React Router 6 |
 | Offline DB | Dexie 4 (IndexedDB wrapper) |
-| HTTP | Axios |
+| HTTP | In-repo `HttpClient` wrapper over `fetch` |
 | State / server cache | React Query (TanStack Query) |
-| AI (client) | `openai` SDK |
+| AI (client) | Backend `POST /api/assistant` via the shared HTTP client |
 | Real-time | Mercure (SSE) |
 | i18n | i18next |
 
@@ -320,7 +320,8 @@ The eFact platform consists of three interconnected products:
 ### 11. MCP (Model Context Protocol)
 
 - MCP endpoint at `/mcp` via `symfony/mcp-bundle`.
-- Exposes the same AI tools as the assistant endpoint to external MCP clients (Claude Desktop, etc.).
+- HTTP transport is configured in `config/packages/mcp.yaml`; route wiring lives in `config/routes/mcp.yaml`.
+- Exposes the same AI tools as the assistant endpoint to external MCP clients.
 
 ---
 
@@ -376,7 +377,7 @@ The eFact platform consists of three interconnected products:
 | POST | `/api/auth/logout` | Invalidate tokens |
 | POST | `/api/auth/select-branch` | Set active branch in JWT |
 
-### Core Resources (API Platform CRUD)
+### API Platform CRUD Resources
 `/api/products`, `/api/sales`, `/api/tax-documents`, `/api/purchases`, `/api/customers`, `/api/users`, `/api/branches`, `/api/warehouses`, `/api/cash-registers`, `/api/cash-sessions`, `/api/categories`, `/api/payment-methods`, `/api/price-lists`, `/api/suppliers`, `/api/voucher-series`, `/api/user-notifications`, `/api/stock-lots`
 
 ### Business Operations
@@ -432,19 +433,17 @@ A spec is **done** when all of the following are true:
 
 1. **PHP coverage target** — `COVERAGE_MIN_PHP` in CI is currently `8.0` (8 %), which functions only as a regression floor. Should this be raised to a meaningful target (e.g., 60 %)? Who owns this decision?
 
-2. **`assets/api/auth.tsx` mock stub** — A hardcoded stub `signIn()` coexists with the real `authService.ts`. Should it be deleted to avoid developer confusion?
+2. **PayPal vs MercadoPago gateways** — Both payment gateways are implemented under `src/ControlPlane/Subscription/Payment/`, with `PaymentGatewayInterface` currently aliased to `PayPalGateway`. Are both active in production? What is the primary gateway for Peruvian tenants?
 
-3. **PayPal vs MercadoPago gateways** — Both payment gateways are implemented in `src/Onboarding/Payment/`. Are both active in production? What is the primary gateway for Peruvian tenants?
+3. **BOM/recipe explosion in production** — `BomExplosionService` is wired as an inventory movement enricher for COMPOSITE products. Is this GA for restaurant/recipe flows, or should it remain behind a plan/vertical feature gate?
 
-4. **BOM/recipe explosion in production** — `BomExplosionService` is wired as an inventory movement enricher for COMPOSITE products. Is this GA for restaurant/recipe flows, or should it remain behind a plan/vertical feature gate?
+4. **Multi-branch vs multi-tenant boundary** — The architecture supports multi-branch inside a tenant and database-per-tenant isolation across companies. Are there plans for cross-tenant/franchisor reporting, or is isolation permanent?
 
-5. **Multi-branch vs multi-tenant boundary** — The architecture supports multi-branch inside a tenant and database-per-tenant isolation across companies. Are there plans for cross-tenant/franchisor reporting, or is isolation permanent?
+5. **Lot/expiry tracking for pharmacies** — `StockLot` and `LotDeductionService` implement FIFO/FEFO deduction. Is this used in production pharmacies today, or should it remain experimental/gated?
 
-6. **Lot/expiry tracking for pharmacies** — `StockLot` and `LotDeductionService` implement FIFO/FEFO deduction. Is this used in production pharmacies today, or should it remain experimental/gated?
+6. **Frontend coverage scope** — Vitest coverage currently targets only 2 files (`posHelpers.ts`, `offline/api.ts`). Should coverage be expanded to the full `assets/features/` surface area? What is the timeline?
 
-7. **Frontend coverage scope** — Vitest coverage currently targets only 2 files (`posHelpers.ts`, `offline/api.ts`). Should coverage be expanded to the full `assets/features/` surface area? What is the timeline?
-
-8. **Scheduler operational ownership** — Scheduler wiring now exists through `#[AsCronTask]` commands and `src/Schedule.php` provider tasks. Who owns production monitoring, missed-run alerting, and runbook maintenance for these jobs?
+7. **Scheduler operational ownership** — Scheduler wiring now exists through `#[AsCronTask]` commands and `src/Schedule.php` provider tasks. Who owns production monitoring, missed-run alerting, and runbook maintenance for these jobs?
 
 ### Recently Resolved
 

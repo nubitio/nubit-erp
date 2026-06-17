@@ -63,7 +63,8 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 ### Backend `efact`
 
 - PHP 8.5, Symfony 7.4, API Platform 4.1, Doctrine ORM/Migrations y FrankenPHP.
-- Arquitectura modular por bounded contexts: `Sales`, `Billing`, `Inventory`, `Purchasing`, `CashRegister`, `Catalog`, `Contacts`, `Organization`, `Identity`, `ControlPlane`, `Reporting`, `Settings`, `Setup`, `Media`, `AI`, `Platform`, `Core` y `Efact`.
+- Arquitectura modular por bounded contexts de producto: `Sales`, `Billing`, `Inventory`, `Purchasing`, `CashRegister`, `Catalog`, `Contacts`, `Organization`, `Identity`, `ControlPlane`, `Reporting`, `Settings`, `Setup`, `Media`, `AI` y `Efact`.
+- Componentes reutilizables ya extraidos como dependencias Composer `nubitio/platform`, `nubitio/api-platform` y `nubitio/admin-bundle`; `src/Core` esta retirado y conserva solo su README historico.
 - MariaDB database-per-tenant y base separada de control plane.
 - Redis para cache/colas Messenger y Mercure para eventos realtime.
 - Observabilidad OpenTelemetry con instrumentacion Symfony, Doctrine y Monolog.
@@ -73,7 +74,7 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 
 - React 19, TypeScript strict, Vite 6, TailwindCSS 4.
 - PWA con Workbox, Dexie/IndexedDB para modo offline y outbox.
-- React Query para cache de servidor, Axios para HTTP y Mercure SSE para realtime.
+- React Query para cache de servidor, cliente HTTP interno sobre `fetch` y Mercure SSE para realtime.
 - Modulos actuales: venta, facturacion, compras, inventario/movimientos, transferencias, clientes, caja, configuracion, admin, asistente AI y notificaciones.
 
 ### Android POS
@@ -192,7 +193,7 @@ Mecanismos de seguridad fiscal:
 - **Offline-first en POS:** ventas y catalogo deben tolerar desconexion mediante IndexedDB/Room y outbox.
 - **Asincrono para trabajo pesado:** facturacion, backups, provisioning, auditoria y exportes no deben bloquear requests.
 - **Observabilidad obligatoria:** operaciones criticas deben emitir logs/spans rastreables.
-- **Platform boundary:** `src/Platform` y `src/Core` no deben depender de dominios concretos eFact; ver `docs/architecture/platform-boundary-map.md` y el plan de extracción `docs/architecture/nubit-backend-extraction-plan.md`.
+- **Platform boundary:** la frontera portable vive en paquetes `nubitio/*`; efact solo enlaza contratos `Nubit\Platform\*` hacia implementaciones `ControlPlane`/tenant en `config/services.yaml`. Ver `docs/architecture/platform-boundary-map.md`.
 
 ### Decisiones vigentes
 
@@ -262,9 +263,9 @@ Mecanismos de seguridad fiscal:
 - Confirmar gateway primario en Peru entre MercadoPago y PayPal.
 - Documentar formalmente estado productivo de Android POS por vertical.
 - Definir si lotes/FEFO y BOM son features GA o gated por plan/vertical.
-- Migrar consumidores legacy de `App\Core` hacia `App\Platform` cuando el guardrail este estable.
+- Retirar aliases legacy `App\Core\*` cuando no queden consumidores y el guardrail refleje los paquetes `nubitio/*`.
 
-Plan de crecimiento recomendado: ver `docs/product-next-level-plan.md`.
+Plan de crecimiento recomendado: mantener este PRD como fuente operacional y abrir documentos dedicados solo cuando exista un owner activo.
 
 ---
 
@@ -277,5 +278,5 @@ Plan de crecimiento recomendado: ver `docs/product-next-level-plan.md`.
 - Playwright happy path sin regresion cuando se toca POS.
 - No romper outbox/offline si se toca venta, catalogo o sincronizacion.
 - No romper circuit breaker, retry ni consulta CDR si se toca facturacion.
-- No introducir dependencias prohibidas en `src/Platform`/`src/Core`.
+- No introducir dependencias de dominio dentro de paquetes reutilizables `nubitio/*` ni nuevos shims `App\Core`.
 - No mezclar logica tenant con control plane salvo puertos/adaptadores documentados.

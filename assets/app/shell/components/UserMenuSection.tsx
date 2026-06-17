@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Avatar } from '@nubitio/ui';
 import { useAuth } from '@app/contexts/auth';
-import { branchService } from '@features/branch';
 import type { UserMenuSectionProps } from '@app/types';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 import './UserMenuSection.scss';
 
@@ -20,25 +20,8 @@ export const UserMenuSection = ({
   onChangePassword,
 }: UserMenuSectionProps) => {
   const { user, signOut } = useAuth();
-  const [canChangeBranch, setCanChangeBranch] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    branchService
-      .getAll()
-      .then((response) => {
-        if (cancelled) return;
-        const branches = response?.data ?? [];
-        setCanChangeBranch(Array.isArray(branches) && branches.length > 1);
-      })
-      .catch(() => {
-        if (!cancelled) setCanChangeBranch(true);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
+  const canChangeBranch = runtimeConfigError || runtimeConfig?.ui.shell.showBranchPicker === true;
 
   const runAction = (item: MenuItem) => {
     item.onClick();
