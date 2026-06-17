@@ -25,8 +25,16 @@ label, settings, desired capabilities, single-stock-location flag). Presets are 
 `app.vertical_preset` and resolved through `VerticalPresetRegistry`. `VerticalPresetApplier`
 applies a preset to the current tenant (TenantSettings defaults + ensures a Default Stock
 Location for single-location presets); it is idempotent and never deletes data. The console
-command `tenant:apply-preset <key>` runs it per tenant. First concrete preset:
-`SingleStoreRetailPreset`.
+command `tenant:apply-preset <key>` runs it per tenant. Concrete presets:
+`SingleStoreRetailPreset`, `PharmacyPreset`.
+
+A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
+**topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —
+it is derived at runtime by `TenantRuntimeConfig` from the tenant's actual data
+(`branchCount`, `warehouseCount`) and entitlements. This avoids a combinatorial
+explosion of `single_store_pharmacy` / `multi_store_pharmacy` variants: one `pharmacy`
+preset serves pharmacies of any size. `usesSingleStockLocation` only expresses a
+preset's default topology intent for fresh tenants; runtime data always wins.
 
 ### Tienda Unica
 

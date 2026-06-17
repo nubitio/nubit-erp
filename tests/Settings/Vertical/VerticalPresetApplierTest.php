@@ -12,6 +12,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Repository\TenantSettingsRepository;
+use App\Settings\Vertical\Preset\PharmacyPreset;
 use App\Settings\Vertical\Preset\SingleStoreRetailPreset;
 use App\Settings\Vertical\VerticalPresetApplier;
 use Doctrine\ORM\EntityManagerInterface;
@@ -76,6 +77,31 @@ final class VerticalPresetApplierTest extends TestCase
         $result = $applier->apply(new SingleStoreRetailPreset());
 
         self::assertFalse($result->defaultWarehouseCreated);
+    }
+
+    public function testMultiLocationPresetDoesNotCreateDefaultWarehouse(): void
+    {
+        $settingsRepo = $this->createMock(TenantSettingsRepository::class);
+        $settingsRepo->method('getOrCreate')->willReturn(new TenantSettings());
+
+        // Even with no warehouses and an existing branch, a non-single-location
+        // preset must not force a default warehouse.
+        $warehouseRepo = $this->createMock(WarehouseRepository::class);
+        $warehouseRepo->expects(self::never())->method('count');
+
+        $branchRepo = $this->createMock(BranchRepository::class);
+        $branchRepo->expects(self::never())->method('findOneBy');
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+        $em->expects(self::once())->method('flush');
+
+        $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
+        $result = $applier->apply(new PharmacyPreset());
+
+        self::assertTrue($result->settingsApplied);
+        self::assertFalse($result->defaultWarehouseCreated);
+        self::assertSame(PharmacyPreset::KEY, $result->presetKey);
     }
 
     public function testRecordsNoteWhenNoBranchExists(): void
