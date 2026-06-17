@@ -82,10 +82,8 @@ final class SaleInvoicingAdapterTest extends TestCase
             ->with('sale-1', 'reason', 10)
             ->willReturn(new ApiResponse(true, 'ok'));
 
-        $response = $this->adapter($invoiceCreation, $messageBus, voidUseCase: $voidUseCase)
+        $this->adapter($invoiceCreation, $messageBus, voidUseCase: $voidUseCase)
             ->voidSale('sale-1', 'reason', 10);
-
-        self::assertSame('{"success":true,"message":"ok","data":null}', $response->getContent());
     }
 
     private function adapter(

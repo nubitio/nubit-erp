@@ -23,7 +23,7 @@ use App\Sales\Entity\SaleItemRecord;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Sales\Repository\SaleRecordRepository;
-use App\Sales\Port\SaleInvoicingPortInterface;
+use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
@@ -53,7 +53,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
         private TenantSettingsService $tenantSettings,
-        private SaleInvoicingPortInterface $saleInvoicing,
+        private InvoiceCreatorInterface $saleInvoicing,
         private LoggerInterface $logger,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,

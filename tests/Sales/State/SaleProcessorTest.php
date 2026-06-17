@@ -22,7 +22,7 @@ use App\Sales\Entity\SaleItemRecord;
 use App\Organization\Repository\BranchRepository;
 use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
-use App\Sales\Port\SaleInvoicingPortInterface;
+use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
@@ -106,8 +106,8 @@ final class SaleProcessorTest extends TestCase
     /** @var EntityManagerInterface&MockObject */
     private EntityManagerInterface $entityManager;
 
-    /** @var SaleInvoicingPortInterface&MockObject */
-    private SaleInvoicingPortInterface $saleInvoicing;
+    /** @var InvoiceCreatorInterface&MockObject */
+    private InvoiceCreatorInterface $saleInvoicing;
 
     /** @var LoggerInterface&MockObject */
     private LoggerInterface $logger;
@@ -144,7 +144,7 @@ final class SaleProcessorTest extends TestCase
         $this->removeProcessor = $this->createMock(ProcessorInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
+        $this->saleInvoicing = $this->createMock(InvoiceCreatorInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->saleUtils = $this->createMock(SaleUtils::class);
         $this->branchRepository = $this->createMock(BranchRepository::class);

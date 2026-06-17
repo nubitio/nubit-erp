@@ -225,7 +225,10 @@ services:
   App\Efact\Audit\AuditLogRepository: ~
 
   App\Inventory\Core\Contract\SalesInventoryPortInterface: '@App\Inventory\Adapter\InventoryServiceSalesInventoryPort'
-  App\Sales\Port\SaleInvoicingPortInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
+  App\Sales\Port\InvoiceCreatorInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
+  App\Sales\Port\SaleInvoicePrinterInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
+  App\Sales\Port\SaleVoiderInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
+  App\Sales\Port\RejectedDocumentReplacerInterface: '@App\Billing\Adapter\SaleInvoicingAdapter'
   App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
   App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'

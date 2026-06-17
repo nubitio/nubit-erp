@@ -45,5 +45,10 @@ The implicit branch and warehouse used when a tenant operates in Tienda Unica mo
 5. Add a `SaleSubmitter` seam in POS.
    Online sales should submit directly by default. The outbox remains the offline adapter used on network failure or when an offline-first capability requires it.
 
-6. Split the Sales/Billing mixed interface.
-   Replace the broad `SaleInvoicingPortInterface` with narrower interfaces for invoice creation, invoice printing, sale voiding and rejected-document replacement. Controllers should own HTTP response shaping.
+6. Split the Sales/Billing mixed interface. (DONE)
+   The broad `SaleInvoicingPortInterface` was replaced by narrower interfaces:
+   `InvoiceCreatorInterface`, `SaleInvoicePrinterInterface`, `SaleVoiderInterface`
+   and `RejectedDocumentReplacerInterface`. Invoice creation and rejected-document
+   replacement now return HTTP-agnostic result DTOs (`InvoiceCreationResult`,
+   `RejectedDocumentReplacementResult`); controllers own the HTTP response shaping.
+   `SaleInvoicingAdapter` implements all four interfaces.

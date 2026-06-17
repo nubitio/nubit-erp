@@ -7,7 +7,7 @@ namespace App\Sales\Controller\Api;
 use App\Identity\Security\Security;
 use Nubit\Platform\Http\ApiResponse;
 use App\Sales\Domain\SaleException;
-use App\Sales\Port\SaleInvoicingPortInterface;
+use App\Sales\Port\SaleVoiderInterface;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class VoidSale extends AbstractController
 {
     public function __construct(
-        private readonly SaleInvoicingPortInterface $saleInvoicing,
+        private readonly SaleVoiderInterface $saleVoider,
         private readonly Security $security,
     ) {
     }
@@ -47,7 +47,7 @@ class VoidSale extends AbstractController
         }
 
         try {
-            $this->saleInvoicing->voidSale((string) $saleId, $reason, $userId, $restoreStock);
+            $this->saleVoider->voidSale((string) $saleId, $reason, $userId, $restoreStock);
         } catch (FilesystemException | SaleException $e) {
             $message = ($e instanceof SaleException) ? $e->getMessage() : 'Error al anular el comprobante';
 

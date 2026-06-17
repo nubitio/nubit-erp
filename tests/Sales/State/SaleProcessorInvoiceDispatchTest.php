@@ -17,7 +17,7 @@ use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
-use App\Sales\Port\SaleInvoicingPortInterface;
+use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\State\SaleUtils;
 use App\Sales\State\SalesWriteGateway;
@@ -47,8 +47,8 @@ use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class SaleProcessorInvoiceDispatchTest extends TestCase
 {
-    /** @var SaleInvoicingPortInterface&MockObject */
-    private SaleInvoicingPortInterface $saleInvoicing;
+    /** @var InvoiceCreatorInterface&MockObject */
+    private InvoiceCreatorInterface $saleInvoicing;
     /** @var Security&MockObject */
     private Security $security;
     /** @var ProcessorInterface<mixed, mixed>&MockObject */
@@ -62,7 +62,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->saleInvoicing = $this->createMock(SaleInvoicingPortInterface::class);
+        $this->saleInvoicing = $this->createMock(InvoiceCreatorInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
