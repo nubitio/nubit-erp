@@ -17,6 +17,7 @@ import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } fro
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubitio/ui';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -24,6 +25,7 @@ const POSPage = () => {
 
   const { currentBranchId, currentBranchName, currentUserName } = useSessionInfo();
   const branchId = String(currentBranchId ?? '');
+  const { data: runtimeConfig } = useTenantRuntimeConfig();
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,7 +57,7 @@ const POSPage = () => {
     warehouses,
     selectedWarehouseId,
     setSelectedWarehouseId,
-  } = usePosCatalogData({ currentBranchId: branchId });
+  } = usePosCatalogData({ currentBranchId: branchId, runtimeConfig });
 
   const customersState = usePosCustomers();
   const clearSelectedCustomer = customersState.clearSelectedCustomer;
@@ -276,6 +278,7 @@ const POSPage = () => {
         onRetrySale={(saleId) => {
           void retrySale(saleId);
         }}
+        showWarehouseSelector={runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1}
       />
 
       {/* ── Mobile tab bar (hidden on desktop via CSS) ── */}

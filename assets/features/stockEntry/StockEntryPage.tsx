@@ -6,6 +6,7 @@ import { createCrudEvents } from '@nubitio/crud';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@app/contexts/useSessionInfo';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const API_URL = API + 'stock-entries';
 
@@ -29,14 +30,32 @@ interface StockEntryPageProps {
 
 export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const { currentBranchId } = useSessionInfo();
+  const { data: runtimeConfig, isLoading } = useTenantRuntimeConfig();
   const events = createCrudEvents(`stock-entry-${mode}`);
   const detailFields = StockEntryItemFields(mode);
   const detailUrl = API_URL + '/{id}/items';
+  const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
+  const basicColumns = showWarehouseSelector ? ['createdAt', 'warehouse', 'typeLabel'] : ['createdAt', 'typeLabel'];
+  const fullColumns = showWarehouseSelector
+    ? ['createdAt', 'warehouse', 'targetWarehouse', 'operation', 'typeLabel', 'note']
+    : ['createdAt', 'operation', 'typeLabel', 'note'];
+
+  if (mode === 'transfer' && runtimeConfig?.ui.inventory.showTransfers === false) {
+    return (
+      <div style={{ padding: 24 }}>
+        Las transferencias entre almacenes no están habilitadas para este tenant.
+      </div>
+    );
+  }
+
+  if (isLoading && !runtimeConfig) {
+    return <div style={{ padding: 24 }}>Cargando configuración...</div>;
+  }
 
   const resource = defineResource(`${API_URL}?type=${TYPE_FILTER[mode]}`, {
     id:     `stock-entry-${mode}`,
     title:  TITLES[mode],
-    fields: StockEntryFields(mode, currentBranchId),
+    fields: StockEntryFields(mode, currentBranchId, runtimeConfig),
     gridDetail: { url: detailUrl, fields: detailFields },
     formDetail: { url: detailUrl, fields: detailFields },
     events,
@@ -48,12 +67,12 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
       {
         key: 'basic',
         label: 'Básico',
-        columns: ['createdAt', 'warehouse', 'typeLabel'],
+        columns: basicColumns,
       },
       {
         key: 'full',
         label: 'Completo',
-        columns: ['createdAt', 'warehouse', 'targetWarehouse', 'operation', 'typeLabel', 'note'],
+        columns: fullColumns,
       },
     ],
     permissions: {

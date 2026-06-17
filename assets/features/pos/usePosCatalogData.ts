@@ -9,9 +9,11 @@ import type { PaymentMethodOption, WarehouseOption } from './types';
 import { extractCollection, isCashPaymentMethod } from './posHelpers';
 import { useOfflineCatalog } from '@offline/hooks/useOfflineCatalog';
 import { useWarehouses } from '@shared/hooks/useWarehouses';
+import type { TenantRuntimeConfig } from '@shared/hooks';
 
 type UsePosCatalogDataParams = {
   currentBranchId: string;
+  runtimeConfig?: TenantRuntimeConfig;
 };
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
@@ -78,7 +80,7 @@ export function usePosWarehouses(currentBranchId: string) {
 
 // ─── Composite hook (used by POSPage) ─────────────────────────────────────────
 
-export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) => {
+export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCatalogDataParams) => {
   const { loading, loadError, categories, menuData, usingOfflineCatalog, lastUpdatedAt } =
     useOfflineCatalog();
 
@@ -99,15 +101,21 @@ export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) 
   // ── Warehouses ───────────────────────────────────────────────────────────────
   const { data: warehouses = [] } = usePosWarehouses(currentBranchId);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+  const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
 
   // Auto-select first warehouse once data arrives
   useEffect(() => {
+    if (selectedWarehouseId === '' && defaultWarehouseId) {
+      setSelectedWarehouseId(defaultWarehouseId);
+      return;
+    }
+
     if (warehouses.length > 0 && selectedWarehouseId === '') {
       setSelectedWarehouseId(warehouses[0].id);
     }
     // Only react to warehouse list changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [warehouses]);
+  }, [warehouses, defaultWarehouseId]);
 
   return {
     loading,

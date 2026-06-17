@@ -18,6 +18,7 @@ import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { SessionExpiredDialog } from './components/SessionExpiredDialog';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 interface EfactAdminShellProps {
   title?: string;
@@ -30,14 +31,22 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
+  const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
 
   useEffect(() => {
+    if (!runtimeConfig && !runtimeConfigError) {
+      return;
+    }
+
     const roleId = userInformation().currentUserRoleId ?? 0;
-    menuService
-      .getMenuByRoleId(roleId)
+    const menuRequest = runtimeConfig
+      ? menuService.getMenuByRoleIdForRuntimeConfig(roleId, runtimeConfig)
+      : menuService.getMenuByRoleId(roleId);
+
+    menuRequest
       .then((response) => setMenuItems(response.data))
       .catch(() => setMenuItems([]));
-  }, []);
+  }, [runtimeConfig, runtimeConfigError]);
 
   return (
     <>

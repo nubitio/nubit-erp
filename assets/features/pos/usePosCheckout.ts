@@ -12,9 +12,9 @@ import {
 import { computeCartTotals } from '@shared/lib/saleCalculations';
 import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
-import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
 import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
+import { submitSale } from './saleSubmitter';
 
 const getActionableSaleErrorMessage = (sale: { errorCode?: string; errorMessage?: string }) => {
   if (sale.errorCode === 'SALE_CASH_SESSION_REQUIRED') {
@@ -337,7 +337,7 @@ export const usePosCheckout = ({
         })),
       };
 
-      const { sale } = await createLocalSaleAndEnqueue({
+      const submitResult = await submitSale({
         tenantId,
         storeId,
         warehouseId: selectedWarehouseId,
@@ -365,7 +365,20 @@ export const usePosCheckout = ({
           discount: discountAmount,
           total,
         },
+        isOnline,
       });
+
+      if (submitResult.mode === 'server') {
+        toast(`Venta registrada (${submitResult.serverCode})`, 'success');
+        setLastSaleCode(submitResult.serverSaleId);
+        clearCart();
+        printSaleInvoice(submitResult.serverSaleId).catch(() => {
+          toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
+        });
+        return;
+      }
+
+      const { sale } = submitResult;
 
       if (!isOnline) {
         toast('Venta guardada localmente', 'success');

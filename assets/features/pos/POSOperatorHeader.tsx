@@ -24,6 +24,7 @@ interface POSOperatorHeaderProps {
   pendingSalesCount: number;
   outboxSales: LocalSale[];
   onRetrySale: (saleId: string) => void;
+  showWarehouseSelector: boolean;
 }
 
 export function POSOperatorHeader({
@@ -42,6 +43,7 @@ export function POSOperatorHeader({
   pendingSalesCount,
   outboxSales,
   onRetrySale,
+  showWarehouseSelector,
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -120,8 +122,8 @@ export function POSOperatorHeader({
             <div className="pos-operator-header__ctx">
               <i className="ph ph-package" aria-hidden="true" />
               <span className="pos-operator-header__label">Almacén</span>
-              {warehouses.length === 1 ? (
-                <strong>{warehouses[0].name}</strong>
+              {!showWarehouseSelector || warehouses.length === 1 ? (
+                <strong>{warehouses.find((warehouse) => warehouse.id === selectedWarehouseId)?.name ?? warehouses[0].name}</strong>
               ) : (
                 <AppDropdown
                   id="pos-warehouse-select"

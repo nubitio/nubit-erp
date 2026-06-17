@@ -12,6 +12,7 @@ import {
 } from '@nubitio/crud';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
+import type { TenantRuntimeConfig } from '@shared/hooks';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -43,8 +44,14 @@ const OPERATION_TYPE_MAP: Record<StockEntryMode, number> = {
 
 // ─── Header fields (common across all types) ──────────────────────────────────
 
-export const StockEntryFields = (mode: StockEntryMode, branchId: string | number = ''): Field[] => {
+export const StockEntryFields = (
+  mode: StockEntryMode,
+  branchId: string | number = '',
+  runtimeConfig?: TenantRuntimeConfig,
+): Field[] => {
   const fields: Field[] = [];
+  const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
+  const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
 
   fields.push(identityField().build());
 
@@ -61,14 +68,21 @@ export const StockEntryFields = (mode: StockEntryMode, branchId: string | number
   );
 
   // Source warehouse
-  fields.push(
-    entityField(API + 'warehouses', 'id', 'name')
-      .name('warehouse')
-      .label(mode === 'transfer' ? 'Almacén origen' : 'Almacén')
-      .filters([{ field: 'branch', operator: '=', value: branchId }])
-      .required(true)
-      .build(),
-  );
+  const warehouseField = entityField(API + 'warehouses', 'id', 'name')
+    .name('warehouse')
+    .label(mode === 'transfer' ? 'Almacén origen' : 'Almacén')
+    .filters([{ field: 'branch', operator: '=', value: branchId }])
+    .required(true);
+
+  if (!showWarehouseSelector && defaultWarehouseId) {
+    warehouseField
+      .defaultValue(`${API}warehouses/${defaultWarehouseId}`)
+      .hidden(true)
+      .visible(false)
+      .visibleOnForm(false);
+  }
+
+  fields.push(warehouseField.build());
 
   // Target warehouse — only for TRANSFER
   if (mode === 'transfer') {
