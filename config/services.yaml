@@ -33,6 +33,10 @@ services:
       iterable $enrichers: !tagged_iterator inventory.stock_movement_enricher
       iterable $saleReports: !tagged_iterator app.sale_report
 
+  _instanceof:
+    App\Settings\Vertical\VerticalPresetInterface:
+      tags: ['app.vertical_preset']
+
   # makes classes in src/ available to be used as services
   # this creates a service per class whose id is the fully-qualified class name
   App\:

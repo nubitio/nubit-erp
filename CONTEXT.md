@@ -20,6 +20,14 @@ Versioned onboarding template that applies capabilities, defaults, menus, seed d
 
 Examples: `single_store_retail`, pharmacy, hardware store, butcher shop.
 
+Implemented as the `App\Settings\Vertical\VerticalPresetInterface` seam (key, version,
+label, settings, desired capabilities, single-stock-location flag). Presets are tagged
+`app.vertical_preset` and resolved through `VerticalPresetRegistry`. `VerticalPresetApplier`
+applies a preset to the current tenant (TenantSettings defaults + ensures a Default Stock
+Location for single-location presets); it is idempotent and never deletes data. The console
+command `tenant:apply-preset <key>` runs it per tenant. First concrete preset:
+`SingleStoreRetailPreset`.
+
 ### Tienda Unica
 
 Default product experience for a tenant with one physical store and one implicit stock location. Internally it still uses branch and warehouse records, but the user interface should not force the owner/cashier to think in branches or warehouses.
