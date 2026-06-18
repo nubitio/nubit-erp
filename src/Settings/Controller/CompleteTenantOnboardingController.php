@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/tenant/onboarding/complete', name: 'api_tenant_onboarding_complete', methods: ['POST'])]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_USER')]
 final class CompleteTenantOnboardingController extends AbstractController
 {
     public function __construct(

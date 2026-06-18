@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * refreshed runtime config so the SPA can re-render with the new vertical.
  */
 #[Route('/api/tenant/apply-preset', name: 'api_tenant_apply_preset', methods: ['POST'])]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_USER')]
 final class ApplyVerticalPresetController extends AbstractController
 {
     public function __construct(

@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * the tenant-scoped adapter used by onboarding/settings.
  */
 #[Route('/api/tenant/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_USER')]
 final class TenantCertificateController extends AbstractController
 {
     public function __construct(

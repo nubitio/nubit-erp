@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Button, Card, FormField, TextField, Timeline, TimelineItem } from '@nubitio/ui';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import {
   useApplyTenantPreset,
@@ -195,15 +196,15 @@ export function TenantOnboardingGate() {
         </header>
 
         <nav className="tenant-onboarding__steps" aria-label="Pasos de onboarding">
-          {STEPS.map((label, index) => (
-            <React.Fragment key={label}>
-              <div className={`tenant-onboarding__step ${index < step ? 'is-done' : ''} ${index === step ? 'is-active' : ''}`}>
-                <span>{index < step ? '✓' : index + 1}</span>
-                <small>{label}</small>
-              </div>
-              {index < STEPS.length - 1 ? <div className={`tenant-onboarding__step-line ${index < step ? 'is-done' : ''}`} /> : null}
-            </React.Fragment>
-          ))}
+          <Timeline variant="stepper" orientation="horizontal" aria-label="Pasos de onboarding">
+            {STEPS.map((label, index) => (
+              <TimelineItem
+                key={label}
+                status={index < step ? 'complete' : index === step ? 'current' : 'pending'}
+                title={label}
+              />
+            ))}
+          </Timeline>
         </nav>
 
         <div className={`tenant-onboarding__body tenant-onboarding__body--${currentStep.toLowerCase()}`}>
@@ -220,8 +221,8 @@ export function TenantOnboardingGate() {
                 { key: 'retail', title: 'Retail / Tienda', description: 'Ventas rápidas, caja e inventario simple.' },
                 { key: 'pharmacy', title: 'Botica / Farmacia', description: 'Inventario estricto y lotes/vencimientos activables.' },
               ].map((option) => (
+                <Card key={option.key}>
                 <button
-                  key={option.key}
                   className={`tenant-onboarding__preset ${selectedPreset === option.key ? 'is-selected' : ''}`}
                   type="button"
                   onClick={() => setSelectedPreset(option.key)}
@@ -229,98 +230,55 @@ export function TenantOnboardingGate() {
                   <strong>{option.title}</strong>
                   <span>{option.description}</span>
                 </button>
+                </Card>
               ))}
             </div>
           )}
 
           {currentStep === 'Company' && (
             <div className="tenant-onboarding__grid">
-              <label className="tenant-onboarding__field tenant-onboarding__field--with-button">
-                <span>RUC</span>
+              <FormField label="RUC" className="tenant-onboarding__field tenant-onboarding__field--with-button">
                 <div>
-                  <input value={company.ruc} onChange={(e) => setCompany({ ...company, ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })} />
-                  <button type="button" onClick={verifyRuc}>Verify with SUNAT</button>
+                  <TextField value={company.ruc} onChange={(e) => setCompany({ ...company, ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })} />
+                  <Button type="button" variant="secondary" onClick={verifyRuc}>Verify with SUNAT</Button>
                 </div>
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Legal name</span>
-                <input value={company.businessName} onChange={(e) => setCompany({ ...company, businessName: e.target.value })} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Trade name (optional)</span>
-                <input value={company.tradeName ?? ''} onChange={(e) => setCompany({ ...company, tradeName: e.target.value })} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Fiscal address</span>
-                <input value={company.fiscalAddress} onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Contact phone</span>
-                <input value={company.phone ?? ''} onChange={(e) => setCompany({ ...company, phone: e.target.value })} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Currency</span>
-                <input value="PEN — Sol" disabled />
-              </label>
+              </FormField>
+              <FormField label="Legal name" className="tenant-onboarding__field"><TextField value={company.businessName} onChange={(e) => setCompany({ ...company, businessName: e.target.value })} /></FormField>
+              <FormField label="Trade name (optional)" className="tenant-onboarding__field"><TextField value={company.tradeName ?? ''} onChange={(e) => setCompany({ ...company, tradeName: e.target.value })} /></FormField>
+              <FormField label="Fiscal address" className="tenant-onboarding__field"><TextField value={company.fiscalAddress} onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })} /></FormField>
+              <FormField label="Contact phone" className="tenant-onboarding__field"><TextField value={company.phone ?? ''} onChange={(e) => setCompany({ ...company, phone: e.target.value })} /></FormField>
+              <FormField label="Currency" className="tenant-onboarding__field"><TextField value="PEN — Sol" disabled /></FormField>
             </div>
           )}
 
           {currentStep === 'SUNAT' && (
             <div className="tenant-onboarding__grid">
-              <label className="tenant-onboarding__field">
-                <span>SOL username</span>
-                <input value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="e.g. EFACT01" disabled={sunatSkipped} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>SOL password</span>
-                <input value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} />
-              </label>
-              <label className="tenant-onboarding__field tenant-onboarding__dropzone">
-                <span>Digital certificate (.pfx or PEM)</span>
-                <input type="file" accept=".pfx,.pem,.crt,.cer" onChange={(e) => setCertificateFile(first(Array.from(e.target.files ?? [])) ?? null)} disabled={sunatSkipped} />
+              <FormField label="SOL username" className="tenant-onboarding__field"><TextField value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="e.g. EFACT01" disabled={sunatSkipped} /></FormField>
+              <FormField label="SOL password" className="tenant-onboarding__field"><TextField value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} /></FormField>
+              <FormField label="Digital certificate (.pfx or PEM)" className="tenant-onboarding__field tenant-onboarding__dropzone">
+                <TextField type="file" accept=".pfx,.pem,.crt,.cer" onChange={(e) => setCertificateFile(first(Array.from(e.target.files ?? [])) ?? null)} disabled={sunatSkipped} />
                 <em>{certificateFile?.name ?? 'Drop .pfx file here or click to browse'}</em>
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Certificate password</span>
-                <input value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="PFX passphrase" disabled={sunatSkipped} />
-              </label>
-              <button className="tenant-onboarding__skip" type="button" onClick={() => setSunatSkipped((value) => !value)}>
+              </FormField>
+              <FormField label="Certificate password" className="tenant-onboarding__field"><TextField value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="PFX passphrase" disabled={sunatSkipped} /></FormField>
+              <Button className="tenant-onboarding__skip" variant="ghost" type="button" onClick={() => setSunatSkipped((value) => !value)}>
                 {sunatSkipped ? 'Configure SUNAT now' : 'Skip SUNAT for now'}
-              </button>
+              </Button>
             </div>
           )}
 
           {currentStep === 'Branch' && (
             <div className="tenant-onboarding__grid">
-              <label className="tenant-onboarding__field">
-                <span>Branch name</span>
-                <input value={branch.name} onChange={(e) => setBranch({ ...branch, name: e.target.value })} placeholder="e.g. San Isidro Main" />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Address</span>
-                <input value={branch.address ?? ''} onChange={(e) => setBranch({ ...branch, address: e.target.value })} placeholder="Street, district, province" />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Invoice series — Factura</span>
-                <input value={branch.invoiceSeries} onChange={(e) => setBranch({ ...branch, invoiceSeries: e.target.value.toUpperCase().slice(0, 6) })} />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Invoice series — Boleta</span>
-                <input value={branch.receiptSeries} onChange={(e) => setBranch({ ...branch, receiptSeries: e.target.value.toUpperCase().slice(0, 6) })} />
-              </label>
+              <FormField label="Branch name" className="tenant-onboarding__field"><TextField value={branch.name} onChange={(e) => setBranch({ ...branch, name: e.target.value })} placeholder="e.g. San Isidro Main" /></FormField>
+              <FormField label="Address" className="tenant-onboarding__field"><TextField value={branch.address ?? ''} onChange={(e) => setBranch({ ...branch, address: e.target.value })} placeholder="Street, district, province" /></FormField>
+              <FormField label="Invoice series — Factura" className="tenant-onboarding__field"><TextField value={branch.invoiceSeries} onChange={(e) => setBranch({ ...branch, invoiceSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
+              <FormField label="Invoice series — Boleta" className="tenant-onboarding__field"><TextField value={branch.receiptSeries} onChange={(e) => setBranch({ ...branch, receiptSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
             </div>
           )}
 
           {currentStep === 'Warehouse' && (
             <div className="tenant-onboarding__grid">
-              <label className="tenant-onboarding__field">
-                <span>Warehouse name</span>
-                <input value={warehouse.name} onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })} placeholder="e.g. Stock Room 1" />
-              </label>
-              <label className="tenant-onboarding__field">
-                <span>Default valuation method</span>
-                <input value="Promedio Ponderado (PP) — SUNAT" disabled />
-              </label>
+              <FormField label="Warehouse name" className="tenant-onboarding__field"><TextField value={warehouse.name} onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })} placeholder="e.g. Stock Room 1" /></FormField>
+              <FormField label="Default valuation method" className="tenant-onboarding__field"><TextField value="Promedio Ponderado (PP) — SUNAT" disabled /></FormField>
             </div>
           )}
 
@@ -340,10 +298,10 @@ export function TenantOnboardingGate() {
         </div>
 
         <footer className="tenant-onboarding__footer">
-          <button type="button" className="tenant-onboarding__back" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Back</button>
-          <button type="button" className="tenant-onboarding__primary" onClick={goNext} disabled={!canContinue || busy}>
+          <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Back</Button>
+          <Button type="button" variant="primary" onClick={goNext} disabled={!canContinue || busy} loading={busy}>
             {step === 5 ? 'Enter Efact' : busy ? 'Saving...' : 'Continue'}
-          </button>
+          </Button>
         </footer>
       </section>
     </main>
