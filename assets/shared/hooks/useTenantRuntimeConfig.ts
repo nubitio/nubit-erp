@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import type { DataRecord } from '@nubitio/core';
@@ -61,5 +61,36 @@ export function useTenantRuntimeConfig() {
     queryFn: fetchTenantRuntimeConfig,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: true,
+  });
+}
+
+export interface ApplyTenantPresetResponse {
+  applied: {
+    preset: string;
+    version: number;
+    defaultWarehouseCreated: boolean;
+    notes: string[];
+  };
+  runtimeConfig: TenantRuntimeConfig;
+}
+
+async function applyTenantPreset(preset: string): Promise<ApplyTenantPresetResponse> {
+  return httpRequestData(
+    httpClient.post<ApplyTenantPresetResponse>('/api/tenant/apply-preset', { preset }),
+  );
+}
+
+/**
+ * Applies a vertical onboarding preset and primes the runtime-config cache with
+ * the refreshed config returned by the server.
+ */
+export function useApplyTenantPreset() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ApplyTenantPresetResponse, Error, string>({
+    mutationFn: applyTenantPreset,
+    onSuccess: (data) => {
+      queryClient.setQueryData([...TENANT_RUNTIME_CONFIG_QUERY_KEY], data.runtimeConfig);
+    },
   });
 }

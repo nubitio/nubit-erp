@@ -34,6 +34,10 @@ not by tenant PATCH). `TenantRuntimeConfigProvider` reads it as the source of tr
 `profile.vertical` / `profile.preset`, validating it against the registry (unknown →
 `custom`). `simpleStoreMode` remains a separate, data-derived topology signal.
 
+Onboarding entry points: the CLI `tenant:apply-preset <key>` and the admin-only
+`POST /api/tenant/apply-preset` ({ "preset": "<key>" }), which returns the refreshed
+runtime config. Frontend hook: `useApplyTenantPreset` (primes the runtime-config cache).
+
 A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
 **topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —
 it is derived at runtime by `TenantRuntimeConfig` from the tenant's actual data
