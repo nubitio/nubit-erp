@@ -49,6 +49,13 @@ adapter: it accepts SOL credentials + PEM/PFX certificate, converts PFX to PEM w
 needed, and calls `CertificateLifecycleServiceInterface` to persist metadata and sync
 Lycet. Frontend hook: `useUploadTenantCertificate`.
 
+The React post-provisioning wizard lives in `TenantOnboardingGate` and is rendered
+before the normal tenant shell when `profile.onboardingCompleted === false`. It covers
+Welcome/vertical, Company (reuses `consultService.consultRuc`), SUNAT certificate,
+Branch + F001/B001 series, Warehouse and Done. The lightweight onboarding endpoints
+under `/api/tenant/onboarding/*` save these steps without exposing Hydra/IRI details
+to the wizard.
+
 A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
 **topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —
 it is derived at runtime by `TenantRuntimeConfig` from the tenant's actual data

@@ -14,6 +14,8 @@ import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
 import { MercureManager } from '@nubitio/core';
 import { AppProviders } from '../AppProviders';
+import { useTenantRuntimeConfig } from '@shared/hooks';
+import { TenantOnboardingGate } from '@features/onboarding/TenantOnboardingGate';
 
 const AppLoading = () => (
   <div className="app-loading" role="status" aria-label="Cargando">
@@ -23,7 +25,6 @@ const AppLoading = () => (
 
 export function RootApp() {
   const { user, loading } = useAuth();
-  const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
   const hasCommittedSession = hasCommittedAuthSession();
 
   if (loading || (!user && hasCommittedSession)) {
@@ -31,14 +32,29 @@ export function RootApp() {
   }
 
   if (user) {
-    if (isFullScreen) {
-      return <FullScreenContent />;
-    }
-
-    return <Content />;
+    return <AuthenticatedRoot />;
   }
 
   return <UnauthenticatedContent />;
+}
+
+function AuthenticatedRoot() {
+  const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
+  const runtimeConfig = useTenantRuntimeConfig();
+
+  if (runtimeConfig.isLoading) {
+    return <AppLoading />;
+  }
+
+  if (runtimeConfig.data?.profile.onboardingCompleted === false) {
+    return <TenantOnboardingGate />;
+  }
+
+  if (isFullScreen) {
+    return <FullScreenContent />;
+  }
+
+  return <Content />;
 }
 
 function AppShell({ screenSizeClass }: { screenSizeClass: string }) {
