@@ -7,6 +7,7 @@ namespace App\Settings\Runtime;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Repository\TenantSettingsRepository;
+use App\Settings\Vertical\VerticalPresetRegistry;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 
 final readonly class TenantRuntimeConfigProvider
@@ -16,6 +17,7 @@ final readonly class TenantRuntimeConfigProvider
         private TenantSettingsRepository $settingsRepository,
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
+        private VerticalPresetRegistry $presetRegistry,
     ) {
     }
 
@@ -39,9 +41,17 @@ final readonly class TenantRuntimeConfigProvider
 
         $simpleStoreMode = $branchCount <= 1 && !$multiWarehouse;
 
+        // The vertical is the persisted onboarding choice (source of truth),
+        // validated against the known presets; topology stays a separate axis.
+        $vertical = $settings->getVertical();
+        if (!$this->presetRegistry->has($vertical)) {
+            $vertical = 'custom';
+        }
+
         return [
             'profile' => [
-                'preset' => $simpleStoreMode ? 'retail' : 'custom',
+                'preset' => $vertical,
+                'vertical' => $vertical,
                 'simpleStoreMode' => $simpleStoreMode,
             ],
             'counts' => [

@@ -56,6 +56,7 @@ final class VerticalPresetApplierTest extends TestCase
         self::assertTrue($settings->isAutoInvoice());
         self::assertSame(DefaultCurrency::PEN, $settings->getDefaultCurrency());
         self::assertSame(StockPolicy::STRICT, $settings->getNegativeStockPolicy());
+        self::assertSame(RetailPreset::KEY, $settings->getVertical());
     }
 
     public function testSkipsWarehouseCreationWhenWarehouseAlreadyExists(): void
@@ -81,8 +82,9 @@ final class VerticalPresetApplierTest extends TestCase
 
     public function testMultiLocationPresetDoesNotCreateDefaultWarehouse(): void
     {
+        $pharmacySettings = new TenantSettings();
         $settingsRepo = $this->createMock(TenantSettingsRepository::class);
-        $settingsRepo->method('getOrCreate')->willReturn(new TenantSettings());
+        $settingsRepo->method('getOrCreate')->willReturn($pharmacySettings);
 
         // Even with no warehouses and an existing branch, a non-single-location
         // preset must not force a default warehouse.
@@ -102,6 +104,7 @@ final class VerticalPresetApplierTest extends TestCase
         self::assertTrue($result->settingsApplied);
         self::assertFalse($result->defaultWarehouseCreated);
         self::assertSame(PharmacyPreset::KEY, $result->presetKey);
+        self::assertSame(PharmacyPreset::KEY, $pharmacySettings->getVertical());
     }
 
     public function testRecordsNoteWhenNoBranchExists(): void

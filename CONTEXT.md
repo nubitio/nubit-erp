@@ -29,6 +29,11 @@ command `tenant:apply-preset <key>` runs it per tenant. Concrete presets:
 `RetailPreset` (key `retail`), `PharmacyPreset` (key `pharmacy`). Preset keys are
 named after the vertical only — never the topology (no `single_store_*`).
 
+The selected vertical is persisted on `TenantSettings.vertical` (written by the applier,
+not by tenant PATCH). `TenantRuntimeConfigProvider` reads it as the source of truth for
+`profile.vertical` / `profile.preset`, validating it against the registry (unknown →
+`custom`). `simpleStoreMode` remains a separate, data-derived topology signal.
+
 A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
 **topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —
 it is derived at runtime by `TenantRuntimeConfig` from the tenant's actual data

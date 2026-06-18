@@ -11,6 +11,7 @@ export interface RuntimeCapability {
 export interface TenantRuntimeConfig {
   profile: {
     preset: string;
+    vertical: string;
     simpleStoreMode: boolean;
   };
   counts: {

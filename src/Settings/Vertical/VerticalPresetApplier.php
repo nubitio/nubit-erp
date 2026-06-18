@@ -60,6 +60,7 @@ final readonly class VerticalPresetApplier
         $values = $preset->settings();
 
         $settings
+            ->setVertical($preset->key())
             ->setIgv($values->igv)
             ->setRequireCashRegister($values->requireCashRegister)
             ->setAutoInvoice($values->autoInvoice)

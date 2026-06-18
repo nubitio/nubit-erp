@@ -89,6 +89,17 @@ class TenantSettings
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private StockPolicy $negativeStockPolicy = StockPolicy::STRICT;
 
+    // ── Onboarding ────────────────────────────────────────────────────────────
+
+    /**
+     * Vertical (business type) key selected during onboarding, e.g. "retail" or
+     * "pharmacy". Written by the VerticalPreset applier, not by tenant PATCH.
+     * Topology/scale is NOT stored here; it is derived from tenant data.
+     */
+    #[ORM\Column(length: 64)]
+    #[Groups(['tenant_settings:read'])]
+    private string $vertical = 'retail';
+
     // ── Getters / Setters ─────────────────────────────────────────────────────
 
     public function getId(): ?int
@@ -173,6 +184,16 @@ class TenantSettings
     public function setNegativeStockPolicy(StockPolicy $policy): static
     {
         $this->negativeStockPolicy = $policy;
+        return $this;
+    }
+
+    public function getVertical(): string
+    {
+        return $this->vertical;
+    }
+    public function setVertical(string $vertical): static
+    {
+        $this->vertical = $vertical;
         return $this;
     }
 }
