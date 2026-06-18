@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Button, Card, FormField, TextField, Timeline, TimelineItem } from '@nubitio/ui';
+import { Button, FileDropzone, FormField, TextField, Timeline, TimelineItem } from '@nubitio/ui';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import {
   useApplyTenantPreset,
@@ -50,8 +50,6 @@ const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
 };
 
 type OnboardingStep = 0 | 1 | 2 | 3 | 4 | 5;
-
-const first = <T,>(items: T[] | undefined): T | undefined => items?.[0];
 
 export function TenantOnboardingGate() {
   const navigate = useNavigate();
@@ -221,16 +219,19 @@ export function TenantOnboardingGate() {
                 { key: 'retail', title: 'Retail / Tienda', description: 'Ventas rápidas, caja e inventario simple.' },
                 { key: 'pharmacy', title: 'Botica / Farmacia', description: 'Inventario estricto y lotes/vencimientos activables.' },
               ].map((option) => (
-                <Card key={option.key}>
                 <button
+                  key={option.key}
                   className={`tenant-onboarding__preset ${selectedPreset === option.key ? 'is-selected' : ''}`}
                   type="button"
                   onClick={() => setSelectedPreset(option.key)}
                 >
+                  <i className={option.key === 'pharmacy' ? 'ph ph-pill' : 'ph ph-storefront'} aria-hidden="true" />
+                  <span className="tenant-onboarding__preset-copy">
                   <strong>{option.title}</strong>
                   <span>{option.description}</span>
+                  </span>
+                  <span className="tenant-onboarding__preset-check" aria-hidden="true">{selectedPreset === option.key ? '✓' : ''}</span>
                 </button>
-                </Card>
               ))}
             </div>
           )}
@@ -256,8 +257,20 @@ export function TenantOnboardingGate() {
               <FormField label="SOL username" className="tenant-onboarding__field"><TextField value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="e.g. EFACT01" disabled={sunatSkipped} /></FormField>
               <FormField label="SOL password" className="tenant-onboarding__field"><TextField value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} /></FormField>
               <FormField label="Digital certificate (.pfx or PEM)" className="tenant-onboarding__field tenant-onboarding__dropzone">
-                <TextField type="file" accept=".pfx,.pem,.crt,.cer" onChange={(e) => setCertificateFile(first(Array.from(e.target.files ?? [])) ?? null)} disabled={sunatSkipped} />
-                <em>{certificateFile?.name ?? 'Drop .pfx file here or click to browse'}</em>
+                <FileDropzone
+                  accept=".pfx,.pem,.crt,.cer"
+                  value={certificateFile ? { fileName: certificateFile.name } : null}
+                  disabled={sunatSkipped}
+                  labels={{
+                    prompt: 'Drop .pfx file here or click to browse',
+                    hint: 'SUNAT digital certificate in PFX or PEM format.',
+                    replace: 'Replace certificate',
+                    remove: 'Remove certificate',
+                    open: 'Open certificate',
+                  }}
+                  onFileSelect={setCertificateFile}
+                  onClear={() => setCertificateFile(null)}
+                />
               </FormField>
               <FormField label="Certificate password" className="tenant-onboarding__field"><TextField value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="PFX passphrase" disabled={sunatSkipped} /></FormField>
               <Button className="tenant-onboarding__skip" variant="ghost" type="button" onClick={() => setSunatSkipped((value) => !value)}>

@@ -1686,6 +1686,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nubitio/ui@npm:^0.5.16":
+  version: 0.5.16
+  resolution: "@nubitio/ui@npm:0.5.16"
+  dependencies:
+    react-dropzone: "npm:^15.0.0"
+  peerDependencies:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+  checksum: 10c0/327d6b896f2b207088313407c31404174c61c267e46a0445848a28b749b58f61a98a4277a87c06fd6a6809ce9ef21fde6e251e40b076967e024f8bb1e284b6b1
+  languageName: node
+  linkType: hard
+
 "@oxc-project/types@npm:=0.133.0":
   version: 0.133.0
   resolution: "@oxc-project/types@npm:0.133.0"
@@ -3952,7 +3964,7 @@ __metadata:
     "@nubitio/crud": "npm:^0.5.11"
     "@nubitio/hydra": "npm:^0.5.11"
     "@nubitio/react-admin": "npm:^0.5.11"
-    "@nubitio/ui": "npm:^0.5.11"
+    "@nubitio/ui": "npm:^0.5.16"
     "@phosphor-icons/web": "npm:^2.1.2"
     "@playwright/test": "npm:^1.58.2"
     "@rollup/rollup-darwin-arm64": "npm:^4.61.1"
