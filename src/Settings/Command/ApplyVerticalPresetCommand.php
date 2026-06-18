@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Command;
 
-use App\Settings\Vertical\Preset\SingleStoreRetailPreset;
+use App\Settings\Vertical\Preset\RetailPreset;
 use App\Settings\Vertical\VerticalPresetApplier;
 use App\Settings\Vertical\VerticalPresetRegistry;
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
@@ -36,7 +36,7 @@ class ApplyVerticalPresetCommand extends PerTenantCommand
             'preset',
             InputArgument::OPTIONAL,
             'Preset key to apply',
-            SingleStoreRetailPreset::KEY,
+            RetailPreset::KEY,
         );
     }
 

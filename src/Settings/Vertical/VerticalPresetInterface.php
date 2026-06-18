@@ -15,7 +15,7 @@ namespace App\Settings\Vertical;
 interface VerticalPresetInterface
 {
     /**
-     * Stable machine key, e.g. "single_store_retail".
+     * Stable machine key, e.g. "retail" or "pharmacy".
      */
     public function key(): string;
 

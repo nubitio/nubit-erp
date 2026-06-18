@@ -18,7 +18,7 @@ Capabilities describe behavior. Entitlements describe what the commercial plan a
 
 Versioned onboarding template that applies capabilities, defaults, menus, seed data and UI defaults for a target business type.
 
-Examples: `single_store_retail`, pharmacy, hardware store, butcher shop.
+Examples (vertical axis only): `retail`, `pharmacy`, hardware store, butcher shop.
 
 Implemented as the `App\Settings\Vertical\VerticalPresetInterface` seam (key, version,
 label, settings, desired capabilities, single-stock-location flag). Presets are tagged
@@ -26,7 +26,8 @@ label, settings, desired capabilities, single-stock-location flag). Presets are 
 applies a preset to the current tenant (TenantSettings defaults + ensures a Default Stock
 Location for single-location presets); it is idempotent and never deletes data. The console
 command `tenant:apply-preset <key>` runs it per tenant. Concrete presets:
-`SingleStoreRetailPreset`, `PharmacyPreset`.
+`RetailPreset` (key `retail`), `PharmacyPreset` (key `pharmacy`). Preset keys are
+named after the vertical only — never the topology (no `single_store_*`).
 
 A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
 **topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —

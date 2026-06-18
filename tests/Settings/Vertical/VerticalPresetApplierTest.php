@@ -13,7 +13,7 @@ use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Vertical\Preset\PharmacyPreset;
-use App\Settings\Vertical\Preset\SingleStoreRetailPreset;
+use App\Settings\Vertical\Preset\RetailPreset;
 use App\Settings\Vertical\VerticalPresetApplier;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -44,7 +44,7 @@ final class VerticalPresetApplierTest extends TestCase
         $em->expects(self::once())->method('flush');
 
         $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
-        $result = $applier->apply(new SingleStoreRetailPreset());
+        $result = $applier->apply(new RetailPreset());
 
         self::assertTrue($result->settingsApplied);
         self::assertTrue($result->defaultWarehouseCreated);
@@ -74,7 +74,7 @@ final class VerticalPresetApplierTest extends TestCase
         $em->expects(self::once())->method('flush');
 
         $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
-        $result = $applier->apply(new SingleStoreRetailPreset());
+        $result = $applier->apply(new RetailPreset());
 
         self::assertFalse($result->defaultWarehouseCreated);
     }
@@ -120,7 +120,7 @@ final class VerticalPresetApplierTest extends TestCase
         $em->expects(self::once())->method('flush');
 
         $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
-        $result = $applier->apply(new SingleStoreRetailPreset());
+        $result = $applier->apply(new RetailPreset());
 
         self::assertFalse($result->defaultWarehouseCreated);
         self::assertCount(1, $result->notes);

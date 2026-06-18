@@ -41,7 +41,7 @@ final readonly class TenantRuntimeConfigProvider
 
         return [
             'profile' => [
-                'preset' => $simpleStoreMode ? 'single_store_retail' : 'custom',
+                'preset' => $simpleStoreMode ? 'retail' : 'custom',
                 'simpleStoreMode' => $simpleStoreMode,
             ],
             'counts' => [

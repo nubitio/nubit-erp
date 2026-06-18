@@ -11,12 +11,16 @@ use App\Settings\Vertical\VerticalPresetInterface;
 use App\Settings\Vertical\VerticalPresetSettings;
 
 /**
- * Default product experience: one physical store with one implicit stock
- * location (Tienda Unica). Advanced capabilities stay available but hidden.
+ * General retail vertical: the default starting point for a new tenant.
+ *
+ * The name encodes the vertical only. Topology (single vs multi store/warehouse)
+ * is derived at runtime from the tenant's data and entitlements;
+ * `usesSingleStockLocation` merely expresses the default intent for a fresh
+ * tenant (Tienda Unica), which runtime data can later override.
  */
-final class SingleStoreRetailPreset implements VerticalPresetInterface
+final class RetailPreset implements VerticalPresetInterface
 {
-    public const string KEY = 'single_store_retail';
+    public const string KEY = 'retail';
 
     public function key(): string
     {
@@ -30,7 +34,7 @@ final class SingleStoreRetailPreset implements VerticalPresetInterface
 
     public function label(): string
     {
-        return 'Tienda única (retail)';
+        return 'Retail / Tienda';
     }
 
     public function settings(): VerticalPresetSettings

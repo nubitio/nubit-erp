@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Settings\Vertical;
 
 use App\Settings\Vertical\Preset\PharmacyPreset;
-use App\Settings\Vertical\Preset\SingleStoreRetailPreset;
+use App\Settings\Vertical\Preset\RetailPreset;
 use App\Settings\Vertical\VerticalPresetRegistry;
 use PHPUnit\Framework\TestCase;
 
@@ -13,18 +13,18 @@ final class VerticalPresetRegistryTest extends TestCase
 {
     public function testResolvesRegisteredPresetByKey(): void
     {
-        $preset = new SingleStoreRetailPreset();
+        $preset = new RetailPreset();
         $registry = new VerticalPresetRegistry([$preset]);
 
-        self::assertTrue($registry->has(SingleStoreRetailPreset::KEY));
-        self::assertSame($preset, $registry->get(SingleStoreRetailPreset::KEY));
-        self::assertSame([SingleStoreRetailPreset::KEY], $registry->keys());
+        self::assertTrue($registry->has(RetailPreset::KEY));
+        self::assertSame($preset, $registry->get(RetailPreset::KEY));
+        self::assertSame([RetailPreset::KEY], $registry->keys());
         self::assertSame([$preset], $registry->all());
     }
 
     public function testResolvesMultipleVerticalsIndependently(): void
     {
-        $retail = new SingleStoreRetailPreset();
+        $retail = new RetailPreset();
         $pharmacy = new PharmacyPreset();
         $registry = new VerticalPresetRegistry([$retail, $pharmacy]);
 
@@ -33,14 +33,14 @@ final class VerticalPresetRegistryTest extends TestCase
         self::assertContains('inventory.lot_tracking', $pharmacy->desiredCapabilities());
         self::assertNotContains('inventory.lot_tracking', $retail->desiredCapabilities());
         self::assertEqualsCanonicalizing(
-            [SingleStoreRetailPreset::KEY, PharmacyPreset::KEY],
+            [RetailPreset::KEY, PharmacyPreset::KEY],
             $registry->keys(),
         );
     }
 
     public function testUnknownPresetThrows(): void
     {
-        $registry = new VerticalPresetRegistry([new SingleStoreRetailPreset()]);
+        $registry = new VerticalPresetRegistry([new RetailPreset()]);
 
         self::assertFalse($registry->has('does_not_exist'));
         $this->expectException(\InvalidArgumentException::class);
