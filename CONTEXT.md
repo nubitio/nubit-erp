@@ -38,6 +38,17 @@ Onboarding entry points: the CLI `tenant:apply-preset <key>` and the admin-only
 `POST /api/tenant/apply-preset` ({ "preset": "<key>" }), which returns the refreshed
 runtime config. Frontend hook: `useApplyTenantPreset` (primes the runtime-config cache).
 
+Post-provisioning onboarding is tracked by `TenantSettings.onboardingCompleted` and
+exposed as `TenantRuntimeConfig.profile.onboardingCompleted`. The admin-only
+`POST /api/tenant/onboarding/complete` marks the wizard complete and returns refreshed
+runtime config. Frontend hook: `useCompleteTenantOnboarding`.
+
+SUNAT certificate setup belongs to tenant onboarding/settings UX, but the lifecycle
+remains in the control plane. `POST /api/tenant/certificate` is the tenant-facing
+adapter: it accepts SOL credentials + PEM/PFX certificate, converts PFX to PEM when
+needed, and calls `CertificateLifecycleServiceInterface` to persist metadata and sync
+Lycet. Frontend hook: `useUploadTenantCertificate`.
+
 A preset encodes ONE axis only: the **vertical** (business type). The orthogonal
 **topology/scale** axis (single vs multi store/warehouse) is NOT encoded in presets —
 it is derived at runtime by `TenantRuntimeConfig` from the tenant's actual data

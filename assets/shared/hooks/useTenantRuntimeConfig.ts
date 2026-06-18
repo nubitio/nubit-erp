@@ -13,6 +13,7 @@ export interface TenantRuntimeConfig {
     preset: string;
     vertical: string;
     simpleStoreMode: boolean;
+    onboardingCompleted: boolean;
   };
   counts: {
     branches: number;
@@ -74,6 +75,10 @@ export interface ApplyTenantPresetResponse {
   runtimeConfig: TenantRuntimeConfig;
 }
 
+export interface CompleteTenantOnboardingResponse {
+  runtimeConfig: TenantRuntimeConfig;
+}
+
 async function applyTenantPreset(preset: string): Promise<ApplyTenantPresetResponse> {
   return httpRequestData(
     httpClient.post<ApplyTenantPresetResponse>('/api/tenant/apply-preset', { preset }),
@@ -89,6 +94,23 @@ export function useApplyTenantPreset() {
 
   return useMutation<ApplyTenantPresetResponse, Error, string>({
     mutationFn: applyTenantPreset,
+    onSuccess: (data) => {
+      queryClient.setQueryData([...TENANT_RUNTIME_CONFIG_QUERY_KEY], data.runtimeConfig);
+    },
+  });
+}
+
+async function completeTenantOnboarding(): Promise<CompleteTenantOnboardingResponse> {
+  return httpRequestData(
+    httpClient.post<CompleteTenantOnboardingResponse>('/api/tenant/onboarding/complete', {}),
+  );
+}
+
+export function useCompleteTenantOnboarding() {
+  const queryClient = useQueryClient();
+
+  return useMutation<CompleteTenantOnboardingResponse, Error, void>({
+    mutationFn: completeTenantOnboarding,
     onSuccess: (data) => {
       queryClient.setQueryData([...TENANT_RUNTIME_CONFIG_QUERY_KEY], data.runtimeConfig);
     },

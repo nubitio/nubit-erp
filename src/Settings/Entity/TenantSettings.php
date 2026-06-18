@@ -100,6 +100,15 @@ class TenantSettings
     #[Groups(['tenant_settings:read'])]
     private string $vertical = 'retail';
 
+    /**
+     * Marks that the post-provisioning tenant onboarding wizard has been
+     * completed. Used by the React OnboardingGate to decide whether to show
+     * setup or the normal shell.
+     */
+    #[ORM\Column]
+    #[Groups(['tenant_settings:read'])]
+    private bool $onboardingCompleted = false;
+
     // ── Getters / Setters ─────────────────────────────────────────────────────
 
     public function getId(): ?int
@@ -194,6 +203,16 @@ class TenantSettings
     public function setVertical(string $vertical): static
     {
         $this->vertical = $vertical;
+        return $this;
+    }
+
+    public function isOnboardingCompleted(): bool
+    {
+        return $this->onboardingCompleted;
+    }
+    public function setOnboardingCompleted(bool $onboardingCompleted): static
+    {
+        $this->onboardingCompleted = $onboardingCompleted;
         return $this;
     }
 }

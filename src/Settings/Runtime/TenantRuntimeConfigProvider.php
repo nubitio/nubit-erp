@@ -53,6 +53,7 @@ final readonly class TenantRuntimeConfigProvider
                 'preset' => $vertical,
                 'vertical' => $vertical,
                 'simpleStoreMode' => $simpleStoreMode,
+                'onboardingCompleted' => $settings->isOnboardingCompleted(),
             ],
             'counts' => [
                 'branches' => $branchCount,
