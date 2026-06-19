@@ -7,6 +7,7 @@ namespace App\Efact\EventListener;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Efact\RateLimit\TenantRateLimiter;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,11 +20,22 @@ final readonly class TenantRateLimitListener
         private TenantRateLimiter $rateLimiter,
         private TenantContext $tenantContext,
         private LoggerInterface $logger,
+        #[Autowire('%kernel.environment%')]
+        private string $kernelEnvironment,
     ) {
     }
 
     public function __invoke(RequestEvent $event): void
     {
+        if ($this->kernelEnvironment !== 'prod') {
+            return;
+        }
+
+        $path = $event->getRequest()->getPathInfo();
+        if ($this->isNonBusinessApiRequest($path)) {
+            return;
+        }
+
         $tenantName = $this->tenantContext->getTenantName();
         if ($tenantName === null || $tenantName === '') {
             return;
@@ -52,5 +64,12 @@ final readonly class TenantRateLimitListener
         $response->headers->set('X-RateLimit-Remaining', '0');
 
         $event->setResponse($response);
+    }
+
+    private function isNonBusinessApiRequest(string $path): bool
+    {
+        return $path === '/api'
+            || str_starts_with($path, '/api/docs')
+            || $path === '/api/tenant/runtime-config';
     }
 }
