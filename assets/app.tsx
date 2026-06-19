@@ -7,6 +7,7 @@ import { EfactApp } from '@app/shell/EfactApp';
 import { ErrorBoundary } from '@shared/components';
 import './i18n';
 import '@nubitio/react-admin/style.css';
+import '@nubitio/ui/style.css';
 import './app.scss';
 
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)
