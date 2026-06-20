@@ -74,7 +74,8 @@ export const usePriceListObservers = ({
 
       const pricesPayload = (prices.current?.getUpdatedRows() ?? []).map((item) => ({
         productId: item.id,
-        price: Number(item.price),
+        // Send as string to preserve exact decimal — backend expects string via PriceItemDto
+        price: String(Number(item.price ?? 0).toFixed(4)),
       }));
       if (pricesPayload.length === 0) {
         toast('No se han realizado cambios', 'warning');

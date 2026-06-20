@@ -12,6 +12,13 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
 /**
+ * Returns all active products with their effective price for a given price list.
+ *
+ * Priority order:
+ *   1. Explicit override in price_list_detail (highest priority)
+ *   2. base_price × price_list.multiplier     (when multiplier is set)
+ *   3. product base price                      (fallback — original behaviour)
+ *
  * @implements ProviderInterface<object>
  */
 readonly class PriceListProvider implements ProviderInterface
@@ -29,24 +36,40 @@ readonly class PriceListProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $id = $uriVariables['id'];
+
         $sql = '
-            select
-                p.producto_id as id,
-                p.descripcion as name,
-                ifnull(pld.price, p.precio) as price
-            from producto p
-            left join price_list_detail pld on p.producto_id = pld.product_id
-            and pld.price_list_id = :id
-            where p.estado = 1
-            order by p.descripcion';
+            SELECT
+                p.producto_id                                        AS id,
+                p.descripcion                                        AS name,
+                CASE
+                    WHEN pld.price IS NOT NULL
+                        THEN pld.price
+                    WHEN pl.multiplier IS NOT NULL
+                        THEN ROUND(p.precio * pl.multiplier, 4)
+                    ELSE p.precio
+                END                                                  AS price,
+                CASE
+                    WHEN pld.price IS NOT NULL THEN \'override\'
+                    WHEN pl.multiplier IS NOT NULL THEN \'multiplier\'
+                    ELSE \'base\'
+                END                                                  AS price_source
+            FROM producto p
+            CROSS JOIN price_list pl
+                ON pl.id = :id
+            LEFT JOIN price_list_detail pld
+                ON pld.product_id   = p.producto_id
+               AND pld.price_list_id = pl.id
+            WHERE p.is_active = 1
+            ORDER BY p.descripcion';
 
         $data = $this->connection->fetchAllAssociative($sql, ['id' => $id]);
 
         return array_map(
             fn (array $item): PriceListDto => new PriceListDto(
-                id: (int)$item['id'],
+                id: $item['id'],
                 name: $item['name'],
-                price: (float)$item['price'],
+                price: $item['price'],          // kept as string — exact decimal from DB
+                priceSource: $item['price_source'],
             ),
             $data
         );

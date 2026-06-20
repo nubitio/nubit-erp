@@ -4,7 +4,9 @@ import NumberUtils from '@shared/lib/NumberUtils';
 export type PriceEditorRow = {
   id: string | number;
   name?: string;
-  price?: number | string;
+  /** Effective price as decimal string (from API) or number (after user edits). */
+  price?: string | number;
+  priceSource?: 'override' | 'multiplier' | 'base';
   updated?: boolean;
 };
 
@@ -14,6 +16,12 @@ export interface PriceEditorGridHandle {
   setRows: (rows: PriceEditorRow[]) => void;
   getUpdatedRows: () => PriceEditorRow[];
 }
+
+const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
+  override: { label: 'Precio especial', color: 'var(--color-primary, #7c3aed)' },
+  multiplier: { label: 'Multiplicador', color: 'var(--color-info, #0891b2)' },
+  base: { label: 'Precio base', color: 'var(--texteditor-label-color, #6b7280)' },
+};
 
 export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceEditorGrid(
   _props,
@@ -39,9 +47,11 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
 
   const updatePrice = (index: number, value: string) => {
     const parsed = parseFloat(value);
-    if (isNaN(parsed)) return;
+    if (isNaN(parsed) || parsed < 0) return;
     rowsRef.current = rowsRef.current.map((r, i) =>
-      i === index ? { ...r, price: parsed, updated: true } : r,
+      i === index
+        ? { ...r, price: parsed.toFixed(4), priceSource: 'override', updated: true }
+        : r,
     );
     setRowsState([...rowsRef.current]);
   };
@@ -79,38 +89,55 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.id}>
-                <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
-                  {row.name}
-                </td>
-                <td
-                  style={{
-                    padding: '6px 8px',
-                    borderBottom: '1px solid var(--base-border-color)',
-                    textAlign: 'right',
-                  }}
-                >
-                  <input
-                    type="number"
-                    step="0.01"
-                    defaultValue={Number(row.price ?? 0)}
-                    onBlur={(e) => updatePrice(i, e.target.value)}
-                    style={{ width: '100%', textAlign: 'right' }}
-                    aria-label={`Precio de ${row.name ?? 'producto'}`}
-                  />
-                  <span
+            {rows.map((row, i) => {
+              const badge = SOURCE_BADGE[row.priceSource ?? 'base'] ?? SOURCE_BADGE['base'];
+              return (
+                <tr key={row.id}>
+                  <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
+                    {row.name}
+                    {row.priceSource && row.priceSource !== 'base' && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          fontSize: 11,
+                          color: badge.color,
+                          fontWeight: 500,
+                        }}
+                        title={badge.label}
+                      >
+                        ● {badge.label}
+                      </span>
+                    )}
+                  </td>
+                  <td
                     style={{
-                      display: 'block',
-                      fontSize: '12px',
-                      color: 'var(--texteditor-label-color)',
+                      padding: '6px 8px',
+                      borderBottom: '1px solid var(--base-border-color)',
+                      textAlign: 'right',
                     }}
                   >
-                    {NumberUtils.formatCurrency(Number(row.price ?? 0))}
-                  </span>
-                </td>
-              </tr>
-            ))}
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      defaultValue={Number(row.price ?? 0)}
+                      onBlur={(e) => updatePrice(i, e.target.value)}
+                      style={{ width: '100%', textAlign: 'right' }}
+                      aria-label={`Precio de ${row.name ?? 'producto'}`}
+                    />
+                    <span
+                      style={{
+                        display: 'block',
+                        fontSize: '12px',
+                        color: 'var(--texteditor-label-color)',
+                      }}
+                    >
+                      {NumberUtils.formatCurrency(Number(row.price ?? 0))}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

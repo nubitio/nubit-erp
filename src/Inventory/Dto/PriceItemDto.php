@@ -8,7 +8,7 @@ class PriceItemDto
 {
     public function __construct(
         public ?string $productId = null,
-        public ?float $price = null,
+        public ?string $price = null,
     ) {
     }
 }

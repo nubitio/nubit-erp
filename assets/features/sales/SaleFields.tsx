@@ -10,7 +10,6 @@ import {
   currencyField,
   dateField,
   numberField,
-  checkboxField,
   switchField,
   selectField,
   textareaField,
@@ -23,10 +22,34 @@ import { httpRequestData } from '@shared/api/network';
 import { productService } from '@features/product';
 import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { ProductDto } from '@features/product/types/product.dto';
-import { PriceListItemDto } from '@features/catalog/types/PriceListItemDto';
-import { Setting, settings } from '@app/Settings';
+import { PriceListApplyDto } from '@features/catalog/types/PriceListItemDto';
+import { priceListEndpoints } from '@features/catalog/api/priceListEndpoints';
+import { Setting, settings } from '@shared/settings';
 import type { GridCellContext } from '@nubitio/crud';
 import type { DataRecord } from '@nubitio/crud';
+
+type FieldChangeContext = {
+  defaultSetCellValue: (row: SaleDetailRow, value: unknown, currentRow: SaleDetailRow) => void;
+};
+
+type SaleDetailRow = DataRecord & {
+  product?: ProductDto | null;
+  qty?: number | string;
+  unitPrice?: number;
+  discountPercent?: number;
+  discountAmount?: number | string;
+  netAmount?: number | string;
+};
+
+type CustomerSelectEvent = {
+  itemData?: {
+    price_list?: { id?: string | number };
+  };
+};
+
+type PriceListChangeEvent = {
+  value?: string | number;
+};
 
 /**
  * Mutable state shared between SaleFields (header) and SaleDetailFields (lines).
@@ -38,7 +61,7 @@ import type { DataRecord } from '@nubitio/crud';
  * and pass the same ref to both SaleFields and SaleDetailFields.
  */
 export interface SaleFieldStateRef {
-  priceList: PriceListItemDto[];
+  priceList: PriceListApplyDto[];
   warehouseId: string;
 }
 
@@ -115,10 +138,10 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
         },
       ])
       .autoSelectIfSingle(true)
-      .onChange((e: any) => {
+      .onChange((e: unknown) => {
         // Write warehouse selection into shared state so detail fields can use it for stock checks.
         if (callbacks?.stateRef) {
-          callbacks.stateRef.current.warehouseId = e;
+          callbacks.stateRef.current.warehouseId = String(e ?? '');
         }
       })
       .visible(false)
@@ -133,7 +156,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .defaultValue(1)
       .required(true)
       .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
-      .onSelect((event: any) => {
+      .onSelect((event: CustomerSelectEvent) => {
         if (event.itemData?.price_list) {
           form?.setFieldValue('price_list', event.itemData.price_list.id);
         }
@@ -145,7 +168,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           options: {
             icon: 'add',
             stylingMode: 'text',
-            onClick: (_e: any) => {
+            onClick: () => {
               callbacks?.onOpenAddCustomer?.();
             },
           },
@@ -159,23 +182,24 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .label('Tarifa')
       .valueType('number')
       .visible(false)
-      .onChange(async (event: any) => {
-        const fetchedPriceList = await httpRequestData<PriceListItemDto[]>(
-          httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
+      .onChange(async (event: PriceListChangeEvent) => {
+        const fetchedPriceList = await httpRequestData<PriceListApplyDto[]>(
+          httpClient.get<PriceListApplyDto[]>(priceListEndpoints.apply(event.value as string | number)),
         );
         // Write fetched price list into shared state so detail fields can apply it on product select.
         if (callbacks?.stateRef) {
           callbacks.stateRef.current.priceList = fetchedPriceList;
         }
         const detailData = form?.getDetailData() ?? [];
-        detailData.forEach((item: any) => {
+        detailData.forEach((item: SaleDetailRow) => {
           const actualPrice = item.unitPrice;
           const priceItem = fetchedPriceList.find(
             (p) => p.id === (item.product?.id ?? item.product?.producto_id),
           );
-          if (priceItem && priceItem.price !== actualPrice) {
-            item.unitPrice = Number(priceItem.price);
-            item.netAmount = item.qty * priceItem.price;
+          const newPrice = Number(priceItem?.price ?? 0);
+          if (priceItem && newPrice !== actualPrice) {
+            item.unitPrice = newPrice;
+            item.netAmount = item.qty * newPrice;
             form?.reloadDetailData();
           }
         });
@@ -203,7 +227,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .defaultValue(() => settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN')
       .visible(false)
       .col(6)
-      .onChange((value: any) => {
+      .onChange((value: string | { value?: string } | null | undefined) => {
         const currency = typeof value === 'string' ? value : (value?.value ?? value);
         if (currency && currency !== 'PEN') {
           form?.showField('exchangeRate');
@@ -253,14 +277,14 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .defaultValue(0)
       .readonly(true)
       .helpText('Clic para aplicar descuento')
-      .onClick((_e: any) => {
+      .onClick(() => {
         const total = getSubTotal(form);
         const rawDiscountPercent = form?.getFieldValue('discountPercent');
         // discountPercent is stored as 0–100 on the form — pass it directly (no conversion).
         const discountPercent = rawDiscountPercent ? Number(rawDiscountPercent) : 0;
         callbacks?.onOpenDiscount?.({ total, discountPercent });
       })
-      .onChange((_e: any) => {
+      .onChange(() => {
         setTotal(form);
       })
       .build(),
@@ -313,7 +337,7 @@ export const SaleDetailFields = (
       .name('product')
       .label('Producto')
       .minWidth(300)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: string | number | null, currentRow: SaleDetailRow) {
         if (value === '' || value == null) {
           row.product = null;
           row.qty = '';
@@ -360,7 +384,7 @@ export const SaleDetailFields = (
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
         if (value === '') return;
 
         const stockPolicy = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
@@ -402,7 +426,7 @@ export const SaleDetailFields = (
       .width(110)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
         if (value === '') return;
         const discountPercent = Number(currentRow.discountPercent ?? 0);
         const grossAmount = currentRow.qty * value;
@@ -425,7 +449,7 @@ export const SaleDetailFields = (
       .valueType('number')
       .precision(2)
       .defaultValue(0)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
         if (value === '') return;
         const percent = Math.min(100, Math.max(0, Number(value)));
         const grossAmount = currentRow.qty * currentRow.unitPrice;
@@ -457,7 +481,7 @@ export const SaleDetailFields = (
       .width(120)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
         if (value === '') return;
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);

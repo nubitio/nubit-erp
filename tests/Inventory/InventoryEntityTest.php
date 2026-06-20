@@ -221,10 +221,10 @@ final class InventoryEntityTest extends TestCase
 
     public function testPriceItemDtoHoldsFields(): void
     {
-        $dto = new PriceItemDto(productId: 'prod-1', price: 99.99);
+        $dto = new PriceItemDto(productId: 'prod-1', price: '99.9900');
 
         self::assertSame('prod-1', $dto->productId);
-        self::assertEqualsWithDelta(99.99, $dto->price ?? 0, 0.001);
+        self::assertSame('99.9900', $dto->price);
     }
 
     public function testPriceItemDtoNullableDefaults(): void
@@ -237,7 +237,7 @@ final class InventoryEntityTest extends TestCase
 
     public function testPricesDtoHoldsFields(): void
     {
-        $item = new PriceItemDto('p-1', 50.0);
+        $item = new PriceItemDto('p-1', '50.0000');
         $dto = new PricesDto(priceListId: 3, prices: [$item]);
 
         self::assertSame(3, $dto->priceListId);
@@ -247,11 +247,12 @@ final class InventoryEntityTest extends TestCase
 
     public function testPriceListDtoHoldsFields(): void
     {
-        $dto = new PriceListDto(id: 1, name: 'Minorista', price: 125.50);
+        $dto = new PriceListDto(id: 'prod-1', name: 'Minorista', price: '125.5000');
 
-        self::assertSame(1, $dto->id);
+        self::assertSame('prod-1', $dto->id);
         self::assertSame('Minorista', $dto->name);
-        self::assertEqualsWithDelta(125.5, $dto->price ?? 0, 0.001);
+        self::assertSame('125.5000', $dto->price);
+        self::assertSame('base', $dto->priceSource);
     }
 
     public function testPriceListDtoNullableDefaults(): void
@@ -261,5 +262,20 @@ final class InventoryEntityTest extends TestCase
         self::assertNull($dto->id);
         self::assertNull($dto->name);
         self::assertNull($dto->price);
+        self::assertSame('base', $dto->priceSource);
+    }
+
+    public function testPriceListEntityMultiplier(): void
+    {
+        $pl = new PriceList();
+        $pl->setName('Mayorista');
+
+        self::assertNull($pl->getMultiplier());
+
+        $pl->setMultiplier('0.9000');
+        self::assertSame('0.9000', $pl->getMultiplier());
+
+        $pl->setMultiplier(null);
+        self::assertNull($pl->getMultiplier());
     }
 }

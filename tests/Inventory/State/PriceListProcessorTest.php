@@ -19,8 +19,8 @@ final class PriceListProcessorTest extends TestCase
         return new PricesDto(
             priceListId: 3,
             prices: [
-                new PriceItemDto('prod-1', 29.90),
-                new PriceItemDto('prod-2', 49.90),
+                new PriceItemDto('prod-1', '29.9000'),
+                new PriceItemDto('prod-2', '49.9000'),
             ]
         );
     }

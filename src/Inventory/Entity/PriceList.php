@@ -15,8 +15,10 @@ use ApiPlatform\Metadata\Post;
 use Nubit\Platform\Http\ApiResponse;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Dto\PriceListDto;
+use App\Inventory\Dto\PriceListApplyDto;
 use App\Inventory\Dto\PricesDto;
 use App\Inventory\Repository\PriceListRepository;
+use App\Inventory\State\PriceListApplyProvider;
 use App\Inventory\State\PriceListProcessor;
 use App\Inventory\State\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;
@@ -48,6 +50,18 @@ use Doctrine\ORM\Mapping as ORM;
             output: ApiResponse::class,
             processor: PriceListProcessor::class,
         ),
+        new GetCollection(
+            uriTemplate: '/price-lists/{id}/apply',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: PriceList::class,
+                ),
+            ],
+            paginationEnabled: false,
+            output: PriceListApplyDto::class,
+            provider: PriceListApplyProvider::class,
+        ),
     ],
     filters: [DataGridFilter::class],
     mercure: true,
@@ -63,6 +77,16 @@ class PriceList
     #[ORM\Column(length: 255)]
     private string $name;
 
+    /**
+     * Optional global multiplier.
+     * When set and no explicit per-product override exists in price_list_detail,
+     * the effective price is computed as: base_price × multiplier.
+     * NULL means "explicit overrides only" (original behaviour).
+     */
+    #[ApiProperty(description: 'price_list.multiplier.label')]
+    #[ORM\Column(type: 'decimal', precision: 8, scale: 4, nullable: true)]
+    private ?string $multiplier = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +100,18 @@ class PriceList
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getMultiplier(): ?string
+    {
+        return $this->multiplier;
+    }
+
+    public function setMultiplier(?string $multiplier): static
+    {
+        $this->multiplier = $multiplier;
 
         return $this;
     }
