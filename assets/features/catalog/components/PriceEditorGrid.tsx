@@ -1,146 +1,144 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  DataGridView,
+  identityField,
+  numberField,
+  textField,
+  type DataRecord,
+  type Field,
+  type GridHandle,
+} from '@nubitio/crud';
+import { httpClient } from '@shared/api/HttpClient';
+import { httpRequestData } from '@shared/api/network';
+import AppResponse from '@shared/api/AppResponse';
+import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
+import { priceListEndpoints } from '../api/priceListEndpoints';
 
-export type PriceEditorRow = {
+export type PriceEditorRow = DataRecord & {
   id: string | number;
   name?: string;
-  /** Effective price as decimal string (from API) or number (after user edits). */
+  /** Effective price as decimal string from the API, or number while edited by the grid. */
   price?: string | number;
   priceSource?: 'override' | 'multiplier' | 'base';
-  updated?: boolean;
 };
 
 export interface PriceEditorGridHandle {
   showLoading: (message?: string) => void;
   hideLoading: () => void;
+  setPriceListId: (id: string | number | null) => void;
   setRows: (rows: PriceEditorRow[]) => void;
-  getUpdatedRows: () => PriceEditorRow[];
+  hasChanges: () => boolean;
+  saveChanges: () => Promise<boolean>;
 }
 
-const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
-  override: { label: 'Precio especial', color: 'var(--color-primary, #7c3aed)' },
-  multiplier: { label: 'Multiplicador', color: 'var(--color-info, #0891b2)' },
-  base: { label: 'Precio base', color: 'var(--texteditor-label-color, #6b7280)' },
+const SOURCE_LABEL: Record<string, string> = {
+  override: 'Precio especial',
+  multiplier: 'Multiplicador',
+  base: 'Precio base',
 };
+
+const formatPriceSource = (value: unknown): string => SOURCE_LABEL[String(value)] ?? SOURCE_LABEL.base;
 
 export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceEditorGrid(
   _props,
   ref,
 ) {
-  const [rows, setRowsState] = useState<PriceEditorRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const rowsRef = useRef<PriceEditorRow[]>([]);
+  const gridRef = useRef<GridHandle | null>(null);
+  const priceListIdRef = useRef<string | number | null>(null);
+  const [rows, setRows] = useState<PriceEditorRow[]>([]);
 
-  useImperativeHandle(ref, () => ({
-    showLoading: (message) => {
-      setLoadingMessage(message ?? '');
-      setLoading(true);
-    },
-    hideLoading: () => setLoading(false),
-    setRows: (newRows) => {
-      rowsRef.current = newRows.map((r) => ({ ...r }));
-      setRowsState([...rowsRef.current]);
-    },
-    getUpdatedRows: () => rowsRef.current.filter((r) => r.updated),
-  }));
+  const fields = useMemo<Field[]>(
+    () => [
+      identityField().name('id').valueType('number').build(),
+      textField()
+        .name('name')
+        .label('Producto')
+        .readonly(true)
+        .minWidth(320)
+        .build(),
+      numberField()
+        .name('price')
+        .label('Precio')
+        .align('right')
+        .required(true)
+        .format({ min: 0, step: 0.01, decimalPlaces: 4 })
+        .formatter((cell) => NumberUtils.formatCurrency(Number(cell.value ?? 0)))
+        .build(),
+      textField()
+        .name('priceSource')
+        .label('Origen')
+        .readonly(true)
+        .width(150)
+        .formatter((cell) => formatPriceSource(cell.value))
+        .build(),
+    ],
+    [],
+  );
 
-  const updatePrice = (index: number, value: string) => {
-    const parsed = parseFloat(value);
-    if (isNaN(parsed) || parsed < 0) return;
-    rowsRef.current = rowsRef.current.map((r, i) =>
-      i === index
-        ? { ...r, price: parsed.toFixed(4), priceSource: 'override', updated: true }
-        : r,
+  const saveRows = async (draftRows: DataRecord[]) => {
+    const priceListId = priceListIdRef.current;
+    if (!priceListId) {
+      toast('Debe seleccionar una tarifa', 'warning');
+      throw new Error('Missing price list id');
+    }
+
+    const pricesPayload = draftRows.map((item) => ({
+      productId: item.id,
+      price: String(Number(item.price ?? 0).toFixed(4)),
+    }));
+
+    const response = await httpRequestData<AppResponse>(
+      httpClient.post<AppResponse>(priceListEndpoints.updatePrices(), {
+        priceListId,
+        prices: pricesPayload,
+      }),
     );
-    setRowsState([...rowsRef.current]);
+
+    setRows((current) =>
+      current.map((row) => {
+        const updated = draftRows.find((item) => item.id === row.id);
+        return updated
+          ? { ...row, price: String(Number(updated.price ?? 0).toFixed(4)), priceSource: 'override' }
+          : row;
+      }),
+    );
+    toast(response.message, 'success');
   };
 
+  useImperativeHandle(ref, () => ({
+    showLoading: (message) => gridRef.current?.showLoading(message),
+    hideLoading: () => gridRef.current?.hideLoading(),
+    setPriceListId: (id) => {
+      priceListIdRef.current = id;
+    },
+    setRows: (newRows) => setRows(newRows.map((row) => ({ ...row }))),
+    hasChanges: () => gridRef.current?.hasEditData() ?? false,
+    saveChanges: () => gridRef.current?.saveChanges() ?? Promise.resolve(false),
+  }));
+
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {loading && (
-        <div style={{ padding: '8px', textAlign: 'center', color: 'var(--texteditor-label-color)' }}>
-          {loadingMessage || 'Cargando...'}
-        </div>
-      )}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th
-                style={{
-                  textAlign: 'left',
-                  padding: '6px 8px',
-                  borderBottom: '1px solid var(--base-border-color)',
-                  minWidth: 300,
-                }}
-              >
-                Producto
-              </th>
-              <th
-                style={{
-                  textAlign: 'right',
-                  padding: '6px 8px',
-                  borderBottom: '1px solid var(--base-border-color)',
-                }}
-              >
-                Precio
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => {
-              const badge = SOURCE_BADGE[row.priceSource ?? 'base'] ?? SOURCE_BADGE['base'];
-              return (
-                <tr key={row.id}>
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid var(--base-border-color)' }}>
-                    {row.name}
-                    {row.priceSource && row.priceSource !== 'base' && (
-                      <span
-                        style={{
-                          marginLeft: 6,
-                          fontSize: 11,
-                          color: badge.color,
-                          fontWeight: 500,
-                        }}
-                        title={badge.label}
-                      >
-                        ● {badge.label}
-                      </span>
-                    )}
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      borderBottom: '1px solid var(--base-border-color)',
-                      textAlign: 'right',
-                    }}
-                  >
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      defaultValue={Number(row.price ?? 0)}
-                      onBlur={(e) => updatePrice(i, e.target.value)}
-                      style={{ width: '100%', textAlign: 'right' }}
-                      aria-label={`Precio de ${row.name ?? 'producto'}`}
-                    />
-                    <span
-                      style={{
-                        display: 'block',
-                        fontSize: '12px',
-                        color: 'var(--texteditor-label-color)',
-                      }}
-                    >
-                      {NumberUtils.formatCurrency(Number(row.price ?? 0))}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    <div style={{ height: '55vh', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
+      <DataGridView
+        ref={gridRef}
+        id="price-list-editor"
+        title="Precios"
+        url={priceListEndpoints.list()}
+        data={rows}
+        fields={fields}
+        editMode="cell"
+        inlineEditToolbar={false}
+        inlineRowActions={false}
+        allowAdd={false}
+        allowEdit
+        allowDelete={false}
+        allowExport={false}
+        filterRow={false}
+        paging={false}
+        toolbarVisible={false}
+        onBatchSave={saveRows}
+        zebraRows={false}
+      />
     </div>
   );
 });

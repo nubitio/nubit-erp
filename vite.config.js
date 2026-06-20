@@ -16,10 +16,19 @@ import react from '@vitejs/plugin-react';
 //
 // Usage: VITE_DEV_SERVER_HOSTNAME=host.docker.internal npm run dev
 const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost';
+// Host-visible origin for Symfony script tags. Defaults to 5174 so efact does not
+// collide with other local Vite apps that commonly bind localhost:5173.
+const viteDevServerOrigin = process.env.VITE_DEV_SERVER_ORIGIN ?? 'http://localhost:5174';
+
+const localCrudPackage = fileURLToPath(new URL('../../nubit-react/packages/crud', import.meta.url));
 
 const frontendAliases = {
-  // Canonical frontend layer aliases (ADR-015). The @nubitio/* packages are
-  // consumed from npm (no aliases) — develop them in the nubit-react repo.
+  // Portal-linked @nubitio/crud must resolve to a single module instance.
+  // Without this alias, Vite pre-bundles node_modules/@nubitio/hydra with one
+  // copy of ResourceStoreProvider while app code loads another via @fs, so
+  // NativeDataGridView cannot see the provider context (price-list crashes).
+  '@nubitio/crud': localCrudPackage,
+  // Canonical frontend layer aliases (ADR-015).
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
   '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
   '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
@@ -32,9 +41,27 @@ const frontendAliases = {
 };
 
 export default defineConfig({
+  optimizeDeps: {
+    // Keep portal-linked @nubitio/crud as a single ESM module. Pre-bundling
+    // @nubitio/hydra inlines a second copy of ResourceStoreProvider, which
+    // breaks React context for grids (price-list route).
+    exclude: ['@nubitio/crud'],
+    include: ['@nubitio/hydra'],
+  },
   resolve: {
     alias: frontendAliases,
-    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
+    dedupe: [
+      'react',
+      'react-dom',
+      'react-router',
+      'react-router-dom',
+      '@tanstack/react-query',
+      '@nubitio/core',
+      '@nubitio/crud',
+      '@nubitio/ui',
+      'i18next',
+      'react-i18next',
+    ],
   },
   test: {
     environment: 'happy-dom',
@@ -51,10 +78,12 @@ export default defineConfig({
   plugins: [
     react(),
     symfonyPlugin({
-      // 'localhost' → Symfony genera URLs con localhost:5173, accesible tanto
-      // desde el navegador del host como desde contenedores Docker (vía el
-      // puerto mapeado 5173:5173). Ver: symfony-vite.pentatrion.com/guide/tips#docker
+      // Advertise the host-mapped origin to Symfony (entrypoints.json).
+      // See: symfony-vite.pentatrion.com/guide/tips#docker
       viteDevServerHostname,
+      originOverride: viteDevServerOrigin,
+      // Avoid sirv intercepting /build/@vite/* before Vite's own middleware.
+      servePublic: false,
     }),
     VitePWA({
       outDir: 'public',
@@ -165,6 +194,7 @@ export default defineConfig({
           .replace(/,\s*\{url:"build\/registerSW\.js",revision:"[^"]*"\}/g, '');
         if (before !== after) {
           writeFileSync(swPath, after, 'utf8');
+          // eslint-disable-next-line no-console -- build plugin status message is intentional CLI output.
           console.log(
             '✓ pwa-strip-manifest-from-precache: removed manifest.webmanifest from sw.js precache list',
           );

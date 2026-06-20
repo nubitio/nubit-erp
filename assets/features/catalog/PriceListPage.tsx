@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
@@ -27,6 +27,8 @@ const baseResource = defineResource(priceListEndpoints.list(), {
 export const PriceListPage = () => {
   const [on, emit] = useEvents();
   const pricesRef = useRef<PriceEditorGridHandle | null>(null);
+  const [pricesOpen, setPricesOpen] = useState(false);
+  const [pricesTitle, setPricesTitle] = useState('Precios');
 
   const resource = useMemo(
     () => ({
@@ -43,7 +45,13 @@ export const PriceListPage = () => {
                 toast('Debe seleccionar una tarifa', 'warning');
                 return;
               }
-              emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
+              setPricesTitle('Precios de ' + selectedRow.name);
+              setPricesOpen(true);
+              // Schedule the ADD after the dialog mounts so the ref is attached
+              // and the observer can safely call setRows / showLoading on the child.
+              setTimeout(() => {
+                emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
+              }, 0);
             },
           },
         ],
@@ -54,10 +62,22 @@ export const PriceListPage = () => {
 
   usePriceListObservers({ on, emit, pricesEvent: priceEvents, pricesRef });
 
+  useEffect(() => {
+    const sub = on(priceEvents.SUCCESS, () => setPricesOpen(false));
+    return () => sub.unsubscribe();
+  }, [on]);
+
   return (
     <>
       <SmartCrudPage resource={resource} />
-      <DialogView events={priceEvents}>
+      <DialogView
+        title={pricesTitle}
+        width={760}
+        isOpen={pricesOpen}
+        onClose={() => setPricesOpen(false)}
+        onCancel={() => setPricesOpen(false)}
+        onSave={() => emit(priceEvents.SAVE)}
+      >
         <PriceEditorGrid ref={pricesRef} />
       </DialogView>
     </>

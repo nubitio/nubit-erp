@@ -112,17 +112,26 @@ services:
 
   vite:
     image: node:20.19.0
+    restart: unless-stopped
     security_opt:
       - label=disable
     environment:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
-    #command: npm run watch
+      # Required for yarn portal deps (@nubitio/crud → ../../nubit-react/...).
+      NODE_OPTIONS: '--preserve-symlinks'
+      # Host-visible Vite URL (mapped port below). Keeps efact off localhost:5173.
+      VITE_DEV_SERVER_ORIGIN: 'http://localhost:5174'
     working_dir: /home/node/app
+    command: >
+      sh -lc "corepack enable && yarn dev --host 0.0.0.0"
     volumes:
       - '.:/home/node/app'
-    stdin_open: true
+      # Linux-native deps — host node_modules (darwin) breaks Rollup inside the container.
+      - vite-node-modules:/home/node/app/node_modules
+      # Yarn portal: ../../nubit-react/packages/* resolves to /home/nubit-react/packages/*
+      - '../../nubit-react:/home/nubit-react'
     ports:
-      - '5173:5173'
+      - '5174:5173'
 
   redis:
     image: redis:6.2.6
@@ -169,7 +178,7 @@ services:
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://127.0.0.1:8000 http://demo.localhost:8080 http://localhost:5173 http://localhost:8080
+        cors_origins http://127.0.0.1:8000 http://demo.localhost:8080 http://localhost:5173 http://localhost:5174 http://localhost:8080
     # Comment the following line to disable the development mode
     command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
     healthcheck:
@@ -183,6 +192,7 @@ services:
 ###< symfony/mercure-bundle ###
 
 volumes:
+  vite-node-modules:
   app-var:
   app-public-uploads:
 
