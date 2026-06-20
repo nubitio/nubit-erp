@@ -33,6 +33,8 @@ use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Setup\Service\E2eTestSeedService;
+use App\Settings\Service\TenantSettingsService;
+use App\Settings\Entity\TenantSettings;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -124,11 +126,16 @@ final class E2eTestSeedServiceTest extends TestCase
             }
         });
 
+        $tenantSettings = new TenantSettings();
+        $tenantSettingsService = $this->createStub(TenantSettingsService::class);
+        $tenantSettingsService->method('get')->willReturn($tenantSettings);
+
         $service = new E2eTestSeedService(
             $entityManager,
             $connection,
             $passwordHasher,
             $initialSetupService,
+            $tenantSettingsService,
             $companyRepository,
             $roleRepository,
             $userRepository,
@@ -202,11 +209,14 @@ final class E2eTestSeedServiceTest extends TestCase
         $entityManager->expects($this->once())->method('remove')->with($user);
         $entityManager->expects($this->once())->method('flush');
 
+        $tenantSettingsService = $this->createStub(TenantSettingsService::class);
+
         $service = new E2eTestSeedService(
             $entityManager,
             $connection,
             $passwordHasher,
             $initialSetupService,
+            $tenantSettingsService,
             $companyRepository,
             $roleRepository,
             $userRepository,

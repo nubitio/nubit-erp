@@ -35,6 +35,7 @@ use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Setup\InitialSetupService;
+use App\Settings\Service\TenantSettingsService;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
@@ -55,6 +56,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly Connection $connection,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly InitialSetupService $initialSetupService,
+        private readonly TenantSettingsService $tenantSettingsService,
         private readonly CompanyRepository $companyRepository,
         private readonly RoleRepository $roleRepository,
         private readonly UserRepository $userRepository,
@@ -78,6 +80,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     public function seed(): array
     {
         $this->ensureInitialSetup();
+        $this->ensureOnboardingCompleted();
 
         $user = $this->upsertE2eUser(self::E2E_PASSWORD);
 
@@ -155,6 +158,15 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             [$purchaseIds],
             [ArrayParameterType::STRING]
         );
+    }
+
+    private function ensureOnboardingCompleted(): void
+    {
+        $settings = $this->tenantSettingsService->get();
+        if (!$settings->isOnboardingCompleted()) {
+            $settings->setOnboardingCompleted(true);
+            $this->tenantSettingsService->save($settings);
+        }
     }
 
     private function ensureInitialSetup(): void
