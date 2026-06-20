@@ -20,15 +20,8 @@ const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost
 // collide with other local Vite apps that commonly bind localhost:5173.
 const viteDevServerOrigin = process.env.VITE_DEV_SERVER_ORIGIN ?? 'http://localhost:5174';
 
-const localCrudPackage = fileURLToPath(new URL('../../nubit-react/packages/crud', import.meta.url));
-
 const frontendAliases = {
-  // Portal-linked @nubitio/crud must resolve to a single module instance.
-  // Without this alias, Vite pre-bundles node_modules/@nubitio/hydra with one
-  // copy of ResourceStoreProvider while app code loads another via @fs, so
-  // NativeDataGridView cannot see the provider context (price-list crashes).
-  '@nubitio/crud': localCrudPackage,
-  // Canonical frontend layer aliases (ADR-015).
+  // Canonical frontend layer aliases (ADR-015). @nubitio/* packages come from npm.
   '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
   '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
   '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
@@ -41,13 +34,6 @@ const frontendAliases = {
 };
 
 export default defineConfig({
-  optimizeDeps: {
-    // Keep portal-linked @nubitio/crud as a single ESM module. Pre-bundling
-    // @nubitio/hydra inlines a second copy of ResourceStoreProvider, which
-    // breaks React context for grids (price-list route).
-    exclude: ['@nubitio/crud'],
-    include: ['@nubitio/hydra'],
-  },
   resolve: {
     alias: frontendAliases,
     dedupe: [
