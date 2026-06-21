@@ -86,6 +86,16 @@
   overflow: hidden;
 }
 
+// When mounted inside a Drawer, the .drawer__body has flex layout.
+// Make the panel fill the full available height so the chat list scrolls
+// and the input stays pinned to the bottom.
+.drawer__body .assistant-panel,
+.drawer__body .chat-container {
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .chat-message__attachments,
 .chat-pending-files {
   display: flex;

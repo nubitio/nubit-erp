@@ -3,13 +3,14 @@ import { AppToolbar } from '@nubitio/ui';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useCashRegisters } from './hooks/useCashRegisters';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
-import { useSessionInfo } from '@app/contexts/useSessionInfo';
+import { useSessionInfo } from '@shared/sessionInfo';
 import { useScreenSize } from '@nubitio/admin';
 import { DashboardStatusBar } from './components/DashboardStatusBar';
 import { DashboardHero } from './components/DashboardHero';
 import { DashboardOperations } from './components/DashboardOperations';
 import { DashboardRankings } from './components/DashboardRankings';
 import { DashboardCharts } from './components/DashboardCharts';
+import { BriefingCard } from '@features/assistant/components/BriefingCard';
 
 export const DashboardPage = () => {
   const screen = useScreenSize();
@@ -38,6 +39,9 @@ export const DashboardPage = () => {
             cashboxLoading={cashboxLoading}
           />
         )}
+
+        {/* AI daily briefing — shows only when content is available (no layout shift on miss) */}
+        <BriefingCard />
 
         {!isMobile && (
           <>

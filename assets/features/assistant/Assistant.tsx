@@ -1,16 +1,18 @@
 import React, { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
+import { useLocation } from 'react-router-dom';
 import { AppToolbar, IconButton } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
 import {
-  assistantService,
   type AssistantAttachmentPayload,
   type AssistantChatMessage,
 } from './services/assistantService';
 import { QuerySuggestionChips } from './components/QuerySuggestionChips';
+import { useAssistantStream } from './hooks/useAssistantStream';
+import type { ScreenContext } from './types';
 import './Assistant.scss';
 
 const REGENERATION_TEXT = 'Regeneration...';
@@ -125,9 +127,27 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageListRef = useRef<HTMLDivElement | null>(null);
+
+  // Streaming hook — replaces the blocking assistantService.chat call
+  const { streamingText, status, stream, abort } = useAssistantStream();
+  const isProcessing = status === 'streaming';
+
+  // Derive screen context from the current route so the AI knows where the user is
+  const { pathname } = useLocation();
+  const screenContext = useMemo((): ScreenContext => {
+    if (pathname.startsWith('/pos')) return { screen: 'pos' };
+    if (pathname.startsWith('/dashboard')) return { screen: 'dashboard' };
+    if (pathname.startsWith('/sale')) return { screen: 'sale_form' };
+    if (pathname.startsWith('/inventory')) return { screen: 'inventory' };
+    if (pathname.startsWith('/cash')) return { screen: 'cash_register' };
+    if (pathname.startsWith('/customer')) return { screen: 'customers' };
+    if (pathname.startsWith('/product')) return { screen: 'products' };
+    if (pathname.startsWith('/purchase')) return { screen: 'purchases' };
+    if (pathname.startsWith('/report')) return { screen: 'reports' };
+    return { screen: pathname.replace(/^\//, '').split('/')[0] ?? 'unknown' };
+  }, [pathname]);
 
   const lastAssistantMessageId = useMemo(
     () => [...messages].reverse().find((message) => message.role === 'assistant')?.id,
@@ -142,33 +162,43 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
 
   const askAssistant = useCallback(
     async (message: ChatMessage, currentMessages: ChatMessage[], attachments?: AssistantAttachmentPayload[]) => {
-      setIsProcessing(true);
       scrollToBottom();
 
+      // Placeholder so the user sees the bubble appear immediately.
+      // Use Date.now() + 1 to avoid ID collision with the user message that was
+      // also stamped with Date.now() milliseconds earlier in sendMessage().
+      const placeholderId = Date.now() + 1;
+      setMessages((existing) => [
+        ...existing,
+        { id: placeholderId, role: 'assistant', text: '', timestamp: new Date() },
+      ]);
+
       try {
-        const response = await assistantService.chat(
+        const fullText = await stream(
           [...currentMessages, message].map(messageToHistory),
           attachments,
+          screenContext,
         );
-        setMessages((existing) => [
-          ...existing,
-          { id: Date.now(), role: 'assistant', text: response.message, timestamp: new Date() },
-        ]);
+
+        // Replace placeholder with final text once streaming completes
+        setMessages((existing) =>
+          existing.map((m) =>
+            m.id === placeholderId ? { ...m, text: fullText } : m,
+          ),
+        );
       } catch (error: unknown) {
-        const message =
-          typeof error === 'object' &&
-          error !== null &&
-          'response' in error &&
-          typeof (error as { response?: { data?: { message?: unknown } } }).response?.data?.message === 'string'
-            ? (error as { response: { data: { message: string } } }).response.data.message
+        // Remove placeholder on error
+        setMessages((existing) => existing.filter((m) => m.id !== placeholderId));
+        const errorMsg =
+          error instanceof Error
+            ? error.message
             : 'No se pudo obtener respuesta del asistente. Inténtalo nuevamente.';
-        toast(message, 'error');
+        toast(errorMsg, 'error');
       } finally {
-        setIsProcessing(false);
         scrollToBottom();
       }
     },
-    [scrollToBottom],
+    [scrollToBottom, stream, screenContext],
   );
 
   const sendMessage = useCallback(
@@ -220,18 +250,18 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
     const history = messages.slice(0, lastAssistantIndex);
     const previousText = messages[lastAssistantIndex].text;
 
-    setIsProcessing(true);
+    // Clear the previous assistant text so streaming text shows from empty
     setMessages((existing) =>
       existing.map((message, index) =>
-        index === lastAssistantIndex ? { ...message, text: REGENERATION_TEXT } : message,
+        index === lastAssistantIndex ? { ...message, text: '' } : message,
       ),
     );
 
     try {
-      const response = await assistantService.chat(history.map(messageToHistory));
+      const fullText = await stream(history.map(messageToHistory), undefined, screenContext);
       setMessages((existing) =>
         existing.map((message, index) =>
-          index === lastAssistantIndex ? { ...message, text: response.message } : message,
+          index === lastAssistantIndex ? { ...message, text: fullText } : message,
         ),
       );
     } catch (error: unknown) {
@@ -240,18 +270,10 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
           index === lastAssistantIndex ? { ...message, text: previousText } : message,
         ),
       );
-      const message =
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as { response?: { data?: { message?: unknown } } }).response?.data?.message === 'string'
-          ? (error as { response: { data: { message: string } } }).response.data.message
-          : 'No se pudo regenerar la respuesta.';
-      toast(message, 'error');
-    } finally {
-      setIsProcessing(false);
+      const errorMsg = error instanceof Error ? error.message : 'No se pudo regenerar la respuesta.';
+      toast(errorMsg, 'error');
     }
-  }, [isProcessing, messages]);
+  }, [isProcessing, messages, stream, screenContext]);
 
   const startSpeechRecognition = useCallback(() => {
     const Recognition = ((window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor }).SpeechRecognition ??
@@ -280,16 +302,28 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
             <QuerySuggestionChips onSuggestionClick={onChipClick} />
           </div>
         ) : (
-          messages.map((message) => (
-            <AssistantMessageBubble
-              key={message.id}
-              message={message}
-              isLastAssistantMessage={message.id === lastAssistantMessageId}
-              onRegenerate={onRegenerate}
-            />
-          ))
+          messages.map((message) => {
+            // While streaming, the last assistant bubble shows the live delta
+            const displayText =
+              isProcessing &&
+              message.role === 'assistant' &&
+              message.id === lastAssistantMessageId &&
+              streamingText
+                ? streamingText
+                : message.text;
+            return (
+              <AssistantMessageBubble
+                key={message.id}
+                message={{ ...message, text: displayText }}
+                isLastAssistantMessage={message.id === lastAssistantMessageId}
+                onRegenerate={onRegenerate}
+              />
+            );
+          })
         )}
-        {isProcessing && <div className="chat-typing">El asistente está escribiendo...</div>}
+        {isProcessing && !streamingText && (
+          <div className="chat-typing">El asistente está escribiendo...</div>
+        )}
       </div>
 
       {pendingFiles.length > 0 && (

@@ -6,7 +6,7 @@
  * This file is intentionally the single place that couples @nubitio/admin to
  * eFact domain concerns. Keep business logic out of @nubitio/admin and in here.
  */
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { AdminShell, type AdminMenuItem } from '@nubitio/admin';
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
@@ -20,6 +20,9 @@ import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { SessionExpiredDialog } from './components/SessionExpiredDialog';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
+// Lazy-load the chat panel so it doesn't bloat the initial bundle
+const Assistant = lazy(() => import('@features/assistant/Assistant'));
+
 interface EfactAdminShellProps {
   title?: string;
   children: React.ReactNode;
@@ -30,6 +33,12 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  // Track whether the drawer has ever been opened so the Assistant component
+  // stays mounted after first use — preserving conversation history across
+  // open/close cycles. Without this, closing the drawer destroys React state.
+  const assistantEverOpenedRef = useRef(false);
+  if (assistantOpen) assistantEverOpenedRef.current = true;
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
   const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
 
@@ -54,6 +63,12 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
         title={title}
         menuItems={menuItems}
         headerActions={[
+          {
+            id: 'assistant',
+            icon: 'ph ph-sparkle',
+            label: 'Asistente de IA',
+            onClick: () => setAssistantOpen((prev) => !prev),
+          },
           {
             id: 'notifications',
             icon: 'ph ph-bell',
@@ -81,6 +96,19 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
       >
         {children}
       </AdminShell>
+
+      {/* AI Assistant drawer */}
+      <Drawer
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        title="Asistente de IA"
+        width={520}
+        scrim="subtle"
+      >
+        <Suspense fallback={null}>
+          {assistantEverOpenedRef.current && <Assistant showToolbar={false} />}
+        </Suspense>
+      </Drawer>
 
       {/* Notification drawer */}
       <Drawer

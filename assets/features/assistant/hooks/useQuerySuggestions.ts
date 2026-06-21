@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@app/contexts/auth';
+import { getSessionUser } from '@shared/sessionInfo';
 import { cashboxService } from '@features/cashRegister';
 
 
@@ -136,7 +136,7 @@ function getRouteSuggestions(
 
 export function useQuerySuggestions(): { suggestions: QuerySuggestion[] } {
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const user = getSessionUser();
   const [cashStatus, setCashStatus] = useState<CashSessionStatus>('unknown');
 
   const roles: string[] = user?.roles ?? [];

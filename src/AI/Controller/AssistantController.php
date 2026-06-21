@@ -61,7 +61,7 @@ class AssistantController extends AbstractController
         // Prepend a dynamic system message so SystemPromptInputProcessor skips its static file.
         // The full prompt = context block (live session data) + static assistant.md content.
         $messageBag = $messageBag->withSystemMessage(
-            Message::forSystem($this->buildDynamicSystemPrompt())
+            Message::forSystem($this->buildDynamicSystemPrompt($data))
         );
 
         $this->logger->info('Assistant request received', [
@@ -190,21 +190,33 @@ class AssistantController extends AbstractController
     }
 
     /**
-     * Builds the full dynamic system prompt: session context block + static assistant.md content.
+     * Builds the full dynamic system prompt: session context block + screen context + static assistant.md content.
      *
      * Injecting it here causes symfony/ai-bundle's SystemPromptInputProcessor to skip its own
      * static file injection (it bails out when a system message already exists in the bag).
      */
-    private function buildDynamicSystemPrompt(): string
+    private function buildDynamicSystemPrompt(AssistantRequest $data): string
     {
         $contextBlock = $this->sessionContextBuilder->build();
+
+        $screenBlock = '';
+        if ($data->screenContext !== null) {
+            $screenBlock = "\n## Pantalla activa del usuario\n"
+                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown') . "\n"
+                . ($data->screenContext->entityType !== null
+                    ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
+                    : '')
+                . ($data->screenContext->entityId !== null
+                    ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
+                    : '');
+        }
 
         $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
         $staticPrompt = is_file($staticPromptPath)
             ? (string) file_get_contents($staticPromptPath)
             : '';
 
-        return $contextBlock . "\n\n---\n\n" . $staticPrompt;
+        return $contextBlock . $screenBlock . "\n\n---\n\n" . $staticPrompt;
     }
 
     private function normalizeContent(mixed $content): string

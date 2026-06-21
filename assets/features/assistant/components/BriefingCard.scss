@@ -1,0 +1,105 @@
+.briefing-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--accent-color) 6%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--accent-color) 18%, transparent);
+  box-shadow: var(--shadow-sm);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    i {
+      color: var(--accent-color);
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--accent-color);
+    opacity: 0.85;
+  }
+
+  &__body {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    line-height: 1.55;
+
+    // Markdown list reset
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    li {
+      margin: 0;
+    }
+
+    p {
+      margin: 0 0 6px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    // Highlight urgent items marked with ⚠️ (the AI is instructed to use this)
+    li:has(> strong),
+    p:has(> strong) {
+      color: var(--warning-color);
+    }
+  }
+
+  // ── Compact / collapsible variant ────────────────────────────────────────
+  &--compact {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
+
+    i:first-child {
+      color: var(--accent-color);
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--accent-color);
+      opacity: 0.85;
+      flex: 1;
+    }
+
+    i:last-child {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+  }
+}
