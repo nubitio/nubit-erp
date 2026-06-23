@@ -275,7 +275,7 @@ services:
       MYSQL_MONITORING_PASSWORD: ${OTEL_MYSQL_MONITORING_PASSWORD}
       REDIS_ENDPOINT: redis:6379
       CADDY_METRICS_ENDPOINT: web:2019
-      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-https://signoz.nubit.io}
+      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-https://ingest.nubit.io}
       SIGNOZ_TLS_INSECURE: ${SIGNOZ_TLS_INSECURE:-false}
       DEPLOYMENT_ENV: ${APP_ENV}
     depends_on:
