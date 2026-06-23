@@ -89,8 +89,10 @@ export const ConnectivityProvider = ({ children }: { children: React.ReactNode }
     }
 
     const interval = window.setInterval(() => {
-      void pingNow();
-    }, 20000);
+      if (document.visibilityState === 'visible') {
+        void pingNow();
+      }
+    }, 60000);
 
     return () => {
       window.clearInterval(interval);

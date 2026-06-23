@@ -41,6 +41,10 @@ export interface TenantRuntimeConfig {
       showTransfers: boolean;
       showLotFields: boolean;
     };
+    pos: {
+      allowLinePriceOverride: boolean;
+      allowCatalogPriceEdit: boolean;
+    };
     reports: {
       showAdvancedReports: boolean;
       showExcelExport: boolean;

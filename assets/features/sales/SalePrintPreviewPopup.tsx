@@ -5,7 +5,7 @@ import './SalePrintPreviewPopup.scss';
 import { useScreenSize } from '@nubitio/admin';
 
 interface SalePrintPreviewPopupProps {
-  saleId: any;
+  saleId: string | number;
   visible: boolean;
   onPositive: () => void;
   onNegative: () => void;

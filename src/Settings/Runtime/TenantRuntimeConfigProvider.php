@@ -100,6 +100,10 @@ final readonly class TenantRuntimeConfigProvider
                     'showTransfers' => $multiWarehouse,
                     'showLotFields' => $lotTracking,
                 ],
+                'pos' => [
+                    'allowLinePriceOverride' => $vertical !== 'pharmacy',
+                    'allowCatalogPriceEdit' => $vertical !== 'pharmacy',
+                ],
                 'reports' => [
                     'showAdvancedReports' => $advancedReports,
                     'showExcelExport' => $excelExport,

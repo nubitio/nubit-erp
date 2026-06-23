@@ -36,7 +36,12 @@ let USERNAME = '';
 let PASSWORD = '';
 
 const SEED_PRODUCT_NAME = 'Producto CI E2E';
-const SEED_CUSTOMER_DNI = '20100000001';
+
+type CashRegisterDashboardRow = {
+  id?: string | number;
+  cashSessionId?: string | number | null;
+  cashShiftId?: string | number | null;
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -95,7 +100,7 @@ async function ensureCashOpen(page: Page): Promise<void> {
   }, BASE_URL);
 
   const closedReg = Array.isArray(dashData)
-    ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
+    ? dashData.find((r: CashRegisterDashboardRow) => (r.cashSessionId ?? r.cashShiftId) == null)
     : null;
 
   if (!closedReg?.id) return;

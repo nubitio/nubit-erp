@@ -4,12 +4,16 @@ import type { ConfigDto } from '../model/ConfigKey';
 
 const endpoints = createEndpoints('configs');
 
+type ConfigCollectionResponse = {
+  'hydra:member'?: ConfigDto[];
+};
+
 class ConfigService {
   getAll(): Promise<ConfigDto[]> {
-    return httpClient.get<{ 'hydra:member': ConfigDto[] }>(endpoints.list()).then((res) => {
+    return httpClient.get<ConfigCollectionResponse | ConfigDto[]>(endpoints.list()).then((res) => {
       // API Platform returns hydra:member for collections
-      const data = res.data as any;
-      return data['hydra:member'] ?? data ?? [];
+      const data = res.data;
+      return Array.isArray(data) ? data : (data['hydra:member'] ?? []);
     });
   }
 

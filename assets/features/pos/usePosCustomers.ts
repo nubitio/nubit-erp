@@ -1,8 +1,11 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
+import { createEndpoints } from '@shared/api/endpoints';
 import type { CustomerOption } from './types';
 import { useCustomerSearch } from '@shared/hooks/useCustomerSearch';
 import { CUSTOMER_PAGE_SIZE } from './posHelpers';
+
+const customerEndpoints = createEndpoints('customers');
 
 const DEFAULT_CUSTOMER_ID = 1;
 
@@ -37,6 +40,16 @@ export const usePosCustomers = () => {
   const customersHasMore = shared.hasMore;
   const customersLoading = shared.isLoading;
 
+  // Stable ref to shared.setQuery so it doesn't appear in effect deps and cause re-runs
+  const setQueryRef = useRef(shared.setQuery);
+  useEffect(() => {
+    setQueryRef.current = shared.setQuery;
+  }, [shared.setQuery]);
+
+  // Track whether we've already fetched (or attempted) the default customer to avoid
+  // re-firing the request every time the `customers` array reference changes.
+  const defaultFetchedRef = useRef(false);
+
   // Keep the same auto-default "Consumidor Final" behavior the POS has always had
   useEffect(() => {
     if (selectedCustomerId !== null || clearedRef.current) {
@@ -45,9 +58,9 @@ export const usePosCustomers = () => {
 
     const customerInList = customers.find((item) => item.id === DEFAULT_CUSTOMER_ID);
     if (customerInList) {
-      setSelectedCustomerIdState(customerInList.id);
+      queueMicrotask(() => setSelectedCustomerIdState(customerInList.id));
       lastSelectedCustomerRef.current = customerInList;
-      shared.setQuery(
+      setQueryRef.current(
         customerInList.doc
           ? `${customerInList.businessName} - ${customerInList.doc}`
           : customerInList.businessName,
@@ -55,11 +68,17 @@ export const usePosCustomers = () => {
       return;
     }
 
+    // Only fetch once — don't repeat on every render / customers array refresh
+    if (defaultFetchedRef.current) {
+      return;
+    }
+    defaultFetchedRef.current = true;
+
     // If the default customer isn't in the current page, fetch it directly
     let cancelled = false;
     const controller = new AbortController();
 
-    httpClient.get<CustomerResponse>(`customers/${DEFAULT_CUSTOMER_ID}`, { signal: controller.signal })
+    httpClient.get<CustomerResponse>(customerEndpoints.detail(DEFAULT_CUSTOMER_ID), { signal: controller.signal })
       .then(({ data: customer }) => {
         if (cancelled) return;
         const mapped: CustomerOption = {
@@ -72,19 +91,19 @@ export const usePosCustomers = () => {
         // We don't mutate the shared hook's list here — we just select it
         setSelectedCustomerIdState(mapped.id);
         lastSelectedCustomerRef.current = mapped;
-        shared.setQuery(
+        setQueryRef.current(
           mapped.doc ? `${mapped.businessName} - ${mapped.doc}` : mapped.businessName,
         );
       })
       .catch(() => {
-        /* ignore network errors for the default customer fallback */
+        /* ignore – default customer fetch failed; POS remains functional without it */
       });
 
     return () => {
       cancelled = true;
       controller.abort();
     };
-  }, [customers, selectedCustomerId, shared]);
+  }, [customers, selectedCustomerId]);
 
   /* eslint-disable react-hooks/refs -- lastSelectedCustomerRef is an intentional mutable cache */
   const customerOptions = useMemo(() => {

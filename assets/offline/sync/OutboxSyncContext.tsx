@@ -78,12 +78,12 @@ export const OutboxSyncProvider = ({ children }: { children: React.ReactNode }) 
   );
 
   useEffect(() => {
-    void refresh();
+    queueMicrotask(() => void refresh());
   }, [refresh]);
 
   useEffect(() => {
     if (isOnline) {
-      void processNow();
+      queueMicrotask(() => void processNow());
     }
   }, [isOnline, processNow]);
 

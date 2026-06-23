@@ -86,25 +86,27 @@ export function TenantOnboardingGate() {
     const snapshot = snapshotQuery.data;
     if (!snapshot) return;
 
-    if (snapshot.company) {
-      setCompany({
-        ruc: snapshot.company.ruc ?? '',
-        businessName: snapshot.company.businessName ?? '',
-        tradeName: snapshot.company.tradeName ?? '',
-        fiscalAddress: snapshot.company.fiscalAddress ?? '',
-        phone: snapshot.company.phone ?? '',
-      });
-    }
-    if (snapshot.branch) {
-      setBranch((current) => ({
-        ...current,
-        name: snapshot.branch?.name ?? current.name,
-        address: snapshot.branch?.address ?? current.address,
-      }));
-    }
-    if (snapshot.warehouse) {
-      setWarehouse({ name: snapshot.warehouse.name ?? '' });
-    }
+    queueMicrotask(() => {
+      if (snapshot.company) {
+        setCompany({
+          ruc: snapshot.company.ruc ?? '',
+          businessName: snapshot.company.businessName ?? '',
+          tradeName: snapshot.company.tradeName ?? '',
+          fiscalAddress: snapshot.company.fiscalAddress ?? '',
+          phone: snapshot.company.phone ?? '',
+        });
+      }
+      if (snapshot.branch) {
+        setBranch((current) => ({
+          ...current,
+          name: snapshot.branch?.name ?? current.name,
+          address: snapshot.branch?.address ?? current.address,
+        }));
+      }
+      if (snapshot.warehouse) {
+        setWarehouse({ name: snapshot.warehouse.name ?? '' });
+      }
+    });
   }, [snapshotQuery.data]);
 
   const currentStep = STEPS[step];

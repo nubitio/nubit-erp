@@ -40,8 +40,14 @@ let USERNAME = '';
 let PASSWORD = '';
 
 const SEED_PRODUCT_NAME = 'Producto CI E2E';
-const SEED_CUSTOMER_DNI = '20100000001';
 const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
+
+type CashRegisterDashboardRow = {
+  id?: string | number;
+  status?: string;
+  cashSessionId?: string | number | null;
+  cashShiftId?: string | number | null;
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -54,14 +60,6 @@ async function fillDxInput(page: Page, ariaLabel: string, value: string) {
   await page.keyboard.press('Control+a');
   await page.keyboard.press('Delete');
   await input.pressSequentially(value, { delay: 30 });
-}
-
-function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
-  return page.getByRole('dialog', { name }).last();
-}
-
-function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-drawer__body, .nb-dialog__body, .nb-crud-dialog__body');
 }
 
 async function login(page: Page) {
@@ -125,7 +123,7 @@ async function ensureCashOpen(page: Page): Promise<string> {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const openReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
+        ? dashData.find((r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
       if (cashSessionId) {
@@ -139,7 +137,7 @@ async function ensureCashOpen(page: Page): Promise<string> {
       return resp.ok ? resp.json() : [];
     }, BASE_URL);
     const closedReg = Array.isArray(dashData)
-      ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
+      ? dashData.find((r: CashRegisterDashboardRow) => (r.cashSessionId ?? r.cashShiftId) == null)
       : null;
     if (closedReg?.id) {
       await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
@@ -254,10 +252,12 @@ test.describe('Fase 3 — ORM migration validation', () => {
     page = await ctx.newPage();
     page.on('console', (msg) => {
       if (msg.type() === 'error' || msg.type() === 'warning') {
+        // eslint-disable-next-line no-console -- E2E diagnostics are written to CI logs on browser errors.
         console.log(`[browser:${msg.type()}] ${msg.text()}`);
       }
     });
     page.on('pageerror', (err) => {
+      // eslint-disable-next-line no-console -- E2E diagnostics are written to CI logs on page errors.
       console.log(`[browser:pageerror] ${err.message}`);
     });
     await login(page);
@@ -597,10 +597,12 @@ test.describe('Fase 3 — ORM migration validation', () => {
     await page.keyboard.press('Tab'); // price
     await page.keyboard.press('Tab'); // exit row
 
-    // Save
+    // Set up the response listener BEFORE clicking save — avoids the race where
+    // the response arrives before waitForResponse starts listening.
+    // Increase timeout to 30s for slow Docker environments under load.
     const saleResponsePromise = page.waitForResponse(
       (r) => /\/api\/sales(?:\?.*)?$/.test(r.url()) && r.request().method() === 'POST',
-      { timeout: 15000 },
+      { timeout: 30000 },
     );
     await clickCrudSave(saleDialog);
 

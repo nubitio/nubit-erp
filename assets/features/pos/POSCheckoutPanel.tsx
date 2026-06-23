@@ -3,9 +3,7 @@ import { Badge, Chip, EmptyState, IconButton, TextField } from '@nubitio/ui';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import {
   formatPosQuantity,
-  isCashPaymentMethod,
   isWeightUnitCode,
-  normalizeText,
   toNumber,
 } from './posHelpers';
 import type { LocalSale } from '@offline/types';
@@ -32,6 +30,8 @@ interface POSCheckoutPanelProps {
   note: string;
   setNote: (value: string) => void;
   updateQuantity: (id: string, nextQuantity: number) => void | Promise<void>;
+  updateLinePrice: (id: string, nextPrice: number) => void;
+  allowLinePriceOverride?: boolean;
   updateLineDescription: (id: string, lineDescription: string) => void;
   removeFromCart: (id: string) => void;
   formatMoney: (value: number) => string;
@@ -66,21 +66,10 @@ interface POSCheckoutPanelProps {
   syncSales?: LocalSale[];
   onRetrySale?: (saleId: string) => void;
   onReadScaleWeight?: (itemId: string) => void;
+  scaleReady?: boolean;
 }
 
 const MAX_VISIBLE_PAYMENT_METHODS = 3;
-
-function getPaymentIconClass(methodName: string): string {
-  const n = normalizeText(methodName);
-  if (isCashPaymentMethod({ id: 0, name: methodName })) return 'ph ph-receipt';
-  if (n.includes('debito')) return 'ph ph-credit-card';
-  if (n.includes('credito') || n.includes('tarjet')) return 'ph ph-credit-card';
-  if (n.includes('transferencia')) return 'ph ph-building';
-  if (n.includes('yape') || n.includes('plin') || n.includes('wallet')) return 'ph ph-wallet';
-  if (n.includes('link')) return 'ph ph-link';
-  if (n.includes('deposito')) return 'ph ph-money';
-  return 'ph ph-device-mobile';
-}
 
 export function POSCheckoutPanel({
   cart,
@@ -104,6 +93,8 @@ export function POSCheckoutPanel({
   note: _note,
   setNote: _setNote,
   updateQuantity,
+  updateLinePrice,
+  allowLinePriceOverride = true,
   updateLineDescription,
   removeFromCart,
   formatMoney,
@@ -113,7 +104,7 @@ export function POSCheckoutPanel({
   emitInvoice: _emitInvoice,
   setEmitInvoice: _setEmitInvoice,
   currency,
-  setCurrency,
+  setCurrency: _setCurrency,
   exchangeRate,
   setExchangeRate,
   discountPercent,
@@ -137,6 +128,7 @@ export function POSCheckoutPanel({
   syncSales: _syncSales = [],
   onRetrySale: _onRetrySale,
   onReadScaleWeight,
+  scaleReady = false,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -145,6 +137,8 @@ export function POSCheckoutPanel({
   // Inline quantity editing
   const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
   const [editingQtyVal, setEditingQtyVal] = useState<string>('');
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editingPriceVal, setEditingPriceVal] = useState<string>('');
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [editingNameVal, setEditingNameVal] = useState<string>('');
   // Customer field ref (for F3 shortcut focus)
@@ -205,13 +199,15 @@ export function POSCheckoutPanel({
     pendingCustomerFocusRef.current = true;
     // Always clear so the search <input> mounts (clearSelectedCustomer is idempotent)
     clearSelectedCustomer();
-    setCustomerOpen(true);
-    setShowCustomerSuggestions(true);
+    queueMicrotask(() => {
+      setCustomerOpen(true);
+      setShowCustomerSuggestions(true);
+    });
   }, [focusCustomerTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Collapse cash panel whenever payment method changes
   useEffect(() => {
-    setCashExpanded(false);
+    queueMicrotask(() => setCashExpanded(false));
   }, [selectedPaymentMethodId]);
 
   const selectedCustomer =
@@ -374,7 +370,7 @@ export function POSCheckoutPanel({
           ) : (
             cart.map((item) => {
               const isWeighted = isWeightUnitCode(item.saleUnitCode);
-              const quantityStep = isWeighted ? 0.001 : 1;
+              const quantityStep = isWeighted ? 0.1 : 1;
               const quantityFloor = isWeighted ? 0.001 : 1;
               const lineDescription = item.lineDescription ?? '';
               const displayName = lineDescription || item.name;
@@ -382,6 +378,14 @@ export function POSCheckoutPanel({
               const displayUnit = item.saleUnitCode
                 ? `/${item.saleUnitCode.toLowerCase()}`
                 : ' c/u';
+
+              const commitPriceEdit = () => {
+                const nextPrice = Number.parseFloat(editingPriceVal);
+                if (Number.isFinite(nextPrice)) {
+                  updateLinePrice(item.id, nextPrice);
+                }
+                setEditingPriceId(null);
+              };
 
               const commitNameEdit = () => {
                 const nextName = editingNameVal.trim();
@@ -425,88 +429,130 @@ export function POSCheckoutPanel({
                     ) : (
                       <div className="pos-line__name">{item.name}</div>
                     )}
-                    <div className="pos-line__unit">
-                      {formatMoney(toNumber(item.salePrice))}
-                      {displayUnit}
-                    </div>
+                    {allowLinePriceOverride && editingPriceId === item.id ? (
+                      <div className="pos-line__unit pos-line__unit--editing">
+                        <input
+                          type="number"
+                          className="pos-line__price-input"
+                          value={editingPriceVal}
+                          min={0}
+                          step="0.10"
+                          autoFocus
+                          onChange={(e) => setEditingPriceVal(e.target.value)}
+                          onFocus={(e) => e.currentTarget.select()}
+                          onBlur={commitPriceEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                            if (e.key === 'Escape') setEditingPriceId(null);
+                          }}
+                          aria-label={`Precio de ${item.name}`}
+                        />
+                        <span>{displayUnit}</span>
+                      </div>
+                    ) : allowLinePriceOverride ? (
+                      <button
+                        type="button"
+                        className="pos-line__unit pos-line__unit--editable"
+                        title="Editar precio unitario"
+                        onClick={() => {
+                          setEditingPriceId(item.id);
+                          setEditingPriceVal(toNumber(item.salePrice).toFixed(2));
+                        }}
+                      >
+                        <span>
+                          {formatMoney(toNumber(item.salePrice))}
+                          {displayUnit}
+                        </span>
+                        <i className="ph ph-pencil-simple" aria-hidden="true" />
+                      </button>
+                    ) : (
+                      <div className="pos-line__unit">
+                        {formatMoney(toNumber(item.salePrice))}
+                        {displayUnit}
+                      </div>
+                    )}
                     {isWeighted && hasCustomName && (
                       <div className="pos-line__base-name">Producto: {item.name}</div>
                     )}
                   </div>
-                  <div className="pos-line__qty">
-                    <button
-                      type="button"
-                      className={item.quantity <= quantityFloor ? 'is-remove' : ''}
-                      onClick={() =>
-                        item.quantity <= quantityFloor
-                          ? removeFromCart(item.id)
-                          : updateQuantity(item.id, item.quantity - quantityStep)
-                      }
-                      aria-label={
-                        item.quantity <= quantityFloor ? `Quitar ${item.name}` : 'Restar cantidad'
-                      }
-                    >
-                      {item.quantity <= quantityFloor ? (
-                        <i className="ph ph-trash" aria-hidden="true" />
+                  <div className="pos-line__actions">
+                    <div className="pos-line__qty">
+                      <button
+                        type="button"
+                        className={item.quantity <= quantityFloor ? 'is-remove' : ''}
+                        onClick={() =>
+                          item.quantity <= quantityFloor
+                            ? removeFromCart(item.id)
+                            : updateQuantity(item.id, item.quantity - quantityStep)
+                        }
+                        aria-label={
+                          item.quantity <= quantityFloor ? `Quitar ${item.name}` : 'Restar cantidad'
+                        }
+                      >
+                        {item.quantity <= quantityFloor ? (
+                          <i className="ph ph-trash" aria-hidden="true" />
+                        ) : (
+                          <i className="ph ph-minus" aria-hidden="true" />
+                        )}
+                      </button>
+                      {editingQtyId === item.id ? (
+                        <input
+                          type="number"
+                          className="pos-line__qty-input"
+                          value={editingQtyVal}
+                          min={0}
+                          step={quantityStep}
+                          autoFocus
+                          onFocus={(e) => e.currentTarget.select()}
+                          onChange={(e) => setEditingQtyVal(e.target.value)}
+                          onBlur={() => {
+                            const n = Number.parseFloat(editingQtyVal);
+                            if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
+                            else if (!isNaN(n) && n === 0) removeFromCart(item.id);
+                            setEditingQtyId(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                            if (e.key === 'Escape') setEditingQtyId(null);
+                          }}
+                          aria-label="Cantidad"
+                        />
                       ) : (
-                        <i className="ph ph-minus" aria-hidden="true" />
-                      )}
-                    </button>
-                    {editingQtyId === item.id ? (
-                      <input
-                        type="number"
-                        className="pos-line__qty-input"
-                        value={editingQtyVal}
-                        min={0}
-                        step={quantityStep}
-                        autoFocus
-                        onChange={(e) => setEditingQtyVal(e.target.value)}
-                        onBlur={() => {
-                          const n = Number.parseFloat(editingQtyVal);
-                          if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
-                          else if (!isNaN(n) && n === 0) removeFromCart(item.id);
-                          setEditingQtyId(null);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                          if (e.key === 'Escape') setEditingQtyId(null);
-                        }}
-                        aria-label="Cantidad"
-                      />
-                    ) : (
-                      <span
-                        className="pos-line__qty-display"
-                        role="button"
-                        tabIndex={0}
-                        title="Editar cantidad"
-                        onClick={() => {
-                          setEditingQtyId(item.id);
-                          setEditingQtyVal(String(item.quantity));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+                        <span
+                          className="pos-line__qty-display"
+                          role="button"
+                          tabIndex={0}
+                          title="Editar cantidad"
+                          onClick={() => {
                             setEditingQtyId(item.id);
                             setEditingQtyVal(String(item.quantity));
-                          }
-                        }}
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setEditingQtyId(item.id);
+                              setEditingQtyVal(String(item.quantity));
+                            }
+                          }}
+                        >
+                          {formatPosQuantity(item.quantity, item.saleUnitCode)}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(item.id, item.quantity + quantityStep)}
+                        aria-label="Sumar cantidad"
                       >
-                        {formatPosQuantity(item.quantity, item.saleUnitCode)}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, item.quantity + quantityStep)}
-                      aria-label="Sumar cantidad"
-                    >
-                      <i className="ph ph-plus" aria-hidden="true" />
-                    </button>
+                        <i className="ph ph-plus" aria-hidden="true" />
+                      </button>
+                    </div>
                     {isWeighted && onReadScaleWeight && (
                       <button
                         type="button"
                         className="pos-line__scale-btn"
+                        disabled={!scaleReady}
                         onClick={() => onReadScaleWeight(item.id)}
                         aria-label={`Leer peso de ${item.name} desde la balanza`}
-                        title="Leer balanza"
+                        title={scaleReady ? 'Leer balanza' : 'Balanza no configurada'}
                       >
                         <i className="ph ph-scales" aria-hidden="true" />
                       </button>

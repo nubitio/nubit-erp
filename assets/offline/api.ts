@@ -10,7 +10,7 @@ export interface ApiRequestConfig {
 export interface ApiResult {
   ok: boolean;
   status?: number;
-  data?: any;
+  data?: unknown;
   errorMessage?: string;
   errorCode?: string;
   action?: string;
@@ -19,7 +19,21 @@ export interface ApiResult {
   requiresLogin?: boolean;
 }
 
-const parseJsonSafely = async (response: Response) => {
+type ApiErrorPayload = {
+  detail?: unknown;
+  message?: unknown;
+  title?: unknown;
+  'hydra:description'?: unknown;
+  violations?: unknown;
+  errorCode?: unknown;
+  action?: unknown;
+  numericCode?: unknown;
+};
+
+const asApiErrorPayload = (payload: unknown): ApiErrorPayload =>
+  payload && typeof payload === 'object' ? payload as ApiErrorPayload : {};
+
+const parseJsonSafely = async (response: Response): Promise<unknown> => {
   try {
     return await response.json();
   } catch {
@@ -27,28 +41,32 @@ const parseJsonSafely = async (response: Response) => {
   }
 };
 
-const parseErrorMessage = (payload: any, fallback: string) => {
-  const violations = Array.isArray(payload?.violations)
-    ? payload.violations
-        .map((item: any) => item?.message)
+const parseErrorMessage = (payload: unknown, fallback: string) => {
+  const errorPayload = asApiErrorPayload(payload);
+  const violations = Array.isArray(errorPayload.violations)
+    ? errorPayload.violations
+        .map((item: unknown) => item && typeof item === 'object' ? (item as { message?: unknown }).message : undefined)
         .filter((message: unknown): message is string => typeof message === 'string' && message.length > 0)
     : [];
 
   return (
-    payload?.detail ||
-    payload?.message ||
-    payload?.['hydra:description'] ||
+    (typeof errorPayload.detail === 'string' ? errorPayload.detail : undefined) ||
+    (typeof errorPayload.message === 'string' ? errorPayload.message : undefined) ||
+    (typeof errorPayload['hydra:description'] === 'string' ? errorPayload['hydra:description'] : undefined) ||
     violations.join('\n') ||
-    payload?.title ||
+    (typeof errorPayload.title === 'string' ? errorPayload.title : undefined) ||
     fallback
   );
 };
 
-const parseErrorMetadata = (payload: any) => ({
-  errorCode: typeof payload?.errorCode === 'string' ? payload.errorCode : undefined,
-  action: typeof payload?.action === 'string' ? payload.action : undefined,
-  numericCode: typeof payload?.numericCode === 'number' ? payload.numericCode : undefined,
-});
+const parseErrorMetadata = (payload: unknown) => {
+  const errorPayload = asApiErrorPayload(payload);
+  return {
+    errorCode: typeof errorPayload.errorCode === 'string' ? errorPayload.errorCode : undefined,
+    action: typeof errorPayload.action === 'string' ? errorPayload.action : undefined,
+    numericCode: typeof errorPayload.numericCode === 'number' ? errorPayload.numericCode : undefined,
+  };
+};
 
 const refreshAuthToken = async (): Promise<boolean> => {
   try {

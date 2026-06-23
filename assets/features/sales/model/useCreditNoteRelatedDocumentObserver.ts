@@ -12,6 +12,17 @@ type UseCreditNoteRelatedDocumentObserverParams = {
   onCurrencyChange?: (currency: string) => void;
 };
 
+type FieldChangedEvent = {
+  field: string;
+  value?: string | number;
+};
+
+type TaxDocumentHeaderResponse = {
+  currency?: string;
+};
+
+type TaxDocumentLine = Record<string, unknown>;
+
 export const useCreditNoteRelatedDocumentObserver = ({
   on,
   apiUrl,
@@ -23,7 +34,7 @@ export const useCreditNoteRelatedDocumentObserver = ({
   callbacksRef.current = { apiUrl, formRef, onCurrencyChange };
 
   useEffect(() => {
-    on<{ field: string; value: any }>(FORM_EVENTS.FIELD_CHANGED, ({ field, value }) => {
+    on<FieldChangedEvent>(FORM_EVENTS.FIELD_CHANGED, ({ field, value }) => {
       if (field !== 'relatedTaxDocument') {
         return;
       }
@@ -43,11 +54,11 @@ export const useCreditNoteRelatedDocumentObserver = ({
       // React can flush the state update (new Field[] with correct currency formatters)
       // before rows render.
       httpClient
-        .get<any>(`${callbacksRef.current.apiUrl}/${value}`)
+        .get<TaxDocumentHeaderResponse>(`${callbacksRef.current.apiUrl}/${value}`)
         .then((headerResponse) => {
           const currency = (headerResponse.data?.currency as string) ?? 'PEN';
           callbacksRef.current.onCurrencyChange?.(currency);
-          return httpClient.get<any>(`${callbacksRef.current.apiUrl}/${value}/lines`);
+          return httpClient.get<TaxDocumentLine[]>(`${callbacksRef.current.apiUrl}/${value}/lines`);
         })
         .then((linesResponse) => {
           const rows = linesResponse.data ?? [];

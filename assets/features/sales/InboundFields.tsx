@@ -13,6 +13,17 @@ import {
 } from '@nubitio/crud';
 import { productService } from '@features/product';
 import { ProductDto } from '@features/product/types/product.dto';
+
+type InboundDetailRow = DataRecord & {
+  product?: ProductDto;
+  qty?: number | string;
+  unitCost?: number;
+  totalAmount?: number;
+};
+
+type FieldChangeContext = {
+  defaultSetCellValue: (row: InboundDetailRow, value: unknown, currentRow: InboundDetailRow) => void;
+};
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
@@ -87,7 +98,7 @@ export const InboundDetailFields = () => {
       .name('product')
       .label('Producto')
       .minWidth(200)
-      .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(async function (this: FieldChangeContext, row: InboundDetailRow, value: string | number, currentRow: InboundDetailRow) {
         const product = (await productService.getOne(value, true)) as ProductDto;
         row.product = product;
         row.unitCost = 0;
@@ -103,7 +114,7 @@ export const InboundDetailFields = () => {
       .label('Cantidad')
       .defaultValue(0)
       .align('center')
-      .onChange(function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(function (this: FieldChangeContext, row: InboundDetailRow, value: number | string, currentRow: InboundDetailRow) {
         if (value === '') return;
         row.totalAmount = Number(currentRow.unitCost ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);
@@ -125,7 +136,7 @@ export const InboundDetailFields = () => {
       .label('Precio unitario')
       .defaultValue(0)
       .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
-      .onChange(function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(function (this: FieldChangeContext, row: InboundDetailRow, value: number | string, currentRow: InboundDetailRow) {
         if (value === '') return;
         row.totalAmount = Number(currentRow.qty ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);

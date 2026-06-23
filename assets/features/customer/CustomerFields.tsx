@@ -7,7 +7,10 @@ import { Field } from '@nubitio/crud';
 import { entityField, textField, textareaField } from '@nubitio/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubitio/crud';
+
+type ValidationEvent = {
+  value?: unknown;
+};
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
@@ -40,8 +43,8 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (e: any) => {
-              const doc = e.value;
+            validationCallback: (e: ValidationEvent) => {
+              const doc = String(e.value ?? '');
               if (doc.length === 8) {
                 return true;
               } else {

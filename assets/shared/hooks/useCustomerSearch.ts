@@ -162,7 +162,7 @@ export function useCustomerSearch(
 
   // Re-fetch from page 1 whenever the debounced query changes.
   useEffect(() => {
-    fetchPage(deferredQuery, 1, false);
+    queueMicrotask(() => fetchPage(deferredQuery, 1, false));
 
     return () => {
       abortRef.current?.abort();

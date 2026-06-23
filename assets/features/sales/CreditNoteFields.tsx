@@ -14,6 +14,24 @@ import {
   textField,
 } from '@nubitio/crud';
 import NumberUtils from '@shared/lib/NumberUtils';
+
+type TaxDocumentItem = {
+  series?: string;
+  number?: string;
+  customer?: { businessName?: string };
+  total?: number;
+  currency?: string;
+};
+
+type CreditNoteDetailRow = DataRecord & {
+  quantity?: number | string;
+  unitPrice?: number;
+  total?: number;
+};
+
+type FieldChangeContext = {
+  defaultSetCellValue: (row: CreditNoteDetailRow, value: unknown, currentRow: CreditNoteDetailRow) => void;
+};
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
 
@@ -84,7 +102,7 @@ export const CreditNoteFields = () => {
           value: '01',
         },
       ])
-      .itemFormatter((data: any) => {
+      .itemFormatter((data: TaxDocumentItem) => {
         return (
           <div>
             <b>{`${data.series ?? ''}-${data.number ?? ''}`}</b>
@@ -202,7 +220,7 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(function (this: any, row: any, value: any, currentRow: any) {
+      .onChange(function (this: FieldChangeContext, row: CreditNoteDetailRow, value: number | string, currentRow: CreditNoteDetailRow) {
         if (value === '') return;
         row.total = Number(currentRow.unitPrice ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);

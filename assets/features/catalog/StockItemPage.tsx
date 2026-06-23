@@ -5,6 +5,7 @@ import {
   defineFields,
   defineResource,
   type DataRecord,
+  type Field,
   type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -198,7 +199,7 @@ export const StockItemPage = () => {
             order: 6,
             width: 80,
             formatter: makeActionsFormatter(navigate),
-          } as any,
+            } as Field,
         },
       ],
     }),

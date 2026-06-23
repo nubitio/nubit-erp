@@ -26,17 +26,19 @@ export interface CashRegisterClosureItem {
   note: unknown;
 }
 
+type CashRegisterMutationResponse = unknown;
+
 const cashRegisterService = () => {
   const openCashRegister = (id: string, openingBalance: number) => {
     const amount = Number(openingBalance ?? 0);
-    return httpClient.post<any>(API + `cash-registers/${id}/open`, {
+    return httpClient.post<CashRegisterMutationResponse>(API + `cash-registers/${id}/open`, {
       id: Number(id),
       openingBalance: Number(amount.toFixed(2)),
     });
   };
 
   const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
-    return httpClient.post<any>(API + `cash-sessions/${id}/close`, {
+    return httpClient.post<CashRegisterMutationResponse>(API + `cash-sessions/${id}/close`, {
       closureItems: closureData,
     });
   };

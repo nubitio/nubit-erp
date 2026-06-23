@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- CRUD toolbar action handlers intentionally read Grid/Form refs inside callbacks, not during render. */
 import { useMemo, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 

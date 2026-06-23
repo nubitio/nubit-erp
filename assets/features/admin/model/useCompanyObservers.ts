@@ -9,11 +9,27 @@ type UseCompanyObserversParams = {
   formRef: React.RefObject<FormHandle | null>;
 };
 
+type FieldChangedEvent = {
+  field?: string;
+  value?: string;
+};
+
+type UbigeoResponse = {
+  code?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+};
+
+type EventSubscription = {
+  unsubscribe?: () => void;
+};
+
 export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserversParams) => {
   const [on, emit] = useEvents();
 
   useEffect(() => {
-    const sub = on<any>(FORM_EVENTS.FIELD_CHANGED, (data) => {
+    const sub = on<FieldChangedEvent>(FORM_EVENTS.FIELD_CHANGED, (data) => {
       if (data.field !== 'ubigeo') return;
 
       if (!data.value) {
@@ -26,7 +42,7 @@ export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserve
 
       emit(loadingEvent, true);
       httpClient
-        .get<any>(companyEndpoints.ubigeo(data.value))
+        .get<UbigeoResponse>(companyEndpoints.ubigeo(data.value))
         .then((response) => {
             const ubigeo = response.data;
             formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
@@ -39,10 +55,10 @@ export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserve
             formRef.current?.setFieldValue('department', '');
             formRef.current?.setFieldValue('province', '');
             formRef.current?.setFieldValue('district', '');
-          })
+        })
         .finally(() => emit(loadingEvent, false));
     });
 
-    return () => (sub as any)?.unsubscribe();
-  }, [on, emit, loadingEvent]);
+    return () => (sub as EventSubscription)?.unsubscribe?.();
+  }, [on, emit, formRef, loadingEvent]);
 };

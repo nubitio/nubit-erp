@@ -68,8 +68,10 @@ final readonly class TenantRateLimitListener
 
     private function isNonBusinessApiRequest(string $path): bool
     {
-        return $path === '/api'
+        return $path === '/health/live'
+            || $path === '/api'
             || str_starts_with($path, '/api/docs')
+            || str_starts_with($path, '/api/user-notifications')
             || $path === '/api/tenant/runtime-config';
     }
 }

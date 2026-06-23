@@ -31,7 +31,7 @@ export const ExchangeRatePage = () => {
   };
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => void load());
   }, []);
 
   const handleSave = async () => {

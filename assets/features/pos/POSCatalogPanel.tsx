@@ -14,6 +14,8 @@ interface POSCatalogPanelProps {
   activeCategory: string | null;
   setActiveCategory: (value: string | null) => void;
   onAddToCart: (item: PosItem) => void | Promise<void>;
+  onCatalogPriceEdit?: (item: PosItem, nextPrice: number) => void | Promise<void>;
+  catalogPriceUpdatingId?: string | null;
   getItemQuantity: (id: string) => number;
   getEffectiveStock: (item: PosItem) => number | undefined;
   enforceStockCheck: boolean;
@@ -27,12 +29,14 @@ export function POSCatalogPanel({
   loadError,
   searchQuery,
   setSearchQuery,
-  cartItemsCount,
+  cartItemsCount: _cartItemsCount,
   filteredMenu,
   categories,
   activeCategory,
   setActiveCategory,
   onAddToCart,
+  onCatalogPriceEdit,
+  catalogPriceUpdatingId,
   getItemQuantity,
   getEffectiveStock,
   enforceStockCheck,
@@ -171,6 +175,8 @@ export function POSCatalogPanel({
                   key={item.id}
                   item={item}
                   onAdd={onAddToCart}
+                  onCatalogPriceEdit={onCatalogPriceEdit}
+                  isCatalogPriceUpdating={catalogPriceUpdatingId === item.id}
                   quantity={inCart}
                   stockOverride={displayStock}
                   enforceStockCheck={enforceStockCheck}

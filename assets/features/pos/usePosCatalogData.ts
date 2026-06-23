@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
@@ -18,19 +18,20 @@ type UsePosCatalogDataParams = {
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- API Platform response shape varies
-const mapPaymentMethods = (responseData: any): PaymentMethodOption[] =>
-  extractCollection<any>(responseData).map((method) => ({
+type PaymentMethodResponse = { id?: string | number; name?: string | null };
+
+const mapPaymentMethods = (responseData: unknown): PaymentMethodOption[] =>
+  extractCollection<PaymentMethodResponse>(responseData).map((method) => ({
     id: Number(method.id),
-    name: String(method.name ?? `Metodo ${method.id}`),
+    name: String(method.name ?? `Metodo ${method.id ?? ''}`),
   }));
 
 export function usePosPaymentMethods() {
   return useQuery<PaymentMethodOption[], Error>({
     queryKey: ['pos-payment-methods'],
     queryFn: () =>
-      httpRequestData<any>(
-        httpClient.get<any>(
+      httpRequestData<unknown>(
+        httpClient.get<unknown>(
           `${API}payment-methods?itemsPerPage=100&page=1`,
         ),
       ).then((responseData) => mapPaymentMethods(responseData)),
@@ -41,11 +42,11 @@ export function usePosPaymentMethods() {
 
 // ─── Warehouses ───────────────────────────────────────────────────────────────
 
-export function usePosWarehouses(currentBranchId: string) {
+export function usePosWarehouses(currentBranchId: string, enabled = true) {
   // Delegate the actual fetch to the shared hook
   const { warehouses: sharedWarehouses, isLoading } = useWarehouses({
     branchId: currentBranchId || undefined,
-    enabled: true,
+    enabled,
   });
 
   // Convert shared shape → legacy POS shape and apply the same fallback filtering
@@ -81,41 +82,40 @@ export function usePosWarehouses(currentBranchId: string) {
 // ─── Composite hook (used by POSPage) ─────────────────────────────────────────
 
 export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCatalogDataParams) => {
-  const { loading, loadError, categories, menuData, usingOfflineCatalog, lastUpdatedAt } =
-    useOfflineCatalog();
+  const {
+    loading,
+    loadError,
+    categories,
+    menuData,
+    usingOfflineCatalog,
+    lastUpdatedAt,
+    updateProductPrice,
+  } = useOfflineCatalog();
 
   // ── Payment methods ──────────────────────────────────────────────────────────
   const { data: paymentMethods = [] } = usePosPaymentMethods();
-  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
-
-  // Auto-select the cash method (or first) when payment methods arrive
-  useEffect(() => {
-    if (paymentMethods.length > 0 && selectedPaymentMethodId === null) {
-      const cash = paymentMethods.find((item) => isCashPaymentMethod(item));
-      setSelectedPaymentMethodId(cash?.id ?? paymentMethods[0].id);
-    }
-    // Only react to changes in the list, not the controlled selection
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentMethods]);
+  const [selectedPaymentMethodOverrideId, setSelectedPaymentMethodId] = useState<number | null>(null);
+  const defaultPaymentMethodId = paymentMethods.length > 0
+    ? (paymentMethods.find((item) => isCashPaymentMethod(item))?.id ?? paymentMethods[0].id)
+    : null;
+  const selectedPaymentMethodId = selectedPaymentMethodOverrideId ?? defaultPaymentMethodId;
 
   // ── Warehouses ───────────────────────────────────────────────────────────────
-  const { data: warehouses = [] } = usePosWarehouses(currentBranchId);
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
   const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
-
-  // Auto-select first warehouse once data arrives
-  useEffect(() => {
-    if (selectedWarehouseId === '' && defaultWarehouseId) {
-      setSelectedWarehouseId(defaultWarehouseId);
-      return;
-    }
-
-    if (warehouses.length > 0 && selectedWarehouseId === '') {
-      setSelectedWarehouseId(warehouses[0].id);
-    }
-    // Only react to warehouse list changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [warehouses, defaultWarehouseId]);
+  const defaultWarehouse = runtimeConfig?.defaults.warehouse;
+  const shouldFetchWarehouses =
+    runtimeConfig?.ui.inventory.showWarehouseSelector !== false || !defaultWarehouseId;
+  const { data: fetchedWarehouses = [] } = usePosWarehouses(
+    currentBranchId,
+    shouldFetchWarehouses,
+  );
+  const warehouses = shouldFetchWarehouses
+    ? fetchedWarehouses
+    : defaultWarehouse
+      ? [{ id: defaultWarehouse.id, name: defaultWarehouse.name }]
+      : [];
+  const [selectedWarehouseOverrideId, setSelectedWarehouseId] = useState<string>('');
+  const selectedWarehouseId = selectedWarehouseOverrideId || defaultWarehouseId || warehouses[0]?.id || '';
 
   return {
     loading,
@@ -124,6 +124,7 @@ export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCata
     menuData,
     usingOfflineCatalog,
     lastUpdatedAt,
+    updateProductPrice,
     paymentMethods,
     selectedPaymentMethodId,
     setSelectedPaymentMethodId,

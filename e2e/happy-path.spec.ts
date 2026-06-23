@@ -46,9 +46,6 @@ let PASSWORD = process.env.E2E_PASSWORD ?? '';
 // ── Test data — unique per run ────────────────────────────────────────────────
 const ts = Date.now();
 const productName = `Test Producto ${ts}`;
-// DNI de 8 dígitos — suficientemente aleatorio para no colisionar
-const customerDni = `1${ts.toString().slice(-7)}`;
-const customerName = `Cliente Test ${ts}`;
 
 // ── Seed product — always available from app:test:seed-e2e ───────────────────
 const SEED_PRODUCT_NAME = 'Producto CI E2E';
@@ -62,6 +59,13 @@ let createdMovementRowText: string | null = null; // descripción del movimiento
 let salesModuleSaleId: string | null = null; // venta creada desde /sale
 let salesModuleProductName: string | null = null; // producto elegido en /sale
 let posProductName = productName; // product to use in POS test (may fall back to seed)
+
+type CashRegisterDashboardRow = {
+  id?: string | number;
+  status?: string;
+  cashSessionId?: string | number | null;
+  cashShiftId?: string | number | null;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper utilities
@@ -293,8 +297,6 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
 
   // Check for "Ver Movimientos" (register open) vs "Abrir" (register closed)
   const movementsBtn = page.getByTestId('cash-btn-movements').first();
-  const openBtn = page.getByTestId('cash-btn-open').first();
-
   const movementsBtnVisible = await movementsBtn.isVisible({ timeout: 8000 }).catch(() => false);
 
   if (movementsBtnVisible) {
@@ -316,7 +318,7 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const openReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
+        ? dashData.find((r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
       if (cashSessionId) {
@@ -337,7 +339,7 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
       return resp.ok ? resp.json() : [];
     }, BASE_URL);
     const closedReg = Array.isArray(dashData)
-      ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
+      ? dashData.find((r: CashRegisterDashboardRow) => (r.cashSessionId ?? r.cashShiftId) == null)
       : null;
     if (!closedReg?.id) return null;
 
@@ -525,7 +527,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
           return resp.ok ? resp.json() : [];
         }, BASE_URL);
         const openReg = Array.isArray(dashData)
-          ? dashData.find((r: any) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
+          ? dashData.find((r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
           : null;
         const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
         if (cashSessionId) {
@@ -539,7 +541,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const closedReg = Array.isArray(dashData)
-        ? dashData.find((r: any) => (r.cashSessionId ?? r.cashShiftId) == null)
+        ? dashData.find((r: CashRegisterDashboardRow) => (r.cashSessionId ?? r.cashShiftId) == null)
         : null;
       if (closedReg?.id) {
         await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);

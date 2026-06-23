@@ -27,8 +27,12 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { tenantSettingsService } from '@features/config/services/tenantSettingsService';
+import { httpClient } from '@shared/api/HttpClient';
 import { IGV_RATE } from '@shared/lib/saleCalculations';
+
+type TenantSettingsResponse = {
+  igv: number;
+};
 
 // ── localStorage persistence ──────────────────────────────────────────────────
 
@@ -81,10 +85,10 @@ export function useTenantIgvRate(): UseTenantIgvRateResult {
   const { data, isLoading, isFetched } = useQuery({
     queryKey: TENANT_IGV_RATE_QUERY_KEY,
     queryFn: async () => {
-      const settings = await tenantSettingsService.getSettings();
+      const response = await httpClient.get<TenantSettingsResponse>('/api/tenant/settings');
       // Backend stores as a whole-number percentage (e.g. 18 or 10.5).
       // Convert to decimal fraction for all calculation functions.
-      const rate = settings.igv / 100;
+      const rate = response.data.igv / 100;
       persistRate(rate);
       return rate;
     },

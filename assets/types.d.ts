@@ -2,7 +2,7 @@ export {};
 
 declare global {
   interface Window {
-    app_logo: any;
-    app_version: any;
+    app_logo: unknown;
+    app_version: unknown;
   }
 }

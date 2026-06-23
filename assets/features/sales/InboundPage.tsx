@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- CRUD detail callbacks intentionally read Form refs after detail edits, not during render. */
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
 import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
@@ -5,7 +6,11 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 
 const API = getCoreApiBaseUrl();
-import { useSessionInfo } from '@app/contexts/useSessionInfo';
+import { useSessionInfo } from '@shared/sessionInfo';
+
+type PurchaseDetailRow = {
+  totalAmount?: number;
+};
 
 export const PurchasesPage = () => {
   const { currentBranchId } = useSessionInfo();
@@ -58,7 +63,10 @@ export const PurchasesPage = () => {
       },
       onDetailRowsChanged: (formRef: RefObject<FormHandle | null>) => {
         const rows = formRef.current?.getDetailData() ?? [];
-        const total = rows.reduce((sum: number, row: any) => sum + (row.totalAmount ?? 0), 0);
+        const total = rows.reduce(
+          (sum: number, row: PurchaseDetailRow) => sum + (row.totalAmount ?? 0),
+          0,
+        );
         formRef.current?.setFieldValue('grandTotal', Number(total));
       },
     });

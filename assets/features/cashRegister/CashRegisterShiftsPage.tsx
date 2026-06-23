@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- Toolbar handlers intentionally read Grid refs inside callbacks, not during render. */
 import { useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {

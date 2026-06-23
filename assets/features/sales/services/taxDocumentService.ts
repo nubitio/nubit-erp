@@ -24,7 +24,7 @@ class TaxDocumentService {
   }
 
   sendEmail(documentId: string) {
-    return httpClient.post<any>(
+    return httpClient.post<unknown>(
       `${API}tax-documents/${documentId}/email`,
     );
   }

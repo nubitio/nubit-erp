@@ -11,17 +11,21 @@ function nameToInitials(name: string): string {
 interface POSItemProps {
   item: PosItem;
   onAdd: (item: PosItem) => void | Promise<void>;
+  onCatalogPriceEdit?: (item: PosItem, nextPrice: number) => void | Promise<void>;
   quantity: number;
   stockOverride?: number;
   enforceStockCheck?: boolean;
+  isCatalogPriceUpdating?: boolean;
 }
 
 export function POSItem({
   item,
   onAdd,
+  onCatalogPriceEdit,
   quantity,
   stockOverride,
   enforceStockCheck = true,
+  isCatalogPriceUpdating = false,
 }: POSItemProps) {
   const stockSource = stockOverride ?? item.stock;
   const stockValue = typeof stockSource === 'number' ? stockSource : null;
@@ -34,12 +38,36 @@ export function POSItem({
       : Number.parseFloat(String(item.salePrice ?? 0)) || 0;
 
   const [isAdding, setIsAdding] = useState(false);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [editingPriceValue, setEditingPriceValue] = useState('');
 
   function triggerAdd() {
-    if (isOutOfStock) return;
+    if (isOutOfStock || editingPrice) return;
     setIsAdding(true);
     setTimeout(() => setIsAdding(false), 320);
     void onAdd(item);
+  }
+
+  function openPriceEditor(event: React.MouseEvent) {
+    event.stopPropagation();
+    setEditingPriceValue(unitPrice.toFixed(2));
+    setEditingPrice(true);
+  }
+
+  function cancelPriceEditor() {
+    setEditingPrice(false);
+    setEditingPriceValue('');
+  }
+
+  async function savePriceEdit() {
+    const nextPrice = Number.parseFloat(editingPriceValue);
+    if (!Number.isFinite(nextPrice) || nextPrice < 0 || !onCatalogPriceEdit) {
+      cancelPriceEditor();
+      return;
+    }
+
+    await onCatalogPriceEdit(item, nextPrice);
+    cancelPriceEditor();
   }
 
   return (
@@ -85,7 +113,51 @@ export function POSItem({
       </div>
 
       {/* Price */}
-      <div className="pos-product-card__price">S/{unitPrice.toFixed(2)}</div>
+      <div className="pos-product-card__price-row" onClick={(event) => event.stopPropagation()}>
+        {editingPrice ? (
+          <div className="pos-product-card__price-edit">
+            <input
+              type="number"
+              min={0}
+              step="0.10"
+              value={editingPriceValue}
+              autoFocus
+              disabled={isCatalogPriceUpdating}
+              onChange={(event) => setEditingPriceValue(event.target.value)}
+              onFocus={(event) => event.currentTarget.select()}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') void savePriceEdit();
+                if (event.key === 'Escape') cancelPriceEditor();
+              }}
+              aria-label={`Nuevo precio de ${item.name}`}
+            />
+            <button
+              type="button"
+              onClick={() => void savePriceEdit()}
+              disabled={isCatalogPriceUpdating}
+              aria-label="Guardar precio"
+            >
+              <i className="ph ph-check" aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="pos-product-card__price">S/{unitPrice.toFixed(2)}</div>
+            {onCatalogPriceEdit && (
+              <button
+                type="button"
+                className="pos-product-card__edit-price"
+                onClick={openPriceEditor}
+                disabled={isCatalogPriceUpdating}
+                aria-label={`Editar precio maestro de ${item.name}`}
+                title="Editar precio del catálogo"
+              >
+                <i className="ph ph-pencil-simple" aria-hidden="true" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </article>
   );
 }

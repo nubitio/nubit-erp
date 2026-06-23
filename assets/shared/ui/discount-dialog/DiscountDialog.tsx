@@ -83,7 +83,7 @@ export const DiscountDialog = () => {
   useEffect(() => {
     if (lastChanged.current !== 'percent') return;
     const clamped = Math.min(100, Math.max(0, discountPercent));
-    setDiscountAmount(Number(((clamped / 100) * total).toFixed(2)));
+    queueMicrotask(() => setDiscountAmount(Number(((clamped / 100) * total).toFixed(2))));
   }, [discountPercent, total]);
 
   // When amount changes (user edited amount field), recompute percent.
@@ -91,7 +91,7 @@ export const DiscountDialog = () => {
     if (lastChanged.current !== 'amount') return;
     if (total > 0) {
       const clamped = Math.min(total, Math.max(0, discountAmount));
-      setDiscountPercent(Number(((clamped / total) * 100).toFixed(4)));
+      queueMicrotask(() => setDiscountPercent(Number(((clamped / total) * 100).toFixed(4))));
     }
   }, [discountAmount, total]);
 

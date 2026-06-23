@@ -751,7 +751,6 @@
 
   &.is-disabled {
     opacity: 0.45;
-    pointer-events: none;
   }
 }
 
@@ -837,7 +836,91 @@
   color: var(--pos-text);
   letter-spacing: -0.01em;
   line-height: 1;
+}
+
+.pos-product-card__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
   margin-top: auto;
+}
+
+.pos-product-card__edit-price {
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-sm);
+  background: var(--pos-card-alt);
+  color: var(--pos-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--pos-primary-soft);
+    border-color: var(--pos-primary-border);
+    color: var(--pos-primary);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+}
+
+.pos-product-card__price-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+
+  input {
+    min-width: 0;
+    width: 100%;
+    border: 1px solid var(--pos-primary-border);
+    border-radius: var(--pos-radius-sm);
+    background: var(--pos-primary-soft);
+    color: var(--pos-text);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    padding: 0.18rem 0.3rem;
+    outline: none;
+
+    &:focus {
+      border-color: var(--pos-primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-primary) 14%, transparent);
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  button {
+    width: 1.45rem;
+    height: 1.45rem;
+    border: 0;
+    border-radius: var(--pos-radius-sm);
+    background: var(--pos-primary);
+    color: var(--pos-primary-contrast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+  }
 }
 
 // .pos-product-card__stock removed — stock now shown as .pos-product-card__stock-corner
@@ -1234,15 +1317,101 @@
   white-space: nowrap;
 }
 
-// Controls column: qty group as segmented control
-.pos-line__scale-btn {
-  margin-left: 0.25rem;
-  width: 1.7rem;
-  flex-shrink: 0;
-  border: 1px solid var(--pos-border);
+.pos-line__unit--editable {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--pos-radius-sm);
+  padding: 0;
+  background: transparent;
+  cursor: text;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: max-content;
+  transition: background var(--pos-transition), border-color var(--pos-transition), color var(--pos-transition);
+
+  i {
+    opacity: 0;
+    font-size: 0.7rem;
+    transition: opacity var(--pos-transition);
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: transparent;
+    border-color: transparent;
+    color: var(--pos-primary);
+    text-decoration: none;
+
+    i {
+      opacity: 0.85;
+    }
+  }
+}
+
+.pos-line__unit--editing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.pos-line__price-input {
+  width: 4.8rem;
+  border: 1px solid var(--pos-primary-border);
   border-radius: var(--pos-radius-sm);
   background: var(--pos-primary-soft);
-  color: var(--pos-primary);
+  color: var(--pos-text);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  padding: 0.1rem 0.25rem;
+  outline: none;
+
+  &:focus {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-primary) 14%, transparent);
+  }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+// Controls column: qty group as segmented control
+.pos-line__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.pos-line__scale-btn {
+  width: 1.8rem;
+  height: 1.8rem;
+  flex-shrink: 0;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius);
+  background: var(--pos-card-alt);
+  color: var(--pos-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--pos-primary-soft);
+    border-color: var(--pos-primary-border);
+    color: var(--pos-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .pos-line__qty {

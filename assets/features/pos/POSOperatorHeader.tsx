@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeSwitcher } from '@app/shell/components';
+import { ThemeSwitcher } from '@nubitio/ui';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';

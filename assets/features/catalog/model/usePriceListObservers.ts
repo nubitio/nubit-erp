@@ -3,7 +3,6 @@ import type { DataRecord } from '@nubitio/crud';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import { priceListEndpoints } from '../api/priceListEndpoints';
-import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
 import type { PriceEditorGridHandle, PriceEditorRow } from '../components/PriceEditorGrid';
 
@@ -47,6 +46,7 @@ export const usePriceListObservers = ({
         return;
       }
 
+      prices.current?.setPriceListId(row.id as string | number);
       prices.current?.showLoading('Cargando precios...');
 
       void httpRequestData<PriceEditorRow[]>(
@@ -72,24 +72,15 @@ export const usePriceListObservers = ({
         return;
       }
 
-      const pricesPayload = (prices.current?.getUpdatedRows() ?? []).map((item) => ({
-        productId: item.id,
-        // Send as string to preserve exact decimal — backend expects string via PriceItemDto
-        price: String(Number(item.price ?? 0).toFixed(4)),
-      }));
-      if (pricesPayload.length === 0) {
+      if (!prices.current?.hasChanges()) {
         toast('No se han realizado cambios', 'warning');
         return;
       }
-      void httpRequestData<AppResponse>(
-        httpClient.post<AppResponse>(priceListEndpoints.updatePrices(), {
-          priceListId: row.id,
-          prices: pricesPayload,
-        }),
-      )
-        .then((response) => {
-          toast(response.message, 'success');
-          emitEvent(ev.SUCCESS);
+
+      void prices.current
+        .saveChanges()
+        .then((saved) => {
+          if (saved) emitEvent(ev.SUCCESS);
         })
         .catch(() => {
           toast('No se pudieron guardar los precios', 'error');

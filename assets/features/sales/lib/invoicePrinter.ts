@@ -1,4 +1,4 @@
-import { settings } from '@app/Settings';
+import { settings } from '@shared/settings';
 import { createWebUsbInvoicePrinter } from './webUsbInvoicePrinter';
 import { createLocalAgentInvoicePrinter } from './localAgentInvoicePrinter';
 

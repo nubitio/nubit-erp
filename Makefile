@@ -68,7 +68,8 @@ cache-clear:
 	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console cache:clear'
 
 dev:
-	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn dev --host 0.0.0.0'
+	$(DC) up -d vite
+	$(DC) logs -f vite
 
 lint:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn lint'

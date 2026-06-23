@@ -4,7 +4,10 @@ const API = getCoreApiBaseUrl();
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 
-type EmitFn = (eventName: string, payload?: any) => void;
+type EmitFn = (eventName: string, payload?: unknown) => void;
+
+type SaleCloneResponse = Record<string, unknown>;
+type SaleCloneItem = Record<string, unknown>;
 
 type CloneSaleToFormParams = {
   saleId: string;
@@ -22,9 +25,9 @@ export const cloneSaleToForm = ({
   emit(loadingEventName, true);
 
   void Promise.all([
-    httpRequestData<any>(httpClient.get<any>(`${API}sales/${saleId}`)),
-    httpRequestData<any>(
-      httpClient.get<any>(`${API}sales/${saleId}/items`),
+    httpRequestData<SaleCloneResponse>(httpClient.get<SaleCloneResponse>(`${API}sales/${saleId}`)),
+    httpRequestData<SaleCloneItem[]>(
+      httpClient.get<SaleCloneItem[]>(`${API}sales/${saleId}/items`),
     ),
   ])
     .then(([sale, items]) => {

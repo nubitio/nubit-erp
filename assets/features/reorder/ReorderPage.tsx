@@ -6,6 +6,7 @@ import {
   defineFields,
   defineResource,
   type DataRecord,
+  type Field,
   type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -187,7 +188,7 @@ export const ReorderPage = () => {
                 order: 4,
                 width: 130,
                 formatter: CoverageCell,
-              } as any,
+              } as Field,
             },
             {
               kind: 'append' as const,
@@ -198,7 +199,7 @@ export const ReorderPage = () => {
                 order: 5,
                 width: 80,
                 formatter: makeActionsCell(),
-              } as any,
+              } as Field,
             },
           ],
         }),

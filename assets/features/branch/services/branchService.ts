@@ -9,7 +9,7 @@ class BranchService {
   private static readonly SELECTED_BRANCH_NAME = 'selectedBranchName';
 
   getAll() {
-    return httpClient.get<any>(`${API}branches`);
+    return httpClient.get<unknown>(`${API}branches`);
   }
 
   /**

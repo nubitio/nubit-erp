@@ -58,8 +58,9 @@ const initialData: DashboardData = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response is untyped at this layer
-const normalize = (payload: any): DashboardData => ({
+type DashboardOverviewResponse = Partial<DashboardData>;
+
+const normalize = (payload: DashboardOverviewResponse): DashboardData => ({
   summary: { ...initialData.summary, ...(payload?.summary ?? {}) },
   salesByDay: payload?.salesByDay ?? [],
   salesByMonth: payload?.salesByMonth ?? [],
@@ -95,7 +96,9 @@ export const useDashboardOverview = (options?: DashboardOverviewOptions) => {
     queryKey: ['dashboard-overview', lite],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- normalize handles shape validation
     queryFn: () =>
-      httpClient.get<any>(API + 'bi/overview' + queryString).then((response) => normalize(response.data)),
+      httpClient
+        .get<DashboardOverviewResponse>(API + 'bi/overview' + queryString)
+        .then((response) => normalize(response.data)),
     staleTime: 5 * 60 * 1000, // 5 minutes — keeps parity with the old setInterval
     refetchInterval: 5 * 60 * 1000,
     placeholderData: initialData,

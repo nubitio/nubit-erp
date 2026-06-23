@@ -1,12 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { useConnectivity } from '@offline/hooks/useConnectivity';
-import { getCachedProducts, getLastProductsSyncAt, persistProducts } from '@offline/catalog';
-import type { Category, PosItem } from '@features/pos/types';
-import { extractCollection, normalizeProduct } from '@features/pos/posHelpers';
+import {
+  getCachedProducts,
+  getLastProductsSyncAt,
+  persistProducts,
+  updateCachedProductPrice,
+} from '@offline/catalog';
+import type { Category, PosItem } from '@shared/pos/types';
+import { extractCollection, normalizeProduct } from '@shared/pos/helpers';
+
+type ProductApiPayload = Record<string, unknown>;
 
 export const useOfflineCatalog = () => {
   const { isOnline } = useConnectivity();
@@ -40,9 +47,9 @@ export const useOfflineCatalog = () => {
       setLoadError(null);
       let cancelled = false;
       const controller = new AbortController();
-      httpClient.get<any>(`${API}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
+      httpClient.get<unknown>(`${API}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
           if (cancelled) return;
-          const rawProducts = extractCollection<any>(response.data);
+          const rawProducts = extractCollection<ProductApiPayload>(response.data);
           const normalizedProducts = rawProducts.map(normalizeProduct);
           const categoryMap = new Map<string, Category>();
           normalizedProducts.forEach((product) => {
@@ -71,6 +78,15 @@ export const useOfflineCatalog = () => {
     return;
   }, [isOnline]);
 
+  const updateProductPrice = useCallback((productId: string, salePrice: number) => {
+    setMenuData((prev) =>
+      prev.map((product) =>
+        product.id === productId ? { ...product, salePrice } : product,
+      ),
+    );
+    void updateCachedProductPrice(productId, salePrice);
+  }, []);
+
   return useMemo(
     () => ({
       loading,
@@ -79,7 +95,8 @@ export const useOfflineCatalog = () => {
       categories,
       usingOfflineCatalog,
       lastUpdatedAt,
+      updateProductPrice,
     }),
-    [categories, lastUpdatedAt, loadError, loading, menuData, usingOfflineCatalog],
+    [categories, lastUpdatedAt, loadError, loading, menuData, updateProductPrice, usingOfflineCatalog],
   );
 };

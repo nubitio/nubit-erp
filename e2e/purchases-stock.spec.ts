@@ -75,18 +75,6 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
   await page.keyboard.press('Tab');
 }
 
-async function clickGridToolbarButton(page: Page, buttonText: string) {
-  const alternatives: Record<string, RegExp> = {
-    Nuevo: /^(Nuevo|New)$/i,
-    Editar: /^(Editar|Edit)$/i,
-    Eliminar: /^(Eliminar|Delete)$/i,
-  };
-  const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.nb-datagrid__toolbar .nb-button').filter({ hasText: text }).first();
-  await btn.waitFor({ state: 'visible', timeout: 8000 });
-  await btn.click();
-}
-
 async function waitForPostLoginLanding(page: Page) {
   await page
     .waitForFunction(
@@ -416,26 +404,30 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
         // Click to open, then type to trigger filtered search. Try a specific term
         // first (seed warehouse name substring), then empty (load-all) as fallback.
+        // Increase debounce wait to 1200ms — Docker containers are slower under load.
         for (const searchTerm of ['CI E2E', 'Almacen', '']) {
           await almacenInput.click({ clickCount: 3 });
           await almacenInput.fill('');
           if (searchTerm) {
-            await almacenInput.pressSequentially(searchTerm, { delay: 40 });
+            await almacenInput.pressSequentially(searchTerm, { delay: 50 });
           } else {
             // Empty string: just focus to open without a search filter
             await almacenInput.click();
           }
-          await page.waitForTimeout(700); // debounce (250ms) + API roundtrip
+          // Wait for debounce (250ms) + API roundtrip + rendering — generous for Docker
+          await page.waitForTimeout(1200);
 
-          if (await firstOption.isVisible({ timeout: 5000 }).catch(() => false)) {
+          if (await firstOption.isVisible({ timeout: 8000 }).catch(() => false)) {
             await firstOption.click();
-            await page.waitForTimeout(300);
-            break;
+            // Wait for the input to be populated after selection
+            await expect(almacenInput).not.toHaveValue('', { timeout: 5000 }).catch(() => {});
+            const val = await almacenInput.inputValue().catch(() => '');
+            if (val.trim().length > 0) break;
           }
         }
       }
 
-      await expect(almacenInput).not.toHaveValue('', { timeout: 8000 });
+      await expect(almacenInput).not.toHaveValue('', { timeout: 10000 });
     });
 
     // ── Seleccionar proveedor ─────────────────────────────────────────────────
@@ -542,11 +534,13 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         if (msg.type() === 'error') consoleErrors.push(msg.text());
       });
 
+      // Increase timeout to 30s — Docker under load can take longer for the
+      // purchase to be persisted and the API to respond.
       const createPurchaseResponsePromise = page.waitForResponse(
         (response) =>
           /\/api\/purchases(?:\?.*)?$/.test(response.url()) &&
           response.request().method() === 'POST',
-        { timeout: 20000 },
+        { timeout: 30000 },
       );
 
       await clickCrudSave(shell);

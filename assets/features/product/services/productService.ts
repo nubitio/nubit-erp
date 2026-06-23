@@ -46,6 +46,14 @@ class ProductService {
       `${API}products/${id}/stock/${warehouseId}`,
     );
   }
+
+  updateSalePrice(id: string, salePrice: number): Promise<ProductDto> {
+    return httpRequestData<ProductDto>(
+      httpClient.patch<ProductDto>(`${API}products/${id}`, {
+        salePrice: salePrice.toFixed(2),
+      }),
+    );
+  }
 }
 
 export const productService = new ProductService();

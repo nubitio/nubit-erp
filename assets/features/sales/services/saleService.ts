@@ -6,7 +6,7 @@ const API = getCoreApiBaseUrl();
 
 class SaleService {
   getOne(saleId: string) {
-    return httpClient.get<any>(`${API}sales/${saleId}`);
+    return httpClient.get<unknown>(`${API}sales/${saleId}`);
   }
 
   voidSale(saleId: string, reason: string, restoreStock = false) {
@@ -36,7 +36,7 @@ class SaleService {
   }
 
   makeNote(noteId: string) {
-    return httpClient.post<any>(`${API}sales/${noteId}/credit-note`);
+    return httpClient.post<unknown>(`${API}sales/${noteId}/credit-note`);
   }
 
   replaceRejected(saleId: string) {

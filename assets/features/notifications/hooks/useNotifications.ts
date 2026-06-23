@@ -7,7 +7,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import type { Notification } from '../services/notificationService';
 import { notificationService } from '../services/notificationService';
 
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 120_000;
 
 export interface UseNotificationsResult {
   notifications: Notification[];
@@ -44,11 +44,22 @@ export function useNotifications(): UseNotificationsResult {
   useEffect(() => {
     mountedRef.current = true;
     fetchNotifications();
-    const timer = setInterval(fetchNotifications, POLL_INTERVAL_MS);
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') {
+        fetchNotifications();
+      }
+    };
+
+    const timer = setInterval(refreshIfVisible, POLL_INTERVAL_MS);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+    window.addEventListener('focus', refreshIfVisible);
 
     return () => {
       mountedRef.current = false;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+      window.removeEventListener('focus', refreshIfVisible);
       lastAbortRef.current?.abort();
     };
   }, [fetchNotifications]);
@@ -64,9 +75,6 @@ export function useNotifications(): UseNotificationsResult {
 
       notificationService
         .markRead(id)
-        .then(() => {
-          if (mountedRef.current) fetchNotifications();
-        })
         .catch(() => {
           // Revert the optimistic update by re-syncing with server
           if (mountedRef.current) fetchNotifications();
@@ -83,9 +91,6 @@ export function useNotifications(): UseNotificationsResult {
 
     notificationService
       .markAllRead()
-      .then(() => {
-        if (mountedRef.current) fetchNotifications();
-      })
       .catch(() => {
         // Revert the optimistic update by re-syncing with server
         if (mountedRef.current) fetchNotifications();

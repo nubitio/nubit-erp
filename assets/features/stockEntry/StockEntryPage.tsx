@@ -5,7 +5,7 @@ const API = getCoreApiBaseUrl();
 import { createCrudEvents } from '@nubitio/crud';
 import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
-import { useSessionInfo } from '@app/contexts/useSessionInfo';
+import { useSessionInfo } from '@shared/sessionInfo';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const API_URL = API + 'stock-entries';

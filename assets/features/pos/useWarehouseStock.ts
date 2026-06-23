@@ -7,11 +7,13 @@ import type { CartItem, PosItem } from './types';
 import { toOptionalNumber } from './posHelpers';
 
 type WarehouseStockMap = Record<string, number | undefined>;
+type ProductStockResponse = { stock?: unknown };
 
 export const useWarehouseStock = (
   selectedWarehouseId: string,
   cart: CartItem[],
   visibleProducts: PosItem[],
+  enabled = true,
 ) => {
   const [warehouseStockByProductId, setWarehouseStockByProductId] = useState<WarehouseStockMap>({});
   const stockRequestsRef = useRef<Map<string, Promise<number | undefined>>>(new Map());
@@ -21,7 +23,7 @@ export const useWarehouseStock = (
 
   const fetchWarehouseStock = useCallback(
     (productId: string, warehouseId: string): Promise<number | undefined> => {
-      if (!warehouseId) {
+      if (!enabled || !warehouseId) {
         return Promise.resolve(undefined);
       }
 
@@ -37,22 +39,22 @@ export const useWarehouseStock = (
       }
 
       const request = httpClient
-        .get<any>(`${API}products/${productId}/stock/${warehouseId}`)
+        .get<ProductStockResponse>(`${API}products/${productId}/stock/${warehouseId}`)
         .then((response) => {
-            const stock = toOptionalNumber(response.data?.stock);
-            setWarehouseStockByProductId((prev) => ({ ...prev, [productId]: stock ?? 0 }));
-            stockRequestsRef.current.delete(requestKey);
-            return stock ?? 0;
-          })
+          const stock = toOptionalNumber(response.data?.stock);
+          setWarehouseStockByProductId((prev) => ({ ...prev, [productId]: stock ?? 0 }));
+          stockRequestsRef.current.delete(requestKey);
+          return stock ?? 0;
+        })
         .catch(() => {
-            stockRequestsRef.current.delete(requestKey);
-            return undefined;
-          });
+          stockRequestsRef.current.delete(requestKey);
+          return undefined;
+        });
 
       stockRequestsRef.current.set(requestKey, request);
       return request;
     },
-    [warehouseStockByProductId],
+    [enabled, warehouseStockByProductId],
   );
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export const useWarehouseStock = (
   }, [selectedWarehouseId]);
 
   useEffect(() => {
-    if (!selectedWarehouseId) {
+    if (!enabled || !selectedWarehouseId) {
       return;
     }
 
@@ -74,16 +76,23 @@ export const useWarehouseStock = (
         void fetchWarehouseStock(productId, selectedWarehouseId);
       }
     });
-  }, [selectedWarehouseId, cart, visibleProducts, warehouseStockByProductId, fetchWarehouseStock]);
+  }, [
+    enabled,
+    selectedWarehouseId,
+    cart,
+    visibleProducts,
+    warehouseStockByProductId,
+    fetchWarehouseStock,
+  ]);
 
   const getEffectiveStock = useCallback(
     (item: PosItem) => {
-      if (!selectedWarehouseId) {
+      if (!enabled || !selectedWarehouseId) {
         return item.stock;
       }
       return warehouseStockByProductId[item.id] ?? item.stock;
     },
-    [selectedWarehouseId, warehouseStockByProductId],
+    [enabled, selectedWarehouseId, warehouseStockByProductId],
   );
 
   return {

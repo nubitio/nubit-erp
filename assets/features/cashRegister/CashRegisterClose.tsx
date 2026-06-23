@@ -94,7 +94,6 @@ export const CashRegisterClose = () => {
     };
 
     gridRef.current?.showLoading('Cargando datos...');
-    setCashSessionId(null);
 
     if (!isLegacyCashRegisterRoute) {
       loadSummary(id);
@@ -102,6 +101,8 @@ export const CashRegisterClose = () => {
         cancelled = true;
       };
     }
+
+    queueMicrotask(() => setCashSessionId(null));
 
     cashboxService
       .getDashboard()

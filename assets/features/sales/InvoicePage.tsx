@@ -1,10 +1,10 @@
+/* eslint-disable react-hooks/refs -- CRUD row action handlers intentionally read Grid refs inside callbacks, not during render. */
 import { useMemo, useRef } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
-import type { InvoiceRow } from './lib/invoiceActions';
 import { createInvoiceRowActions } from './ui/createInvoiceRowActions';
 import toast from '@shared/lib/SharedUtils';
 

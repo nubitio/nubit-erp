@@ -103,7 +103,7 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
 
   useEffect(() => {
     if (!open) return;
-    void refresh();
+    queueMicrotask(() => void refresh());
   }, [open, refresh]);
 
   useEffect(() => {

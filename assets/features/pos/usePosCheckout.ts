@@ -6,6 +6,7 @@ const API = getCoreApiBaseUrl();
 import type { CartItem, PosItem } from './types';
 import { isWeightUnitCode, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
 import {
+  fetchScaleStatus,
   LocalAgentNotAvailableError,
   waitForStableWeight,
 } from '@features/sales/lib/localAgentClient';
@@ -33,8 +34,10 @@ type UsePosCheckoutParams = {
   selectedPaymentMethodName?: string;
   isCashPaymentSelected: boolean;
   enforceStockCheck: boolean;
+  warnOnNegativeStock?: boolean;
   visibleProducts: PosItem[];
   isOnline: boolean;
+  useWarehouseStockChecks?: boolean;
   onQueuedSaleCreated: () => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
   onCashSessionRequired?: () => void;
@@ -49,8 +52,10 @@ export const usePosCheckout = ({
   selectedPaymentMethodName,
   isCashPaymentSelected,
   enforceStockCheck,
+  warnOnNegativeStock = false,
   visibleProducts,
   isOnline,
+  useWarehouseStockChecks = true,
   onQueuedSaleCreated,
   printSaleInvoice,
   onCashSessionRequired,
@@ -79,6 +84,7 @@ export const usePosCheckout = ({
   const [emitInvoice, setEmitInvoice] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
   const { igvRate } = useTenantIgvRate();
+  const [scaleReady, setScaleReady] = useState(false);
 
   // Persist cart draft on every change (strip photo to keep storage lean)
   useEffect(() => {
@@ -102,12 +108,37 @@ export const usePosCheckout = ({
     selectedWarehouseId,
     cart,
     visibleProducts,
+    useWarehouseStockChecks,
   );
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchScaleStatus()
+      .then((status) => {
+        if (!cancelled) {
+          setScaleReady(status.enabled && status.connected);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setScaleReady(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const readScaleQuantity = async (): Promise<number | null> => {
+    if (!scaleReady) {
+      toast('Balanza no configurada. Ingresa el peso manualmente o configúrala en Hardware local.', 'warning');
+      return null;
+    }
+
     try {
       toast('Coloque el producto en la balanza…', 'info');
-      return await waitForStableWeight({ timeoutMs: 12_000 });
+      return await waitForStableWeight({ timeoutMs: 4_000, pollMs: 300 });
     } catch (err) {
       if (err instanceof LocalAgentNotAvailableError) {
         toast('Agente de hardware no disponible. Configure el cableado en Hardware local.', 'warning');
@@ -120,7 +151,7 @@ export const usePosCheckout = ({
 
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
-    const warehouseStock = selectedWarehouseId
+    const warehouseStock = useWarehouseStockChecks && selectedWarehouseId
       ? await fetchWarehouseStock(item.id, selectedWarehouseId)
       : undefined;
     const effectiveStock = warehouseStock ?? item.stock;
@@ -135,15 +166,19 @@ export const usePosCheckout = ({
       return;
     }
 
+    if (
+      tracksInventory &&
+      warnOnNegativeStock &&
+      typeof effectiveStock === 'number' &&
+      effectiveStock <= 0
+    ) {
+      toast(`"${item.name}" quedará con stock negativo`, 'warning');
+    }
+
     const isWeighted = isWeightUnitCode(item.saleUnitCode);
     let initialQuantity = 1;
     if (isWeighted) {
-      const weight = await readScaleQuantity();
-      if (weight != null) {
-        initialQuantity = Number(weight.toFixed(3));
-      } else {
-        initialQuantity = 0.001;
-      }
+      initialQuantity = 0.1;
     }
 
     setCart((prevCart) => {
@@ -171,6 +206,15 @@ export const usePosCheckout = ({
           return prevCart;
         }
 
+        if (
+          tracksInventory &&
+          warnOnNegativeStock &&
+          typeof effectiveStock === 'number' &&
+          existingItem.quantity >= effectiveStock
+        ) {
+          toast(`"${item.name}" superará el stock disponible`, 'warning');
+        }
+
         return prevCart.map((cartItem) =>
           cartItem.id === item.id
             ? {
@@ -184,6 +228,23 @@ export const usePosCheckout = ({
 
       return [...prevCart, { ...item, stock: effectiveStock, quantity: initialQuantity }];
     });
+
+    if (isWeighted && scaleReady) {
+      void readScaleQuantity().then((weight) => {
+        if (weight == null) return;
+        setCart((prevCart) =>
+          prevCart.map((cartItem) =>
+            cartItem.id === item.id
+              ? {
+                  ...cartItem,
+                  saleUnitCode: cartItem.saleUnitCode ?? item.saleUnitCode,
+                  quantity: Number(weight.toFixed(3)),
+                }
+              : cartItem,
+          ),
+        );
+      });
+    }
   };
 
   const readScaleForLine = async (id: string) => {
@@ -215,7 +276,7 @@ export const usePosCheckout = ({
       return;
     }
 
-    const warehouseStock = selectedWarehouseId
+    const warehouseStock = useWarehouseStockChecks && selectedWarehouseId
       ? await fetchWarehouseStock(id, selectedWarehouseId)
       : undefined;
     const effectiveStock = warehouseStock ?? currentItem.stock;
@@ -235,6 +296,15 @@ export const usePosCheckout = ({
           return { ...item, stock: effectiveStock, quantity };
         }
 
+        if (
+          tracksInventory &&
+          warnOnNegativeStock &&
+          typeof effectiveStock === 'number' &&
+          normalizedNextQuantity > effectiveStock
+        ) {
+          toast(`"${item.name}" superará el stock disponible`, 'warning');
+        }
+
         return { ...item, stock: effectiveStock, quantity: normalizedNextQuantity };
       }),
     );
@@ -243,6 +313,20 @@ export const usePosCheckout = ({
   const updateLineDescription = (id: string, lineDescription: string) => {
     setCart((prevCart) =>
       prevCart.map((item) => (item.id === id ? { ...item, lineDescription } : item)),
+    );
+  };
+
+  const updateLinePrice = (id: string, nextPrice: number) => {
+    const normalizedPrice = Number(nextPrice.toFixed(2));
+    if (!Number.isFinite(normalizedPrice) || normalizedPrice < 0) {
+      toast('El precio debe ser mayor o igual a cero', 'warning');
+      return;
+    }
+
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === id ? { ...item, salePrice: normalizedPrice } : item,
+      ),
     );
   };
 
@@ -431,6 +515,7 @@ export const usePosCheckout = ({
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateLinePrice,
     updateLineDescription,
     clearCart,
     cartItemsCount,
@@ -451,5 +536,6 @@ export const usePosCheckout = ({
     handleCheckout,
     getEffectiveStock,
     readScaleForLine,
+    scaleReady,
   };
 };

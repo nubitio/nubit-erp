@@ -15,5 +15,5 @@ exec_vite "corepack enable && yarn install --immutable"
 exec_web_php "bin/console cache:clear"
 
 printf "\nBootstrap complete.\n"
-printf "- App: http://localhost:8080\n"
-printf "- Vite: http://localhost:5173\n"
+printf "- App: http://demo.localhost:8080\n"
+printf "- Vite: http://localhost:5174 (starts automatically with the vite container)\n"

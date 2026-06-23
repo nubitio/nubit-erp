@@ -14,7 +14,10 @@ import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { GridCellContext } from '@nubitio/crud';
+
+type ValidationEvent = {
+  value?: unknown;
+};
 
 export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
@@ -37,7 +40,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (e: any) => {
+            validationCallback: (e: ValidationEvent) => {
               const doc = e.value;
               return SharedUtils.validateRUC(doc ?? '');
             },

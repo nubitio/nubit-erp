@@ -19,8 +19,13 @@ type UseSalePageObserversParams = {
   setGridError?: (value: string | null) => void;
   onDiscountApply: (payload: DiscountDialogApplyPayload) => void;
   onDetailRowsChanged: () => void;
-  onCustomerCreated: (payload: any) => void;
+  onCustomerCreated: (payload: unknown) => void;
   onSaleAdd: () => void | Promise<void>;
+};
+
+type SaleGridRow = {
+  sunatStatus?: string | number | null;
+  invoiceSunatStatus?: string | number | null;
 };
 
 export const useSalePageObservers = ({
@@ -78,7 +83,7 @@ export const useSalePageObservers = ({
     on(FORM_EVENTS.ROW_UPDATED, () => callbacksRef.current.onDetailRowsChanged());
     on(FORM_EVENTS.ROW_REMOVED, () => callbacksRef.current.onDetailRowsChanged());
 
-    on<any>(DATA_GRID_EVENTS.SELECTION_CHANGED, (e) => {
+    on<SaleGridRow[]>(DATA_GRID_EVENTS.SELECTION_CHANGED, (e) => {
       const hasSingleSelection = e.length === 1;
       callbacksRef.current.setPrintEnabled(hasSingleSelection);
       callbacksRef.current.setCloneEnabled(hasSingleSelection);

@@ -6,5 +6,5 @@ export const lazyNamed = <TModule, TKey extends keyof TModule>(
 ) =>
   lazy(async () => {
     const mod = await importer();
-    return { default: mod[exportName] as ComponentType<any> };
+    return { default: mod[exportName] as ComponentType<unknown> };
   });

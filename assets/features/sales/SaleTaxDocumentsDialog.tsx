@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- Dialog grid actions intentionally read Grid refs inside callbacks, not during render. */
 import { useRef, useMemo } from 'react';
 import { AppDialog } from '@nubitio/ui';
 import { useScreenSize } from '@nubitio/admin';

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- CRUD field factories intentionally receive Form refs for event callbacks, not render reads. */
 import { useRef, useMemo } from 'react';
 import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
 import { companyEvents } from '@app/domainEvents';

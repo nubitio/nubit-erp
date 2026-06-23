@@ -21,7 +21,6 @@ export interface SaleSummaryProps {
 
 export const SaleSummary: React.FC<SaleSummaryProps> = ({
   totals,
-  currency = 'PEN',
   igvRate,
   showTaxBreakdown = false,
   compact = false,

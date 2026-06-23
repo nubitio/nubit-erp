@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- CRUD action adapters intentionally read Grid/Form refs inside callbacks, not during render. */
 import './SalePage.scss';
 import {
   ColumnPresetSelector,
@@ -15,7 +16,7 @@ import {
 import { useCoreTranslation } from '@nubitio/core';
 import { saleEndpoints } from './api/saleEndpoints';
 import { SaleDetailFields, SaleFields, SaleFieldStateRef, setTotal } from './SaleFields';
-import { useSessionInfo } from '@app/contexts/useSessionInfo';
+import { useSessionInfo } from '@shared/sessionInfo';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DiscountDialog,
@@ -23,7 +24,7 @@ import {
   DiscountDialogEvent,
 } from '@shared/ui/discount-dialog/DiscountDialog';
 import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './model';
-import { Setting, settings } from '@app/Settings';
+import { Setting, settings } from '@shared/settings';
 import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
 import { createSaleToolbar, useSalePrintPreview } from './ui';
 import { CustomerPage, CustomerFields, customerFormLayout } from '@features/customer';

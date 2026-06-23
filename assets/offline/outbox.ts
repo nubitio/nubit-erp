@@ -52,7 +52,14 @@ const buildTemporalCorrelative = async () => {
   return `${OFFLINE_CORRELATIVE_PREFIX}-${year}-${String(count + 1).padStart(6, '0')}`;
 };
 
-const buildServerSaleCode = (created: any, fallback: string) => {
+type ServerSaleResponse = {
+  serie?: string;
+  numero?: string;
+  invoice?: string;
+  id?: string;
+};
+
+const buildServerSaleCode = (created: ServerSaleResponse, fallback: string) => {
   const composed = [created?.serie, created?.numero].filter(Boolean).join('-');
   return composed || created?.invoice || created?.id || fallback;
 };

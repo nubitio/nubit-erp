@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Avatar, useFloatingPanel } from '@nubitio/ui';
 
 import type { UserPanelProps } from '@app/types';

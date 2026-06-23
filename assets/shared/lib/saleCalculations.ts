@@ -24,7 +24,7 @@
  * behaviour for all current products which have no explicit tax classification.
  */
 
-import type { Discount, SaleLine, SaleTotals, SunatTaxType } from '@shared/domain/sale.types';
+import type { Discount, SaleTotals, SunatTaxType } from '@shared/domain/sale.types';
 
 /**
  * The standard Peruvian IGV rate (18%).
@@ -96,9 +96,6 @@ export const computeTotals = (
   const exoneradoSubtotal = round2(
     lines.filter((l) => isExonerado(l.taxType)).reduce((sum, l) => sum + l.netAmount, 0),
   );
-  // Inafecto includes taxType '30' and '40'.
-  const inafectoSubtotal = round2(subtotal - gravadoSubtotal - exoneradoSubtotal);
-
   // Proportional allocation of header discount across each group.
   const allocate = (groupSubtotal: number): number =>
     subtotal > 0 ? round2(afterDiscount * (groupSubtotal / subtotal)) : 0;

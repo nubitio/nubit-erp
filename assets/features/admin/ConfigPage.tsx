@@ -126,7 +126,9 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
 
   // Sync draft when config changes externally
   useEffect(() => {
-    if (!editing) setDraft(config.value);
+    if (editing) return;
+
+    queueMicrotask(() => setDraft(config.value));
   }, [config.value, editing]);
 
   const handleEdit = () => {
@@ -442,7 +444,7 @@ export const ConfigPage = () => {
   };
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => void load());
   }, []);
 
   const handleSave = async (config: ConfigDto, newValue: string) => {

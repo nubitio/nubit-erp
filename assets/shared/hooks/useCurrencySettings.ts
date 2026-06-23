@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Setting, settings } from '@app/Settings';
+import { Setting, settings } from '@shared/settings';
 
 type Currency = 'PEN' | 'USD';
 

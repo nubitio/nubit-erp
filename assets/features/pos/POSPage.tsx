@@ -1,15 +1,16 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './POSPage.scss';
 import './HardwareAgentDialog.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { useSessionInfo } from '@app/contexts/useSessionInfo';
-import { Setting, settings } from '@app/Settings';
+import { useSessionInfo } from '@shared/sessionInfo';
+import { Setting, settings } from '@shared/settings';
 import { createInvoicePrinter, InvoicePrinter } from '@features/sales';
 import { ThemeContext } from '@assets/theme/theme';
 import { POSOperatorHeader } from './POSOperatorHeader';
 import { POSCatalogPanel } from './POSCatalogPanel';
 import { POSCheckoutPanel } from './POSCheckoutPanel';
+import { productService } from '@features/product/services/productService';
 import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
@@ -26,17 +27,21 @@ const POSPage = () => {
   const { currentBranchId, currentBranchName, currentUserName } = useSessionInfo();
   const branchId = String(currentBranchId ?? '');
   const { data: runtimeConfig } = useTenantRuntimeConfig();
+  const allowLinePriceOverride = runtimeConfig?.ui.pos?.allowLinePriceOverride ?? true;
+  const allowCatalogPriceEdit = runtimeConfig?.ui.pos?.allowCatalogPriceEdit ?? true;
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [enforceStockCheck, setEnforceStockCheck] = useState(true);
-  const [cajaAbierta, setCajaAbierta] = useState(
+  const stockPolicy = runtimeConfig?.settings.negativeStockPolicy ?? 'STRICT';
+  const enforceStockCheck = stockPolicy === 'STRICT';
+  const [cajaAbierta, setCajaAbiertaState] = useState(
     () => localStorage.getItem('pos_caja_abierta') !== 'false',
   );
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
   const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
+  const [catalogPriceUpdatingId, setCatalogPriceUpdatingId] = useState<string | null>(null);
 
   const invoicePrinterRef = useRef<InvoicePrinter>(createInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +62,7 @@ const POSPage = () => {
     warehouses,
     selectedWarehouseId,
     setSelectedWarehouseId,
+    updateProductPrice,
   } = usePosCatalogData({ currentBranchId: branchId, runtimeConfig });
 
   const customersState = usePosCustomers();
@@ -97,6 +103,7 @@ const POSPage = () => {
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateLinePrice,
     updateLineDescription,
     clearCart,
     cartItemsCount,
@@ -113,6 +120,7 @@ const POSPage = () => {
     getEffectiveStock,
     igvRate,
     readScaleForLine,
+    scaleReady,
   } = usePosCheckout({
     tenantId: window.location.hostname || 'default-tenant',
     storeId: branchId || 'default-store',
@@ -122,8 +130,10 @@ const POSPage = () => {
     selectedPaymentMethodName: selectedPaymentMethod?.name,
     isCashPaymentSelected,
     enforceStockCheck,
+    warnOnNegativeStock: stockPolicy === 'WARNING_ONLY',
     visibleProducts: filteredMenu,
     isOnline,
+    useWarehouseStockChecks: runtimeConfig?.ui.inventory.showWarehouseSelector === true,
     onQueuedSaleCreated: async () => {
       await refresh();
       await processNow();
@@ -138,25 +148,55 @@ const POSPage = () => {
   const formatMoney = (value: number) =>
     NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)), currency);
 
-  // ── Caja session timestamp ────────────────────────────────────────────────────────────────
-  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(() =>
-    localStorage.getItem('pos_caja_opened_at'),
-  );
+  const handleCatalogPriceEdit = async (item: (typeof menuData)[number], nextPrice: number) => {
+    const normalizedPrice = Number(nextPrice.toFixed(2));
+    if (!Number.isFinite(normalizedPrice) || normalizedPrice < 0) {
+      toast('El precio debe ser mayor o igual a cero', 'warning');
+      return;
+    }
 
-  // ── Persist caja state ─────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    localStorage.setItem('pos_caja_abierta', String(cajaAbierta));
-    if (cajaAbierta) {
-      if (!localStorage.getItem('pos_caja_opened_at')) {
-        const now = new Date().toISOString();
-        localStorage.setItem('pos_caja_opened_at', now);
-        setCajaOpenedAt(now);
-      }
-    } else {
+    setCatalogPriceUpdatingId(item.id);
+    try {
+      await productService.updateSalePrice(item.id, normalizedPrice);
+      updateProductPrice(item.id, normalizedPrice);
+      toast(`Precio de "${item.name}" actualizado`, 'success');
+    } catch {
+      toast('No se pudo actualizar el precio del producto', 'error');
+    } finally {
+      setCatalogPriceUpdatingId(null);
+    }
+  };
+
+  // ── Caja session timestamp ────────────────────────────────────────────────────────────────
+  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(() => {
+    if (localStorage.getItem('pos_caja_abierta') === 'false') {
+      return null;
+    }
+
+    const existing = localStorage.getItem('pos_caja_opened_at');
+    if (existing) {
+      return existing;
+    }
+
+    const now = new Date().toISOString();
+    localStorage.setItem('pos_caja_opened_at', now);
+    return now;
+  });
+
+  const setCajaAbierta = useCallback((nextOpen: boolean) => {
+    setCajaAbiertaState(nextOpen);
+    localStorage.setItem('pos_caja_abierta', String(nextOpen));
+
+    if (!nextOpen) {
       localStorage.removeItem('pos_caja_opened_at');
       setCajaOpenedAt(null);
+      return;
     }
-  }, [cajaAbierta]);
+
+    const openedAt = localStorage.getItem('pos_caja_opened_at') ?? new Date().toISOString();
+    localStorage.setItem('pos_caja_opened_at', openedAt);
+    setCajaOpenedAt(openedAt);
+  }, []);
 
   // ── Notify once if a draft cart was restored ──────────────────────────────────────────────
   const draftNotifiedRef = useRef(false);
@@ -175,8 +215,6 @@ const POSPage = () => {
   // ── Load settings ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
-      const stockPolicySetting = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
-      setEnforceStockCheck(stockPolicySetting?.value !== 'ALLOW_NEGATIVE');
       const autoInvoiceSetting = await settings.get(Setting.AUTO_INVOICE);
       setEmitInvoice(parseBooleanSetting(autoInvoiceSetting?.value, false));
     })();
@@ -318,6 +356,8 @@ const POSPage = () => {
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
         onAddToCart={addToCart}
+        onCatalogPriceEdit={allowCatalogPriceEdit ? handleCatalogPriceEdit : undefined}
+        catalogPriceUpdatingId={catalogPriceUpdatingId}
         getItemQuantity={(id) => cart.find((cartItem) => cartItem.id === id)?.quantity || 0}
         getEffectiveStock={getEffectiveStock}
         enforceStockCheck={enforceStockCheck}
@@ -355,6 +395,8 @@ const POSPage = () => {
         note={note}
         setNote={setNote}
         updateQuantity={updateQuantity}
+        updateLinePrice={updateLinePrice}
+        allowLinePriceOverride={allowLinePriceOverride}
         updateLineDescription={updateLineDescription}
         removeFromCart={removeFromCart}
         formatMoney={formatMoney}
@@ -391,6 +433,7 @@ const POSPage = () => {
         onReadScaleWeight={(id) => {
           void readScaleForLine(id);
         }}
+        scaleReady={scaleReady}
       />
 
       {/* ── Clear cart confirmation (triggered by Esc key) ── */}
