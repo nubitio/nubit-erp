@@ -65,7 +65,7 @@ services:
       - source: otel_collector_dev_config
         target: /etc/otelcol-contrib/config.yaml
     environment:
-      SIGNOZ_ENDPOINT: 'https://ingest.nubit.io'
+      SIGNOZ_ENDPOINT: 'https://signoz.nubit.io'
       SIGNOZ_TLS_INSECURE: 'false'
     ports:
       - '4317:4317'
