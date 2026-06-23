@@ -15,16 +15,25 @@ if [ ! -d node_modules ] || [ package.json -nt node_modules/.yarn-integrity 2>/d
 fi
 
 # ── 3. Resolve web service URL ────────────────────────────────────────────────
-# We navigate to the web container by its numeric IP (resolved from the Docker
-# DNS name "efact-web"). We do NOT set a custom Host header — Chromium rejects
-# page.goto() when extraHTTPHeaders.Host doesn't match the URL hostname
-# (net::ERR_INVALID_ARGUMENT). Caddy's SERVER_NAME=":80" matches any hostname,
-# so no Host override is needed.
+# Use the numeric IP of the efact-web container rather than the DNS name.
+# Chromium rejects page.goto() with extraHTTPHeaders.Host != URL hostname, so
+# we cannot set a custom Host header. Instead we navigate directly to the IP —
+# Caddy's SERVER_NAME=":80" matches any hostname, so no Host override is needed.
+# We resolve the IP at startup (not hardcode it) to survive container restarts.
 if [ -z "$E2E_BASE_URL" ]; then
-  WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
+  # Retry resolution up to 10s to handle race between e2e startup and web DNS propagation
+  WEB_IP=""
+  for i in $(seq 1 10); do
+    WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
+    [ -n "$WEB_IP" ] && break
+    sleep 1
+  done
   if [ -n "$WEB_IP" ]; then
     export E2E_BASE_URL="http://${WEB_IP}"
-    echo "[e2e-entrypoint] Resolved efact-web -> E2E_BASE_URL=${E2E_BASE_URL}"
+    echo "[e2e-entrypoint] Resolved efact-web -> ${WEB_IP} -> E2E_BASE_URL=${E2E_BASE_URL}"
+  else
+    echo "[e2e-entrypoint] WARNING: could not resolve efact-web, falling back to DNS name"
+    export E2E_BASE_URL="http://efact-web"
   fi
 fi
 
@@ -34,10 +43,18 @@ fi
 SEED_URL="${E2E_BASE_URL}/api/test/e2e/seed"
 echo "[e2e-entrypoint] Seeding E2E test data from ${SEED_URL}..."
 
-SEED_RESPONSE=$(curl -sf -X POST "${SEED_URL}" 2>&1) || {
-  echo "[e2e-entrypoint] ERROR: Seed endpoint failed. Response: ${SEED_RESPONSE}"
+# Retry up to 30 times (30s) — the web container may still be warming up its DB connection pool
+SEED_RESPONSE=""
+for i in $(seq 1 30); do
+  SEED_RESPONSE=$(curl -sf -X POST "${SEED_URL}" 2>&1) && break
+  echo "[e2e-entrypoint] Seed attempt ${i}/30 failed, retrying in 1s..."
+  sleep 1
+done
+
+if [ -z "$SEED_RESPONSE" ]; then
+  echo "[e2e-entrypoint] ERROR: Seed endpoint failed after 30 attempts. Last URL: ${SEED_URL}"
   exit 1
-}
+fi
 
 echo "[e2e-entrypoint] Seed response: ${SEED_RESPONSE}"
 
@@ -59,29 +76,36 @@ export E2E_SALE_ID
 echo "[e2e-entrypoint] E2E seed ready: username=${E2E_USERNAME} saleId=${E2E_SALE_ID}"
 
 # ── 5. Start Vite dev server in the background ────────────────────────────────
-# The PHP app shell loads assets from http://localhost:5173 (vite-plugin-symfony).
-# We start Vite here so the browser can fetch the JS/CSS bundles.
-VITE_CHECK_URL="http://localhost:5173/build/@vite/client"
+# The PHP web container injects <script src="http://localhost:5174/build/..."> tags
+# (VITE_DEV_SERVER_ORIGIN=http://localhost:5174 in docker-compose.yml). Inside the
+# e2e container, "localhost" refers to *this* container, not the host machine, so
+# the browser cannot reach the external efact-vite-1 container on :5174.
+#
+# Fix: start our own Vite on :5174 inside this container. The web container's HTML
+# already points to localhost:5174, so the browser will hit our local Vite instead.
+VITE_CHECK_URL="http://localhost:5174/build/@vite/client"
 if ! curl -sf "$VITE_CHECK_URL" > /dev/null 2>&1; then
-  echo "[e2e-entrypoint] Starting Vite dev server..."
-  yarn vite --host 0.0.0.0 --port 5173 > /tmp/vite.log 2>&1 &
+  echo "[e2e-entrypoint] Starting Vite dev server on :5174..."
+  # Use port 5174 to match VITE_DEV_SERVER_ORIGIN set in docker-compose for the web container.
+  # Also set VITE_DEV_SERVER_ORIGIN so vite.config.js generates correct asset URLs.
+  VITE_DEV_SERVER_ORIGIN="http://localhost:5174" yarn vite --host 0.0.0.0 --port 5174 > /tmp/vite.log 2>&1 &
   VITE_PID=$!
   echo "[e2e-entrypoint] Vite PID=$VITE_PID — waiting for it to be ready..."
-  # Wait up to 90s for Vite to serve the client script
-  for i in $(seq 1 90); do
+  # Wait up to 120s for Vite to serve the client script
+  for i in $(seq 1 120); do
     if curl -sf "$VITE_CHECK_URL" > /dev/null 2>&1; then
       echo "[e2e-entrypoint] Vite is ready (${i}s)"
       break
     fi
-    if [ $i -eq 90 ]; then
-      echo "[e2e-entrypoint] ERROR: Vite did not start in 90s. Logs:"
+    if [ $i -eq 120 ]; then
+      echo "[e2e-entrypoint] ERROR: Vite did not start in 120s. Logs:"
       cat /tmp/vite.log
       exit 1
     fi
     sleep 1
   done
 else
-  echo "[e2e-entrypoint] Vite already running on :5173"
+  echo "[e2e-entrypoint] Vite already running on :5174"
 fi
 
 # ── 6. Run the requested command ──────────────────────────────────────────────
