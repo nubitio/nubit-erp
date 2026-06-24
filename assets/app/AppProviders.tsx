@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 
 import { ThemeProvider, DensityProvider, useAccentColor } from '@nubitio/ui';
@@ -26,10 +26,14 @@ function notifyServerError(error: unknown) {
   }
 }
 
-// Mounts inside DensityProvider; applies the persisted accent color on every
-// page load — even when the SettingsPanel has never been opened.
+// Applies the persisted accent (or eFact azure default) on every page load.
 const AccentColorApplier = () => {
-  useAccentColor();
+  const { accent } = useAccentColor();
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent-color', accent);
+  }, [accent]);
+
   return null;
 };
 

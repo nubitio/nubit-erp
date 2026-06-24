@@ -1,6 +1,6 @@
 // Static design tokens are owned by @nubitio/ui and arrive via
 // '@nubitio/react-admin/style.css' (imported in app.tsx). Theme-dependent
-// color tokens load at runtime from public/themes/ (copied from the package).
+// color tokens load at runtime from public/themes/ (eFact-owned theme CSS).
 @use 'variables' as *;
 
 html,

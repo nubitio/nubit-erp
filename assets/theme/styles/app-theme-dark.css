@@ -1,0 +1,80 @@
+/* stylelint-disable */
+/* eFact dark theme — source of truth. Copied to public/themes/ at build time. */
+:root,
+[data-theme=dark] {
+  --base-bg: #171d27;
+  --base-bg-darken-4: #111827;
+  --base-bg-darken-5: #0b1120;
+  --base-text-color: #f3f4f6;
+  --base-text-color-alpha: rgba(243, 244, 246, 0.65);
+  --background-gray-color: rgba(243, 244, 246, 0.04);
+  --typography-bg: var(--base-bg);
+  --accent-color: #2f7ce0;
+  --accent-hover: color-mix(in srgb, var(--accent-color) 85%, #fff);
+  --accent-pressed: color-mix(in srgb, var(--accent-color) 70%, #fff);
+  --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));
+  --success-color: #22c55e;
+  --info-color: #38bdf8;
+  --warning-color: #fbbf24;
+  --dark-warning-color: #f59e0b;
+  --error-color: #f87171;
+  --on-accent-color: #ffffff;
+  --on-success-color: #052e16;
+  --on-error-color: #450a0a;
+  --border-color: #2d3748;
+  --border-subtle: #1f2937;
+  --base-border-color: var(--border-color);
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --text-disabled: #4b5563;
+  --text-on-accent: var(--on-accent-color);
+  --texteditor-edit-color: var(--text-primary);
+  --texteditor-label-color: var(--text-secondary);
+  --subtitle-text-color: var(--text-secondary);
+  --surface-0: #111827;
+  --surface-1: #171d27;
+  --surface-2: #1f2937;
+  --surface-3: color-mix(in srgb, var(--accent-color) 16%, #111827);
+  --surface-canvas: var(--surface-0);
+  --surface-card: var(--surface-1);
+  --surface-elevated: #1f2937;
+  --surface-subtle: var(--surface-2);
+  --surface-selected: var(--surface-3);
+  --card-background: var(--surface-1);
+  --side-panel-background: #171d27;
+  --control-bg: var(--surface-1);
+  --control-bg-hover: var(--surface-2);
+  --control-border: var(--border-color);
+  --grid-header-bg: #171d27;
+  --grid-filter-bg: #1f2937;
+  --grid-row-hover-bg: #1f2937;
+  --grid-row-selected-bg: color-mix(in srgb, var(--accent-color) 14%, #111827);
+  --grid-row-selected-border: color-mix(in srgb, var(--accent-color) 60%, #111827);
+  --grid-row-alt-bg: color-mix(in srgb, var(--surface-0) 40%, var(--surface-1));
+  --status-success-bg: rgba(34, 197, 94, 0.14);
+  --status-success-text: #86efac;
+  --status-success-border: rgba(34, 197, 94, 0.32);
+  --status-warning-bg: rgba(251, 191, 36, 0.14);
+  --status-warning-text: #fcd34d;
+  --status-warning-border: rgba(251, 191, 36, 0.32);
+  --status-danger-bg: rgba(248, 113, 113, 0.14);
+  --status-danger-text: #fca5a5;
+  --status-danger-border: rgba(248, 113, 113, 0.34);
+  --status-info-bg: rgba(56, 189, 248, 0.14);
+  --status-info-text: #7dd3fc;
+  --status-info-border: rgba(56, 189, 248, 0.32);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.55), 0 4px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.07);
+  --focus-ring-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+  --overlay-bg: rgb(0 0 0 / 58%);
+  --overlay-bg-subtle: rgb(0 0 0 / 30%);
+  --tooltip-danger-button-color: rgba(248, 113, 113, 0.12);
+  --tooltip-success-button-color: rgba(34, 197, 94, 0.12);
+}
+
+[data-theme=dark] {
+  content: "";
+}

@@ -1,105 +1,21 @@
 import './DashboardPage.scss';
-import { AppToolbar } from '@nubitio/ui';
-import { useDashboardOverview } from './hooks/useDashboardOverview';
-import { useCashRegisters } from './hooks/useCashRegisters';
-import { useDashboardMetrics } from './hooks/useDashboardMetrics';
+
+import { useMemo } from 'react';
+import { DashboardPage as NubitDashboardPage } from '@nubitio/react-admin';
+
 import { useSessionInfo } from '@shared/sessionInfo';
-import { useScreenSize } from '@nubitio/admin';
-import { DashboardStatusBar } from './components/DashboardStatusBar';
-import { DashboardHero } from './components/DashboardHero';
-import { DashboardOperations } from './components/DashboardOperations';
-import { DashboardRankings } from './components/DashboardRankings';
-import { DashboardCharts } from './components/DashboardCharts';
-import { BriefingCard } from '@features/assistant/components/BriefingCard';
+import { buildEfactDashboardConfig } from './dashboard/efactDashboardConfig';
+import { useEfactDashboardData } from './dashboard/useEfactDashboardData';
 
 export const DashboardPage = () => {
-  const screen = useScreenSize();
-  const isMobile = screen.isXSmall || screen.isSmall;
-  const { data, loading, error, refetch } = useDashboardOverview({ lite: isMobile });
-  const { cashRegisters, isLoading: cashboxLoading } = useCashRegisters();
-  const metrics = useDashboardMetrics(data, cashRegisters);
-  const { currentUserName, currentBranchName } = useSessionInfo();
-
-  const isPartial = !!(data.meta?.partial && !error);
+  const { currentBranchName } = useSessionInfo();
+  const dashboardData = useEfactDashboardData();
+  const dashboardConfig = useMemo(
+    () => buildEfactDashboardConfig(currentBranchName || 'Panel'),
+    [currentBranchName],
+  );
 
   return (
-    <div className="view-wrapper-scroll dashboard-page">
-      <AppToolbar title="Dashboard" onRefresh={refetch}>
-        {error && <div className="dashboard-error">{error}</div>}
-        {isPartial && (
-          <div className="dashboard-error">Se cargó información parcial del dashboard.</div>
-        )}
-
-        {!isMobile && (
-          <DashboardStatusBar
-            summary={data.summary}
-            metrics={metrics}
-            isPartial={!!data.meta?.partial}
-            currentBranchName={currentBranchName}
-            cashboxLoading={cashboxLoading}
-          />
-        )}
-
-        {/* AI daily briefing — shows only when content is available (no layout shift on miss) */}
-        <BriefingCard />
-
-        {!isMobile && (
-          <>
-            <div className="dash-priority-row">
-              <DashboardHero
-                isMobile={isMobile}
-                summary={data.summary}
-                metrics={metrics}
-                paymentMethodsToday={data.paymentMethodsToday}
-                recentSalesToday={data.recentSalesToday}
-                currentUserName={currentUserName}
-                currentBranchName={currentBranchName}
-                cashboxLoading={cashboxLoading}
-              />
-              <DashboardOperations
-                cashRegisters={cashRegisters}
-                cashboxLoading={cashboxLoading}
-                lowStockProducts={data.lowStockProducts}
-              />
-            </div>
-            <DashboardRankings
-              topProducts={data.topProducts}
-              topCustomers={data.topCustomers}
-              topPurchasedProducts={data.topPurchasedProducts}
-              purchasesSummary={data.purchasesSummary}
-              metrics={metrics}
-            />
-            <DashboardCharts salesByMonth={data.salesByMonth} salesByDay={data.salesByDay} />
-          </>
-        )}
-
-        {isMobile && (
-          <>
-            <DashboardHero
-              isMobile={isMobile}
-              summary={data.summary}
-              metrics={metrics}
-              paymentMethodsToday={data.paymentMethodsToday}
-              recentSalesToday={data.recentSalesToday}
-              currentUserName={currentUserName}
-              currentBranchName={currentBranchName}
-              cashboxLoading={cashboxLoading}
-            />
-            <DashboardRankings
-              topProducts={data.topProducts}
-              topCustomers={data.topCustomers}
-              topPurchasedProducts={data.topPurchasedProducts}
-              purchasesSummary={data.purchasesSummary}
-              metrics={metrics}
-            />
-          </>
-        )}
-      </AppToolbar>
-      {(loading || cashboxLoading) && (
-        <div className="dashboard-loading-overlay" aria-hidden="true">
-          <span className="dashboard-loading-spinner" />
-        </div>
-      )}
-    </div>
+    <NubitDashboardPage config={{ ...dashboardConfig, useData: () => dashboardData }} />
   );
 };

@@ -1,0 +1,79 @@
+/* stylelint-disable */
+/* eFact light theme — source of truth. Copied to public/themes/ at build time. */
+:root,
+[data-theme=light] {
+  --base-bg: #ffffff;
+  --base-bg-darken-4: #f5f6f8;
+  --base-bg-darken-5: #eef1f7;
+  --base-text-color: #111827;
+  --base-text-color-alpha: rgba(17, 24, 39, 0.65);
+  --background-gray-color: rgba(17, 24, 39, 0.04);
+  --typography-bg: var(--base-bg);
+  --accent-color: #1a6fd4;
+  --accent-hover: color-mix(in srgb, var(--accent-color) 82%, #000);
+  --accent-pressed: color-mix(in srgb, var(--accent-color) 65%, #000);
+  --accent-subtle: color-mix(in srgb, var(--accent-color) 10%, #fff);
+  --success-color: #16a34a;
+  --info-color: #0284c7;
+  --warning-color: #f59e0b;
+  --dark-warning-color: #d97706;
+  --error-color: #dc2626;
+  --on-accent-color: #ffffff;
+  --on-success-color: #ffffff;
+  --on-error-color: #ffffff;
+  --border-color: #d7deea;
+  --border-subtle: #e8ecf4;
+  --base-border-color: var(--border-color);
+  --text-primary: #111827;
+  --text-secondary: #4a5568;
+  --text-tertiary: #7c8a9e;
+  --text-disabled: #a8b3c4;
+  --text-on-accent: var(--on-accent-color);
+  --texteditor-edit-color: var(--text-primary);
+  --texteditor-label-color: var(--text-secondary);
+  --subtitle-text-color: var(--text-secondary);
+  --surface-0: #f5f6f8;
+  --surface-1: #ffffff;
+  --surface-2: #eef1f7;
+  --surface-3: color-mix(in srgb, var(--accent-color) 9%, #ffffff);
+  --surface-canvas: var(--surface-0);
+  --surface-card: var(--surface-1);
+  --surface-elevated: var(--surface-1);
+  --surface-subtle: var(--surface-2);
+  --surface-selected: var(--surface-3);
+  --card-background: var(--surface-1);
+  --side-panel-background: var(--surface-1);
+  --control-bg: var(--surface-1);
+  --control-bg-hover: var(--surface-2);
+  --control-border: var(--border-color);
+  --grid-header-bg: #eef1f7;
+  --grid-filter-bg: #ffffff;
+  --grid-row-hover-bg: #eef1f7;
+  --grid-row-selected-bg: color-mix(in srgb, var(--accent-color) 9%, #ffffff);
+  --grid-row-selected-border: color-mix(in srgb, var(--accent-color) 72%, #ffffff);
+  --grid-row-alt-bg: #f4f6fb;
+  --status-success-bg: #dcfce7;
+  --status-success-text: #15803d;
+  --status-success-border: #86efac;
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #b45309;
+  --status-warning-border: #fcd34d;
+  --status-danger-bg: #fee2e2;
+  --status-danger-text: #b91c1c;
+  --status-danger-border: #fca5a5;
+  --status-info-bg: #e0f2fe;
+  --status-info-text: #0369a1;
+  --status-info-border: #7dd3fc;
+  --shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.08), 0 0 0 1px rgba(17, 24, 39, 0.04);
+  --shadow-md: 0 4px 10px rgba(17, 24, 39, 0.1), 0 0 0 1px rgba(17, 24, 39, 0.04);
+  --shadow-lg: 0 12px 28px rgba(17, 24, 39, 0.14), 0 4px 8px rgba(17, 24, 39, 0.07);
+  --focus-ring-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  --overlay-bg: rgb(17 24 39 / 42%);
+  --overlay-bg-subtle: rgb(17 24 39 / 18%);
+  --tooltip-danger-button-color: rgba(220, 38, 38, 0.1);
+  --tooltip-success-button-color: rgba(22, 163, 74, 0.1);
+}
+
+[data-theme=light] {
+  content: "";
+}
