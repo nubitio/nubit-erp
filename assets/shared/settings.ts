@@ -84,6 +84,16 @@ class Settings {
     if (value === 'LOCAL_AGENT' || value === 'WEBUSB') return value;
     return 'WEBUSB';
   }
+
+  /**
+   * Invalidate the local cache so the next `get()` call fetches fresh values
+   * from the server. Call this after any setting is persisted to the backend.
+   */
+  invalidate(): void {
+    localStorage.removeItem(STORAGE_TS_KEY);
+    this.settings = [];
+    localStorage.removeItem(STORAGE_KEY);
+  }
 }
 
 export const settings = new Settings();

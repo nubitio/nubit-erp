@@ -80,6 +80,7 @@ export const usePosCheckout = ({
   const [discountPercent, setDiscountPercent] = useState(() => draft?.discountPercent ?? 0);
   const [note, setNote] = useState(() => draft?.note ?? '');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
+  const [lastCheckoutSucceeded, setLastCheckoutSucceeded] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
@@ -389,6 +390,7 @@ export const usePosCheckout = ({
     }
 
     setIsProcessingSale(true);
+    setLastCheckoutSucceeded(false);
 
     try {
       const salePayload = {
@@ -455,6 +457,7 @@ export const usePosCheckout = ({
       if (submitResult.mode === 'server') {
         toast(`Venta registrada (${submitResult.serverCode})`, 'success');
         setLastSaleCode(submitResult.serverSaleId);
+        setLastCheckoutSucceeded(true);
         clearCart();
         printSaleInvoice(submitResult.serverSaleId).catch(() => {
           toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
@@ -468,6 +471,7 @@ export const usePosCheckout = ({
         toast('Venta guardada localmente', 'success');
         toast('Pendiente de sincronización', 'warning');
         setLastSaleCode(sale.correlativoTemporal);
+        setLastCheckoutSucceeded(true);
         clearCart();
         await onQueuedSaleCreated();
         return;
@@ -478,6 +482,7 @@ export const usePosCheckout = ({
       const syncedSale = await offlineDb.sales.get(sale.id);
       if (syncedSale?.serverSaleId) {
         toast(`Venta registrada (${syncedSale.serverCode ?? sale.correlativoTemporal})`, 'success');
+        setLastCheckoutSucceeded(true);
         clearCart();
         printSaleInvoice(syncedSale.serverSaleId).catch(() => {
           toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
@@ -489,8 +494,12 @@ export const usePosCheckout = ({
         toast(getActionableSaleErrorMessage(syncedSale), 'error', 6000);
       } else {
         toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
+        setLastCheckoutSucceeded(true);
         clearCart();
       }
+    } catch {
+      // HttpClient already displayed an error toast for HTTP error responses.
+      // We only need to ensure isProcessingSale resets (handled by finally).
     } finally {
       setIsProcessingSale(false);
     }
@@ -534,6 +543,7 @@ export const usePosCheckout = ({
     quickCashActions,
     checkoutDisabled,
     handleCheckout,
+    lastCheckoutSucceeded,
     getEffectiveStock,
     readScaleForLine,
     scaleReady,

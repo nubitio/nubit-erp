@@ -19,6 +19,8 @@ import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubitio/ui';
 import { useTenantRuntimeConfig } from '@shared/hooks';
+import { httpClient } from '@shared/api/HttpClient';
+import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -68,14 +70,66 @@ const POSPage = () => {
   const customersState = usePosCustomers();
   const clearSelectedCustomer = customersState.clearSelectedCustomer;
 
-  const filteredMenu = menuData.filter((item) => {
-    const matchesCategory = !activeCategory || item.category.id === activeCategory;
-    if (!matchesCategory) return false;
-    const query = normalizeText(searchQuery);
-    if (!query) return true;
-    const fields = [item.name, item.sku ?? '', item.barcode ?? ''];
-    return fields.some((value) => normalizeText(value).includes(query));
-  });
+  // ── Price list override ───────────────────────────────────────────────────────
+  // When the selected customer has a price list, fetch the resolved prices from
+  // GET /api/price-lists/{id}/apply and overlay them onto the catalog.
+  // The base catalog (menuData / offline DB) is never mutated.
+  const [priceListOverrides, setPriceListOverrides] = useState<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    const selectedCustomer = customersState.customerOptions.find(
+      (c) => c.id === customersState.selectedCustomerId,
+    );
+    const priceListId = selectedCustomer?.priceListId;
+
+    if (!priceListId) {
+      setPriceListOverrides(new Map());
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    httpClient
+      .get<unknown>(`${getCoreApiBaseUrl()}price-lists/${priceListId}/apply`, {
+        signal: controller.signal,
+      })
+      .then((response) => {
+        if (cancelled) return;
+        const raw = response.data;
+        const items: Array<{ id: string; price: string }> = Array.isArray(raw)
+          ? (raw as Array<{ id: string; price: string }>)
+          : ((raw as Record<string, unknown>)['hydra:member'] as Array<{ id: string; price: string }> ?? []);
+        const map = new Map<string, number>();
+        for (const item of items) {
+          const price = parseFloat(item.price);
+          if (Number.isFinite(price)) map.set(String(item.id), price);
+        }
+        setPriceListOverrides(map);
+      })
+      .catch(() => {
+        if (!cancelled) setPriceListOverrides(new Map());
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [customersState.selectedCustomerId, customersState.customerOptions]);
+
+  const filteredMenu = menuData
+    .filter((item) => {
+      const matchesCategory = !activeCategory || item.category.id === activeCategory;
+      if (!matchesCategory) return false;
+      const query = normalizeText(searchQuery);
+      if (!query) return true;
+      const fields = [item.name, item.sku ?? '', item.barcode ?? ''];
+      return fields.some((value) => normalizeText(value).includes(query));
+    })
+    .map((item) => {
+      const override = priceListOverrides.get(item.id);
+      return override !== undefined ? { ...item, salePrice: override } : item;
+    });
 
   const selectedPaymentMethod =
     paymentMethods.find((method) => method.id === selectedPaymentMethodId) ?? null;
@@ -93,6 +147,7 @@ const POSPage = () => {
     note,
     setNote,
     isProcessingSale,
+    lastCheckoutSucceeded,
     lastSaleCode,
     emitInvoice,
     setEmitInvoice,
@@ -426,6 +481,7 @@ const POSPage = () => {
         checkoutDisabled={checkoutDisabled}
         handleCheckout={handleCheckout}
         isProcessingSale={isProcessingSale}
+        lastCheckoutSucceeded={lastCheckoutSucceeded}
         syncSales={recentSales}
         onRetrySale={(saleId) => {
           void retrySale(saleId);

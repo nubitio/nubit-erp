@@ -28,11 +28,14 @@ export interface CustomerOption {
   id: number;
   businessName: string;
   doc?: string;
+  /** ID of the price list assigned to this customer, if any. */
+  priceListId?: number;
 }
 
 export interface PaymentMethodOption {
   id: number;
   name: string;
+  isActive: boolean;
 }
 
 export interface WarehouseOption {

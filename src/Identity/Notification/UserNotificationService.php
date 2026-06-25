@@ -7,9 +7,13 @@ namespace App\Identity\Notification;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 
 /**
- * Writes in-app notifications to the tenant DB.
+ * Writes in-app notifications to the tenant DB and pushes them in real-time
+ * via Mercure so the frontend does not need to poll.
  *
  * Uses raw DBAL (not ORM) so it can be called safely from Doctrine lifecycle
  * listeners without risking flush-inside-flush issues.
@@ -30,7 +34,78 @@ final readonly class UserNotificationService implements UserNotificationServiceI
 
     public function __construct(
         private Connection $connection,
+        private HubInterface $mercureHub,
+        private RequestStack $requestStack,
     ) {
+    }
+
+    /**
+     * Returns the scheme+host of the current request, used to build the
+     * per-user Mercure topic.  Returns empty string when called outside a
+     * request context (CLI commands, async message handlers) — callers treat
+     * that as "skip Mercure publish".
+     */
+    private function currentOrigin(): string
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        return $request?->getSchemeAndHttpHost() ?? '';
+    }
+
+    /**
+     * Publish a notification payload to the per-user Mercure topic.
+     *
+     * Topic format: {origin}/api/users/{userId}/notifications
+     * This matches the subscriber token scope ({tenantOrigin}/api/*) that
+     * MercureCookieDecorator issues on login.
+     *
+     * Failures are swallowed — the notification is already persisted in the DB;
+     * Mercure delivery is best-effort and the frontend retries on focus/visibility.
+     *
+     * @param array<string, mixed> $payload
+     */
+    private function publishToMercure(int $userId, array $payload): void
+    {
+        $origin = $this->currentOrigin();
+        if ($origin === '') {
+            return; // No request context (CLI/async) — skip real-time push.
+        }
+
+        $topic = $origin . '/api/users/' . $userId . '/notifications';
+
+        try {
+            $this->mercureHub->publish(
+                new Update($topic, json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)),
+            );
+        } catch (\Throwable) {
+            // Mercure publish failure must never break the primary write path.
+        }
+    }
+
+    /**
+     * Build the serialisable payload from a notification row.
+     *
+     * @return array<string, mixed>
+     */
+    private function notificationPayload(
+        int $userId,
+        string $type,
+        string $severity,
+        string $title,
+        string $body,
+        ?string $actionUrl,
+        string $createdAt,
+    ): array {
+        return [
+            'userId'    => $userId,
+            'type'      => $type,
+            'severity'  => $severity,
+            'title'     => $title,
+            'body'      => $body,
+            'actionUrl' => $actionUrl,
+            'readAt'    => null,
+            'createdAt' => $createdAt,
+        ];
     }
 
     /**
@@ -46,6 +121,8 @@ final readonly class UserNotificationService implements UserNotificationServiceI
         string $body,
         ?string $actionUrl = null,
     ): void {
+        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+
         $this->connection->insert('user_notification', [
             'user_id'    => $userId,
             'type'       => $type,
@@ -54,8 +131,12 @@ final readonly class UserNotificationService implements UserNotificationServiceI
             'body'       => $body,
             'action_url' => $actionUrl,
             'read_at'    => null,
-            'created_at' => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'created_at' => $now,
         ]);
+
+        $this->publishToMercure($userId, $this->notificationPayload(
+            $userId, $type, $severity, $title, $body, $actionUrl, $now,
+        ));
     }
 
     /**
@@ -96,8 +177,10 @@ final readonly class UserNotificationService implements UserNotificationServiceI
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
 
         foreach ($rows as $row) {
+            $userId = (int) $row['usuario_id'];
+
             $this->connection->insert('user_notification', [
-                'user_id'    => (int) $row['usuario_id'],
+                'user_id'    => $userId,
                 'type'       => $type,
                 'severity'   => $severity,
                 'title'      => $title,
@@ -106,6 +189,10 @@ final readonly class UserNotificationService implements UserNotificationServiceI
                 'read_at'    => null,
                 'created_at' => $now,
             ]);
+
+            $this->publishToMercure($userId, $this->notificationPayload(
+                $userId, $type, $severity, $title, $body, $actionUrl, $now,
+            ));
         }
     }
 
@@ -180,6 +267,10 @@ final readonly class UserNotificationService implements UserNotificationServiceI
                 'read_at'    => null,
                 'created_at' => $now,
             ]);
+
+            $this->publishToMercure($userId, $this->notificationPayload(
+                $userId, $type, $severity, $title, $body, $actionUrl, $now,
+            ));
         }
     }
 

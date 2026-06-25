@@ -16,6 +16,7 @@ interface CustomerResponse {
   ruc?: string | null;
   dni?: string | null;
   doc?: string | null;
+  price_list?: { id?: number | string } | null;
 }
 
 export const usePosCustomers = () => {
@@ -87,6 +88,7 @@ export const usePosCustomers = () => {
             customer.businessName ?? customer.name ?? `Cliente ${customer.id}`,
           ),
           doc: customer.ruc ?? customer.dni ?? customer.doc ?? undefined,
+          priceListId: customer.price_list?.id != null ? Number(customer.price_list.id) : undefined,
         };
         // We don't mutate the shared hook's list here — we just select it
         setSelectedCustomerIdState(mapped.id);

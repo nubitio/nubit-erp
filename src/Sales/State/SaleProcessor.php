@@ -103,7 +103,24 @@ readonly class SaleProcessor implements ProcessorInterface
         $resolvedCashSessionId = null;
         $requireOpenSession = false;
         $request = $context['request'] ?? null;
-        $isOfflineSale = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
+        // Offline-sale mode skips stock validation because the physical transaction already occurred.
+        // To prevent casual abuse of this bypass, require a well-formed Idempotency-Key alongside
+        // the X-Offline-Sale flag — the outbox always sends both together.
+        // TODO: harden further by pre-registering offline sale IDs server-side so the key can be
+        //       verified rather than merely checked for presence.
+        $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
+        $idempotencyKey    = $request instanceof Request ? ($request->headers->get('Idempotency-Key') ?? '') : '';
+        $isOfflineSale     = $offlineSaleHeader && preg_match(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+            $idempotencyKey,
+        ) === 1;
+        if ($offlineSaleHeader && !$isOfflineSale) {
+            $this->logger->warning('X-Offline-Sale header rejected: missing or malformed Idempotency-Key', [
+                'user_id'          => $user->userId,
+                'idempotency_key'  => $idempotencyKey ?: '(empty)',
+                'remote_addr'      => $request?->getClientIp(),
+            ]);
+        }
 
         // Convert writeItems array to SaleItemRecord objects
         if ($isNew && !empty($data->getWriteItems())) {
@@ -419,11 +436,9 @@ readonly class SaleProcessor implements ProcessorInterface
 
             // gross = qty × unitPrice
             $grossAmount = Money::money(BigDecimal::of((string) $unitPrice)->multipliedBy($qty));
-            // net = gross − discount
-            $itemTotal = $itemData['total'] ?? $itemData['precio_total'] ?? null;
-            if ($itemTotal === null || $itemTotal === '' || $itemTotal === '0.00') {
-                $itemTotal = Money::toString(Money::money($grossAmount)->minus(Money::money($discount)));
-            }
+            // net = gross − discount  (always computed server-side; any client-supplied total is ignored
+            // to prevent price manipulation via the write-items payload)
+            $itemTotal = Money::toString(Money::money($grossAmount)->minus(Money::money($discount)));
 
             $item->setLineNo($lineNo++);
             $item->setQty(number_format($qty, 3, '.', ''));

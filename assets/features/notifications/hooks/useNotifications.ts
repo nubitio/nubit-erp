@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { getCoreApiBaseUrl } from '@nubitio/core';
+import { getCoreApiBaseUrl, MercureManager, useMercureHub } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { httpClient } from '@shared/api/HttpClient';
 import type { Notification } from '../services/notificationService';
 import { notificationService } from '../services/notificationService';
+import { useSessionInfo } from '@shared/sessionInfo';
 
-const POLL_INTERVAL_MS = 120_000;
+/**
+ * Fallback poll interval used only when the Mercure hub is not yet available
+ * (e.g. first load before the hub URL has been discovered from a response header).
+ * Once Mercure is connected the interval is cleared and real-time push takes over.
+ */
+const FALLBACK_POLL_INTERVAL_MS = 120_000;
 
 export interface UseNotificationsResult {
   notifications: Notification[];
@@ -22,6 +28,9 @@ export function useNotifications(): UseNotificationsResult {
   const [loading, setLoading] = useState(true);
   const lastAbortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
+
+  const hubUrl = useMercureHub();
+  const { currentUserId } = useSessionInfo();
 
   const fetchNotifications = useCallback(() => {
     lastAbortRef.current?.abort();
@@ -41,6 +50,7 @@ export function useNotifications(): UseNotificationsResult {
       });
   }, []);
 
+  // ── Initial fetch + fallback poll (only when Mercure is not available) ───────
   useEffect(() => {
     mountedRef.current = true;
     fetchNotifications();
@@ -51,18 +61,58 @@ export function useNotifications(): UseNotificationsResult {
       }
     };
 
-    const timer = setInterval(refreshIfVisible, POLL_INTERVAL_MS);
+    // Fallback polling: disabled when Mercure hub is already known
+    let timer: ReturnType<typeof setInterval> | undefined;
+    if (!hubUrl) {
+      timer = setInterval(refreshIfVisible, FALLBACK_POLL_INTERVAL_MS);
+    }
+
+    // Always re-fetch on tab focus / visibility change — cheap catch-up for
+    // any Mercure gaps while the tab was hidden.
     document.addEventListener('visibilitychange', refreshIfVisible);
     window.addEventListener('focus', refreshIfVisible);
 
     return () => {
       mountedRef.current = false;
-      clearInterval(timer);
+      if (timer !== undefined) clearInterval(timer);
       document.removeEventListener('visibilitychange', refreshIfVisible);
       window.removeEventListener('focus', refreshIfVisible);
       lastAbortRef.current?.abort();
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, hubUrl]);
+
+  // ── Mercure real-time subscription ──────────────────────────────────────────
+  // Topic: {origin}/api/users/{userId}/notifications
+  // Published by UserNotificationService after each DB insert.
+  useEffect(() => {
+    if (!hubUrl || !currentUserId) return;
+
+    const topic = `${window.location.origin}/api/users/${String(currentUserId)}/notifications`;
+
+    const handler = (data: unknown) => {
+      if (!mountedRef.current) return;
+
+      const incoming = data as Partial<Notification> & { id?: number };
+
+      // If the payload includes enough fields, prepend it directly to avoid
+      // an extra HTTP round-trip. Otherwise fall back to a full re-fetch.
+      if (incoming?.id && incoming.type && incoming.title) {
+        setNotifications((prev) => {
+          if (prev.some((n) => n.id === incoming.id)) return prev; // dedupe
+          return [incoming as Notification, ...prev];
+        });
+      } else {
+        // Minimal push (just a ping) — re-fetch to get the full list.
+        fetchNotifications();
+      }
+    };
+
+    MercureManager.subscribe(topic, handler);
+
+    return () => {
+      MercureManager.unsubscribe(topic, handler);
+    };
+  }, [hubUrl, currentUserId, fetchNotifications]);
 
   const markRead = useCallback(
     (id: number) => {

@@ -45,7 +45,7 @@ readonly class SunatSendControlService
                 'exception' => $exception,
             ]);
 
-            return true;
+            return false;
         }
     }
 
@@ -97,7 +97,7 @@ readonly class SunatSendControlService
 
         if ($code !== null && $code !== '' && ctype_digit($code)) {
             $numericCode = (int)$code;
-            if ($numericCode >= 2000 && $numericCode < 4000) {
+            if ($numericCode >= 2000 && $numericCode < 3000) {
                 return true;
             }
         }

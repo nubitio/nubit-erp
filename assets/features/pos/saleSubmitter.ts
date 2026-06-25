@@ -32,8 +32,13 @@ const extractServerSaleId = (created: Record<string, unknown>): string | null =>
   return match?.[1] ?? null;
 };
 
-const isNetworkFailure = (error: unknown) => {
-  return error instanceof TypeError;
+const isNetworkFailure = (error: unknown): boolean => {
+  if (error instanceof TypeError) return true;
+  if (error instanceof Error) {
+    const err = error as Error & { status?: number };
+    return typeof err.status === 'number' && err.status >= 500;
+  }
+  return false;
 };
 
 export async function submitSale(input: SubmitSaleInput): Promise<SaleSubmitterResult> {

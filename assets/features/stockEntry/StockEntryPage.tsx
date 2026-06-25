@@ -7,6 +7,7 @@ import type { StockEntryMode } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@shared/sessionInfo';
 import { useTenantRuntimeConfig } from '@shared/hooks';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const API_URL = API + 'stock-entries';
 
@@ -31,6 +32,9 @@ interface StockEntryPageProps {
 export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const { currentBranchId } = useSessionInfo();
   const { data: runtimeConfig, isLoading } = useTenantRuntimeConfig();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = new URLSearchParams(location.search).get('returnTo');
   const events = createCrudEvents(`stock-entry-${mode}`);
   const detailFields = StockEntryItemFields(mode);
   const detailUrl = API_URL + '/{id}/items';
@@ -81,6 +85,11 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
       canDelete: false,
     },
     mercure: false,
+    onSaveSuccess: () => {
+      if (returnTo) {
+        navigate(returnTo);
+      }
+    },
   });
 
   return <SmartCrudPage resource={resource} />;

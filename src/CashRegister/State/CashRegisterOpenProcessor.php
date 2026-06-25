@@ -62,14 +62,9 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             ->toScale(2, RoundingMode::HALF_UP)
             ->__toString();
 
-        $cashRegister = $this->entityManager->getReference(CashRegister::class, $data->id);
+        $cashRegister = $this->entityManager->find(CashRegister::class, $data->id);
         if (!$cashRegister instanceof CashRegister) {
             throw new NotFoundHttpException('Caja registradora no encontrada.');
-        }
-
-        $userRef = $this->entityManager->getReference(User::class, $user->userId);
-        if (!$userRef instanceof User) {
-            throw new NotFoundHttpException('Usuario no encontrado.');
         }
 
         $branchId = $this->branchContextService->getCurrentBranchId();
@@ -77,9 +72,19 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Contexto de sucursal no encontrado.');
         }
 
+        $cashRegisterBranchId = $cashRegister->getBranch()->getId();
+        if ($cashRegisterBranchId !== $branchId) {
+            throw new UnauthorizedHttpException('Bearer', 'La caja registradora no pertenece a la sucursal actual.');
+        }
+
         $branch = $this->branchRepository->find($branchId);
         if ($branch === null) {
             throw new NotFoundHttpException('Sucursal no encontrada.');
+        }
+
+        $userRef = $this->entityManager->getReference(User::class, $user->userId);
+        if (!$userRef instanceof User) {
+            throw new NotFoundHttpException('Usuario no encontrado.');
         }
 
         $cashSession = new CashSession();

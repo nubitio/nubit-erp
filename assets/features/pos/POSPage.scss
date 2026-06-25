@@ -2250,15 +2250,17 @@
 
   &__change {
     margin-top: var(--space-1);
-    // Semi-transparent glass on colored bg — use text-primary tint for Fluent alignment (no raw white)
-    background: color-mix(in srgb, var(--text-primary) 18%, transparent);
-    border: 1.5px solid color-mix(in srgb, var(--text-primary) 35%, transparent);
+    // This overlay is always rendered on a green background regardless of theme,
+    // so use white-based rgba values for legibility in both light and dark modes.
+    background: rgba(255, 255, 255, 0.18);
+    border: 1.5px solid rgba(255, 255, 255, 0.38);
     border-radius: var(--pos-radius);
     padding: var(--space-2) var(--space-6);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--space-1);
+    color: rgba(255, 255, 255, 0.95);
 
     span {
       font-size: var(--font-size-xxs);
@@ -2294,20 +2296,21 @@
     &:active { transform: scale(0.97); }
 
     &--primary {
-      // Bright action button on success overlay — use text-primary tint for high contrast (Fluent aligned)
-      background: color-mix(in srgb, var(--text-primary) 95%, transparent);
+      // White pill button on green overlay — works in both light and dark themes
+      // because the overlay is always green regardless of theme.
+      background: rgba(255, 255, 255, 0.92);
       color: var(--pos-success);
-      border-color: color-mix(in srgb, var(--text-primary) 95%, transparent);
+      border-color: rgba(255, 255, 255, 0.92);
 
       &:hover { opacity: 0.9; }
     }
 
     &--secondary {
       background: transparent;
-      color: var(--text-primary);
-      border-color: color-mix(in srgb, var(--text-primary) 55%, transparent);
+      color: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.55);
 
-      &:hover { background: color-mix(in srgb, var(--text-primary) 12%, transparent); }
+      &:hover { background: rgba(255, 255, 255, 0.14); }
     }
   }
 }

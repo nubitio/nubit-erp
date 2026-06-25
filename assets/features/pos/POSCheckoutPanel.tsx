@@ -61,6 +61,7 @@ interface POSCheckoutPanelProps {
   checkoutDisabled: boolean;
   handleCheckout: () => void;
   isProcessingSale: boolean;
+  lastCheckoutSucceeded?: boolean;
   lastSaleCode?: string | null;
   onPrintLastSale?: () => void;
   syncSales?: LocalSale[];
@@ -123,6 +124,7 @@ export function POSCheckoutPanel({
   checkoutDisabled,
   handleCheckout,
   isProcessingSale,
+  lastCheckoutSucceeded = false,
   lastSaleCode,
   onPrintLastSale,
   syncSales: _syncSales = [],
@@ -159,19 +161,21 @@ export function POSCheckoutPanel({
   const successCodeRef = useRef<string | null>(null);
   const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Success overlay: fires when isProcessingSale goes true → false
+  // Success overlay: fires when isProcessingSale goes true → false AND sale succeeded
   useEffect(() => {
     if (prevProcessing.current && !isProcessingSale) {
-      successChangeRef.current = changeAmount;
-      successWasCashRef.current = isCashPaymentSelected && amountReceivedNumber > 0;
-      successCodeRef.current = lastSaleCode ?? null;
-      setShowSuccess(true);
-      // Auto-dismiss after 8s if the cashier doesn't interact
-      if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
-      successDismissTimer.current = setTimeout(() => setShowSuccess(false), 8000);
+      if (lastCheckoutSucceeded) {
+        successChangeRef.current = changeAmount;
+        successWasCashRef.current = isCashPaymentSelected && amountReceivedNumber > 0;
+        successCodeRef.current = lastSaleCode ?? null;
+        setShowSuccess(true);
+        // Auto-dismiss after 8s if the cashier doesn't interact
+        if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
+        successDismissTimer.current = setTimeout(() => setShowSuccess(false), 8000);
+      }
     }
     prevProcessing.current = isProcessingSale;
-  }, [isProcessingSale, changeAmount, isCashPaymentSelected, amountReceivedNumber, lastSaleCode]);
+  }, [isProcessingSale, lastCheckoutSucceeded, changeAmount, isCashPaymentSelected, amountReceivedNumber, lastSaleCode]);
 
   // New line entrance animation
   useEffect(() => {

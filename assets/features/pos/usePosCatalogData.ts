@@ -18,12 +18,13 @@ type UsePosCatalogDataParams = {
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
-type PaymentMethodResponse = { id?: string | number; name?: string | null };
+type PaymentMethodResponse = { id?: string | number; name?: string | null; isActive?: boolean };
 
 const mapPaymentMethods = (responseData: unknown): PaymentMethodOption[] =>
   extractCollection<PaymentMethodResponse>(responseData).map((method) => ({
     id: Number(method.id),
     name: String(method.name ?? `Metodo ${method.id ?? ''}`),
+    isActive: method.isActive !== false,
   }));
 
 export function usePosPaymentMethods() {
@@ -34,7 +35,9 @@ export function usePosPaymentMethods() {
         httpClient.get<unknown>(
           `${API}payment-methods?itemsPerPage=100&page=1`,
         ),
-      ).then((responseData) => mapPaymentMethods(responseData)),
+      ).then(
+        (responseData) => mapPaymentMethods(responseData).filter((m) => m.isActive),
+      ),
     staleTime: 5 * 60 * 1000,
     placeholderData: [],
   });

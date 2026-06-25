@@ -20,6 +20,8 @@ export interface CustomerSearchOption {
   businessName: string;
   /** RUC (11 digits) or DNI (8 digits). */
   doc?: string;
+  /** ID of the price list assigned to this customer, if any. */
+  priceListId?: number;
 }
 
 export interface UseCustomerSearchOptions {
@@ -89,12 +91,15 @@ function extractCustomers(raw: unknown): CustomerSearchOption[] {
 
   return items.map((c) => {
     const customer = c as Record<string, unknown>;
+    const priceList = customer['price_list'] as Record<string, unknown> | null | undefined;
+    const priceListId = priceList?.['id'] != null ? Number(priceList['id']) : undefined;
     return {
       id: Number(customer['id']),
       businessName: String(
         customer['businessName'] ?? customer['name'] ?? `Cliente ${customer['id']}`,
       ),
       doc: (customer['ruc'] ?? customer['dni'] ?? customer['doc']) as string | undefined,
+      priceListId,
     };
   });
 }

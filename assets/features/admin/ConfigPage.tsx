@@ -9,6 +9,7 @@ import {
   isTechnical,
   tenantSettingsService,
 } from '@features/config';
+import { settings } from '@shared/settings';
 import './ConfigPage.scss';
 
 // ── Label registry ────────────────────────────────────────────────────────────
@@ -458,12 +459,14 @@ export const ConfigPage = () => {
 
       const updatedSettings = await tenantSettingsService.patchSettings({ igv });
       setConfigs((prev) => syncIgvConfig(prev, updatedSettings.igv));
+      settings.invalidate();
       toast('Configuración guardada', 'success');
       return;
     }
 
     const updated = await configService.patch(config.id, newValue);
     setConfigs((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    settings.invalidate();
     toast('Configuración guardada', 'success');
   };
 

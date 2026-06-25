@@ -178,50 +178,56 @@ readonly class DashboardRepository
             ORDER BY td.year, td.month
         ", $params), [], $failedSegments);
 
+        // Reads live sale_payments — payment_method_daily_summary has no populator yet.
         $paymentMethodShare = $this->safeQuery('paymentMethods', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
-                COALESCE(SUM(pms.amount_total), 0) AS total
-            FROM payment_method_daily_summary pms
-                LEFT JOIN payment_method pm ON pms.payment_method_id = pm.id
-            WHERE pms.branch_id = :branchId
-              AND pms.summary_date >= :last30days
+                COALESCE(SUM(sp.amount), 0) AS total
+            FROM sale_payments sp
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                INNER JOIN sales s ON sp.sale_id = s.id
+            WHERE s.branch_id = :branchId
+              AND s.issued_at >= :last30daysUtc
+              AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
         ", $params), [], $failedSegments);
 
+        // Reads live sale_payments grouped by day — payment_method_daily_summary has no populator yet.
         $paymentMethodTrendRaw = $this->safeQuery(
             'paymentMethodTrend',
             fn () => $this->connection->fetchAllAssociative("
                 SELECT
-                    td.date AS date_value,
-                    DATE_FORMAT(td.date, '%d %b') AS label,
+                    DATE(CONVERT_TZ(s.issued_at, '+00:00', '-05:00')) AS date_value,
+                    DATE_FORMAT(DATE(CONVERT_TZ(s.issued_at, '+00:00', '-05:00')), '%d %b') AS label,
                     COALESCE(pm.name, 'Sin método') AS method,
-                    COALESCE(SUM(pms.amount_total), 0) AS total
-                FROM time_dimension td
-                LEFT JOIN payment_method_daily_summary pms
-                    ON td.date = pms.summary_date
-                    AND pms.branch_id = :branchId
-                LEFT JOIN payment_method pm ON pms.payment_method_id = pm.id
-                WHERE td.date >= :last30days
-                  AND td.date <= :today
-                GROUP BY td.date, pm.id, pm.name
-                ORDER BY td.date
+                    COALESCE(SUM(sp.amount), 0) AS total
+                FROM sale_payments sp
+                    LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                    INNER JOIN sales s ON sp.sale_id = s.id
+                WHERE s.branch_id = :branchId
+                  AND s.issued_at >= :last30daysUtc
+                  AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                GROUP BY date_value, pm.id, pm.name
+                ORDER BY date_value
             ", $params),
             [],
             $failedSegments
         );
 
+        // Reads live sale_items — product_daily_summary has no populator yet.
         $topProducts = $this->safeQuery('topProducts', fn () => $this->connection->fetchAllAssociative("
             SELECT
-                COALESCE(p.descripcion, 'Sin producto') AS product,
-                SUM(pds.qty_sold) AS quantity,
-                SUM(pds.net_sales) AS total
-            FROM product_daily_summary pds
-                LEFT JOIN producto p ON pds.product_id = p.producto_id
-            WHERE pds.branch_id = :branchId
-              AND pds.summary_date >= :last30days
-            GROUP BY pds.product_id, p.descripcion
+                COALESCE(p.descripcion, si.name_snapshot, 'Sin producto') AS product,
+                SUM(si.qty) AS quantity,
+                SUM(si.net_amount) AS total
+            FROM sale_items si
+                LEFT JOIN producto p ON si.product_id = p.producto_id
+                INNER JOIN sales s ON si.sale_id = s.id
+            WHERE s.branch_id = :branchId
+              AND s.issued_at >= :last30daysUtc
+              AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+            GROUP BY si.product_id, p.descripcion, si.name_snapshot
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);

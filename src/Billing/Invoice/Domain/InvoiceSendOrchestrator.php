@@ -125,7 +125,6 @@ readonly class InvoiceSendOrchestrator
                 );
             }
 
-            $this->controlService->resetRejectionStreak($tenantName);
             $this->logger->error('Error sending invoice', [
                 'tax_document_id' => $taxDocumentId,
                 'exception' => $exception,
