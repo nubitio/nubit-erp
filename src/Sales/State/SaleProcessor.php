@@ -140,7 +140,10 @@ readonly class SaleProcessor implements ProcessorInterface
 
             $requireOpenSession = $this->tenantSettings->isRequireCashRegister();
 
-            // Check for open cash session in v2 table, with fallback to legacy cash_shift table.
+            // Check for an open V2 cash session. Only cash_sessions (V2) is checked here because
+            // CashSessionResolver also only resolves against cash_sessions — accepting a legacy
+            // cash_shift row here would let the sale proceed past this guard and then fail later
+            // with a cryptic "Sales V2 write failed" error when the resolver can't find a session.
             if ($requireOpenSession) {
                 $conn = $this->entityManager->getConnection();
 
@@ -148,14 +151,6 @@ readonly class SaleProcessor implements ProcessorInterface
                     "SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
                     [$user->userId]
                 );
-
-                // Fallback: accept an open legacy cash_shift row (status = 'OPEN') for the same user.
-                if (!$hasOpenSession) {
-                    $hasOpenSession = (bool) $conn->fetchOne(
-                        "SELECT 1 FROM cash_shift WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
-                        [$user->userId]
-                    );
-                }
 
                 if (!$hasOpenSession) {
                     $this->logger->warning('Sale processing failed: No open cash session found', [

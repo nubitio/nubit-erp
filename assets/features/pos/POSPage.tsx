@@ -21,6 +21,7 @@ import { ConfirmDialog } from '@nubitio/ui';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { OpenCajaDialog } from './OpenCajaDialog';
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -39,6 +40,8 @@ const POSPage = () => {
   const [cajaAbierta, setCajaAbiertaState] = useState(
     () => localStorage.getItem('pos_caja_abierta') !== 'false',
   );
+  const [cashRegisterId, setCashRegisterId] = useState<number | null>(null);
+  const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
@@ -253,6 +256,45 @@ const POSPage = () => {
     setCajaOpenedAt(openedAt);
   }, []);
 
+  // ── Sync caja state with server on mount ─────────────────────────────────────────────────
+  // localStorage defaults to 'open'; verify against the real cash-registers/dashboard so
+  // the POS header always reflects actual server state.
+  useEffect(() => {
+    httpClient
+      .get<{ id: number; status: string; openedAt?: string | null }[]>(
+        getCoreApiBaseUrl() + 'cash-registers/dashboard',
+      )
+      .then((response) => {
+        const rows = response.data;
+        if (!Array.isArray(rows) || rows.length === 0) return;
+        // Always store the first register id so "Abrir caja" knows which register to open.
+        setCashRegisterId(rows[0].id);
+        const openRow = rows.find((r) => r.status === 'open');
+        if (openRow) {
+          setCashRegisterId(openRow.id);
+          if (!cajaAbierta) {
+            setCajaAbiertaState(true);
+            localStorage.setItem('pos_caja_abierta', 'true');
+          }
+          if (openRow.openedAt) {
+            localStorage.setItem('pos_caja_opened_at', openRow.openedAt);
+            setCajaOpenedAt(openRow.openedAt);
+          }
+        } else {
+          // No open session on the server — correct the local state.
+          setCajaAbiertaState(false);
+          localStorage.setItem('pos_caja_abierta', 'false');
+          localStorage.removeItem('pos_caja_opened_at');
+          setCajaOpenedAt(null);
+        }
+      })
+      .catch(() => {
+        // Network error: keep the localStorage value rather than flipping state.
+      });
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Notify once if a draft cart was restored ──────────────────────────────────────────────
   const draftNotifiedRef = useRef(false);
   useEffect(() => {
@@ -372,6 +414,7 @@ const POSPage = () => {
           void retrySale(saleId);
         }}
         showWarehouseSelector={runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1}
+        onOpenCaja={() => setOpenCajaDialogOpen(true)}
       />
 
       {/* ── Mobile tab bar (hidden on desktop via CSS) ── */}
@@ -506,6 +549,18 @@ const POSPage = () => {
         }}
         onCancel={() => setConfirmClearCartOpen(false)}
       />
+      {openCajaDialogOpen && cashRegisterId !== null && (
+        <OpenCajaDialog
+          cashRegisterId={cashRegisterId}
+          onSuccess={(openedAt) => {
+            setOpenCajaDialogOpen(false);
+            setCajaAbierta(true);
+            localStorage.setItem('pos_caja_opened_at', openedAt);
+            setCajaOpenedAt(openedAt);
+          }}
+          onCancel={() => setOpenCajaDialogOpen(false)}
+        />
+      )}
     </div>
   );
 };

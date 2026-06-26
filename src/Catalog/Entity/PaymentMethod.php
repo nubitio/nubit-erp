@@ -11,12 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
-#[ApiResource(mercure: true)]
+#[ApiResource(mercure: true, normalizationContext: ['groups' => ['payment_method:read']])]
 class PaymentMethod
 {
     final public const int CASH = 1;
 
     #[Groups([
+        'payment_method:read',
         'cash_movement:read',
         'sale:read',
         'sale_record:read',
@@ -27,6 +28,7 @@ class PaymentMethod
     private ?int $id = null;
 
     #[Groups([
+        'payment_method:read',
         'cash_movement:read',
         'sale:read',
         'sale_record:read',
@@ -37,6 +39,7 @@ class PaymentMethod
 
     /** When false the payment method is hidden from the POS and new sales. */
     #[Groups([
+        'payment_method:read',
         'cash_movement:read',
         'sale:read',
         'sale_record:read',
@@ -62,7 +65,7 @@ class PaymentMethod
         return $this;
     }
 
-    public function isActive(): bool
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }

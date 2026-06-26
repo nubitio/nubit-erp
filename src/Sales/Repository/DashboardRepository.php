@@ -476,6 +476,36 @@ readonly class DashboardRepository
             },
             $lowStockProducts
         );
+
+        $recentSalesToday = $this->safeQuery('recentSalesToday', fn () => $this->connection->fetchAllAssociative("
+            SELECT
+                s.id AS id,
+                DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
+                COALESCE(pm.name, 'Sin método') AS payment_method,
+                s.grand_total AS total,
+                s.series AS series,
+                s.number AS number
+            FROM sales s
+                LEFT JOIN sale_payments sp ON sp.sale_id = s.id
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
+              AND s.issued_at >= :todayStartUtc
+              AND s.issued_at < :todayEndUtc
+              {$receiptFilter}
+            GROUP BY s.id, issued_at, payment_method, total
+            ORDER BY s.issued_at DESC
+            LIMIT 10
+        ", $params), [], $failedSegments);
+        $payload['recentSalesToday'] = array_map(static fn (array $row): array => [
+            'id' => (string) $row['id'],
+            'issuedAt' => $row['issued_at'],
+            'paymentMethod' => $row['payment_method'],
+            'total' => (float) $row['total'],
+            'series' => $row['series'] ?? null,
+            'number' => $row['number'] ?? null,
+        ], $recentSalesToday);
+
         $payload['meta'] = $this->buildMeta('full', $failedSegments);
 
         return $payload;
@@ -706,6 +736,7 @@ readonly class DashboardRepository
             'topCustomers' => [],
             'voucherTypes' => [],
             'lowStockProducts' => [],
+            'recentSalesToday' => [],
             'meta' => [],
         ];
     }

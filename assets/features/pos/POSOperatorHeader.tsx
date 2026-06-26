@@ -25,6 +25,7 @@ interface POSOperatorHeaderProps {
   outboxSales: LocalSale[];
   onRetrySale: (saleId: string) => void;
   showWarehouseSelector: boolean;
+  onOpenCaja?: () => void;
 }
 
 export function POSOperatorHeader({
@@ -44,6 +45,7 @@ export function POSOperatorHeader({
   outboxSales,
   onRetrySale,
   showWarehouseSelector,
+  onOpenCaja,
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -188,7 +190,7 @@ export function POSOperatorHeader({
           <button
             type="button"
             className="pos-caja-action-btn is-open"
-            onClick={() => setCajaAbierta(true)}
+            onClick={() => onOpenCaja ? onOpenCaja() : setCajaAbierta(true)}
           >
             Abrir caja
           </button>
