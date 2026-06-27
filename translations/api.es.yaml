@@ -137,6 +137,26 @@ supplier:
   phone:
     label: Teléfono
 
+purchase_item:
+  product:
+    label: Producto
+  qty:
+    label: Cantidad
+  unit_cost:
+    label: Precio unitario
+  total_amount:
+    label: Precio total
+
+stock_entry_item:
+  product:
+    label: Producto
+  qty:
+    label: Cantidad
+  unit:
+    label: Unidad
+  note:
+    label: Nota
+
 tax_document_line:
   line_number:
     label: Ítem N.°

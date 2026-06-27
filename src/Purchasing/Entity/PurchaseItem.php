@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Purchasing\Repository\PurchaseItemRepository;
+use Nubit\ApiPlatform\Attribute\EmbeddedLines;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,6 +19,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[EmbeddedLines(
+    parentProperty: 'purchase',
+    route: '/api/goods_receipt_items',
+    normalizationGroups: ['purchase_item:read'],
+)]
 #[ORM\Entity(repositoryClass: PurchaseItemRepository::class)]
 #[ORM\Table(name: 'goods_receipt_items')]
 #[ORM\HasLifecycleCallbacks]
@@ -46,65 +52,102 @@ class PurchaseItem
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'legacy_movimiento_detalle_id', type: 'integer', nullable: true)]
-    #[ApiProperty(description: 'purchase_item.legacy_movimiento_detalle_id.label')]
+    #[ApiProperty(
+        description: 'purchase_item.legacy_movimiento_detalle_id.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?int $legacyMovimientoDetalleId = null;
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
-    #[ApiProperty(description: 'purchase_item.line_no.label')]
+    #[ApiProperty(
+        description: 'purchase_item.line_no.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private int $lineNo = 0;
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: true)]
-    #[ApiProperty(description: 'purchase_item.product.label')]
+    #[ApiProperty(
+        description: 'purchase_item.product.label',
+        readableLink: true,
+        openapiContext: ['x-crud' => ['order' => 1]],
+    )]
     private ?Product $product = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'variant_id', type: 'string', length: 255, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.variant_id.label')]
+    #[ApiProperty(
+        description: 'purchase_item.variant_id.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $variantId = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'sku_snapshot', type: 'string', length: 64, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.sku_snapshot.label')]
+    #[ApiProperty(
+        description: 'purchase_item.sku_snapshot.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $skuSnapshot = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'name_snapshot', type: 'string', length: 255)]
-    #[ApiProperty(description: 'purchase_item.name_snapshot.label')]
+    #[ApiProperty(
+        description: 'purchase_item.name_snapshot.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private string $nameSnapshot = '';
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'uom_snapshot', type: 'string', length: 20, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.uom_snapshot.label')]
+    #[ApiProperty(
+        description: 'purchase_item.uom_snapshot.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $uomSnapshot = null;
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[Assert\Positive(message: 'La cantidad debe ser mayor que cero.')]
     #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 14, scale: 3)]
-    #[ApiProperty(description: 'purchase_item.qty.label')]
+    #[ApiProperty(
+        description: 'purchase_item.qty.label',
+        openapiContext: ['x-crud' => ['order' => 2]],
+    )]
     private string|int|float $qty = '0.000';
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'unit_cost', type: Types::DECIMAL, precision: 12, scale: 4)]
-    #[ApiProperty(description: 'purchase_item.unit_cost.label')]
+    #[ApiProperty(
+        description: 'purchase_item.unit_cost.label',
+        openapiContext: ['x-crud' => ['order' => 3, 'format' => 'currency']],
+    )]
     private string $unitCost = '0.0000';
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'gross_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
-    #[ApiProperty(description: 'purchase_item.gross_amount.label')]
+    #[ApiProperty(
+        description: 'purchase_item.gross_amount.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private string $grossAmount = '0.00';
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'tax_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
-    #[ApiProperty(description: 'purchase_item.tax_amount.label')]
+    #[ApiProperty(
+        description: 'purchase_item.tax_amount.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private string $taxAmount = '0.00';
 
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'total_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
-    #[ApiProperty(description: 'purchase_item.total_amount.label')]
+    #[ApiProperty(
+        description: 'purchase_item.total_amount.label',
+        openapiContext: ['x-crud' => ['order' => 4, 'format' => 'currency', 'readonly' => true]],
+    )]
     private string $totalAmount = '0.00';
 
     #[Groups(['purchase_item:read'])]
@@ -114,42 +157,66 @@ class PurchaseItem
         nullable: true,
         options: ['default' => 'CURRENT_TIMESTAMP'],
     )]
-    #[ApiProperty(description: 'purchase_item.created_at.label')]
+    #[ApiProperty(
+        description: 'purchase_item.created_at.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?DateTimeInterface $createdAt = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.updated_at.label')]
+    #[ApiProperty(
+        description: 'purchase_item.updated_at.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?DateTimeInterface $updatedAt = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'local_uuid', type: 'string', length: 36, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.local_uuid.label')]
+    #[ApiProperty(
+        description: 'purchase_item.local_uuid.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $localUuid = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'idempotency_key', type: 'string', length: 36, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.idempotency_key.label')]
+    #[ApiProperty(
+        description: 'purchase_item.idempotency_key.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $idempotencyKey = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'sync_status', type: 'string', length: 20, options: ['default' => 'SYNCED'])]
-    #[ApiProperty(description: 'purchase_item.sync_status.label')]
+    #[ApiProperty(
+        description: 'purchase_item.sync_status.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private string $syncStatus = 'SYNCED';
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'synced_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.synced_at.label')]
+    #[ApiProperty(
+        description: 'purchase_item.synced_at.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?DateTimeInterface $syncedAt = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'device_id', type: 'string', length: 100, nullable: true)]
-    #[ApiProperty(description: 'purchase_item.device_id.label')]
+    #[ApiProperty(
+        description: 'purchase_item.device_id.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?string $deviceId = null;
 
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'version_no', type: 'integer', options: ['default' => 1])]
-    #[ApiProperty(description: 'purchase_item.version_no.label')]
+    #[ApiProperty(
+        description: 'purchase_item.version_no.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private int $versionNo = 1;
 
     #[Groups(['purchase_item:read'])]
@@ -159,7 +226,10 @@ class PurchaseItem
         nullable: true,
         options: ['default' => 'CURRENT_TIMESTAMP'],
     )]
-    #[ApiProperty(description: 'purchase_item.last_modified_at.label')]
+    #[ApiProperty(
+        description: 'purchase_item.last_modified_at.label',
+        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
+    )]
     private ?DateTimeInterface $lastModifiedAt = null;
 
     #[ORM\PrePersist]

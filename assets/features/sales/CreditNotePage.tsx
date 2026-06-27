@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/refs -- CRUD toolbar action handlers intentionally read Grid/Form refs inside callbacks, not during render. */
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -56,13 +56,11 @@ export const CreditNotePage = () => {
   const gridRef = useRef<GridHandle | null>(null);
   const formRef = useRef<FormHandle | null>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
-  const [formDetailFields, setFormDetailFields] = useState(() => CreditNoteDetailFields());
 
   useCreditNoteRelatedDocumentObserver({
     on,
     apiUrl: API_URL,
     formRef,
-    onCurrencyChange: (currency) => setFormDetailFields(CreditNoteDetailFields(currency)),
   });
 
   const actionDeps = useMemo(
@@ -113,8 +111,6 @@ export const CreditNotePage = () => {
             CreditNoteDetailFields((parentRow?.currency as string) ?? 'PEN'),
         },
         formDetail: {
-          url: API_URL + '/{id}/lines',
-          fields: formDetailFields,
           propertyName: 'lines',
           allowAdding: false,
           allowDeleting: true,
@@ -162,7 +158,7 @@ export const CreditNotePage = () => {
           ],
         },
       }),
-    [actionDeps, formDetailFields],
+    [actionDeps],
   );
 
   return (

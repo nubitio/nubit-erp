@@ -14,6 +14,7 @@ services:
       - '8444:443'
     volumes:
       - '.:/app'
+      - '../../nubit-symfony:/nubit-symfony'
       - 'app-var:/app/var'
       - 'app-public-uploads:/app/public/uploads'
     extra_hosts:

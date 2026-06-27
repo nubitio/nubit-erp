@@ -6,19 +6,35 @@ namespace App\Inventory\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Link;
+use Nubit\ApiPlatform\Attribute\EmbeddedLines;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Inventory\Repository\StockEntryItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[EmbeddedLines(
+    parentProperty: 'entry',
+    route: '/api/stock_entry_items',
+    normalizationGroups: ['stock_entry_items:read'],
+)]
 #[ORM\Entity(repositoryClass: StockEntryItemRepository::class)]
 #[ORM\Table(name: 'stock_entry_items')]
+#[ApiResource(
+    uriTemplate: '/stock-entries/{id}/items',
+    operations: [new GetCollection()],
+    uriVariables: [
+        'id' => new Link(fromProperty: 'items', fromClass: StockEntry::class),
+    ],
+    normalizationContext: ['groups' => ['stock_entry_items:read']],
+    paginationEnabled: false,
+)]
 class StockEntryItem
 {
     #[Groups(['stock_entry:read', 'stock_entry_items:read'])]
@@ -33,7 +49,11 @@ class StockEntryItem
     private ?StockEntry $entry = null;
 
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
-    #[ApiProperty(description: 'stock_entry_item.product.label')]
+    #[ApiProperty(
+        description: 'stock_entry_item.product.label',
+        readableLink: true,
+        openapiContext: ['x-crud' => ['order' => 1]],
+    )]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: false)]
     #[Assert\NotNull]
@@ -46,17 +66,24 @@ class StockEntryItem
      * - ADJUSTMENT: the new real quantity (absolute)
      */
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
-    #[ApiProperty(description: 'stock_entry_item.qty.label')]
+    #[ApiProperty(
+        description: 'stock_entry_item.qty.label',
+        openapiContext: ['x-crud' => ['order' => 2]],
+    )]
+    #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 18, scale: 6)]
     #[Assert\Positive(message: 'La cantidad debe ser mayor a cero.')]
-    private string $qty = '0.000000';
+    private string|int|float $qty = '0.000000';
 
     /**
      * Stock snapshot before this entry — set by processor for ADJUSTMENT only.
      * Null for all other types.
      */
     #[Groups(['stock_entry:read', 'stock_entry_items:read'])]
-    #[ApiProperty(description: 'stock_entry_item.qty_before.label')]
+    #[ApiProperty(
+        description: 'stock_entry_item.qty_before.label',
+        openapiContext: ['x-crud' => ['hideInGrid' => true, 'showInForm' => false]],
+    )]
     #[ORM\Column(name: 'qty_before', type: Types::DECIMAL, precision: 18, scale: 6, nullable: true)]
     private ?string $qtyBefore = null;
 
@@ -65,17 +92,27 @@ class StockEntryItem
      * Negative for ISSUE / TRANSFER_OUT; positive for RECEIPT / TRANSFER_IN / positive ADJUSTMENT.
      */
     #[Groups(['stock_entry:read', 'stock_entry_items:read'])]
-    #[ApiProperty(description: 'stock_entry_item.qty_delta.label')]
+    #[ApiProperty(
+        description: 'stock_entry_item.qty_delta.label',
+        openapiContext: ['x-crud' => ['hideInGrid' => true, 'showInForm' => false]],
+    )]
     #[ORM\Column(name: 'qty_delta', type: Types::DECIMAL, precision: 18, scale: 6, nullable: true)]
     private ?string $qtyDelta = null;
 
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
-    #[ApiProperty(description: 'stock_entry_item.unit.label')]
+    #[ApiProperty(
+        description: 'stock_entry_item.unit.label',
+        openapiContext: ['x-crud' => ['order' => 3]],
+    )]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unit_id', referencedColumnName: 'unidad_id', nullable: true)]
     private ?UnitOfMeasure $unit = null;
 
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
+    #[ApiProperty(
+        description: 'stock_entry_item.note.label',
+        openapiContext: ['x-crud' => ['order' => 4]],
+    )]
     #[ORM\Column(name: 'note', type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 
@@ -110,9 +147,9 @@ class StockEntryItem
     {
         return $this->qty;
     }
-    public function setQty(string $qty): static
+    public function setQty(string|int|float $qty): static
     {
-        $this->qty = bcadd($qty, '0', 6);
+        $this->qty = bcadd((string) $qty, '0', 6);
         return $this;
     }
 

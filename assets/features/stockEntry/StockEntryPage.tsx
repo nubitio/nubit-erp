@@ -3,7 +3,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { createCrudEvents } from '@nubitio/crud';
-import type { StockEntryMode } from './StockEntryFields';
+import type { StockEntryMode, StockEntryPrefill } from './StockEntryFields';
 import { StockEntryFields, StockEntryItemFields } from './StockEntryFields';
 import { useSessionInfo } from '@shared/sessionInfo';
 import { useTenantRuntimeConfig } from '@shared/hooks';
@@ -29,14 +29,23 @@ interface StockEntryPageProps {
   mode: StockEntryMode;
 }
 
+function readPrefillFromSearch(search: string): StockEntryPrefill {
+  const params = new URLSearchParams(search);
+  return {
+    warehouseId: params.get('warehouse') ?? undefined,
+    productId: params.get('product') ?? undefined,
+  };
+}
+
 export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const { currentBranchId } = useSessionInfo();
   const { data: runtimeConfig, isLoading } = useTenantRuntimeConfig();
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = new URLSearchParams(location.search).get('returnTo');
+  const prefill = readPrefillFromSearch(location.search);
   const events = createCrudEvents(`stock-entry-${mode}`);
-  const detailFields = StockEntryItemFields(mode);
+  const detailFields = StockEntryItemFields(mode, prefill);
   const detailUrl = API_URL + '/{id}/items';
   const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
   const basicColumns = showWarehouseSelector ? ['createdAt', 'warehouse', 'typeLabel'] : ['createdAt', 'typeLabel'];
@@ -59,9 +68,15 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
   const resource = defineResource(`${API_URL}?type=${TYPE_FILTER[mode]}`, {
     id:     `stock-entry-${mode}`,
     title:  TITLES[mode],
-    fields: StockEntryFields(mode, currentBranchId, runtimeConfig),
+    fields: StockEntryFields(mode, currentBranchId, runtimeConfig, prefill),
     gridDetail: { url: detailUrl, fields: detailFields },
-    formDetail: { url: detailUrl, fields: detailFields },
+    formDetail: {
+      propertyName: 'items',
+      allowAdding: true,
+      allowDeleting: true,
+      allowUpdating: true,
+      required: true,
+    },
     events,
     sort:      [{ selector: 'createdAt', desc: true }],
     viewMode: 'page',

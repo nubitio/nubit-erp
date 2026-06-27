@@ -137,6 +137,26 @@ supplier:
   phone:
     label: Phone
 
+purchase_item:
+  product:
+    label: Product
+  qty:
+    label: Quantity
+  unit_cost:
+    label: Unit price
+  total_amount:
+    label: Line total
+
+stock_entry_item:
+  product:
+    label: Product
+  qty:
+    label: Quantity
+  unit:
+    label: Unit
+  note:
+    label: Note
+
 tax_document_line:
   line_number:
     label: Line no.

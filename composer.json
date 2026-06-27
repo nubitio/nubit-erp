@@ -11,6 +11,32 @@
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "path",
+      "url": "/nubit-symfony/packages/admin-bundle",
+      "options": {
+        "symlink": true,
+        "versions": { "nubitio/admin-bundle": "0.10.99" }
+      }
+    },
+    {
+      "type": "path",
+      "url": "/nubit-symfony/packages/api-platform",
+      "options": {
+        "symlink": true,
+        "versions": { "nubitio/api-platform": "0.10.99" }
+      }
+    },
+    {
+      "type": "path",
+      "url": "/nubit-symfony/packages/platform",
+      "options": {
+        "symlink": true,
+        "versions": { "nubitio/platform": "0.10.99" }
+      }
+    }
+  ],
   "require": {
     "php": ">=8.5",
     "ext-ctype": "*",
