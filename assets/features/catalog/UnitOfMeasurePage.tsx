@@ -1,5 +1,5 @@
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   enumField,
@@ -189,4 +189,4 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
     ],
   }),
 });
-export const UnitOfMeasurePage = () => <SmartCrudPage resource={resource} />;
+export const UnitOfMeasurePage = () => <SchemaCrudPage resource={resource} />;

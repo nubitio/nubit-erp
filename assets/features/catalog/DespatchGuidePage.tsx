@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- CRUD toolbar callbacks intentionally read Grid refs after user actions, not during render. */
 import { useCallback, useMemo, useRef } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
@@ -68,5 +68,5 @@ export function DespatchGuidePage() {
     [sendSelectedGuide],
   );
 
-  return <SmartCrudPage resource={resource} gridRef={gridRef} />;
+  return <SchemaCrudPage resource={resource} gridRef={gridRef} />;
 }

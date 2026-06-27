@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FieldType,
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   type DataRecord,
@@ -217,7 +217,7 @@ export const ReorderPage = () => {
     [makeActionsCell],
   );
 
-  return <SmartCrudPage resource={resource} />;
+  return <SchemaCrudPage resource={resource} />;
 };
 
 const btnStyle: React.CSSProperties = {

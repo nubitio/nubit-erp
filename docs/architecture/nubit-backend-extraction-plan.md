@@ -166,7 +166,7 @@ flowchart TB
 - App Symfony que solo requiere `nubitio/admin-bundle`.
 - `docker-compose`: MariaDB/PostgreSQL + Mercure (**Mercure on**).
 - Entidades ejemplo: `User`, `Role`, `Product` con `DataGridFilter` + `x-crud`.
-- Frontend Vite: `@nubit/react-admin`, una página `SmartCrudPage`, `CoreProvider` con cookie auth.
+- Frontend Vite: `@nubit/react-admin`, una página `SchemaCrudPage`, `CoreProvider` con cookie auth.
 - `.env` y README: web vs Android.
 
 ---
@@ -182,7 +182,7 @@ Este contrato ya existe en efact; los paquetes lo formalizan.
 | Paginación alternativa | Header `X-Total-Count` | Mismo data source |
 | Filtros grid | `sort`, `filter`, `searchValue` | Serialización en `CoreHttpClient` / load options |
 | Errores dominio | `Nubit\Platform\Exception\ServiceException` → 422 | `CoreHttpClient` + violations |
-| Tiempo real | Mercure en `ApiResource` (opcional) | `useMercureSubscription` en `SmartCrudPage` |
+| Tiempo real | Mercure en `ApiResource` (opcional) | `useMercureSubscription` en `SchemaCrudPage` |
 | IDs Hydra | `@id` / IRIs | `HydraAdapter` en `@nubit/crud` |
 
 ---

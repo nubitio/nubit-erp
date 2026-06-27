@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SmartCrudPage, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -53,5 +53,5 @@ export const CashRegisterPage = () => {
     [navigate],
   );
 
-  return <SmartCrudPage resource={resource} />;
+  return <SchemaCrudPage resource={resource} />;
 };

@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
 import { categoryEndpoints } from './api/catalogEndpoints';
 
 interface CategoryRecord extends DataRecord {
@@ -24,4 +24,4 @@ const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
   }),
 });
 
-export const CategoryPage = () => <SmartCrudPage resource={resource} />;
+export const CategoryPage = () => <SchemaCrudPage resource={resource} />;

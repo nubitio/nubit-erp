@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
+import { SchemaCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { PriceListFields } from './PriceListFields';
 import { priceListEndpoints } from './api/priceListEndpoints';
 import toast from '@shared/lib/SharedUtils';
@@ -69,7 +69,7 @@ export const PriceListPage = () => {
 
   return (
     <>
-      <SmartCrudPage resource={resource} />
+      <SchemaCrudPage resource={resource} />
       <DialogView
         title={pricesTitle}
         width={760}

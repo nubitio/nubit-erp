@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
 import { branchEndpoints } from './api/adminEndpoints';
 
 interface BranchRecord extends DataRecord {
@@ -55,4 +55,4 @@ const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
   }),
 });
 
-export const BranchPage = () => <SmartCrudPage resource={resource} />;
+export const BranchPage = () => <SchemaCrudPage resource={resource} />;

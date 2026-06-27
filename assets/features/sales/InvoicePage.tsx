@@ -3,7 +3,7 @@ import { useMemo, useRef } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { SmartCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, type DataRecord, type GridHandle } from '@nubitio/crud';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
 import { createInvoiceRowActions } from './ui/createInvoiceRowActions';
 import toast from '@shared/lib/SharedUtils';
@@ -97,5 +97,5 @@ export const InvoicePage = () => {
     [],
   );
 
-  return <SmartCrudPage resource={resource} gridRef={gridRef} />;
+  return <SchemaCrudPage resource={resource} gridRef={gridRef} />;
 };

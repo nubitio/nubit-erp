@@ -1,5 +1,5 @@
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   enumField,
@@ -65,4 +65,4 @@ const resource = defineResource<OperationRecord>(operationEndpoints.list(), {
     ],
   }),
 });
-export const OperationPage = () => <SmartCrudPage resource={resource} />;
+export const OperationPage = () => <SchemaCrudPage resource={resource} />;

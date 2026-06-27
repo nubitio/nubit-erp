@@ -4,7 +4,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineResource,
   type DataRecord,
   type FormHandle,
@@ -166,7 +166,7 @@ export const CreditNotePage = () => {
   );
 
   return (
-    <SmartCrudPage
+    <SchemaCrudPage
       resource={resource}
       formRef={formRef}
       gridRef={gridRef}

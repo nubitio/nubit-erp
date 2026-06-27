@@ -1,6 +1,6 @@
 import {
   FieldType,
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   type DataRecord,
@@ -139,4 +139,4 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   }),
 });
 
-export const SupplierPage = () => <SmartCrudPage resource={resource} />;
+export const SupplierPage = () => <SchemaCrudPage resource={resource} />;

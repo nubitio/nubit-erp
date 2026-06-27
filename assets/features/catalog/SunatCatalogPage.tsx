@@ -1,5 +1,5 @@
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   switchField,
@@ -89,4 +89,4 @@ const resource = defineResource<SunatCatalogRecord>(sunatCatalogEndpoints.list()
   }),
 });
 
-export const SunatCatalogPage = () => <SmartCrudPage resource={resource} />;
+export const SunatCatalogPage = () => <SchemaCrudPage resource={resource} />;

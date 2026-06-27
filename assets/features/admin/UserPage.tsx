@@ -1,4 +1,4 @@
-import { SmartCrudPage } from '@nubitio/crud';
+import { SchemaCrudPage } from '@nubitio/crud';
 import { userResource } from './userResource';
 
-export const UserPage = () => <SmartCrudPage resource={userResource} />;
+export const UserPage = () => <SchemaCrudPage resource={userResource} />;

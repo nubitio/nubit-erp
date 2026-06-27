@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineResource } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -92,7 +92,7 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
     },
   });
 
-  return <SmartCrudPage resource={resource} />;
+  return <SchemaCrudPage resource={resource} />;
 };
 
 // ── Type-specific page exports (one component per route) ──────────────────────

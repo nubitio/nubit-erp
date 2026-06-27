@@ -2,7 +2,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   enumField,
@@ -113,4 +113,4 @@ const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement
     ],
   }),
 });
-export const CashMovementCategoryPage = () => <SmartCrudPage resource={resource} />;
+export const CashMovementCategoryPage = () => <SchemaCrudPage resource={resource} />;

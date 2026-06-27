@@ -1,5 +1,5 @@
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   FieldType,
@@ -150,7 +150,7 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
 export const CustomerPage = () => {
   const { t } = useTranslation();
 
-  return <SmartCrudPage resource={{ ...customerResource, title: t('customer.title') }} />;
+  return <SchemaCrudPage resource={{ ...customerResource, title: t('customer.title') }} />;
 };
 
 // Static properties consumed by SalePage — must stay as module-level singletons.

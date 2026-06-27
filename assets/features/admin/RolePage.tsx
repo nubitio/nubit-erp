@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { SmartCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
+import { SchemaCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
 import { permissionEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from './api/roleEndpoints';
@@ -77,7 +77,7 @@ export const RolePage = () => {
 
   return (
     <>
-      <SmartCrudPage resource={resource} />
+      <SchemaCrudPage resource={resource} />
       <DialogView events={permissionEvents}>
         <PermissionTreeView ref={treeRef} />
       </DialogView>

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/refs -- CRUD field factories intentionally receive Form refs for event callbacks, not render reads. */
 import { useRef, useMemo } from 'react';
-import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
 import { companyEvents } from '@app/domainEvents';
 import { CompanyFields } from './CompanyFields';
 import { companyEndpoints } from './api/companyEndpoints';
@@ -41,5 +41,5 @@ export const CompanyPage = () => {
     [],
   );
   useCompanyObservers({ loadingEvent: companyEvents.LOADING, formRef });
-  return <SmartCrudPage resource={resource} formRef={formRef} />;
+  return <SchemaCrudPage resource={resource} formRef={formRef} />;
 };

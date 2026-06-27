@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- CRUD detail callbacks intentionally read Form refs after detail edits, not during render. */
 import type { RefObject } from 'react';
 import { useMemo } from 'react';
-import { SmartCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, type FormHandle } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 
@@ -72,7 +72,7 @@ export const PurchasesPage = () => {
     });
   }, [currentBranchId]);
 
-  return <SmartCrudPage resource={resource} />;
+  return <SchemaCrudPage resource={resource} />;
 };
 
 // Route alias: /inbound redirects to the same page as /purchases.

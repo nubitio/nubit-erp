@@ -1,5 +1,5 @@
 import {
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   enumField,
@@ -399,7 +399,7 @@ export function ProductPage() {
 
   return (
     <>
-      <SmartCrudPage
+      <SchemaCrudPage
         resource={productResourceWithImport}
       />
       <ProductImportDialog

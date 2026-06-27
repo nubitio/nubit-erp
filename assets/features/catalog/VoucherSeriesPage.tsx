@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -28,4 +28,4 @@ const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
   }),
 });
 
-export const VoucherSeriesPage = () => <SmartCrudPage resource={resource} />;
+export const VoucherSeriesPage = () => <SchemaCrudPage resource={resource} />;

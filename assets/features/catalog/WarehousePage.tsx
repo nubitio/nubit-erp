@@ -1,4 +1,4 @@
-import { SmartCrudPage, defineResource, defineFieldContract } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, defineFieldContract } from '@nubitio/crud';
 import { warehouseEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource(warehouseEndpoints.list(), {
@@ -20,4 +20,4 @@ const resource = defineResource(warehouseEndpoints.list(), {
     ],
   }),
 });
-export const WarehousePage = () => <SmartCrudPage resource={resource} />;
+export const WarehousePage = () => <SchemaCrudPage resource={resource} />;

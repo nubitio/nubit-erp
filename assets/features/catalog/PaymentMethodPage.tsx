@@ -1,5 +1,5 @@
 import { defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
-import { SmartCrudPage } from '@nubitio/crud';
+import { SchemaCrudPage } from '@nubitio/crud';
 import { paymentMethodEndpoints } from './api/catalogEndpoints';
 
 interface PaymentMethodRecord extends DataRecord {
@@ -36,4 +36,4 @@ const resource = defineResource<PaymentMethodRecord>(paymentMethodEndpoints.list
   }),
 });
 
-export const PaymentMethodPage = () => <SmartCrudPage resource={resource} />;
+export const PaymentMethodPage = () => <SchemaCrudPage resource={resource} />;

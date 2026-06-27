@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FieldType,
-  SmartCrudPage,
+  SchemaCrudPage,
   defineFields,
   defineResource,
   type DataRecord,
@@ -218,5 +218,5 @@ export const StockItemPage = () => {
     },
   });
 
-  return <SmartCrudPage resource={resource} />;
+  return <SchemaCrudPage resource={resource} />;
 };
