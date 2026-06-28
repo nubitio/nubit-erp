@@ -4,6 +4,57 @@
   padding: 0 1rem 4rem;
 }
 
+.config-catalog-intro {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.config-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.config-catalog-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--border-color, var(--base-border-color, #e5e7eb));
+  border-radius: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--accent-color, #3b82f6);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 5%);
+  }
+}
+
+.config-catalog-link__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--accent-color, #3b82f6);
+  font-size: 1.1rem;
+}
+
+.config-catalog-link__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--base-text-color);
+}
+
+.config-catalog-link__desc {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
 // ── Header ────────────────────────────────────────────────────────────────────
 
 .config-page-header {
