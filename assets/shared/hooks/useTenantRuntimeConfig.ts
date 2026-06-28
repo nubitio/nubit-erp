@@ -13,6 +13,7 @@ export interface TenantRuntimeConfig {
     preset: string;
     vertical: string;
     simpleStoreMode: boolean;
+    navigationTier: 'basic' | 'standard' | 'advanced';
     onboardingCompleted: boolean;
   };
   counts: {

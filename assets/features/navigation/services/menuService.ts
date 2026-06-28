@@ -12,11 +12,30 @@ const TRANSFER_PATHS = new Set(['transfer']);
 const DEPRECATED_MENU_PATHS = new Set(['reports']);
 const ADVANCED_REPORT_PATHS = new Set(['ple']);
 
+const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {
+  basic: 0,
+  standard: 1,
+  advanced: 2,
+};
+
+const MENU_MIN_TIER = new Map<string, TenantRuntimeConfig['profile']['navigationTier']>([
+  ['purchases', 'standard'],
+  ['inventory', 'standard'],
+  ['ple', 'advanced'],
+]);
+
 function normalizePath(path: unknown): string {
   return String(path ?? '').replace(/^\/+/, '').toLowerCase();
 }
 
 function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): boolean {
+  const minTier = MENU_MIN_TIER.get(path);
+  const currentTier = runtimeConfig.profile.navigationTier ?? 'basic';
+
+  if (minTier && NAVIGATION_TIER_RANK[currentTier] < NAVIGATION_TIER_RANK[minTier]) {
+    return false;
+  }
+
   if (!runtimeConfig.ui.inventory.showWarehouseManagement && WAREHOUSE_PATHS.has(path)) {
     return false;
   }

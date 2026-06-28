@@ -40,6 +40,13 @@ final readonly class TenantRuntimeConfigProvider
         $excelExport = $this->isFeatureEnabled($entitlements, 'excel_export');
 
         $simpleStoreMode = $branchCount <= 1 && !$multiWarehouse;
+        $navigationTier = $this->resolveNavigationTier(
+            multiWarehouse: $multiWarehouse,
+            branchCount: $branchCount,
+            warehouseCount: $warehouseCount,
+            advancedReports: $advancedReports,
+            excelExport: $excelExport,
+        );
 
         // The vertical is the persisted onboarding choice (source of truth),
         // validated against the known presets; topology stays a separate axis.
@@ -53,6 +60,7 @@ final readonly class TenantRuntimeConfigProvider
                 'preset' => $vertical,
                 'vertical' => $vertical,
                 'simpleStoreMode' => $simpleStoreMode,
+                'navigationTier' => $navigationTier,
                 'onboardingCompleted' => $settings->isOnboardingCompleted(),
             ],
             'counts' => [
@@ -118,6 +126,24 @@ final readonly class TenantRuntimeConfigProvider
     private function isFeatureEnabled(array $entitlements, string $featureKey): bool
     {
         return $entitlements[$featureKey]['enabled'] ?? false;
+    }
+
+    private function resolveNavigationTier(
+        bool $multiWarehouse,
+        int $branchCount,
+        int $warehouseCount,
+        bool $advancedReports,
+        bool $excelExport,
+    ): string {
+        if ($advancedReports || $excelExport) {
+            return 'advanced';
+        }
+
+        if ($multiWarehouse || $branchCount > 1 || $warehouseCount > 1) {
+            return 'standard';
+        }
+
+        return 'basic';
     }
 
     /**
