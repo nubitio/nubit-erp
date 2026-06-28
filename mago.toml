@@ -1,0 +1,47 @@
+#:schema https://mago.carthage.software/1.40.0/schema.json
+version = "1"
+php-version = "8.5"
+threads = 8
+
+[source]
+paths = ["src", "tests"]
+includes = ["vendor"]
+excludes = [
+  "var/**",
+  "public/**",
+  "migrations/**",
+  "node_modules/**",
+]
+extensions = ["php"]
+
+[source.glob]
+literal-separator = true
+
+[linter]
+integrations = ["symfony", "doctrine", "phpunit"]
+baseline = "linter-baseline.toml"
+
+[linter.rules]
+strict-types = { enabled = false }
+no-trailing-space = { enabled = true }
+no-global = { enabled = true }
+no-eval = { enabled = true }
+no-closing-tag = { enabled = true }
+no-empty = { enabled = true }
+no-else-clause = { enabled = true }
+no-short-opening-tag = { enabled = true }
+lowercase-keyword = { enabled = true }
+prefer-static-closure = { enabled = true }
+no-php-tag-terminator = { enabled = true }
+no-redundant-use = { enabled = true }
+excessive-parameter-list = { threshold = 10, constructor-threshold = 15 }
+cyclomatic-complexity = { threshold = 20 }
+too-many-methods = { threshold = 20 }
+too-many-properties = { threshold = 20 }
+
+[analyzer]
+baseline = "analyzer-baseline.toml"
+
+[formatter]
+
+[guard]

@@ -10,7 +10,7 @@ PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev lint format test test-back test-front e2e logs ps shell-web shell-vite
+.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev lint lint-php format format-php test test-back test-front e2e logs ps shell-web shell-vite
 
 help:
 	@printf "\n"
@@ -26,7 +26,9 @@ help:
 	@printf "  make cache-clear      Clear Symfony cache\n"
 	@printf "  make dev              Start Vite dev server\n"
 	@printf "  make lint             Run frontend lint\n"
+	@printf "  make lint-php         Run Mago lint + analyze + format check\n"
 	@printf "  make format           Run frontend formatter\n"
+	@printf "  make format-php       Run Mago formatter\n"
 	@printf "  make test             Run backend and frontend tests\n"
 	@printf "  make logs             Tail web/vite/database/redis/otel logs\n"
 	@printf "  make shell-web        Open shell in web container\n"
@@ -74,8 +76,14 @@ dev:
 lint:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn lint'
 
+lint-php:
+	$(EXEC_WEB) 'cd /app && mago lint && mago analyze && mago fmt --check'
+
 format:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn format'
+
+format-php:
+	$(EXEC_WEB) 'cd /app && mago fmt'
 
 test: test-back test-front
 

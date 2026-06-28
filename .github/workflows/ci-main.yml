@@ -32,12 +32,18 @@ jobs:
       - name: Install backend dependencies
         run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Run GrumPHP
+      - name: Run Mago lint + format check
+        run: |
+          docker compose exec -T web mago lint
+          docker compose exec -T web mago analyze
+          docker compose exec -T web mago fmt --check
+
+      - name: Run PHPStan
         # Level is enforced via phpstan.dist.neon (min: 6, see SLICE-SEC-001)
         run: |
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
-            web ./vendor/bin/grumphp run --no-interaction
+            web php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress
 
       - name: Enable PCOV in web container
         run: |

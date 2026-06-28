@@ -1,17 +1,10 @@
 #!/bin/sh
 
 #
-# Run the hook command.
-# Note: this will be replaced by the real command during copy.
+# Pre-commit hook: runs Mago (lint + format check) + PHPStan + PHPUnit
+# inside the efact-web Docker container.
 #
 
-# Fetch the GIT diff and format it as command input:
-DIFF=$(git -c diff.mnemonicprefix=false -c diff.noprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged | cat)
+export EFACT_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 
-# Grumphp env vars
-
-export GRUMPHP_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
-
-# Run GrumPHP
-#(cd "./" && printf "%s\n" "${DIFF}" | exec 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
-(cd "./" && printf "%s\n" "${DIFF}" | docker exec efact-web 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
+(cd "./" && docker exec efact-web sh -c 'mago lint && mago fmt --check && php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress && ./vendor/bin/phpunit --no-coverage')
