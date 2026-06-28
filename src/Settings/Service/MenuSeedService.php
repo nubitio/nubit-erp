@@ -48,29 +48,11 @@ class MenuSeedService
         [
             'id' => 300,
             'order_index' => 2,
-            'key_name' => 'Ventas',
-            'type' => 'group',
-            'route' => null,
+            'key_name' => 'Facturación',
+            'type' => 'route',
+            'route' => 'billing',
             'icon' => 'ph ph-chart-line-up',
             'parent_id' => null,
-        ],
-        [
-            'id' => 301,
-            'order_index' => 0,
-            'key_name' => 'Registro de ventas',
-            'type' => 'route',
-            'route' => 'sale',
-            'icon' => null,
-            'parent_id' => 300,
-        ],
-        [
-            'id' => 302,
-            'order_index' => 1,
-            'key_name' => 'Consulta de ventas',
-            'type' => 'route',
-            'route' => 'sale-consult',
-            'icon' => null,
-            'parent_id' => 300,
         ],
 
         // ── Nivel 2: crecimiento ────────────────────────────────────────────
@@ -84,26 +66,8 @@ class MenuSeedService
             'parent_id' => null,
         ],
         [
-            'id' => 401,
-            'order_index' => 4,
-            'key_name' => 'Comprobantes',
-            'type' => 'route',
-            'route' => 'invoice',
-            'icon' => 'ph ph-file-text',
-            'parent_id' => null,
-        ],
-        [
-            'id' => 402,
-            'order_index' => 5,
-            'key_name' => 'Notas de crédito',
-            'type' => 'route',
-            'route' => 'credit-note',
-            'icon' => 'ph ph-file-minus',
-            'parent_id' => null,
-        ],
-        [
             'id' => 101,
-            'order_index' => 6,
+            'order_index' => 4,
             'key_name' => 'Productos',
             'type' => 'route',
             'route' => 'product',
@@ -112,7 +76,7 @@ class MenuSeedService
         ],
         [
             'id' => 550,
-            'order_index' => 7,
+            'order_index' => 5,
             'key_name' => 'Inventario',
             'type' => 'route',
             'route' => 'inventory',
@@ -121,7 +85,7 @@ class MenuSeedService
         ],
         [
             'id' => 204,
-            'order_index' => 8,
+            'order_index' => 6,
             'key_name' => 'Clientes',
             'type' => 'route',
             'route' => 'customer',
@@ -130,7 +94,7 @@ class MenuSeedService
         ],
         [
             'id' => 206,
-            'order_index' => 9,
+            'order_index' => 7,
             'key_name' => 'Caja',
             'type' => 'route',
             'route' => 'cashbox',
@@ -141,7 +105,7 @@ class MenuSeedService
         // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
             'id' => 601,
-            'order_index' => 10,
+            'order_index' => 8,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
@@ -150,7 +114,7 @@ class MenuSeedService
         ],
         [
             'id' => 909,
-            'order_index' => 11,
+            'order_index' => 9,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
