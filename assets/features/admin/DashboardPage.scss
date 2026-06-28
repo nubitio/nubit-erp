@@ -1,15 +1,5 @@
 // Light efact polish on top of @nubitio/dashboard defaults.
-.view-wrapper-scroll.nb-dashboard-page {
-  padding-inline: 0;
-
-  // The library clips this inner wrapper with overflow:hidden, preventing the
-  // outer scroll container (.view-wrapper-scroll) from detecting any overflow.
-  // Allow content to flow out so the outer wrapper can scroll it correctly.
-  .view-wrapper-dashboard {
-    overflow: visible;
-  }
-}
-
+// Note: overflow and padding fixes now live in the @nubitio/dashboard library.
 .nb-dashboard-page {
   .nb-toolbar-content {
     gap: var(--space-5);
