@@ -1,9 +1,9 @@
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import type { TenantRuntimeConfig } from '@shared/hooks';
+import type { AdminMenuItem } from '@nubitio/admin';
 
 const API = getCoreApiBaseUrl();
-import type { AdminMenuItem } from '@nubitio/admin';
 
 type AdminMenuSubItem = NonNullable<AdminMenuItem['items']>[number];
 
@@ -62,7 +62,7 @@ function filterSubItemsByRuntimeConfig(
   return items.filter((item) => isAllowedMenuPath(normalizePath(item.path), runtimeConfig));
 }
 
-function filterMenuByRuntimeConfig(
+export function filterMenuByRuntimeConfig(
   items: AdminMenuItem[],
   runtimeConfig: TenantRuntimeConfig,
 ): AdminMenuItem[] {
