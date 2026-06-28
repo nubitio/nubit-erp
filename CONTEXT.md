@@ -1,5 +1,58 @@
 # eFact Domain Context
 
+## Target Architecture
+
+> Decisions are recorded in `docs/adr/`. The section below summarises the agreed direction; see the referenced ADR for rationale and rejected alternatives.
+
+### Architecture Style — ADR-001
+
+eFact is a **modular monolith with strict bounded contexts** (see [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md)).
+
+- One deployable unit; contexts enforced by namespace boundaries, not network boundaries.
+- Cross-context communication exclusively via **Symfony Messenger domain events**. No context may directly call a service from another context's Application or Domain layer.
+- Migration strategy: **strangler-fig by context**. Pilot context: **CashRegister**.
+
+### Module Responsibilities
+
+| Module | Responsibility |
+|---|---|
+| `ControlPlane` | Tenant registry, commercial plans, SUNAT certificate lifecycle, provisioning |
+| `Settings` | TenantRuntimeConfig, VerticalPresets, Capabilities |
+| `Contacts` | Unified partner registry (customers, suppliers, employees) with role assignments |
+| `Catalog` | Products, variants, price lists, tax rules |
+| `Inventory` | Stock ledger (append-only movements), warehouse management |
+| `Sales` | Orders, payments — separated from tax document issuance |
+| `Billing` | Tax documents (boletas, facturas), SUNAT/Lycet submissions — immutable |
+| `CashRegister` | Sessions, cash movements, reconciliations |
+| `Reporting` | Read models and projections only — no writes to source-of-truth tables |
+
+### Layer Structure per Module — ADR-002
+
+Each module follows a four-layer structure (see [ADR-002](docs/adr/ADR-002-domain-application-infrastructure-api-layers.md)):
+
+```
+src/<Context>/
+  Domain/          # Entities, Value Objects, Domain Events, Repository Interfaces
+  Application/     # Use-case Services, Commands/Queries, DTOs, Event Handlers
+  Infrastructure/  # Doctrine repos, Messenger transports, external HTTP clients
+  Api/             # API Platform resources, controllers, request/response transformers
+```
+
+Dependency rule: `Api → Application → Domain`; `Infrastructure → Domain` (implements interfaces).  
+**Controllers and API resources only call Application services** — never Domain services or repositories directly.
+
+### Append-only Ledgers and Immutable Fiscal Documents — ADR-003
+
+See [ADR-003](docs/adr/ADR-003-append-only-ledgers-immutable-fiscal-documents.md).
+
+- `stock_movements` and `cash_movements` are **append-only** ledger tables — no UPDATE/DELETE after insert. Corrections are new rows with a `corrects_movement_id` reference.
+- Tax documents are **immutable after issuance**. Corrections use `credit_note` / `debit_note` documents linked via `references_document_id` (SUNAT CPE model). Voiding is a status transition, never a delete.
+- Reporting aggregates live in separate read-model tables (Reporting context) rebuilt from domain events — they are not source-of-truth.
+
+### Stack (confirmed, no changes)
+
+PHP 8.5 · Symfony 7.4 · API Platform 4.1 · Doctrine ORM 3.5 · PostgreSQL (schema-per-tenant + control-plane DB) · React 19 / Vite / TypeScript
+
 ## Product Model
 
 ### Tenant Runtime Config
