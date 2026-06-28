@@ -8,6 +8,11 @@ ARG PHP_VERSION=8.5
 ARG FRANKENPHP_VERSION=1.10
 
 # -----------------------------------------------------------------------------
+# Mago PHP toolchain
+# -----------------------------------------------------------------------------
+FROM ghcr.io/carthage-software/mago:latest AS mago
+
+# -----------------------------------------------------------------------------
 # Base image with FrankenPHP
 # -----------------------------------------------------------------------------
 FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
@@ -122,6 +127,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tmux \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Mago
+COPY --from=mago /mago /usr/local/bin/mago
 
 # Install Xdebug
 #RUN install-php-extensions xdebug

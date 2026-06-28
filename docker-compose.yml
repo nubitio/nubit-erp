@@ -146,7 +146,7 @@ services:
     working_dir: /home/node/app
     # Bootstrap Corepack (Yarn 4) before every command, then run tests
     entrypoint: ['sh', '/home/node/app/docker/e2e-entrypoint.sh']
-    command: ['yarn', 'test:e2e']
+    command: ['npx', 'playwright', 'test']
     volumes:
       - '.:/home/node/app'
     environment:
