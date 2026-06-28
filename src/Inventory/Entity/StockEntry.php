@@ -126,6 +126,7 @@ class StockEntry
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, StockEntryItem> */
+    #[ApiProperty(writableLink: true)]
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
     #[ORM\OneToMany(
         targetEntity: StockEntryItem::class,
@@ -254,6 +255,16 @@ class StockEntry
         if (!$this->items->contains($item)) {
             $this->items->add($item);
             $item->setEntry($this);
+        }
+        return $this;
+    }
+
+    public function removeItem(StockEntryItem $item): static
+    {
+        if ($this->items->removeElement($item)) {
+            if ($item->getEntry() === $this) {
+                $item->setEntry(null);
+            }
         }
         return $this;
     }

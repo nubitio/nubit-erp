@@ -6,6 +6,9 @@ namespace App\Inventory\Repository;
 
 use App\Inventory\ApiResource\StockMovement;
 use App\Inventory\Core\Enum\StockMovementType;
+use App\Inventory\Service\FifoKardexValuator;
+use App\Inventory\Service\KardexCostSqlHelper;
+use App\Inventory\Service\WeightedAverageKardexValuator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
@@ -19,8 +22,14 @@ use Doctrine\DBAL\ParameterType;
  */
 final readonly class StockMovementRepository
 {
-    public function __construct(private Connection $connection)
-    {
+    private const int EXPORT_MAX_ROWS = 10_000;
+
+    public function __construct(
+        private Connection $connection,
+        private FifoKardexValuator $fifoValuator,
+        private WeightedAverageKardexValuator $weightedAverageValuator,
+        private KardexCostSqlHelper $kardexCostSql,
+    ) {
     }
 
     /**
@@ -36,6 +45,7 @@ final readonly class StockMovementRepository
      *   sourceIdOperator?: string,
      *   note?: string,
      *   noteOperator?: string,
+     *   valuation?: string,
      * } $filters
      *
      * @return list<StockMovement>
@@ -43,6 +53,165 @@ final readonly class StockMovementRepository
      * @throws Exception
      */
     public function findKardex(array $filters, int $page, int $perPage): array
+    {
+        $valuation = $this->normalizeValuation($filters['valuation'] ?? null);
+
+        if ($valuation === 'fifo') {
+            return $this->findKardexFifo($filters, $page, $perPage);
+        }
+
+        return $this->findKardexWeightedAverage($filters, $page, $perPage);
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return list<StockMovement>
+     *
+     * @throws Exception
+     */
+    public function findKardexForExport(array $filters): array
+    {
+        return $this->findKardex($filters, 1, self::EXPORT_MAX_ROWS);
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return list<StockMovement>
+     *
+     * @throws Exception
+     */
+    private function findKardexWeightedAverage(array $filters, int $page, int $perPage): array
+    {
+        return $this->findKardexValued($filters, $page, $perPage, $this->weightedAverageValuator);
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return list<StockMovement>
+     *
+     * @throws Exception
+     */
+    private function findKardexFifo(array $filters, int $page, int $perPage): array
+    {
+        return $this->findKardexValued($filters, $page, $perPage, $this->fifoValuator);
+    }
+
+    /**
+     * @param FifoKardexValuator|WeightedAverageKardexValuator $valuator
+     *
+     * @param array<string, mixed> $filters
+     *
+     * @return list<StockMovement>
+     *
+     * @throws Exception
+     */
+    private function findKardexValued(array $filters, int $page, int $perPage, object $valuator): array
+    {
+        [$whereClause, $params] = $this->buildKardexWhere($filters);
+        $purchaseItemJoin = $this->kardexCostSql->purchaseItemJoinSql();
+        $inboundUnitCost = $this->kardexCostSql->inboundUnitCostExpression();
+
+        $sql = <<<SQL
+            SELECT
+                inner_q.id,
+                inner_q.warehouse_id,
+                inner_q.warehouse_name,
+                inner_q.product_id,
+                inner_q.product_name,
+                inner_q.product_code,
+                inner_q.occurred_at,
+                inner_q.movement_type,
+                inner_q.qty_delta_base,
+                inner_q.qty_original,
+                inner_q.unit_id,
+                inner_q.unit_name,
+                inner_q.source_type,
+                inner_q.source_id,
+                inner_q.note,
+                inner_q.created_at,
+                inner_q.running_balance,
+                inner_q.inbound_unit_cost
+            FROM (
+                SELECT
+                    sm.id,
+                    sm.warehouse_id,
+                    a.descripcion        AS warehouse_name,
+                    sm.product_id,
+                    p.descripcion        AS product_name,
+                    p.codigo             AS product_code,
+                    sm.occurred_at,
+                    sm.movement_type,
+                    sm.qty_delta_base,
+                    sm.qty_original,
+                    sm.unit_id,
+                    u.name               AS unit_name,
+                    sm.source_type,
+                    sm.source_id,
+                    sm.note,
+                    sm.created_at,
+                    {$inboundUnitCost} AS inbound_unit_cost,
+                    SUM(sm.qty_delta_base) OVER (
+                        PARTITION BY sm.warehouse_id, sm.product_id
+                        ORDER BY sm.occurred_at ASC, sm.created_at ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) AS running_balance
+                FROM stock_movements sm
+                LEFT JOIN almacen a  ON a.almacen_id   = sm.warehouse_id
+                LEFT JOIN producto p ON p.producto_id  = sm.product_id
+                LEFT JOIN unidad u   ON u.unidad_id    = sm.unit_id
+                LEFT JOIN stock_lots sl ON sl.id = sm.lot_id
+                {$purchaseItemJoin}
+                {$whereClause}
+            ) AS inner_q
+            ORDER BY inner_q.occurred_at ASC, inner_q.created_at ASC
+        SQL;
+
+        $rows = $this->connection->fetchAllAssociative($sql, $params);
+
+        $valuationInput = array_map(static fn (array $row): array => [
+            'warehouse_id' => (string) $row['warehouse_id'],
+            'qty_delta' => number_format((float) $row['qty_delta_base'], 6, '.', ''),
+            'inbound_unit_cost' => $row['inbound_unit_cost'] !== null
+                ? number_format((float) $row['inbound_unit_cost'], 4, '.', '')
+                : null,
+        ], $rows);
+
+        $valuations = $valuator->apply($valuationInput);
+
+        foreach ($rows as $index => &$row) {
+            $row['unit_cost'] = $valuations[$index]['unit_cost'];
+            $row['line_value'] = $valuations[$index]['line_value'];
+            $row['running_value'] = $valuations[$index]['running_value'];
+        }
+        unset($row);
+
+        usort(
+            $rows,
+            static function (array $left, array $right): int {
+                $occurredCompare = strcmp((string) $right['occurred_at'], (string) $left['occurred_at']);
+                if ($occurredCompare !== 0) {
+                    return $occurredCompare;
+                }
+
+                return strcmp((string) $right['created_at'], (string) $left['created_at']);
+            },
+        );
+
+        $offset = ($page - 1) * $perPage;
+        $rows = array_slice($rows, $offset, $perPage);
+
+        return array_map($this->hydrateRow(...), $rows);
+    }
+
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    private function buildKardexWhere(array $filters): array
     {
         $params = [];
         $where  = [];
@@ -82,73 +251,12 @@ final readonly class StockMovementRepository
 
         $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        // The inner query computes running_balance in ASC order (chronological).
-        // The outer query re-orders DESC (most recent first) for display.
-        $sql = <<<SQL
-            SELECT
-                inner_q.id,
-                inner_q.warehouse_id,
-                inner_q.warehouse_name,
-                inner_q.product_id,
-                inner_q.product_name,
-                inner_q.product_code,
-                inner_q.occurred_at,
-                inner_q.movement_type,
-                inner_q.qty_delta_base,
-                inner_q.qty_original,
-                inner_q.unit_id,
-                inner_q.unit_name,
-                inner_q.source_type,
-                inner_q.source_id,
-                inner_q.note,
-                inner_q.created_at,
-                inner_q.running_balance
-            FROM (
-                SELECT
-                    sm.id,
-                    sm.warehouse_id,
-                    a.descripcion        AS warehouse_name,
-                    sm.product_id,
-                    p.descripcion        AS product_name,
-                    p.codigo             AS product_code,
-                    sm.occurred_at,
-                    sm.movement_type,
-                    sm.qty_delta_base,
-                    sm.qty_original,
-                    sm.unit_id,
-                    u.name               AS unit_name,
-                    sm.source_type,
-                    sm.source_id,
-                    sm.note,
-                    sm.created_at,
-                    SUM(sm.qty_delta_base) OVER (
-                        PARTITION BY sm.warehouse_id, sm.product_id
-                        ORDER BY sm.occurred_at ASC, sm.created_at ASC
-                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-                    ) AS running_balance
-                FROM stock_movements sm
-                LEFT JOIN almacen a  ON a.almacen_id   = sm.warehouse_id
-                LEFT JOIN producto p ON p.producto_id  = sm.product_id
-                LEFT JOIN unidad u   ON u.unidad_id    = sm.unit_id
-                {$whereClause}
-            ) AS inner_q
-            ORDER BY inner_q.occurred_at DESC, inner_q.created_at DESC
-            LIMIT :limit OFFSET :offset
-        SQL;
+        return [$whereClause, $params];
+    }
 
-        $params['limit']  = $perPage;
-        $params['offset'] = ($page - 1) * $perPage;
-
-        $rows = $this->connection->fetchAllAssociative(
-            $sql,
-            $params,
-            [
-                'limit' => ParameterType::INTEGER,
-                'offset' => ParameterType::INTEGER,
-            ],
-        );
-
-        return array_map($this->hydrateRow(...), $rows);
+    private function normalizeValuation(?string $valuation): string
+    {
+        return $valuation === 'fifo' ? 'fifo' : 'pp';
     }
 
     /**
@@ -261,6 +369,17 @@ final readonly class StockMovementRepository
                 'id'   => (int) $row['unit_id'],
                 'name' => $row['unit_name'] ?? '',
             ];
+        }
+
+        $unitCost = isset($row['unit_cost']) ? (float) $row['unit_cost'] : null;
+        if ($unitCost !== null) {
+            $sm->unitCost = number_format($unitCost, 2, '.', '');
+            $sm->lineValue = isset($row['line_value'])
+                ? number_format((float) $row['line_value'], 2, '.', '')
+                : null;
+            $sm->runningValue = isset($row['running_value'])
+                ? number_format((float) $row['running_value'], 2, '.', '')
+                : null;
         }
 
         return $sm;

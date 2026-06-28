@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\Inventory\Repository\StockMovementRepository;
+use App\Inventory\Service\KardexReferenceResolver;
 use Override;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -28,6 +29,7 @@ final readonly class StockMovementProvider implements ProviderInterface
 
     public function __construct(
         private StockMovementRepository $repository,
+        private KardexReferenceResolver $referenceResolver,
         private RequestStack $requestStack,
     ) {
     }
@@ -43,6 +45,7 @@ final readonly class StockMovementProvider implements ProviderInterface
             'type'      => $request?->query->get('type') ?? $request?->query->get('movementType'),
             'from'      => $request?->query->get('from'),
             'to'        => $request?->query->get('to'),
+            'valuation' => $request?->query->get('valuation'),
         ];
 
         if ($request !== null) {
@@ -56,6 +59,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         $perPage = max(1, min(200, (int) ($request?->query->get('itemsPerPage', self::DEFAULT_PER_PAGE) ?? self::DEFAULT_PER_PAGE)));
 
         $items = $this->repository->findKardex($filters, $page, $perPage);
+        $this->referenceResolver->applyToMovements($items);
         $total = $this->repository->countKardex($filters);
 
         return new TraversablePaginator(new \ArrayIterator($items), $page, $perPage, $total);

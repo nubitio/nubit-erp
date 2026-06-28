@@ -79,12 +79,28 @@ final class StockMovement
     #[Groups(['stock_movement:read'])]
     public ?string $sourceId = null;
 
+    /** Human-readable document reference (serie-número) resolved from sourceType/sourceId. */
+    #[Groups(['stock_movement:read'])]
+    public ?string $sourceReference = null;
+
     #[Groups(['stock_movement:read'])]
     public ?string $note = null;
 
     /** Cumulative balance after this movement (running sum over time). */
     #[Groups(['stock_movement:read'])]
     public ?string $runningBalance = null;
+
+    /** Unit cost from product purchase price (weighted-average proxy). */
+    #[Groups(['stock_movement:read'])]
+    public ?string $unitCost = null;
+
+    /** Absolute movement value at unit cost. */
+    #[Groups(['stock_movement:read'])]
+    public ?string $lineValue = null;
+
+    /** Running balance value at unit cost. */
+    #[Groups(['stock_movement:read'])]
+    public ?string $runningValue = null;
 
     #[Groups(['stock_movement:read'])]
     public ?string $createdAt = null;

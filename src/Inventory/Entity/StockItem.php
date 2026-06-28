@@ -73,6 +73,20 @@ class StockItem
     }
 
     #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.unit_name.label', writable: false)]
+    public function getUnitName(): string
+    {
+        return $this->product->getUnitOfMeasure()->getName();
+    }
+
+    #[Groups(['stock_item:read'])]
+    #[ApiProperty(description: 'stock_item.unit_code.label', writable: false)]
+    public function getUnitCode(): string
+    {
+        return $this->product->getUnitOfMeasure()->getCode();
+    }
+
+    #[Groups(['stock_item:read'])]
     #[ApiProperty(description: 'stock_item.updated_at.label')]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
