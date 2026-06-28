@@ -125,6 +125,25 @@ Default product experience for a tenant with one physical store and one implicit
 
 The implicit branch and warehouse used when a tenant operates in Tienda Unica mode. Advanced tenants can still enable multi-branch or multi-warehouse capabilities.
 
+### Navigation Tier
+
+`TenantRuntimeConfig.profile.navigationTier` is the navigation scale axis used by the frontend shell and feature hubs. It is derived at runtime from topology counts and entitlements; it is **not** the same as `simpleStoreMode`.
+
+| Tier | Meaning | Current derivation |
+|---|---|---|
+| `basic` | POS/facturación-first tenant with one implicit operating location | single branch/warehouse and no enterprise entitlements |
+| `standard` | SMB operations with explicit purchasing/inventory workflows | multi-branch, multi-warehouse, or `multi_warehouse` entitlement |
+| `advanced` | Enterprise/reporting surface | `advanced_reports` or `excel_export` entitlement |
+
+`simpleStoreMode` remains a topology/layout signal: hide warehouse columns or default stock locations. Do not use it to decide which product modules are in the navigation. Navigation exposure uses `navigationTier`, capabilities, and role-menu permissions together.
+
+Current hub structure:
+
+- `/billing` (`Facturación`): wraps ventas, consultas, comprobantes and notas de crédito. Basic tenants see ventas/comprobantes; standard and advanced tenants also see consultas/notas.
+- `/catalog` (`Catálogo`): wraps products and catalog configuration. Basic tenants see products only; standard and advanced tenants also see categories, units, prices, suppliers and series.
+- `/inventory` (`Inventario`): wraps stock, movements and stock operations. The movement ledger tab is standard/advanced only; warehouse UI remains gated by `showWarehouseManagement`.
+- `/config` (`Configuración`): basic tenants see company, SUNAT and series. Standard/advanced tenants see user, branch, warehouse and general configuration tabs when capabilities/topology allow them.
+
 ## Pending Simplification Work
 
 1. Hide warehouse management for Tienda Unica tenants.
@@ -136,8 +155,8 @@ The implicit branch and warehouse used when a tenant operates in Tienda Unica mo
 3. Default warehouse in write forms.
    Stock entries, purchases and POS/sale forms should use `TenantRuntimeConfig.defaults.warehouse` when `showWarehouseSelector` is false. Users should not see an `Almacen` field in Tienda Unica mode.
 
-4. Make menu resolution capability-aware.
-   Capabilities decide which product modules are available; roles decide who can use the available modules. Preserve role-menu permissions as the advanced implementation.
+4. Make menu resolution capability-aware. (DONE)
+   Menu resolution now combines `navigationTier`, capabilities/UI rules and role-menu permissions. The database menu defines the ceiling, `menuService.ts` filters unavailable paths at runtime, and feature hubs hide internal tabs using the same runtime config.
 
 5. Add a `SaleSubmitter` seam in POS.
    Online sales should submit directly by default. The outbox remains the offline adapter used on network failure or when an offline-first capability requires it.
