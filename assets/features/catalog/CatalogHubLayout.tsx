@@ -10,7 +10,7 @@ export const CatalogHubLayout = () => {
     <FeatureHubLayout
       density="compact"
       title="Catálogo"
-      subtitle="Productos, categorías, unidades, precios, proveedores y series comerciales."
+      subtitle="Productos, categorías, unidades, precios y proveedores."
       basePath="/catalog"
       defaultPath="/catalog/products"
       tabsAriaLabel="Secciones de catálogo"
@@ -42,13 +42,6 @@ export const CatalogHubLayout = () => {
           label: 'Proveedores',
           path: '/catalog/suppliers',
           icon: 'ph-truck',
-          visible: showConfigurationTabs,
-        },
-        {
-          key: 'series',
-          label: 'Series',
-          path: '/catalog/series',
-          icon: 'ph-ticket',
           visible: showConfigurationTabs,
         },
       ]}

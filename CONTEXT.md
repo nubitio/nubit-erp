@@ -140,9 +140,9 @@ The implicit branch and warehouse used when a tenant operates in Tienda Unica mo
 Current hub structure:
 
 - `/billing` (`Facturación`): wraps ventas, consultas, comprobantes and notas de crédito. Basic tenants see ventas/comprobantes; standard and advanced tenants also see consultas/notas.
-- `/catalog` (`Catálogo`): wraps products and catalog configuration. Basic tenants see products only; standard and advanced tenants also see categories, units, prices, suppliers and series.
+- `/catalog` (`Catálogo`): wraps products and catalog configuration. Basic tenants see products only; standard and advanced tenants also see categories, units, prices and suppliers. Fiscal series stay in Configuration, not Catalog.
 - `/inventory` (`Inventario`): wraps stock, movements and stock operations. The movement ledger tab is standard/advanced only; warehouse UI remains gated by `showWarehouseManagement`.
-- `/config` (`Configuración`): basic tenants see company, SUNAT and series. Standard/advanced tenants see user, branch, warehouse and general configuration tabs when capabilities/topology allow them.
+- `/config` (`Configuración`): basic tenants see company, SUNAT and fiscal series. Standard/advanced tenants also see user, branch and general configuration tabs. Warehouse management belongs to Inventory; legacy `/config/warehouses` redirects to `/inventory/warehouses`.
 
 ## Pending Simplification Work
 

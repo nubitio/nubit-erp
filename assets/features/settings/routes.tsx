@@ -10,7 +10,6 @@ import { SettingsCrudPanel } from './SettingsCrudPanel';
 const VoucherSeriesPage = lazyNamed(() => import('@features/catalog/VoucherSeriesPage'), 'VoucherSeriesPage');
 const UserPage = lazyNamed(() => import('@features/admin/UserPage'), 'UserPage');
 const BranchPage = lazyNamed(() => import('@features/admin/BranchPage'), 'BranchPage');
-const WarehousePage = lazyNamed(() => import('@features/catalog/WarehousePage'), 'WarehousePage');
 
 const SettingsSeriesTab = () => (
   <SettingsCrudPanel>
@@ -30,15 +29,10 @@ const SettingsBranchesTab = () => (
   </SettingsCrudPanel>
 );
 
-const SettingsWarehousesTab = () => (
-  <SettingsCrudPanel>
-    <WarehousePage />
-  </SettingsCrudPanel>
-);
-
 export const settingsRoutes: AppRouteDefinition[] = [
   { path: '/user', element: () => <Navigate to="/config/users" replace /> },
   { path: '/branch', element: () => <Navigate to="/config/branches" replace /> },
+  { path: '/config/warehouses', element: () => <Navigate to="/inventory/warehouses" replace /> },
   { path: '/voucher-series', element: () => <Navigate to="/config/series" replace /> },
   {
     path: '/config',
@@ -49,7 +43,6 @@ export const settingsRoutes: AppRouteDefinition[] = [
       { path: 'series', element: SettingsSeriesTab },
       { path: 'users', element: SettingsUsersTab },
       { path: 'branches', element: SettingsBranchesTab },
-      { path: 'warehouses', element: SettingsWarehousesTab },
       { path: 'general', element: SettingsGeneralTab },
     ],
   },
