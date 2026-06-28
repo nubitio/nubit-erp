@@ -40,13 +40,55 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         ], $config['ui']['pos']);
     }
 
-    private function createProviderForVertical(string $vertical): TenantRuntimeConfigProvider
+    public function testDerivesBasicNavigationTierForSingleLocationTenant(): void
+    {
+        $config = $this->createProviderForVertical(RetailPreset::KEY)->getConfig();
+
+        self::assertSame('basic', $config['profile']['navigationTier']);
+    }
+
+    public function testDerivesStandardNavigationTierForMultiBranchTenant(): void
+    {
+        $config = $this->createProviderForVertical(RetailPreset::KEY, branchCount: 2)->getConfig();
+
+        self::assertSame('standard', $config['profile']['navigationTier']);
+    }
+
+    public function testDerivesStandardNavigationTierForMultiWarehouseEntitlement(): void
+    {
+        $config = $this->createProviderForVertical(
+            RetailPreset::KEY,
+            entitlements: ['multi_warehouse' => ['enabled' => true, 'config' => []]],
+        )->getConfig();
+
+        self::assertSame('standard', $config['profile']['navigationTier']);
+    }
+
+    public function testDerivesAdvancedNavigationTierForAdvancedReportingEntitlement(): void
+    {
+        $config = $this->createProviderForVertical(
+            RetailPreset::KEY,
+            entitlements: ['advanced_reports' => ['enabled' => true, 'config' => []]],
+        )->getConfig();
+
+        self::assertSame('advanced', $config['profile']['navigationTier']);
+    }
+
+    /**
+     * @param array<string, array{enabled: bool, config: array<string, mixed>}> $entitlements
+     */
+    private function createProviderForVertical(
+        string $vertical,
+        array $entitlements = [],
+        int $branchCount = 1,
+        int $warehouseCount = 1,
+    ): TenantRuntimeConfigProvider
     {
         $settings = (new TenantSettings())->setVertical($vertical);
 
         /** @var FeatureCheckerInterface&MockObject $featureChecker */
         $featureChecker = $this->createMock(FeatureCheckerInterface::class);
-        $featureChecker->method('getEntitlements')->willReturn([]);
+        $featureChecker->method('getEntitlements')->willReturn($entitlements);
 
         /** @var TenantSettingsRepository&MockObject $settingsRepository */
         $settingsRepository = $this->createMock(TenantSettingsRepository::class);
@@ -54,12 +96,12 @@ final class TenantRuntimeConfigProviderTest extends TestCase
 
         /** @var BranchRepository&MockObject $branchRepository */
         $branchRepository = $this->createMock(BranchRepository::class);
-        $branchRepository->method('count')->willReturn(1);
+        $branchRepository->method('count')->willReturn($branchCount);
         $branchRepository->method('findOneBy')->willReturn(null);
 
         /** @var WarehouseRepository&MockObject $warehouseRepository */
         $warehouseRepository = $this->createMock(WarehouseRepository::class);
-        $warehouseRepository->method('count')->willReturn(1);
+        $warehouseRepository->method('count')->willReturn($warehouseCount);
         $warehouseRepository->method('findOneBy')->willReturn(null);
 
         return new TenantRuntimeConfigProvider(
