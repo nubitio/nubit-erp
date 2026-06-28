@@ -7,9 +7,10 @@ import type { AdminMenuItem } from '@nubitio/admin';
 
 type AdminMenuSubItem = NonNullable<AdminMenuItem['items']>[number];
 
-const WAREHOUSE_PATHS = new Set(['warehouse']);
+const WAREHOUSE_PATHS = new Set(['warehouse', 'inventory/warehouses']);
 const TRANSFER_PATHS = new Set(['transfer']);
-const ADVANCED_REPORT_PATHS = new Set(['reports', 'ple']);
+const DEPRECATED_MENU_PATHS = new Set(['reports']);
+const ADVANCED_REPORT_PATHS = new Set(['ple']);
 
 function normalizePath(path: unknown): string {
   return String(path ?? '').replace(/^\/+/, '').toLowerCase();
@@ -21,6 +22,10 @@ function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): bo
   }
 
   if (!runtimeConfig.ui.inventory.showTransfers && TRANSFER_PATHS.has(path)) {
+    return false;
+  }
+
+  if (DEPRECATED_MENU_PATHS.has(path)) {
     return false;
   }
 

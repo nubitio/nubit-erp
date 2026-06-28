@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:menu:sync-mvp',
-    description: 'Apply the MVP menu for existing tenants without changing tenant settings.',
+    description: 'Apply the layered operational menu for existing tenants without changing tenant settings.',
 )]
 final class SyncMvpMenuCommand extends PerTenantCommand
 {
@@ -31,7 +31,7 @@ final class SyncMvpMenuCommand extends PerTenantCommand
 
         $this->menuSeedService->syncMvpPreservingRoleAccess();
 
-        $io->success('MVP menu synchronized. Tenant settings were not changed.');
+        $io->success('Operational menu synchronized. Tenant settings were not changed.');
 
         return Command::SUCCESS;
     }

@@ -10,20 +10,32 @@ use Doctrine\DBAL\ArrayParameterType;
 
 class MenuSeedService
 {
+    /**
+     * Menú operativo por capas: operación diaria, crecimiento y enterprise.
+     * Las rutas avanzadas siguen registradas en el frontend; la visibilidad
+     * final se refina con TenantRuntimeConfig en menuService.ts.
+     *
+     * @var list<array{
+     *     id: int,
+     *     order_index: int,
+     *     key_name: string,
+     *     type: string,
+     *     route: string|null,
+     *     icon: string|null,
+     *     parent_id: int|null
+     * }>
+     */
     private const array MENUS = [
-        // Superficie MVP: solo las entradas necesarias para vender, facturar,
-        // operar caja y configurar el tenant. Las rutas avanzadas siguen
-        // registradas, pero no se exponen en el menú inicial.
+        // ── Nivel 1: operación diaria ───────────────────────────────────────
         [
             'id' => 1,
             'order_index' => 0,
-            'key_name' => 'Dashboard',
+            'key_name' => 'Inicio',
             'type' => 'route',
             'route' => 'dashboard',
             'icon' => 'ph ph-house-simple',
             'parent_id' => null,
         ],
-
         [
             'id' => 201,
             'order_index' => 1,
@@ -34,8 +46,46 @@ class MenuSeedService
             'parent_id' => null,
         ],
         [
-            'id' => 401,
+            'id' => 300,
             'order_index' => 2,
+            'key_name' => 'Ventas',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-chart-line-up',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 301,
+            'order_index' => 0,
+            'key_name' => 'Registro de ventas',
+            'type' => 'route',
+            'route' => 'sale',
+            'icon' => null,
+            'parent_id' => 300,
+        ],
+        [
+            'id' => 302,
+            'order_index' => 1,
+            'key_name' => 'Consulta de ventas',
+            'type' => 'route',
+            'route' => 'sale-consult',
+            'icon' => null,
+            'parent_id' => 300,
+        ],
+
+        // ── Nivel 2: crecimiento ────────────────────────────────────────────
+        [
+            'id' => 500,
+            'order_index' => 3,
+            'key_name' => 'Compras',
+            'type' => 'route',
+            'route' => 'purchases',
+            'icon' => 'ph ph-shopping-bag',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 401,
+            'order_index' => 4,
             'key_name' => 'Comprobantes',
             'type' => 'route',
             'route' => 'invoice',
@@ -43,8 +93,17 @@ class MenuSeedService
             'parent_id' => null,
         ],
         [
+            'id' => 402,
+            'order_index' => 5,
+            'key_name' => 'Notas de crédito',
+            'type' => 'route',
+            'route' => 'credit-note',
+            'icon' => 'ph ph-file-minus',
+            'parent_id' => null,
+        ],
+        [
             'id' => 101,
-            'order_index' => 3,
+            'order_index' => 6,
             'key_name' => 'Productos',
             'type' => 'route',
             'route' => 'product',
@@ -52,35 +111,17 @@ class MenuSeedService
             'parent_id' => null,
         ],
         [
-            'id' => 102,
-            'order_index' => 4,
+            'id' => 550,
+            'order_index' => 7,
             'key_name' => 'Inventario',
             'type' => 'route',
-            'route' => 'stock',
+            'route' => 'inventory',
             'icon' => 'ph ph-warehouse',
             'parent_id' => null,
         ],
         [
-            'id' => 103,
-            'order_index' => 5,
-            'key_name' => 'Entradas de stock',
-            'type' => 'route',
-            'route' => 'receipt',
-            'icon' => 'ph ph-arrow-line-down',
-            'parent_id' => null,
-        ],
-        [
-            'id' => 104,
-            'order_index' => 6,
-            'key_name' => 'Tarifas',
-            'type' => 'route',
-            'route' => 'price-list',
-            'icon' => 'ph ph-tag',
-            'parent_id' => null,
-        ],
-        [
             'id' => 204,
-            'order_index' => 7,
+            'order_index' => 8,
             'key_name' => 'Clientes',
             'type' => 'route',
             'route' => 'customer',
@@ -89,16 +130,27 @@ class MenuSeedService
         ],
         [
             'id' => 206,
-            'order_index' => 8,
+            'order_index' => 9,
             'key_name' => 'Caja',
             'type' => 'route',
             'route' => 'cashbox',
             'icon' => 'ph ph-cash-register',
             'parent_id' => null,
         ],
+
+        // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
+        [
+            'id' => 601,
+            'order_index' => 10,
+            'key_name' => 'Exportación PLE',
+            'type' => 'route',
+            'route' => 'ple',
+            'icon' => 'ph ph-export',
+            'parent_id' => null,
+        ],
         [
             'id' => 909,
-            'order_index' => 9,
+            'order_index' => 11,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
@@ -124,18 +176,7 @@ class MenuSeedService
         $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
 
         foreach (self::MENUS as $menu) {
-            $this->connection->executeStatement(
-                'INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
-                VALUES (:id, :order_index, :key_name, :type, :route, :icon, :parent_id)
-                ON DUPLICATE KEY UPDATE
-                    order_index = VALUES(order_index),
-                    key_name = VALUES(key_name),
-                    type = VALUES(type),
-                    route = VALUES(route),
-                    icon = VALUES(icon),
-                    parent_id = VALUES(parent_id)',
-                $menu
-            );
+            $this->upsertMenu($menu);
         }
 
         // Grant all roles access to all menus (role-level filtering handled elsewhere).
@@ -146,8 +187,8 @@ class MenuSeedService
     }
 
     /**
-     * Apply the MVP menu to an existing tenant without touching tenant settings.
-     * Missing MVP role assignments are backfilled to match initial seed behavior.
+     * Apply the layered menu to an existing tenant without touching tenant settings.
+     * Missing role assignments are backfilled to match initial seed behavior.
      *
      * @throws Exception
      */
@@ -156,18 +197,7 @@ class MenuSeedService
         $menuIds = array_column(self::MENUS, 'id');
 
         foreach (self::MENUS as $menu) {
-            $this->connection->executeStatement(
-                'INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
-                VALUES (:id, :order_index, :key_name, :type, :route, :icon, :parent_id)
-                ON DUPLICATE KEY UPDATE
-                    order_index = VALUES(order_index),
-                    key_name = VALUES(key_name),
-                    type = VALUES(type),
-                    route = VALUES(route),
-                    icon = VALUES(icon),
-                    parent_id = VALUES(parent_id)',
-                $menu
-            );
+            $this->upsertMenu($menu);
         }
 
         $this->connection->executeStatement(
@@ -185,6 +215,35 @@ class MenuSeedService
              SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r WHERE m.id IN (?)',
             [$menuIds],
             [ArrayParameterType::INTEGER],
+        );
+    }
+
+    /**
+     * @param array{
+     *     id: int,
+     *     order_index: int,
+     *     key_name: string,
+     *     type: string,
+     *     route: string|null,
+     *     icon: string|null,
+     *     parent_id: int|null
+     * } $menu
+     *
+     * @throws Exception
+     */
+    private function upsertMenu(array $menu): void
+    {
+        $this->connection->executeStatement(
+            'INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
+            VALUES (:id, :order_index, :key_name, :type, :route, :icon, :parent_id)
+            ON DUPLICATE KEY UPDATE
+                order_index = VALUES(order_index),
+                key_name = VALUES(key_name),
+                type = VALUES(type),
+                route = VALUES(route),
+                icon = VALUES(icon),
+                parent_id = VALUES(parent_id)',
+            $menu
         );
     }
 }
