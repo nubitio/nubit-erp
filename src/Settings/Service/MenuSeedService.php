@@ -68,9 +68,9 @@ class MenuSeedService
         [
             'id' => 101,
             'order_index' => 4,
-            'key_name' => 'Productos',
+            'key_name' => 'Catálogo',
             'type' => 'route',
-            'route' => 'product',
+            'route' => 'catalog',
             'icon' => 'ph ph-cube',
             'parent_id' => null,
         ],
