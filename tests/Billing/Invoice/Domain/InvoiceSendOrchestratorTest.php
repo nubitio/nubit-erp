@@ -205,7 +205,7 @@ final class InvoiceSendOrchestratorTest extends TestCase
             ]);
         $this->invoiceSendUseCase->method('__invoke')->willThrowException(new \RuntimeException('Timeout'));
         $this->recoveryService->method('tryRecoverByConsult')->willReturn(false);
-        $this->controlService->expects(self::once())->method('resetRejectionStreak')->with('tenant-a');
+        $this->controlService->expects(self::never())->method('resetRejectionStreak');
 
         $result = $this->orchestrator->process(
             'doc-6',
