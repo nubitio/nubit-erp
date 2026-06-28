@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e23282bbf07bf48c8aa7391fff8a48e",
+    "content-hash": "c35ea76b722a3fa92dd8a2a9475a3101",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.3.11",
+            "version": "v4.3.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "17b18315adece264ac3720af45f5ea2fa6775c37"
+                "reference": "1d641ccad7abbc292dc8341895ef57338a853944"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/17b18315adece264ac3720af45f5ea2fa6775c37",
-                "reference": "17b18315adece264ac3720af45f5ea2fa6775c37",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/1d641ccad7abbc292dc8341895ef57338a853944",
+                "reference": "1d641ccad7abbc292dc8341895ef57338a853944",
                 "shasum": ""
             },
             "require": {
@@ -92,7 +92,7 @@
                 "jangregor/phpstan-prophecy": "^2.1.11",
                 "justinrainbow/json-schema": "^6.5.2",
                 "laravel/framework": "^11.0 || ^12.0 || ^13.0",
-                "mcp/sdk": ">=0.4 <1.0",
+                "mcp/sdk": "^0.6",
                 "orchestra/testbench": "^10.9 || ^11.0",
                 "phpspec/prophecy-phpunit": "^2.2",
                 "phpstan/extension-installer": "^1.1",
@@ -220,9 +220,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.3.11"
+                "source": "https://github.com/api-platform/core/tree/v4.3.15"
             },
-            "time": "2026-06-12T07:28:43+00:00"
+            "time": "2026-06-26T10:41:18+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -2614,16 +2614,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "3.34.0",
+            "version": "3.35.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "2daaac3b0d4c83ea7ed5d8586e786f5d00f3540e"
+                "reference": "f23af6c5aafd958a7593029a271d77baf5ed793c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/2daaac3b0d4c83ea7ed5d8586e786f5d00f3540e",
-                "reference": "2daaac3b0d4c83ea7ed5d8586e786f5d00f3540e",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/f23af6c5aafd958a7593029a271d77baf5ed793c",
+                "reference": "f23af6c5aafd958a7593029a271d77baf5ed793c",
                 "shasum": ""
             },
             "require": {
@@ -2691,9 +2691,9 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.34.0"
+                "source": "https://github.com/thephpleague/flysystem/tree/3.35.1"
             },
-            "time": "2026-05-14T10:28:08+00:00"
+            "time": "2026-06-25T06:52:23+00:00"
         },
         {
             "name": "league/flysystem-aws-s3-v3",
@@ -3458,17 +3458,11 @@
         },
         {
             "name": "nubitio/admin-bundle",
-            "version": "v0.9.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nubitio/admin-bundle.git",
-                "reference": "443624a2233f6344f6bce2ee2762e8ecfd0836da"
-            },
+            "version": "0.10.99",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/443624a2233f6344f6bce2ee2762e8ecfd0836da",
-                "reference": "443624a2233f6344f6bce2ee2762e8ecfd0836da",
-                "shasum": ""
+                "type": "path",
+                "url": "/nubit-symfony/packages/admin-bundle",
+                "reference": "7cbe1f0d9105bd533aaeb635b74e7320a875cfdb"
             },
             "require": {
                 "api-platform/core": "^4.1",
@@ -3502,6 +3496,7 @@
                 "symfony/mercure": "^0.6"
             },
             "suggest": {
+                "nubitio/tenant-bundle": "Column-mode multi-tenancy: TenantScoped attribute, Doctrine filter, registry, and resolvers",
                 "symfony/mercure-bundle": "Live grid updates; the bundle adds a fail-safe hub decorator and the subscriber cookie"
             },
             "type": "symfony-bundle",
@@ -3510,7 +3505,11 @@
                     "Nubit\\AdminBundle\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Nubit\\AdminBundle\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -3529,21 +3528,18 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-12T11:16:00+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": false
+            }
         },
         {
             "name": "nubitio/api-platform",
-            "version": "v0.9.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nubitio/api-platform.git",
-                "reference": "b532c5e38e5119f20455ba5755d0151d53f4afad"
-            },
+            "version": "0.10.99",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/api-platform/zipball/b532c5e38e5119f20455ba5755d0151d53f4afad",
-                "reference": "b532c5e38e5119f20455ba5755d0151d53f4afad",
-                "shasum": ""
+                "type": "path",
+                "url": "/nubit-symfony/packages/api-platform",
+                "reference": "68848219777183048a9e357976e6354e498e637f"
             },
             "require": {
                 "api-platform/core": "^4.1",
@@ -3570,17 +3566,21 @@
                     "Nubit\\ApiPlatform\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Nubit\\ApiPlatform\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
             "description": "API Platform bridge for the Nubit admin stack: data-grid filter (sort/filter/searchValue), translated OpenAPI docs with x-crud hints for @nubitio/hydra, pagination headers, and entity traits.",
             "homepage": "https://github.com/nubitio/nubit-symfony/tree/main/packages/api-platform",
             "keywords": [
-                "Hydra",
                 "api-platform",
                 "crud",
                 "datagrid",
+                "hydra",
                 "nubit",
                 "symfony"
             ],
@@ -3588,21 +3588,18 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-12T11:15:59+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": false
+            }
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.9.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nubitio/platform.git",
-                "reference": "22544748aad6e950ca54dcbacf476fa3b8a78206"
-            },
+            "version": "0.10.99",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/platform/zipball/22544748aad6e950ca54dcbacf476fa3b8a78206",
-                "reference": "22544748aad6e950ca54dcbacf476fa3b8a78206",
-                "shasum": ""
+                "type": "path",
+                "url": "/nubit-symfony/packages/platform",
+                "reference": "c7009a600734acde14f54a89f1210890e6256d2b"
             },
             "require": {
                 "php": ">=8.5",
@@ -3639,7 +3636,11 @@
                     "Nubit\\Platform\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Nubit\\Platform\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -3656,7 +3657,10 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-11T03:51:05+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": false
+            }
         },
         {
             "name": "nyholm/psr7-server",
@@ -12908,16 +12912,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.4.0",
+            "version": "2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155"
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9007ea6f45ecf352a9422b36644e4bfc039b9155",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/2ccb7c2e821038c03a3e6e1700c570c158c55f70",
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70",
                 "shasum": ""
             },
             "require": {
@@ -12968,9 +12972,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.4.0"
+                "source": "https://github.com/webmozarts/assert/tree/2.4.1"
             },
-            "time": "2026-05-20T13:07:01+00:00"
+            "time": "2026-06-15T15:31:57+00:00"
         },
         {
             "name": "willdurand/negotiation",

@@ -14,7 +14,23 @@ if [ ! -d node_modules ] || [ package.json -nt node_modules/.yarn-integrity 2>/d
   yarn install --immutable
 fi
 
-# ── 3. Resolve web service URL ────────────────────────────────────────────────
+# ── 3. Ensure Rollup native module matches the container platform ────────────
+# Host node_modules may have darwin-native modules but the container is Linux.
+# Map uname arch to Rollup package arch: aarch64 → arm64, x86_64 → x64
+UNAME_M=$(uname -m)
+case "$UNAME_M" in
+  aarch64)  ROLLUP_ARCH="arm64" ;;
+  x86_64)   ROLLUP_ARCH="x64" ;;
+  *)        ROLLUP_ARCH="$UNAME_M" ;;
+esac
+ROLLUP_PKG="@rollup/rollup-linux-${ROLLUP_ARCH}-gnu"
+ROLLUP_PKG_DIR="node_modules/${ROLLUP_PKG}"
+if [ -d "node_modules/rollup" ] && [ ! -d "$ROLLUP_PKG_DIR" ]; then
+  echo "[e2e-entrypoint] Installing Rollup native module for linux-${ROLLUP_ARCH}..."
+  npm install --no-save "${ROLLUP_PKG}@4.61.1" 2>&1 || echo "[e2e-entrypoint] WARNING: could not install ${ROLLUP_PKG}"
+fi
+
+# ── 4. Resolve web service URL ────────────────────────────────────────────────
 # Use the numeric IP of the efact-web container rather than the DNS name.
 # Chromium rejects page.goto() with extraHTTPHeaders.Host != URL hostname, so
 # we cannot set a custom Host header. Instead we navigate directly to the IP —
@@ -88,7 +104,7 @@ if ! curl -sf "$VITE_CHECK_URL" > /dev/null 2>&1; then
   echo "[e2e-entrypoint] Starting Vite dev server on :5174..."
   # Use port 5174 to match VITE_DEV_SERVER_ORIGIN set in docker-compose for the web container.
   # Also set VITE_DEV_SERVER_ORIGIN so vite.config.js generates correct asset URLs.
-  VITE_DEV_SERVER_ORIGIN="http://localhost:5174" yarn vite --host 0.0.0.0 --port 5174 > /tmp/vite.log 2>&1 &
+  VITE_DEV_SERVER_ORIGIN="http://localhost:5174" npx vite --host 0.0.0.0 --port 5174 > /tmp/vite.log 2>&1 &
   VITE_PID=$!
   echo "[e2e-entrypoint] Vite PID=$VITE_PID — waiting for it to be ready..."
   # Wait up to 120s for Vite to serve the client script
