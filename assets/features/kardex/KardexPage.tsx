@@ -1,5 +1,7 @@
 import './KardexPage.scss';
-import { useCallback } from 'react';
+import '@features/inventory/InventoryHub.scss';
+import { useCallback, useMemo } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import {
   ColumnPresetSelector,
@@ -12,27 +14,56 @@ import {
   useColumnPreset,
   type ColumnGroupDef,
   type Field,
-  type DataRecord,
   type ResourceConfig,
 } from '@nubitio/crud';
 import { useCoreTranslation } from '@nubitio/core';
-import { Badge } from '@nubitio/ui';
+import { useSessionInfo } from '@shared/sessionInfo';
+import { useWarehouses } from '@shared/hooks/useWarehouses';
+import { KardexDashboard } from './KardexDashboard';
+import { KardexMovementTypeCell } from './KardexMovementTypeCell';
+import {
+  MOVEMENT_TYPES,
+  formatCurrency,
+  formatKardexDate,
+  formatQty,
+  formatReference,
+  type KardexValuationMethod,
+  type StockMovementRecord,
+} from './kardexShared';
+import { openKardexExport } from './kardexExport';
 
 const API = getCoreApiBaseUrl();
-
 const BASE_URL = API + 'stock-movements';
 
 const KARDEX_COLUMN_GROUP_DEFS: ColumnGroupDef[] = [
-  { key: 'entries', label: 'ENTRADAS', className: 'nb-datagrid__group--in' },
-  { key: 'exits', label: 'SALIDAS', className: 'nb-datagrid__group--out' },
-  { key: 'balance', label: 'SALDO', className: 'nb-datagrid__group--balance' },
+  { key: 'document', label: 'DOCUMENTO', align: 'left' },
+  { key: 'entries', label: 'ENTRADAS' },
+  { key: 'exits', label: 'SALIDAS' },
+  { key: 'balance', label: 'SALDO' },
 ];
 
 const KARDEX_COLUMN_PRESETS = [
   {
-    key: 'basic',
-    label: 'Básico',
-    columns: ['occurredAt', 'warehouse', 'product', 'movementType', 'runningBalance'],
+    key: 'valorizado',
+    label: 'Valorizado',
+    columns: [
+      'occurredAt',
+      'movementType',
+      'sourceId',
+      'qtyIn',
+      'unitCost',
+      'lineValue',
+      'qtyOut',
+      '_unitCostExit',
+      '_lineValueExit',
+      'runningBalance',
+      'runningValue',
+    ],
+  },
+  {
+    key: 'ledger',
+    label: 'Cantidades',
+    columns: ['occurredAt', 'movementType', 'sourceId', 'qtyIn', 'qtyOut', 'runningBalance'],
   },
   {
     key: 'full',
@@ -55,99 +86,13 @@ const KARDEX_PRESET_RESOURCE: ResourceConfig = {
   id: 'kardex',
   title: 'Kardex',
   apiUrl: BASE_URL,
-  defaultPreset: 'basic',
+  defaultPreset: 'valorizado',
   columnPresets: KARDEX_COLUMN_PRESETS,
 };
 
-interface StockMovementRecord extends DataRecord {
-  id: string;
-  warehouse: { id?: string; name?: string } | null;
-  product: { id?: string; code?: string | null; name?: string } | null;
-  occurredAt: string | null;
-  movementType: string | null;
-  movementTypeLabel: string | null;
-  qtyIn: string | null;
-  qtyOut: string | null;
-  runningBalance: string | null;
-  sourceType: string | null;
-  sourceId: string | null;
-  note: string | null;
-}
-
-const MOVEMENT_TYPES = [
-  { value: 'PURCHASE_IN', text: 'Compra' },
-  { value: 'SALE_OUT', text: 'Venta' },
-  { value: 'ADJUSTMENT', text: 'Ajuste' },
-  { value: 'TRANSFER_IN', text: 'Traslado entrada' },
-  { value: 'TRANSFER_OUT', text: 'Traslado salida' },
-  { value: 'MANUAL_IN', text: 'Entrada manual' },
-  { value: 'MANUAL_OUT', text: 'Salida manual' },
-  { value: 'VOID_REVERSAL', text: 'Reversa anulación' },
-  { value: 'PURCHASE_VOID', text: 'Anulación compra' },
-  { value: 'RETURN_IN', text: 'Devolución cliente' },
-  { value: 'RECIPE_CONSUMPTION', text: 'Consumo receta' },
-];
-
-const INBOUND_TYPES = new Set(['PURCHASE_IN', 'TRANSFER_IN', 'MANUAL_IN', 'VOID_REVERSAL', 'RETURN_IN']);
-const OUTBOUND_TYPES = new Set(['SALE_OUT', 'TRANSFER_OUT', 'MANUAL_OUT', 'PURCHASE_VOID', 'RECIPE_CONSUMPTION']);
-
-const movementTone = (type: string | null | undefined): 'in' | 'out' | 'neutral' => {
-  if (type && INBOUND_TYPES.has(type)) return 'in';
-  if (type && OUTBOUND_TYPES.has(type)) return 'out';
-  return 'neutral';
-};
-
-const BADGE_VARIANT: Record<string, 'success' | 'danger' | 'secondary'> = {
-  in: 'success',
-  out: 'danger',
-  neutral: 'secondary',
-};
-
-const formatQty = (value: unknown): string => {
-  if (value === null || value === undefined || value === '') return '';
-  const n = Number(value);
-  return Number.isFinite(n)
-    ? n.toLocaleString('es-PE', { maximumFractionDigits: 3, minimumFractionDigits: 0 })
-    : '';
-};
-
-const formatProduct = (value: unknown): string => {
-  if (value && typeof value === 'object') {
-    const p = value as { code?: string | null; name?: string };
-    return [p.code, p.name].filter(Boolean).join(' - ');
-  }
-  return String(value ?? '');
-};
-
-const formatWarehouse = (value: unknown): string => {
-  if (value && typeof value === 'object') {
-    return String((value as { name?: string }).name ?? '');
-  }
-  return String(value ?? '');
-};
-
-const formatMovementType = (value: unknown) => {
-  if (!value) return null;
-  const tone = movementTone(value as string);
-  const entry = MOVEMENT_TYPES.find((t) => t.value === value);
-  return <Badge variant={BADGE_VARIANT[tone]}>{entry?.text || String(value)}</Badge>;
-};
-
-const formatReference = (row: StockMovementRecord) => {
-  const sourceId = row.sourceId ?? '';
-  const [id, type, line] = sourceId.split(':');
-  const shortId = id ? id.slice(0, 8) : '';
-  const entry = MOVEMENT_TYPES.find((t) => t.value === row.movementType);
-  const label = entry?.text || type || row.sourceType || 'Movimiento';
-
-  if (!shortId) return '';
-
-  return (
-    <span className="kardex-reference" title={sourceId}>
-      <span className="kardex-reference__label">{label}</span>
-      <span className="kardex-reference__id">{shortId}{line ? ` · item ${line}` : ''}</span>
-    </span>
-  );
+type FormatterEvent = {
+  value?: unknown;
+  data?: StockMovementRecord;
 };
 
 const formatNote = (value: unknown): string => {
@@ -156,44 +101,249 @@ const formatNote = (value: unknown): string => {
   return note;
 };
 
-const formatDate = (value: unknown): string => {
-  if (!value) return '';
-  try {
-    return new Date(value as string).toLocaleString('es-PE', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-      timeZone: 'America/Lima',
-    });
-  } catch {
-    return String(value);
-  }
+const formatUnitCost = (e: FormatterEvent) => formatCurrency(e.value);
+const formatLineValueForIn = (e: FormatterEvent) => {
+  const row = e.data;
+  if (!row?.qtyIn) return '—';
+  return formatCurrency(row.lineValue);
+};
+const formatLineValueForOut = (e: FormatterEvent) => {
+  const row = e.data;
+  if (!row?.qtyOut) return '—';
+  return formatCurrency(row.lineValue);
 };
 
-type FormatterEvent = {
-  value?: unknown;
-  data?: DataRecord;
-};
-
-const buildFields = (): Field[] => [
+const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
   identityField().build(),
-
   { ...textField().name('movementTypeLabel').label('').build(), visible: false, visibleOnForm: false },
   { ...textField().name('sourceType').label('').build(), visible: false, visibleOnForm: false },
 
-  { ...datetimeField().name('occurredAt').label('Fecha').build(), order: 0, width: 150, formatter: (e: FormatterEvent) => formatDate(e.value) },
-  { ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(), order: 1, width: 160, formatter: (e: FormatterEvent) => formatWarehouse(e.value) },
-  { ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(), order: 2, width: 220, formatter: (e: FormatterEvent) => formatProduct(e.value) },
-  { ...enumField(MOVEMENT_TYPES).name('movementType').label('Tipo').build(), order: 3, width: 160, formatter: (e: FormatterEvent) => formatMovementType(e.value) },
-  { ...textField().name('sourceId').label('Referencia').build(), order: 4, width: 170, formatter: (e: FormatterEvent) => formatReference(e.data as StockMovementRecord) },
-  { ...textField().name('qtyIn').columnGroup('entries').label('Cant.').build(), order: 5, width: 100, align: 'right', filterable: false, formatter: (e: FormatterEvent) => formatQty(e.value) },
-  { ...textField().name('qtyOut').columnGroup('exits').label('Cant.').build(), order: 6, width: 100, align: 'right', filterable: false, formatter: (e: FormatterEvent) => formatQty(e.value) },
-  { ...textField().name('runningBalance').columnGroup('balance').label('Cant.').build(), order: 7, width: 110, align: 'right', filterable: false, formatter: (e: FormatterEvent) => formatQty(e.value) },
-  { ...textField().name('note').label('Nota').build(), order: 8, width: 220, formatter: (e: FormatterEvent) => formatNote(e.value) },
+  {
+    ...datetimeField().name('occurredAt').label('Fecha').build(),
+    columnGroup: 'document',
+    order: 0,
+    width: 110,
+    formatter: (e: FormatterEvent) => formatKardexDate(e.value),
+  },
+  {
+    ...enumField(MOVEMENT_TYPES.map(({ value, text }) => ({ value, text })))
+      .name('movementType')
+      .label('Tipo')
+      .build(),
+    columnGroup: 'document',
+    order: 1,
+    width: 170,
+    formatter: (e: FormatterEvent) => <KardexMovementTypeCell value={e.value} />,
+  },
+  {
+    ...textField().name('sourceId').label('Referencia').build(),
+    columnGroup: 'document',
+    order: 2,
+    width: 150,
+    formatter: (e: FormatterEvent) => formatReference(e.data as StockMovementRecord),
+  },
+  {
+    ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(),
+    order: 3,
+    width: 150,
+    visible: !scoped,
+    formatter: (e: FormatterEvent) => {
+      const value = e.value;
+      if (value && typeof value === 'object') return String((value as { name?: string }).name ?? '');
+      return String(value ?? '');
+    },
+  },
+  {
+    ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(),
+    order: 4,
+    width: 220,
+    visible: !scoped,
+    formatter: (e: FormatterEvent) => {
+      const value = e.value;
+      if (value && typeof value === 'object') {
+        const p = value as { code?: string | null; name?: string };
+        return [p.code, p.name].filter(Boolean).join(' - ');
+      }
+      return String(value ?? '');
+    },
+  },
+  {
+    ...textField().name('qtyIn').label('Cant.').build(),
+    columnGroup: 'entries',
+    order: 5,
+    width: 90,
+    align: 'right',
+    filterable: false,
+    formatter: (e: FormatterEvent) => formatQty(e.value),
+  },
+  {
+    ...textField().name('unitCost').label('Costo unit.').build(),
+    columnGroup: 'entries',
+    order: 6,
+    width: 100,
+    align: 'right',
+    filterable: false,
+    visible: showValuation,
+    formatter: formatUnitCost,
+  },
+  {
+    ...textField().name('lineValue').label('Total').build(),
+    columnGroup: 'entries',
+    order: 7,
+    width: 100,
+    align: 'right',
+    filterable: false,
+    visible: showValuation,
+    formatter: formatLineValueForIn,
+  },
+  {
+    ...textField().name('qtyOut').label('Cant.').build(),
+    columnGroup: 'exits',
+    order: 8,
+    width: 90,
+    align: 'right',
+    filterable: false,
+    formatter: (e: FormatterEvent) => formatQty(e.value),
+  },
+  {
+    ...textField().name('_unitCostExit').label('Costo unit.').build(),
+    columnGroup: 'exits',
+    order: 9,
+    width: 100,
+    align: 'right',
+    filterable: false,
+    visible: showValuation,
+    formatter: (e: FormatterEvent) => (e.data?.qtyOut ? formatCurrency(e.data?.unitCost) : '—'),
+  },
+  {
+    ...textField().name('_lineValueExit').label('Total').build(),
+    columnGroup: 'exits',
+    order: 10,
+    width: 100,
+    align: 'right',
+    filterable: false,
+    visible: showValuation,
+    formatter: formatLineValueForOut,
+  },
+  {
+    ...textField().name('runningBalance').label('Stock').build(),
+    columnGroup: 'balance',
+    order: 11,
+    width: 100,
+    align: 'right',
+    filterable: false,
+    formatter: (e: FormatterEvent) => formatQty(e.value),
+  },
+  {
+    ...textField().name('runningValue').label('Valor').build(),
+    columnGroup: 'balance',
+    order: 12,
+    width: 110,
+    align: 'right',
+    filterable: false,
+    visible: showValuation,
+    formatter: (e: FormatterEvent) => formatCurrency(e.value),
+  },
+  {
+    ...textField().name('note').label('Nota').build(),
+    order: 13,
+    width: 220,
+    formatter: (e: FormatterEvent) => formatNote(e.value),
+  },
 ];
+
+function buildGridUrl(
+  productId: string | null,
+  warehouseId: string | null,
+  from: string | null,
+  to: string | null,
+  valuation: KardexValuationMethod,
+): string {
+  const params = new URLSearchParams({ valuation });
+  if (productId) params.set('product', `${API}products/${productId}`);
+  if (warehouseId) params.set('warehouse', `${API}warehouses/${warehouseId}`);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  return `${BASE_URL}?${params.toString()}`;
+}
 
 export const KardexPage = () => {
   const { t } = useCoreTranslation();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { currentBranchId } = useSessionInfo();
+  const { warehouses } = useWarehouses({ branchId: currentBranchId });
   const presetState = useColumnPreset(KARDEX_PRESET_RESOURCE);
+  const inInventoryHub = location.pathname.startsWith('/inventory');
+
+  const productId = searchParams.get('product');
+  const warehouseId = searchParams.get('warehouse');
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
+  const valuation = (searchParams.get('valuation') as KardexValuationMethod | null) ?? 'pp';
+
+  const updateSearchParams = useCallback(
+    (patch: Record<string, string | null | undefined>) => {
+      const next = new URLSearchParams(searchParams);
+      for (const [key, value] of Object.entries(patch)) {
+        if (value) next.set(key, value);
+        else next.delete(key);
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const urlFilters = useMemo(() => {
+    const rules: Array<{ field: string; operator: string; value: string }> = [];
+    if (warehouseId) {
+      rules.push({ field: 'warehouse', operator: '=', value: `${API}warehouses/${warehouseId}` });
+    }
+    if (productId) {
+      rules.push({ field: 'product', operator: '=', value: `${API}products/${productId}` });
+    }
+    return rules;
+  }, [productId, warehouseId]);
+
+  const warehouseOptions = useMemo(
+    () => warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.name })),
+    [warehouses],
+  );
+
+  const gridUrl = useMemo(
+    () => buildGridUrl(productId, warehouseId, from, to, valuation),
+    [productId, warehouseId, from, to, valuation],
+  );
+  const showValuation = true;
+  const gridKey = `${productId ?? 'all'}-${warehouseId ?? 'all'}-${from ?? ''}-${to ?? ''}-${valuation}-${presetState.activePreset}`;
+
+  const kardexToolbar = useMemo(
+    () => ({
+      utility: [
+        {
+          key: 'kardex-pdf',
+          text: 'PDF',
+          icon: 'ph-file-pdf',
+          disabled: !productId,
+          onClick: () => {
+            if (!productId) return;
+            openKardexExport('pdf', { productId, warehouseId, from, to, valuation });
+          },
+        },
+        {
+          key: 'kardex-xlsx',
+          text: 'Excel',
+          icon: 'ph-file-xls',
+          disabled: !productId,
+          onClick: () => {
+            if (!productId) return;
+            openKardexExport('xlsx', { productId, warehouseId, from, to, valuation });
+          },
+        },
+      ],
+    }),
+    [productId, warehouseId, from, to, valuation],
+  );
 
   const renderPresetSelector = useCallback(
     () => (
@@ -209,20 +359,59 @@ export const KardexPage = () => {
     [presetState.activePreset, presetState.setPreset, t],
   );
 
+  const kardexDashboard = (
+    <KardexDashboard
+      productId={productId}
+      warehouseId={warehouseId}
+      from={from}
+      to={to}
+      valuation={valuation}
+      warehouseOptions={warehouseOptions}
+      onProductChange={(value) => updateSearchParams({ product: value })}
+      onWarehouseChange={(value) => updateSearchParams({ warehouse: value })}
+      onFromChange={(value) => updateSearchParams({ from: value })}
+      onToChange={(value) => updateSearchParams({ to: value })}
+      onValuationChange={(value) => updateSearchParams({ valuation: value })}
+    />
+  );
+
   return (
-    <div className="view-wrapper-scroll kardex-page">
+    <div
+      className={inInventoryHub ? 'inventory-kardex-page kardex-page' : 'view-wrapper-scroll kardex-page'}
+      data-testid={inInventoryHub ? 'inventory-kardex-page' : undefined}
+    >
       <DataGridView
+        key={gridKey}
         id="kardex"
-        title="Kardex — Movimientos de stock"
-        url={BASE_URL}
-        fields={buildFields()}
+        title={inInventoryHub ? '' : 'Kardex'}
+        mode={inInventoryHub ? 'normal' : undefined}
+        url={gridUrl}
+        fields={buildFields(Boolean(productId), showValuation)}
+        filter={urlFilters}
         columnGroupDefs={KARDEX_COLUMN_GROUP_DEFS}
-        sort={[{ selector: 'occurredAt', desc: true }]}
+        toolbar={kardexToolbar}
+        sort={[{ selector: 'occurredAt', desc: false }]}
         allowAdd={false}
         allowEdit={false}
         allowDelete={false}
+        manualLoad={!productId}
+        filterRow={false}
         visibleColumns={presetState.visibleColumns}
         beforeToolbar={renderPresetSelector}
+        aboveGrid={kardexDashboard}
+        emptyState={
+          productId
+            ? {
+                title: 'Sin movimientos',
+                description: 'No hay movimientos registrados para este producto en el período visible.',
+                icon: 'list-magnifying-glass',
+              }
+            : {
+                title: 'Selecciona un producto',
+                description: 'Elige un producto en el panel superior para cargar el kardex.',
+                icon: 'package',
+              }
+        }
       />
     </div>
   );
