@@ -6,7 +6,8 @@ export const InventoryHubLayout = () => {
 
   const showWarehouses = runtimeConfig?.ui.inventory.showWarehouseManagement ?? false;
   const showTransfers = runtimeConfig?.ui.inventory.showTransfers ?? false;
-  const simpleStoreMode = runtimeConfig?.profile.simpleStoreMode ?? true;
+  const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
+  const showMovementLedger = navigationTier === 'standard' || navigationTier === 'advanced';
 
   return (
     <FeatureHubLayout
@@ -23,7 +24,7 @@ export const InventoryHubLayout = () => {
           label: 'Movimientos',
           path: '/inventory/movements',
           icon: 'ph-list-magnifying-glass',
-          visible: !simpleStoreMode,
+          visible: showMovementLedger,
         },
         {
           key: 'operations',
