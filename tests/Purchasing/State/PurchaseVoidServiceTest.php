@@ -211,8 +211,10 @@ final class PurchaseVoidServiceTest extends TestCase
         $purchase->setWarehouse($wh);
         $purchase->setIssuedAt(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
+        $lineNo = 1;
         foreach ($items as [$productId, $qty]) {
             $item = new PurchaseItem();
+            $item->setLineNo($lineNo++);
             $item->setProduct($this->makeProduct($productId));
             $item->setQty($qty);
             $purchase->addItem($item);

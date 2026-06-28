@@ -64,6 +64,11 @@ class Purchase
     private ?string $id = null;
 
     #[Groups(['purchase:read'])]
+    #[ORM\Column(name: 'receipt_no', type: 'integer', nullable: true)]
+    #[ApiProperty(description: 'purchase.receipt_no.label')]
+    private ?int $receiptNo = null;
+
+    #[Groups(['purchase:read'])]
     #[ORM\Column(name: 'legacy_movimiento_id', type: 'string', length: 255, nullable: true)]
     #[ApiProperty(description: 'purchase.legacy_movimiento_id.label')]
     private ?string $legacyMovimientoId = null;
@@ -263,6 +268,18 @@ class Purchase
     public function setId(?string $id): static
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getReceiptNo(): ?int
+    {
+        return $this->receiptNo;
+    }
+
+    public function setReceiptNo(?int $receiptNo): static
+    {
+        $this->receiptNo = $receiptNo;
 
         return $this;
     }

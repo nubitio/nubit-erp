@@ -25,9 +25,11 @@ final readonly class PurchaseInventoryService
             return;
         }
 
-        $lineNo = 0;
         foreach ($purchase->getItems() as $item) {
-            ++$lineNo;
+            $lineNo = $item->getLineNo();
+            if ($lineNo <= 0) {
+                continue;
+            }
 
             $product = $item->getProduct();
             if (!$product instanceof Product || !$product->getTrackInventory()) {

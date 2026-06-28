@@ -49,6 +49,7 @@ final class PurchaseInventoryServiceTest extends TestCase
 
         $purchase->addItem(
             (new PurchaseItem())
+                ->setLineNo(1)
                 ->setProduct($this->newProduct('prod-1'))
                 ->setQty('5.000')
         );
@@ -88,6 +89,7 @@ final class PurchaseInventoryServiceTest extends TestCase
 
         $purchase->addItem(
             (new PurchaseItem())
+                ->setLineNo(1)
                 ->setProduct($this->newServiceProduct('svc-1'))
                 ->setQty('5.000')
         );
@@ -105,6 +107,7 @@ final class PurchaseInventoryServiceTest extends TestCase
         $purchase = (new Purchase())->setId('purchase-1');
         $purchase->addItem(
             (new PurchaseItem())
+                ->setLineNo(1)
                 ->setProduct($this->newProduct('prod-1'))
                 ->setQty('5.000')
         );

@@ -9,6 +9,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Entity\Branch;
 use App\Purchasing\Entity\Purchase;
+use App\Purchasing\Service\PurchaseReceiptSequenceService;
+use App\Purchasing\Service\PurchaseSupplierDocumentValidator;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use Override;
@@ -32,6 +34,8 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private PurchaseInventoryService $purchaseInventoryService,
+        private PurchaseReceiptSequenceService $purchaseReceiptSequenceService,
+        private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
     ) {
     }
 
@@ -52,6 +56,10 @@ readonly class PurchaseProcessor implements ProcessorInterface
 
         // Auto-populate fields that the form does not send
         if ($data instanceof Purchase) {
+            if ($isNewPurchase) {
+                $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
+                $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
+            }
             // 1. Set buyerUser from the authenticated user
             if ($data->getBuyerUser() === null) {
                 $user = $this->security->getUser();
@@ -79,10 +87,15 @@ readonly class PurchaseProcessor implements ProcessorInterface
             // 4. Ensure each item's owning-side back-reference is set before Doctrine persist.
             //    API Platform may denormalise items directly into the collection without calling
             //    addItem(), so the ManyToOne foreign key would be left null.
+            $lineNo = 1;
             foreach ($data->getItems() as $item) {
                 if ($item->getPurchase() !== $data) {
                     $item->setPurchase($data);
                 }
+                if ($item->getLineNo() <= 0) {
+                    $item->setLineNo($lineNo);
+                }
+                ++$lineNo;
             }
         }
 
