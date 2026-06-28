@@ -61,8 +61,15 @@ export type EfactDeclarativeDashboardPayload = {
     invoicesToday: number;
     avgTicket: number;
     salesThisMonth: number;
+    ytdRevenue: number;
+    igvCollected: number;
+    customersThisMonth: number;
+    dailyGrowth: number | null;
+    monthGrowth: number | null;
   };
   salesByDay: Array<{ label: string; total: number }>;
+  salesByMonth: Array<{ label: string; total: number }>;
+  paymentMethods: Array<{ method: string; total: number }>;
   voucherTypes: Array<{ name: string; total: number; count: number }>;
   recentSales: Array<{
     id: string;
@@ -71,7 +78,20 @@ export type EfactDeclarativeDashboardPayload = {
     total: number;
   }>;
   topProducts: Array<{ name: string; quantity: number; total: number }>;
+  topCustomers: Array<{ name: string; invoices: number; total: number }>;
 };
+
+function truncateName(name: string, maxLength = 45): string {
+  return name.length > maxLength ? name.slice(0, maxLength - 1) + '…' : name;
+}
+
+function resolveYtdRevenue(data: DashboardData): number {
+  if (data.salesByMonth.length > 0) {
+    return data.salesByMonth.reduce((sum, month) => sum + month.total, 0);
+  }
+
+  return data.summary.salesThisMonth;
+}
 
 export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeDashboardPayload {
   return {
@@ -80,8 +100,21 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       invoicesToday: data.summary.invoicesToday,
       avgTicket: data.summary.avgTicket,
       salesThisMonth: data.summary.salesThisMonth,
+      ytdRevenue: resolveYtdRevenue(data),
+      igvCollected: data.summary.salesThisMonth * (18 / 118),
+      customersThisMonth: data.summary.customersThisMonth,
+      dailyGrowth: data.summary.dailyGrowth,
+      monthGrowth: data.summary.monthGrowth,
     },
     salesByDay: pickLast7SalesDays(data.salesByDay),
+    salesByMonth: data.salesByMonth.map((row) => ({
+      label: row.label,
+      total: row.total,
+    })),
+    paymentMethods: data.paymentMethods.map((row) => ({
+      method: row.method,
+      total: row.total,
+    })),
     voucherTypes: data.voucherTypes.map((row) => ({
       name: voucherTypeLabel(row.type),
       total: row.total,
@@ -94,8 +127,13 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       total: row.total,
     })),
     topProducts: data.topProducts.map((row) => ({
-      name: row.product,
+      name: truncateName(row.product),
       quantity: row.quantity,
+      total: row.total,
+    })),
+    topCustomers: data.topCustomers.map((row) => ({
+      name: row.customer,
+      invoices: row.invoices,
       total: row.total,
     })),
   };

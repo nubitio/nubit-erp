@@ -29,8 +29,11 @@ const emptyDashboardData = (): DashboardData => ({
     label: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][index % 7],
     total: index === 22 ? 500 : 10,
   })),
-  salesByMonth: [],
-  paymentMethods: [],
+  salesByMonth: [
+    { label: 'Ene', total: 100 },
+    { label: 'Feb', total: 200 },
+  ],
+  paymentMethods: [{ method: 'Efectivo', total: 300 }],
   paymentMethodTrend: { methods: [], points: [] },
   topProducts: [{ product: 'Arroz', quantity: 2, total: 20 }],
   purchasesSummary: {
@@ -44,7 +47,7 @@ const emptyDashboardData = (): DashboardData => ({
   },
   purchasesByDay: [],
   topPurchasedProducts: [],
-  topCustomers: [],
+  topCustomers: [{ customer: 'ACME SAC', invoices: 4, total: 900 }],
   voucherTypes: [{ type: '03', count: 4, total: 400 }],
   lowStockProducts: [],
   paymentMethodsToday: [],
@@ -75,5 +78,11 @@ describe('mapEfactDashboardPayload', () => {
     expect(payload.voucherTypes[0]?.name).toBe('Boleta');
     expect(payload.recentSales[0]?.paymentMethod).toBe('Efectivo');
     expect(payload.topProducts[0]?.name).toBe('Arroz');
+    expect(payload.stats.ytdRevenue).toBe(300);
+    expect(payload.stats.igvCollected).toBeCloseTo(1200 * (18 / 118), 2);
+    expect(payload.stats.customersThisMonth).toBe(8);
+    expect(payload.salesByMonth).toHaveLength(2);
+    expect(payload.paymentMethods[0]?.method).toBe('Efectivo');
+    expect(payload.topCustomers[0]?.name).toBe('ACME SAC');
   });
 });

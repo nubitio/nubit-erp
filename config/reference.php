@@ -2344,8 +2344,8 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type MercureConfig = array{
  *     hubs?: array<string, array{ // Default: []
- *         url?: scalar|Param|null, // URL of the hub's publish endpoint // Default: null
- *         public_url?: scalar|Param|null, // URL of the hub's public endpoint
+ *         url?: scalar|Param|null, // URL of the hub's publish endpoint
+ *         public_url?: scalar|Param|null, // URL of the hub's public endpoint // Default: null
  *         jwt?: string|array{ // JSON Web Token configuration.
  *             value?: scalar|Param|null, // JSON Web Token to use to publish to this hub.
  *             provider?: scalar|Param|null, // The ID of a service to call to provide the JSON Web Token.
@@ -2364,6 +2364,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     enable_profiler?: bool|Param, // Deprecated: The child node "enable_profiler" at path "mercure.enable_profiler" is deprecated. // Enable Symfony Web Profiler integration.
  * }
  * @psalm-type NubitAdminConfig = array{
+ *     app_profile?: scalar|Param|null, // Application profile: internal (single org), saas (B2B multi-tenant), hybrid (one org, multiple spaces). // Default: "internal"
  *     auth?: array{
  *         secret?: scalar|Param|null, // Secret used to sign JWTs. Defaults to %env(APP_SECRET)%. // Default: "%env(APP_SECRET)%"
  *         access_token_ttl?: int|Param, // Default: 3600
@@ -2394,7 +2395,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *         directory?: scalar|Param|null, // Sub-directory inside the storage where uploads land. // Default: "media"
  *         purge_retention_days?: int|Param, // nubit:media:purge removes media soft-deleted longer ago than this. // Default: 30
+ *         max_size?: int|Param, // Maximum upload size in bytes. 0 means no limit. // Default: 10485760
+ *         allowed_mimes?: list<scalar|Param|null>,
  *     },
+ *     runtime_config?: bool|Param, // Expose GET /api/runtime-config (opt-in; payload from RuntimeConfigProviderInterface). // Default: false
  *     soft_delete?: bool|Param, // Register the Doctrine filter hiding #[SoftDeletable] rows. // Default: true
  *     single_tenant_defaults?: bool|Param, // Bind noop single-tenant implementations of the Nubit\Platform contracts. // Default: true
  * }

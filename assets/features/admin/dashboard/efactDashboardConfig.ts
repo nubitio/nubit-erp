@@ -1,7 +1,6 @@
 import {
   barChartWidget,
   defineDashboard,
-  donutChartWidget,
   statWidget,
   tableWidget,
   type DashboardConfig,
@@ -23,22 +22,7 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             format: 'currency',
             icon: 'ph-currency-dollar',
             iconTone: 'success',
-          }),
-          statWidget({
-            id: 'invoices-today',
-            title: 'Comprobantes hoy',
-            valuePath: 'stats.invoicesToday',
-            format: 'number',
-            icon: 'ph-receipt',
-            iconTone: 'info',
-          }),
-          statWidget({
-            id: 'avg-ticket',
-            title: 'Ticket medio (mes)',
-            valuePath: 'stats.avgTicket',
-            format: 'currency',
-            icon: 'ph-chart-line-up',
-            iconTone: 'accent',
+            trend: { valuePath: 'stats.dailyGrowth', label: 'vs ayer' },
           }),
           statWidget({
             id: 'sales-month',
@@ -47,12 +31,21 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             format: 'currency',
             icon: 'ph-trend-up',
             iconTone: 'warning',
+            trend: { valuePath: 'stats.monthGrowth', label: 'vs mes ant.' },
+          }),
+          statWidget({
+            id: 'avg-ticket',
+            title: 'Ticket medio',
+            valuePath: 'stats.avgTicket',
+            format: 'currency',
+            icon: 'ph-chart-line-up',
+            iconTone: 'accent',
           }),
         ],
       },
       {
-        id: 'charts',
-        layout: 'charts',
+        id: 'sales-chart',
+        layout: 'full',
         widgets: [
           barChartWidget({
             id: 'sales-by-day',
@@ -61,17 +54,7 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             dataPath: 'salesByDay',
             xKey: 'label',
             yKey: 'total',
-            height: 180,
-          }),
-          donutChartWidget({
-            id: 'by-voucher-type',
-            title: 'Por comprobante',
-            subtitle: 'Este mes',
-            dataPath: 'voucherTypes',
-            labelKey: 'name',
-            valueKey: 'total',
-            centerLabel: 'Total',
-            centerValuePath: 'stats.salesThisMonth',
+            height: 200,
           }),
         ],
       },
@@ -112,3 +95,4 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
     ],
   });
 }
+// hmr-trigger

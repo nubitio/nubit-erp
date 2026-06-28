@@ -51,6 +51,8 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_CUSTOMER_NAME = 'Cliente CI E2E';
     private const string E2E_PRODUCT_CODE = 'E2E-CI-PRODUCT';
     private const string E2E_PRODUCT_NAME = 'Producto CI E2E';
+    private const string E2E_PRODUCT_2_CODE = 'E2E-CI-PRODUCT-2';
+    private const string E2E_PRODUCT_2_NAME = 'Producto CI E2E 2';
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly Connection $connection,
@@ -92,7 +94,8 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
-        $product = $this->upsertProduct($warehouse);
+        $product = $this->upsertProduct($warehouse, self::E2E_PRODUCT_CODE, self::E2E_PRODUCT_NAME);
+        $this->upsertProduct($warehouse, self::E2E_PRODUCT_2_CODE, self::E2E_PRODUCT_2_NAME);
 
         $sale = $this->createFreshSale($user, $branch, $warehouse, $customer, $product);
 
@@ -314,9 +317,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         return $customer;
     }
 
-    private function upsertProduct(Warehouse $warehouse): Product
+    private function upsertProduct(Warehouse $warehouse, string $code, string $name): Product
     {
-        $product = $this->productRepository->findOneBy(['code' => self::E2E_PRODUCT_CODE]);
+        $product = $this->productRepository->findOneBy(['code' => $code]);
         if ($product instanceof Product) {
             // Always reset to known-good state so previous test runs don't affect stock or price
             $product
@@ -332,9 +335,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
             $product = new Product();
             $product
-                ->setCode(self::E2E_PRODUCT_CODE)
+                ->setCode($code)
                 ->setType(1)
-                ->setName(self::E2E_PRODUCT_NAME)
+                ->setName($name)
                 ->setCategory($category)
                 ->setUnitOfMeasure($unit)
                 ->setPurchasePrice('8.00')

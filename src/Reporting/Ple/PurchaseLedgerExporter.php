@@ -33,20 +33,108 @@ final readonly class PurchaseLedgerExporter
      */
     public function export(string $period): array
     {
+        $built = $this->buildPackage($period);
+
+        return [
+            'filename' => $built['filename'],
+            'content' => $built['content'],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function preview(string $period): array
+    {
+        $built = $this->buildPackage($period);
+
+        return [
+            'key' => 'purchases',
+            'pleCode' => 'LE8.1',
+            'label' => 'Registro de Compras',
+            'bookCode' => self::BOOK_CODE,
+            'filename' => $built['filename'],
+            'recordCount' => $built['recordCount'],
+            'sizeBytes' => $built['sizeBytes'],
+            'status' => $built['recordCount'] > 0 ? 'ready' : 'empty',
+            'statusLabel' => $built['recordCount'] > 0 ? 'Listo para enviar' : 'Sin registros',
+            'rows' => $built['rows'],
+            'totals' => $built['totals'],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     filename: string,
+     *     content: string,
+     *     recordCount: int,
+     *     sizeBytes: int,
+     *     rows: list<array<string, mixed>>,
+     *     totals: array{taxable: float, igv: float, total: float}
+     * }
+     */
+    private function buildPackage(string $period): array
+    {
         $rows = $this->fetchRows($period);
         $periodKey = $period . '00';
 
         $content = '';
+        $previewRows = [];
+        $totals = ['taxable' => 0.0, 'igv' => 0.0, 'total' => 0.0];
         $correlative = 0;
+
         foreach ($rows as $row) {
             ++$correlative;
+            $taxable = (float) ($row['subtotal'] ?? 0);
+            $igv = (float) ($row['tax_total'] ?? 0);
+            $total = (float) ($row['grand_total'] ?? 0);
+
             $content .= $this->buildRecord($periodKey, $correlative, $row);
+            $previewRows[] = $this->toPreviewRow($correlative, $row, $taxable, $igv, $total);
+
+            $totals['taxable'] += $taxable;
+            $totals['igv'] += $igv;
+            $totals['total'] += $total;
         }
 
         $ruc = $this->companyContext->getId();
         $filename = PleWriter::fileName($ruc, $period, self::BOOK_CODE, $rows !== []);
 
-        return ['filename' => $filename, 'content' => $content];
+        return [
+            'filename' => $filename,
+            'content' => $content,
+            'recordCount' => count($rows),
+            'sizeBytes' => strlen($content),
+            'rows' => $previewRows,
+            'totals' => [
+                'taxable' => round($totals['taxable'], 2),
+                'igv' => round($totals['igv'], 2),
+                'total' => round($totals['total'], 2),
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
+    private function toPreviewRow(int $index, array $row, float $taxable, float $igv, float $total): array
+    {
+        return [
+            'index' => $index,
+            'issueDate' => PleWriter::date($this->toDate($row['issued_at'] ?? null)),
+            'documentType' => (string) ($row['supplier_doc_type'] ?? '00'),
+            'series' => (string) ($row['supplier_doc_series'] ?? ''),
+            'number' => (string) ($row['supplier_doc_number'] ?? ''),
+            'counterpartyDoc' => (string) ($row['supplier_doc'] ?? ''),
+            'counterpartyName' => (string) ($row['supplier_name'] ?? ''),
+            'taxable' => round($taxable, 2),
+            'igv' => round($igv, 2),
+            'total' => round($total, 2),
+            'state' => '1',
+            'stateLabel' => 'Activo',
+        ];
     }
 
     /**

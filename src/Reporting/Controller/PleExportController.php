@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Reporting\Controller;
 
+use App\Reporting\Ple\PlePreviewService;
+use App\Reporting\Ple\PleValidationService;
+use App\Reporting\Ple\PleZipService;
 use App\Reporting\Ple\PurchaseLedgerExporter;
 use App\Reporting\Ple\SalesLedgerExporter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,7 +28,40 @@ final class PleExportController extends AbstractController
     public function __construct(
         private readonly SalesLedgerExporter $salesExporter,
         private readonly PurchaseLedgerExporter $purchaseExporter,
+        private readonly PlePreviewService $previewService,
+        private readonly PleValidationService $validationService,
+        private readonly PleZipService $zipService,
     ) {
+    }
+
+    #[Route('/preview', name: 'ple_preview', methods: ['GET'])]
+    public function preview(Request $request): JsonResponse
+    {
+        $period = $this->resolvePeriod($request);
+
+        return $this->json($this->previewService->preview($period));
+    }
+
+    #[Route('/validate', name: 'ple_validate', methods: ['GET'])]
+    public function validate(Request $request): JsonResponse
+    {
+        $period = $this->resolvePeriod($request);
+        $book = $request->query->get('book');
+        $bookKey = is_string($book) && $book !== '' ? $book : null;
+
+        if ($bookKey !== null && !in_array($bookKey, ['sales', 'purchases'], true)) {
+            throw $this->createNotFoundException('El libro solicitado no es válido.');
+        }
+
+        return $this->json($this->validationService->validate($period, $bookKey));
+    }
+
+    #[Route('/zip', name: 'ple_zip', methods: ['GET'])]
+    public function zip(Request $request): Response
+    {
+        $period = $this->resolvePeriod($request);
+
+        return $this->zipService->createArchive($period);
     }
 
     #[Route('/sales', name: 'ple_sales', methods: ['GET'])]

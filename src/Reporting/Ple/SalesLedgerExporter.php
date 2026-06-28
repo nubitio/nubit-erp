@@ -37,20 +37,134 @@ final readonly class SalesLedgerExporter
      */
     public function export(string $period): array
     {
+        $built = $this->buildPackage($period);
+
+        return [
+            'filename' => $built['filename'],
+            'content' => $built['content'],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function preview(string $period): array
+    {
+        $built = $this->buildPackage($period);
+
+        return [
+            'key' => 'sales',
+            'pleCode' => 'LE14.1',
+            'label' => 'Registro de Ventas',
+            'bookCode' => self::BOOK_CODE,
+            'filename' => $built['filename'],
+            'recordCount' => $built['recordCount'],
+            'sizeBytes' => $built['sizeBytes'],
+            'status' => $built['recordCount'] > 0 ? 'ready' : 'empty',
+            'statusLabel' => $built['recordCount'] > 0 ? 'Listo para enviar' : 'Sin registros',
+            'rows' => $built['rows'],
+            'totals' => $built['totals'],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     filename: string,
+     *     content: string,
+     *     recordCount: int,
+     *     sizeBytes: int,
+     *     rows: list<array<string, mixed>>,
+     *     totals: array{taxable: float, igv: float, total: float}
+     * }
+     */
+    private function buildPackage(string $period): array
+    {
         $rows = $this->fetchRows($period);
         $periodKey = $period . '00';
 
         $content = '';
+        $previewRows = [];
+        $totals = ['taxable' => 0.0, 'igv' => 0.0, 'total' => 0.0];
         $correlative = 0;
+
         foreach ($rows as $row) {
             ++$correlative;
+            $amounts = $this->resolveAmounts($row);
             $content .= $this->buildRecord($periodKey, $correlative, $row);
+            $previewRows[] = $this->toPreviewRow($correlative, $row, $amounts);
+
+            if ($amounts['state'] === '1') {
+                $totals['taxable'] += $amounts['taxable'];
+                $totals['igv'] += $amounts['igv'];
+                $totals['total'] += $amounts['total'];
+            }
         }
 
         $ruc = $this->companyContext->getId();
         $filename = PleWriter::fileName($ruc, $period, self::BOOK_CODE, $rows !== []);
 
-        return ['filename' => $filename, 'content' => $content];
+        return [
+            'filename' => $filename,
+            'content' => $content,
+            'recordCount' => count($rows),
+            'sizeBytes' => strlen($content),
+            'rows' => $previewRows,
+            'totals' => $totals,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array{taxable: float, igv: float, total: float, state: string}
+     */
+    private function resolveAmounts(array $row): array
+    {
+        $isVoided = $row['void_ticket'] !== null || $row['void_correlation'] !== null;
+        $taxable = (float) ($row['taxable_amount'] ?? 0);
+        $igv = (float) ($row['igv_amount'] ?? 0);
+        $total = (float) ($row['total'] ?? 0);
+        $sign = (string) $row['document_type'] === '07' ? -1 : 1;
+
+        if ($isVoided) {
+            return [
+                'taxable' => 0.0,
+                'igv' => 0.0,
+                'total' => 0.0,
+                'state' => '2',
+            ];
+        }
+
+        return [
+            'taxable' => $taxable * $sign,
+            'igv' => $igv * $sign,
+            'total' => $total * $sign,
+            'state' => '1',
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @param array{taxable: float, igv: float, total: float, state: string} $amounts
+     *
+     * @return array<string, mixed>
+     */
+    private function toPreviewRow(int $index, array $row, array $amounts): array
+    {
+        return [
+            'index' => $index,
+            'issueDate' => PleWriter::date($this->toDate($row['issue_date'] ?? null)),
+            'documentType' => (string) $row['document_type'],
+            'series' => (string) $row['series'],
+            'number' => (string) $row['number'],
+            'counterpartyDoc' => (string) ($row['customer_doc'] ?? ''),
+            'counterpartyName' => (string) ($row['customer_name'] ?? 'VARIOS'),
+            'taxable' => round($amounts['taxable'], 2),
+            'igv' => round($amounts['igv'], 2),
+            'total' => round($amounts['total'], 2),
+            'state' => $amounts['state'],
+            'stateLabel' => $amounts['state'] === '2' ? 'Anulado' : 'Activo',
+        ];
     }
 
     /**
@@ -104,33 +218,18 @@ final readonly class SalesLedgerExporter
     private function buildRecord(string $periodKey, int $correlative, array $row): string
     {
         $cuo = sprintf('M%06d', $correlative);
-        $isVoided = $row['void_ticket'] !== null || $row['void_correlation'] !== null;
-
         [$docTypeId, $docNumber] = $this->customerDocument((string) ($row['customer_doc'] ?? ''));
 
-        $taxable = (float) ($row['taxable_amount'] ?? 0);
-        $igv = (float) ($row['igv_amount'] ?? 0);
-        $total = (float) ($row['total'] ?? 0);
+        $amounts = $this->resolveAmounts($row);
+        $taxable = $amounts['taxable'];
+        $igv = $amounts['igv'];
+        $total = $amounts['total'];
+        $state = $amounts['state'];
         $currency = (string) ($row['currency'] ?? 'PEN');
         $exchangeRate = PleWriter::amount($row['exchange_rate'] ?? '1');
-        $sign = (string) $row['document_type'] === '07' ? -1 : 1;
 
         $issueDate = $this->toDate($row['issue_date'] ?? null);
         $modifiedDate = $this->toDate($row['modified_issue_date'] ?? null);
-
-        // Estado: 1 = anotación oportuna. Para comprobantes anulados se reporta
-        // el registro con importes en cero conservando la identidad del documento.
-        $state = '1';
-        if ($isVoided) {
-            $taxable = 0.0;
-            $igv = 0.0;
-            $total = 0.0;
-            $state = '2';
-        } else {
-            $taxable *= $sign;
-            $igv *= $sign;
-            $total *= $sign;
-        }
 
         return PleWriter::record([
             $periodKey,                                   // 1  Periodo
