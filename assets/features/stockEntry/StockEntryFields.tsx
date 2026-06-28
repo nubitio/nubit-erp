@@ -18,6 +18,11 @@ import type { TenantRuntimeConfig } from '@shared/hooks';
 
 export type StockEntryMode = 'receipt' | 'issue' | 'transfer' | 'adjustment';
 
+export interface StockEntryPrefill {
+  warehouseId?: string;
+  productId?: string;
+}
+
 const REASON_OPTIONS = [
   { value: 'INITIAL_STOCK',    text: 'Carga inicial' },
   { value: 'COUNT_CORRECTION', text: 'Corrección por conteo' },
@@ -48,9 +53,10 @@ export const StockEntryFields = (
   mode: StockEntryMode,
   branchId: string | number = '',
   runtimeConfig?: TenantRuntimeConfig,
+  prefill?: StockEntryPrefill,
 ): Field[] => {
   const fields: Field[] = [];
-  const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
+  const defaultWarehouseId = prefill?.warehouseId ?? runtimeConfig?.defaults.warehouse?.id ?? '';
   const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
 
   fields.push(identityField().build());
@@ -150,18 +156,21 @@ export const StockEntryFields = (
 
 // ─── Item fields ──────────────────────────────────────────────────────────────
 
-export const StockEntryItemFields = (mode: StockEntryMode): Field[] => {
+export const StockEntryItemFields = (mode: StockEntryMode, prefill?: StockEntryPrefill): Field[] => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
 
-  fields.push(
-    entityField(API + 'products', 'id', 'name')
-      .name('product')
-      .label('Producto')
-      .required(true)
-      .build(),
-  );
+  const productField = entityField(API + 'products', 'id', 'name')
+    .name('product')
+    .label('Producto')
+    .required(true);
+
+  if (prefill?.productId) {
+    productField.defaultValue(`${API}products/${prefill.productId}`);
+  }
+
+  fields.push(productField.build());
 
   fields.push(
     numberField()

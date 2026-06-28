@@ -25,19 +25,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class UnitOfMeasure
 {
-    #[Groups(['unit-of-measure:read', 'product:read'])]
+    #[Groups(['unit-of-measure:read', 'product:read', 'stock_item:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'unidad_id')]
     private ?int $id = null;
 
-    #[Groups(['unit-of-measure:read', 'unit-of-measure:write', 'product:read'])]
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write', 'product:read', 'stock_item:read'])]
     #[Assert\NotBlank]
     #[ApiProperty(description: 'unit_of_measure.name.label')]
     #[ORM\Column(length: 255)]
     private string $name;
 
-    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write', 'stock_item:read'])]
     #[ApiProperty(description: 'unit_of_measure.code.label')]
     #[ORM\Column(length: 255)]
     private string $code;

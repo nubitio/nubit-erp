@@ -145,7 +145,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
     if (pathname.startsWith('/customer')) return { screen: 'customers' };
     if (pathname.startsWith('/product')) return { screen: 'products' };
     if (pathname.startsWith('/purchase')) return { screen: 'purchases' };
-    if (pathname.startsWith('/report')) return { screen: 'reports' };
+    if (pathname.startsWith('/report')) return { screen: 'dashboard' };
     return { screen: pathname.replace(/^\//, '').split('/')[0] ?? 'unknown' };
   }, [pathname]);
 

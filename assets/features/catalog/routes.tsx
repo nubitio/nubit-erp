@@ -1,3 +1,4 @@
+import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import { crudRoute } from '@app/router/crudRoute';
 import type { AppRouteDefinition } from '@app/router/types';
@@ -13,7 +14,6 @@ const ReceiptPage = lazyNamed(() => import('@features/stockEntry/StockEntryPage'
 const ReorderPage = lazyNamed(() => import('@features/reorder/ReorderPage'), 'ReorderPage');
 const CategoryPage = lazyNamed(() => import('./CategoryPage'), 'CategoryPage');
 const WarehousePage = lazyNamed(() => import('./WarehousePage'), 'WarehousePage');
-const StockItemPage = lazyNamed(() => import('./StockItemPage'), 'StockItemPage');
 const PriceListPage = lazyNamed(() => import('./PriceListPage'), 'PriceListPage');
 const SupplierPage = lazyNamed(() => import('./SupplierPage'), 'SupplierPage');
 const UnitOfMeasurePage = lazyNamed(() => import('./UnitOfMeasurePage'), 'UnitOfMeasurePage');
@@ -24,9 +24,11 @@ const PaymentMethodPage = lazyNamed(() => import('./PaymentMethodPage'), 'Paymen
 const OperationPage = lazyNamed(() => import('./OperationPage'), 'OperationPage');
 const DespatchGuidePage = lazyNamed(() => import('./DespatchGuidePage'), 'DespatchGuidePage');
 
+const StockRedirect = () => <Navigate to="/inventory/stock" replace />;
+
 export const catalogRoutes: AppRouteDefinition[] = [
   ...productRoutes,
-  { path: '/stock', element: StockItemPage },
+  { path: '/stock', element: StockRedirect },
   { path: '/kardex', element: KardexPage },
   { path: '/reorder', element: ReorderPage },
   ...crudRoute('/stock-adjustment', StockAdjustmentPage),

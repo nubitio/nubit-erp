@@ -34,6 +34,7 @@ class Category
     #[Groups([
         'category:read',
         'product:read',
+        'stock_item:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -44,6 +45,7 @@ class Category
     #[Groups([
         'category:read',
         'product:read',
+        'stock_item:read',
         'category:write',
     ])]
     #[Assert\NotBlank]

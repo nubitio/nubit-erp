@@ -8,6 +8,7 @@ import {
   currencyField,
   dateField,
   numberField,
+  enumField,
   textareaField,
   textField,
 } from '@nubitio/crud';
@@ -70,6 +71,36 @@ export const InboundFields = (branchId: string | number = '') => {
       .name('supplier')
       .label('Proveedor')
       .width(240)
+      .required(true)
+      .build(),
+  );
+  fields.push(
+    enumField([
+      { value: '01', text: 'Factura' },
+      { value: '03', text: 'Boleta' },
+      { value: '07', text: 'Nota de crédito' },
+      { value: '08', text: 'Nota de débito' },
+    ])
+      .name('supplierDocType')
+      .label('Tipo comprobante')
+      .width(150)
+      .required(true)
+      .build(),
+  );
+  fields.push(
+    textField()
+      .name('supplierDocSeries')
+      .label('Serie proveedor')
+      .width(120)
+      .required(true)
+      .build(),
+  );
+  fields.push(
+    textField()
+      .name('supplierDocNumber')
+      .label('Número proveedor')
+      .width(140)
+      .required(true)
       .build(),
   );
   fields.push(textareaField().name('note').label('Glosa').width(300).build());

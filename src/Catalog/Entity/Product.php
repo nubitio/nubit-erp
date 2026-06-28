@@ -136,15 +136,15 @@ class Product
     private string $name;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'stock_item:read'])]
     #[ApiProperty(description: 'product.category.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id', nullable: false)]
     private Category $category;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read', 'product:write'])]
-    #[ApiProperty(description: 'product.unit_of_measure.label')]
+    #[Groups(['product:read', 'product:write', 'stock_item:read'])]
+    #[ApiProperty(readableLink: true, description: 'product.unit_of_measure.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id', nullable: false)]
     private UnitOfMeasure $unitOfMeasure;
