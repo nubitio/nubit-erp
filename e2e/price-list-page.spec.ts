@@ -1,28 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
+import { login as loginUser } from './helpers/auth';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 const BASE_URL = getE2EBaseUrl();
-
-async function fillDxInput(page: Page, ariaLabel: string, value: string) {
-  const input = page.locator(`input[aria-label="${ariaLabel}"]`).first();
-  await input.waitFor({ state: 'visible', timeout: 10_000 });
-  await input.click({ clickCount: 3 });
-  await page.keyboard.press('Control+a');
-  await page.keyboard.press('Delete');
-  await input.pressSequentially(value, { delay: 30 });
-  await page.keyboard.press('Tab');
-}
-
-async function login(page: Page) {
-  const seed = await getE2ESeed();
-  await page.goto(`${BASE_URL}/#/login`);
-  await expect(page.locator('form.login-form')).toBeVisible({ timeout: 20_000 });
-  await fillDxInput(page, 'Usuario', seed.username);
-  await fillDxInput(page, 'Contraseña', seed.password);
-  await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
-  await expect(page.locator('.nb-admin-shell')).toBeVisible({ timeout: 30_000 });
-}
 
 test.describe('Price list page', () => {
   test('loads after login without vite or runtime errors', async ({ page }) => {
@@ -51,7 +32,8 @@ test.describe('Price list page', () => {
       }
     });
 
-    await login(page);
+    const seed = await getE2ESeed();
+    await loginUser(page, seed.username, seed.password);
     await page.goto(`${BASE_URL}/#/price-list`);
     // Retry once if 502s are detected — transient under Docker load
     await page.waitForTimeout(2000);

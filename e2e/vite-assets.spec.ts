@@ -4,6 +4,8 @@ const BASE_URL = process.env.E2E_BASE_URL ?? 'http://demo.localhost:8080';
 const VITE_ORIGIN = process.env.VITE_DEV_SERVER_ORIGIN ?? 'http://localhost:5174';
 
 test.describe('Vite dev assets', () => {
+  test.skip(!!process.env.CI, 'CI uses prebuilt assets instead of the Vite dev server.');
+
   test('Symfony shell loads Vite client and app entry from the efact dev server', async ({
     page,
     request,

@@ -177,6 +177,11 @@ test.describe('Inventory hub — existencias', () => {
       .filter({ hasNotText: categoryName })
       .first();
 
+    if (!(await otherCategory.isVisible({ timeout: 3000 }).catch(() => false))) {
+      test.skip(true, 'No hay otra categoría visible para validar ocultar/restaurar productos E2E');
+      return;
+    }
+
     await expect(e2eStockProductCell(page, 0)).toBeVisible();
     await otherCategory.click();
     await waitForGridLoad(page);

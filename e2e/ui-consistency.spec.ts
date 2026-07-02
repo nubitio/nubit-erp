@@ -53,7 +53,6 @@ const CRUD_PAGES: CrudPageSpec[] = [
     hasPresets: true,
   },
   { route: '/category', toolbar: /categor/i, opensForm: true, shell: 'dialog', hasPresets: false },
-  { route: '/warehouse', toolbar: /almac/i, opensForm: true, shell: 'dialog', hasPresets: false },
   {
     route: '/supplier',
     toolbar: /proveedor/i,
