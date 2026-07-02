@@ -6,6 +6,7 @@ import { SettingsCompanyTab } from './SettingsCompanyTab';
 import { SettingsSunatTab } from './SettingsSunatTab';
 import { SettingsGeneralTab } from './SettingsGeneralTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const VoucherSeriesPage = lazyNamed(() => import('@features/catalog/VoucherSeriesPage'), 'VoucherSeriesPage');
 const UserPage = lazyNamed(() => import('@features/admin/UserPage'), 'UserPage');
@@ -29,10 +30,18 @@ const SettingsBranchesTab = () => (
   </SettingsCrudPanel>
 );
 
+const WarehousesRedirect = () => {
+  const { data: runtimeConfig } = useTenantRuntimeConfig();
+  if (runtimeConfig?.ui.inventory.showWarehouseManagement === false) {
+    return <Navigate to="/inventory/stock" replace />;
+  }
+  return <Navigate to="/inventory/warehouses" replace />;
+};
+
 export const settingsRoutes: AppRouteDefinition[] = [
   { path: '/user', element: () => <Navigate to="/config/users" replace /> },
   { path: '/branch', element: () => <Navigate to="/config/branches" replace /> },
-  { path: '/config/warehouses', element: () => <Navigate to="/inventory/warehouses" replace /> },
+  { path: '/config/warehouses', element: WarehousesRedirect },
   { path: '/voucher-series', element: () => <Navigate to="/config/series" replace /> },
   {
     path: '/config',

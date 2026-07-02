@@ -1,6 +1,8 @@
+import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { InventoryHubLayout } from './InventoryHubLayout';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const StockItemPage = lazyNamed(() => import('@features/catalog/StockItemPage'), 'StockItemPage');
 const KardexPage = lazyNamed(() => import('@features/kardex/KardexPage'), 'KardexPage');
@@ -12,6 +14,14 @@ const InventoryOperationsPage = lazyNamed(
 );
 const CycleCountPage = lazyNamed(() => import('./CycleCountPage'), 'CycleCountPage');
 
+const WarehouseRouteGuard = () => {
+  const { data: runtimeConfig } = useTenantRuntimeConfig();
+  if (runtimeConfig?.ui.inventory.showWarehouseManagement === false) {
+    return <Navigate to="/inventory/stock" replace />;
+  }
+  return <WarehousePage />;
+};
+
 export const inventoryRoutes: AppRouteDefinition[] = [
   {
     path: '/inventory',
@@ -22,7 +32,7 @@ export const inventoryRoutes: AppRouteDefinition[] = [
       { path: 'operations', element: InventoryOperationsPage },
       { path: 'cycle-count', element: CycleCountPage },
       { path: 'reorder', element: ReorderPage },
-      { path: 'warehouses', element: WarehousePage },
+      { path: 'warehouses', element: WarehouseRouteGuard },
     ],
   },
 ];

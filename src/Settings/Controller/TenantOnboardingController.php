@@ -41,7 +41,7 @@ final class TenantOnboardingController extends AbstractController
     public function snapshot(): JsonResponse
     {
         if (!$this->hasTenantContext()) {
-            return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'No tenant context'], Response::HTTP_CONFLICT);
         }
 
         return $this->json($this->buildSnapshot());
@@ -51,7 +51,7 @@ final class TenantOnboardingController extends AbstractController
     public function saveCompany(Request $request): JsonResponse
     {
         if (!$this->hasTenantContext()) {
-            return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'No tenant context'], Response::HTTP_CONFLICT);
         }
 
         try {
@@ -77,7 +77,7 @@ final class TenantOnboardingController extends AbstractController
     public function saveBranch(Request $request): JsonResponse
     {
         if (!$this->hasTenantContext()) {
-            return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'No tenant context'], Response::HTTP_CONFLICT);
         }
 
         try {
@@ -108,7 +108,7 @@ final class TenantOnboardingController extends AbstractController
     public function saveWarehouse(Request $request): JsonResponse
     {
         if (!$this->hasTenantContext()) {
-            return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'No tenant context'], Response::HTTP_CONFLICT);
         }
 
         try {

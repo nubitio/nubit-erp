@@ -14,6 +14,7 @@ import {
 } from '@nubitio/crud';
 import { productService } from '@features/product';
 import { ProductDto } from '@features/product/types/product.dto';
+import type { TenantRuntimeConfig } from '@shared/hooks';
 
 type InboundDetailRow = DataRecord & {
   product?: ProductDto;
@@ -29,8 +30,11 @@ import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
 
-export const InboundFields = (branchId: string | number = '') => {
+export const InboundFields = (branchId: string | number = '', runtimeConfig?: TenantRuntimeConfig) => {
   const fields: Field[] = [];
+
+  const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
+  const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
 
   fields.push(identityField().label('ID').build());
   fields.push(
@@ -51,21 +55,28 @@ export const InboundFields = (branchId: string | number = '') => {
       .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
       .build(),
   );
-  fields.push(
-    entityField(API + 'warehouses', 'id', 'name')
-      .name('warehouse')
-      .label('Almacén')
-      .width(200)
-      .filters([
-        {
-          field: 'branch',
-          operator: '=',
-          value: branchId,
-        },
-      ])
-      .required(true)
-      .build(),
-  );
+  const warehouseField = entityField(API + 'warehouses', 'id', 'name')
+    .name('warehouse')
+    .label('Almacén')
+    .width(200)
+    .filters([
+      {
+        field: 'branch',
+        operator: '=',
+        value: branchId,
+      },
+    ])
+    .required(true);
+
+  if (!showWarehouseSelector && defaultWarehouseId) {
+    warehouseField
+      .defaultValue(`${API}warehouses/${defaultWarehouseId}`)
+      .hidden(true)
+      .visible(false)
+      .visibleOnForm(false);
+  }
+
+  fields.push(warehouseField.build());
   fields.push(
     entityField(API + 'suppliers', 'id', 'businessName')
       .name('supplier')

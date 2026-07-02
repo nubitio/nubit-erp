@@ -4,6 +4,7 @@ import { crudRoute } from '@app/router/crudRoute';
 import type { AppRouteDefinition } from '@app/router/types';
 import { customerRoutes } from '@features/customer/routes';
 import { CatalogHubLayout } from './CatalogHubLayout';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const ProductPage = lazyNamed(() => import('@features/product/ProductPage'), 'ProductPage');
 const StockAdjustmentPage = lazyNamed(
@@ -24,7 +25,13 @@ const DespatchGuidePage = lazyNamed(() => import('./DespatchGuidePage'), 'Despat
 const StockRedirect = () => <Navigate to="/inventory/stock" replace />;
 const KardexRedirect = () => <Navigate to="/inventory/movements" replace />;
 const ReorderRedirect = () => <Navigate to="/inventory/reorder" replace />;
-const WarehouseRedirect = () => <Navigate to="/inventory/warehouses" replace />;
+const WarehouseRedirect = () => {
+  const { data: runtimeConfig } = useTenantRuntimeConfig();
+  if (runtimeConfig?.ui.inventory.showWarehouseManagement === false) {
+    return <Navigate to="/inventory/stock" replace />;
+  }
+  return <Navigate to="/inventory/warehouses" replace />;
+};
 const ProductRedirect = () => <Navigate to="/catalog/products" replace />;
 const CategoryRedirect = () => <Navigate to="/catalog/categories" replace />;
 const PriceListRedirect = () => <Navigate to="/catalog/prices" replace />;

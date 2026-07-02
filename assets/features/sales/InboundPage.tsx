@@ -7,6 +7,7 @@ import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 
 const API = getCoreApiBaseUrl();
 import { useSessionInfo } from '@shared/sessionInfo';
+import { useTenantRuntimeConfig } from '@shared/hooks';
 
 type PurchaseDetailRow = {
   totalAmount?: number;
@@ -14,15 +15,29 @@ type PurchaseDetailRow = {
 
 export const PurchasesPage = () => {
   const { currentBranchId } = useSessionInfo();
+  const { data: runtimeConfig } = useTenantRuntimeConfig();
 
   const resource = useMemo(() => {
     const detailFields = PurchasesDetailFields();
     const detailUrl = API + 'purchases/{id}/items';
 
+    const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
+    const showWarehouseColumn = showWarehouseSelector || !runtimeConfig?.defaults.warehouse?.id;
+
+    const basicColumns = showWarehouseColumn
+      ? ['issuedAt', 'supplier', 'warehouse', 'grandTotal']
+      : ['issuedAt', 'supplier', 'grandTotal'];
+    const fullColumns = showWarehouseColumn
+      ? ['issuedAt', 'supplier', 'warehouse', 'note', 'grandTotal']
+      : ['issuedAt', 'supplier', 'note', 'grandTotal'];
+    const formFields = showWarehouseColumn
+      ? ['issuedAt', 'warehouse', 'supplier', 'grandTotal']
+      : ['issuedAt', 'supplier', 'grandTotal'];
+
     return defineResource(API + 'purchases', {
       id: 'purchases',
       title: 'Compras',
-      fields: PurchasesFields(currentBranchId),
+      fields: PurchasesFields(currentBranchId, runtimeConfig),
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: {
         propertyName: 'items',
@@ -38,12 +53,12 @@ export const PurchasesPage = () => {
         {
           key: 'basic',
           label: 'Básico',
-          columns: ['issuedAt', 'supplier', 'warehouse', 'grandTotal'],
+          columns: basicColumns,
         },
         {
           key: 'full',
           label: 'Completo',
-          columns: ['issuedAt', 'supplier', 'warehouse', 'note', 'grandTotal'],
+          columns: fullColumns,
         },
       ],
       defaultPreset: 'basic',
@@ -58,7 +73,7 @@ export const PurchasesPage = () => {
           {
             label: 'Cabecera',
             icon: 'ph-receipt',
-            fields: ['issuedAt', 'warehouse', 'supplier', 'grandTotal'],
+            fields: formFields,
           },
           {
             label: 'Notas',
@@ -76,7 +91,7 @@ export const PurchasesPage = () => {
         formRef.current?.setFieldValue('grandTotal', Number(total));
       },
     });
-  }, [currentBranchId]);
+  }, [currentBranchId, runtimeConfig]);
 
   return <SchemaCrudPage resource={resource} />;
 };

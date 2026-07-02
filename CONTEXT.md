@@ -146,20 +146,20 @@ Current hub structure:
 
 ## Pending Simplification Work
 
-1. Hide warehouse management for Tienda Unica tenants.
-   Use `TenantRuntimeConfig.ui.inventory.showWarehouseManagement` to hide warehouse admin routes and menu entries. Keep backend entities and schema unchanged.
+1. Hide warehouse management for Tienda Unica tenants. (DONE)
+   Route guard added to `/inventory/warehouses`, legacy redirects from `/warehouse` and `/config/warehouses` now check `showWarehouseManagement`. Warehouse hub tab and menu entries were already gated.
 
-2. Hide stock transfers for Tienda Unica tenants.
-   Use `TenantRuntimeConfig.ui.inventory.showTransfers` to remove transfer entry points unless `inventory.multi_warehouse` is enabled.
+2. Hide stock transfers for Tienda Unica tenants. (DONE)
+   Menu entries, hub banner, operation card, route guard on `StockEntryPage`, and `StockEntryPage` transfer form already gated by `showTransfers` / `inventory.multi_warehouse`.
 
-3. Default warehouse in write forms.
-   Stock entries, purchases and POS/sale forms should use `TenantRuntimeConfig.defaults.warehouse` when `showWarehouseSelector` is false. Users should not see an `Almacen` field in Tienda Unica mode.
+3. Default warehouse in write forms. (DONE)
+   Stock entry forms (`StockEntryFields.tsx`), purchase forms (`InboundFields.tsx`), purchase grid layout (`InboundPage.tsx`), and POS form all use `defaults.warehouse` / `showWarehouseSelector` to hide and auto-fill the warehouse field.
 
 4. Make menu resolution capability-aware. (DONE)
    Menu resolution now combines `navigationTier`, capabilities/UI rules and role-menu permissions. The database menu defines the ceiling, `menuService.ts` filters unavailable paths at runtime, and feature hubs hide internal tabs using the same runtime config.
 
-5. Add a `SaleSubmitter` seam in POS.
-   Online sales should submit directly by default. The outbox remains the offline adapter used on network failure or when an offline-first capability requires it.
+5. Add a `SaleSubmitter` seam in POS. (DONE)
+   Online sales submit directly by default; the IndexedDB outbox handles network failure and offline mode. Implemented in `assets/features/pos/saleSubmitter.ts`.
 
 6. Split the Sales/Billing mixed interface. (DONE)
    The broad `SaleInvoicingPortInterface` was replaced by narrower interfaces:
