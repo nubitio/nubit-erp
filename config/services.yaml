@@ -60,6 +60,9 @@ services:
 
   # Media URLs go straight to S3/CDN instead of the bundle streaming route.
   Nubit\AdminBundle\Media\MediaUrlResolverInterface: '@App\Efact\Filesystem\S3MediaUrlResolver'
+
+  App\Billing\Sunat\Domain\BillRepositoryInterface: '@App\Billing\Sunat\Infrastructure\BillRepository'
+
   # Bundle's Mercure token service, registered manually because efact uses
   # its own tenant-scoped decorator instead of nubit_admin.mercure.enabled.
   Nubit\AdminBundle\Auth\MercureSubscriberTokenService:

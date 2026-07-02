@@ -8,7 +8,7 @@ set -e
 
 # Wait for the web server to be ready before running tests.
 # This guards against the web container being recreated by docker compose run.
-if [ -z "$E2E_BASE_URL" ]; then
+if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
   WEB_IP=""
   for _ in $(seq 1 10); do
     WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
