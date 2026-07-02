@@ -1,0 +1,7 @@
+services:
+  App\Setup\Infrastructure\Billing\E2eStubBillRepository:
+    decorates: App\Billing\Sunat\Infrastructure\BillRepository
+    arguments:
+      $inner: '@.inner'
+
+  App\Billing\Sunat\Domain\BillRepositoryInterface: '@App\Setup\Infrastructure\Billing\E2eStubBillRepository'

@@ -20,6 +20,7 @@ use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
+use App\Contacts\Repository\SupplierRepository;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RoleRepository;
@@ -57,6 +58,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $branchRepository = $this->createMock(BranchRepository::class);
         $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $customerRepository = $this->createStub(CustomerRepository::class);
+        $supplierRepository = $this->createStub(SupplierRepository::class);
         $productRepository = $this->createStub(ProductRepository::class);
         $productStockRepository = $this->createStub(ProductStockRepository::class);
         $categoryRepository = $this->createStub(CategoryRepository::class);
@@ -167,6 +169,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $branchRepository,
             $warehouseRepository,
             $customerRepository,
+            $supplierRepository,
             $productRepository,
             $productStockRepository,
             $categoryRepository,
@@ -196,6 +199,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $branchRepository = $this->createMock(BranchRepository::class);
         $warehouseRepository = $this->createStub(WarehouseRepository::class);
         $customerRepository = $this->createStub(CustomerRepository::class);
+        $supplierRepository = $this->createStub(SupplierRepository::class);
         $productRepository = $this->createStub(ProductRepository::class);
         $productStockRepository = $this->createStub(ProductStockRepository::class);
         $categoryRepository = $this->createStub(CategoryRepository::class);
@@ -253,6 +257,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $branchRepository,
             $warehouseRepository,
             $customerRepository,
+            $supplierRepository,
             $productRepository,
             $productStockRepository,
             $categoryRepository,

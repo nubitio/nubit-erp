@@ -19,7 +19,9 @@ use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Contacts\Entity\Customer;
+use App\Contacts\Entity\Supplier;
 use App\Contacts\Repository\CustomerRepository;
+use App\Contacts\Repository\SupplierRepository;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RoleRepository;
@@ -53,6 +55,8 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_PRODUCT_NAME = 'Producto CI E2E';
     private const string E2E_PRODUCT_2_CODE = 'E2E-CI-PRODUCT-2';
     private const string E2E_PRODUCT_2_NAME = 'Producto CI E2E 2';
+    private const string E2E_SUPPLIER_RUC = '20100000999';
+    private const string E2E_SUPPLIER_NAME = 'Proveedor CI E2E';
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -66,6 +70,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly BranchRepository $branchRepository,
         private readonly WarehouseRepository $warehouseRepository,
         private readonly CustomerRepository $customerRepository,
+        private readonly SupplierRepository $supplierRepository,
         private readonly ProductRepository $productRepository,
         private readonly ProductStockRepository $productStockRepository,
         private readonly CategoryRepository $categoryRepository,
@@ -94,6 +99,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
+        $this->upsertSupplier();
         $product = $this->upsertProduct($warehouse, self::E2E_PRODUCT_CODE, self::E2E_PRODUCT_NAME);
         $this->upsertProduct($warehouse, self::E2E_PRODUCT_2_CODE, self::E2E_PRODUCT_2_NAME);
 
@@ -309,6 +315,26 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->flush();
 
         return $customer;
+    }
+
+    private function upsertSupplier(): Supplier
+    {
+        $supplier = $this->supplierRepository->findOneBy(['ruc' => self::E2E_SUPPLIER_RUC]);
+        if ($supplier instanceof Supplier) {
+            return $supplier;
+        }
+
+        $supplier = new Supplier();
+        $supplier
+            ->setRuc(self::E2E_SUPPLIER_RUC)
+            ->setBusinessName(self::E2E_SUPPLIER_NAME)
+            ->setFiscalAddress('CI Supplier Address')
+            ->setPhone('+51900000002');
+
+        $this->entityManager->persist($supplier);
+        $this->entityManager->flush();
+
+        return $supplier;
     }
 
     private function upsertProduct(Warehouse $warehouse, string $code, string $name): Product

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 const BASE_URL = getE2EBaseUrl();
@@ -23,7 +24,7 @@ async function completeBranchSelectionIfVisible(page: Page) {
     return;
   }
 
-  const seededBranchOption = branchDialog.getByRole('radio', { name: 'CI E2E Branch' });
+  const seededBranchOption = branchDialog.getByRole('radio', { name: E2E_SEED.branchName });
 
   if (await seededBranchOption.isVisible({ timeout: 1_000 }).catch(() => false)) {
     await seededBranchOption.click();
@@ -86,13 +87,14 @@ test.describe('Post-login shell entry regression', () => {
 
     await completeBranchSelectionIfVisible(page);
 
-    await expect.poll(() => page.url(), { timeout: 20_000 }).toBe(`${BASE_URL}/#/user`);
+    // /user redirects to /config/users (legacy route alias).
+    await expect.poll(() => page.url(), { timeout: 20_000 }).toMatch(/\/#\/config\/users$/);
     await expect(page.locator('form.login-form')).toBeHidden({ timeout: 10_000 });
     await expect(page.locator('.nb-admin-shell')).toBeVisible({ timeout: 20_000 });
 
     await expect
       .poll(async () => page.evaluate(() => window.location.hash), { timeout: 5_000 })
-      .toBe('#/user');
+      .toBe('#/config/users');
 
     await expect
       .poll(

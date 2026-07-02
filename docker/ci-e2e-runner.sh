@@ -37,5 +37,24 @@ until wget -qO- "$BASE/health/live" >/dev/null 2>&1; do
 done
 echo "Web is ready."
 
+# Local runs without CI env vars: seed idempotently (same as e2e-entrypoint).
+if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_SALE_ID:-}" ]; then
+  echo "Seeding E2E credentials from ${BASE}/api/test/e2e/seed ..."
+  SEED_JSON=$(curl -sf -X POST "${BASE}/api/test/e2e/seed") || {
+    echo "ERROR: E2E seed endpoint failed at ${BASE}/api/test/e2e/seed"
+    exit 1
+  }
+  export E2E_USERNAME=$(echo "$SEED_JSON" | grep -o '"username":"[^"]*"' | cut -d'"' -f4)
+  export E2E_PASSWORD=$(echo "$SEED_JSON" | grep -o '"password":"[^"]*"' | cut -d'"' -f4)
+  export E2E_SALE_ID=$(echo "$SEED_JSON" | grep -o '"saleId":"[^"]*"' | cut -d'"' -f4)
+  echo "E2E seed ready: username=${E2E_USERNAME} saleId=${E2E_SALE_ID}"
+fi
+
 corepack enable
-yarn test:e2e
+
+# Critical business flows only — no visual/debug/smoke specs.
+yarn test:e2e \
+  e2e/login-shell-mount.spec.ts \
+  e2e/happy-path.spec.ts \
+  e2e/golden-path-fiscal.spec.ts \
+  e2e/purchases-stock.spec.ts

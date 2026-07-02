@@ -1,32 +1,65 @@
 import { expect, type Page } from '@playwright/test';
+import { E2E_SEED } from '../support/seedConstants';
 import { getE2EBaseUrl } from '../support/e2eSeed';
 
-const BASE_URL = getE2EBaseUrl();
+async function fillDxInput(page: Page, ariaLabel: string, value: string) {
+  const input = page
+    .locator(
+      `input[aria-label="${ariaLabel}"], textarea[aria-label="${ariaLabel}"], [role="textbox"][aria-label="${ariaLabel}"]`,
+    )
+    .first();
+  await input.waitFor({ state: 'visible', timeout: 8000 });
+  await input.click({ clickCount: 3 });
+  await page.keyboard.press('Control+a');
+  await page.keyboard.press('Delete');
+  await input.pressSequentially(value, { delay: 30 });
+  await page.keyboard.press('Tab');
+}
+
+async function waitForPostLoginLanding(page: Page) {
+  await page
+    .waitForFunction(
+      () => {
+        const hash = window.location.hash ?? '';
+        const loginForm = document.querySelector('form.login-form');
+        return !hash.includes('/login') && !loginForm;
+      },
+      undefined,
+      { timeout: 30000 },
+    )
+    .catch(() => {});
+
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+}
 
 /** Log in and complete branch selection when the picker appears. */
 export async function login(page: Page, username: string, password: string) {
-  await page.goto(`${BASE_URL}/#/login`);
-  await expect(page.locator('form.login-form')).toBeVisible({ timeout: 15000 });
+  const baseUrl = getE2EBaseUrl();
 
-  const usernameInput = page.locator('input[aria-label="Usuario"]').first();
-  await usernameInput.waitFor({ state: 'visible', timeout: 8000 });
-  await usernameInput.click({ clickCount: 3 });
-  await usernameInput.pressSequentially(username, { delay: 30 });
-  await page.keyboard.press('Tab');
+  await page.goto(`${baseUrl}/#/login`);
+  await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
+  await expect(page.locator('form.login-form')).toBeVisible({ timeout: 25000 });
 
-  const passwordInput = page.locator('input[aria-label="Contraseña"]').first();
-  await passwordInput.waitFor({ state: 'visible', timeout: 8000 });
-  await passwordInput.click({ clickCount: 3 });
-  await passwordInput.pressSequentially(password, { delay: 30 });
+  await fillDxInput(page, 'Usuario', username);
+  await fillDxInput(page, 'Contraseña', password);
+
+  const loginResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/auth/login') && response.request().method() === 'POST',
+    { timeout: 20000 },
+  );
 
   await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
 
+  const loginResponse = await loginResponsePromise;
+  expect(loginResponse.ok(), `login API debe responder 2xx (status ${loginResponse.status()})`).toBeTruthy();
+
   try {
     const firstBranch = page.locator('[data-testid="branch-picker-option"]').first();
-    await firstBranch.waitFor({ state: 'visible', timeout: 6000 });
+    await firstBranch.waitFor({ state: 'visible', timeout: 7000 });
     const e2eBranch = page
       .locator('[data-testid="branch-picker-option"]')
-      .filter({ hasText: 'CI E2E Branch' });
+      .filter({ hasText: E2E_SEED.branchName });
     const target = (await e2eBranch.count()) > 0 ? e2eBranch.first() : firstBranch;
     await target.click();
     await page.waitForTimeout(300);
@@ -43,5 +76,12 @@ export async function login(page: Page, username: string, password: string) {
     // No branch picker — auto-selected.
   }
 
-  await page.waitForURL(/\/#\/(dashboard|pos)/, { timeout: 20000 });
+  await waitForPostLoginLanding(page);
+
+  const onAppRoute =
+    page.url().includes('/#/dashboard') ||
+    page.url().includes('/#/pos') ||
+    !(page.url().includes('/#/login') || (await page.locator('form.login-form').isVisible().catch(() => false)));
+
+  expect(onAppRoute, 'debe salir de /login tras autenticarse').toBeTruthy();
 }

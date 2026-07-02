@@ -36,6 +36,7 @@ import {
   waitForSaleFormReady,
 } from './helpers/crud';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
+import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 // ── Env / config ──────────────────────────────────────────────────────────────
@@ -48,8 +49,9 @@ const ts = Date.now();
 const productName = `Test Producto ${ts}`;
 
 // ── Seed product — always available from app:test:seed-e2e ───────────────────
-const SEED_PRODUCT_NAME = 'Producto CI E2E';
-const SEED_PRODUCT_PRICE = '10';
+const SEED_PRODUCT_NAME = E2E_SEED.productName;
+const SEED_PRODUCT_2_NAME = E2E_SEED.product2Name;
+const SEED_PRODUCT_PRICE = E2E_SEED.productPrice;
 const SEED_CUSTOMER_DNI = '20100000001';
 const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 
@@ -477,13 +479,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
     // Retry the whole filter→row cycle: re-applies the filter when a late
     // grid re-render swallowed it instead of waiting 15s for a row that can
     // no longer appear.
-    const productRow = page.locator('.nb-datagrid__row').filter({ hasText: SEED_PRODUCT_NAME });
+    const productRow = page
+      .locator('.nb-datagrid__row')
+      .filter({ hasText: SEED_PRODUCT_NAME })
+      .filter({ hasNotText: SEED_PRODUCT_2_NAME });
     await expect(async () => {
       await filterGridByName(page, SEED_PRODUCT_NAME);
       await waitForGridLoad(page);
       await expect(productRow.first()).toBeVisible({ timeout: 5000 });
     }).toPass({ timeout: 30000 });
-    await expect(productRow).toContainText(SEED_PRODUCT_PRICE);
+    await expect(productRow.first()).toContainText(SEED_PRODUCT_PRICE);
 
     posProductName = SEED_PRODUCT_NAME;
   });

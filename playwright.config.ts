@@ -7,7 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
  *
  *  1. Headless inside Docker (CI / docker compose --profile e2e run --rm e2e):
  *       docker compose --profile e2e run --rm e2e
- *       docker compose --profile e2e run --rm e2e yarn test:e2e e2e/happy-path.spec.ts
+ *       # CI runs four critical specs via docker/ci-e2e-runner.sh
+ *       docker compose --profile e2e run --rm e2e yarn test:e2e e2e/golden-path-fiscal.spec.ts
  *
  *  2. Headed on host machine (see the app run in a real browser):
  *       E2E_BASE_URL=http://localhost:8080 yarn test:e2e --headed
