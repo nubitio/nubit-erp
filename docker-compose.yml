@@ -106,6 +106,7 @@ services:
       MESSENGER_TRANSPORT_DSN: '${MESSENGER_TRANSPORT_DSN:-doctrine://control_plane?queue_name=default}'
       MAILER_FROM: '${MAILER_FROM:-noreply@efact.app}'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
+      E2E_SEED_ENABLED: '1'
     depends_on:
       - database
       - mercure
@@ -140,7 +141,7 @@ services:
       - '6379:6379'
 
   e2e:
-    image: mcr.microsoft.com/playwright:v1.60.0-noble
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
     security_opt:
       - label=disable
     working_dir: /home/node/app
@@ -149,6 +150,7 @@ services:
     command: ['npx', 'playwright', 'test']
     volumes:
       - '.:/home/node/app'
+      - vite-node-modules:/home/node/app/node_modules
     environment:
       # Suppress Corepack download confirmation prompt
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
