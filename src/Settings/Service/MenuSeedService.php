@@ -104,8 +104,17 @@ class MenuSeedService
 
         // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
-            'id' => 601,
+            'id' => 700,
             'order_index' => 8,
+            'key_name' => 'Impuestos',
+            'type' => 'route',
+            'route' => 'taxes',
+            'icon' => 'ph ph-receipt',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 601,
+            'order_index' => 9,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
@@ -114,7 +123,7 @@ class MenuSeedService
         ],
         [
             'id' => 909,
-            'order_index' => 9,
+            'order_index' => 10,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
