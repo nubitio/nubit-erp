@@ -2,7 +2,7 @@ import { type RefObject } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { FormHandle } from '@nubitio/crud';
+import type { FormHandle, GridCellContext } from '@nubitio/crud';
 import { Field } from '@nubitio/crud';
 import { entityField, textField, textareaField } from '@nubitio/crud';
 import { consultService } from '@features/consult';

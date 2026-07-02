@@ -166,6 +166,7 @@ test.describe('Inventory hub — existencias', () => {
 
     if (!e2eCategory?.trim()) {
       test.skip(true, 'El producto E2E no expone categoría en la grilla');
+      return;
     }
 
     const categoryName = e2eCategory.trim();

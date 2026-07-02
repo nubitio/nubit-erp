@@ -62,7 +62,8 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
         .label('Precio')
         .align('right')
         .required(true)
-        .format({ min: 0, step: 0.01, decimalPlaces: 4 })
+        .precision(4)
+        .validators([{ type: 'range', options: { min: 0 } }])
         .formatter((cell) => NumberUtils.formatCurrency(Number(cell.value ?? 0)))
         .build(),
       textField()

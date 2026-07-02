@@ -90,7 +90,7 @@ interface SaleDetailFieldCallbacks {
   stateRef?: MutableRefObject<SaleFieldStateRef>;
 }
 
-const isStockTrackedProduct = (product: ProductDto | DataRecord | undefined) => {
+const isStockTrackedProduct = (product: ProductDto | DataRecord | null | undefined) => {
   if (!product) return false;
 
   const inventoryBehavior = String(product.inventoryBehavior ?? '').toUpperCase();
@@ -156,7 +156,8 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .defaultValue(1)
       .required(true)
       .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
-      .onSelect((event: CustomerSelectEvent) => {
+      .onSelect((e: unknown) => {
+        const event = e as CustomerSelectEvent;
         if (event.itemData?.price_list) {
           form?.setFieldValue('price_list', event.itemData.price_list.id);
         }
@@ -193,13 +194,11 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
         const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: SaleDetailRow) => {
           const actualPrice = item.unitPrice;
-          const priceItem = fetchedPriceList.find(
-            (p) => p.id === (item.product?.id ?? item.product?.producto_id),
-          );
+          const priceItem = fetchedPriceList.find((p) => p.id === item.product?.id);
           const newPrice = Number(priceItem?.price ?? 0);
           if (priceItem && newPrice !== actualPrice) {
             item.unitPrice = newPrice;
-            item.netAmount = item.qty * newPrice;
+            item.netAmount = Number(item.qty ?? 0) * newPrice;
             form?.reloadDetailData();
           }
         });
@@ -337,7 +336,9 @@ export const SaleDetailFields = (
       .name('product')
       .label('Producto')
       .minWidth(300)
-      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: string | number | null, currentRow: SaleDetailRow) {
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as SaleDetailRow;
+        const currentRow = currentRowData as SaleDetailRow;
         if (value === '' || value == null) {
           row.product = null;
           row.qty = '';
@@ -349,14 +350,14 @@ export const SaleDetailFields = (
           return;
         }
 
-        const product = (await productService.getOne(value, true)) as ProductDto;
+        const product = (await productService.getOne(String(value), true)) as ProductDto;
         // Read price list from shared state (set when user selects a tarifa in the header).
         const currentPriceList = callbacks?.stateRef?.current.priceList ?? [];
         let price = product.salePrice;
         if (currentPriceList.length > 0) {
           const priceItem = currentPriceList.find((item) => item.id === value);
           if (priceItem) {
-            price = priceItem.price;
+            price = Number(priceItem.price);
           }
         }
         row.product = product;
@@ -384,13 +385,16 @@ export const SaleDetailFields = (
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as SaleDetailRow;
+        const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
+        const qty = Number(value);
 
         const stockPolicy = await settings.get(Setting.INVENTORY_NEGATIVE_STOCK_POLICY);
 
         const discountPercent = Number(currentRow.discountPercent ?? 0);
-        const grossAmount = currentRow.unitPrice * value;
+        const grossAmount = Number(currentRow.unitPrice ?? 0) * qty;
         const discountAmount = Number((grossAmount * (discountPercent / 100)).toFixed(2));
         row.discountAmount = discountAmount;
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
@@ -398,14 +402,15 @@ export const SaleDetailFields = (
         // Read warehouse from shared state (set when user selects an almacén in the header).
         const currentWarehouseId = callbacks?.stateRef?.current.warehouseId ?? '';
 
-        if (value > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE' && isStockTrackedProduct(currentRow.product)) {
+        const product = currentRow.product;
+        if (qty > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE' && product && isStockTrackedProduct(product)) {
           if (!currentWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
           }
-          const stockData = await GetStockUseCase(currentRow.product.id, currentWarehouseId);
+          const stockData = await GetStockUseCase(product.id, currentWarehouseId);
           toast('Stock actual: ' + stockData.stock, 'info', 2000);
-          if (value > stockData.stock) {
+          if (qty > stockData.stock) {
             toast('No hay stock suficiente', 'error', 2000);
             value = '';
             row.qty = '';
@@ -426,10 +431,12 @@ export const SaleDetailFields = (
       .width(110)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as SaleDetailRow;
+        const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
         const discountPercent = Number(currentRow.discountPercent ?? 0);
-        const grossAmount = currentRow.qty * value;
+        const grossAmount = Number(currentRow.qty ?? 0) * Number(value);
         const discountAmount = Number((grossAmount * (discountPercent / 100)).toFixed(2));
         row.discountAmount = discountAmount;
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
@@ -449,10 +456,12 @@ export const SaleDetailFields = (
       .valueType('number')
       .precision(2)
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as SaleDetailRow;
+        const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
         const percent = Math.min(100, Math.max(0, Number(value)));
-        const grossAmount = currentRow.qty * currentRow.unitPrice;
+        const grossAmount = Number(currentRow.qty ?? 0) * Number(currentRow.unitPrice ?? 0);
         const discountAmount = Number((grossAmount * (percent / 100)).toFixed(2));
         row.discountAmount = discountAmount;
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
@@ -481,7 +490,9 @@ export const SaleDetailFields = (
       .width(120)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, row: SaleDetailRow, value: number | string, currentRow: SaleDetailRow) {
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as SaleDetailRow;
+        const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);

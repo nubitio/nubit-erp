@@ -254,7 +254,7 @@ const POSPage = () => {
     const openedAt = localStorage.getItem('pos_caja_opened_at') ?? new Date().toISOString();
     localStorage.setItem('pos_caja_opened_at', openedAt);
     setCajaOpenedAt(openedAt);
-  }, []);
+  }, [setCajaOpenedAt]);
 
   // ── Sync caja state with server on mount ─────────────────────────────────────────────────
   // localStorage defaults to 'open'; verify against the real cash-registers/dashboard so

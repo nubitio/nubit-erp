@@ -152,9 +152,10 @@ const processOutboxItem = async (item: OutboxItem) => {
         status: 'done',
         lastError: undefined,
       });
+      const created = (result.data ?? {}) as ServerSaleResponse;
       await updateSaleStatus(item.saleId, 'synced', {
-        serverSaleId: result.data?.id ? String(result.data.id) : undefined,
-        serverCode: buildServerSaleCode(result.data, item.saleId),
+        serverSaleId: created.id ? String(created.id) : undefined,
+        serverCode: buildServerSaleCode(created, item.saleId),
         errorMessage: undefined,
         errorCode: undefined,
         errorAction: undefined,

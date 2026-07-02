@@ -8,7 +8,7 @@ import {
   textField,
   textareaField,
 } from '@nubitio/crud';
-import type { FormHandle, DataRecord } from '@nubitio/crud';
+import type { FormHandle, DataRecord, GridCellContext } from '@nubitio/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -42,7 +42,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
           options: {
             validationCallback: (e: ValidationEvent) => {
               const doc = e.value;
-              return SharedUtils.validateRUC(doc ?? '');
+              return SharedUtils.validateRUC(typeof doc === 'string' || typeof doc === 'number' ? doc : '');
             },
             message: 'El RUC ingresado no es válido',
           },

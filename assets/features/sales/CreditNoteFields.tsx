@@ -33,7 +33,7 @@ type FieldChangeContext = {
   defaultSetCellValue: (row: CreditNoteDetailRow, value: unknown, currentRow: CreditNoteDetailRow) => void;
 };
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubitio/crud';
+import type { DataRecord, GridCellContext } from '@nubitio/crud';
 
 const reasonCodes: { value: string; text: string }[] = [
   {
@@ -102,14 +102,15 @@ export const CreditNoteFields = () => {
           value: '01',
         },
       ])
-      .itemFormatter((data: TaxDocumentItem) => {
+      .itemFormatter((item: unknown) => {
+        const data = item as TaxDocumentItem;
         return (
           <div>
             <b>{`${data.series ?? ''}-${data.number ?? ''}`}</b>
             <br />
             {data.customer?.businessName ?? ''}
             <br />
-            {NumberUtils.formatCurrency(data.total, data.currency ?? 'PEN')}
+            {NumberUtils.formatCurrency(data.total ?? 0, data.currency ?? 'PEN')}
           </div>
         );
       })
@@ -220,7 +221,9 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(function (this: FieldChangeContext, row: CreditNoteDetailRow, value: number | string, currentRow: CreditNoteDetailRow) {
+      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as CreditNoteDetailRow;
+        const currentRow = currentRowData as CreditNoteDetailRow;
         if (value === '') return;
         row.total = Number(currentRow.unitPrice ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);

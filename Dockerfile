@@ -129,7 +129,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Mago
-COPY --from=mago /mago /usr/local/bin/mago
+COPY --from=mago /usr/local/bin/mago /usr/local/bin/mago
 
 # Install Xdebug
 #RUN install-php-extensions xdebug

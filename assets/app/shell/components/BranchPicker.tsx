@@ -114,7 +114,8 @@ export const BranchPicker = ({
     let cancelled = false;
     branchService.getAll().then((response) => {
         if (cancelled) return;
-        const data: Branch[] = response?.data ?? [];
+        const raw = response?.data;
+        const data: Branch[] = Array.isArray(raw) ? (raw as Branch[]) : [];
         loadBranchData(data);
       }).catch(() => {
         if (cancelled) return;

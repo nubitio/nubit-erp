@@ -258,7 +258,8 @@ export const SalePage = () => {
       setTotal(formRef.current);
     },
     onCustomerCreated: (payload) => {
-      formRef.current?.setFieldValue('customer', payload.data);
+      const { data } = payload as { data?: unknown };
+      formRef.current?.setFieldValue('customer', data);
     },
     onSaleAdd: async () => {
       const defaultCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN';
@@ -443,7 +444,7 @@ export const SalePage = () => {
         />
       </DrawerView>
       <SalePrintPreviewPopup
-        saleId={salePrintPreview.selectedSaleIdRef.current}
+        saleId={salePrintPreview.selectedSaleIdRef.current ?? ''}
         visible={salePrintPreview.isPreviewVisible}
         onPositive={salePrintPreview.confirmPreview}
         onNegative={salePrintPreview.closePreview}

@@ -109,7 +109,8 @@ export const LoginForm = () => {
 
         try {
           const branchesResponse = await branchService.getAll();
-          const branches: BranchOption[] = branchesResponse?.data ?? [];
+          const rawBranches = branchesResponse?.data;
+          const branches: BranchOption[] = Array.isArray(rawBranches) ? (rawBranches as BranchOption[]) : [];
 
           if (branches.length === 0) {
             setSubmitError('No hay locales disponibles para este usuario.');

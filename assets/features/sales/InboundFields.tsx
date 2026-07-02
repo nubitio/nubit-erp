@@ -28,7 +28,7 @@ type FieldChangeContext = {
 };
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
-import type { GridCellContext } from '@nubitio/crud';
+import type { DataRecord, GridCellContext } from '@nubitio/crud';
 
 export const InboundFields = (branchId: string | number = '', runtimeConfig?: TenantRuntimeConfig) => {
   const fields: Field[] = [];
@@ -140,8 +140,10 @@ export const InboundDetailFields = () => {
       .name('product')
       .label('Producto')
       .minWidth(200)
-      .onChange(async function (this: FieldChangeContext, row: InboundDetailRow, value: string | number, currentRow: InboundDetailRow) {
-        const product = (await productService.getOne(value, true)) as ProductDto;
+      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as InboundDetailRow;
+        const currentRow = currentRowData as InboundDetailRow;
+        const product = (await productService.getOne(String(value), true)) as ProductDto;
         row.product = product;
         row.unitCost = 0;
         this.defaultSetCellValue(row, product, currentRow);
@@ -156,7 +158,9 @@ export const InboundDetailFields = () => {
       .label('Cantidad')
       .defaultValue(0)
       .align('center')
-      .onChange(function (this: FieldChangeContext, row: InboundDetailRow, value: number | string, currentRow: InboundDetailRow) {
+      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as InboundDetailRow;
+        const currentRow = currentRowData as InboundDetailRow;
         if (value === '') return;
         row.totalAmount = Number(currentRow.unitCost ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);
@@ -178,7 +182,9 @@ export const InboundDetailFields = () => {
       .label('Precio unitario')
       .defaultValue(0)
       .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
-      .onChange(function (this: FieldChangeContext, row: InboundDetailRow, value: number | string, currentRow: InboundDetailRow) {
+      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+        const row = rowData as InboundDetailRow;
+        const currentRow = currentRowData as InboundDetailRow;
         if (value === '') return;
         row.totalAmount = Number(currentRow.qty ?? 0) * Number(value ?? 0);
         this.defaultSetCellValue(row, value, currentRow);

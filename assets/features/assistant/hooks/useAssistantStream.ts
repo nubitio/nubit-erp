@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { exceptionalFetch } from '@shared/api/network';
 import type { AssistantChatMessage, AssistantAttachmentPayload } from '../services/assistantService';
 import type { ScreenContext } from '../types';
 
@@ -65,13 +66,18 @@ export function useAssistantStream(): UseAssistantStreamReturn {
       let accumulated = '';
 
       try {
-        const response = await fetch(`${API}assistant/stream`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: controller.signal,
-          credentials: 'include', // forward HttpOnly cookie (JWT)
-        });
+        // SSE streaming requires the native fetch ReadableStream API.
+        const response = await exceptionalFetch(
+          `${API}assistant/stream`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+            credentials: 'include', // forward HttpOnly cookie (JWT)
+          },
+          'browser-native-api',
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
@@ -82,7 +88,7 @@ export function useAssistantStream(): UseAssistantStreamReturn {
 
         const decoder = new TextDecoder();
 
-        while (true) {
+        for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
 

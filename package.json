@@ -39,6 +39,7 @@
     "build:themes": "node scripts/copy-themes.mjs",
     "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
     "postinstall": "yarn build:themes",
+    "test": "vitest run --coverage --coverage.reportsDirectory=var/coverage/frontend",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
@@ -50,12 +51,12 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "@fontsource/syne": "^5.2.7",
-    "@nubitio/admin": "0.6.3",
-    "@nubitio/core": "0.6.3",
-    "@nubitio/crud": "0.6.3",
-    "@nubitio/hydra": "0.6.3",
-    "@nubitio/react-admin": "0.6.3",
-    "@nubitio/ui": "0.6.3",
+    "@nubitio/admin": "0.6.5",
+    "@nubitio/core": "0.6.5",
+    "@nubitio/crud": "0.6.5",
+    "@nubitio/hydra": "0.6.5",
+    "@nubitio/react-admin": "0.6.5",
+    "@nubitio/ui": "0.6.5",
     "@phosphor-icons/web": "^2.1.2",
     "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/react-query": "^5.0.0",
@@ -81,14 +82,5 @@
   "packageManager": "yarn@4.9.1",
   "overrides": {
     "serialize-javascript": ">=7.0.3"
-  },
-  "resolutions": {
-    "@nubitio/admin": "portal:../../nubit-react/packages/admin",
-    "@nubitio/core": "portal:../../nubit-react/packages/core",
-    "@nubitio/crud": "portal:../../nubit-react/packages/crud",
-    "@nubitio/hydra": "portal:../../nubit-react/packages/hydra",
-    "@nubitio/react-admin": "portal:../../nubit-react/packages/react-admin",
-    "@nubitio/ui": "portal:../../nubit-react/packages/ui",
-    "@nubitio/dashboard": "portal:../../nubit-react/packages/dashboard"
   }
 }

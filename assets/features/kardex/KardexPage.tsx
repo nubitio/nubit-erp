@@ -14,6 +14,7 @@ import {
   useColumnPreset,
   type ColumnGroupDef,
   type Field,
+  type GridCellContext,
   type ResourceConfig,
 } from '@nubitio/crud';
 import { useCoreTranslation } from '@nubitio/core';
@@ -90,10 +91,9 @@ const KARDEX_PRESET_RESOURCE: ResourceConfig = {
   columnPresets: KARDEX_COLUMN_PRESETS,
 };
 
-type FormatterEvent = {
-  value?: unknown;
-  data?: StockMovementRecord;
-};
+type FormatterEvent = GridCellContext;
+
+const rowOf = (e: FormatterEvent): StockMovementRecord => e.data as StockMovementRecord;
 
 const formatNote = (value: unknown): string => {
   const note = String(value ?? '');
@@ -103,12 +103,12 @@ const formatNote = (value: unknown): string => {
 
 const formatUnitCost = (e: FormatterEvent) => formatCurrency(e.value);
 const formatLineValueForIn = (e: FormatterEvent) => {
-  const row = e.data;
+  const row = rowOf(e);
   if (!row?.qtyIn) return '—';
   return formatCurrency(row.lineValue);
 };
 const formatLineValueForOut = (e: FormatterEvent) => {
-  const row = e.data;
+  const row = rowOf(e);
   if (!row?.qtyOut) return '—';
   return formatCurrency(row.lineValue);
 };
@@ -213,7 +213,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     align: 'right',
     filterable: false,
     visible: showValuation,
-    formatter: (e: FormatterEvent) => (e.data?.qtyOut ? formatCurrency(e.data?.unitCost) : '—'),
+    formatter: (e: FormatterEvent) => (rowOf(e)?.qtyOut ? formatCurrency(rowOf(e)?.unitCost) : '—'),
   },
   {
     ...textField().name('_lineValueExit').label('Total').build(),
