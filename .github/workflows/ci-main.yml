@@ -122,7 +122,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start full stack
-        run: docker compose up -d database redis otel-collector web vite
+        run: docker compose up -d database redis otel-collector web
 
       - name: Wait for web to be healthy
         run: |
@@ -153,11 +153,11 @@ jobs:
       - name: Install dependencies for e2e
         run: |
           docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
-          docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
+          docker compose run --rm --no-deps vite sh -lc "corepack enable && yarn install --immutable"
 
       - name: Build frontend for E2E
         run: |
-          docker compose exec -T vite sh -lc "corepack enable && yarn build"
+          docker compose run --rm --no-deps vite sh -lc "corepack enable && yarn build"
 
       - name: Run database migrations for e2e
         run: |
