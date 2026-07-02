@@ -111,7 +111,7 @@ final readonly class E2eStubBillRepository implements BillRepositoryInterface
     private function isStubEnabled(): bool
     {
         if (array_key_exists('E2E_SEED_ENABLED', $_SERVER)) {
-            return (string) $_SERVER['E2E_SEED_ENABLED'] === '1';
+            return $_SERVER['E2E_SEED_ENABLED'] === '1';
         }
 
         $flag = getenv('E2E_SEED_ENABLED');
@@ -121,8 +121,8 @@ final readonly class E2eStubBillRepository implements BillRepositoryInterface
 
     private function resolveDocumentName(Invoice $invoice): string
     {
-        $series = trim((string) ($invoice->getSerie() ?? 'B001'));
-        $number = trim((string) ($invoice->getCorrelativo() ?? '1'));
+        $series = trim($invoice->getSerie() ?? 'B001');
+        $number = trim($invoice->getCorrelativo() ?? '1');
 
         return $series . '-' . $number;
     }
