@@ -8,7 +8,22 @@ set -e
 
 # Wait for the web server to be ready before running tests.
 # This guards against the web container being recreated by docker compose run.
-BASE="${E2E_BASE_URL:-http://web}"
+if [ -z "$E2E_BASE_URL" ]; then
+  WEB_IP=""
+  for _ in $(seq 1 10); do
+    WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
+    [ -n "$WEB_IP" ] && break
+    sleep 1
+  done
+
+  if [ -n "$WEB_IP" ]; then
+    export E2E_BASE_URL="http://${WEB_IP}"
+  else
+    export E2E_BASE_URL="http://efact-web"
+  fi
+fi
+
+BASE="$E2E_BASE_URL"
 echo "Waiting for $BASE/health/live ..."
 i=0
 until wget -qO- "$BASE/health/live" >/dev/null 2>&1; do

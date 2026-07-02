@@ -201,7 +201,6 @@ jobs:
             -e E2E_USERNAME \
             -e E2E_PASSWORD \
             -e E2E_SALE_ID \
-            -e E2E_BASE_URL=http://web \
             --entrypoint "" \
             e2e \
             sh /home/node/app/docker/ci-e2e-runner.sh
