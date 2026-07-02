@@ -16,19 +16,14 @@ use App\Setup\State\SetupStatusProvider;
     uriTemplate: '/setup',
     shortName: 'Setup',
     operations: [
-        new Get(
-            output: SetupStatusDto::class,
-            provider: SetupStatusProvider::class
-        ),
+        new Get(output: SetupStatusDto::class, provider: SetupStatusProvider::class),
         new Post(
             input: InitialSetupInput::class,
             output: SetupStatusDto::class,
             read: false,
-            processor: SetupProcessor::class
+            processor: SetupProcessor::class,
         ),
     ],
     paginationEnabled: false,
 )]
-class SetupResource
-{
-}
+class SetupResource {}

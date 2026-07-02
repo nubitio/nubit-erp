@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -39,7 +39,7 @@ final class SalesV2RebuildDailySummariesCommand extends PerTenantCommand
             null,
             InputOption::VALUE_OPTIONAL,
             'Number of rolling days to rebuild (counting back from today).',
-            2
+            2,
         );
     }
 
@@ -68,15 +68,12 @@ final class SalesV2RebuildDailySummariesCommand extends PerTenantCommand
         try {
             $this->connection->beginTransaction();
 
-            $this->connection->executeStatement(
-                'DELETE FROM branch_daily_summary WHERE summary_date BETWEEN :from AND :to',
-                ['from' => $from, 'to' => $to]
-            );
+            $this->connection->executeStatement('DELETE FROM branch_daily_summary WHERE summary_date BETWEEN :from AND :to', [
+                'from' => $from,
+                'to' => $to,
+            ]);
 
-            $this->connection->executeStatement(
-                $this->rebuildSql(),
-                ['from' => $from, 'to' => $to]
-            );
+            $this->connection->executeStatement($this->rebuildSql(), ['from' => $from, 'to' => $to]);
 
             $this->connection->commit();
         } catch (\Throwable $throwable) {
@@ -92,21 +89,21 @@ final class SalesV2RebuildDailySummariesCommand extends PerTenantCommand
     private function rebuildSql(): string
     {
         return <<<'SQL'
-INSERT INTO branch_daily_summary
-    (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
-SELECT
-    DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima'))     AS summary_date,
-    branch_id,
-    COUNT(*)                                                   AS sales_count,
-    COALESCE(SUM(grand_total), 0)                              AS gross_sales,
-    COALESCE(SUM(discount_total), 0)                           AS discount_total,
-    COALESCE(SUM(tax_total), 0)                                AS tax_total,
-    COALESCE(SUM(grand_total - tax_total), 0)                  AS net_sales,
-    0                                                          AS refunds_total
-FROM sales
-WHERE DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')) BETWEEN :from AND :to
-  AND status != 'VOIDED'
-GROUP BY DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')), branch_id
-SQL;
+            INSERT INTO branch_daily_summary
+                (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
+            SELECT
+                DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima'))     AS summary_date,
+                branch_id,
+                COUNT(*)                                                   AS sales_count,
+                COALESCE(SUM(grand_total), 0)                              AS gross_sales,
+                COALESCE(SUM(discount_total), 0)                           AS discount_total,
+                COALESCE(SUM(tax_total), 0)                                AS tax_total,
+                COALESCE(SUM(grand_total - tax_total), 0)                  AS net_sales,
+                0                                                          AS refunds_total
+            FROM sales
+            WHERE DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')) BETWEEN :from AND :to
+              AND status != 'VOIDED'
+            GROUP BY DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')), branch_id
+            SQL;
     }
 }

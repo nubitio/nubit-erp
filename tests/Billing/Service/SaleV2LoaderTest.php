@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Service;
 
-use App\Settings\Service\TenantSettingsService;
 use App\Billing\Service\SaleV2Loader;
 use App\Contacts\Entity\Customer;
-use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Domain\SaleStatus;
+use App\Sales\Entity\SaleRecord;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -176,7 +176,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-series');
+        $sale = $loader->loadAsSale('sale-series');
 
         self::assertInstanceOf(SaleRecord::class, $sale);
         self::assertSame('F001', $sale->getSerie());
@@ -213,7 +213,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-noseries');
+        $sale = $loader->loadAsSale('sale-noseries');
 
         self::assertNull($sale?->getSerie());
         self::assertNull($sale?->getNumero());
@@ -253,7 +253,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-customer');
+        $sale = $loader->loadAsSale('sale-customer');
 
         self::assertSame($customer, $sale?->getCliente());
     }
@@ -296,7 +296,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($warehouseRepo);
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-warehouse');
+        $sale = $loader->loadAsSale('sale-warehouse');
 
         self::assertSame($warehouse, $sale?->getAlmacen());
     }
@@ -316,7 +316,7 @@ final class SaleV2LoaderTest extends TestCase
             'subtotal' => '100.00',
             'discount_total' => '0.00',
             'grand_total' => '100.00',
-            'tax_total' => '0.00',  // tax_total = 0 → fall back to settings
+            'tax_total' => '0.00', // tax_total = 0 → fall back to settings
             'issued_at' => null,
             'created_at' => null,
             'series' => null,
@@ -334,7 +334,7 @@ final class SaleV2LoaderTest extends TestCase
         $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
-        $sale   = $loader->loadAsSale('sale-taxzero');
+        $sale = $loader->loadAsSale('sale-taxzero');
 
         self::assertSame('18', $sale?->getIgv());
     }
@@ -351,7 +351,7 @@ final class SaleV2LoaderTest extends TestCase
             'status' => 'COMPLETED',
             'currency' => 'PEN',
             'exchange_rate' => '1.000000',
-            'subtotal' => '0.00',  // subtotal = 0 → fall back to settings
+            'subtotal' => '0.00', // subtotal = 0 → fall back to settings
             'discount_total' => '0.00',
             'grand_total' => '0.00',
             'tax_total' => '18.00',
@@ -372,7 +372,7 @@ final class SaleV2LoaderTest extends TestCase
         $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
-        $sale   = $loader->loadAsSale('sale-subzero');
+        $sale = $loader->loadAsSale('sale-subzero');
 
         self::assertSame('18', $sale?->getIgv());
     }
@@ -410,7 +410,7 @@ final class SaleV2LoaderTest extends TestCase
         $settings->method('getIgv')->willReturn(10.5);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
-        $sale   = $loader->loadAsSale('sale-igv-configured');
+        $sale = $loader->loadAsSale('sale-igv-configured');
 
         self::assertSame('10.5', $sale?->getIgv());
     }
@@ -448,7 +448,7 @@ final class SaleV2LoaderTest extends TestCase
         $settings->method('getIgv')->willReturn(18.0);
 
         $loader = new SaleV2Loader($connection, $em, $settings);
-        $sale   = $loader->loadAsSale('sale-invalid-igv-rate');
+        $sale = $loader->loadAsSale('sale-invalid-igv-rate');
 
         self::assertSame('18', $sale?->getIgv());
     }
@@ -499,7 +499,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($productRepo);
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-items');
+        $sale = $loader->loadAsSale('sale-items');
 
         self::assertNotNull($sale);
         self::assertCount(1, $sale->getSaleItemRecords());
@@ -529,7 +529,7 @@ final class SaleV2LoaderTest extends TestCase
 
         $itemRow = [
             'sale_id' => 'sale-noproductid',
-            'product_id' => null,  // null product_id → item skipped
+            'product_id' => null, // null product_id → item skipped
             'qty' => '1.0',
             'unit_price' => '10.00',
             'net_amount' => '10.00',
@@ -545,7 +545,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($this->createMock(EntityRepository::class));
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-noproductid');
+        $sale = $loader->loadAsSale('sale-noproductid');
 
         self::assertNotNull($sale);
         self::assertCount(0, $sale->getSaleItemRecords());
@@ -595,7 +595,7 @@ final class SaleV2LoaderTest extends TestCase
         $em->method('getRepository')->willReturn($productRepo);
 
         $loader = $this->makeLoader($connection, $em);
-        $sale   = $loader->loadAsSale('sale-productnotfound');
+        $sale = $loader->loadAsSale('sale-productnotfound');
 
         self::assertNotNull($sale);
         self::assertCount(0, $sale->getSaleItemRecords());

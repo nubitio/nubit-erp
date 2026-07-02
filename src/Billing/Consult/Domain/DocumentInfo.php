@@ -18,6 +18,5 @@ final readonly class DocumentInfo
         public string $address,
         /** Whether the taxpayer/person record is active. */
         public bool $active,
-    ) {
-    }
+    ) {}
 }

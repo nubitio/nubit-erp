@@ -53,10 +53,20 @@ class TenantProvisionCommand extends Command
             ->addOption('provisioning-url', null, InputOption::VALUE_OPTIONAL, 'Provisioning database URL')
             ->addOption('seed-initial', null, InputOption::VALUE_NONE, 'Run initial data seed')
             ->addOption('seed-test', null, InputOption::VALUE_NONE, 'Run test data seed')
-            ->addOption('baseline-existing-schema', null, InputOption::VALUE_NONE, 'Mark tenant migrations as executed instead of running them. Use only after loading a baseline schema dump.')
+            ->addOption(
+                'baseline-existing-schema',
+                null,
+                InputOption::VALUE_NONE,
+                'Mark tenant migrations as executed instead of running them. Use only after loading a baseline schema dump.',
+            )
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
-            ->addOption('admin-password', null, InputOption::VALUE_OPTIONAL, 'Admin password for initial setup (prefer TENANT_ADMIN_PASSWORD env)')
+            ->addOption(
+                'admin-password',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Admin password for initial setup (prefer TENANT_ADMIN_PASSWORD env)',
+            )
             ->addOption('company-ruc', null, InputOption::VALUE_OPTIONAL, 'Company RUC (11 digits)')
             ->addOption('company-name', null, InputOption::VALUE_OPTIONAL, 'Company business name')
             ->addOption('company-trade', null, InputOption::VALUE_OPTIONAL, 'Company trade name')
@@ -66,8 +76,18 @@ class TenantProvisionCommand extends Command
             ->addOption('branch-address', null, InputOption::VALUE_OPTIONAL, 'Branch address')
             ->addOption('branch-phone', null, InputOption::VALUE_OPTIONAL, 'Branch phone')
             ->addOption('provision-id', null, InputOption::VALUE_OPTIONAL, 'Provision tracking ID from control plane')
-            ->addOption('lycet-upsert', null, InputOption::VALUE_NONE, 'Register/update company in lycet after provisioning')
-            ->addOption('lycet-sol-user', null, InputOption::VALUE_OPTIONAL, 'SOL user for lycet (RUC+user, e.g. 20000000001MODDATOS)')
+            ->addOption(
+                'lycet-upsert',
+                null,
+                InputOption::VALUE_NONE,
+                'Register/update company in lycet after provisioning',
+            )
+            ->addOption(
+                'lycet-sol-user',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'SOL user for lycet (RUC+user, e.g. 20000000001MODDATOS)',
+            )
             ->addOption('lycet-sol-pass', null, InputOption::VALUE_OPTIONAL, 'SOL password for lycet')
             ->addOption('lycet-cert-file', null, InputOption::VALUE_OPTIONAL, 'Path to .pem certificate file for lycet')
             ->addOption('lycet-logo-file', null, InputOption::VALUE_OPTIONAL, 'Path to logo file for lycet (optional)');
@@ -95,20 +115,19 @@ class TenantProvisionCommand extends Command
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
 
         if ($provisionId !== null) {
-            $controlPlane->executeStatement(
-                "UPDATE tenant_provisions SET status = 'running', started_at = NOW() WHERE id = ?",
-                [(int) $provisionId],
-            );
+            $controlPlane->executeStatement("UPDATE tenant_provisions SET status = 'running', started_at = NOW() WHERE id = ?", [
+                (int) $provisionId,
+            ]);
         }
 
         try {
             $this->doProvision($io, $input, $tenant, $domain);
         } catch (\Throwable $e) {
             if ($provisionId !== null) {
-                $controlPlane->executeStatement(
-                    "UPDATE tenant_provisions SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?",
-                    [$e->getMessage(), (int) $provisionId],
-                );
+                $controlPlane->executeStatement("UPDATE tenant_provisions SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?", [
+                    $e->getMessage(),
+                    (int) $provisionId,
+                ]);
             }
             $io->error($e->getMessage());
 
@@ -116,10 +135,9 @@ class TenantProvisionCommand extends Command
         }
 
         if ($provisionId !== null) {
-            $controlPlane->executeStatement(
-                "UPDATE tenant_provisions SET status = 'completed', completed_at = NOW() WHERE id = ?",
-                [(int) $provisionId],
-            );
+            $controlPlane->executeStatement("UPDATE tenant_provisions SET status = 'completed', completed_at = NOW() WHERE id = ?", [
+                (int) $provisionId,
+            ]);
         }
 
         $io->success(sprintf('Tenant "%s" provisioned successfully.', $tenant));
@@ -133,9 +151,10 @@ class TenantProvisionCommand extends Command
         $provisioningConn = DriverManager::getConnection($this->parseDbUrl($provisioningUrl));
 
         $io->section('Creating database');
-        $provisioningConn->executeStatement(
-            sprintf('CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci', $tenant),
-        );
+        $provisioningConn->executeStatement(sprintf(
+            'CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci',
+            $tenant,
+        ));
         $io->writeln(sprintf('  Database <info>%s</info> created.', $tenant));
 
         if ($input->getOption('create-user')) {
@@ -144,9 +163,11 @@ class TenantProvisionCommand extends Command
                 sprintf("CREATE USER IF NOT EXISTS '%s'@'%%' IDENTIFIED BY ?", $tenant),
                 [$this->tenantDbPass],
             );
-            $provisioningConn->executeStatement(
-                sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'%%'", $tenant, $tenant),
-            );
+            $provisioningConn->executeStatement(sprintf(
+                "GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'%%'",
+                $tenant,
+                $tenant,
+            ));
             $provisioningConn->executeStatement('FLUSH PRIVILEGES');
             $io->writeln(sprintf('  User <info>%s</info> created.', $tenant));
         }
@@ -222,13 +243,15 @@ class TenantProvisionCommand extends Command
 
         if ($input->getOption('lycet-upsert')) {
             $io->section('Registering company in lycet');
-            $ruc      = (string) ($input->getOption('company-ruc') ?: '');
-            $solUser  = (string) ($input->getOption('lycet-sol-user') ?: '');
-            $solPass  = (string) ($input->getOption('lycet-sol-pass') ?: '');
+            $ruc = (string) ($input->getOption('company-ruc') ?: '');
+            $solUser = (string) ($input->getOption('lycet-sol-user') ?: '');
+            $solPass = (string) ($input->getOption('lycet-sol-pass') ?: '');
             $certFile = (string) ($input->getOption('lycet-cert-file') ?: '');
 
             if ($ruc === '' || $solUser === '' || $solPass === '' || $certFile === '') {
-                $io->warning('lycet-upsert skipped: --company-ruc, --lycet-sol-user, --lycet-sol-pass and --lycet-cert-file are all required.');
+                $io->warning(
+                    'lycet-upsert skipped: --company-ruc, --lycet-sol-user, --lycet-sol-pass and --lycet-cert-file are all required.',
+                );
             } elseif (!file_exists($certFile)) {
                 $io->warning(sprintf('lycet-upsert skipped: certificate file not found: %s', $certFile));
             } else {
@@ -272,7 +295,9 @@ class TenantProvisionCommand extends Command
             return;
         }
 
-        $existingDomain = $controlPlane->fetchAssociative('SELECT id, tenant_id FROM tenant_domains WHERE domain = ?', [$domain]);
+        $existingDomain = $controlPlane->fetchAssociative('SELECT id, tenant_id FROM tenant_domains WHERE domain = ?', [
+            $domain,
+        ]);
         if ($existingDomain !== false && (int) $existingDomain['tenant_id'] !== $tenantId) {
             throw new \RuntimeException(sprintf('Domain "%s" is already registered to another tenant.', $domain));
         }
@@ -335,10 +360,10 @@ class TenantProvisionCommand extends Command
         }
 
         $params = [
-            'driver'  => 'pdo_mysql',
-            'host'    => $parts['host'],
-            'port'    => $parts['port'] ?? 3306,
-            'user'    => isset($parts['user']) ? urldecode($parts['user']) : '',
+            'driver' => 'pdo_mysql',
+            'host' => $parts['host'],
+            'port' => $parts['port'] ?? 3306,
+            'user' => isset($parts['user']) ? urldecode($parts['user']) : '',
             'password' => isset($parts['pass']) ? urldecode($parts['pass']) : '',
             'charset' => 'utf8mb4',
         ];
@@ -359,7 +384,12 @@ class TenantProvisionCommand extends Command
 
     private function resolveAdminPassword(InputInterface $input): string
     {
-        $fromEnv = trim((string) ($_SERVER['TENANT_ADMIN_PASSWORD'] ?? $_ENV['TENANT_ADMIN_PASSWORD'] ?? getenv('TENANT_ADMIN_PASSWORD') ?: ''));
+        $fromEnv = trim(
+            (string) (
+                $_SERVER['TENANT_ADMIN_PASSWORD'] ?? $_ENV['TENANT_ADMIN_PASSWORD'] ?? getenv('TENANT_ADMIN_PASSWORD')
+                ?: ''
+            ),
+        );
         if ($fromEnv !== '') {
             return $fromEnv;
         }

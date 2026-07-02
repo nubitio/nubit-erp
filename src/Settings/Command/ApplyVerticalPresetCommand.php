@@ -32,12 +32,7 @@ class ApplyVerticalPresetCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->addArgument(
-            'preset',
-            InputArgument::OPTIONAL,
-            'Preset key to apply',
-            RetailPreset::KEY,
-        );
+        $this->addArgument('preset', InputArgument::OPTIONAL, 'Preset key to apply', RetailPreset::KEY);
     }
 
     #[Override]

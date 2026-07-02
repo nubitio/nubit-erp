@@ -6,9 +6,7 @@ namespace App\Billing\Receipt;
 
 final class ReceiptPayload
 {
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     public static function encode(string $type, string $id): string
     {

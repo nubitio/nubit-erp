@@ -84,16 +84,16 @@ final class ReportGridFilterApplierTest extends TestCase
     public static function operatorProvider(): array
     {
         return [
-            'equals'       => ['=',           'val',  '=',        'val'],
-            'not equals'   => ['<>',          'val',  '<>',       'val'],
-            'greater'      => ['>',           '5',    '>',        '5'],
-            'gte'          => ['>=',          '5',    '>=',       '5'],
-            'less'         => ['<',           '5',    '<',        '5'],
-            'lte'          => ['<=',          '5',    '<=',       '5'],
-            'contains'     => ['contains',    'foo',  'LIKE',     '%foo%'],
-            'notcontains'  => ['notcontains', 'foo',  'NOT LIKE', '%foo%'],
-            'startswith'   => ['startswith',  'foo',  'LIKE',     'foo%'],
-            'endswith'     => ['endswith',    'foo',  'LIKE',     '%foo'],
+            'equals' => ['=', 'val', '=', 'val'],
+            'not equals' => ['<>', 'val', '<>', 'val'],
+            'greater' => ['>', '5', '>', '5'],
+            'gte' => ['>=', '5', '>=', '5'],
+            'less' => ['<', '5', '<', '5'],
+            'lte' => ['<=', '5', '<=', '5'],
+            'contains' => ['contains', 'foo', 'LIKE', '%foo%'],
+            'notcontains' => ['notcontains', 'foo', 'NOT LIKE', '%foo%'],
+            'startswith' => ['startswith', 'foo', 'LIKE', 'foo%'],
+            'endswith' => ['endswith', 'foo', 'LIKE', '%foo'],
         ];
     }
 
@@ -219,13 +219,13 @@ final class ReportGridFilterApplierTest extends TestCase
     public static function normalizeValueProvider(): array
     {
         return [
-            'contains wraps'     => ['contains',    'foo',   '%foo%'],
-            'notcontains wraps'  => ['notcontains',  'bar',   '%bar%'],
-            'startswith appends' => ['startswith',   'baz',   'baz%'],
-            'endswith prepends'  => ['endswith',     'qux',   '%qux'],
-            'equals passthrough' => ['=',            'hello', 'hello'],
-            'null passthrough'   => ['=',            null,    null],
-            'int passthrough'    => ['=',            42,      42],
+            'contains wraps' => ['contains', 'foo', '%foo%'],
+            'notcontains wraps' => ['notcontains', 'bar', '%bar%'],
+            'startswith appends' => ['startswith', 'baz', 'baz%'],
+            'endswith prepends' => ['endswith', 'qux', '%qux'],
+            'equals passthrough' => ['=', 'hello', 'hello'],
+            'null passthrough' => ['=', null, null],
+            'int passthrough' => ['=', 42, 42],
         ];
     }
 

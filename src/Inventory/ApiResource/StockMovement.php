@@ -7,8 +7,8 @@ namespace App\Inventory\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\State\StockMovementProvider;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 /**
@@ -25,10 +25,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     shortName: 'StockMovement',
     operations: [
-        new GetCollection(
-            uriTemplate: '/stock-movements',
-            provider: StockMovementProvider::class,
-        ),
+        new GetCollection(uriTemplate: '/stock-movements', provider: StockMovementProvider::class),
     ],
     normalizationContext: ['groups' => ['stock_movement:read']],
     filters: [DataGridFilter::class],

@@ -34,14 +34,14 @@ final class SunatRucScraper
     /** Seed query used only to obtain the numRnd token (arbitrary company name). */
     private const string SEED_RAZON_SOC = 'BVA FOODS';
 
-    private const string USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) '
-        . 'AppleWebKit/537.36 (KHTML, like Gecko) '
-        . 'Chrome/124.0.0.0 Safari/537.36';
+    private const string USER_AGENT =
+        'Mozilla/5.0 (X11; Linux x86_64) '
+            . 'AppleWebKit/537.36 (KHTML, like Gecko) '
+            . 'Chrome/124.0.0.0 Safari/537.36';
 
     public function __construct(
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws LookupException
@@ -64,11 +64,11 @@ final class SunatRucScraper
 
             // Step 3: actual RUC query
             $html = $this->curlPost($ch, self::CONSULT_URL, [
-                'accion'    => 'consPorRuc',
-                'nroRuc'    => $ruc,
-                'numRnd'    => $numRnd,
+                'accion' => 'consPorRuc',
+                'nroRuc' => $ruc,
+                'numRnd' => $numRnd,
                 'actReturn' => '1',
-                'modo'      => '1',
+                'modo' => '1',
             ]);
         } finally {
             curl_close($ch);
@@ -91,14 +91,14 @@ final class SunatRucScraper
     {
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_USERAGENT      => self::USER_AGENT,
+            CURLOPT_USERAGENT => self::USER_AGENT,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_COOKIEJAR      => '/dev/null',  // keep cookies in memory for this handle
-            CURLOPT_COOKIEFILE     => '',
+            CURLOPT_COOKIEJAR => '/dev/null', // keep cookies in memory for this handle
+            CURLOPT_COOKIEFILE => '',
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => 0,
-            CURLOPT_TIMEOUT        => 20,
+            CURLOPT_TIMEOUT => 20,
         ]);
 
         return $ch;
@@ -121,9 +121,13 @@ final class SunatRucScraper
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded',
-        ]);
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
+                'Content-Type: application/x-www-form-urlencoded',
+            ],
+        );
         $result = curl_exec($ch);
 
         return is_string($result) ? $result : '';
@@ -131,7 +135,11 @@ final class SunatRucScraper
 
     private function extractNumRnd(string $html): string
     {
-        preg_match('/<input[^>]+type=["\']hidden["\'][^>]+name=["\']numRnd["\'][^>]+value=["\']([^"\']*)["\']/', $html, $m);
+        preg_match(
+            '/<input[^>]+type=["\']hidden["\'][^>]+name=["\']numRnd["\'][^>]+value=["\']([^"\']*)["\']/',
+            $html,
+            $m,
+        );
         if (!empty($m[1])) {
             return $m[1];
         }
@@ -171,21 +179,18 @@ final class SunatRucScraper
             throw LookupException::notFound('RUC', $ruc);
         }
 
-        $estado    = strtoupper(trim($fields['Estado del Contribuyente:'] ?? $fields['Estado:'] ?? 'ACTIVO'));
-        $condicion = strtoupper(trim(explode("\r\n", $fields['Condición del Contribuyente:'] ?? $fields['Condición:'] ?? 'HABIDO')[0]));
-        $active    = str_contains($estado, 'ACTIVO') && str_contains($condicion, 'HABIDO');
+        $estado = strtoupper(trim($fields['Estado del Contribuyente:'] ?? $fields['Estado:'] ?? 'ACTIVO'));
+        $condicion = strtoupper(trim(
+            explode("\r\n", $fields['Condición del Contribuyente:'] ?? $fields['Condición:'] ?? 'HABIDO')[0],
+        ));
+        $active = str_contains($estado, 'ACTIVO') && str_contains($condicion, 'HABIDO');
 
         $address = trim($fields['Domicilio Fiscal:'] ?? $fields['Dirección del Domicilio Fiscal:'] ?? '');
         // SUNAT HTML contains excessive internal whitespace (padded table cells).
         // Normalize to single spaces so the value is clean before persistence.
         $address = preg_replace('/\s+/', ' ', $address) ?? $address;
 
-        return new DocumentInfo(
-            id: $parsedRuc ?: $ruc,
-            name: $razonSocial,
-            address: $address,
-            active: $active,
-        );
+        return new DocumentInfo(id: $parsedRuc ?: $ruc, name: $razonSocial, address: $address, active: $active);
     }
 
     /**
@@ -198,9 +203,7 @@ final class SunatRucScraper
     {
         $dic = [];
 
-        $listGroups = $xpath->query(
-            "//div[contains(concat(' ', normalize-space(@class), ' '), ' list-group ')]"
-        );
+        $listGroups = $xpath->query("//div[contains(concat(' ', normalize-space(@class), ' '), ' list-group ')]");
 
         if (!$listGroups instanceof \DOMNodeList || 0 === $listGroups->count()) {
             return $dic;
@@ -229,11 +232,11 @@ final class SunatRucScraper
     {
         $headings = $xpath->query(
             ".//*[contains(concat(' ', normalize-space(@class), ' '), ' list-group-item-heading ')]",
-            $item
+            $item,
         );
         $texts = $xpath->query(
             ".//*[contains(concat(' ', normalize-space(@class), ' '), ' list-group-item-text ')]",
-            $item
+            $item,
         );
 
         if (!$headings instanceof \DOMNodeList || !$texts instanceof \DOMNodeList) {

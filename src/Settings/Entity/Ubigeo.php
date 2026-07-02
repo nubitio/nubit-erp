@@ -6,9 +6,9 @@ namespace App\Settings\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Settings\Repository\UbigeoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 

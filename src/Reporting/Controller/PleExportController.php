@@ -31,8 +31,7 @@ final class PleExportController extends AbstractController
         private readonly PlePreviewService $previewService,
         private readonly PleValidationService $validationService,
         private readonly PleZipService $zipService,
-    ) {
-    }
+    ) {}
 
     #[Route('/preview', name: 'ple_preview', methods: ['GET'])]
     public function preview(Request $request): JsonResponse
@@ -102,10 +101,7 @@ final class PleExportController extends AbstractController
     {
         $response = new Response($result['content']);
         $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
-        $response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="' . $result['filename'] . '"',
-        );
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $result['filename'] . '"');
         $response->headers->set('Cache-Control', 'no-cache, no-store');
         $response->headers->set('Pragma', 'no-cache');
 

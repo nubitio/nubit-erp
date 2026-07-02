@@ -26,8 +26,7 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
         private readonly string $accessToken = '',
         private readonly string $webhookSecret = '',
         private readonly string $planMapJson = '{}',
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {

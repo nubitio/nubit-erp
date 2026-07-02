@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use App\Catalog\Entity\PaymentMethod;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
-use Nubit\Platform\Exception\DomainErrorCode;
-use Nubit\Platform\Exception\DomainProblemException;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Exception\ValidationException;
-use App\Identity\Auth\BranchContextService;
-use App\Settings\Service\TenantSettingsService;
-use App\Efact\Domain\Money;
-use App\Contacts\Entity\Customer;
+use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Organization\Repository\BranchRepository;
+use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
-use App\Sales\Repository\SaleRecordRepository;
+use App\Efact\Domain\Money;
+use App\Identity\Auth\BranchContextService;
+use App\Identity\Security\Security;
+use App\Organization\Repository\BranchRepository;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
+use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SalePaymentPlanService;
+use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Exception\DomainErrorCode;
+use Nubit\Platform\Exception\DomainProblemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Exception\ValidationException;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -64,8 +64,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
         private CustomerRepository $customerRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -109,16 +108,15 @@ readonly class SaleProcessor implements ProcessorInterface
         // TODO: harden further by pre-registering offline sale IDs server-side so the key can be
         //       verified rather than merely checked for presence.
         $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
-        $idempotencyKey    = $request instanceof Request ? ($request->headers->get('Idempotency-Key') ?? '') : '';
-        $isOfflineSale     = $offlineSaleHeader && preg_match(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
-            $idempotencyKey,
-        ) === 1;
+        $idempotencyKey = $request instanceof Request ? $request->headers->get('Idempotency-Key') ?? '' : '';
+        $isOfflineSale =
+            $offlineSaleHeader
+            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $idempotencyKey) === 1;
         if ($offlineSaleHeader && !$isOfflineSale) {
             $this->logger->warning('X-Offline-Sale header rejected: missing or malformed Idempotency-Key', [
-                'user_id'          => $user->userId,
-                'idempotency_key'  => $idempotencyKey ?: '(empty)',
-                'remote_addr'      => $request?->getClientIp(),
+                'user_id' => $user->userId,
+                'idempotency_key' => $idempotencyKey ?: '(empty)',
+                'remote_addr' => $request->getClientIp(),
             ]);
         }
 
@@ -147,10 +145,10 @@ readonly class SaleProcessor implements ProcessorInterface
             if ($requireOpenSession) {
                 $conn = $this->entityManager->getConnection();
 
-                $hasOpenSession = (bool) $conn->fetchOne(
-                    "SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
-                    [$user->userId]
-                );
+                $hasOpenSession =
+                    (bool) $conn->fetchOne("SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1", [
+                        $user->userId,
+                    ]);
 
                 if (!$hasOpenSession) {
                     $this->logger->warning('Sale processing failed: No open cash session found', [
@@ -202,7 +200,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->salePaymentPlanService->resolveForWrite(
                 $data,
                 strtoupper(trim($data->getCurrency())) ?: 'PEN',
-                $data->getTotal() ?? '0.00'
+                $data->getTotal() ?? '0.00',
             );
         }
 
@@ -284,7 +282,7 @@ readonly class SaleProcessor implements ProcessorInterface
                 throw new ServiceException(
                     'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
                     0,
-                    $exception
+                    $exception,
                 );
             }
         } else {
@@ -295,12 +293,12 @@ readonly class SaleProcessor implements ProcessorInterface
         if ($isNew && $isOperationalSale) {
             $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
                 $data,
-                $data->getTotal() ?? '0.00'
+                $data->getTotal() ?? '0.00',
             );
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
                 if ($resolvedCashSessionId !== null) {
                     try {
-                        $serie  = $data->getSerie() ?? '';
+                        $serie = $data->getSerie() ?? '';
                         $numero = $data->getNumero() ?? '';
                         $saleRef = $serie !== '' && $numero !== '' ? "{$serie}-{$numero}" : null;
                         $this->salesWriteGateway->writeCashSaleMovement(
@@ -310,7 +308,9 @@ readonly class SaleProcessor implements ProcessorInterface
                             amount: $cashCollected,
                             categoryId: null,
                             paymentMethodId: \App\Catalog\Entity\PaymentMethod::CASH,
-                            createdAt: $data->getFecha() !== null ? \DateTimeImmutable::createFromInterface($data->getFecha()) : new DateTimeImmutable(),
+                            createdAt: $data->getFecha() !== null
+                                ? \DateTimeImmutable::createFromInterface($data->getFecha())
+                                : new DateTimeImmutable(),
                             description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
                         );
                     } catch (\Throwable $exception) {
@@ -324,7 +324,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         throw new ServiceException(
                             'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
                             0,
-                            $exception
+                            $exception,
                         );
                     }
                 }
@@ -390,16 +390,16 @@ readonly class SaleProcessor implements ProcessorInterface
 
             // Resolve product from IRI, object with @id / id, or plain UUID
             $productRef = $itemData['product'] ?? null;
-            $productId  = $this->extractProductId($productRef);
-            $product    = null;
+            $productId = $this->extractProductId($productRef);
+            $product = null;
             if ($productId !== null) {
                 $product = $this->entityManager->find(Product::class, $productId);
                 $item->setProduct($product);
             }
 
-            $qty       = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
+            $qty = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
             $unitPrice = $itemData['unitPrice'] ?? $itemData['precio_unitario'] ?? '0.00';
-            $discount  = $itemData['discount'] ?? $itemData['descuento'] ?? null;
+            $discount = $itemData['discount'] ?? $itemData['descuento'] ?? null;
 
             // Resolve discountPercent: prefer explicit percent over legacy flat amount.
             $discountPercent = $itemData['discountPercent'] ?? $itemData['descuento_porcentaje'] ?? null;
@@ -412,18 +412,16 @@ readonly class SaleProcessor implements ProcessorInterface
                         'discountPercent' => [
                             sprintf(
                                 'El porcentaje de descuento debe estar entre 0 y 100. Valor recibido: %s.',
-                                $discountPercent
+                                $discountPercent,
                             ),
                         ],
                     ]);
                 }
 
                 // discountAmount = qty × unitPrice × (discountPercent / 100), HALF_UP to 2 dp
-                $discountAmount = Money::money(
-                    BigDecimal::of((string) $unitPrice)
-                        ->multipliedBy($qty)
-                        ->multipliedBy(Money::rate($discountPercent))
-                );
+                $discountAmount = Money::money(BigDecimal::of((string) $unitPrice)->multipliedBy(
+                    $qty,
+                )->multipliedBy(Money::rate($discountPercent)));
                 $discount = Money::toString($discountAmount);
             }
 
@@ -447,7 +445,9 @@ readonly class SaleProcessor implements ProcessorInterface
                 $item->setDiscountPercent((string) $discountPercent);
             }
 
-            $description = trim((string) ($itemData['description'] ?? $itemData['nameSnapshot'] ?? $itemData['descripcion'] ?? ''));
+            $description = trim(
+                (string) ($itemData['description'] ?? $itemData['nameSnapshot'] ?? $itemData['descripcion'] ?? ''),
+            );
 
             if ($description !== '') {
                 $item->setNameSnapshot(mb_substr($description, 0, 255));
@@ -464,12 +464,12 @@ readonly class SaleProcessor implements ProcessorInterface
             }
 
             $this->logger->debug('Converted sale item', [
-                'product_id'       => $product?->getId(),
-                'qty'              => $qty,
-                'unit_price'       => $unitPrice,
+                'product_id' => $product?->getId(),
+                'qty' => $qty,
+                'unit_price' => $unitPrice,
                 'discount_percent' => $discountPercent,
-                'discount'         => $discount,
-                'total'            => $itemTotal,
+                'discount' => $discount,
+                'total' => $itemTotal,
             ]);
 
             $items[] = $item;
@@ -523,7 +523,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $defaultCustomer = $this->customerRepository->findDefaultAnonymous();
         if (!$defaultCustomer instanceof Customer) {
             throw new ServiceException(
-                'Debe seleccionar un cliente para la venta y no existe el cliente general (ruc=00000000).'
+                'Debe seleccionar un cliente para la venta y no existe el cliente general (ruc=00000000).',
             );
         }
 

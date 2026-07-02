@@ -32,11 +32,16 @@ final readonly class CspNonceListener
 
     public function __construct(
         private CspNonceService $nonceService,
-        #[Autowire(env: 'S3_PUBLIC_URL')] string $s3PublicUrl,
-        #[Autowire(env: 'S3_ENDPOINT')] string $s3Endpoint,
-        #[Autowire(env: 'S3_BUCKET_NAME')] string $s3BucketName,
-        #[Autowire(env: 'MERCURE_PUBLIC_URL')] string $mercurePublicUrl,
-        #[Autowire(param: 'kernel.environment')] private string $environment,
+        #[Autowire(env: 'S3_PUBLIC_URL')]
+        string $s3PublicUrl,
+        #[Autowire(env: 'S3_ENDPOINT')]
+        string $s3Endpoint,
+        #[Autowire(env: 'S3_BUCKET_NAME')]
+        string $s3BucketName,
+        #[Autowire(env: 'MERCURE_PUBLIC_URL')]
+        string $mercurePublicUrl,
+        #[Autowire(param: 'kernel.environment')]
+        private string $environment,
     ) {
         $s3PublicUrl = trim($s3PublicUrl);
         $base = $s3PublicUrl;
@@ -52,9 +57,9 @@ final readonly class CspNonceListener
         $this->assetHost = $host !== '' ? $scheme . '://' . $host : '';
 
         // Build the Mercure hub origin for connect-src (e.g. https://app.efact.app).
-        $mercureHost   = parse_url(trim($mercurePublicUrl), PHP_URL_HOST) ?? '';
+        $mercureHost = parse_url(trim($mercurePublicUrl), PHP_URL_HOST) ?? '';
         $mercureScheme = parse_url(trim($mercurePublicUrl), PHP_URL_SCHEME) ?? 'https';
-        $mercurePort   = parse_url(trim($mercurePublicUrl), PHP_URL_PORT);
+        $mercurePort = parse_url(trim($mercurePublicUrl), PHP_URL_PORT);
         $this->mercureHost = $mercureHost !== ''
             ? $mercureScheme . '://' . $mercureHost . ($mercurePort !== null ? ':' . $mercurePort : '')
             : '';
@@ -94,25 +99,20 @@ final readonly class CspNonceListener
         // is on https://. We include both scheme variants of the tenant host so the
         // EventSource URL is always covered regardless of proxy configuration.
         $tenantHost = $event->getRequest()->getHttpHost(); // e.g. jawka.efact.app
-        $connectSrcExtra = $tenantHost !== ''
-            ? "https://{$tenantHost} http://{$tenantHost}"
-            : $this->mercureHost; // fallback to static env var
+        $connectSrcExtra = $tenantHost !== '' ? "https://{$tenantHost} http://{$tenantHost}" : $this->mercureHost; // fallback to static env var
 
-        $response->headers->set(
-            'Content-Security-Policy',
-            implode('; ', [
-                "default-src 'self'",
-                "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
-                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-                $imgSrc,
-                "font-src 'self' data: https://cdn.jsdelivr.net",
-                // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
-                // localhost HTTP for efact-hardware-agent;
-                // localhost ws/wss for QZ Tray desktop print agent.
-                "connect-src 'self' {$connectSrcExtra} http://127.0.0.1:8765 http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
-                "frame-src 'self'",
-                "worker-src 'self' blob:",
-            ])
-        );
+        $response->headers->set('Content-Security-Policy', implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+            $imgSrc,
+            "font-src 'self' data: https://cdn.jsdelivr.net",
+            // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
+            // localhost HTTP for efact-hardware-agent;
+            // localhost ws/wss for QZ Tray desktop print agent.
+            "connect-src 'self' {$connectSrcExtra} http://127.0.0.1:8765 http://localhost:8765 ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
+            "frame-src 'self'",
+            "worker-src 'self' blob:",
+        ]));
     }
 }

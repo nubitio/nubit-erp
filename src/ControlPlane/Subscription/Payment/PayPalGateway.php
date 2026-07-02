@@ -27,8 +27,7 @@ final class PayPalGateway implements PaymentGatewayInterface
         private readonly string $webhookId = '',
         private readonly string $mode = 'sandbox',
         private readonly string $planMapJson = '{}',
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -303,8 +302,6 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     private function getBaseUrl(): string
     {
-        return $this->mode === 'live'
-            ? 'https://api-m.paypal.com'
-            : 'https://api-m.sandbox.paypal.com';
+        return $this->mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
     }
 }

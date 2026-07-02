@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use App\Efact\Audit\AuditLogger;
-use App\Efact\Service\CompanyContext;
-use App\Billing\Sunat\Domain\BillSendUseCase;
-use App\Billing\Sunat\Domain\BillConsultUseCase;
-use App\Billing\Sunat\Model\Response\DocumentResponse;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Config\EfactConstants as Constants;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Billing\Sunat\Domain\BillConsultUseCase;
+use App\Billing\Sunat\Domain\BillSendUseCase;
+use App\Billing\Sunat\Model\Response\DocumentResponse;
+use App\Efact\Audit\AuditLogger;
+use App\Efact\Config\EfactConstants as Constants;
+use App\Efact\Service\CompanyContext;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 
 readonly class InvoiceSendUseCase
 {
@@ -29,8 +29,7 @@ readonly class InvoiceSendUseCase
         private TaxDocumentEventRepository $taxDocumentEventRepository,
         private ManagerRegistry $doctrine,
         private AuditLogger $auditLogger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws FilesystemException
@@ -47,29 +46,23 @@ readonly class InvoiceSendUseCase
                 throw new ServiceException('Invoice not found');
             }
 
-            $saleId = (string)($taxDocument->getCanonicalSaleId() ?? '');
+            $saleId = (string) ($taxDocument->getCanonicalSaleId() ?? '');
             $response = $this->billSendUseCase->__invoke($taxDocumentId);
             $docDir = Constants::INVOICE_DIR . '/' . $response->name;
-            $this->fileManager->write(
-                $docDir . '/' . $response->name . '.xml',
-                $response->xml
-            );
+            $this->fileManager->write($docDir . '/' . $response->name . '.xml', $response->xml);
 
             if ($response->sunatResponse->isSuccess()) {
                 $sunatStatus = $response->sunatResponse->getCdrResponse()?->getCode();
                 $sunatMessage = $response->sunatResponse->getCdrResponse()?->getDescription();
                 $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
-                $this->fileManager->write(
-                    $docDir . '/R-' . $response->name . '.zip',
-                    $cdr
-                );
+                $this->fileManager->write($docDir . '/R-' . $response->name . '.zip', $cdr);
                 $taxDocument->setCdrPath($docDir . '/R-' . $response->name . '.zip');
                 $recoveredByConsult = false;
                 $retryable = false;
             } else {
                 $errorCode = $response->sunatResponse->getError()?->getCode();
                 $errorMessage = $response->sunatResponse->getError()?->getMessage();
-                $retryable = !$this->sunatSendControlService->isSunatRejection($errorCode, (string)$errorMessage);
+                $retryable = !$this->sunatSendControlService->isSunatRejection($errorCode, (string) $errorMessage);
                 $recoveredByConsult = false;
 
                 if ($retryable) {
@@ -80,14 +73,19 @@ readonly class InvoiceSendUseCase
                             $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
                             $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
                             $companyId = $this->companyContext->getId();
-                            $docFullName = $companyId . '-'
-                                . $taxDocument->getDocumentType() . '-'
+                            $docFullName =
+                                $companyId
+                                . '-'
+                                . $taxDocument->getDocumentType()
+                                . '-'
                                 . $consultResponse->getCdrResponse()->getId();
                             $this->fileManager->write(
                                 Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
-                                $cdr
+                                $cdr,
                             );
-                            $taxDocument->setCdrPath(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip');
+                            $taxDocument->setCdrPath(
+                                Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
+                            );
                             $recoveredByConsult = true;
                         } elseif ($consultResponse->isSuccess() && $consultResponse->getCdrResponse() !== null) {
                             $sunatStatus = $consultResponse->getCdrResponse()->getCode();

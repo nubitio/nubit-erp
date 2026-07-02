@@ -16,8 +16,7 @@ final readonly class TenantUsageService
         private TenantManager $tenantManager,
         private TenantResourceCatalog $resourceCatalog,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, int>
@@ -46,8 +45,8 @@ final readonly class TenantUsageService
             }
 
             try {
-                $count = (int)$connection->fetchOne(
-                    'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName)
+                $count = (int) $connection->fetchOne(
+                    'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName),
                 );
                 $metrics[$metricName] = $count;
             } catch (\Throwable $e) {
@@ -62,12 +61,9 @@ final readonly class TenantUsageService
 
         try {
             /** @var string|false $size */
-            $size = $connection->fetchOne(
-                'SELECT ROUND(SUM(data_length + index_length), 0) '
-                . 'FROM information_schema.tables WHERE table_schema = ?',
-                [$tenant['connection'] ?? $tenantName]
-            );
-            $metrics['storage_bytes'] = $size !== false ? (int)$size : 0;
+            $size = $connection->fetchOne('SELECT ROUND(SUM(data_length + index_length), 0) '
+            . 'FROM information_schema.tables WHERE table_schema = ?', [$tenant['connection'] ?? $tenantName]);
+            $metrics['storage_bytes'] = $size !== false ? (int) $size : 0;
         } catch (\Throwable $e) {
             $this->logger->warning('Failed to get database size', [
                 'tenant' => $tenantName,
@@ -89,14 +85,14 @@ final readonly class TenantUsageService
             return;
         }
 
-        $tenantId = (int)($tenant['id'] ?? 0);
+        $tenantId = (int) ($tenant['id'] ?? 0);
         if ($tenantId === 0) {
             return;
         }
 
         /** @var Connection $controlPlane */
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
         foreach ($metrics as $metricName => $value) {
             $controlPlane->executeStatement(
@@ -122,7 +118,7 @@ final readonly class TenantUsageService
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
 
-        $tenantId = (int)($tenant['id'] ?? 0);
+        $tenantId = (int) ($tenant['id'] ?? 0);
         if ($tenantId <= 0) {
             return [];
         }
@@ -131,8 +127,7 @@ final readonly class TenantUsageService
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
 
         /** @var array<int, array{metric_name: string, metric_value: int}> $rows */
-        $rows = $controlPlane->fetchAllAssociative(
-            'SELECT tu.metric_name, tu.metric_value
+        $rows = $controlPlane->fetchAllAssociative('SELECT tu.metric_name, tu.metric_value
              FROM tenant_usage tu
              INNER JOIN (
                  SELECT metric_name, MAX(collected_at) AS max_collected
@@ -140,13 +135,11 @@ final readonly class TenantUsageService
                  WHERE tenant_id = ?
                  GROUP BY metric_name
              ) latest ON latest.metric_name = tu.metric_name AND latest.max_collected = tu.collected_at
-             WHERE tu.tenant_id = ?',
-            [$tenantId, $tenantId]
-        );
+             WHERE tu.tenant_id = ?', [$tenantId, $tenantId]);
 
         $result = [];
         foreach ($rows as $row) {
-            $result[(string)$row['metric_name']] = (int)$row['metric_value'];
+            $result[(string) $row['metric_name']] = (int) $row['metric_value'];
         }
 
         return $result;
@@ -162,26 +155,23 @@ final readonly class TenantUsageService
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
 
-        $tenantId = (int)($tenant['id'] ?? 0);
+        $tenantId = (int) ($tenant['id'] ?? 0);
         if ($tenantId <= 0) {
             return [];
         }
 
         $hours = max(1, $hours);
         $limit = max(10, min($limit, 5000));
-        $cutoff = (new \DateTimeImmutable(sprintf('-%d hours', $hours)))->format('Y-m-d H:i:s');
+        $cutoff = new \DateTimeImmutable(sprintf('-%d hours', $hours))->format('Y-m-d H:i:s');
 
         /** @var Connection $controlPlane */
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
         /** @var array<int, array{metric_name: string, collected_at: string, metric_value: int}> $rows */
-        $rows = $controlPlane->fetchAllAssociative(
-            'SELECT metric_name, collected_at, metric_value
+        $rows = $controlPlane->fetchAllAssociative('SELECT metric_name, collected_at, metric_value
              FROM tenant_usage
              WHERE tenant_id = ? AND collected_at >= ?
              ORDER BY collected_at DESC
-             LIMIT ' . $limit,
-            [$tenantId, $cutoff]
-        );
+             LIMIT ' . $limit, [$tenantId, $cutoff]);
 
         return $rows;
     }
@@ -203,7 +193,7 @@ final readonly class TenantUsageService
 
         /** @var \Doctrine\DBAL\Connection $controlPlane */
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
-        $cutoff = (new \DateTimeImmutable(sprintf('-%d hours', max(1, $hours))))->format('Y-m-d H:i:s');
+        $cutoff = new \DateTimeImmutable(sprintf('-%d hours', max(1, $hours)))->format('Y-m-d H:i:s');
 
         $oldestRows = $controlPlane->fetchAllAssociative(
             'SELECT tu.metric_name, tu.metric_value

@@ -25,8 +25,7 @@ final readonly class BelowMinStockItemExtension implements QueryCollectionExtens
 {
     public function __construct(
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     public function applyToCollection(
         QueryBuilder $queryBuilder,
@@ -49,7 +48,7 @@ final readonly class BelowMinStockItemExtension implements QueryCollectionExtens
             return;
         }
 
-        $alias    = $queryBuilder->getRootAliases()[0];
+        $alias = $queryBuilder->getRootAliases()[0];
         $prodAlias = $queryNameGenerator->generateJoinAlias('product');
 
         $queryBuilder

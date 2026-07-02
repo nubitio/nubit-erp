@@ -13,6 +13,5 @@ readonly class User
         public ?string $header = null,
         /** @var Extra[] */
         public ?array $extras = null,
-    ) {
-    }
+    ) {}
 }

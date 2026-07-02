@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Domain;
 
-use App\Billing\Sunat\Model\Response\DocumentResponse;
-use App\Billing\Sunat\Model\Response\SummaryResponse;
 use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Shared\Enum\ChargeType;
 use App\Billing\Shared\Enum\OperationType;
 use App\Billing\Shared\ErrorMessages;
 use App\Billing\Shared\Service\AmountFormatterService;
+use App\Billing\Sunat\Model\Response\DocumentResponse;
+use App\Billing\Sunat\Model\Response\SummaryResponse;
 use PHPUnit\Framework\TestCase;
 
 final class EInvoicingDomainTest extends TestCase
@@ -99,7 +99,7 @@ final class EInvoicingDomainTest extends TestCase
 
     public function testFormatAmountInWordsContainsSon(): void
     {
-        $svc    = new AmountFormatterService();
+        $svc = new AmountFormatterService();
         $result = $svc->formatAmountInWords(100.50);
 
         self::assertStringStartsWith('SON ', $result);
@@ -108,7 +108,7 @@ final class EInvoicingDomainTest extends TestCase
 
     public function testFormatAmountInWordsIsUppercase(): void
     {
-        $svc    = new AmountFormatterService();
+        $svc = new AmountFormatterService();
         $result = $svc->formatAmountInWords(25.00);
 
         self::assertSame(mb_strtoupper($result), $result);
@@ -116,7 +116,7 @@ final class EInvoicingDomainTest extends TestCase
 
     public function testFormatAmountInWordsCustomCurrency(): void
     {
-        $svc    = new AmountFormatterService();
+        $svc = new AmountFormatterService();
         $result = $svc->formatAmountInWords(10.00, 'DÓLARES');
 
         self::assertStringContainsString('DÓLARES', $result);

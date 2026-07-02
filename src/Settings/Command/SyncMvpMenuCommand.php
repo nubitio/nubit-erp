@@ -19,8 +19,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class SyncMvpMenuCommand extends PerTenantCommand
 {
-    public function __construct(private readonly MenuSeedService $menuSeedService)
-    {
+    public function __construct(
+        private readonly MenuSeedService $menuSeedService,
+    ) {
         parent::__construct();
     }
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller\Api;
 
-use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Service\InvoiceCreationServiceInterface;
 use App\Billing\Service\SaleV2Loader;
 use App\Sales\State\DetractionCalculatorInterface;
+use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,11 +41,13 @@ class MakeInvoice extends AbstractController
 
         $result = $invoiceCreationService->createForSale($sale);
 
-        return $result['success']
-            ? ApiResponse::success($result['message'], [
-                'detraccionMonto' => $sale->getDetraccionMonto(),
-                'detraccionCodigo' => $sale->getDetraccionCodigo(),
-            ])
-            : ApiResponse::error($result['message']);
+        return (
+            $result['success']
+                ? ApiResponse::success($result['message'], [
+                    'detraccionMonto' => $sale->getDetraccionMonto(),
+                    'detraccionCodigo' => $sale->getDetraccionCodigo(),
+                ])
+                : ApiResponse::error($result['message'])
+        );
     }
 }

@@ -15,7 +15,8 @@ final class InitialSetupServiceAdapterTest extends TestCase
     public function testMapsControlPlaneRequestToSetupInput(): void
     {
         $setupService = $this->createMock(InitialSetupService::class);
-        $setupService->expects(self::once())
+        $setupService
+            ->expects(self::once())
             ->method('configure')
             ->with(self::callback(function (InitialSetupInput $input): bool {
                 self::assertSame('admin', $input->adminUsername);
@@ -33,17 +34,19 @@ final class InitialSetupServiceAdapterTest extends TestCase
             }));
 
         $adapter = new InitialSetupServiceAdapter($setupService);
-        $adapter->configure(new InitialTenantSetupRequest(
-            'admin',
-            'Admin.3000',
-            '20123456789',
-            'Empresa Demo SAC',
-            'Demo',
-            'Av. Principal 123',
-            '999999999',
-            'Principal',
-            'Av. Principal 123',
-            '988888888',
-        ));
+        $adapter->configure(
+            new InitialTenantSetupRequest(
+                'admin',
+                'Admin.3000',
+                '20123456789',
+                'Empresa Demo SAC',
+                'Demo',
+                'Av. Principal 123',
+                '999999999',
+                'Principal',
+                'Av. Principal 123',
+                '988888888',
+            ),
+        );
     }
 }

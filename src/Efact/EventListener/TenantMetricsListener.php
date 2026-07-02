@@ -20,8 +20,7 @@ final class TenantMetricsListener
 
     public function __construct(
         private TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function __invoke(ResponseEvent $event): void
     {
@@ -37,7 +36,7 @@ final class TenantMetricsListener
 
         $durationMs = (microtime(true) - $start) * 1000;
         $statusCode = $event->getResponse()->getStatusCode();
-        $route = (string)($request->attributes->get('_route') ?? '');
+        $route = (string) ($request->attributes->get('_route') ?? '');
 
         $attributes = [
             'tenant.id' => $this->tenantContext->getTenantId(),

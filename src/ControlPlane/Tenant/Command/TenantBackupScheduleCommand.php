@@ -80,10 +80,9 @@ final class TenantBackupScheduleCommand extends Command
     {
         $conn = $this->connectionRegistry->getConnection('control_plane');
 
-        $lastBackup = $conn->fetchOne(
-            "SELECT created_at FROM tenant_backups WHERE tenant_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1",
-            [$tenantId],
-        );
+        $lastBackup = $conn->fetchOne("SELECT created_at FROM tenant_backups WHERE tenant_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1", [
+            $tenantId,
+        ]);
 
         if ($lastBackup === false || $lastBackup === null) {
             return true;

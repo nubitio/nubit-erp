@@ -14,6 +14,5 @@ readonly class FileRequest
     public function __construct(
         public DocumentInterface $document,
         public ?Parameters $parameters = null,
-    ) {
-    }
+    ) {}
 }

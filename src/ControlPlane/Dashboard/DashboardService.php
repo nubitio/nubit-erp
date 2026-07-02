@@ -13,8 +13,7 @@ final readonly class DashboardService
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{total: int, active: int, suspended: int, deleted: int}
@@ -27,7 +26,7 @@ final readonly class DashboardService
             $total = (int) $conn->fetchOne('SELECT COUNT(*) FROM tenants');
             $active = (int) $conn->fetchOne("SELECT COUNT(*) FROM tenants WHERE status = 'active'");
             $suspended = (int) $conn->fetchOne("SELECT COUNT(*) FROM tenants WHERE status = 'suspended'");
-            $deleted = (int) $conn->fetchOne("SELECT COUNT(*) FROM tenants WHERE deleted_at IS NOT NULL");
+            $deleted = (int) $conn->fetchOne('SELECT COUNT(*) FROM tenants WHERE deleted_at IS NOT NULL');
 
             return compact('total', 'active', 'suspended', 'deleted');
         } catch (\Throwable $e) {
@@ -46,9 +45,7 @@ final readonly class DashboardService
             $conn = $this->getConnection();
 
             $totalPlans = (int) $conn->fetchOne('SELECT COUNT(*) FROM plans');
-            $tenantsWithoutPlan = (int) $conn->fetchOne(
-                "SELECT COUNT(*) FROM tenants WHERE plan IS NULL OR plan = ''",
-            );
+            $tenantsWithoutPlan = (int) $conn->fetchOne("SELECT COUNT(*) FROM tenants WHERE plan IS NULL OR plan = ''");
 
             return [
                 'total_plans' => $totalPlans,
@@ -73,17 +70,14 @@ final readonly class DashboardService
                 return [];
             }
 
-            $since = (new \DateTimeImmutable(sprintf('-%d hours', $hours)))->format('Y-m-d H:i:s');
+            $since = new \DateTimeImmutable(sprintf('-%d hours', $hours))->format('Y-m-d H:i:s');
 
-            return $conn->fetchAllAssociative(
-                'SELECT action, COUNT(*) as count
+            return $conn->fetchAllAssociative('SELECT action, COUNT(*) as count
                  FROM audit_logs
                  WHERE created_at >= ?
                  GROUP BY action
                  ORDER BY count DESC
-                 LIMIT 20',
-                [$since],
-            );
+                 LIMIT 20', [$since]);
         } catch (\Throwable $e) {
             $this->logger->warning('Dashboard: failed to load audit summary', ['exception' => $e->getMessage()]);
 
@@ -104,9 +98,7 @@ final readonly class DashboardService
             }
 
             $totalBackups = (int) $conn->fetchOne("SELECT COUNT(*) FROM tenant_backups WHERE status = 'completed'");
-            $lastBackupAt = $conn->fetchOne(
-                "SELECT MAX(completed_at) FROM tenant_backups WHERE status = 'completed'",
-            );
+            $lastBackupAt = $conn->fetchOne("SELECT MAX(completed_at) FROM tenant_backups WHERE status = 'completed'");
             $totalSizeBytes = (int) $conn->fetchOne(
                 "SELECT COALESCE(SUM(size_bytes), 0) FROM tenant_backups WHERE status = 'completed'",
             );

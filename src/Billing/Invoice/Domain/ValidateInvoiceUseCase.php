@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use Nubit\Platform\Exception\ServiceException;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Efact\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
 use App\Settings\Entity\ConfigKey;
-use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Api\AuthApi;
@@ -18,6 +17,7 @@ use Greenter\Sunat\ConsultaCpe\Configuration;
 use Greenter\Sunat\ConsultaCpe\Model\CpeFilter;
 use Greenter\Sunat\ConsultaCpe\Model\CpeResponse;
 use GuzzleHttp\ClientInterface;
+use Nubit\Platform\Exception\ServiceException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -35,8 +35,7 @@ readonly class ValidateInvoiceUseCase
         private TaxDocumentRepository $taxDocumentRepository,
         private EntityManagerInterface $entityManager,
         private ClientInterface $httpClient,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ApiException
@@ -63,9 +62,9 @@ readonly class ValidateInvoiceUseCase
             ->setNumeroSerie(strval($voucher->voucher_series))
             ->setNumero(strval($voucher->voucher_number))
             ->setFechaEmision(
-                (new \DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC')))
+                new \DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('UTC'))
                     ->setTimezone(new \DateTimeZone('America/Lima'))
-                    ->format('d/m/Y')
+                    ->format('d/m/Y'),
             )
             ->setMonto(strval($voucher->voucher_sale_amount));
 
@@ -96,7 +95,7 @@ readonly class ValidateInvoiceUseCase
                 self::GRANT_TYPE,
                 self::SCOPE,
                 strval($this->settings->get(ConfigKey::CPE_CLIENT_ID->value)),
-                strval($this->settings->get(ConfigKey::CPE_CLIENT_SECRET->value))
+                strval($this->settings->get(ConfigKey::CPE_CLIENT_SECRET->value)),
             );
 
             return $result->getAccessToken() ?? '';

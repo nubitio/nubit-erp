@@ -38,8 +38,7 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
         private InventoryService $inventoryService,
         private StockVoidReverserInterface $stockVoidReverser,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \Doctrine\DBAL\Exception
@@ -75,9 +74,9 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
         }
 
         $creditNoteId = (string) $creditNote->getId();
-        $warehouseId  = (string) $warehouse->getId();
-        $lineNo       = 0;
-        $reversed     = 0;
+        $warehouseId = (string) $warehouse->getId();
+        $lineNo = 0;
+        $reversed = 0;
 
         foreach ($creditNote->getLines() as $line) {
             /** @var TaxDocumentLine $line */
@@ -98,15 +97,15 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
             try {
                 $this->inventoryService->recordMovement(
                     new MovementDraft(
-                        warehouseId:  $warehouseId,
-                        productId:    $productId,
+                        warehouseId: $warehouseId,
+                        productId: $productId,
                         movementType: StockMovementType::RETURN_IN,
                         qtyDeltaBase: $qtyString,
-                        unitId:       0,
-                        qtyOriginal:  $qtyString,
-                        sourceType:   'CREDIT_NOTE',
-                        sourceId:     sprintf('%s:%d', $creditNoteId, $lineNo),
-                        note:         sprintf(
+                        unitId: 0,
+                        qtyOriginal: $qtyString,
+                        sourceType: 'CREDIT_NOTE',
+                        sourceId: sprintf('%s:%d', $creditNoteId, $lineNo),
+                        note: sprintf(
                             'Devolución cliente — nota de crédito %s (código: %s)',
                             $creditNote->getFullNumber(),
                             $reasonCode ?? 'N/A',
@@ -118,17 +117,17 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
             } catch (\Throwable $e) {
                 $this->logger->error('CreditNoteStockReverser: failed to record return movement', [
                     'credit_note_id' => $creditNoteId,
-                    'line_no'        => $lineNo,
-                    'product_id'     => $productId,
-                    'error'          => $e->getMessage(),
+                    'line_no' => $lineNo,
+                    'product_id' => $productId,
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         $this->logger->info('CreditNoteStockReverser: partial return processed', [
-            'credit_note_id'  => $creditNoteId,
-            'reason_code'     => $reasonCode,
-            'lines_reversed'  => $reversed,
+            'credit_note_id' => $creditNoteId,
+            'reason_code' => $reasonCode,
+            'lines_reversed' => $reversed,
         ]);
     }
 }

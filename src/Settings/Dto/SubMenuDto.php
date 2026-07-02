@@ -9,6 +9,5 @@ class SubMenuDto
     public function __construct(
         public string $text,
         public string $path,
-    ) {
-    }
+    ) {}
 }

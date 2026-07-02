@@ -6,10 +6,10 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;

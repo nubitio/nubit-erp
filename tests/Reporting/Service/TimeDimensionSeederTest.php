@@ -28,7 +28,7 @@ final class TimeDimensionSeederTest extends TestCase
             locale: 'en_US',
             progressCallback: static function (int $batchCount) use (&$progress): void {
                 $progress[] = $batchCount;
-            }
+            },
         );
 
         self::assertSame(3, $count);
@@ -52,7 +52,7 @@ final class TimeDimensionSeederTest extends TestCase
             new \DateTimeImmutable('2026-01-01'),
             new \DateTimeImmutable('2026-01-02'),
             batchSize: 1,
-            locale: 'en_US'
+            locale: 'en_US',
         );
     }
 }

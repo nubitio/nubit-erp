@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionPaymentMethodSalesDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -22,8 +22,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -34,16 +33,14 @@ readonly class CashSessionXReportProvider implements ProviderInterface
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative(
-            'SELECT id, opening_amount, opened_at FROM cash_sessions WHERE id = ?',
-            [$cashSessionId]
-        );
+        $session = $this->connection->fetchAssociative('SELECT id, opening_amount, opened_at FROM cash_sessions WHERE id = ?', [
+            $cashSessionId,
+        ]);
 
         if ($session === false) {
-            $session = $this->connection->fetchAssociative(
-                'SELECT id, opening_amount, opened_at FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-                [$cashSessionId]
-            );
+            $session = $this->connection->fetchAssociative('SELECT id, opening_amount, opened_at FROM cash_sessions WHERE legacy_cash_shift_id = ?', [
+                $cashSessionId,
+            ]);
         }
 
         if ($session === false) {
@@ -56,21 +53,21 @@ readonly class CashSessionXReportProvider implements ProviderInterface
         $totalSalesRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
-            [$sessionId]
+            [$sessionId],
         );
         $totalSales = BigDecimal::of((string) ($totalSalesRaw ?: '0'));
 
         $cashInRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
-            [$sessionId]
+            [$sessionId],
         );
         $cashIn = BigDecimal::of((string) ($cashInRaw ?: '0'));
 
         $cashOutRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
-            [$sessionId]
+            [$sessionId],
         );
         $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));
 
@@ -80,25 +77,24 @@ readonly class CashSessionXReportProvider implements ProviderInterface
              JOIN payment_method pm ON pm.id = cm.payment_method_id
              WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
              GROUP BY cm.payment_method_id, pm.name",
-            [$sessionId]
+            [$sessionId],
         );
 
-        $shiftDurationMinutes = (int) ($this->connection->fetchOne(
-            'SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_sessions WHERE id = ?',
-            [$sessionId]
-        ) ?: 0);
+        $shiftDurationMinutes = (int) (
+            $this->connection->fetchOne('SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_sessions WHERE id = ?', [
+                $sessionId,
+            ]) ?: 0
+        );
 
         $currentBalance = $openingBalance->plus($totalSales)->plus($cashIn)->minus($cashOut);
 
         $salesByPaymentMethod = array_map(
-            static fn (array $row): CashSessionPaymentMethodSalesDto => new CashSessionPaymentMethodSalesDto(
+            static fn(array $row): CashSessionPaymentMethodSalesDto => new CashSessionPaymentMethodSalesDto(
                 paymentMethodId: (int) $row['paymentMethodId'],
                 paymentMethod: (string) $row['paymentMethod'],
-                amount: BigDecimal::of((string) $row['amount'])
-                    ->toScale(2, RoundingMode::HALF_UP)
-                    ->__toString(),
+                amount: BigDecimal::of((string) $row['amount'])->toScale(2, RoundingMode::HALF_UP)->__toString(),
             ),
-            $salesRows
+            $salesRows,
         );
 
         return new CashSessionXReportDto(

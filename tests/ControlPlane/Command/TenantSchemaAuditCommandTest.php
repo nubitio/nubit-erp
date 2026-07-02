@@ -15,52 +15,50 @@ final class TenantSchemaAuditCommandTest extends TestCase
     public function testBuildSchemaSnapshotNormalizesAndFiltersRows(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchFirstColumn')
-            ->willReturn(['menu', 'doctrine_migration_versions', 'MENU']);
-        $connection->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls(
+        $connection->method('fetchFirstColumn')->willReturn(['menu', 'doctrine_migration_versions', 'MENU']);
+        $connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls(
+            [
                 [
-                    [
-                        'table_name' => 'menu',
-                        'column_name' => 'ID',
-                        'column_type' => 'INT(11)',
-                        'is_nullable' => 'NO',
-                        'column_default' => null,
-                        'extra' => 'AUTO_INCREMENT',
-                        'collation_name' => '',
-                    ],
+                    'table_name' => 'menu',
+                    'column_name' => 'ID',
+                    'column_type' => 'INT(11)',
+                    'is_nullable' => 'NO',
+                    'column_default' => null,
+                    'extra' => 'AUTO_INCREMENT',
+                    'collation_name' => '',
+                ],
+            ],
+            [
+                [
+                    'table_name' => 'menu',
+                    'non_unique' => 0,
+                    'index_type' => 'BTREE',
+                    'column_list' => 'id',
+                ],
+            ],
+            [
+                [
+                    'table_name' => 'menu',
+                    'constraint_type' => 'FOREIGN KEY',
+                    'column_list' => 'id',
+                    'referenced_table_name' => 'cliente',
+                    'referenced_column_list' => 'id',
+                    'update_rule' => 'NO ACTION',
+                    'delete_rule' => 'RESTRICT',
+                    'check_clause' => '',
                 ],
                 [
-                    [
-                        'table_name' => 'menu',
-                        'non_unique' => 0,
-                        'index_type' => 'BTREE',
-                        'column_list' => 'id',
-                    ],
+                    'table_name' => 'menu',
+                    'constraint_type' => 'CHECK',
+                    'column_list' => '',
+                    'referenced_table_name' => '',
+                    'referenced_column_list' => '',
+                    'update_rule' => '',
+                    'delete_rule' => '',
+                    'check_clause' => ' amount > 0 ',
                 ],
-                [
-                    [
-                        'table_name' => 'menu',
-                        'constraint_type' => 'FOREIGN KEY',
-                        'column_list' => 'id',
-                        'referenced_table_name' => 'cliente',
-                        'referenced_column_list' => 'id',
-                        'update_rule' => 'NO ACTION',
-                        'delete_rule' => 'RESTRICT',
-                        'check_clause' => '',
-                    ],
-                    [
-                        'table_name' => 'menu',
-                        'constraint_type' => 'CHECK',
-                        'column_list' => '',
-                        'referenced_table_name' => '',
-                        'referenced_column_list' => '',
-                        'update_rule' => '',
-                        'delete_rule' => '',
-                        'check_clause' => ' amount > 0 ',
-                    ],
-                ]
-            );
+            ],
+        );
 
         $command = new TenantSchemaAuditCommand($connection);
 

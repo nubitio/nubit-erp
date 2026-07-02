@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Inventory\Entity;
 
-use App\Catalog\Entity\Product;
-use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -14,13 +12,15 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use App\Catalog\Entity\Product;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\State\WarehouseCreateProcessor;
 use App\Inventory\State\WarehousesByBranchProvider;
+use App\Organization\Entity\Branch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -36,10 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             uriTemplate: '/branches/{id}/warehouses',
             uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: Branch::class,
-                ),
+                'id' => new Link(fromProperty: 'id', fromClass: Branch::class),
             ],
             provider: WarehousesByBranchProvider::class,
         ),
@@ -84,10 +81,15 @@ class Warehouse
      * @var Collection<int, ProductStock>
      */
     #[Groups(['warehouse:read'])]
-    #[ORM\OneToMany(targetEntity: ProductStock::class, mappedBy: 'warehouse', cascade: [
-        'persist',
-        'remove',
-    ], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: ProductStock::class,
+        mappedBy: 'warehouse',
+        cascade: [
+            'persist',
+            'remove',
+        ],
+        orphanRemoval: true,
+    )]
     private Collection $productStocks;
 
     public function getId(): ?string

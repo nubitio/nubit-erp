@@ -22,7 +22,7 @@ final class PurchaseSoftDeleteProcessorTest extends TestCase
 {
     public function testPurchaseDeleteOperationUsesVoidProcessorAndNoOutput(): void
     {
-        $resource = (new ReflectionClass(Purchase::class))->getAttributes(ApiResource::class)[0]->newInstance();
+        $resource = new ReflectionClass(Purchase::class)->getAttributes(ApiResource::class)[0]->newInstance();
 
         foreach ($resource->getOperations() ?? [] as $operation) {
             if (!$operation instanceof Delete) {
@@ -40,7 +40,7 @@ final class PurchaseSoftDeleteProcessorTest extends TestCase
 
     public function testPurchaseHasNoPutOperation(): void
     {
-        $resource = (new ReflectionClass(Purchase::class))->getAttributes(ApiResource::class)[0]->newInstance();
+        $resource = new ReflectionClass(Purchase::class)->getAttributes(ApiResource::class)[0]->newInstance();
 
         foreach ($resource->getOperations() ?? [] as $operation) {
             self::assertNotInstanceOf(

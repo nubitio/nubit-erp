@@ -12,8 +12,7 @@ readonly class InvoiceSendRecoveryService
     public function __construct(
         private InvoiceConsultUseCase $invoiceConsultUseCase,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function tryRecoverByConsult(string $taxDocumentId, ?string $tenantName): bool
     {

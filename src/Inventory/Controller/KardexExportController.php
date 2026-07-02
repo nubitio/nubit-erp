@@ -21,8 +21,7 @@ final class KardexExportController extends AbstractController
     public function __construct(
         private readonly KardexExportService $exportService,
         private readonly PdfExporter $pdfExporter,
-    ) {
-    }
+    ) {}
 
     #[RequiresFeature('excel_export')]
     #[Route('/api/inventory/kardex/export.xlsx', name: 'api_inventory_kardex_export_xlsx', methods: ['GET'])]
@@ -87,11 +86,7 @@ final class KardexExportController extends AbstractController
             'valuation' => $valuation !== '' ? $valuation : null,
         ]);
 
-        $filenameBase = sprintf(
-            'kardex-%s-%s',
-            $report['summary']['product']['code'] ?? $productId,
-            date('Y-m-d'),
-        );
+        $filenameBase = sprintf('kardex-%s-%s', $report['summary']['product']['code'] ?? $productId, date('Y-m-d'));
 
         return [$report, $filenameBase];
     }

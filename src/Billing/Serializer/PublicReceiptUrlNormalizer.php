@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Serializer;
 
+use App\Billing\Entity\TaxDocument;
 use App\Billing\Receipt\ReceiptPayload;
 use App\Sales\Entity\SaleRecord;
-use App\Billing\Entity\TaxDocument;
 use Override;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -20,9 +20,8 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
     private const string ALREADY_CALLED = 'public_receipt_url_normalizer_called';
 
     public function __construct(
-        private readonly UrlGeneratorInterface $urlGenerator
-    ) {
-    }
+        private readonly UrlGeneratorInterface $urlGenerator,
+    ) {}
 
     /**
      * @inheritdoc
@@ -54,13 +53,12 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             $normalized['publicReceiptUrl'] = $this->urlGenerator->generate(
                 'receipt_show',
                 ['payload' => $payload],
-                UrlGeneratorInterface::ABSOLUTE_URL
+                UrlGeneratorInterface::ABSOLUTE_URL,
             );
         }
 
         return $normalized;
     }
-
 
     private function buildPayload(mixed $object): ?string
     {
@@ -70,7 +68,7 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
 
         if ($object instanceof SaleRecord) {
             $taxDocumentId = $object->getTaxDocumentId();
-            $documentType  = $object->getDocumentType();
+            $documentType = $object->getDocumentType();
             if ($taxDocumentId === null || $documentType === null) {
                 return null;
             }

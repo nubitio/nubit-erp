@@ -11,8 +11,7 @@ final readonly class ProvisionCommandRunner implements ProvisionCommandRunnerInt
 {
     public function __construct(
         private KernelInterface $kernel,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{successful:bool,exit_code:int,output:string}

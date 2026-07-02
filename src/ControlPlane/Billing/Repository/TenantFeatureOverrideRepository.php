@@ -92,13 +92,11 @@ final readonly class TenantFeatureOverrideRepository implements TenantFeatureOve
      */
     public function findExpiredUncleaned(): array
     {
-        $rows = $this->cp->fetchAllAssociative(
-            'SELECT * FROM tenant_feature_overrides
+        $rows = $this->cp->fetchAllAssociative('SELECT * FROM tenant_feature_overrides
              WHERE expires_at IS NOT NULL
                AND expires_at <= NOW()
                AND cleaned_at IS NULL
-             ORDER BY expires_at ASC',
-        );
+             ORDER BY expires_at ASC');
 
         return array_map($this->hydrate(...), $rows);
     }

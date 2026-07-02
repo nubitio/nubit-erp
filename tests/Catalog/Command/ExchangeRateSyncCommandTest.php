@@ -31,10 +31,10 @@ final class ExchangeRateSyncCommandTest extends TestCase
     public function testOutputsSuccessWhenRateSynced(): void
     {
         $tester = $this->runCommand([
-            'success'    => true,
-            'rate'       => '3.75',
+            'success' => true,
+            'rate' => '3.75',
             'updated_at' => '2026-04-30 09:00:00',
-            'message'    => 'OK',
+            'message' => 'OK',
         ]);
 
         self::assertSame(0, $tester->getStatusCode());
@@ -45,10 +45,10 @@ final class ExchangeRateSyncCommandTest extends TestCase
     public function testOutputsWarningWhenSyncFails(): void
     {
         $tester = $this->runCommand([
-            'success'    => false,
-            'rate'       => null,
+            'success' => false,
+            'rate' => null,
             'updated_at' => null,
-            'message'    => 'BCRP API unreachable',
+            'message' => 'BCRP API unreachable',
         ]);
 
         // Command always exits 0 — it warns but doesn't fail hard

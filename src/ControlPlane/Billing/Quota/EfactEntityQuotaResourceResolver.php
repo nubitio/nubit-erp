@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Quota;
 
-use App\Organization\Entity\Branch;
-use App\Contacts\Entity\Customer;
-use App\Catalog\Entity\Product;
 use App\Billing\Entity\TaxDocument;
+use App\Catalog\Entity\Product;
+use App\Contacts\Entity\Customer;
 use App\Identity\Entity\User;
+use App\Organization\Entity\Branch;
 use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 
 final readonly class EfactEntityQuotaResourceResolver implements QuotaResourceResolverInterface

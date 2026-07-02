@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Billing\Sunat\Domain;
 
 use App\Billing\Repository\TaxDocumentRepository;
-use DateTime;
-use DateMalformedStringException;
 use App\Billing\Sunat\Model\Response\SummaryResponse;
+use DateMalformedStringException;
+use DateTime;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Voided\Voided;
 use Greenter\Model\Voided\VoidedDetail;
@@ -19,8 +19,7 @@ readonly class VoidedCreateUseCase
         private VoidedRepositoryInterface $voidedRepository,
         private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $invoiceUtils,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DateMalformedStringException
@@ -40,7 +39,7 @@ readonly class VoidedCreateUseCase
         $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
 
         $voided = new Voided()
-            ->setCorrelativo((string)($lastCorrelative + 1))
+            ->setCorrelativo((string) ($lastCorrelative + 1))
             ->setFecGeneracion(new DateTime(strval($voucher->voucher_date)))
             ->setFecComunicacion(new DateTime(strval($voucher->voucher_date)))
             ->setCompany($this->invoiceUtils->getCompany())

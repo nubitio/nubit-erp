@@ -10,10 +10,7 @@ final class ControlPlaneBoundaryTest extends TestCase
 {
     public function testCoreDoesNotImportConcreteControlPlaneClasses(): void
     {
-        $violations = $this->findUseStatementViolations(
-            __DIR__ . '/../../src/Core',
-            '/^use App\\\\ControlPlane\\\\/m',
-        );
+        $violations = $this->findUseStatementViolations(__DIR__ . '/../../src/Core', '/^use App\\\\ControlPlane\\\\/m');
 
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
@@ -40,9 +37,10 @@ final class ControlPlaneBoundaryTest extends TestCase
     ): array {
         $violations = [];
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \FilesystemIterator::SKIP_DOTS,
+        ));
 
         foreach ($iterator as $file) {
             if (!$file instanceof \SplFileInfo || $file->getExtension() !== 'php') {

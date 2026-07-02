@@ -12,8 +12,8 @@ use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleTax;
 use App\Sales\Repository\DashboardRepository;
-use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Sales\Service\SalePaymentPlanService;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -38,8 +38,7 @@ readonly class SalesWriteGateway
         private SalePaymentPlanService $salePaymentPlanService,
         private DashboardRepository $dashboardRepository,
         private TenantSettingsService $tenantSettingsService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -63,9 +62,10 @@ readonly class SalesWriteGateway
             throw new \RuntimeException(sprintf('New schema write aborted: warehouse is null for sale %s.', $saleId));
         }
         if ($cashRegisterId === null) {
-            throw new \RuntimeException(
-                sprintf('New schema write aborted: cash register is null for sale %s.', $saleId)
-            );
+            throw new \RuntimeException(sprintf(
+                'New schema write aborted: cash register is null for sale %s.',
+                $saleId,
+            ));
         }
         if ($sellerUserId === null) {
             throw new \RuntimeException(sprintf('New schema write aborted: seller user is null for sale %s.', $saleId));
@@ -109,9 +109,7 @@ readonly class SalesWriteGateway
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
         $saleOffline = $this->buildOfflineMeta('sale:' . $saleId, $issuedAt, 1);
         $createdAt = $sale->getDateCreated() ?? new \DateTimeImmutable();
-        $createdAtMutable = \DateTime::createFromImmutable(
-            \DateTimeImmutable::createFromInterface($createdAt)
-        );
+        $createdAtMutable = \DateTime::createFromImmutable(\DateTimeImmutable::createFromInterface($createdAt));
 
         // ── Populate offline/sync fields on SaleRecord ────────────────────────
         $sale->setIssuedAt($issuedAtMutable);
@@ -159,15 +157,15 @@ readonly class SalesWriteGateway
 
             $item->setLineNo($currentLineNo);
             $item->setSkuSnapshot($item->getSkuSnapshot() ?? $item->getProduct()->getCode());
-            $item->setNameSnapshot($item->getNameSnapshot() !== '' ? $item->getNameSnapshot() : $item->getProduct()->getName());
+            $item->setNameSnapshot(
+                $item->getNameSnapshot() !== '' ? $item->getNameSnapshot() : $item->getProduct()->getName(),
+            );
             $item->setUomSnapshot($item->getUomSnapshot() ?? $item->getProduct()->getUnitOfMeasure()->getCode());
             $item->setGrossAmount(Money::toString($grossAmount));
             $item->setNetAmount(Money::toString($netAmount));
-            $item->setTaxAmount(Money::toString(
-                Money::money($item->getNetAmount())->multipliedBy(
-                    Money::of($sale->getIgv() ?? '0')->dividedBy(100, 10, RoundingMode::HALF_UP)
-                )
-            ));
+            $item->setTaxAmount(Money::toString(Money::money($item->getNetAmount())->multipliedBy(Money::of(
+                $sale->getIgv() ?? '0',
+            )->dividedBy(100, 10, RoundingMode::HALF_UP))));
             $item->setUnitCostSnapshot($item->getUnitCostSnapshot() ?? $item->getProduct()->getPurchasePrice());
             $item->setSyncStatus('SYNCED');
             $item->setLocalUuid($this->deterministicUuid('sale-item-local:' . $saleId . ':' . $currentLineNo));
@@ -190,7 +188,7 @@ readonly class SalesWriteGateway
             $paymentMethodId = $paymentLine['payment_method_id'];
             $paymentMethod = $this->entityManager->getReference(PaymentMethod::class, $paymentMethodId);
 
-            $payment = (new SalePayment())
+            $payment = new SalePayment()
                 ->setSaleRecord($sale)
                 ->setPaymentMethod($paymentMethod)
                 ->setAmount($paymentLine['amount'])
@@ -217,7 +215,7 @@ readonly class SalesWriteGateway
         foreach ($sale->getSaleItemRecords() as $item) {
             $itemDiscountPct = Money::of($item->getDiscountPercent() ?? '0');
             if ($itemDiscountPct->isGreaterThan(BigDecimal::zero())) {
-                $discount = (new SaleDiscount())
+                $discount = new SaleDiscount()
                     ->setSaleRecord($sale)
                     ->setSaleItem($item)
                     ->setDiscountType('PERCENT')
@@ -234,7 +232,7 @@ readonly class SalesWriteGateway
 
         // Sale-level discount
         if (!$discountAmount->isZero()) {
-            $saleDiscount = (new SaleDiscount())
+            $saleDiscount = new SaleDiscount()
                 ->setSaleRecord($sale)
                 ->setSaleItem(null)
                 ->setDiscountType('PERCENT')
@@ -265,10 +263,10 @@ readonly class SalesWriteGateway
                 round((float) Money::toString($subtotal) * ($igvRateValue / 100), 2),
                 2,
                 '.',
-                ''
+                '',
             );
 
-            $saleTax = (new SaleTax())
+            $saleTax = new SaleTax()
                 ->setSaleRecord($sale)
                 ->setSaleItem(null)
                 ->setTaxCode('IGV')
@@ -293,10 +291,7 @@ readonly class SalesWriteGateway
         // Post-commit: update daily summary (non-voided sales only).
         if ($sale->getEstado() !== 0) {
             try {
-                $this->upsertDailySummaries(
-                    (string) $branchId,
-                    $issuedDate,
-                );
+                $this->upsertDailySummaries((string) $branchId, $issuedDate);
             } catch (\Throwable) {
                 // Intentionally swallowed: summary is best-effort.
             }
@@ -318,33 +313,33 @@ readonly class SalesWriteGateway
     {
         $this->connection->executeStatement(
             <<<'SQL'
-INSERT INTO branch_daily_summary
-    (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
-SELECT
-    :saleDate                                 AS summary_date,
-    :branchId                                 AS branch_id,
-    COUNT(*)                                  AS sales_count,
-    COALESCE(SUM(grand_total), 0)             AS gross_sales,
-    COALESCE(SUM(discount_total), 0)          AS discount_total,
-    COALESCE(SUM(tax_total), 0)               AS tax_total,
-    COALESCE(SUM(grand_total - tax_total), 0) AS net_sales,
-    0                                         AS refunds_total
-FROM sales
-WHERE issued_date = :saleDate
-  AND branch_id  = :branchId
-  AND status    != 'VOIDED'
-ON DUPLICATE KEY UPDATE
-    sales_count    = VALUES(sales_count),
-    gross_sales    = VALUES(gross_sales),
-    discount_total = VALUES(discount_total),
-    tax_total      = VALUES(tax_total),
-    net_sales      = VALUES(net_sales),
-    updated_at     = NOW()
-SQL,
+                INSERT INTO branch_daily_summary
+                    (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
+                SELECT
+                    :saleDate                                 AS summary_date,
+                    :branchId                                 AS branch_id,
+                    COUNT(*)                                  AS sales_count,
+                    COALESCE(SUM(grand_total), 0)             AS gross_sales,
+                    COALESCE(SUM(discount_total), 0)          AS discount_total,
+                    COALESCE(SUM(tax_total), 0)               AS tax_total,
+                    COALESCE(SUM(grand_total - tax_total), 0) AS net_sales,
+                    0                                         AS refunds_total
+                FROM sales
+                WHERE issued_date = :saleDate
+                  AND branch_id  = :branchId
+                  AND status    != 'VOIDED'
+                ON DUPLICATE KEY UPDATE
+                    sales_count    = VALUES(sales_count),
+                    gross_sales    = VALUES(gross_sales),
+                    discount_total = VALUES(discount_total),
+                    tax_total      = VALUES(tax_total),
+                    net_sales      = VALUES(net_sales),
+                    updated_at     = NOW()
+                SQL,
             [
                 'saleDate' => $saleDate->format('Y-m-d'),
                 'branchId' => $branchId,
-            ]
+            ],
         );
     }
 
@@ -366,60 +361,60 @@ SQL,
 
         $this->connection->executeStatement(
             <<<'SQL'
-UPDATE sales
-SET
-    status = 'VOIDED',
-    updated_at = :updated_at,
-    sync_status = 'SYNCED',
-    synced_at = :updated_at,
-    version_no = version_no + 1,
-    last_modified_at = :updated_at
-WHERE id = :id
-   OR legacy_movimiento_id = :id
-SQL,
+                UPDATE sales
+                SET
+                    status = 'VOIDED',
+                    updated_at = :updated_at,
+                    sync_status = 'SYNCED',
+                    synced_at = :updated_at,
+                    version_no = version_no + 1,
+                    last_modified_at = :updated_at
+                WHERE id = :id
+                   OR legacy_movimiento_id = :id
+                SQL,
             [
                 'id' => $saleId,
                 'updated_at' => $updatedAt->format('Y-m-d H:i:s'),
-            ]
+            ],
         );
 
         $this->connection->executeStatement(
             <<<'SQL'
-INSERT INTO sale_discounts (
-    sale_id,
-    sale_item_id,
-    discount_type,
-    source,
-    value,
-    amount_applied,
-    reason_code,
-    reason_text,
-    created_at
-)
-SELECT
-    s.id,
-    NULL,
-    'AMOUNT',
-    'MANUAL',
-    0,
-    0,
-    'VOID_REASON',
-    :reason_text,
-    :created_at
-FROM sales s
-WHERE (s.id = :id OR s.legacy_movimiento_id = :id)
-  AND NOT EXISTS (
-    SELECT 1
-    FROM sale_discounts d
-    WHERE d.sale_id = s.id
-      AND d.reason_code = 'VOID_REASON'
-  )
-SQL,
+                INSERT INTO sale_discounts (
+                    sale_id,
+                    sale_item_id,
+                    discount_type,
+                    source,
+                    value,
+                    amount_applied,
+                    reason_code,
+                    reason_text,
+                    created_at
+                )
+                SELECT
+                    s.id,
+                    NULL,
+                    'AMOUNT',
+                    'MANUAL',
+                    0,
+                    0,
+                    'VOID_REASON',
+                    :reason_text,
+                    :created_at
+                FROM sales s
+                WHERE (s.id = :id OR s.legacy_movimiento_id = :id)
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM sale_discounts d
+                    WHERE d.sale_id = s.id
+                      AND d.reason_code = 'VOID_REASON'
+                  )
+                SQL,
             [
                 'id' => $saleId,
                 'reason_text' => $voidReason,
                 'created_at' => $updatedAt->format('Y-m-d H:i:s'),
-            ]
+            ],
         );
     }
 
@@ -442,50 +437,50 @@ SQL,
 
         $this->connection->executeStatement(
             <<<'SQL'
-INSERT INTO cash_movements (
-    cash_session_id,
-    movement_type,
-    category_id,
-    sale_id,
-    return_id,
-    payment_method_id,
-    amount,
-    description,
-    created_by,
-    created_at,
-    local_uuid,
-    idempotency_key,
-    sync_status,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-) VALUES (
-    :cash_session_id,
-    'SALE_IN',
-    :category_id,
-    :sale_id,
-    NULL,
-    :payment_method_id,
-    :amount,
-    :description,
-    :created_by,
-    :created_at,
-    :local_uuid,
-    :idempotency_key,
-    'SYNCED',
-    :synced_at,
-    :device_id,
-    :version_no,
-    :last_modified_at
-)
-ON DUPLICATE KEY UPDATE
-    amount = VALUES(amount),
-    description = VALUES(description),
-    synced_at = VALUES(synced_at),
-    version_no = version_no + 1,
-    last_modified_at = VALUES(last_modified_at)
-SQL,
+                INSERT INTO cash_movements (
+                    cash_session_id,
+                    movement_type,
+                    category_id,
+                    sale_id,
+                    return_id,
+                    payment_method_id,
+                    amount,
+                    description,
+                    created_by,
+                    created_at,
+                    local_uuid,
+                    idempotency_key,
+                    sync_status,
+                    synced_at,
+                    device_id,
+                    version_no,
+                    last_modified_at
+                ) VALUES (
+                    :cash_session_id,
+                    'SALE_IN',
+                    :category_id,
+                    :sale_id,
+                    NULL,
+                    :payment_method_id,
+                    :amount,
+                    :description,
+                    :created_by,
+                    :created_at,
+                    :local_uuid,
+                    :idempotency_key,
+                    'SYNCED',
+                    :synced_at,
+                    :device_id,
+                    :version_no,
+                    :last_modified_at
+                )
+                ON DUPLICATE KEY UPDATE
+                    amount = VALUES(amount),
+                    description = VALUES(description),
+                    synced_at = VALUES(synced_at),
+                    version_no = version_no + 1,
+                    last_modified_at = VALUES(last_modified_at)
+                SQL,
             [
                 'cash_session_id' => $cashSessionId,
                 'category_id' => $categoryId,
@@ -501,7 +496,7 @@ SQL,
                 'device_id' => $offline['device_id'],
                 'version_no' => $offline['version_no'],
                 'last_modified_at' => $offline['last_modified_at'],
-            ]
+            ],
         );
     }
 

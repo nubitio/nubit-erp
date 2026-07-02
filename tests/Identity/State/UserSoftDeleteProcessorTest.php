@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\State;
 
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
@@ -83,7 +83,7 @@ final class UserSoftDeleteProcessorTest extends TestCase
 
     public function testUserDeleteOperationUsesSoftDeleteProcessorAndNoOutput(): void
     {
-        $resource = (new ReflectionClass(User::class))->getAttributes(ApiResource::class)[0]->newInstance();
+        $resource = new ReflectionClass(User::class)->getAttributes(ApiResource::class)[0]->newInstance();
 
         foreach ($resource->getOperations() ?? [] as $operation) {
             if (!$operation instanceof Delete) {

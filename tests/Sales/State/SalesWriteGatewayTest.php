@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use App\Organization\Entity\Branch;
 use App\Catalog\Entity\PaymentMethod;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Inventory\Entity\Warehouse;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
+use App\Inventory\Entity\Warehouse;
+use App\Organization\Entity\Branch;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Repository\DashboardRepository;
 use App\Sales\Service\SaleCurrencyResolver;
 use App\Sales\Service\SalePaymentPlanService;
@@ -18,9 +18,9 @@ use App\Sales\State\SalesWriteGateway;
 use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SalesWriteGateway::class)]
@@ -95,7 +95,8 @@ class SalesWriteGatewayTest extends TestCase
 
     private function stubCurrencyResolver(): void
     {
-        $this->currencyResolver->method('resolveForWrite')
+        $this->currencyResolver
+            ->method('resolveForWrite')
             ->willReturn(['currency' => 'PEN', 'exchange_rate' => '1.000000']);
     }
 
@@ -107,9 +108,7 @@ class SalesWriteGatewayTest extends TestCase
      */
     private function buildSaleWithNullSeller(): SaleRecord
     {
-        $sale = $this->getMockBuilder(SaleRecord::class)
-            ->onlyMethods(['getCreatedBy', 'getUpdatedBy'])
-            ->getMock();
+        $sale = $this->getMockBuilder(SaleRecord::class)->onlyMethods(['getCreatedBy', 'getUpdatedBy'])->getMock();
         $sale->method('getCreatedBy')->willReturn(null);
         $sale->method('getUpdatedBy')->willReturn(null);
 
@@ -265,7 +264,7 @@ class SalesWriteGatewayTest extends TestCase
 
         $this->assertNotEmpty(
             $sale->getSaleDiscounts()->toArray(),
-            'Expected a sale_discounts entry when descuento > 0'
+            'Expected a sale_discounts entry when descuento > 0',
         );
     }
 
@@ -278,10 +277,7 @@ class SalesWriteGatewayTest extends TestCase
 
         $this->gateway->write($sale, null);
 
-        $this->assertNotEmpty(
-            $sale->getSaleTaxes()->toArray(),
-            'Expected a sale_taxes entry when igv > 0'
-        );
+        $this->assertNotEmpty($sale->getSaleTaxes()->toArray(), 'Expected a sale_taxes entry when igv > 0');
     }
 
     public function testWriteInsertsItemDiscountRowWhenDescuentoPorcentajeIsGreaterThanZero(): void
@@ -315,7 +311,7 @@ class SalesWriteGatewayTest extends TestCase
 
         $itemDiscounts = array_values(array_filter(
             $sale->getSaleDiscounts()->toArray(),
-            fn ($d) => $d->getSaleItem() !== null
+            fn($d) => $d->getSaleItem() !== null,
         ));
 
         $this->assertCount(1, $itemDiscounts, 'Expected exactly 1 item-level sale_discount entry');
@@ -353,7 +349,8 @@ class SalesWriteGatewayTest extends TestCase
         $this->connection->method('commit');
 
         $callArgs = [];
-        $this->connection->method('executeStatement')
+        $this->connection
+            ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$callArgs): int {
                 $callArgs[] = ['sql' => $sql, 'params' => $params];
                 return 1;
@@ -363,9 +360,11 @@ class SalesWriteGatewayTest extends TestCase
 
         $itemDiscountInserts = array_filter(
             $callArgs,
-            fn ($call) => str_contains($call['sql'], 'sale_discounts')
+            fn($call) => (
+                str_contains($call['sql'], 'sale_discounts')
                 && str_contains($call['sql'], 'INSERT')
                 && isset($call['params']['sale_item_id'])
+            ),
         );
 
         $this->assertEmpty($itemDiscountInserts, 'Expected no item-level sale_discounts INSERT when no discount');
@@ -459,9 +458,7 @@ class SalesWriteGatewayTest extends TestCase
         $sale = new SaleRecord();
         $sale->setId('sale-void-1');
 
-        $this->connection->expects($this->exactly(2))
-            ->method('executeStatement')
-            ->willReturn(1);
+        $this->connection->expects($this->exactly(2))->method('executeStatement')->willReturn(1);
 
         $this->gateway->markVoided($sale, 'Customer changed mind');
     }
@@ -472,7 +469,8 @@ class SalesWriteGatewayTest extends TestCase
         $sale->setId('sale-void-2');
 
         $capturedParams = [];
-        $this->connection->method('executeStatement')
+        $this->connection
+            ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$capturedParams): int {
                 $capturedParams[] = $params;
                 return 1;
@@ -489,16 +487,12 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testWriteCashSaleMovementExecutesInsert(): void
     {
-        $this->connection->expects($this->once())
+        $this->connection
+            ->expects($this->once())
             ->method('executeStatement')
             ->with($this->stringContains('cash_movements'))
             ->willReturn(1);
 
-        $this->gateway->writeCashSaleMovement(
-            saleId: 'sale-uuid-99',
-            cashSessionId: 5,
-            createdBy: 1,
-            amount: '250.00',
-        );
+        $this->gateway->writeCashSaleMovement(saleId: 'sale-uuid-99', cashSessionId: 5, createdBy: 1, amount: '250.00');
     }
 }

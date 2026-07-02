@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Service;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Inventory\Entity\StockLot;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
+use App\Inventory\Entity\StockLot;
 use App\Inventory\Repository\StockLotRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Exception\ServiceException;
 
 /**
  * Handles FIFO / FEFO lot deduction for inventory movements.
@@ -29,8 +29,7 @@ final readonly class LotDeductionService
     public function __construct(
         private StockLotRepository $stockLotRepository,
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * Deduct $qty from lots using the product's tracking strategy (FIFO / FEFO).
@@ -40,12 +39,8 @@ final readonly class LotDeductionService
      * @throws ServiceException when insufficient stock across all lots
      * @throws \LogicException  when strategy is NONE
      */
-    public function deduct(
-        string $productId,
-        string $warehouseId,
-        string $qty,
-        LotTrackingStrategy $strategy,
-    ): array {
+    public function deduct(string $productId, string $warehouseId, string $qty, LotTrackingStrategy $strategy): array
+    {
         $lots = match ($strategy) {
             LotTrackingStrategy::FEFO => $this->stockLotRepository->findForFefo($productId, $warehouseId),
             LotTrackingStrategy::FIFO => $this->stockLotRepository->findForFifo($productId, $warehouseId),
@@ -62,9 +57,7 @@ final readonly class LotDeductionService
             }
 
             $available = $lot->getQtyOnHand();
-            $take = (bccomp($available, $remaining, self::SCALE) >= 0)
-                ? $remaining        // lot has more than enough
-                : $available;       // take the entire lot
+            $take = bccomp($available, $remaining, self::SCALE) >= 0 ? $remaining : $available; // lot has more than enough // take the entire lot
 
             $lot->setQtyOnHand(bcsub($available, $take, self::SCALE));
             $this->entityManager->persist($lot);

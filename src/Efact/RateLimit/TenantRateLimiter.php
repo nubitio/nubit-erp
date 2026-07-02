@@ -23,7 +23,7 @@ final readonly class TenantRateLimiter
         string $window,
     ) {
         $this->limitPerWindow = (int) $limit;
-        $this->windowSeconds  = (int) $window;
+        $this->windowSeconds = (int) $window;
     }
 
     public function check(string $tenantName): RateLimitResult
@@ -35,7 +35,7 @@ final readonly class TenantRateLimiter
         }
 
         $windowKey = (string) (int) (time() / $this->windowSeconds);
-        $cacheKey  = 'tenant_rl.' . preg_replace('/[^a-zA-Z0-9_.]/', '_', $tenantName) . '.' . $windowKey;
+        $cacheKey = 'tenant_rl.' . preg_replace('/[^a-zA-Z0-9_.]/', '_', $tenantName) . '.' . $windowKey;
 
         $item = $this->cache->getItem($cacheKey);
 
@@ -46,16 +46,11 @@ final readonly class TenantRateLimiter
         $item->expiresAfter($this->windowSeconds);
         $this->cache->save($item);
 
-        $remaining  = max(0, $limit - $current);
-        $allowed    = $current <= $limit;
+        $remaining = max(0, $limit - $current);
+        $allowed = $current <= $limit;
         $retryAfter = $allowed ? 0 : $this->windowSeconds - (time() % $this->windowSeconds);
 
-        return new RateLimitResult(
-            allowed: $allowed,
-            limit: $limit,
-            remaining: $remaining,
-            retryAfter: $retryAfter,
-        );
+        return new RateLimitResult(allowed: $allowed, limit: $limit, remaining: $remaining, retryAfter: $retryAfter);
     }
 
     /**
@@ -76,7 +71,7 @@ final readonly class TenantRateLimiter
 
             if ($requestsPerHour > 0 && $this->windowSeconds > 0) {
                 // Convert from requests/hour to requests/window
-                return (int) ceil($requestsPerHour * $this->windowSeconds / 3600);
+                return (int) ceil(($requestsPerHour * $this->windowSeconds) / 3600);
             }
         }
 

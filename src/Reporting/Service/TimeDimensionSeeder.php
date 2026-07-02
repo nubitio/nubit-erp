@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace App\Reporting\Service;
 
 use DateTimeImmutable;
-use IntlDateFormatter;
-use Throwable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use IntlDateFormatter;
+use Throwable;
 
 readonly class TimeDimensionSeeder
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     public function seed(
         DateTimeImmutable $startDate,
@@ -127,8 +126,7 @@ readonly class TimeDimensionSeeder
             $params[] = $row['event'];
         }
 
-        $sql = sprintf(
-            'INSERT INTO time_dimension (
+        $sql = sprintf('INSERT INTO time_dimension (
             id, date, year, month, day, quarter, week, day_name, month_name, holiday, weekend, event
             ) VALUES %s
              ON DUPLICATE KEY UPDATE
@@ -142,9 +140,7 @@ readonly class TimeDimensionSeeder
                month_name = VALUES(month_name),
                holiday = VALUES(holiday),
                weekend = VALUES(weekend),
-               event = VALUES(event)',
-            implode(',', $placeholders)
-        );
+               event = VALUES(event)', implode(',', $placeholders));
 
         $this->connection->executeStatement($sql, $params);
     }

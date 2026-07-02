@@ -21,7 +21,7 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
     {
         $method = new \ReflectionMethod(TenantController::class, 'downloadBackup');
         $roles = array_map(
-            static fn (\ReflectionAttribute $attribute): string => (string) $attribute->getArguments()[0],
+            static fn(\ReflectionAttribute $attribute): string => (string) $attribute->getArguments()[0],
             $method->getAttributes(IsGranted::class),
         );
 
@@ -30,7 +30,8 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
 
     public function testDownloadActionChecksTenantOwnershipBeforeDownloadingOrOpeningBackup(): void
     {
-        $source = (string) file_get_contents(__DIR__ . '/../../../src/ControlPlane/Tenant/Controller/TenantController.php');
+        $source = (string) file_get_contents(__DIR__
+        . '/../../../src/ControlPlane/Tenant/Controller/TenantController.php');
         $methodStart = strpos($source, 'public function downloadBackup');
         self::assertIsInt($methodStart);
 
@@ -68,7 +69,8 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
         ];
 
         $connection = $this->createMock(Connection::class);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('fetchAssociative')
             ->with(
                 self::stringContains('WHERE id = ? AND tenant_id = ?'),
@@ -85,7 +87,8 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
     public function testFindBackupForTenantReturnsNullForWrongTenantWithoutReadingStorage(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('fetchAssociative')
             ->with(
                 self::stringContains('WHERE id = ? AND tenant_id = ?'),

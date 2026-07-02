@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Efact\Twig;
 
-use Twig\Attribute\AsTwigFunction;
 use App\Efact\Service\SettingsService;
+use Twig\Attribute\AsTwigFunction;
 
 readonly class SettingsExtension
 {
     public function __construct(
         private SettingsService $settingsService,
-    ) {
-    }
+    ) {}
 
     #[AsTwigFunction('setting')]
     public function getSetting(string $settingName): mixed

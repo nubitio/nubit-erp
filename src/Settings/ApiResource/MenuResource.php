@@ -16,8 +16,6 @@ use App\Settings\State\MenuProvider;
         'roleId' => 'roleId',
     ],
     paginationEnabled: false,
-    provider: MenuProvider::class
+    provider: MenuProvider::class,
 )]
-class MenuResource
-{
-}
+class MenuResource {}

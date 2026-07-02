@@ -31,7 +31,8 @@ final class TestSeedE2eCommandTest extends TestCase
         $_SERVER['E2E_SEED_ENABLED'] = '1';
 
         $service = $this->createMock(E2eTestSeedServiceInterface::class);
-        $service->expects(self::once())
+        $service
+            ->expects(self::once())
             ->method('seed')
             ->willReturn([
                 'username' => 'ci_e2e_user',
@@ -45,7 +46,7 @@ final class TestSeedE2eCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $exitCode);
         self::assertJsonStringEqualsJsonString(
             '{"username":"ci_e2e_user","password":"secret123","saleId":"sale-1"}',
-            trim($tester->getDisplay())
+            trim($tester->getDisplay()),
         );
 
         unset($_SERVER['E2E_SEED_ENABLED']);

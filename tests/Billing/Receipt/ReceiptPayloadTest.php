@@ -37,9 +37,6 @@ final class ReceiptPayloadTest extends TestCase
 
     public function testEncodeDifferentTypesProduceDifferentResults(): void
     {
-        self::assertNotSame(
-            ReceiptPayload::encode('01', 'same-id'),
-            ReceiptPayload::encode('03', 'same-id'),
-        );
+        self::assertNotSame(ReceiptPayload::encode('01', 'same-id'), ReceiptPayload::encode('03', 'same-id'));
     }
 }

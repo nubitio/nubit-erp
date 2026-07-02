@@ -36,7 +36,7 @@ final class TenantRateLimiterTest extends TestCase
     public function testFirstRequestIsAllowed(): void
     {
         $limiter = $this->makeLimiter(limit: 5);
-        $result  = $limiter->check('tenant-a');
+        $result = $limiter->check('tenant-a');
 
         self::assertTrue($result->allowed);
         self::assertSame(5, $result->limit);
@@ -68,7 +68,7 @@ final class TenantRateLimiterTest extends TestCase
     public function testZeroLimitAlwaysAllows(): void
     {
         $limiter = $this->makeLimiter(limit: 0);
-        $result  = $limiter->check('tenant-a');
+        $result = $limiter->check('tenant-a');
 
         self::assertTrue($result->allowed);
         self::assertSame(0, $result->limit);
@@ -77,12 +77,9 @@ final class TenantRateLimiterTest extends TestCase
     public function testFeatureConfigOverridesGlobalLimit(): void
     {
         // 3600 req/h, window=3600s → limit per window = 3600
-        $limiter = $this->makeLimiter(
-            limit: 5,
-            window: 3600,
-            featureEnabled: true,
-            featureConfig: ['requests_per_hour' => 3600],
-        );
+        $limiter = $this->makeLimiter(limit: 5, window: 3600, featureEnabled: true, featureConfig: [
+            'requests_per_hour' => 3600,
+        ]);
 
         $result = $limiter->check('tenant-a');
         self::assertTrue($result->allowed);

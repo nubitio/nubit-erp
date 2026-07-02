@@ -14,8 +14,7 @@ final readonly class TaxDocumentVoidUpdater
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
-    ) {
-    }
+    ) {}
 
     public function applyVoidResult(TaxDocument $taxDocument, SunatVoidResponse $response, int $voidedStatus): void
     {

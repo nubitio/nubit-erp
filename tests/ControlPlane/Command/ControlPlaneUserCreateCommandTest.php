@@ -8,8 +8,8 @@ use App\ControlPlane\Tenant\Command\ControlPlaneUserCreateCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -51,17 +51,20 @@ final class ControlPlaneUserCreateCommandTest extends TestCase
     public function testCreatesOrUpdatesControlPlaneUserSuccessfully(): void
     {
         $connection = $this->connectionWithTable(true);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('executeStatement')
             ->with(
                 self::stringContains('INSERT INTO control_plane_admin_users'),
                 self::callback(static function (array $params): bool {
-                    return $params[0] === 'admin.user'
+                    return (
+                        $params[0] === 'admin.user'
                         && is_string($params[1])
                         && $params[1] !== ''
                         && $params[2] === json_encode(['ROLE_ADMIN'])
-                        && $params[3] === 0;
-                })
+                        && $params[3] === 0
+                    );
+                }),
             );
 
         $command = new ControlPlaneUserCreateCommand($this->registryFor($connection));

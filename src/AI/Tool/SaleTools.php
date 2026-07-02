@@ -4,33 +4,28 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use Throwable;
-use App\Reporting\Entity\TimeDimension;
-use DateTimeInterface;
 use App\AI\Dto\RecentSaleDto;
-use App\Sales\Repository\SalesAnalyticsRepository;
+use App\Reporting\Entity\TimeDimension;
 use App\Reporting\Repository\TimeDimensionRepository;
+use App\Sales\Repository\SalesAnalyticsRepository;
 use DateInterval;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Throwable;
 
 #[AsTool(
     name: 'sales_summary',
     description: 'Sales summary for a date range (defaults to last 7 days).',
     method: 'salesSummary',
 )]
-#[AsTool(
-    name: 'recent_sales',
-    description: 'Latest sales with total amount and identifiers.',
-    method: 'recentSales',
-)]
+#[AsTool(name: 'recent_sales', description: 'Latest sales with total amount and identifiers.', method: 'recentSales')]
 final readonly class SaleTools
 {
     public function __construct(
         private SalesAnalyticsRepository $saleRepository,
         private TimeDimensionRepository $timeDimensionRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{
@@ -102,7 +97,8 @@ final readonly class SaleTools
         $toId = (int) $to->format('Ymd');
 
         /** @var list<TimeDimension> $dimensions */
-        $dimensions = $this->timeDimensionRepository->createQueryBuilder('td')
+        $dimensions = $this->timeDimensionRepository
+            ->createQueryBuilder('td')
             ->where('td.id >= :fromId')
             ->andWhere('td.id <= :toId')
             ->setParameter('fromId', $fromId)
@@ -188,7 +184,7 @@ final readonly class SaleTools
         $week = $first?->getWeek();
         $monthName = $first?->getMonthName();
         $year = $from->format('Y');
-        $hasHoliday = array_any($dimensions, fn ($dim): bool => $dim->isHoliday() === true);
+        $hasHoliday = array_any($dimensions, fn($dim): bool => $dim->isHoliday() === true);
 
         $qualifier = $hasHoliday ? 'semana con feriado' : 'semana normal';
 
@@ -204,11 +200,6 @@ final readonly class SaleTools
             return sprintf('Semana %d de %s %s (%s)', $week, $monthName, $year, $qualifier);
         }
 
-        return sprintf(
-            '%s al %s (%s)',
-            $from->format('d/m/Y'),
-            $to->format('d/m/Y'),
-            $qualifier
-        );
+        return sprintf('%s al %s (%s)', $from->format('d/m/Y'), $to->format('d/m/Y'), $qualifier);
     }
 }

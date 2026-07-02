@@ -24,20 +24,26 @@ final class TenantRuntimeConfigProviderTest extends TestCase
     {
         $config = $this->createProviderForVertical(RetailPreset::KEY)->getConfig();
 
-        self::assertSame([
-            'allowLinePriceOverride' => true,
-            'allowCatalogPriceEdit' => true,
-        ], $config['ui']['pos']);
+        self::assertSame(
+            [
+                'allowLinePriceOverride' => true,
+                'allowCatalogPriceEdit' => true,
+            ],
+            $config['ui']['pos'],
+        );
     }
 
     public function testDisablesPosPriceEditingForPharmacy(): void
     {
         $config = $this->createProviderForVertical(PharmacyPreset::KEY)->getConfig();
 
-        self::assertSame([
-            'allowLinePriceOverride' => false,
-            'allowCatalogPriceEdit' => false,
-        ], $config['ui']['pos']);
+        self::assertSame(
+            [
+                'allowLinePriceOverride' => false,
+                'allowCatalogPriceEdit' => false,
+            ],
+            $config['ui']['pos'],
+        );
     }
 
     public function testDerivesBasicNavigationTierForSingleLocationTenant(): void
@@ -56,20 +62,18 @@ final class TenantRuntimeConfigProviderTest extends TestCase
 
     public function testDerivesStandardNavigationTierForMultiWarehouseEntitlement(): void
     {
-        $config = $this->createProviderForVertical(
-            RetailPreset::KEY,
-            entitlements: ['multi_warehouse' => ['enabled' => true, 'config' => []]],
-        )->getConfig();
+        $config = $this->createProviderForVertical(RetailPreset::KEY, entitlements: [
+            'multi_warehouse' => ['enabled' => true, 'config' => []],
+        ])->getConfig();
 
         self::assertSame('standard', $config['profile']['navigationTier']);
     }
 
     public function testDerivesAdvancedNavigationTierForAdvancedReportingEntitlement(): void
     {
-        $config = $this->createProviderForVertical(
-            RetailPreset::KEY,
-            entitlements: ['advanced_reports' => ['enabled' => true, 'config' => []]],
-        )->getConfig();
+        $config = $this->createProviderForVertical(RetailPreset::KEY, entitlements: [
+            'advanced_reports' => ['enabled' => true, 'config' => []],
+        ])->getConfig();
 
         self::assertSame('advanced', $config['profile']['navigationTier']);
     }
@@ -82,9 +86,8 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         array $entitlements = [],
         int $branchCount = 1,
         int $warehouseCount = 1,
-    ): TenantRuntimeConfigProvider
-    {
-        $settings = (new TenantSettings())->setVertical($vertical);
+    ): TenantRuntimeConfigProvider {
+        $settings = new TenantSettings()->setVertical($vertical);
 
         /** @var FeatureCheckerInterface&MockObject $featureChecker */
         $featureChecker = $this->createMock(FeatureCheckerInterface::class);

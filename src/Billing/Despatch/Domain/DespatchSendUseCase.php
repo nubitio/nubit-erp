@@ -27,8 +27,7 @@ readonly class DespatchSendUseCase
         private EntityManagerInterface $entityManager,
         private FileManager $fileManager,
         private LoggerInterface $billingLogger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(string $despatchGuideId): DocumentResponse
     {

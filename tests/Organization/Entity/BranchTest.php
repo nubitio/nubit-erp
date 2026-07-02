@@ -21,14 +21,18 @@ final class BranchTest extends TestCase
 
     public function testSetAndGetAddress(): void
     {
-        $branch = (new Branch())->setName('B')->setAddress('Av. Larco 123, Lima');
+        $branch = new Branch()
+            ->setName('B')
+            ->setAddress('Av. Larco 123, Lima');
 
         self::assertSame('Av. Larco 123, Lima', $branch->getAddress());
     }
 
     public function testSetAndGetPhone(): void
     {
-        $branch = (new Branch())->setName('B')->setPhone('01-234-5678');
+        $branch = new Branch()
+            ->setName('B')
+            ->setPhone('01-234-5678');
 
         self::assertSame('01-234-5678', $branch->getPhone());
     }
@@ -36,31 +40,37 @@ final class BranchTest extends TestCase
     public function testSetAndGetCompany(): void
     {
         $company = new Company();
-        $branch  = (new Branch())->setName('B')->setCompany($company);
+        $branch = new Branch()
+            ->setName('B')
+            ->setCompany($company);
 
         self::assertSame($company, $branch->getCompany());
     }
 
     public function testAddressDefaultsToNull(): void
     {
-        $branch = (new Branch())->setName('B');
+        $branch = new Branch()->setName('B');
         self::assertNull($branch->getAddress());
     }
 
     public function testPhoneDefaultsToNull(): void
     {
-        $branch = (new Branch())->setName('B');
+        $branch = new Branch()->setName('B');
         self::assertNull($branch->getPhone());
     }
 
     public function testWarehousesCollectionIsEmptyByDefault(): void
     {
-        $branch = (new Branch())->setName('B');
+        $branch = new Branch()->setName('B');
         self::assertTrue($branch->getWarehouses()->isEmpty());
     }
 
     public function testIdIsNullBeforePersistence(): void
     {
-        self::assertNull((new Branch())->setName('B')->getId());
+        self::assertNull(
+            new Branch()
+                ->setName('B')
+                ->getId(),
+        );
     }
 }

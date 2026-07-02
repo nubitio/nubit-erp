@@ -18,8 +18,7 @@ final readonly class StockItemCategoryExtension implements QueryCollectionExtens
 {
     public function __construct(
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     public function applyToCollection(
         QueryBuilder $queryBuilder,

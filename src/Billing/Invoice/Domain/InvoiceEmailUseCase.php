@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use App\Billing\Sunat\Domain\BillPdfUseCase;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\SettingsService;
-use App\Efact\Service\CompanyContext;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Sunat\Domain\BillPdfUseCase;
+use App\Efact\Config\EfactConstants as Constants;
+use App\Efact\Service\CompanyContext;
+use App\Efact\Service\SettingsService;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Filesystem\FileManager;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -33,8 +33,7 @@ readonly class InvoiceEmailUseCase
         private CompanyContext $companyContext,
         private TaxDocumentRepository $taxDocumentRepository,
         private string $mailerFrom = 'noreply@efact.app',
-    ) {
-    }
+    ) {}
 
     /**
      * @throws SyntaxError
@@ -64,7 +63,7 @@ readonly class InvoiceEmailUseCase
         $invoiceUrl = $this->urlGenerator->generate(
             'receipt_show',
             ['payload' => $payload],
-            UrlGeneratorInterface::ABSOLUTE_URL
+            UrlGeneratorInterface::ABSOLUTE_URL,
         );
 
         $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;

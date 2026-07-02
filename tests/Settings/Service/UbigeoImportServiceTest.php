@@ -31,7 +31,7 @@ final class UbigeoImportServiceTest extends TestCase
             "codigo,departamento,provincia,distrito\n"
             . "010101,AMAZONAS,CHACHAPOYAS,CHACHAPOYAS\n"
             . "010102,AMAZONAS,CHACHAPOYAS,ASUNCION\n"
-            . "010103,AMAZONAS,CHACHAPOYAS,BALSAS\n"
+            . "010103,AMAZONAS,CHACHAPOYAS,BALSAS\n",
         );
 
         $executedSql = [];
@@ -40,13 +40,13 @@ final class UbigeoImportServiceTest extends TestCase
         $connection->expects(self::once())->method('beginTransaction');
         $connection->expects(self::once())->method('commit');
         $connection->expects(self::never())->method('rollBack');
-        $connection->method('executeStatement')->willReturnCallback(
-            static function (string $sql) use (&$executedSql): int {
+        $connection
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$executedSql): int {
                 $executedSql[] = $sql;
 
                 return 1;
-            }
-        );
+            });
 
         $service = new UbigeoImportService($connection);
 
@@ -58,7 +58,7 @@ final class UbigeoImportServiceTest extends TestCase
             disableChecks: true,
             progressCallback: static function (int $batchCount) use (&$progress): void {
                 $progress[] = $batchCount;
-            }
+            },
         );
 
         unlink($tmpFile);
@@ -83,8 +83,9 @@ final class UbigeoImportServiceTest extends TestCase
         $connection->expects(self::once())->method('beginTransaction');
         $connection->expects(self::never())->method('commit');
         $connection->expects(self::once())->method('rollBack');
-        $connection->method('executeStatement')->willReturnCallback(
-            static function (string $sql) use (&$executedSql): int {
+        $connection
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$executedSql): int {
                 $executedSql[] = $sql;
 
                 if (str_starts_with($sql, 'INSERT INTO ubigeo')) {
@@ -92,8 +93,7 @@ final class UbigeoImportServiceTest extends TestCase
                 }
 
                 return 1;
-            }
-        );
+            });
 
         $service = new UbigeoImportService($connection);
 

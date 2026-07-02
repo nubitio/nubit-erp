@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Efact\Service;
 
-use RuntimeException;
 use App\Organization\Entity\Company;
 use App\Organization\Repository\CompanyRepository;
+use RuntimeException;
 
 class CompanyContext
 {
@@ -14,8 +14,7 @@ class CompanyContext
 
     public function __construct(
         private readonly CompanyRepository $companyRepository,
-    ) {
-    }
+    ) {}
 
     public function getCompany(): Company
     {

@@ -12,6 +12,5 @@ class MenuDto
         public string $path,
         /** @var array<int, SubMenuDto> */
         public array $items = [],
-    ) {
-    }
+    ) {}
 }

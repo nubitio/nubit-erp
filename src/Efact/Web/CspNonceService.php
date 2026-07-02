@@ -21,8 +21,7 @@ final class CspNonceService
 
     public function __construct(
         private readonly RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns the nonce for the current request, generating it on first call.

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Setup\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,37 +39,35 @@ class SeedTestDataCommand extends PerTenantCommand
             ->addOption('sales', null, InputOption::VALUE_OPTIONAL, 'Number of sales to create', 200)
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Batch size for flushing', 50)
             ->addOption('purge', null, InputOption::VALUE_NONE, 'Purge existing test data before seeding')
-            ->setHelp(
-                <<<'HELP'
-This command seeds test data for development purposes.
+            ->setHelp(<<<'HELP'
+                This command seeds test data for development purposes.
 
-It creates:
-- Categories with parent-child relationships
-- Additional units of measure
-- Suppliers with Peruvian RUC format
-- Customers (companies and individuals)
-- Products with categories, units, prices and stock
-- Sales with multiple items
+                It creates:
+                - Categories with parent-child relationships
+                - Additional units of measure
+                - Suppliers with Peruvian RUC format
+                - Customers (companies and individuals)
+                - Products with categories, units, prices and stock
+                - Sales with multiple items
 
-Example usage:
-  php bin/console app:seed:test-data
-  php bin/console app:seed:test-data --customers=500 --products=1000
-  php bin/console app:seed:test-data -c 100 --products=200 -s 10 --sales=50
-  php bin/console app:seed:test-data --purge  # Clear existing data first
+                Example usage:
+                  php bin/console app:seed:test-data
+                  php bin/console app:seed:test-data --customers=500 --products=1000
+                  php bin/console app:seed:test-data -c 100 --products=200 -s 10 --sales=50
+                  php bin/console app:seed:test-data --purge  # Clear existing data first
 
-Note: This command is idempotent - it will skip existing records based on unique identifiers.
+                Note: This command is idempotent - it will skip existing records based on unique identifiers.
 
-The --purge option will truncate the following tables:
-  - Sales and sale items
-  - Products and product stock
-  - Customers
-  - Suppliers
-  - Categories (except default "General")
-  - Units of measure (except default "NIU")
+                The --purge option will truncate the following tables:
+                  - Sales and sale items
+                  - Products and product stock
+                  - Customers
+                  - Suppliers
+                  - Categories (except default "General")
+                  - Units of measure (except default "NIU")
 
-⚠️  WARNING: --purge will DELETE ALL TEST DATA. Use with caution!
-HELP
-            );
+                ⚠️  WARNING: --purge will DELETE ALL TEST DATA. Use with caution!
+                HELP);
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -77,12 +75,12 @@ HELP
         $io = new SymfonyStyle($input, $output);
 
         $connection = $this->connectionRegistry->getConnection();
-        $customerCount = (int)$input->getOption('customers');
-        $productCount = (int)$input->getOption('products');
-        $supplierCount = (int)$input->getOption('suppliers');
-        $saleCount = (int)$input->getOption('sales');
-        $batchSize = (int)$input->getOption('batch-size');
-        $purge = (bool)$input->getOption('purge');
+        $customerCount = (int) $input->getOption('customers');
+        $productCount = (int) $input->getOption('products');
+        $supplierCount = (int) $input->getOption('suppliers');
+        $saleCount = (int) $input->getOption('sales');
+        $batchSize = (int) $input->getOption('batch-size');
+        $purge = (bool) $input->getOption('purge');
 
         $io->title('Seeding Test Data');
 
@@ -106,15 +104,13 @@ HELP
             }
         }
 
-        $io->info(
-            sprintf(
-                'Creating: %d customers, %d products, %d suppliers, %d sales',
-                $customerCount,
-                $productCount,
-                $supplierCount,
-                $saleCount
-            )
-        );
+        $io->info(sprintf(
+            'Creating: %d customers, %d products, %d suppliers, %d sales',
+            $customerCount,
+            $productCount,
+            $supplierCount,
+            $saleCount,
+        ));
 
         try {
             $io->section('Starting seed process...');
@@ -124,23 +120,20 @@ HELP
                 productCount: $productCount,
                 supplierCount: $supplierCount,
                 saleCount: $saleCount,
-                batchSize: $batchSize
+                batchSize: $batchSize,
             );
 
             $io->success('Test data seeded successfully!');
 
-            $io->table(
-                ['Entity', 'Records Created'],
-                [
-                    ['Categories', $stats['categories_created']],
-                    ['Units of Measure', $stats['units_created']],
-                    ['Suppliers', $stats['suppliers_created']],
-                    ['Customers', $stats['customers_created']],
-                    ['Products', $stats['products_created']],
-                    ['Sales', $stats['sales_created']],
-                    ['Invoices', $stats['invoices_created']],
-                ]
-            );
+            $io->table(['Entity', 'Records Created'], [
+                ['Categories', $stats['categories_created']],
+                ['Units of Measure', $stats['units_created']],
+                ['Suppliers', $stats['suppliers_created']],
+                ['Customers', $stats['customers_created']],
+                ['Products', $stats['products_created']],
+                ['Sales', $stats['sales_created']],
+                ['Invoices', $stats['invoices_created']],
+            ]);
 
             return Command::SUCCESS;
         } catch (\RuntimeException $e) {
@@ -212,10 +205,9 @@ HELP
 
     private function truncateIfExists(Connection $connection, string $table): void
     {
-        $exists = $connection->fetchOne(
-            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
-            [$table]
-        );
+        $exists = $connection->fetchOne('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?', [
+            $table,
+        ]);
 
         if ((int) $exists > 0) {
             $connection->executeStatement('TRUNCATE TABLE ' . $table);

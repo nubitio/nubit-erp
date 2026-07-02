@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Sales\State;
 
 use App\Billing\Receipt\ReceiptPayload;
-use App\Sales\Entity\SaleRecord;
 use App\Billing\Serializer\PublicReceiptUrlNormalizer;
-use PHPUnit\Framework\MockObject\MockObject;
+use App\Sales\Entity\SaleRecord;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -35,7 +35,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->urlGenerator    = $this->createMock(UrlGeneratorInterface::class);
+        $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
         $this->innerNormalizer = $this->createMock(NormalizerInterface::class);
 
         $this->normalizer = new PublicReceiptUrlNormalizer($this->urlGenerator);
@@ -51,7 +51,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
     public function testEnrichedSaleRecordSerializesToAbsolutePublicReceiptUrl(): void
     {
         $taxDocumentId = '40cac647-abcd-1234-efgh-000000000001';
-        $documentType  = '03';
+        $documentType = '03';
         $expectedPayload = ReceiptPayload::encode($documentType, $taxDocumentId);
         $expectedAbsoluteUrl = 'https://app.efact.pe/receipt/' . $expectedPayload;
 
@@ -59,15 +59,13 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
         $saleRecord = new SaleRecord();
         $saleRecord->setTaxDocumentId($taxDocumentId);
         $saleRecord->setDocumentType($documentType);
-        $saleRecord->setPublicReceiptUrl(
-            ReceiptPayload::publicUrl($documentType, $taxDocumentId) // relative — set by repository
-        );
+        $saleRecord->setPublicReceiptUrl(ReceiptPayload::publicUrl($documentType, $taxDocumentId)); // relative — set by repository
 
         // The inner normalizer returns whatever it built from the entity's fields
         $this->innerNormalizer
             ->method('normalize')
             ->willReturn([
-                'id'               => 'sale-id-001',
+                'id' => 'sale-id-001',
                 'publicReceiptUrl' => $saleRecord->getPublicReceiptUrl(), // relative from repository
             ]);
 
@@ -75,11 +73,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
         $this->urlGenerator
             ->expects($this->once())
             ->method('generate')
-            ->with(
-                'receipt_show',
-                ['payload' => $expectedPayload],
-                UrlGeneratorInterface::ABSOLUTE_URL
-            )
+            ->with('receipt_show', ['payload' => $expectedPayload], UrlGeneratorInterface::ABSOLUTE_URL)
             ->willReturn($expectedAbsoluteUrl);
 
         $result = $this->normalizer->normalize($saleRecord, null, []);
@@ -89,7 +83,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
         $this->assertMatchesRegularExpression(
             '#^https?://[^/]+/receipt/#',
             $result['publicReceiptUrl'],
-            'publicReceiptUrl must be absolute (scheme + host + path)'
+            'publicReceiptUrl must be absolute (scheme + host + path)',
         );
     }
 
@@ -129,7 +123,7 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
             $this->assertMatchesRegularExpression(
                 '#^https?://[^/]+/receipt/#',
                 $result['publicReceiptUrl'],
-                sprintf('Item with taxDocumentId=%s must have absolute publicReceiptUrl', $data['taxDocumentId'])
+                sprintf('Item with taxDocumentId=%s must have absolute publicReceiptUrl', $data['taxDocumentId']),
             );
         }
     }
@@ -142,13 +136,9 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
         $saleRecord = new SaleRecord();
         // Not enriched: taxDocumentId = null, documentType = null
 
-        $this->innerNormalizer
-            ->method('normalize')
-            ->willReturn(['publicReceiptUrl' => null]);
+        $this->innerNormalizer->method('normalize')->willReturn(['publicReceiptUrl' => null]);
 
-        $this->urlGenerator
-            ->expects($this->never())
-            ->method('generate');
+        $this->urlGenerator->expects($this->never())->method('generate');
 
         $result = $this->normalizer->normalize($saleRecord, null, []);
 
@@ -164,25 +154,21 @@ final class SaleRecordPublicReceiptUrlTest extends TestCase
         $saleRecord->setTaxDocumentId('uuid-test');
         $saleRecord->setDocumentType('03');
 
-        $this->innerNormalizer
-            ->method('normalize')
-            ->willReturn(['publicReceiptUrl' => '/receipt/some-relative-path']); // relative
+        $this->innerNormalizer->method('normalize')->willReturn(['publicReceiptUrl' => '/receipt/some-relative-path']); // relative
 
-        $this->urlGenerator
-            ->method('generate')
-            ->willReturn('https://example.com/receipt/some-absolute-payload');
+        $this->urlGenerator->method('generate')->willReturn('https://example.com/receipt/some-absolute-payload');
 
         $result = $this->normalizer->normalize($saleRecord, null, []);
 
         $this->assertStringStartsWith(
             'https://',
             $result['publicReceiptUrl'],
-            'publicReceiptUrl must never be a relative path'
+            'publicReceiptUrl must never be a relative path',
         );
         $this->assertStringNotContainsString(
             '/receipt/some-relative-path',
             $result['publicReceiptUrl'],
-            'Relative URL from repository must be overwritten by normalizer'
+            'Relative URL from repository must be overwritten by normalizer',
         );
     }
 }

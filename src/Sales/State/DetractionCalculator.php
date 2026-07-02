@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use App\Catalog\Entity\SunatCatalog;
-use Nubit\Platform\Exception\ServiceException;
-use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\SunatCatalogRepository;
+use App\Sales\Entity\SaleRecord;
+use Nubit\Platform\Exception\ServiceException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -22,8 +22,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
     public function __construct(
         private SunatCatalogRepository $sunatCatalogRepository,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ServiceException
@@ -47,7 +46,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
 
             if ($detractionCatalog && $catalog->getId() !== $detractionCatalog->getId()) {
                 throw new ServiceException(
-                    'Los productos tienen diferentes códigos de detracción. Separe la venta en comprobantes distintos.'
+                    'Los productos tienen diferentes códigos de detracción. Separe la venta en comprobantes distintos.',
                 );
             }
 
@@ -76,7 +75,13 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
         }
 
         if ($threshold > 0 && $totalForThreshold <= $threshold) {
-            $this->clearDetraction($sale, sprintf('total %.2f (PEN %.2f) does not exceed threshold %.2f for code %s', $total, $totalForThreshold, $threshold, $detractionCode));
+            $this->clearDetraction($sale, sprintf(
+                'total %.2f (PEN %.2f) does not exceed threshold %.2f for code %s',
+                $total,
+                $totalForThreshold,
+                $threshold,
+                $detractionCode,
+            ));
 
             return;
         }
@@ -84,7 +89,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
         $sale->setDetraccionCodigo($detractionCatalog->getCode());
         $sale->setDetraccionPorcentaje($detractionCatalog->getPercentage());
         $amount = $sale->getDetraccionPorcentaje() !== null
-            ? round($sale->getTotal() * $sale->getDetraccionPorcentaje() / 100, 2)
+            ? round(($sale->getTotal() * $sale->getDetraccionPorcentaje()) / 100, 2)
             : null;
         $sale->setDetraccionMonto($amount);
         $sale->setDetraccionValorReferencial((float) ($sale->getTotal() ?? 0));

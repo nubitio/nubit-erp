@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Contract;
 
 use App\Catalog\Entity\Product;
-use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Exception;
+use Nubit\Platform\Exception\ServiceException;
 
 /**
  * Port for sale inventory operations used by Sales during the ADR-018 cutover.

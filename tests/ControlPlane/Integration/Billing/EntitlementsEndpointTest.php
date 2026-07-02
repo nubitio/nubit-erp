@@ -11,8 +11,8 @@ use App\ControlPlane\Billing\Service\TenantUsageSummaryInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,10 +40,10 @@ final class EntitlementsEndpointTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tenantContext      = $this->createMock(TenantContext::class);
-        $this->tenantManager      = $this->createMock(TenantManager::class);
-        $this->quotaService       = $this->createMock(TenantUsageSummaryInterface::class);
-        $this->featureChecker     = $this->createMock(FeatureCheckerInterface::class);
+        $this->tenantContext = $this->createMock(TenantContext::class);
+        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->quotaService = $this->createMock(TenantUsageSummaryInterface::class);
+        $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
         $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
     }
 
@@ -54,19 +54,27 @@ final class EntitlementsEndpointTest extends TestCase
     public function testEntitlementsEndpointReturns200WithPlanLimitsAndFeatures(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->with('acme')->willReturn([
-            'id'   => 1,
-            'name' => 'acme',
-            'plan' => 'basic',
-        ]);
-        $this->quotaService->method('getUsageSummary')->with('acme')->willReturn([
-            'users'    => ['current' => 3, 'limit' => 10],
-            'invoices' => ['current' => 50, 'limit' => 500],
-        ]);
-        $this->featureChecker->method('getEntitlements')->willReturn([
-            'excel_export' => ['enabled' => true,  'config' => []],
-            'api_access'   => ['enabled' => false, 'config' => []],
-        ]);
+        $this->tenantManager
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+                'plan' => 'basic',
+            ]);
+        $this->quotaService
+            ->method('getUsageSummary')
+            ->with('acme')
+            ->willReturn([
+                'users' => ['current' => 3, 'limit' => 10],
+                'invoices' => ['current' => 50, 'limit' => 500],
+            ]);
+        $this->featureChecker
+            ->method('getEntitlements')
+            ->willReturn([
+                'excel_export' => ['enabled' => true, 'config' => []],
+                'api_access' => ['enabled' => false, 'config' => []],
+            ]);
 
         $response = $this->makeController()->__invoke(Request::create('/api/tenant/entitlements'));
 
@@ -91,15 +99,20 @@ final class EntitlementsEndpointTest extends TestCase
     public function testEntitlementsEndpointReturnsSourceFieldForAdminWithDebugHeader(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->with('acme')->willReturn([
-            'id'   => 5,
-            'name' => 'acme',
-            'plan' => 'pro',
-        ]);
+        $this->tenantManager
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 5,
+                'name' => 'acme',
+                'plan' => 'pro',
+            ]);
         $this->quotaService->method('getUsageSummary')->willReturn([]);
-        $this->featureChecker->method('getEntitlements')->willReturn([
-            'excel_export' => ['enabled' => true, 'config' => []],
-        ]);
+        $this->featureChecker
+            ->method('getEntitlements')
+            ->willReturn([
+                'excel_export' => ['enabled' => true, 'config' => []],
+            ]);
         // No active overrides → source should be 'plan'.
         $this->overrideRepository->method('findActiveByTenant')->willReturn([]);
 

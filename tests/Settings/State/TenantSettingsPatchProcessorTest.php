@@ -19,8 +19,8 @@ final class TenantSettingsPatchProcessorTest extends TestCase
 {
     public function testProcessUpdatesExistingSingletonInsteadOfSavingIncomingEntity(): void
     {
-        $existing = (new TenantSettings())->setIgv(18.0);
-        $incoming = (new TenantSettings())->setIgv(10.5);
+        $existing = new TenantSettings()->setIgv(18.0);
+        $incoming = new TenantSettings()->setIgv(10.5);
 
         /** @var TenantSettingsService&MockObject $service */
         $service = $this->createMock(TenantSettingsService::class);

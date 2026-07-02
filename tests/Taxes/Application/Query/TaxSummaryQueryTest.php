@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Taxes\Application\Query;
 
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Connection;
 use App\Taxes\Application\Query\TaxSummaryQuery;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 
 final class TaxSummaryQueryTest extends TestCase
@@ -21,6 +21,7 @@ final class TaxSummaryQueryTest extends TestCase
         ]);
 
         $pdo = $this->connection->getNativeConnection();
+        self::assertInstanceOf(\PDO::class, $pdo);
         $pdo->sqliteCreateFunction('DATE_FORMAT', function (?string $date, string $format): ?string {
             if (null === $date) {
                 return null;
@@ -69,23 +70,35 @@ final class TaxSummaryQueryTest extends TestCase
     {
         // Insert sales
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 's1', 'document_type' => '01', 'issue_date' => '2026-06-05',
-            'taxable_amount' => 10000, 'igv_amount' => 1800,
+            'tax_document_id' => 's1',
+            'document_type' => '01',
+            'issue_date' => '2026-06-05',
+            'taxable_amount' => 10000,
+            'igv_amount' => 1800,
         ]);
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 's2', 'document_type' => '03', 'issue_date' => '2026-06-10',
-            'taxable_amount' => 5000, 'igv_amount' => 900,
+            'tax_document_id' => 's2',
+            'document_type' => '03',
+            'issue_date' => '2026-06-10',
+            'taxable_amount' => 5000,
+            'igv_amount' => 900,
         ]);
 
         // Insert purchase
         $this->connection->insert('goods_receipts', [
-            'id' => 'p1', 'status' => 'POSTED', 'issued_at' => '2026-06-15 00:00:00',
-            'subtotal' => 8000, 'tax_total' => 1440,
+            'id' => 'p1',
+            'status' => 'POSTED',
+            'issued_at' => '2026-06-15 00:00:00',
+            'subtotal' => 8000,
+            'tax_total' => 1440,
         ]);
 
         // Insert retention sufrida
         $this->connection->insert('retention_percepcion', [
-            'id' => 'r1', 'direction' => 'sufrida', 'amount' => 100, 'period_date' => '2026-06-18',
+            'id' => 'r1',
+            'direction' => 'sufrida',
+            'amount' => 100,
+            'period_date' => '2026-06-18',
         ]);
 
         $query = new TaxSummaryQuery($this->connection);
@@ -96,7 +109,7 @@ final class TaxSummaryQueryTest extends TestCase
         self::assertSame(8000.0, $result['igvMensual']['creditoFiscal']['baseImponible']);
         self::assertSame(1440.0, $result['igvMensual']['creditoFiscal']['igv']);
         self::assertSame(100.0, $result['igvMensual']['retencionesSufridas']);
-        self::assertSame(1160.0, $result['igvMensual']['igvPorPagar']);       // 2700 - 1440 - 100
+        self::assertSame(1160.0, $result['igvMensual']['igvPorPagar']); // 2700 - 1440 - 100
         self::assertSame(1160.0, $result['kpi']['igvPorPagar']);
         self::assertSame(1440.0, $result['kpi']['creditoFiscal']);
         self::assertSame('Junio 2026', $result['periodLabel']);
@@ -105,8 +118,12 @@ final class TaxSummaryQueryTest extends TestCase
     public function testVoidedDocumentsExcluded(): void
     {
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 's1', 'document_type' => '01', 'issue_date' => '2026-06-05',
-            'taxable_amount' => 10000, 'igv_amount' => 1800, 'void_ticket' => 'T123',
+            'tax_document_id' => 's1',
+            'document_type' => '01',
+            'issue_date' => '2026-06-05',
+            'taxable_amount' => 10000,
+            'igv_amount' => 1800,
+            'void_ticket' => 'T123',
         ]);
 
         $query = new TaxSummaryQuery($this->connection);
@@ -135,14 +152,22 @@ final class TaxSummaryQueryTest extends TestCase
     public function testDetraccionesPendientes(): void
     {
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 's1', 'document_type' => '01', 'issue_date' => '2026-06-05',
-            'taxable_amount' => 10000, 'igv_amount' => 1800,
-            'detraction_amount' => 400, 'detraction_deposited_at' => null,
+            'tax_document_id' => 's1',
+            'document_type' => '01',
+            'issue_date' => '2026-06-05',
+            'taxable_amount' => 10000,
+            'igv_amount' => 1800,
+            'detraction_amount' => 400,
+            'detraction_deposited_at' => null,
         ]);
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 's2', 'document_type' => '01', 'issue_date' => '2026-06-10',
-            'taxable_amount' => 5000, 'igv_amount' => 900,
-            'detraction_amount' => 200, 'detraction_deposited_at' => '2026-06-12 10:00:00',
+            'tax_document_id' => 's2',
+            'document_type' => '01',
+            'issue_date' => '2026-06-10',
+            'taxable_amount' => 5000,
+            'igv_amount' => 900,
+            'detraction_amount' => 200,
+            'detraction_deposited_at' => '2026-06-12 10:00:00',
         ]);
 
         $query = new TaxSummaryQuery($this->connection);

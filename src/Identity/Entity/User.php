@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Identity\Entity;
 
-use DateTimeImmutable;
-use Override;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -14,13 +12,15 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\Role;
 use App\Identity\Repository\UserRepository;
-use App\Identity\State\UserSoftDeleteProcessor;
 use App\Identity\State\UserPasswordHasher;
+use App\Identity\State\UserSoftDeleteProcessor;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Override;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;

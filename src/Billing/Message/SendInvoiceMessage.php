@@ -12,8 +12,7 @@ final readonly class SendInvoiceMessage
     public function __construct(
         public string $taxDocumentId,
         private string $tenantId,
-    ) {
-    }
+    ) {}
 
     public function getTenantId(): string
     {

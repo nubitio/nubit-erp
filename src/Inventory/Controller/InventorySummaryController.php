@@ -17,8 +17,7 @@ final class InventorySummaryController extends AbstractController
 {
     public function __construct(
         private readonly InventorySummaryService $summaryService,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

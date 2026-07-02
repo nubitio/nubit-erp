@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Security;
 
-use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
-use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\Security\SecurityService;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -57,10 +57,10 @@ final class SecurityServiceTest extends TestCase
         $token = $this->makeJwtToken($user);
 
         $service = $this->makeService($user, $token, [
-            'userId'   => 7,
+            'userId' => 7,
             'username' => 'juan',
-            'role'     => 1,
-            'roles'    => ['ROLE_USER'],
+            'role' => 1,
+            'roles' => ['ROLE_USER'],
         ]);
 
         $result = $service->connectedUser();
@@ -99,7 +99,10 @@ final class SecurityServiceTest extends TestCase
         $token = $this->makeJwtToken($user);
 
         $service = $this->makeService($user, $token, [
-            'userId' => 7, 'username' => 'juan', 'role' => 1, 'roles' => ['ROLE_USER'],
+            'userId' => 7,
+            'username' => 'juan',
+            'role' => 1,
+            'roles' => ['ROLE_USER'],
         ]);
 
         self::assertTrue($service->isAuthenticated());

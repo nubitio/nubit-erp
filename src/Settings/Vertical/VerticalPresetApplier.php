@@ -26,8 +26,7 @@ final readonly class VerticalPresetApplier
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     public function apply(VerticalPresetInterface $preset): VerticalPresetApplicationResult
     {
@@ -85,7 +84,7 @@ final readonly class VerticalPresetApplier
             return [false, 'No existe una sucursal; se omitió la creación del almacén por defecto.'];
         }
 
-        $warehouse = (new Warehouse())
+        $warehouse = new Warehouse()
             ->setName(self::DEFAULT_WAREHOUSE_NAME)
             ->setBranch($defaultBranch);
 

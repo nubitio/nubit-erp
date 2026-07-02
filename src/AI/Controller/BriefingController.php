@@ -25,8 +25,7 @@ class BriefingController extends AbstractController
     public function __construct(
         private readonly DailyBriefingService $briefingService,
         private readonly TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function __invoke(): JsonResponse
     {
@@ -35,10 +34,7 @@ class BriefingController extends AbstractController
         try {
             $content = $this->briefingService->generate($tenantName);
         } catch (Throwable $throwable) {
-            return new JsonResponse(
-                ['content' => DailyBriefingService::DEFAULT_MESSAGE],
-                Response::HTTP_OK,
-            );
+            return new JsonResponse(['content' => DailyBriefingService::DEFAULT_MESSAGE], Response::HTTP_OK);
         }
 
         return new JsonResponse(['content' => $content]);

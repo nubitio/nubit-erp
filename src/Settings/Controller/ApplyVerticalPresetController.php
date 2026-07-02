@@ -28,8 +28,7 @@ final class ApplyVerticalPresetController extends AbstractController
         private readonly VerticalPresetRegistry $registry,
         private readonly VerticalPresetApplier $applier,
         private readonly TenantRuntimeConfigProvider $runtimeConfigProvider,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -45,20 +44,14 @@ final class ApplyVerticalPresetController extends AbstractController
 
         $key = $payload['preset'] ?? $payload['vertical'] ?? null;
         if (!is_string($key) || $key === '') {
-            return $this->json(
-                ['error' => 'Missing "preset" (vertical key).'],
-                Response::HTTP_BAD_REQUEST,
-            );
+            return $this->json(['error' => 'Missing "preset" (vertical key).'], Response::HTTP_BAD_REQUEST);
         }
 
         if (!$this->registry->has($key)) {
-            return $this->json(
-                [
-                    'error' => sprintf('Unknown preset "%s".', $key),
-                    'available' => $this->registry->keys(),
-                ],
-                Response::HTTP_BAD_REQUEST,
-            );
+            return $this->json([
+                'error' => sprintf('Unknown preset "%s".', $key),
+                'available' => $this->registry->keys(),
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $result = $this->applier->apply($this->registry->get($key));

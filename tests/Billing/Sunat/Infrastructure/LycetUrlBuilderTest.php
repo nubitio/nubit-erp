@@ -17,8 +17,7 @@ final class LycetUrlBuilderHost
     public function __construct(
         private readonly string $apiBaseUrl,
         private readonly string $apiToken,
-    ) {
-    }
+    ) {}
 
     /** @param array<string, string|int|null> $extraParams */
     public function publicUrl(string $path, array $extraParams = []): string
@@ -44,10 +43,7 @@ final class LycetUrlBuilderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->host = new LycetUrlBuilderHost(
-            apiBaseUrl: 'https://lycet.example.com',
-            apiToken: 'secret-token-xyz',
-        );
+        $this->host = new LycetUrlBuilderHost(apiBaseUrl: 'https://lycet.example.com', apiToken: 'secret-token-xyz');
     }
 
     public function testLycetUrlBuildsCorrectUrl(): void
@@ -104,9 +100,7 @@ final class LycetUrlBuilderTest extends TestCase
 
     public function testMaskAndRethrowWrapsWhenTokenAppearsInMessage(): void
     {
-        $original = new \RuntimeException(
-            'cURL error: token=secret-token-xyz is invalid'
-        );
+        $original = new \RuntimeException('cURL error: token=secret-token-xyz is invalid');
 
         try {
             $this->host->publicMaskAndRethrow($original);

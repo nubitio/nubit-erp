@@ -20,7 +20,7 @@ final class ConfigTest extends TestCase
 
     public function testMapsToConfigTable(): void
     {
-        $attributes = (new \ReflectionClass(Config::class))->getAttributes(\Doctrine\ORM\Mapping\Table::class);
+        $attributes = new \ReflectionClass(Config::class)->getAttributes(\Doctrine\ORM\Mapping\Table::class);
 
         self::assertCount(1, $attributes);
         self::assertSame('config', $attributes[0]->newInstance()->name);
@@ -71,11 +71,11 @@ final class ConfigTest extends TestCase
     public static function provideAllConfigTypes(): array
     {
         return [
-            'STRING'  => [ConfigType::STRING],
-            'INT'     => [ConfigType::INT],
-            'FLOAT'   => [ConfigType::FLOAT],
+            'STRING' => [ConfigType::STRING],
+            'INT' => [ConfigType::INT],
+            'FLOAT' => [ConfigType::FLOAT],
             'BOOLEAN' => [ConfigType::BOOLEAN],
-            'JSON'    => [ConfigType::JSON],
+            'JSON' => [ConfigType::JSON],
         ];
     }
 }

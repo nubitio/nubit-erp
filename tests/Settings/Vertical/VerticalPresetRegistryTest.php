@@ -32,10 +32,7 @@ final class VerticalPresetRegistryTest extends TestCase
         self::assertSame($pharmacy, $registry->get(PharmacyPreset::KEY));
         self::assertContains('inventory.lot_tracking', $pharmacy->desiredCapabilities());
         self::assertNotContains('inventory.lot_tracking', $retail->desiredCapabilities());
-        self::assertEqualsCanonicalizing(
-            [RetailPreset::KEY, PharmacyPreset::KEY],
-            $registry->keys(),
-        );
+        self::assertEqualsCanonicalizing([RetailPreset::KEY, PharmacyPreset::KEY], $registry->keys());
     }
 
     public function testUnknownPresetThrows(): void

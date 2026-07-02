@@ -47,9 +47,9 @@ final readonly class TenantAwareMercureHub implements HubInterface
     public function __construct(
         private HubInterface $inner,
         private RequestStack $requestStack,
-        #[Autowire(param: 'kernel.environment')] private string $environment,
-    ) {
-    }
+        #[Autowire(param: 'kernel.environment')]
+        private string $environment,
+    ) {}
 
     public function getPublicUrl(): string
     {
@@ -60,7 +60,7 @@ final readonly class TenantAwareMercureHub implements HubInterface
             // In non-dev environments fall back to https: the browser is always on HTTPS
             // in production even when the internal proxy connection uses plain HTTP.
             $isProd = $this->environment !== 'dev' && $this->environment !== 'test';
-            $scheme = ($request->isSecure() || $isProd) ? 'https' : 'http';
+            $scheme = $request->isSecure() || $isProd ? 'https' : 'http';
 
             return $scheme . '://' . $request->getHttpHost() . self::HUB_PATH;
         }

@@ -6,18 +6,15 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\SunatCatalogRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SunatCatalogRepository::class)]
 #[ORM\Table(name: 'sunat_catalog')]
 #[ORM\UniqueConstraint(name: 'uniq_sunat_catalog_code', columns: ['catalog', 'code'])]
-#[ApiResource(
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 class SunatCatalog
 {
     #[ORM\Id]

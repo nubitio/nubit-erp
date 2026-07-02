@@ -23,8 +23,7 @@ final readonly class PurchaseLedgerExporter
     public function __construct(
         private Connection $connection,
         private CompanyContext $companyContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @param string $period Periodo en formato AAAAMM
@@ -145,25 +144,25 @@ final readonly class PurchaseLedgerExporter
         [$start, $end] = $this->periodBounds($period);
 
         $sql = <<<'SQL'
-            SELECT
-                gr.supplier_doc_type,
-                gr.supplier_doc_series,
-                gr.supplier_doc_number,
-                gr.issued_at,
-                gr.subtotal,
-                gr.tax_total,
-                gr.grand_total,
-                gr.currency,
-                gr.exchange_rate,
-                p.ruc          AS supplier_doc,
-                p.razon_social AS supplier_name
-            FROM goods_receipts gr
-            LEFT JOIN proveedor p ON p.proveedor_id = gr.supplier_id
-            WHERE gr.issued_at BETWEEN ? AND ?
-              AND gr.deleted_at IS NULL
-              AND gr.status = 'POSTED'
-            ORDER BY gr.issued_at, gr.supplier_doc_series, gr.supplier_doc_number
-        SQL;
+                SELECT
+                    gr.supplier_doc_type,
+                    gr.supplier_doc_series,
+                    gr.supplier_doc_number,
+                    gr.issued_at,
+                    gr.subtotal,
+                    gr.tax_total,
+                    gr.grand_total,
+                    gr.currency,
+                    gr.exchange_rate,
+                    p.ruc          AS supplier_doc,
+                    p.razon_social AS supplier_name
+                FROM goods_receipts gr
+                LEFT JOIN proveedor p ON p.proveedor_id = gr.supplier_id
+                WHERE gr.issued_at BETWEEN ? AND ?
+                  AND gr.deleted_at IS NULL
+                  AND gr.status = 'POSTED'
+                ORDER BY gr.issued_at, gr.supplier_doc_series, gr.supplier_doc_number
+            SQL;
 
         /** @var list<array<string, mixed>> $rows */
         $rows = $this->connection->fetchAllAssociative($sql, [$start, $end . ' 23:59:59']);
@@ -189,43 +188,43 @@ final readonly class PurchaseLedgerExporter
         $issueDate = $this->toDate($row['issued_at'] ?? null);
 
         return PleWriter::record([
-            $periodKey,                                       // 1  Periodo
-            $cuo,                                             // 2  CUO
-            $cuo,                                             // 3  Correlativo del asiento
-            PleWriter::date($issueDate),                      // 4  Fecha de emisión del comprobante
-            '',                                               // 5  Fecha de vencimiento/pago
-            (string) ($row['supplier_doc_type'] ?? '00'),     // 6  Tipo de comprobante (Tabla 10)
-            (string) ($row['supplier_doc_series'] ?? ''),     // 7  Serie / Año DUA
-            (string) ($row['supplier_doc_number'] ?? ''),     // 8  Número / DUA
-            '',                                               // 9  Código dependencia aduanera (Tabla 11)
-            $docTypeId,                                       // 10 Tipo doc. identidad proveedor (Tabla 2)
-            $docNumber,                                       // 11 Número doc. identidad proveedor
-            (string) ($row['supplier_name'] ?? ''),           // 12 Razón social del proveedor
-            PleWriter::amount($taxable),                      // 13 Base imponible gravadas (op. gravadas)
-            PleWriter::amount($igv),                          // 14 IGV / IPM de 13
-            '0.00',                                           // 15 Base imponible gravadas y no gravadas
-            '0.00',                                           // 16 IGV / IPM de 15
-            '0.00',                                           // 17 Base imponible no gravadas
-            '0.00',                                           // 18 IGV / IPM de 17
-            '0.00',                                           // 19 Valor de adquisiciones no gravadas
-            '0.00',                                           // 20 ISC
-            '0.00',                                           // 21 ICBPER
-            '0.00',                                           // 22 Otros tributos y cargos
-            PleWriter::amount($total),                        // 23 Importe total
-            $currency,                                        // 24 Moneda (Tabla 4)
-            $exchangeRate,                                    // 25 Tipo de cambio
-            '',                                               // 26 Fecha emisión doc. modificado
-            '',                                               // 27 Tipo doc. modificado (Tabla 10)
-            '',                                               // 28 Serie doc. modificado
-            '',                                               // 29 Número doc. modificado / DUA
-            '',                                               // 30 Fecha constancia detracción
-            '',                                               // 31 Número constancia detracción
-            '',                                               // 32 Marca de comprobante sujeto a retención
-            '',                                               // 33 Clasificación bienes/servicios (Tabla 30)
-            '',                                               // 34 Identificación contrato/proyecto
-            '',                                               // 35 Error tipo 1
-            '',                                               // 36 Indicador cancelado con medio de pago
-            '1',                                              // 37 Estado
+            $periodKey, // 1  Periodo
+            $cuo, // 2  CUO
+            $cuo, // 3  Correlativo del asiento
+            PleWriter::date($issueDate), // 4  Fecha de emisión del comprobante
+            '', // 5  Fecha de vencimiento/pago
+            (string) ($row['supplier_doc_type'] ?? '00'), // 6  Tipo de comprobante (Tabla 10)
+            (string) ($row['supplier_doc_series'] ?? ''), // 7  Serie / Año DUA
+            (string) ($row['supplier_doc_number'] ?? ''), // 8  Número / DUA
+            '', // 9  Código dependencia aduanera (Tabla 11)
+            $docTypeId, // 10 Tipo doc. identidad proveedor (Tabla 2)
+            $docNumber, // 11 Número doc. identidad proveedor
+            (string) ($row['supplier_name'] ?? ''), // 12 Razón social del proveedor
+            PleWriter::amount($taxable), // 13 Base imponible gravadas (op. gravadas)
+            PleWriter::amount($igv), // 14 IGV / IPM de 13
+            '0.00', // 15 Base imponible gravadas y no gravadas
+            '0.00', // 16 IGV / IPM de 15
+            '0.00', // 17 Base imponible no gravadas
+            '0.00', // 18 IGV / IPM de 17
+            '0.00', // 19 Valor de adquisiciones no gravadas
+            '0.00', // 20 ISC
+            '0.00', // 21 ICBPER
+            '0.00', // 22 Otros tributos y cargos
+            PleWriter::amount($total), // 23 Importe total
+            $currency, // 24 Moneda (Tabla 4)
+            $exchangeRate, // 25 Tipo de cambio
+            '', // 26 Fecha emisión doc. modificado
+            '', // 27 Tipo doc. modificado (Tabla 10)
+            '', // 28 Serie doc. modificado
+            '', // 29 Número doc. modificado / DUA
+            '', // 30 Fecha constancia detracción
+            '', // 31 Número constancia detracción
+            '', // 32 Marca de comprobante sujeto a retención
+            '', // 33 Clasificación bienes/servicios (Tabla 30)
+            '', // 34 Identificación contrato/proyecto
+            '', // 35 Error tipo 1
+            '', // 36 Indicador cancelado con medio de pago
+            '1', // 37 Estado
         ]);
     }
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Identity\Dto\AuthUserDto;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
+use Nubit\Platform\Exception\ServiceException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -22,8 +22,7 @@ final readonly class SaleInventoryOrchestrator
         private StockValidationPolicyInterface $stockValidationPolicy,
         private NegativeStockPolicyResolver $policyResolver,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Validates stock availability and records inventory movements for all sale items.
@@ -81,7 +80,7 @@ final readonly class SaleInventoryOrchestrator
 
             $currentStock = $this->salesInventory->getStockForProductInWarehouse(
                 $item->getProduct(),
-                $sale->getAlmacen()
+                $sale->getAlmacen(),
             );
 
             if ($useCoreValidation) {
@@ -99,7 +98,7 @@ final readonly class SaleInventoryOrchestrator
                         $item->getProduct()->getName(),
                         $validation->reason ?? 'STRICT',
                         rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                        rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.')
+                        rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.'),
                     ));
                 }
 
@@ -122,7 +121,7 @@ final readonly class SaleInventoryOrchestrator
                     'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
                     $item->getProduct()->getName(),
                     rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                    rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.')
+                    rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.'),
                 ));
             }
         }
@@ -147,7 +146,7 @@ final readonly class SaleInventoryOrchestrator
             $warehouseId = $sale->getAlmacen()->getId();
             $currentStock = $this->salesInventory->getStockForProductInWarehouse(
                 $item->getProduct(),
-                $sale->getAlmacen()
+                $sale->getAlmacen(),
             );
 
             $this->logger->debug('Current stock for product', [
@@ -163,12 +162,7 @@ final readonly class SaleInventoryOrchestrator
                     'quantity_added' => $item->getQty(),
                 ]);
 
-                $this->salesInventory->applyMovementFromSaleItem(
-                    $sale,
-                    $item,
-                    $lineNo,
-                    $enforceNonNegative
-                );
+                $this->salesInventory->applyMovementFromSaleItem($sale, $item, $lineNo, $enforceNonNegative);
             } elseif ($sale->getTipoId() === 2) {
                 $this->logger->info('Decreasing stock for sale', [
                     'product_id' => $productId,
@@ -180,7 +174,7 @@ final readonly class SaleInventoryOrchestrator
                     $sale,
                     $item,
                     $lineNo,
-                    $useCoreValidation ? false : $enforceNonNegative
+                    $useCoreValidation ? false : $enforceNonNegative,
                 );
             }
         }

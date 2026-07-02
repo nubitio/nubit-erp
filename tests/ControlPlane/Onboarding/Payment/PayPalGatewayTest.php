@@ -22,7 +22,7 @@ final class PayPalGatewayTest extends TestCase
         string $webhookId = 'test-webhook-id',
         string $mode = 'sandbox',
         string $planMapJson = '{}',
-        MockHttpClient|null $httpClient = null,
+        ?MockHttpClient $httpClient = null,
     ): PayPalGateway {
         return new PayPalGateway(
             logger: $this->createMock(LoggerInterface::class),
@@ -85,11 +85,7 @@ final class PayPalGatewayTest extends TestCase
 
     public function testCredentialsAreStoredViaConstructorInjection(): void
     {
-        $gateway = $this->buildGateway(
-            clientId: 'my-client-id',
-            clientSecret: 'my-secret',
-            webhookId: 'my-webhook-id',
-        );
+        $gateway = $this->buildGateway(clientId: 'my-client-id', clientSecret: 'my-secret', webhookId: 'my-webhook-id');
 
         // Verify credentials are accessible as properties (no env reads)
         $reflection = new \ReflectionClass($gateway);
@@ -126,13 +122,18 @@ final class PayPalGatewayTest extends TestCase
             httpClient: $httpClient,
         );
 
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
-            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
-            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-123',
-            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-abc',
-            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
-        ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_PAYPAL_AUTH_ALGO' => 'SHA256withRSA',
+                'HTTP_PAYPAL_CERT_URL' => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+                'HTTP_PAYPAL_TRANSMISSION_ID' => 'tx-id-123',
+                'HTTP_PAYPAL_TRANSMISSION_SIG' => 'sig-abc',
+                'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+            ],
+            content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}',
+        );
 
         $event = $gateway->handleWebhook($request);
 
@@ -150,14 +151,10 @@ final class PayPalGatewayTest extends TestCase
     public function testHandleWebhookReturnsNullWhenVerifyApiUnreachable(): void
     {
         // Simulate network failure: HTTP 500 on the OAuth token request
-        $httpClient = new MockHttpClient(
-            new MockResponse('{"error":"server_error"}', ['http_code' => 500]),
-        );
+        $httpClient = new MockHttpClient(new MockResponse('{"error":"server_error"}', ['http_code' => 500]));
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('error')
-            ->with(self::stringContains('Verify API unreachable'));
+        $logger->expects(self::once())->method('error')->with(self::stringContains('Verify API unreachable'));
 
         $gateway = new PayPalGateway(
             logger: $logger,
@@ -169,13 +166,18 @@ final class PayPalGatewayTest extends TestCase
             planMapJson: '{}',
         );
 
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_PAYPAL_AUTH_ALGO'        => 'SHA256withRSA',
-            'HTTP_PAYPAL_CERT_URL'         => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
-            'HTTP_PAYPAL_TRANSMISSION_ID'  => 'tx-id-123',
-            'HTTP_PAYPAL_TRANSMISSION_SIG' => 'sig-abc',
-            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
-        ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_PAYPAL_AUTH_ALGO' => 'SHA256withRSA',
+                'HTTP_PAYPAL_CERT_URL' => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+                'HTTP_PAYPAL_TRANSMISSION_ID' => 'tx-id-123',
+                'HTTP_PAYPAL_TRANSMISSION_SIG' => 'sig-abc',
+                'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+            ],
+            content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}',
+        );
 
         $result = $gateway->handleWebhook($request);
 
@@ -196,9 +198,7 @@ final class PayPalGatewayTest extends TestCase
         ]);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('warning')
-            ->with('PayPal webhook signature verification failed');
+        $logger->expects(self::once())->method('warning')->with('PayPal webhook signature verification failed');
 
         $gateway = new PayPalGateway(
             logger: $logger,
@@ -210,13 +210,18 @@ final class PayPalGatewayTest extends TestCase
             planMapJson: '{}',
         );
 
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
-            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
-            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-123',
-            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-abc',
-            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
-        ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_PAYPAL_AUTH_ALGO' => 'SHA256withRSA',
+                'HTTP_PAYPAL_CERT_URL' => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+                'HTTP_PAYPAL_TRANSMISSION_ID' => 'tx-id-123',
+                'HTTP_PAYPAL_TRANSMISSION_SIG' => 'sig-abc',
+                'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+            ],
+            content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}',
+        );
 
         $result = $gateway->handleWebhook($request);
 
@@ -235,20 +240,21 @@ final class PayPalGatewayTest extends TestCase
             new MockResponse('{"verification_status":"SUCCESS"}', ['http_code' => 200]),
         ]);
 
-        $gateway = $this->buildGateway(
-            webhookId: 'wh-id',
-            mode: 'sandbox',
-            httpClient: $httpClient,
-        );
+        $gateway = $this->buildGateway(webhookId: 'wh-id', mode: 'sandbox', httpClient: $httpClient);
 
         // Payload with no resource.id and no resource.billing_agreement_id
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
-            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
-            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-456',
-            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-def',
-            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
-        ], content: '{"id":"evt-2","event_type":"PAYMENT.SALE.COMPLETED","resource":{}}');
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_PAYPAL_AUTH_ALGO' => 'SHA256withRSA',
+                'HTTP_PAYPAL_CERT_URL' => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+                'HTTP_PAYPAL_TRANSMISSION_ID' => 'tx-id-456',
+                'HTTP_PAYPAL_TRANSMISSION_SIG' => 'sig-def',
+                'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+            ],
+            content: '{"id":"evt-2","event_type":"PAYMENT.SALE.COMPLETED","resource":{}}',
+        );
 
         $event = $gateway->handleWebhook($request);
 

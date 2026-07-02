@@ -18,18 +18,18 @@ final class PurchaseSupplierDocumentValidatorTest extends TestCase
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->expectExceptionMessage('tipo de comprobante');
 
-        (new PurchaseSupplierDocumentValidator())->assertRequiredForCreate($purchase);
+        new PurchaseSupplierDocumentValidator()->assertRequiredForCreate($purchase);
     }
 
     public function testAcceptsCompleteSupplierDocument(): void
     {
-        $purchase = (new Purchase())
+        $purchase = new Purchase()
             ->setSupplierDocType('01')
             ->setSupplierDocSeries('F001')
             ->setSupplierDocNumber('12345');
 
-        (new PurchaseSupplierDocumentValidator())->assertRequiredForCreate($purchase);
+        new PurchaseSupplierDocumentValidator()->assertRequiredForCreate($purchase);
 
-        self::assertTrue(true);
+        self::assertSame('01', $purchase->getSupplierDocType());
     }
 }

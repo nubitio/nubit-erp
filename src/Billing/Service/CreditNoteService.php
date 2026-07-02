@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Billing\Service;
 
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Repository\TaxDocumentEventRepository;
 use App\Billing\Sunat\Domain\NoteConsultUseCase;
 use App\Billing\Sunat\Domain\NoteSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
-use App\Billing\Repository\TaxDocumentEventRepository;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Service\CompanyContext;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Billing\Entity\TaxDocument;
+use App\Efact\Service\CompanyContext;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -33,8 +33,7 @@ readonly class CreditNoteService
         private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
         private readonly LoggerInterface $billingLogger,
-    ) {
-    }
+    ) {}
 
     /**
      * Send credit note to SUNAT
@@ -55,10 +54,7 @@ readonly class CreditNoteService
         // Save XML file
         $docDir = Constants::INVOICE_DIR . '/' . $response->name;
         if (isset($response->xml) && ($response->xml !== '' && $response->xml !== '0')) {
-            $this->fileManager->write(
-                $docDir . '/' . $response->name . '.xml',
-                $response->xml
-            );
+            $this->fileManager->write($docDir . '/' . $response->name . '.xml', $response->xml);
         }
 
         // Process response
@@ -70,10 +66,7 @@ readonly class CreditNoteService
             $cdrZipOnSend = $response->sunatResponse->getCdrZip();
             if (!in_array($cdrZipOnSend, [null, '', '0'], true)) {
                 $cdr = base64_decode($cdrZipOnSend);
-                $this->fileManager->write(
-                    $docDir . '/R-' . $response->name . '.zip',
-                    $cdr
-                );
+                $this->fileManager->write($docDir . '/R-' . $response->name . '.zip', $cdr);
                 $creditNote->setCdrPath($docDir . '/R-' . $response->name . '.zip');
             } else {
                 // SUNAT did not return the CDR zip inline — attempt to fetch it via consult
@@ -123,10 +116,12 @@ readonly class CreditNoteService
                 $sunatStatus = $consultResponse->getCdrResponse()->getCode();
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
             } else {
-                $sunatStatus = $consultResponse->getCdrResponse()?->getCode()
-                    ?? $consultResponse->getError()?->getCode();
-                $sunatMessage = $consultResponse->getCdrResponse()?->getDescription()
-                    ?? $consultResponse->getError()?->getMessage();
+                $sunatStatus = $consultResponse->getCdrResponse()?->getCode() ?? $consultResponse
+                    ->getError()
+                    ?->getCode();
+                $sunatMessage = $consultResponse->getCdrResponse()?->getDescription() ?? $consultResponse
+                    ->getError()
+                    ?->getMessage();
             }
 
             $cdrZip = $consultResponse->getCdrZip();
@@ -134,8 +129,11 @@ readonly class CreditNoteService
                 $decoded = base64_decode($cdrZip);
                 if ($decoded !== '') {
                     $companyId = $this->companyContext->getId();
-                    $docFullName = $companyId . '-'
-                        . $creditNote->getDocumentType() . '-'
+                    $docFullName =
+                        $companyId
+                        . '-'
+                        . $creditNote->getDocumentType()
+                        . '-'
                         . $consultResponse->getCdrResponse()->getId();
                     $cdrPath = Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip';
                     $this->fileManager->write($cdrPath, $decoded);

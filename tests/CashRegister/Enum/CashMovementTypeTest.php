@@ -41,7 +41,7 @@ final class CashMovementTypeTest extends TestCase
     public function testCasesAreUnique(): void
     {
         $cases = CashMovementType::cases();
-        $values = array_map(static fn (CashMovementType $c) => $c->value, $cases);
+        $values = array_map(static fn(CashMovementType $c) => $c->value, $cases);
 
         self::assertCount(count(array_unique($values)), $cases);
     }

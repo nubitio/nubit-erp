@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Domain;
 
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sunat\Domain\FileResponse;
-use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\CompanyContext;
-use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Filesystem\FileManager;
 
 readonly class ReceiptXmlUseCase
 {
@@ -17,8 +17,7 @@ readonly class ReceiptXmlUseCase
         private TaxDocumentRepository $taxDocumentRepository,
         private CompanyContext $companyContext,
         private FileManager $fileManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws FilesystemException
@@ -44,7 +43,7 @@ readonly class ReceiptXmlUseCase
 
         return new FileResponse(
             $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml'),
-            $docFullName . '.xml'
+            $docFullName . '.xml',
         );
     }
 
@@ -61,7 +60,7 @@ readonly class ReceiptXmlUseCase
 
         return new FileResponse(
             $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml'),
-            $docFullName . '.xml'
+            $docFullName . '.xml',
         );
     }
 }

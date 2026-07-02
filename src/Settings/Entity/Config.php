@@ -6,16 +6,13 @@ namespace App\Settings\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Settings\Repository\ConfigRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
 #[ORM\Table(name: 'config')]
-#[ApiResource(
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 class Config
 {
     #[ORM\Id]

@@ -9,6 +9,5 @@ class ReceiptRequest
     public function __construct(
         public ReceiptType $type,
         public string $id,
-    ) {
-    }
+    ) {}
 }

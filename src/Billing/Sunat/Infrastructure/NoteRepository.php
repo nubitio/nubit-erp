@@ -32,8 +32,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
         private string $apiToken,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws TransportExceptionInterface
@@ -65,13 +64,13 @@ readonly class NoteRepository implements NoteRepositoryInterface
         } catch (\Throwable $e) {
             $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
             $this->billingLogger->error('sunat.send', [
-                'sunat_code'      => 'N/A',
-                'sunat_message'   => 'N/A',
-                'success'         => false,
-                'duration_ms'     => $durationMs,
-                'tenant_id'       => $tenantId,
+                'sunat_code' => 'N/A',
+                'sunat_message' => 'N/A',
+                'success' => false,
+                'duration_ms' => $durationMs,
+                'tenant_id' => $tenantId,
                 'tax_document_id' => $taxDocumentId,
-                'exception'       => $e,
+                'exception' => $e,
             ]);
             $this->maskAndRethrow($e);
         }
@@ -84,20 +83,20 @@ readonly class NoteRepository implements NoteRepositoryInterface
 
         if ($success) {
             $this->billingLogger->info('sunat.send', [
-                'sunat_code'      => $sunatCode,
-                'sunat_message'   => $sunatMessage,
-                'success'         => true,
-                'duration_ms'     => $durationMs,
-                'tenant_id'       => $tenantId,
+                'sunat_code' => $sunatCode,
+                'sunat_message' => $sunatMessage,
+                'success' => true,
+                'duration_ms' => $durationMs,
+                'tenant_id' => $tenantId,
                 'tax_document_id' => $taxDocumentId,
             ]);
         } else {
             $this->billingLogger->warning('sunat.send', [
-                'sunat_code'      => $sunatCode,
-                'sunat_message'   => $sunatMessage,
-                'success'         => false,
-                'duration_ms'     => $durationMs,
-                'tenant_id'       => $tenantId,
+                'sunat_code' => $sunatCode,
+                'sunat_message' => $sunatMessage,
+                'success' => false,
+                'duration_ms' => $durationMs,
+                'tenant_id' => $tenantId,
                 'tax_document_id' => $taxDocumentId,
             ]);
         }

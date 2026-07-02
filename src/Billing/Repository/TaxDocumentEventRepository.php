@@ -31,7 +31,7 @@ class TaxDocumentEventRepository extends ServiceEntityRepository implements Suna
         string $eventType,
         ?string $statusCode,
         ?string $statusMessage,
-        ?array $payload = null
+        ?array $payload = null,
     ): TaxDocumentEvent {
         $event = new TaxDocumentEvent();
         $event->setTaxDocument($taxDocument);
@@ -53,7 +53,8 @@ class TaxDocumentEventRepository extends ServiceEntityRepository implements Suna
     public function findRejections(): array
     {
         /** @var list<TaxDocumentEvent> $result */
-        $result = $this->createQueryBuilder('e')
+        $result = $this
+            ->createQueryBuilder('e')
             ->addSelect('d')
             ->join('e.taxDocument', 'd')
             ->where('e.code IS NOT NULL')
@@ -68,7 +69,7 @@ class TaxDocumentEventRepository extends ServiceEntityRepository implements Suna
 
     private function resolveStatus(?string $statusCode): string
     {
-        $normalizedCode = strtolower(trim((string)$statusCode));
+        $normalizedCode = strtolower(trim((string) $statusCode));
         if ($normalizedCode === '' || $normalizedCode === 'pendiente') {
             return 'pending';
         }

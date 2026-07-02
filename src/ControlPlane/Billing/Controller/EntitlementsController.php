@@ -36,8 +36,7 @@ final class EntitlementsController extends AbstractController
         private readonly TenantUsageSummaryInterface $quotaService,
         private readonly FeatureCheckerInterface $featureChecker,
         private readonly TenantFeatureOverrideRepositoryInterface $overrideRepository,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -62,12 +61,7 @@ final class EntitlementsController extends AbstractController
         $debugMode = $this->isDebugMode($request, $tenant);
         $features = $this->buildFeaturesPayload($rawEntitlements, $tenant, $debugMode);
 
-        $response = new EntitlementsResponse(
-            plan: $plan,
-            limits: $limits,
-            features: $features,
-            debugMode: $debugMode,
-        );
+        $response = new EntitlementsResponse(plan: $plan, limits: $limits, features: $features, debugMode: $debugMode);
 
         return $this->json($response->toArray());
     }
@@ -92,7 +86,7 @@ final class EntitlementsController extends AbstractController
         foreach ($quotaKeys as $key) {
             if (isset($usageSummary[$key])) {
                 $limits[$key] = [
-                    'limit'   => $usageSummary[$key]['limit'],
+                    'limit' => $usageSummary[$key]['limit'],
                     'current' => $usageSummary[$key]['current'],
                 ];
             }
@@ -104,7 +98,7 @@ final class EntitlementsController extends AbstractController
             $storageCurrentBytes = $usageSummary['storage_bytes']['current'];
 
             $limits['storage_mb'] = [
-                'limit'   => $storageLimitBytes === -1 ? -1 : (int) round($storageLimitBytes / (1024 * 1024)),
+                'limit' => $storageLimitBytes === -1 ? -1 : (int) round($storageLimitBytes / (1024 * 1024)),
                 'current' => (int) round($storageCurrentBytes / (1024 * 1024)),
             ];
         }
@@ -137,8 +131,8 @@ final class EntitlementsController extends AbstractController
             $source = isset($overrideKeys[$key]) ? 'override' : 'plan';
             $features[$key] = [
                 'enabled' => $entitlement['enabled'],
-                'source'  => $source,
-                'config'  => $entitlement['config'],
+                'source' => $source,
+                'config' => $entitlement['config'],
             ];
         }
 

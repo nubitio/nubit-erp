@@ -8,5 +8,6 @@ enum SaleStatus: int
 {
     case ACTIVE = 1;
     case VOIDED = 2;
+
     // Add other sale statuses as needed
 }

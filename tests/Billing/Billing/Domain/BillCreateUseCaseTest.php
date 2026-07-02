@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Billing\Domain;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Billing\Sunat\Domain\BillCreateUseCase;
-use App\Billing\Sunat\Domain\BillUtilsInterface;
 use App\Billing\Invoice\Dto\HydratedVoucher;
 use App\Billing\Invoice\Dto\HydratedVoucherItem;
 use App\Billing\Invoice\Service\VoucherHydratorInterface;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Shared\Enum\OperationType;
 use App\Billing\Shared\Service\AmountFormatterService;
+use App\Billing\Sunat\Domain\BillCreateUseCase;
+use App\Billing\Sunat\Domain\BillUtilsInterface;
 use App\Organization\Entity\Company;
 use App\Organization\Repository\CompanyRepository;
-use App\Billing\Repository\TaxDocumentRepository;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company as GreenterCompany;
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -37,9 +37,9 @@ final class BillCreateUseCaseTest extends TestCase
     protected function setUp(): void
     {
         $this->taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
-        $this->billUtils              = $this->createMock(BillUtilsInterface::class);
-        $this->companyRepository      = $this->createMock(CompanyRepository::class);
-        $this->voucherHydrator        = $this->createMock(VoucherHydratorInterface::class);
+        $this->billUtils = $this->createMock(BillUtilsInterface::class);
+        $this->companyRepository = $this->createMock(CompanyRepository::class);
+        $this->voucherHydrator = $this->createMock(VoucherHydratorInterface::class);
         $this->amountFormatterService = new AmountFormatterService();
 
         $this->company = new Company();
@@ -169,9 +169,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher(item: $this->makeItem());
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -200,9 +200,9 @@ final class BillCreateUseCaseTest extends TestCase
             unitPrice: 110.5,
         );
         $voucher = $this->makeBaseVoucher(item: $item, voucherTaxPercentage: 10.5);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -214,9 +214,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher(paymentMethod: 1);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -228,9 +228,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher(paymentMethod: 2);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -242,14 +242,10 @@ final class BillCreateUseCaseTest extends TestCase
     public function testInvokeAddsDetractionAndSetsDetraccionSaleOperationType(): void
     {
         $this->setupTaxDocument();
-        $voucher = $this->makeBaseVoucher(
-            detractionCode: '022',
-            detractionPercent: 12.0,
-            detractionAmount: 12.0,
-        );
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $voucher = $this->makeBaseVoucher(detractionCode: '022', detractionPercent: 12.0, detractionAmount: 12.0);
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -269,9 +265,9 @@ final class BillCreateUseCaseTest extends TestCase
             detractionAmount: 12.0,
             operationType: OperationType::SALE->value,
         );
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -283,14 +279,10 @@ final class BillCreateUseCaseTest extends TestCase
     public function testInvokeCalculatesDetractionAmountFromPercentWhenAmountIsNull(): void
     {
         $this->setupTaxDocument();
-        $voucher = $this->makeBaseVoucher(
-            detractionCode: '022',
-            detractionPercent: 10.0,
-            detractionAmount: null,
-        );
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $voucher = $this->makeBaseVoucher(detractionCode: '022', detractionPercent: 10.0, detractionAmount: null);
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -305,9 +297,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher(surcharge: 5.0);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -319,9 +311,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher(discount: 10.0);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -332,11 +324,11 @@ final class BillCreateUseCaseTest extends TestCase
     public function testInvokeMapsSaleItemsToDetails(): void
     {
         $this->setupTaxDocument();
-        $item    = $this->makeItem();
+        $item = $this->makeItem();
         $voucher = $this->makeBaseVoucher(item: $item);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -351,9 +343,9 @@ final class BillCreateUseCaseTest extends TestCase
     {
         $this->setupTaxDocument();
         $voucher = $this->makeBaseVoucher();
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -366,14 +358,10 @@ final class BillCreateUseCaseTest extends TestCase
         $this->company->setDetraccionAccount('00-000-123456');
 
         $this->setupTaxDocument();
-        $voucher = $this->makeBaseVoucher(
-            detractionCode: '022',
-            detractionPercent: 12.0,
-            detractionAmount: 12.0,
-        );
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $voucher = $this->makeBaseVoucher(detractionCode: '022', detractionPercent: 12.0, detractionAmount: 12.0);
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -429,10 +417,10 @@ final class BillCreateUseCaseTest extends TestCase
             voucherOperationType: '',
             voucherDetractionCode: '022',
             voucherDetractionPercent: 12.0,
-            voucherDetractionAmount: 108.0,   // USD amount stored in DB
+            voucherDetractionAmount: 108.0, // USD amount stored in DB
             voucherDetractionPaymentMethod: null,
             voucherDetractionPaymentDescription: null,
-            voucherDetractionValueRef: 900.0,  // USD value ref stored in DB
+            voucherDetractionValueRef: 900.0, // USD value ref stored in DB
             voucherDetractionAccount: null,
             voucherDetractionDescription: null,
             voucherBankName: null,
@@ -445,9 +433,9 @@ final class BillCreateUseCaseTest extends TestCase
             voucherItems: [$this->makeItem()],
         );
 
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -467,15 +455,11 @@ final class BillCreateUseCaseTest extends TestCase
         $this->setupTaxDocument();
 
         // PEN invoice: amounts must pass through unchanged
-        $voucher = $this->makeBaseVoucher(
-            detractionCode: '022',
-            detractionPercent: 12.0,
-            detractionAmount: 108.0,
-        );
+        $voucher = $this->makeBaseVoucher(detractionCode: '022', detractionPercent: 12.0, detractionAmount: 108.0);
 
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -540,9 +524,9 @@ final class BillCreateUseCaseTest extends TestCase
             voucherItems: [],
         );
 
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -576,9 +560,9 @@ final class BillCreateUseCaseTest extends TestCase
         );
 
         $voucher = $this->makeBaseVoucher(discount: 10.0, item: $item);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -612,9 +596,9 @@ final class BillCreateUseCaseTest extends TestCase
 
         $item = $this->makeItem(); // discountAmount = 0.0 by default
         $voucher = $this->makeBaseVoucher(item: $item);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -650,9 +634,9 @@ final class BillCreateUseCaseTest extends TestCase
         );
 
         $voucher = $this->makeBaseVoucher(discount: 10.0, item: $item);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -672,9 +656,9 @@ final class BillCreateUseCaseTest extends TestCase
         $this->setupTaxDocument();
 
         $voucher = $this->makeBaseVoucher(discount: 15.0);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');
@@ -688,9 +672,9 @@ final class BillCreateUseCaseTest extends TestCase
         $this->setupTaxDocument();
 
         $voucher = $this->makeBaseVoucher(discount: 0.0);
-        $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn(
-            $this->createMock(\App\Billing\Invoice\Domain\Voucher::class)
-        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
         $this->voucherHydrator->method('hydrate')->willReturn($voucher);
 
         $invoice = $this->useCase->__invoke('td-1');

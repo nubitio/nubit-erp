@@ -36,8 +36,7 @@ final readonly class ProductImportMessageHandler
         private LoggerInterface $logger,
         private TenantContext $tenantContext,
         private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
-    ) {
-    }
+    ) {}
 
     public function __invoke(ProductImportMessage $message): void
     {
@@ -54,43 +53,44 @@ final readonly class ProductImportMessageHandler
 
             $lastPublishedAt = 0;
 
-            $result = $this->processor->process(
-                $message->filePath,
-                function (int $current, int $total) use ($topic, $message, &$lastPublishedAt): void {
-                    // Throttle publishes: every N rows OR on the last row.
-                    if ($current - $lastPublishedAt >= self::PUBLISH_EVERY || $current === $total) {
-                        $this->publish($topic, [
-                            'jobId'    => $message->jobId,
-                            'status'   => 'processing',
-                            'progress' => ['current' => $current, 'total' => $total],
-                        ]);
-                        $lastPublishedAt = $current;
-                    }
-                },
-            );
+            $result = $this->processor->process($message->filePath, function (int $current, int $total) use (
+                $topic,
+                $message,
+                &$lastPublishedAt,
+            ): void {
+                // Throttle publishes: every N rows OR on the last row.
+                if (($current - $lastPublishedAt) >= self::PUBLISH_EVERY || $current === $total) {
+                    $this->publish($topic, [
+                        'jobId' => $message->jobId,
+                        'status' => 'processing',
+                        'progress' => ['current' => $current, 'total' => $total],
+                    ]);
+                    $lastPublishedAt = $current;
+                }
+            });
 
             $this->publish($topic, [
-                'jobId'  => $message->jobId,
+                'jobId' => $message->jobId,
                 'status' => 'completed',
                 'result' => $result->toArray(),
             ]);
 
             $this->logger->info('product_import.done', [
-                'job_id'  => $message->jobId,
+                'job_id' => $message->jobId,
                 'created' => $result->created,
                 'updated' => $result->updated,
-                'errors'  => count($result->errors),
+                'errors' => count($result->errors),
             ]);
         } catch (\Throwable $e) {
             $this->logger->error('product_import.failed', [
-                'job_id'    => $message->jobId,
+                'job_id' => $message->jobId,
                 'exception' => $e->getMessage(),
             ]);
 
             $this->publish($topic, [
-                'jobId'  => $message->jobId,
+                'jobId' => $message->jobId,
                 'status' => 'failed',
-                'error'  => 'Error procesando el archivo: ' . $e->getMessage(),
+                'error' => 'Error procesando el archivo: ' . $e->getMessage(),
             ]);
 
             throw $e;
@@ -141,7 +141,7 @@ final readonly class ProductImportMessageHandler
             );
         } catch (\Throwable $e) {
             $this->logger->warning('product_import.mercure_publish_failed', [
-                'topic'     => $topic,
+                'topic' => $topic,
                 'exception' => $e->getMessage(),
             ]);
         }

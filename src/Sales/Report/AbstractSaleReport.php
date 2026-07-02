@@ -17,8 +17,7 @@ abstract class AbstractSaleReport implements ExportableReportInterface
 {
     public function __construct(
         protected readonly SunatStateService $sunatState,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns an additional AND clause that restricts to sales with a
@@ -28,9 +27,11 @@ abstract class AbstractSaleReport implements ExportableReportInterface
     protected function receiptFilter(string $salesAlias = 's'): string
     {
         if ($this->sunatState->isReceiptRequired()) {
-            return 'AND EXISTS (SELECT 1 FROM tax_document td '
+            return (
+                'AND EXISTS (SELECT 1 FROM tax_document td '
                 . "WHERE (td.movimiento_id = {$salesAlias}.legacy_movimiento_id OR td.sale_id = {$salesAlias}.id) "
-                . "AND td.document_type IN ('01','03'))";
+                . "AND td.document_type IN ('01','03'))"
+            );
         }
 
         return '';

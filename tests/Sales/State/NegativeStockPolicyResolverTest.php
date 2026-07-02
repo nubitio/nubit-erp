@@ -38,8 +38,8 @@ final class NegativeStockPolicyResolverTest extends TestCase
     public static function stockPolicyMappingProvider(): array
     {
         return [
-            'STRICT'         => [StockPolicy::STRICT],
-            'WARNING_ONLY'   => [StockPolicy::WARNING_ONLY],
+            'STRICT' => [StockPolicy::STRICT],
+            'WARNING_ONLY' => [StockPolicy::WARNING_ONLY],
             'ALLOW_NEGATIVE' => [StockPolicy::ALLOW_NEGATIVE],
         ];
     }
@@ -67,10 +67,10 @@ final class NegativeStockPolicyResolverTest extends TestCase
 
     public function testWarningOnlyPolicyGrantsAdminsOnly(): void
     {
-        $cashier    = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
-        $admin      = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
+        $cashier = new AuthUserDto(userId: 1, username: 'cashier', roles: ['ROLE_USER']);
+        $admin = new AuthUserDto(userId: 2, username: 'admin', roles: ['ROLE_ADMIN']);
         $superAdmin = new AuthUserDto(userId: 3, username: 'superadmin', roles: ['ROLE_SUPER_ADMIN']);
-        $noRoles    = new AuthUserDto(userId: 4, username: 'ghost', roles: []);
+        $noRoles = new AuthUserDto(userId: 4, username: 'ghost', roles: []);
 
         self::assertFalse($this->resolver->canSell(StockPolicy::WARNING_ONLY, $cashier));
         self::assertTrue($this->resolver->canSell(StockPolicy::WARNING_ONLY, $admin));

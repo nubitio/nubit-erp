@@ -29,9 +29,12 @@ final readonly class S3UrlResolver
     private bool $prependBucket;
 
     public function __construct(
-        #[Autowire(env: 'S3_ENDPOINT')] string $endpoint,
-        #[Autowire(env: 'S3_BUCKET_NAME')] private string $bucket,
-        #[Autowire(env: 'S3_PUBLIC_URL')] string $publicUrl = '',
+        #[Autowire(env: 'S3_ENDPOINT')]
+        string $endpoint,
+        #[Autowire(env: 'S3_BUCKET_NAME')]
+        private string $bucket,
+        #[Autowire(env: 'S3_PUBLIC_URL')]
+        string $publicUrl = '',
     ) {
         $publicUrl = trim($publicUrl);
 

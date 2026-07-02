@@ -6,7 +6,7 @@ namespace App\Settings\Enum;
 
 enum PrintMethod: string
 {
-    case WEBUSB      = 'WEBUSB';
+    case WEBUSB = 'WEBUSB';
     case LOCAL_AGENT = 'LOCAL_AGENT';
 
     public static function default(): self

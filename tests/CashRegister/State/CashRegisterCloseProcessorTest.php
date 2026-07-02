@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Put;
-use App\Identity\Security\Security;
-use App\Identity\Dto\AuthUserDto;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
-use App\Identity\Entity\User;
 use App\CashRegister\Repository\CashSessionRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
+use App\Identity\Dto\AuthUserDto;
+use App\Identity\Entity\User;
+use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
@@ -48,8 +48,8 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $cashSession = new CashSession();
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
-        $this->entityManager->method('persist')->willReturnCallback(fn () => null);
-        $this->entityManager->method('flush')->willReturnCallback(fn () => null);
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [
@@ -77,8 +77,8 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $cashSession = new CashSession();
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
-        $this->entityManager->method('persist')->willReturnCallback(fn () => null);
-        $this->entityManager->method('flush')->willReturnCallback(fn () => null);
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
 
         $dto = new CashRegisterCloseDto();
         $dto->expectedAmount = '123.456';

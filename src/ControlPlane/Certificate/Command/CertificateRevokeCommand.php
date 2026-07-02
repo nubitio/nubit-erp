@@ -13,11 +13,15 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:control-plane:certificate:revoke', description: 'Revoke tenant SUNAT certificate metadata and remove it from lycet.')]
+#[AsCommand(
+    name: 'app:control-plane:certificate:revoke',
+    description: 'Revoke tenant SUNAT certificate metadata and remove it from lycet.',
+)]
 final class CertificateRevokeCommand extends Command
 {
-    public function __construct(private readonly CertificateLifecycleServiceInterface $certificates)
-    {
+    public function __construct(
+        private readonly CertificateLifecycleServiceInterface $certificates,
+    ) {
         parent::__construct();
     }
 
@@ -33,7 +37,7 @@ final class CertificateRevokeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $reason = trim((string)($input->getOption('reason') ?? ''));
+        $reason = trim((string) ($input->getOption('reason') ?? ''));
         if ($reason === '') {
             $io->error('--reason is required.');
 
@@ -42,9 +46,9 @@ final class CertificateRevokeCommand extends Command
 
         try {
             $this->certificates->revoke(
-                (string)$input->getArgument('tenant'),
-                (string)$input->getArgument('ruc'),
-                (string)$input->getOption('revoked-by'),
+                (string) $input->getArgument('tenant'),
+                (string) $input->getArgument('ruc'),
+                (string) $input->getOption('revoked-by'),
                 $reason,
             );
         } catch (\Throwable $e) {

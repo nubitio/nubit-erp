@@ -17,8 +17,7 @@ final class KnowledgeIndex implements KnowledgeIndexInterface
     public function __construct(
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -235,7 +234,7 @@ final class KnowledgeIndex implements KnowledgeIndexInterface
             $vector[$token] = $tf * ($idf[$token] ?? 0.0);
         }
 
-        $norm = sqrt(array_sum(array_map(static fn (float $v): float => $v ** 2, $vector))) ?: 1;
+        $norm = sqrt(array_sum(array_map(static fn(float $v): float => $v ** 2, $vector))) ?: 1;
         foreach ($vector as $token => $weight) {
             $vector[$token] = $weight / $norm;
         }
@@ -274,12 +273,50 @@ final class KnowledgeIndex implements KnowledgeIndexInterface
     private function stopWords(): array
     {
         $words = [
-            'the', 'and', 'for', 'with', 'from', 'this', 'that',
-            'para', 'por', 'con', 'los', 'las', 'una', 'uno', 'del',
-            'de', 'la', 'el', 'en', 'un', 'una', 'sin', 'sobre', 'segun',
-            'al', 'a', 'lo', 'sus', 'su', 'mis', 'tus', 'como', 'cuando',
-            'donde', 'que', 'qué', 'cuál', 'cual', 'cuáles', 'cuales',
-            'ser', 'estar', 'haber', 'hay',
+            'the',
+            'and',
+            'for',
+            'with',
+            'from',
+            'this',
+            'that',
+            'para',
+            'por',
+            'con',
+            'los',
+            'las',
+            'una',
+            'uno',
+            'del',
+            'de',
+            'la',
+            'el',
+            'en',
+            'un',
+            'una',
+            'sin',
+            'sobre',
+            'segun',
+            'al',
+            'a',
+            'lo',
+            'sus',
+            'su',
+            'mis',
+            'tus',
+            'como',
+            'cuando',
+            'donde',
+            'que',
+            'qué',
+            'cuál',
+            'cual',
+            'cuáles',
+            'cuales',
+            'ser',
+            'estar',
+            'haber',
+            'hay',
         ];
         return array_fill_keys($words, true);
     }

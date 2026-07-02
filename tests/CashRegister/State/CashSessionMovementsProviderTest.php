@@ -53,10 +53,7 @@ final class CashSessionMovementsProviderTest extends TestCase
             $conn->method('fetchAssociative')->willReturn(false);
         } elseif ($sessionByLegacy) {
             // first call (direct) → false, second (legacy) → found
-            $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-                false,
-                ['id' => 7],
-            );
+            $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(false, ['id' => 7]);
         } else {
             $conn->method('fetchAssociative')->willReturn(['id' => 7]);
         }
@@ -64,15 +61,13 @@ final class CashSessionMovementsProviderTest extends TestCase
         $conn->method('fetchAllAssociative')->willReturn(self::movementRows());
 
         $em = $this->createStub(EntityManagerInterface::class);
-        $em->method('find')->willReturnCallback(
-            static function (string $class, mixed $id) use ($sessionEntity): mixed {
-                if ($class === CashSession::class) {
-                    return $sessionEntity;
-                }
-
-                return null;
+        $em->method('find')->willReturnCallback(static function (string $class, mixed $id) use ($sessionEntity): mixed {
+            if ($class === CashSession::class) {
+                return $sessionEntity;
             }
-        );
+
+            return null;
+        });
 
         return new CashSessionMovementsProvider($conn, $em);
     }

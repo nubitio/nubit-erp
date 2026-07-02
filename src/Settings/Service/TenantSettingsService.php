@@ -23,8 +23,7 @@ readonly class TenantSettingsService
     public function __construct(
         private TenantSettingsRepository $repository,
         private EntityManagerInterface $em,
-    ) {
-    }
+    ) {}
 
     public function get(): TenantSettings
     {

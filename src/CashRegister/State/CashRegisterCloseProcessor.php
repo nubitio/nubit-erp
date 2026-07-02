@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\Dto\CashRegisterCloseResponseDto;
+use App\CashRegister\Entity\CashSession;
+use App\CashRegister\Repository\CashSessionRepository;
+use App\Identity\Entity\User;
+use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\CashRegister\Dto\CashRegisterCloseResponseDto;
-use App\Identity\Security\Security;
-use App\CashRegister\Dto\CashRegisterCloseDto;
-use App\CashRegister\Entity\CashSession;
-use App\Identity\Entity\User;
-use App\CashRegister\Repository\CashSessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -30,8 +30,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private CashSessionRepository $cashSessionRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -113,9 +112,6 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             );
         }
 
-        return new CashRegisterCloseResponseDto(
-            success: true,
-            message: 'Caja cerrada correctamente',
-        );
+        return new CashRegisterCloseResponseDto(success: true, message: 'Caja cerrada correctamente');
     }
 }

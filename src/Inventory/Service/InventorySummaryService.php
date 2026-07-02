@@ -11,8 +11,7 @@ final readonly class InventorySummaryService
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{

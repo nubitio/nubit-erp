@@ -9,8 +9,7 @@ readonly class BillPdfUseCase
     public function __construct(
         private BillCreateUseCase $billCreateUseCase,
         private BillRepositoryInterface $billRepository,
-    ) {
-    }
+    ) {}
 
     public function __invoke(string $taxDocumentId): FileResponse
     {

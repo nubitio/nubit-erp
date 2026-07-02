@@ -22,8 +22,7 @@ final class SaleCurrencyResolverTest extends TestCase
         ?string $usdRate = null,
     ): SaleCurrencyResolver {
         $tenantSettings = $this->createStub(TenantSettingsService::class);
-        $tenantSettings->method('getDefaultCurrency')
-            ->willReturn(DefaultCurrency::from($defaultCurrency));
+        $tenantSettings->method('getDefaultCurrency')->willReturn(DefaultCurrency::from($defaultCurrency));
 
         $exchangeRateRepo = $this->createStub(ExchangeRateRepository::class);
         if ($usdRate !== null) {
@@ -39,12 +38,12 @@ final class SaleCurrencyResolverTest extends TestCase
     public function testResolveForSaleIdFallsBackToLegacyMovimientoId(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects($this->once())
+        $connection
+            ->expects($this->once())
             ->method('fetchAssociative')
-            ->with(
-                $this->callback(static fn (string $sql): bool => str_contains($sql, 'legacy_movimiento_id')),
-                ['id' => 'legacy-123']
-            )
+            ->with($this->callback(static fn(string $sql): bool => str_contains($sql, 'legacy_movimiento_id')), [
+                'id' => 'legacy-123',
+            ])
             ->willReturn([
                 'currency' => 'USD',
                 'exchange_rate' => '3.9',
@@ -60,11 +59,9 @@ final class SaleCurrencyResolverTest extends TestCase
     public function testResolveForWriteUsesDefaultsWhenSnapshotMissing(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects($this->once())
-            ->method('fetchAssociative')
-            ->willReturn(false);
+        $connection->expects($this->once())->method('fetchAssociative')->willReturn(false);
 
-        $sale = (new SaleRecord())->setId('sale-1');
+        $sale = new SaleRecord()->setId('sale-1');
 
         $resolver = $this->makeResolver($connection, 'PEN');
         $result = $resolver->resolveForWrite($sale);
@@ -76,7 +73,8 @@ final class SaleCurrencyResolverTest extends TestCase
     public function testResolveForSaleIdUsesDefaultsWhenSnapshotMissing(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects($this->once())
+        $connection
+            ->expects($this->once())
             ->method('fetchAssociative')
             ->with($this->anything(), ['id' => 'missing-sale'])
             ->willReturn(false);
@@ -91,7 +89,8 @@ final class SaleCurrencyResolverTest extends TestCase
     public function testResolveForSaleIdUsesConfiguredUsdFallbackWhenSnapshotRateInvalid(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects($this->once())
+        $connection
+            ->expects($this->once())
             ->method('fetchAssociative')
             ->willReturn([
                 'currency' => 'USD',

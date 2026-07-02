@@ -8,11 +8,11 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use Nubit\ApiPlatform\Attribute\EmbeddedLines;
 use App\Billing\Repository\TaxDocumentLineRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\EmbeddedLines;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[EmbeddedLines(
@@ -24,10 +24,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     uriTemplate: '/tax-documents/{id}/lines.{_format}',
     operations: [new GetCollection()],
     uriVariables: [
-        'id' => new Link(
-            fromProperty: 'lines',
-            fromClass: TaxDocument::class,
-        ),
+        'id' => new Link(fromProperty: 'lines', fromClass: TaxDocument::class),
     ],
     normalizationContext: ['groups' => ['tax_document_line:read']],
     paginationEnabled: false,
@@ -50,127 +47,126 @@ class TaxDocumentLine
         name: 'tax_document_id',
         referencedColumnName: 'tax_document_id',
         nullable: false,
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
     )]
     private TaxDocument $taxDocument;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.line_number.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.line_number.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'line_number', type: Types::INTEGER)]
     private int $lineNumber;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.product_id.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.product_id.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'product_id', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productId = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.product_code.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.product_code.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'product_code', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productCode = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.product_name.label',
-        openapiContext: ['x-crud' => ['order' => 1, 'readonly' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.product_name.label', openapiContext: ['x-crud' => [
+        'order' => 1,
+        'readonly' => true,
+    ]])]
     #[ORM\Column(name: 'product_name', type: Types::STRING, length: 255)]
     private string $productName;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.product_uom.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.product_uom.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'product_uom', type: Types::STRING, length: 20, nullable: true)]
     private ?string $productUom = null;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.quantity.label',
-        openapiContext: ['x-crud' => ['order' => 2]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.quantity.label', openapiContext: ['x-crud' => ['order' => 2]])]
     #[ORM\Column(name: 'quantity', type: Types::DECIMAL, precision: 10, scale: 6, options: ['default' => 0])]
     private string $quantity = '0.000000';
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]
-    #[ApiProperty(
-        description: 'tax_document_line.unit_price.label',
-        openapiContext: ['x-crud' => ['order' => 3, 'format' => 'currency', 'readonly' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.unit_price.label', openapiContext: ['x-crud' => [
+        'order' => 3,
+        'format' => 'currency',
+        'readonly' => true,
+    ]])]
     #[ORM\Column(name: 'unit_price', type: Types::DECIMAL, precision: 12, scale: 6, options: ['default' => 0])]
     private string $unitPrice = '0.000000';
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.unit_value.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.unit_value.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'unit_value', type: Types::DECIMAL, precision: 12, scale: 6, nullable: true)]
     private ?string $unitValue = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.discount_amount.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.discount_amount.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $discountAmount = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.taxed_amount.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.taxed_amount.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'taxed_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxedAmount = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.tax_amount.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.tax_amount.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'tax_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxAmount = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.tax_percentage.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.tax_percentage.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'tax_percentage', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $taxPercentage = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.tax_type.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.tax_type.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'tax_type', type: Types::STRING, length: 4, nullable: true)]
     private ?string $taxType = null;
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.total.label',
-        openapiContext: ['x-crud' => ['order' => 4, 'format' => 'currency', 'readonly' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.total.label', openapiContext: ['x-crud' => [
+        'order' => 4,
+        'format' => 'currency',
+        'readonly' => true,
+    ]])]
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => 0])]
     private string $total = '0.00';
 
     #[Groups(['tax_document_line:read'])]
-    #[ApiProperty(
-        description: 'tax_document_line.created_at.label',
-        openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]],
-    )]
+    #[ApiProperty(description: 'tax_document_line.created_at.label', openapiContext: ['x-crud' => [
+        'showInForm' => false,
+        'hideInGrid' => true,
+    ]])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTimeImmutable $createdAt;
 

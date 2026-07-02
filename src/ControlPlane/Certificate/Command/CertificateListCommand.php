@@ -15,8 +15,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'app:control-plane:certificate:list', description: 'List tenant SUNAT certificates.')]
 final class CertificateListCommand extends Command
 {
-    public function __construct(private readonly CertificateLifecycleServiceInterface $certificates)
-    {
+    public function __construct(
+        private readonly CertificateLifecycleServiceInterface $certificates,
+    ) {
         parent::__construct();
     }
 
@@ -29,13 +30,13 @@ final class CertificateListCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         try {
-            $rows = array_map(static fn ($cert): array => [
+            $rows = array_map(static fn($cert): array => [
                 $cert->id,
                 $cert->ruc,
                 $cert->status->value,
                 $cert->expiresAt->format('Y-m-d'),
                 substr($cert->fingerprintSha256, 0, 12),
-            ], $this->certificates->list((string)$input->getArgument('tenant')));
+            ], $this->certificates->list((string) $input->getArgument('tenant')));
         } catch (\Throwable $e) {
             $io->error($e->getMessage());
 

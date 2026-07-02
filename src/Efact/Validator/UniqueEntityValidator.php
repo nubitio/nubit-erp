@@ -14,9 +14,8 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 final class UniqueEntityValidator extends ConstraintValidator
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
-    ) {
-    }
+        private readonly EntityManagerInterface $entityManager,
+    ) {}
 
     public function validate(mixed $value, Constraint $constraint): void
     {
@@ -29,14 +28,15 @@ final class UniqueEntityValidator extends ConstraintValidator
         $entityClass = $value::class;
 
         $qb = $this->entityManager->createQueryBuilder();
-        $qb->select('e')
-            ->from($entityClass, 'e');
+        $qb->select('e')->from($entityClass, 'e');
 
         $propertyAccessor = new PropertyAccessor();
 
         foreach ($fields as $field) {
-            $qb->andWhere(sprintf('e.%s = :%s', $field, $field))
-                ->setParameter($field, $propertyAccessor->getValue($value, $field));
+            $qb->andWhere(sprintf('e.%s = :%s', $field, $field))->setParameter($field, $propertyAccessor->getValue(
+                $value,
+                $field,
+            ));
         }
 
         if (is_subclass_of($entityClass, AuditableEntity::class)) {
@@ -52,8 +52,7 @@ final class UniqueEntityValidator extends ConstraintValidator
             $identifierField = $metadata->getSingleIdentifierFieldName();
             $identifierValue = reset($identifierValues);
 
-            $qb->andWhere(sprintf('e.%s != :entityId', $identifierField))
-                ->setParameter('entityId', $identifierValue);
+            $qb->andWhere(sprintf('e.%s != :entityId', $identifierField))->setParameter('entityId', $identifierValue);
         }
 
         $qb->setMaxResults(1);
@@ -61,9 +60,7 @@ final class UniqueEntityValidator extends ConstraintValidator
         $result = $qb->getQuery()->getOneOrNullResult();
 
         if ($result !== null) {
-            $this->context->buildViolation($constraint->message)
-                ->atPath($fields[0])
-                ->addViolation();
+            $this->context->buildViolation($constraint->message)->atPath($fields[0])->addViolation();
         }
     }
 }

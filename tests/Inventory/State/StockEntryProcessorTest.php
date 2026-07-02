@@ -6,12 +6,12 @@ namespace App\Tests\Inventory\State;
 
 use App\Catalog\Entity\Product;
 use App\Identity\Entity\User;
+use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockEntryType;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
-use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Service\UnitConversionService;
 use App\Inventory\Entity\LogisticOperation;
 use App\Inventory\Entity\StockEntry;
@@ -81,10 +81,10 @@ final class StockEntryProcessorTest extends TestCase
 
         $this->createSchema();
 
-        $this->dispatcher     = $this->createMock(EventDispatcherInterface::class);
-        $this->em             = $this->createMock(EntityManagerInterface::class);
-        $this->security       = $this->createMock(Security::class);
-        $this->policy         = $this->createMock(StockValidationPolicyInterface::class);
+        $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->security = $this->createMock(Security::class);
+        $this->policy = $this->createMock(StockValidationPolicyInterface::class);
 
         $this->unitConversion = new UnitConversionService($this->conn);
 
@@ -96,12 +96,14 @@ final class StockEntryProcessorTest extends TestCase
         );
 
         // wrapInTransaction: just run the callback
-        $this->em->method('wrapInTransaction')
-            ->willReturnCallback(static function (callable $cb): void { $cb(); });
+        $this->em
+            ->method('wrapInTransaction')
+            ->willReturnCallback(static function (callable $cb): void {
+                $cb();
+            });
 
         // persist + flush: assign IDs via reflection, no real ORM
-        $this->em->method('persist')
-            ->willReturnCallback($this->assignIds(...));
+        $this->em->method('persist')->willReturnCallback($this->assignIds(...));
 
         $this->em->method('flush');
 
@@ -110,8 +112,7 @@ final class StockEntryProcessorTest extends TestCase
         $this->security->method('getUser')->willReturn($user);
 
         // Policy: allow by default
-        $this->policy->method('validateSale')
-            ->willReturn(StockValidationResult::allowed());
+        $this->policy->method('validateSale')->willReturn(StockValidationResult::allowed());
     }
 
     protected function tearDown(): void
@@ -184,8 +185,7 @@ final class StockEntryProcessorTest extends TestCase
     public function testIssueThrowsWhenPolicyBlocksAndStockInsufficient(): void
     {
         $blockingPolicy = $this->createMock(StockValidationPolicyInterface::class);
-        $blockingPolicy->method('validateSale')
-            ->willReturn(StockValidationResult::blocked('stock insuficiente'));
+        $blockingPolicy->method('validateSale')->willReturn(StockValidationResult::blocked('stock insuficiente'));
 
         $entry = $this->makeEntry(StockEntryType::ISSUE, 'wh-1');
         $entry->addItem($this->makeItem('prod-a', '999.000000'));
@@ -246,14 +246,18 @@ final class StockEntryProcessorTest extends TestCase
         $this->seedStock('wh-src', 'prod-a', '30.000000');
 
         $blockingPolicy = $this->createMock(StockValidationPolicyInterface::class);
-        $blockingPolicy->method('validateSale')
-            ->willReturnCallback(
-                static function (Product $product, string $warehouseId, string $requestedQty, string $onHand): StockValidationResult {
-                    return bccomp($requestedQty, $onHand, 6) === 1
-                        ? StockValidationResult::blocked('stock insuficiente')
-                        : StockValidationResult::allowed();
-                }
-            );
+        $blockingPolicy
+            ->method('validateSale')
+            ->willReturnCallback(static function (
+                Product $product,
+                string $warehouseId,
+                string $requestedQty,
+                string $onHand,
+            ): StockValidationResult {
+                return bccomp($requestedQty, $onHand, 6) === 1
+                    ? StockValidationResult::blocked('stock insuficiente')
+                    : StockValidationResult::allowed();
+            });
 
         $entry = $this->makeTransferEntry('wh-src', 'wh-dst');
         $entry->addItem($this->makeItem('prod-a', '20.000000'));
@@ -272,7 +276,7 @@ final class StockEntryProcessorTest extends TestCase
         $this->seedStock('wh-1', 'prod-a', '50.000000');
 
         $entry = $this->makeAdjustment('wh-1', 'COUNT_CORRECTION');
-        $item  = $this->makeItem('prod-a', '47.000000');
+        $item = $this->makeItem('prod-a', '47.000000');
         $entry->addItem($item);
 
         $this->processor()->process($entry, $this->stubOperation());
@@ -361,7 +365,7 @@ final class StockEntryProcessorTest extends TestCase
 
         $this->processor()->process($entry, $this->stubOperation());
 
-        $count = $this->conn->fetchOne("SELECT COUNT(*) FROM stock_movements");
+        $count = $this->conn->fetchOne('SELECT COUNT(*) FROM stock_movements');
         self::assertSame(0, (int) $count);
     }
 
@@ -458,14 +462,13 @@ final class StockEntryProcessorTest extends TestCase
         $item->setQty($qty);
 
         // seed product_units for base conversion
-        $exists = $this->conn->fetchOne(
-            'SELECT COUNT(*) FROM product_units WHERE product_id = ? AND unit_id = 1',
-            [$productId],
-        );
+        $exists = $this->conn->fetchOne('SELECT COUNT(*) FROM product_units WHERE product_id = ? AND unit_id = 1', [
+            $productId,
+        ]);
         if (!(int) $exists) {
             $this->conn->insert('product_units', [
-                'product_id'         => $productId,
-                'unit_id'            => 1,
+                'product_id' => $productId,
+                'unit_id' => 1,
                 'conversion_to_base' => '1.000000',
             ]);
         }
@@ -475,34 +478,40 @@ final class StockEntryProcessorTest extends TestCase
 
     private function seedStock(string $warehouseId, string $productId, string $qty): void
     {
-        $exists = $this->conn->fetchOne(
-            'SELECT COUNT(*) FROM stock_items WHERE warehouse_id = ? AND product_id = ?',
-            [$warehouseId, $productId],
-        );
+        $exists = $this->conn->fetchOne('SELECT COUNT(*) FROM stock_items WHERE warehouse_id = ? AND product_id = ?', [
+            $warehouseId,
+            $productId,
+        ]);
 
         if ((int) $exists) {
-            $this->conn->update('stock_items', ['qty_on_hand' => $qty], [
-                'warehouse_id' => $warehouseId,
-                'product_id'   => $productId,
-            ]);
+            $this->conn->update(
+                'stock_items',
+                ['qty_on_hand' => $qty],
+                [
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                ],
+            );
         } else {
             $this->conn->insert('stock_items', [
                 'warehouse_id' => $warehouseId,
-                'product_id'   => $productId,
-                'qty_on_hand'  => $qty,
+                'product_id' => $productId,
+                'qty_on_hand' => $qty,
                 'qty_reserved' => '0.000000',
-                'updated_at'   => date('Y-m-d H:i:s'),
-                'version'      => 0,
+                'updated_at' => date('Y-m-d H:i:s'),
+                'version' => 0,
             ]);
         }
     }
 
     private function getOnHand(string $warehouseId, string $productId): string
     {
-        return (string) ($this->conn->fetchOne(
-            'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = ? AND product_id = ?',
-            [$warehouseId, $productId],
-        ) ?: '0');
+        return (string) (
+            $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = ? AND product_id = ?', [
+                $warehouseId,
+                $productId,
+            ]) ?: '0'
+        );
     }
 
     private function assertOnHand(string $warehouseId, string $productId, float $expected): void
@@ -513,19 +522,18 @@ final class StockEntryProcessorTest extends TestCase
 
     private function assertMovementType(string $productId, StockMovementType $expected): void
     {
-        $type = $this->conn->fetchOne(
-            'SELECT movement_type FROM stock_movements WHERE product_id = ? LIMIT 1',
-            [$productId],
-        );
+        $type = $this->conn->fetchOne('SELECT movement_type FROM stock_movements WHERE product_id = ? LIMIT 1', [
+            $productId,
+        ]);
         self::assertSame($expected->value, $type, "Expected movement type {$expected->value} for product {$productId}");
     }
 
     private function assertQtyDeltaInLedger(string $warehouseId, string $productId, string $expected): void
     {
-        $delta = $this->conn->fetchOne(
-            'SELECT SUM(qty_delta_base) FROM stock_movements WHERE warehouse_id = ? AND product_id = ?',
-            [$warehouseId, $productId],
-        );
+        $delta = $this->conn->fetchOne('SELECT SUM(qty_delta_base) FROM stock_movements WHERE warehouse_id = ? AND product_id = ?', [
+            $warehouseId,
+            $productId,
+        ]);
         self::assertEqualsWithDelta((float) $expected, (float) $delta, 0.000001);
     }
 
@@ -551,57 +559,57 @@ final class StockEntryProcessorTest extends TestCase
     private function createSchema(): void
     {
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_movements (
-                id              VARCHAR(36)   NOT NULL,
-                warehouse_id    VARCHAR(36)   NOT NULL,
-                product_id      VARCHAR(36)   NOT NULL,
-                occurred_at     DATETIME      NOT NULL,
-                movement_type   VARCHAR(32)   NOT NULL,
-                quantity_delta  DECIMAL(18,6) NOT NULL,
-                qty_delta_base  DECIMAL(18,6) NOT NULL,
-                qty_original    DECIMAL(18,6) NOT NULL,
-                unit_id         INTEGER       DEFAULT NULL,
-                source_type     VARCHAR(64)   NOT NULL,
-                source_id       VARCHAR(255)  NOT NULL,
-                note            TEXT          DEFAULT NULL,
-                idempotency_key VARCHAR(64)   NOT NULL UNIQUE,
-                sync_status     VARCHAR(20)   NOT NULL DEFAULT 'SYNCED',
-                synced_at       DATETIME      DEFAULT NULL,
-                version_no      INTEGER       NOT NULL DEFAULT 1,
-                last_modified_at DATETIME     NOT NULL,
-                created_at      DATETIME      NOT NULL,
-                PRIMARY KEY (id)
-            )
-        SQL);
+                CREATE TABLE stock_movements (
+                    id              VARCHAR(36)   NOT NULL,
+                    warehouse_id    VARCHAR(36)   NOT NULL,
+                    product_id      VARCHAR(36)   NOT NULL,
+                    occurred_at     DATETIME      NOT NULL,
+                    movement_type   VARCHAR(32)   NOT NULL,
+                    quantity_delta  DECIMAL(18,6) NOT NULL,
+                    qty_delta_base  DECIMAL(18,6) NOT NULL,
+                    qty_original    DECIMAL(18,6) NOT NULL,
+                    unit_id         INTEGER       DEFAULT NULL,
+                    source_type     VARCHAR(64)   NOT NULL,
+                    source_id       VARCHAR(255)  NOT NULL,
+                    note            TEXT          DEFAULT NULL,
+                    idempotency_key VARCHAR(64)   NOT NULL UNIQUE,
+                    sync_status     VARCHAR(20)   NOT NULL DEFAULT 'SYNCED',
+                    synced_at       DATETIME      DEFAULT NULL,
+                    version_no      INTEGER       NOT NULL DEFAULT 1,
+                    last_modified_at DATETIME     NOT NULL,
+                    created_at      DATETIME      NOT NULL,
+                    PRIMARY KEY (id)
+                )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_items (
-                warehouse_id VARCHAR(36)   NOT NULL,
-                product_id   VARCHAR(36)   NOT NULL,
-                qty_on_hand  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_movement_id VARCHAR(36) DEFAULT NULL,
-                version      INTEGER       NOT NULL DEFAULT 0,
-                PRIMARY KEY (warehouse_id, product_id)
-            )
-        SQL);
+                CREATE TABLE stock_items (
+                    warehouse_id VARCHAR(36)   NOT NULL,
+                    product_id   VARCHAR(36)   NOT NULL,
+                    qty_on_hand  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_movement_id VARCHAR(36) DEFAULT NULL,
+                    version      INTEGER       NOT NULL DEFAULT 0,
+                    PRIMARY KEY (warehouse_id, product_id)
+                )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE product_units (
-                product_id          VARCHAR(36)   NOT NULL,
-                unit_id             INTEGER       NOT NULL,
-                conversion_to_base  DECIMAL(18,6) NOT NULL,
-                PRIMARY KEY (product_id, unit_id)
-            )
-        SQL);
+                CREATE TABLE product_units (
+                    product_id          VARCHAR(36)   NOT NULL,
+                    unit_id             INTEGER       NOT NULL,
+                    conversion_to_base  DECIMAL(18,6) NOT NULL,
+                    PRIMARY KEY (product_id, unit_id)
+                )
+            SQL);
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_balances (
-                warehouse_id VARCHAR(36)   NOT NULL,
-                product_id   VARCHAR(36)   NOT NULL,
-                on_hand_qty  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                PRIMARY KEY (warehouse_id, product_id)
-            )
-        SQL);
+                CREATE TABLE stock_balances (
+                    warehouse_id VARCHAR(36)   NOT NULL,
+                    product_id   VARCHAR(36)   NOT NULL,
+                    on_hand_qty  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    PRIMARY KEY (warehouse_id, product_id)
+                )
+            SQL);
     }
 }

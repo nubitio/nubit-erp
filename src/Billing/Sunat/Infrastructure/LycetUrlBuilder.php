@@ -24,7 +24,7 @@ trait LycetUrlBuilder
     private function lycetUrl(string $path, array $extraParams = []): string
     {
         $base = rtrim($this->apiBaseUrl, '/');
-        $url  = "{$base}/api/v1/{$path}?token={$this->apiToken}";
+        $url = "{$base}/api/v1/{$path}?token={$this->apiToken}";
 
         if ($extraParams !== []) {
             $url .= '&' . http_build_query($extraParams);
@@ -41,7 +41,7 @@ trait LycetUrlBuilder
     private function lycetUrlSafe(string $path, array $extraParams = []): string
     {
         $base = rtrim($this->apiBaseUrl, '/');
-        $url  = "{$base}/api/v1/{$path}?token=***";
+        $url = "{$base}/api/v1/{$path}?token=***";
 
         if ($extraParams !== []) {
             $url .= '&' . http_build_query($extraParams);
@@ -68,11 +68,7 @@ trait LycetUrlBuilder
             throw $e;
         }
 
-        $masked = str_replace(
-            'token=' . $this->apiToken,
-            'token=***',
-            $message,
-        );
+        $masked = str_replace('token=' . $this->apiToken, 'token=***', $message);
 
         throw new \RuntimeException($masked, $e->getCode(), $e);
     }

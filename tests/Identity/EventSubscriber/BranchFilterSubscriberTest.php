@@ -7,10 +7,10 @@ namespace App\Tests\Identity\EventSubscriber;
 use App\Identity\EventSubscriber\BranchFilterSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\FilterCollection;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -31,8 +31,10 @@ interface FilterParameterSetter
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class FilterStub extends \Doctrine\ORM\Query\Filter\SQLFilter
 {
-    public function addFilterConstraint(\Doctrine\ORM\Mapping\ClassMetadata $targetEntity, string $targetTableAlias): string
-    {
+    public function addFilterConstraint(
+        \Doctrine\ORM\Mapping\ClassMetadata $targetEntity,
+        string $targetTableAlias,
+    ): string {
         return '';
     }
 
@@ -43,7 +45,7 @@ final class FilterStub extends \Doctrine\ORM\Query\Filter\SQLFilter
     public static function createWithMockEm(\PHPUnit\Framework\MockObject\MockObject $mockEm): self
     {
         /** @var self $stub */
-        $stub = (new \ReflectionClass(self::class))->newInstanceWithoutConstructor();
+        $stub = new \ReflectionClass(self::class)->newInstanceWithoutConstructor();
 
         // Inject the mock EM into the private readonly 'em' property of SQLFilter
         $emProp = new \ReflectionProperty(\Doctrine\ORM\Query\Filter\SQLFilter::class, 'em');
@@ -71,8 +73,7 @@ final class TestableBranchFilterSubscriber extends BranchFilterSubscriber
         // We pass a bare BranchContextService instance (without constructor) to satisfy
         // the parent constructor's type hint. The parent constructor stores it as readonly,
         // but we override onKernelRequest so the stored value is never used.
-        $branchContextService = (new \ReflectionClass(\App\Identity\Auth\BranchContextService::class))
-            ->newInstanceWithoutConstructor();
+        $branchContextService = new \ReflectionClass(\App\Identity\Auth\BranchContextService::class)->newInstanceWithoutConstructor();
 
         parent::__construct($entityManager, $branchContextService);
     }

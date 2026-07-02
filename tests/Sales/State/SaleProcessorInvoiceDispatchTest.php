@@ -6,26 +6,26 @@ namespace App\Tests\Sales\State;
 
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
 use App\Identity\Auth\BranchContextService;
-use App\Settings\Service\TenantSettingsService;
 use App\Identity\Dto\AuthUserDto;
+use App\Identity\Security\Security;
 use App\Organization\Entity\Branch;
-use App\Sales\Entity\SaleRecord;
 use App\Organization\Repository\BranchRepository;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
-use App\Sales\Port\InvoiceCreatorInterface;
-use App\Sales\Service\SalePaymentPlanService;
-use App\Sales\State\SaleUtils;
-use App\Sales\State\SalesWriteGateway;
-use Doctrine\DBAL\Connection;
 use App\Sales\State\SaleProcessor;
+use App\Sales\State\SalesWriteGateway;
+use App\Sales\State\SaleUtils;
+use App\Settings\Service\TenantSettingsService;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -130,7 +130,9 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
 
         // Resolver throws if branch is null — inject a branch with an id.
         $branch = new Branch();
-        (new \ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new \ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
@@ -153,14 +155,10 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     private function buildProcessor(): SaleProcessor
     {
         // connectedUser() is called to set createdBy on the new sale.
-        $this->security
-            ->method('connectedUser')
-            ->willReturn(new AuthUserDto(userId: 1, username: 'test'));
+        $this->security->method('connectedUser')->willReturn(new AuthUserDto(userId: 1, username: 'test'));
 
         // persistProcessor returns the Sale entity unchanged.
-        $this->persistProcessor
-            ->method('process')
-            ->willReturnArgument(0);
+        $this->persistProcessor->method('process')->willReturnArgument(0);
 
         // AUTO_INVOICE=false; emitInvoice flag on the entity drives the path.
         // REQUIRE_CASH_REGISTER=false so no cash-shift check.
@@ -223,7 +221,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     private function injectNoOpStub(
         ReflectionClass $processorReflection,
         SaleProcessor $target,
-        string $propertyName
+        string $propertyName,
     ): void {
         $property = $processorReflection->getProperty($propertyName);
         $type = $property->getType();
@@ -252,10 +250,8 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
      *
      * @param ReflectionClass<SaleProcessor> $processorReflection
      */
-    private function injectCashSessionResolverStub(
-        ReflectionClass $processorReflection,
-        SaleProcessor $target
-    ): void {
+    private function injectCashSessionResolverStub(ReflectionClass $processorReflection, SaleProcessor $target): void
+    {
         $resolverRc = new ReflectionClass(CashSessionResolver::class);
         /** @var CashSessionResolver $resolver */
         $resolver = $resolverRc->newInstanceWithoutConstructor();
@@ -278,10 +274,8 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
      *
      * @param ReflectionClass<SaleProcessor> $processorReflection
      */
-    private function injectBranchContextStub(
-        ReflectionClass $processorReflection,
-        SaleProcessor $target
-    ): void {
+    private function injectBranchContextStub(ReflectionClass $processorReflection, SaleProcessor $target): void
+    {
         /** @var SecurityComponent&MockObject $securityComponentMock */
         $securityComponentMock = $this->createStub(SecurityComponent::class);
         $securityComponentMock->method('getToken')->willReturn(null);
@@ -326,7 +320,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                     }
                 }
             }
-            if (!($type instanceof ReflectionNamedType) || $type->allowsNull()) {
+            if (!$type instanceof ReflectionNamedType || $type->allowsNull()) {
                 $prop->setValue($stub, null);
             }
         }

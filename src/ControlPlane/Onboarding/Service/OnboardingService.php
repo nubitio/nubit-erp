@@ -161,7 +161,7 @@ final readonly class OnboardingService
              WHERE p.public_token = ? AND p.account_id = ?
              LIMIT 1',
             [$token, $accountId],
-            [ParameterType::STRING, ParameterType::INTEGER]
+            [ParameterType::STRING, ParameterType::INTEGER],
         );
 
         if ($row === false) {
@@ -199,31 +199,35 @@ final readonly class OnboardingService
         string $adminPassword = '',
     ): int {
         $conn = $this->cp();
-        $conn->insert('tenant_provisions', [
-            'tenant_id' => null,
-            'account_id' => $accountId,
-            'tenant_name' => $tenantName,
-            'domain' => $domain,
-            'plan' => $plan,
-            'admin_user' => 'admin',
-            'admin_password' => $adminPassword !== '' ? $this->secretCipher->encrypt($adminPassword) : null,
-            'target_container' => '',
-            'status' => 'dispatched',
-            'public_token' => $token,
-            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-        ], [
-            ParameterType::NULL,
-            ParameterType::INTEGER,
-            ParameterType::STRING,
-            ParameterType::STRING,
-            ParameterType::STRING,
-            ParameterType::STRING,
-            $adminPassword !== '' ? ParameterType::STRING : ParameterType::NULL,
-            ParameterType::STRING,
-            ParameterType::STRING,
-            ParameterType::STRING,
-            ParameterType::STRING,
-        ]);
+        $conn->insert(
+            'tenant_provisions',
+            [
+                'tenant_id' => null,
+                'account_id' => $accountId,
+                'tenant_name' => $tenantName,
+                'domain' => $domain,
+                'plan' => $plan,
+                'admin_user' => 'admin',
+                'admin_password' => $adminPassword !== '' ? $this->secretCipher->encrypt($adminPassword) : null,
+                'target_container' => '',
+                'status' => 'dispatched',
+                'public_token' => $token,
+                'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+            ],
+            [
+                ParameterType::NULL,
+                ParameterType::INTEGER,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                $adminPassword !== '' ? ParameterType::STRING : ParameterType::NULL,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+            ],
+        );
 
         return (int) $conn->lastInsertId();
     }

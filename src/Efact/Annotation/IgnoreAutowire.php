@@ -7,6 +7,4 @@ namespace App\Efact\Annotation;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-final class IgnoreAutowire
-{
-}
+final class IgnoreAutowire {}

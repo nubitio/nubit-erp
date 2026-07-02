@@ -18,7 +18,7 @@ final class SaleByProductReport extends AbstractSaleReport
     {
         return [
             'issuedDate' => 's.issued_date',
-            'status'     => 's.status',
+            'status' => 's.status',
         ];
     }
 
@@ -27,37 +27,37 @@ final class SaleByProductReport extends AbstractSaleReport
         $receiptFilter = $this->receiptFilter('s');
 
         return <<<SQL
-select
-    coalesce(p.codigo, '-') as product_code,
-    coalesce(p.descripcion, 'Sin producto') as product_name,
-    c.descripcion as category,
-    sum(si.qty) as quantity,
-    round(sum(si.net_amount) / nullif(sum(si.qty),0), 2) as average_unit_price,
-    sum(si.net_amount) as total
-from sales s
-    inner join sale_items si on si.sale_id = s.id
-    left join producto p on p.producto_id = si.product_id
-    left join categoria c on c.categoria_id = p.categoria_id
-where
-    s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-    and s.issued_date between :date_from and :date_to
-    and s.branch_id = :local_id
-    {$receiptFilter}
-    {$gridFilter}
-group by product_code, product_name, category
-order by total desc
-SQL;
+            select
+                coalesce(p.codigo, '-') as product_code,
+                coalesce(p.descripcion, 'Sin producto') as product_name,
+                c.descripcion as category,
+                sum(si.qty) as quantity,
+                round(sum(si.net_amount) / nullif(sum(si.qty),0), 2) as average_unit_price,
+                sum(si.net_amount) as total
+            from sales s
+                inner join sale_items si on si.sale_id = s.id
+                left join producto p on p.producto_id = si.product_id
+                left join categoria c on c.categoria_id = p.categoria_id
+            where
+                s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                and s.issued_date between :date_from and :date_to
+                and s.branch_id = :local_id
+                {$receiptFilter}
+                {$gridFilter}
+            group by product_code, product_name, category
+            order by total desc
+            SQL;
     }
 
     public function columns(): array
     {
         return [
-            'product_code'       => 'Código',
-            'product_name'       => 'Producto',
-            'category'           => 'Categoría',
-            'quantity'           => 'Cantidad',
+            'product_code' => 'Código',
+            'product_name' => 'Producto',
+            'category' => 'Categoría',
+            'quantity' => 'Cantidad',
             'average_unit_price' => 'Precio unit. prom.',
-            'total'              => 'Total',
+            'total' => 'Total',
         ];
     }
 

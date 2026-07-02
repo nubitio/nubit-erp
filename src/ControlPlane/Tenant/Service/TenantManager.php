@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -82,8 +82,8 @@ readonly class TenantManager implements TenantRegistryInterface
      */
     public function addTenant(array $tenant): void
     {
-        $name = trim((string)($tenant['name'] ?? ''));
-        $connection = trim((string)($tenant['connection'] ?? ''));
+        $name = trim((string) ($tenant['name'] ?? ''));
+        $connection = trim((string) ($tenant['connection'] ?? ''));
 
         if ('' === $name || '' === $connection) {
             throw new InvalidArgumentException('Tenant name and connection are required');
@@ -110,7 +110,7 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         if ($tenant !== null) {
-            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantCache((string) ($tenant['name'] ?? ''));
             $this->invalidateTenantDomainCaches($id);
         }
     }
@@ -120,8 +120,8 @@ readonly class TenantManager implements TenantRegistryInterface
      */
     public function updateTenant(int $id, array $tenant): void
     {
-        $name = trim((string)($tenant['name'] ?? ''));
-        $connection = trim((string)($tenant['connection'] ?? ''));
+        $name = trim((string) ($tenant['name'] ?? ''));
+        $connection = trim((string) ($tenant['connection'] ?? ''));
 
         if ('' === $name || '' === $connection) {
             throw new InvalidArgumentException('Tenant name and connection are required');
@@ -136,7 +136,7 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         if ($oldTenant !== null) {
-            $this->invalidateTenantCache((string)($oldTenant['name'] ?? ''));
+            $this->invalidateTenantCache((string) ($oldTenant['name'] ?? ''));
         }
         $this->invalidateTenantCache($name);
         $this->invalidateTenantDomainCaches($id);
@@ -151,7 +151,7 @@ readonly class TenantManager implements TenantRegistryInterface
             return $this->getTenantFromDatabase($id);
         }
 
-        return array_find($this->readTenantsFromYaml(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
+        return array_find($this->readTenantsFromYaml(), fn($tenant) => (int) ($tenant['id'] ?? 0) === $id);
     }
 
     /**
@@ -173,7 +173,7 @@ readonly class TenantManager implements TenantRegistryInterface
                 return $this->getTenantByNameFromDatabase($name);
             }
 
-            return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+            return array_find($this->readTenantsFromYaml(), fn($tenant) => ($tenant['name'] ?? '') === $name);
         });
     }
 
@@ -210,10 +210,9 @@ readonly class TenantManager implements TenantRegistryInterface
         $this->requireControlPlaneReady('list tenant domains');
 
         /** @var array<int, array<string, mixed>> $rows */
-        $rows = $conn->fetchAllAssociative(
-            'SELECT id, domain, is_primary FROM tenant_domains WHERE tenant_id = ? ORDER BY is_primary DESC, id ASC',
-            [$tenantId],
-        );
+        $rows = $conn->fetchAllAssociative('SELECT id, domain, is_primary FROM tenant_domains WHERE tenant_id = ? ORDER BY is_primary DESC, id ASC', [
+            $tenantId,
+        ]);
 
         return $rows;
     }
@@ -261,7 +260,7 @@ readonly class TenantManager implements TenantRegistryInterface
         $conn->delete('tenant_domains', ['id' => $domainId]);
 
         if ($row !== false) {
-            $this->cache->delete('tenant_domain_' . hash('xxh3', (string)$row['domain']));
+            $this->cache->delete('tenant_domain_' . hash('xxh3', (string) $row['domain']));
         }
     }
 
@@ -287,16 +286,15 @@ readonly class TenantManager implements TenantRegistryInterface
         $conn = $this->getControlPlaneConnection();
         $this->requireControlPlaneReady('get primary tenant domain');
 
-        $domain = $conn->fetchOne(
-            'SELECT domain FROM tenant_domains WHERE tenant_id = ? AND is_primary = 1 ORDER BY id ASC LIMIT 1',
-            [$tenantId],
-        );
+        $domain = $conn->fetchOne('SELECT domain FROM tenant_domains WHERE tenant_id = ? AND is_primary = 1 ORDER BY id ASC LIMIT 1', [
+            $tenantId,
+        ]);
 
         if ($domain === false) {
             return null;
         }
 
-        return (string)$domain;
+        return (string) $domain;
     }
 
     /**
@@ -323,7 +321,8 @@ readonly class TenantManager implements TenantRegistryInterface
             return $this->fallbackToYamlOrFail('read tenants');
         }
 
-        $sql = 'SELECT t.id, t.name, t.connection, t.status, t.plan,'
+        $sql =
+            'SELECT t.id, t.name, t.connection, t.status, t.plan,'
             . ' t.backup_frequency, t.backup_retention_days,'
             . ' d.domain AS primary_domain'
             . ' FROM tenants t'
@@ -416,11 +415,15 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'name' => $name,
-            'connection' => $connection,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'name' => $name,
+                'connection' => $connection,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Tenant not found');
@@ -441,11 +444,15 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $conn->update('tenants', [
-            'status' => 'deleted',
-            'deleted_at' => $now,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $conn->update(
+            'tenants',
+            [
+                'status' => 'deleted',
+                'deleted_at' => $now,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
     }
 
     public function purgeTenant(int $id): void
@@ -474,10 +481,14 @@ readonly class TenantManager implements TenantRegistryInterface
         $this->requireControlPlaneReady('suspend tenant');
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'status' => 'suspended',
-            'updated_at' => $now,
-        ], ['id' => $id, 'status' => 'active']);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'status' => 'suspended',
+                'updated_at' => $now,
+            ],
+            ['id' => $id, 'status' => 'active'],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Active tenant not found');
@@ -485,7 +496,7 @@ readonly class TenantManager implements TenantRegistryInterface
 
         $tenant = $this->getTenant($id);
         if ($tenant !== null) {
-            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantCache((string) ($tenant['name'] ?? ''));
             $this->invalidateTenantDomainCaches($id);
         }
     }
@@ -499,10 +510,14 @@ readonly class TenantManager implements TenantRegistryInterface
         $this->requireControlPlaneReady('unsuspend tenant');
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'status' => 'active',
-            'updated_at' => $now,
-        ], ['id' => $id, 'status' => 'suspended']);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'status' => 'active',
+                'updated_at' => $now,
+            ],
+            ['id' => $id, 'status' => 'suspended'],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Suspended tenant not found');
@@ -510,7 +525,7 @@ readonly class TenantManager implements TenantRegistryInterface
 
         $tenant = $this->getTenant($id);
         if ($tenant !== null) {
-            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantCache((string) ($tenant['name'] ?? ''));
             $this->invalidateTenantDomainCaches($id);
         }
     }
@@ -521,11 +536,15 @@ readonly class TenantManager implements TenantRegistryInterface
         $this->requireControlPlaneReady('restore tenant');
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'status' => 'active',
-            'deleted_at' => null,
-            'updated_at' => $now,
-        ], ['id' => $id, 'status' => 'deleted']);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'status' => 'active',
+                'deleted_at' => null,
+                'updated_at' => $now,
+            ],
+            ['id' => $id, 'status' => 'deleted'],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Deleted tenant not found');
@@ -546,11 +565,15 @@ readonly class TenantManager implements TenantRegistryInterface
         $conn = $this->getControlPlaneConnection();
         $this->requireControlPlaneReady('update backup frequency');
 
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'backup_frequency' => $frequency,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
+        $affected = $conn->update(
+            'tenants',
+            [
+                'backup_frequency' => $frequency,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0) {
             $exists = $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]);
@@ -577,11 +600,15 @@ readonly class TenantManager implements TenantRegistryInterface
         $conn = $this->getControlPlaneConnection();
         $this->requireControlPlaneReady('update backup retention');
 
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'backup_retention_days' => $days,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
+        $affected = $conn->update(
+            'tenants',
+            [
+                'backup_retention_days' => $days,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0) {
             $exists = $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]);
@@ -615,10 +642,14 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
-        $affected = $conn->update('tenants', [
-            'plan' => $plan,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'plan' => $plan,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0) {
             $exists = $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]);
@@ -629,7 +660,7 @@ readonly class TenantManager implements TenantRegistryInterface
 
         $tenant = $this->getTenant($id);
         if ($tenant !== null) {
-            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantCache((string) ($tenant['name'] ?? ''));
             $this->invalidateTenantDomainCaches($id);
         }
 
@@ -647,15 +678,12 @@ readonly class TenantManager implements TenantRegistryInterface
         if (!$this->isControlPlaneReady($conn)) {
             $this->fallbackToYamlOrFail('get tenant');
 
-            return array_find($this->readTenantsFromYaml(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
+            return array_find($this->readTenantsFromYaml(), fn($tenant) => (int) ($tenant['id'] ?? 0) === $id);
         }
 
         /** @var array<string, mixed>|false $row */
-        $row = $conn->fetchAssociative(
-            'SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days'
-            . ' FROM tenants WHERE id = ?',
-            [$id],
-        );
+        $row = $conn->fetchAssociative('SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days'
+        . ' FROM tenants WHERE id = ?', [$id]);
 
         if ($row === false) {
             return null;
@@ -674,15 +702,12 @@ readonly class TenantManager implements TenantRegistryInterface
         if (!$this->isControlPlaneReady($conn)) {
             $this->fallbackToYamlOrFail('get tenant by name');
 
-            return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+            return array_find($this->readTenantsFromYaml(), fn($tenant) => ($tenant['name'] ?? '') === $name);
         }
 
         /** @var array<string, mixed>|false $row */
-        $row = $conn->fetchAssociative(
-            'SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days'
-            . ' FROM tenants WHERE name = ? AND status != ?',
-            [$name, 'deleted'],
-        );
+        $row = $conn->fetchAssociative('SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days'
+        . ' FROM tenants WHERE name = ? AND status != ?', [$name, 'deleted']);
 
         if ($row === false) {
             return null;
@@ -705,14 +730,11 @@ readonly class TenantManager implements TenantRegistryInterface
         }
 
         /** @var array<string, mixed>|false $row */
-        $row = $conn->fetchAssociative(
-            'SELECT t.id, t.name, t.connection, t.status, t.plan,'
-            . ' t.backup_frequency, t.backup_retention_days'
-            . ' FROM tenant_domains d '
-            . 'INNER JOIN tenants t ON t.id = d.tenant_id '
-            . 'WHERE d.domain = ? AND t.status != ?',
-            [$domain, 'deleted'],
-        );
+        $row = $conn->fetchAssociative('SELECT t.id, t.name, t.connection, t.status, t.plan,'
+        . ' t.backup_frequency, t.backup_retention_days'
+        . ' FROM tenant_domains d '
+        . 'INNER JOIN tenants t ON t.id = d.tenant_id '
+        . 'WHERE d.domain = ? AND t.status != ?', [$domain, 'deleted']);
 
         if ($row === false) {
             return null;
@@ -746,7 +768,7 @@ readonly class TenantManager implements TenantRegistryInterface
         $found = false;
 
         foreach ($data as &$existingTenant) {
-            if ((int)($existingTenant['id'] ?? 0) === $id) {
+            if ((int) ($existingTenant['id'] ?? 0) === $id) {
                 $existingTenant['name'] = $name;
                 $existingTenant['connection'] = $connection;
                 $found = true;
@@ -771,7 +793,7 @@ readonly class TenantManager implements TenantRegistryInterface
     private function deleteTenantInYaml(int $id): void
     {
         $data = $this->readTenantsFromYaml();
-        $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
+        $data = array_values(array_filter($data, static fn(array $tenant): bool => (int) ($tenant['id'] ?? 0) !== $id));
         $this->writeTenants($data);
     }
 
@@ -790,7 +812,7 @@ readonly class TenantManager implements TenantRegistryInterface
 
         throw new RuntimeException(sprintf(
             'Control plane database not ready and YAML fallback unavailable while attempting to %s.',
-            $operation
+            $operation,
         ));
     }
 
@@ -807,7 +829,7 @@ readonly class TenantManager implements TenantRegistryInterface
             return;
         }
 
-        if ('' === trim((string)file_get_contents($this->tenantsConfigFilePath))) {
+        if ('' === trim((string) file_get_contents($this->tenantsConfigFilePath))) {
             $this->writeTenants([]);
         }
     }
@@ -826,9 +848,9 @@ readonly class TenantManager implements TenantRegistryInterface
      */
     private function nextId(array $tenants): int
     {
-        $ids = array_map(static fn (array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
+        $ids = array_map(static fn(array $tenant): int => (int) ($tenant['id'] ?? 0), $tenants);
 
-        return (int)(max($ids ?: [0]) + 1);
+        return (int) (max($ids ?: [0]) + 1);
     }
 
     private function shouldUseDatabase(): bool
@@ -898,7 +920,7 @@ readonly class TenantManager implements TenantRegistryInterface
         try {
             $domains = $this->getTenantDomains($tenantId);
             foreach ($domains as $domain) {
-                $this->cache->delete('tenant_domain_' . hash('xxh3', (string)($domain['domain'] ?? '')));
+                $this->cache->delete('tenant_domain_' . hash('xxh3', (string) ($domain['domain'] ?? '')));
             }
         } catch (\Throwable) {
             // Domain cache invalidation is the best effort

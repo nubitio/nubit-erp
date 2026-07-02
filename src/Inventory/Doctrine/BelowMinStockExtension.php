@@ -22,8 +22,7 @@ final readonly class BelowMinStockExtension implements QueryCollectionExtensionI
 {
     public function __construct(
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     public function applyToCollection(
         QueryBuilder $queryBuilder,
@@ -48,8 +47,6 @@ final readonly class BelowMinStockExtension implements QueryCollectionExtensionI
 
         $alias = $queryBuilder->getRootAliases()[0];
 
-        $queryBuilder
-            ->andWhere("{$alias}.stock <= {$alias}.minStock")
-            ->andWhere("{$alias}.minStock > 0");
+        $queryBuilder->andWhere("{$alias}.stock <= {$alias}.minStock")->andWhere("{$alias}.minStock > 0");
     }
 }

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use App\Billing\Sunat\Domain\BillConsultUseCase;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\CompanyContext;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Billing\Sunat\Domain\BillConsultUseCase;
+use App\Efact\Config\EfactConstants as Constants;
+use App\Efact\Service\CompanyContext;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 
 readonly class InvoiceConsultUseCase
 {
@@ -24,8 +24,7 @@ readonly class InvoiceConsultUseCase
         private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
         private ManagerRegistry $doctrine,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws FilesystemException
@@ -46,19 +45,24 @@ readonly class InvoiceConsultUseCase
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
                 $companyId = $this->companyContext->getId();
-                $docFullName = $companyId . '-'
-                    . $taxDocument->getDocumentType() . '-'
+                $docFullName =
+                    $companyId
+                    . '-'
+                    . $taxDocument->getDocumentType()
+                    . '-'
                     . $consultResponse->getCdrResponse()->getId();
                 $this->fileManager->write(
                     Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
-                    $cdr
+                    $cdr,
                 );
                 $taxDocument->setCdrPath(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip');
             } else {
-                $sunatStatus = $consultResponse->getCdrResponse()?->getCode()
-                    ?? $consultResponse->getError()?->getCode();
-                $sunatMessage = $consultResponse->getCdrResponse()?->getDescription()
-                    ?? $consultResponse->getError()?->getMessage();
+                $sunatStatus = $consultResponse->getCdrResponse()?->getCode() ?? $consultResponse
+                    ->getError()
+                    ?->getCode();
+                $sunatMessage = $consultResponse->getCdrResponse()?->getDescription() ?? $consultResponse
+                    ->getError()
+                    ?->getMessage();
             }
 
             $taxDocument->setSunatStatus($sunatStatus);

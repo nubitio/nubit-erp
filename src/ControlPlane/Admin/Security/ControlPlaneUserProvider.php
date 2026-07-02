@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Admin\Security;
 
-use Override;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
+use Override;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -20,8 +20,7 @@ final readonly class ControlPlaneUserProvider implements UserProviderInterface
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -30,15 +29,12 @@ final readonly class ControlPlaneUserProvider implements UserProviderInterface
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         try {
-            $user = $this->getControlPlaneConnection()->fetchAssociative(
-                <<<'SQL'
+            $user = $this->getControlPlaneConnection()->fetchAssociative(<<<'SQL'
                     SELECT id, username, password_hash, roles, is_active
                     FROM control_plane_admin_users
                     WHERE username = ?
                     LIMIT 1
-                SQL,
-                [$identifier],
-            );
+                SQL, [$identifier]);
         } catch (Exception) {
             throw new UserNotFoundException('Control plane users are not available. Run control-plane migrations.');
         }
@@ -54,7 +50,7 @@ final readonly class ControlPlaneUserProvider implements UserProviderInterface
         if (!is_array($roles)) {
             $roles = ['ROLE_ADMIN'];
         }
-        $roles = array_values(array_filter($roles, static fn (mixed $role): bool => is_string($role) && $role !== ''));
+        $roles = array_values(array_filter($roles, static fn(mixed $role): bool => is_string($role) && $role !== ''));
         if ($roles === []) {
             $roles = ['ROLE_ADMIN'];
         }

@@ -14,8 +14,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[AsTool(
     name: 'read_api_resource',
     description: 'Fetch any API resource or collection by its URI path (e.g. /api/products, /api/customers/123). '
-        . 'Returns the decoded JSON response. Use this to query entities that do not have a dedicated tool. '
-        . 'Always prefer dedicated tools (search_products, sales_summary, etc.) when they exist.',
+    . 'Returns the decoded JSON response. Use this to query entities that do not have a dedicated tool. '
+    . 'Always prefer dedicated tools (search_products, sales_summary, etc.) when they exist.',
     method: 'readResource',
 )]
 final readonly class ApiReadTool
@@ -26,8 +26,7 @@ final readonly class ApiReadTool
         private RequestStack $requestStack,
         #[Autowire('%app.api_base_url%')]
         private string $apiBaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * Fetch any API resource or collection by URI.
@@ -71,9 +70,7 @@ final readonly class ApiReadTool
         $statusCode = $response->getStatusCode();
 
         if ($statusCode >= 400) {
-            throw new \RuntimeException(
-                sprintf('HTTP %d error fetching "%s"', $statusCode, $uri),
-            );
+            throw new \RuntimeException(sprintf('HTTP %d error fetching "%s"', $statusCode, $uri));
         }
 
         /** @var array<string, mixed> $data */

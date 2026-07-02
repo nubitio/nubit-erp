@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
+use App\Identity\Security\Security;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -31,8 +31,7 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
     public function __construct(
         private Connection $connection,
         private Security $security,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -44,15 +43,12 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
-    ): CashMovement|null {
+    ): ?CashMovement {
         // DELETE — remove from v2 table and return null (204 No Content)
         if ($operation instanceof Delete) {
             $id = (int) ($uriVariables['id'] ?? 0);
             if ($id > 0) {
-                $this->connection->executeStatement(
-                    'DELETE FROM cash_movements WHERE id = ?',
-                    [$id]
-                );
+                $this->connection->executeStatement('DELETE FROM cash_movements WHERE id = ?', [$id]);
             }
 
             return null;
@@ -71,28 +67,25 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
 
         $movementType = match ($data->getType()) {
             CashMovementType::EXPENSE => 'CASH_OUT',
-            default                   => 'CASH_IN',
+            default => 'CASH_IN',
         };
 
         $categoryId = $data->getCategory()?->getId();
-        $amount     = $data->getAmount() ?? '0.00';
+        $amount = $data->getAmount() ?? '0.00';
         $description = $data->getDescription();
 
         if ($operation instanceof Post) {
             // INSERT into v2 table
-            $this->connection->executeStatement(
-                'INSERT INTO cash_movements
+            $this->connection->executeStatement('INSERT INTO cash_movements
                     (cash_session_id, movement_type, category_id, amount, description, created_by, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, NOW())',
-                [
-                    $cashSession->getId(),
-                    $movementType,
-                    $categoryId,
-                    $amount,
-                    $description,
-                    $user->userId,
-                ]
-            );
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())', [
+                $cashSession->getId(),
+                $movementType,
+                $categoryId,
+                $amount,
+                $description,
+                $user->userId,
+            ]);
 
             $newId = (int) $this->connection->lastInsertId();
 
@@ -105,18 +98,15 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
         } else {
             // PATCH — UPDATE existing row
             $id = (int) ($uriVariables['id'] ?? 0);
-            $this->connection->executeStatement(
-                'UPDATE cash_movements
+            $this->connection->executeStatement('UPDATE cash_movements
                  SET movement_type = ?, category_id = ?, amount = ?, description = ?
-                 WHERE id = ?',
-                [
-                    $movementType,
-                    $categoryId,
-                    $amount,
-                    $description,
-                    $id,
-                ]
-            );
+                 WHERE id = ?', [
+                $movementType,
+                $categoryId,
+                $amount,
+                $description,
+                $id,
+            ]);
         }
 
         return $data;

@@ -18,20 +18,14 @@ final class QzTrayController
             return new Response('QZ certificate not configured.', Response::HTTP_NOT_FOUND);
         }
 
-        return new Response(
-            (string) file_get_contents($path),
-            Response::HTTP_OK,
-            ['Content-Type' => 'text/plain']
-        );
+        return new Response((string) file_get_contents($path), Response::HTTP_OK, ['Content-Type' => 'text/plain']);
     }
 
     #[Route('/api/qz/sign', name: 'qz_sign', methods: ['POST'])]
     public function sign(Request $request): Response
     {
         $payload = json_decode($request->getContent(), true);
-        $data = is_array($payload)
-            ? ($payload['data'] ?? $payload['toSign'] ?? null)
-            : null;
+        $data = is_array($payload) ? $payload['data'] ?? $payload['toSign'] ?? null : null;
 
         if (null === $data || '' === $data) {
             $data = $request->getContent();
@@ -47,10 +41,7 @@ final class QzTrayController
         }
 
         $passphrase = $_ENV['QZ_PRIVATE_KEY_PASSPHRASE'] ?? null;
-        $privateKey = openssl_pkey_get_private(
-            (string) file_get_contents($keyPath),
-            $passphrase ?? ''
-        );
+        $privateKey = openssl_pkey_get_private((string) file_get_contents($keyPath), $passphrase ?? '');
 
         if (false === $privateKey) {
             return new Response('Invalid private key.', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -60,10 +51,6 @@ final class QzTrayController
         openssl_sign($data, $signature, $privateKey, OPENSSL_ALGO_SHA256);
         openssl_free_key($privateKey);
 
-        return new Response(
-            base64_encode($signature),
-            Response::HTTP_OK,
-            ['Content-Type' => 'text/plain']
-        );
+        return new Response(base64_encode($signature), Response::HTTP_OK, ['Content-Type' => 'text/plain']);
     }
 }

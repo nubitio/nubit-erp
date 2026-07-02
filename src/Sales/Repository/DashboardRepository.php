@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Sales\Repository;
 
-use Nubit\Platform\Cache\CacheManager;
 use App\Settings\Service\SunatStateService;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Cache\CacheManager;
 
 readonly class DashboardRepository
 {
@@ -22,8 +22,7 @@ readonly class DashboardRepository
         private Connection $connection,
         private SunatStateService $sunatState,
         private CacheManager $cache,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -104,7 +103,9 @@ readonly class DashboardRepository
         $receiptFilter = $ctx['receiptFilterSales'];
         $failedSegments = [];
 
-        $summary = $this->safeQuery('summary', fn () => $this->connection->fetchAssociative("
+        $summary = $this->safeQuery(
+            'summary',
+            fn() => $this->connection->fetchAssociative('
             SELECT
                 SUM(CASE WHEN td.date = :today THEN bds.net_sales ELSE 0 END) AS sales_today,
                 SUM(CASE WHEN td.date = :yesterday THEN bds.net_sales ELSE 0 END) AS sales_yesterday,
@@ -122,12 +123,17 @@ readonly class DashboardRepository
             FROM branch_daily_summary bds
             INNER JOIN time_dimension td ON td.date = bds.summary_date
             WHERE bds.branch_id = :branchId
-        ", $params) ?: [], [], $failedSegments);
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
         // Replaced non-sargable CONVERT_TZ JOIN on time_dimension with a direct
         // UTC range filter on issued_at — lets the idx_sales_branch_issued index
         // cover the full WHERE clause without a function call on every row.
-        $customers = $this->safeQuery('customers', fn () => $this->connection->fetchAssociative("
+        $customers = $this->safeQuery(
+            'customers',
+            fn() => $this->connection->fetchAssociative("
             SELECT
                 COUNT(
                     DISTINCT CASE
@@ -145,9 +151,14 @@ readonly class DashboardRepository
             WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
               AND s.branch_id = :branchId
               AND s.issued_at >= :monthStartUtc
-        ", $params) ?: [], [], $failedSegments);
+        ", $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
-        $salesByDay = $this->safeQuery('salesByDay', fn () => $this->connection->fetchAllAssociative("
+        $salesByDay = $this->safeQuery(
+            'salesByDay',
+            fn() => $this->connection->fetchAllAssociative('
             SELECT
                 td.day AS day,
                 td.day_name AS day_name,
@@ -160,9 +171,14 @@ readonly class DashboardRepository
               AND td.month = :currentMonth
             GROUP BY td.id, td.day
             ORDER BY td.day
-        ", $params), [], $failedSegments);
+        ', $params),
+            [],
+            $failedSegments,
+        );
 
-        $salesByMonth = $this->safeQuery('salesByMonth', fn () => $this->connection->fetchAllAssociative("
+        $salesByMonth = $this->safeQuery(
+            'salesByMonth',
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 CONCAT(LEFT(td.month_name, 3), ' ', td.year) AS label,
                 td.year,
@@ -176,10 +192,15 @@ readonly class DashboardRepository
               AND td.date <= :today
             GROUP BY td.year, td.month
             ORDER BY td.year, td.month
-        ", $params), [], $failedSegments);
+        ", $params),
+            [],
+            $failedSegments,
+        );
 
         // Reads live sale_payments — payment_method_daily_summary has no populator yet.
-        $paymentMethodShare = $this->safeQuery('paymentMethods', fn () => $this->connection->fetchAllAssociative("
+        $paymentMethodShare = $this->safeQuery(
+            'paymentMethods',
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
                 COALESCE(SUM(sp.amount), 0) AS total
@@ -191,12 +212,15 @@ readonly class DashboardRepository
               AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
-        ", $params), [], $failedSegments);
+        ", $params),
+            [],
+            $failedSegments,
+        );
 
         // Reads live sale_payments grouped by day — payment_method_daily_summary has no populator yet.
         $paymentMethodTrendRaw = $this->safeQuery(
             'paymentMethodTrend',
-            fn () => $this->connection->fetchAllAssociative("
+            fn() => $this->connection->fetchAllAssociative("
                 SELECT
                     DATE(CONVERT_TZ(s.issued_at, '+00:00', '-05:00')) AS date_value,
                     DATE_FORMAT(DATE(CONVERT_TZ(s.issued_at, '+00:00', '-05:00')), '%d %b') AS label,
@@ -212,11 +236,13 @@ readonly class DashboardRepository
                 ORDER BY date_value
             ", $params),
             [],
-            $failedSegments
+            $failedSegments,
         );
 
         // Reads live sale_items — product_daily_summary has no populator yet.
-        $topProducts = $this->safeQuery('topProducts', fn () => $this->connection->fetchAllAssociative("
+        $topProducts = $this->safeQuery(
+            'topProducts',
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(p.descripcion, si.name_snapshot, 'Sin producto') AS product,
                 SUM(si.qty) AS quantity,
@@ -230,9 +256,14 @@ readonly class DashboardRepository
             GROUP BY si.product_id, p.descripcion, si.name_snapshot
             ORDER BY total DESC
             LIMIT 5
-        ", $params), [], $failedSegments);
+        ", $params),
+            [],
+            $failedSegments,
+        );
 
-        $purchaseSummary = $this->safeQuery('purchaseSummary', fn () => $this->connection->fetchAssociative("
+        $purchaseSummary = $this->safeQuery(
+            'purchaseSummary',
+            fn() => $this->connection->fetchAssociative('
             SELECT
                 SUM(CASE WHEN td.date = :today THEN pds.grand_total ELSE 0 END) AS purchases_today,
                 SUM(CASE WHEN td.date >= :last7days THEN pds.grand_total ELSE 0 END) AS purchases_week,
@@ -249,9 +280,14 @@ readonly class DashboardRepository
             FROM purchases_daily_summary pds
             INNER JOIN time_dimension td ON td.date = pds.summary_date
             WHERE pds.branch_id = :branchId
-        ", $params) ?: [], [], $failedSegments);
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
-        $purchasesByDay = $this->safeQuery('purchasesByDay', fn () => $this->connection->fetchAllAssociative("
+        $purchasesByDay = $this->safeQuery(
+            'purchasesByDay',
+            fn() => $this->connection->fetchAllAssociative('
             SELECT
                 td.day AS day,
                 td.day_name AS day_name,
@@ -264,11 +300,14 @@ readonly class DashboardRepository
               AND td.month = :currentMonth
             GROUP BY td.id, td.day
             ORDER BY td.day
-        ", $params), [], $failedSegments);
+        ', $params),
+            [],
+            $failedSegments,
+        );
 
         $topPurchasedProducts = $this->safeQuery(
             'topPurchasedProducts',
-            fn () => $this->connection->fetchAllAssociative("
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(p.descripcion, 'Sin producto') AS product,
                 SUM(ppds.qty_received) AS quantity,
@@ -282,12 +321,12 @@ readonly class DashboardRepository
             LIMIT 5
         ", $params),
             [],
-            $failedSegments
+            $failedSegments,
         );
 
         // Replaced INNER JOIN time_dimension with CONVERT_TZ by a direct UTC
         // range on issued_at — fully covered by idx_sales_branch_issued.
-        $topCustomers = $this->safeQuery('topCustomers', fn () => $this->connection->fetchAllAssociative("
+        $topCustomers = $this->safeQuery('topCustomers', fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(c.razon_social, 'Cliente') AS customer,
                 COUNT(*) AS invoices,
@@ -305,7 +344,9 @@ readonly class DashboardRepository
 
         // Replaced INNER JOIN time_dimension + CONVERT_TZ on issue_date with a
         // direct UTC range — lets the existing index on tax_document be used.
-        $voucherTypeStats = $this->safeQuery('voucherTypes', fn () => $this->connection->fetchAllAssociative("
+        $voucherTypeStats = $this->safeQuery(
+            'voucherTypes',
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(vt.descripcion, 'Sin tipo') AS voucher_type,
                 COUNT(*) AS count,
@@ -324,9 +365,14 @@ readonly class DashboardRepository
               AND i.document_type IN ('01', '03')
             GROUP BY vt.codigo, vt.descripcion
             ORDER BY total DESC
-        ", $params), [], $failedSegments);
+        ", $params),
+            [],
+            $failedSegments,
+        );
 
-        $lowStockProducts = $this->safeQuery('lowStockProducts', fn () => $this->connection->fetchAllAssociative("
+        $lowStockProducts = $this->safeQuery(
+            'lowStockProducts',
+            fn() => $this->connection->fetchAllAssociative('
             SELECT
                 p.descripcion AS product,
                 p.producto_id AS product_id,
@@ -342,9 +388,14 @@ readonly class DashboardRepository
               AND si.qty_on_hand <= p.stock_minimo
             ORDER BY (si.qty_on_hand / p.stock_minimo) ASC
             LIMIT 10
-        ", $params), [], $failedSegments);
+        ', $params),
+            [],
+            $failedSegments,
+        );
 
-        $refunds = $this->safeQuery('refunds', fn () => $this->connection->fetchAssociative("
+        $refunds = $this->safeQuery(
+            'refunds',
+            fn() => $this->connection->fetchAssociative('
             SELECT
                 SUM(CASE WHEN td.date = :today THEN bds.refunds_total ELSE 0 END) AS refunds_today,
                 SUM(
@@ -353,7 +404,10 @@ readonly class DashboardRepository
             FROM branch_daily_summary bds
                 INNER JOIN time_dimension td ON td.date = bds.summary_date
             WHERE bds.branch_id = :branchId
-        ", $params) ?: [], [], $failedSegments);
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
         $payload = $this->emptyOverviewPayload();
         $summaryData = [
@@ -398,8 +452,11 @@ readonly class DashboardRepository
             'receiptsThisMonth' => (int) ($purchaseSummary['receipts_month'] ?? 0),
         ];
         $purchaseSummaryData['monthGrowth'] = $purchaseSummaryData['purchasesLastMonth'] > 0
-            ? (($purchaseSummaryData['purchasesThisMonth'] - $purchaseSummaryData['purchasesLastMonth'])
-                / $purchaseSummaryData['purchasesLastMonth']) * 100
+            ? (
+                ($purchaseSummaryData['purchasesThisMonth'] - $purchaseSummaryData['purchasesLastMonth'])
+                / $purchaseSummaryData['purchasesLastMonth']
+            )
+            * 100
             : null;
         $payload['purchasesSummary'] = $purchaseSummaryData;
 
@@ -418,66 +475,61 @@ readonly class DashboardRepository
             $paymentTrendPivot[$key][$row['method']] = (float) $row['total'];
         }
 
-        $payload['salesByDay'] = array_map(static fn (array $row): array => [
-                'day' => (int) $row['day'],
-                'label' => $row['day_name'],
-                'total' => (float) $row['total'],
-            ], $salesByDay);
-        $payload['salesByMonth'] = array_map(static fn (array $row): array => [
-                'label' => $row['label'],
-                'total' => (float) $row['total'],
-            ], $salesByMonth);
-        $payload['paymentMethods'] = array_map(static fn (array $row): array => [
-                'method' => $row['method'],
-                'total' => (float) $row['total'],
-            ], $paymentMethodShare);
+        $payload['salesByDay'] = array_map(static fn(array $row): array => [
+            'day' => (int) $row['day'],
+            'label' => $row['day_name'],
+            'total' => (float) $row['total'],
+        ], $salesByDay);
+        $payload['salesByMonth'] = array_map(static fn(array $row): array => [
+            'label' => $row['label'],
+            'total' => (float) $row['total'],
+        ], $salesByMonth);
+        $payload['paymentMethods'] = array_map(static fn(array $row): array => [
+            'method' => $row['method'],
+            'total' => (float) $row['total'],
+        ], $paymentMethodShare);
         $payload['paymentMethodTrend'] = [
             'methods' => array_keys($methods),
             'points' => array_values($paymentTrendPivot),
         ];
-        $payload['topProducts'] = array_map(static fn (array $row): array => [
-                'product' => $row['product'],
-                'quantity' => (float) $row['quantity'],
-                'total' => (float) $row['total'],
-            ], $topProducts);
-        $payload['purchasesByDay'] = array_map(static fn (array $row): array => [
+        $payload['topProducts'] = array_map(static fn(array $row): array => [
+            'product' => $row['product'],
+            'quantity' => (float) $row['quantity'],
+            'total' => (float) $row['total'],
+        ], $topProducts);
+        $payload['purchasesByDay'] = array_map(static fn(array $row): array => [
             'day' => (int) $row['day'],
             'label' => $row['day_name'],
             'total' => (float) $row['total'],
         ], $purchasesByDay);
-        $payload['topPurchasedProducts'] = array_map(static fn (array $row): array => [
+        $payload['topPurchasedProducts'] = array_map(static fn(array $row): array => [
             'product' => $row['product'],
             'quantity' => (float) $row['quantity'],
             'total' => (float) $row['total'],
         ], $topPurchasedProducts);
-        $payload['topCustomers'] = array_map(static fn (array $row): array => [
-                'customer' => $row['customer'],
-                'invoices' => (int) $row['invoices'],
-                'total' => (float) $row['total'],
-            ], $topCustomers);
-        $payload['voucherTypes'] = array_map(static fn (array $row): array => [
-                'type' => $row['voucher_type'],
-                'count' => (int) $row['count'],
-                'total' => (float) $row['total'],
-            ], $voucherTypeStats);
-        $payload['lowStockProducts'] = array_map(
-            static function (array $row): array {
-                $fallbackMin = $row['min_stock'] > 0 ? $row['min_stock'] : 5;
-                return [
-                    'product' => $row['product'],
-                    'productId' => $row['product_id'] ?? null,
-                    'currentStock' => (float) $row['current_stock'],
-                    'minStock' => (float) $row['min_stock'],
-                    'avgPrice' => (float) $row['avg_price'],
-                    'stockPercentage' => $fallbackMin > 0
-                        ? round(($row['current_stock'] / $fallbackMin) * 100, 1)
-                        : 0,
-                ];
-            },
-            $lowStockProducts
-        );
+        $payload['topCustomers'] = array_map(static fn(array $row): array => [
+            'customer' => $row['customer'],
+            'invoices' => (int) $row['invoices'],
+            'total' => (float) $row['total'],
+        ], $topCustomers);
+        $payload['voucherTypes'] = array_map(static fn(array $row): array => [
+            'type' => $row['voucher_type'],
+            'count' => (int) $row['count'],
+            'total' => (float) $row['total'],
+        ], $voucherTypeStats);
+        $payload['lowStockProducts'] = array_map(static function (array $row): array {
+            $fallbackMin = $row['min_stock'] > 0 ? $row['min_stock'] : 5;
+            return [
+                'product' => $row['product'],
+                'productId' => $row['product_id'] ?? null,
+                'currentStock' => (float) $row['current_stock'],
+                'minStock' => (float) $row['min_stock'],
+                'avgPrice' => (float) $row['avg_price'],
+                'stockPercentage' => $fallbackMin > 0 ? round(($row['current_stock'] / $fallbackMin) * 100, 1) : 0,
+            ];
+        }, $lowStockProducts);
 
-        $recentSalesToday = $this->safeQuery('recentSalesToday', fn () => $this->connection->fetchAllAssociative("
+        $recentSalesToday = $this->safeQuery('recentSalesToday', fn() => $this->connection->fetchAllAssociative("
             SELECT
                 s.id AS id,
                 DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
@@ -497,7 +549,7 @@ readonly class DashboardRepository
             ORDER BY s.issued_at DESC
             LIMIT 10
         ", $params), [], $failedSegments);
-        $payload['recentSalesToday'] = array_map(static fn (array $row): array => [
+        $payload['recentSalesToday'] = array_map(static fn(array $row): array => [
             'id' => (string) $row['id'],
             'issuedAt' => $row['issued_at'],
             'paymentMethod' => $row['payment_method'],
@@ -522,7 +574,9 @@ readonly class DashboardRepository
         $failedSegments = [];
         $payload = $this->emptyLitePayload();
 
-        $summary = $this->safeQuery('summaryLite', fn () => $this->connection->fetchAssociative("
+        $summary = $this->safeQuery(
+            'summaryLite',
+            fn() => $this->connection->fetchAssociative('
             SELECT
                 SUM(CASE WHEN td.date = :today THEN bds.net_sales ELSE 0 END) AS sales_today,
                 SUM(CASE WHEN td.date = :yesterday THEN bds.net_sales ELSE 0 END) AS sales_yesterday,
@@ -531,17 +585,27 @@ readonly class DashboardRepository
             FROM branch_daily_summary bds
                 INNER JOIN time_dimension td ON td.date = bds.summary_date
             WHERE bds.branch_id = :branchId
-        ", $params) ?: [], [], $failedSegments);
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
-        $refunds = $this->safeQuery('refundsLite', fn () => $this->connection->fetchAssociative("
+        $refunds = $this->safeQuery(
+            'refundsLite',
+            fn() => $this->connection->fetchAssociative('
             SELECT
                 SUM(CASE WHEN td.date = :today THEN bds.refunds_total ELSE 0 END) AS refunds_today
             FROM branch_daily_summary bds
                 INNER JOIN time_dimension td ON td.date = bds.summary_date
             WHERE bds.branch_id = :branchId
-        ", $params) ?: [], [], $failedSegments);
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
 
-        $paymentMethodsToday = $this->safeQuery('paymentMethodsToday', fn () => $this->connection->fetchAllAssociative("
+        $paymentMethodsToday = $this->safeQuery(
+            'paymentMethodsToday',
+            fn() => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
                 COALESCE(SUM(pms.amount_total), 0) AS total
@@ -552,11 +616,14 @@ readonly class DashboardRepository
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
             LIMIT 5
-        ", $params), [], $failedSegments);
+        ", $params),
+            [],
+            $failedSegments,
+        );
 
         // Replaced INNER JOIN time_dimension + CONVERT_TZ with a direct UTC
         // range on issued_at — fully covered by idx_sales_branch_issued.
-        $hourlySalesToday = $this->safeQuery('hourlySalesToday', fn () => $this->connection->fetchAllAssociative("
+        $hourlySalesToday = $this->safeQuery('hourlySalesToday', fn() => $this->connection->fetchAllAssociative("
             SELECT
                 DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:00') AS hour_label,
                 COALESCE(SUM(s.grand_total), 0) AS total
@@ -571,7 +638,7 @@ readonly class DashboardRepository
         ", $params), [], $failedSegments);
 
         // Same fix for recentSalesToday.
-        $recentSalesToday = $this->safeQuery('recentSalesToday', fn () => $this->connection->fetchAllAssociative("
+        $recentSalesToday = $this->safeQuery('recentSalesToday', fn() => $this->connection->fetchAllAssociative("
             SELECT
                 s.id AS id,
                 DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
@@ -597,9 +664,7 @@ readonly class DashboardRepository
         $salesWeek = (float) ($summary['sales_week'] ?? 0);
         $invoicesToday = (int) ($summary['invoices_today'] ?? 0);
         $refundsToday = (float) ($refunds['refunds_today'] ?? 0);
-        $dailyGrowth = $salesYesterday > 0
-            ? (($salesToday - $salesYesterday) / $salesYesterday) * 100
-            : null;
+        $dailyGrowth = $salesYesterday > 0 ? (($salesToday - $salesYesterday) / $salesYesterday) * 100 : null;
 
         $payload['summary'] = [
             'salesToday' => $salesToday,
@@ -611,15 +676,15 @@ readonly class DashboardRepository
             'refundsToday' => $refundsToday,
             'netSalesToday' => max($salesToday - $refundsToday, 0),
         ];
-        $payload['paymentMethodsToday'] = array_map(static fn (array $row): array => [
+        $payload['paymentMethodsToday'] = array_map(static fn(array $row): array => [
             'method' => $row['method'],
             'total' => (float) $row['total'],
         ], $paymentMethodsToday);
-        $payload['hourlySalesToday'] = array_map(static fn (array $row): array => [
+        $payload['hourlySalesToday'] = array_map(static fn(array $row): array => [
             'hour' => $row['hour_label'],
             'total' => (float) $row['total'],
         ], $hourlySalesToday);
-        $payload['recentSalesToday'] = array_map(static fn (array $row): array => [
+        $payload['recentSalesToday'] = array_map(static fn(array $row): array => [
             'id' => (string) $row['id'],
             'issuedAt' => $row['issued_at'],
             'paymentMethod' => $row['payment_method'],
@@ -774,7 +839,7 @@ readonly class DashboardRepository
             'mode' => $mode,
             'partial' => count($failedSegments) > 0,
             'failedSegments' => $failedSegments,
-            'generatedAt' => (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format(DATE_ATOM),
+            'generatedAt' => new DateTimeImmutable('now', new DateTimeZone('America/Lima'))->format(DATE_ATOM),
         ];
     }
 
@@ -794,12 +859,14 @@ readonly class DashboardRepository
     private function receiptFilter(string $salesAlias = 's'): string
     {
         if ($this->sunatState->isReceiptRequired()) {
-            return 'AND EXISTS (SELECT 1 FROM tax_document td2 '
+            return (
+                'AND EXISTS (SELECT 1 FROM tax_document td2 '
                 . 'WHERE ('
                 . "({$salesAlias}.legacy_movimiento_id IS NOT NULL AND td2.movimiento_id = {$salesAlias}.legacy_movimiento_id)"
                 . ' OR '
                 . "(td2.sale_id IS NOT NULL AND td2.sale_id = {$salesAlias}.id)"
-                . ") AND td2.document_type IN ('01','03'))";
+                . ") AND td2.document_type IN ('01','03'))"
+            );
         }
 
         return '';

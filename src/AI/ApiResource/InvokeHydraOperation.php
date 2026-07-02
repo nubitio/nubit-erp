@@ -9,19 +9,14 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\McpTool;
 use App\AI\State\InvokeHydraOperationProcessor;
 
-#[ApiResource(
-    shortName: 'InvokeHydraOperation',
-    operations: [],
-    paginationEnabled: false,
-    mcp: [
-        'invoke_hydra_operation' => new McpTool(
-            name: 'invoke_hydra_operation',
-            description: 'Execute a state-changing operation (POST, PATCH, DELETE) on an Efact API resource. Use the Hydra docs to discover valid URIs and payloads.',
-            processor: InvokeHydraOperationProcessor::class,
-            structuredContent: false,
-        ),
-    ],
-)]
+#[ApiResource(shortName: 'InvokeHydraOperation', operations: [], paginationEnabled: false, mcp: [
+    'invoke_hydra_operation' => new McpTool(
+        name: 'invoke_hydra_operation',
+        description: 'Execute a state-changing operation (POST, PATCH, DELETE) on an Efact API resource. Use the Hydra docs to discover valid URIs and payloads.',
+        processor: InvokeHydraOperationProcessor::class,
+        structuredContent: false,
+    ),
+])]
 class InvokeHydraOperation
 {
     public string $uri = '';

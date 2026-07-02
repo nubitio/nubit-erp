@@ -10,6 +10,5 @@ class RoleMenuItemDto
         public int $id,
         public string $text,
         public bool $selected,
-    ) {
-    }
+    ) {}
 }

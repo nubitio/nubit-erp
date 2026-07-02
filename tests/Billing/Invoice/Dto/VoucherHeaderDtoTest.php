@@ -35,32 +35,32 @@ final class VoucherHeaderDtoTest extends TestCase
     public function testFromArrayMapsAllPresentKeys(): void
     {
         $row = [
-            'sale_id'               => 42,
-            'customer_doc_type'     => '6',
-            'customer_doc_number'   => '20123456789',
-            'customer_name'         => 'Empresa SAC',
-            'customer_address'      => 'Av. Lima 1',
-            'customer_email'        => 'test@example.com',
-            'customer_phone'        => '01-234-5678',
-            'company_id'            => '20999888777',
-            'company_name'          => 'Mi Empresa',
-            'company_address'       => 'Jr. Miraflores 100',
-            'company_phone'         => '01-111-2222',
-            'branch_address'        => 'Jr. Miraflores 100 Of. 2',
-            'branch_phone'          => '01-111-2223',
-            'voucher_type'          => '01',
-            'voucher_series'        => 'F001',
-            'voucher_number'        => '00000123',
+            'sale_id' => 42,
+            'customer_doc_type' => '6',
+            'customer_doc_number' => '20123456789',
+            'customer_name' => 'Empresa SAC',
+            'customer_address' => 'Av. Lima 1',
+            'customer_email' => 'test@example.com',
+            'customer_phone' => '01-234-5678',
+            'company_id' => '20999888777',
+            'company_name' => 'Mi Empresa',
+            'company_address' => 'Jr. Miraflores 100',
+            'company_phone' => '01-111-2222',
+            'branch_address' => 'Jr. Miraflores 100 Of. 2',
+            'branch_phone' => '01-111-2223',
+            'voucher_type' => '01',
+            'voucher_series' => 'F001',
+            'voucher_number' => '00000123',
             'voucher_payment_method' => '1',
-            'voucher_date'          => '2026-04-30',
-            'voucher_currency'      => 'PEN',
+            'voucher_date' => '2026-04-30',
+            'voucher_currency' => 'PEN',
             'voucher_exchange_rate' => '1.000',
-            'voucher_taxed_amount'  => '100.00',
-            'voucher_tax_amount'    => '18.00',
-            'voucher_total_taxes'   => '18.00',
-            'voucher_sale_value'    => '100.00',
-            'voucher_sale_amount'   => '118.00',
-            'voucher_status'        => '0',
+            'voucher_taxed_amount' => '100.00',
+            'voucher_tax_amount' => '18.00',
+            'voucher_total_taxes' => '18.00',
+            'voucher_sale_value' => '100.00',
+            'voucher_sale_amount' => '118.00',
+            'voucher_status' => '0',
         ];
 
         $dto = VoucherHeaderDto::fromArray($row);
@@ -94,9 +94,9 @@ final class VoucherHeaderDtoTest extends TestCase
     public function testFromArrayHandlesStringOrNullFields(): void
     {
         $dto = VoucherHeaderDto::fromArray([
-            'voucher_discount_amount'     => '5.00',
+            'voucher_discount_amount' => '5.00',
             'voucher_discount_percentage' => '0.05',
-            'voucher_operation_type'      => '0101',
+            'voucher_operation_type' => '0101',
         ]);
 
         self::assertSame('5.00', $dto->voucherDiscountAmount);

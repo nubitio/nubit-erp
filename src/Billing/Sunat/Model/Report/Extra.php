@@ -12,6 +12,5 @@ readonly class Extra
     public function __construct(
         public string $name,
         public string $value,
-    ) {
-    }
+    ) {}
 }

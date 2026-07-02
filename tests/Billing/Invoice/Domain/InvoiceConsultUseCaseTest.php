@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Invoice\Domain;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Service\CompanyContext;
-use App\Billing\Sunat\Domain\BillConsultUseCase;
-use App\Billing\Invoice\Domain\InvoiceConsultUseCase;
 use App\Billing\Entity\TaxDocument;
+use App\Billing\Invoice\Domain\InvoiceConsultUseCase;
 use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Billing\Sunat\Domain\BillConsultUseCase;
+use App\Efact\Service\CompanyContext;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Greenter\Model\Response\CdrResponse;
 use Greenter\Model\Response\Error;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -37,27 +37,27 @@ final class InvoiceConsultUseCaseTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->billConsultUseCase  = $this->createMock(BillConsultUseCase::class);
-        $this->filesystemOperator  = $this->createMock(FilesystemOperator::class);
-        $this->companyContext       = $this->createMock(CompanyContext::class);
-        $this->doctrine            = $this->createMock(ManagerRegistry::class);
-        $this->entityManager       = $this->createMock(ObjectManager::class);
+        $this->billConsultUseCase = $this->createMock(BillConsultUseCase::class);
+        $this->filesystemOperator = $this->createMock(FilesystemOperator::class);
+        $this->companyContext = $this->createMock(CompanyContext::class);
+        $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->entityManager = $this->createMock(ObjectManager::class);
 
         $this->doctrine->method('getManager')->willReturn($this->entityManager);
 
         // TaxDocumentEventRepository is final — bypass constructor via reflection
         /** @var TaxDocumentEventRepository $taxDocEventRepo */
-        $taxDocEventRepo    = (new \ReflectionClass(TaxDocumentEventRepository::class))->newInstanceWithoutConstructor();
-        $mockObjectManager  = $this->createStub(ObjectManager::class);
+        $taxDocEventRepo = new \ReflectionClass(TaxDocumentEventRepository::class)->newInstanceWithoutConstructor();
+        $mockObjectManager = $this->createStub(ObjectManager::class);
         $mockObjectManager->method('persist'); // no-op
         $mockRegistry = $this->createStub(ManagerRegistry::class);
         $mockRegistry->method('getManager')->willReturn($mockObjectManager);
-        $registryProp = (new \ReflectionClass(TaxDocumentEventRepository::class))->getProperty('registry');
+        $registryProp = new \ReflectionClass(TaxDocumentEventRepository::class)->getProperty('registry');
         $registryProp->setValue($taxDocEventRepo, $mockRegistry);
         $this->taxDocumentEventRepository = $taxDocEventRepo;
 
-        $tenantContext    = new TenantContext();
-        $slugger          = $this->createStub(SluggerInterface::class);
+        $tenantContext = new TenantContext();
+        $slugger = $this->createStub(SluggerInterface::class);
         $this->fileManager = new FileManager($this->filesystemOperator, $tenantContext, $slugger);
 
         $this->useCase = new InvoiceConsultUseCase(
@@ -86,12 +86,12 @@ final class InvoiceConsultUseCaseTest extends TestCase
 
     private function makeAcceptedConsultResult(string $code = '0', string $id = 'F001-1'): StatusCdrResult
     {
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode($code)
             ->setDescription('La factura es valida')
             ->setId($id);
 
-        return (new StatusCdrResult())
+        return new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse)
             ->setCdrZip(base64_encode('fake-cdr-zip'));
@@ -116,7 +116,7 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $taxDocument = $this->makeTaxDocument();
         $this->entityManager->method('find')->willReturn($taxDocument);
 
-        $consultResult = (new StatusCdrResult())->setSuccess(false);
+        $consultResult = new StatusCdrResult()->setSuccess(false);
         $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
 
         $result = $this->useCase->__invoke('td-1');
@@ -154,11 +154,11 @@ final class InvoiceConsultUseCaseTest extends TestCase
 
         // isAccepted() returns false when code is not 0 and not >=4000
         // Build a success result where cdrResponse code is rejected (e.g. 2800)
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('2800')
             ->setDescription('El comprobante ya existe');
         // Attach an error to the StatusCdrResult
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse)
             ->setError(new Error('2800', 'El comprobante ya existe'));
@@ -177,10 +177,10 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $taxDocument = $this->makeTaxDocument();
         $this->entityManager->method('find')->willReturn($taxDocument);
 
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('2800')
             ->setDescription('Rechazado');
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse);
         // SUNAT/adapter can return rejected CDR data without populating getError().
@@ -212,7 +212,7 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $taxDocument = $this->makeTaxDocument();
         $this->entityManager->method('find')->willReturn($taxDocument);
 
-        $consultResult = (new StatusCdrResult())->setSuccess(false);
+        $consultResult = new StatusCdrResult()->setSuccess(false);
         $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
 
         $this->entityManager->expects(self::never())->method('flush');
@@ -227,11 +227,11 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $this->entityManager->method('find')->willReturn($taxDocument);
         $this->companyContext->method('getId')->willReturn('20555000001');
 
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('0')
             ->setDescription('ok')
             ->setId('B001-5');
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse)
             ->setCdrZip(base64_encode('zip-data'));
@@ -242,10 +242,7 @@ final class InvoiceConsultUseCaseTest extends TestCase
         $this->filesystemOperator
             ->expects(self::once())
             ->method('write')
-            ->with(
-                self::stringContains('20555000001-03-B001-5'),
-                self::anything()
-            );
+            ->with(self::stringContains('20555000001-03-B001-5'), self::anything());
 
         $this->useCase->__invoke('td-2');
     }

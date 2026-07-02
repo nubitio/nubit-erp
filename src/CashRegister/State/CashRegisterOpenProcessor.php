@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use App\CashRegister\Dto\CashRegisterOpenDto;
+use App\CashRegister\Entity\CashRegister;
+use App\CashRegister\Entity\CashSession;
+use App\Identity\Auth\BranchContextService;
+use App\Identity\Entity\User;
+use App\Identity\Security\Security;
+use App\Organization\Repository\BranchRepository;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
-use App\Identity\Auth\BranchContextService;
-use App\CashRegister\Dto\CashRegisterOpenDto;
-use App\CashRegister\Entity\CashRegister;
-use App\CashRegister\Entity\CashSession;
-use App\Identity\Entity\User;
-use App\Organization\Repository\BranchRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Override;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -35,8 +35,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         private Security $security,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -58,9 +57,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
         }
 
-        $scaledAmount = BigDecimal::of($data->openingBalance)
-            ->toScale(2, RoundingMode::HALF_UP)
-            ->__toString();
+        $scaledAmount = BigDecimal::of($data->openingBalance)->toScale(2, RoundingMode::HALF_UP)->__toString();
 
         $cashRegister = $this->entityManager->find(CashRegister::class, $data->id);
         if (!$cashRegister instanceof CashRegister) {
@@ -110,7 +107,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
                     $scaledAmount,
                     'Saldo inicial',
                     $user->userId,
-                ]
+                ],
             );
 
             $connection->commit();

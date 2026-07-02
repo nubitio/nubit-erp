@@ -21,8 +21,7 @@ final readonly class CashRegistersByBranchProvider implements ProviderInterface
     public function __construct(
         private CashRegisterRepository $repository,
         private BranchContextServiceInterface $branchContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<CashRegister>

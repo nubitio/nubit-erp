@@ -17,8 +17,7 @@ final readonly class AuditLogRepository
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private CacheInterface $cache,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $filters Keys: 'action', 'date_from', 'date_to'
@@ -59,15 +58,12 @@ final readonly class AuditLogRepository
 
         $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $total = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM audit_logs a ' . $whereClause,
-            $params,
-            $types,
-        );
+        $total = (int) $connection->fetchOne('SELECT COUNT(*) FROM audit_logs a ' . $whereClause, $params, $types);
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $sql = 'SELECT a.id, a.action, a.actor, a.channel, a.metadata, a.created_at, t.name AS tenant_name
+        $sql =
+            'SELECT a.id, a.action, a.actor, a.channel, a.metadata, a.created_at, t.name AS tenant_name
                 FROM audit_logs a
                 LEFT JOIN tenants t ON t.id = a.tenant_id '
             . $whereClause
@@ -109,9 +105,7 @@ final readonly class AuditLogRepository
         return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
             $item->expiresAfter(600);
 
-            return $this->getControlPlaneConnection()
-                ->createSchemaManager()
-                ->tablesExist(['audit_logs']);
+            return $this->getControlPlaneConnection()->createSchemaManager()->tablesExist(['audit_logs']);
         });
     }
 

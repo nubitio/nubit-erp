@@ -25,8 +25,12 @@ final class BomExplosionServiceTest extends TestCase
         return $product;
     }
 
-    private function makeComponent(string $productId, string $componentQty = '1.000000', string $wastage = '1.000000', bool $optional = false): ProductBomItem
-    {
+    private function makeComponent(
+        string $productId,
+        string $componentQty = '1.000000',
+        string $wastage = '1.000000',
+        bool $optional = false,
+    ): ProductBomItem {
         $component = new Product();
         // Use reflection to set the ID since it's generated
         $ref = new \ReflectionProperty(Product::class, 'id');
@@ -162,7 +166,7 @@ final class BomExplosionServiceTest extends TestCase
         $em->method('find')->willReturn($parent);
 
         $mandatory = $this->makeComponent('comp-a', '1.000000', '1.000000', optional: false);
-        $optional  = $this->makeComponent('comp-b', '1.000000', '1.000000', optional: true);
+        $optional = $this->makeComponent('comp-b', '1.000000', '1.000000', optional: true);
 
         $repo = $this->createStub(ProductBomItemRepository::class);
         $repo->method('findByParent')->willReturn([$mandatory, $optional]);

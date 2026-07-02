@@ -35,7 +35,7 @@ final class PurchaseVoidProcessorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->persist     = $this->createMock(ProcessorInterface::class);
+        $this->persist = $this->createMock(ProcessorInterface::class);
         $this->voidService = $this->createMock(PurchaseVoidServiceInterface::class);
     }
 
@@ -44,14 +44,16 @@ final class PurchaseVoidProcessorTest extends TestCase
         $purchase = new Purchase();
 
         $reverseCalledWith = null;
-        $this->voidService->expects(self::once())
+        $this->voidService
+            ->expects(self::once())
             ->method('reverse')
             ->willReturnCallback(function (Purchase $p) use (&$reverseCalledWith): void {
                 $reverseCalledWith = $p;
             });
 
         $persistedPurchase = null;
-        $this->persist->expects(self::once())
+        $this->persist
+            ->expects(self::once())
             ->method('process')
             ->willReturnCallback(function (mixed $data) use (&$persistedPurchase): mixed {
                 $persistedPurchase = $data;
@@ -62,8 +64,14 @@ final class PurchaseVoidProcessorTest extends TestCase
         $result = $this->processor()->process($purchase, new Delete(), [], []);
 
         // process() returns null (204 No Content)
-        self::assertSame('VOIDED', $persistedPurchase instanceof Purchase ? $persistedPurchase->getStatus() : 'NOT_VOIDED');
-        self::assertInstanceOf(\DateTimeInterface::class, $persistedPurchase instanceof Purchase ? $persistedPurchase->getDeletedAt() : null);
+        self::assertSame(
+            'VOIDED',
+            $persistedPurchase instanceof Purchase ? $persistedPurchase->getStatus() : 'NOT_VOIDED',
+        );
+        self::assertInstanceOf(
+            \DateTimeInterface::class,
+            $persistedPurchase instanceof Purchase ? $persistedPurchase->getDeletedAt() : null,
+        );
         /** @phpstan-ignore staticMethod.alreadyNarrowedType */
         self::assertNull($result);
     }
@@ -72,12 +80,14 @@ final class PurchaseVoidProcessorTest extends TestCase
     {
         $callOrder = [];
 
-        $this->voidService->method('reverse')
+        $this->voidService
+            ->method('reverse')
             ->willReturnCallback(function () use (&$callOrder): void {
                 $callOrder[] = 'reverse';
             });
 
-        $this->persist->method('process')
+        $this->persist
+            ->method('process')
             ->willReturnCallback(function () use (&$callOrder): null {
                 $callOrder[] = 'persist';
 

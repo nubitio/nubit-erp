@@ -14,8 +14,7 @@ final readonly class TenantHealthChecker
         private ConnectionRegistry $connectionRegistry,
         private TenantManager $tenantManager,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{healthy: bool, tenant: string, checks: array<string, array{ok: bool, message: string}>}
@@ -31,11 +30,7 @@ final readonly class TenantHealthChecker
             $checks['schema'] = $this->checkSchema($tenantName);
         }
 
-        $healthy = array_reduce(
-            $checks,
-            static fn (bool $carry, array $check): bool => $carry && $check['ok'],
-            true,
-        );
+        $healthy = array_reduce($checks, static fn(bool $carry, array $check): bool => $carry && $check['ok'], true);
 
         return [
             'healthy' => $healthy,

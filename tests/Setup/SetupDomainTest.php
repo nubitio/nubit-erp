@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Setup\Dto\InitialSetupInput;
 use App\Setup\Dto\SetupStatusDto;
-use App\Setup\InitialSetupService;
 use App\Setup\Infrastructure\Mercure\E2eTolerantHub;
+use App\Setup\InitialSetupService;
 use App\Setup\State\SetupProcessor;
 use App\Setup\State\SetupStatusProvider;
 use PHPUnit\Framework\TestCase;
@@ -57,12 +57,7 @@ final class SetupDomainTest extends TestCase
 
     public function testSetupStatusDtoHoldsFields(): void
     {
-        $dto = new SetupStatusDto(
-            configured: true,
-            userCount: 2,
-            companyCount: 1,
-            branchCount: 3,
-        );
+        $dto = new SetupStatusDto(configured: true, userCount: 2, companyCount: 1, branchCount: 3);
 
         self::assertTrue($dto->configured);
         self::assertSame(2, $dto->userCount);
@@ -85,10 +80,7 @@ final class SetupDomainTest extends TestCase
         $input = new InitialSetupInput();
 
         $service = $this->createMock(InitialSetupService::class);
-        $service->expects(self::once())
-            ->method('configure')
-            ->with($input)
-            ->willReturn($expected);
+        $service->expects(self::once())->method('configure')->with($input)->willReturn($expected);
 
         $processor = new SetupProcessor($service);
         $result = $processor->process($input, new Post());

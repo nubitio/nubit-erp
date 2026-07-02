@@ -9,8 +9,8 @@ use App\ControlPlane\Subscription\Payment\PaymentEvent;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -21,7 +21,8 @@ final class SubscriptionManagerTest extends TestCase
     {
         $connection = $this->connection();
         $insertedRows = [];
-        $connection->expects(self::exactly(2))
+        $connection
+            ->expects(self::exactly(2))
             ->method('insert')
             ->willReturnCallback(static function (string $table, array $data) use (&$insertedRows): int {
                 $insertedRows[] = [$table, $data];
@@ -68,19 +69,24 @@ final class SubscriptionManagerTest extends TestCase
     {
         $connection = $this->connection();
         $linked = [];
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('fetchFirstColumn')
             ->with(
                 'SELECT id FROM subscriptions WHERE provision_id = ? AND tenant_id IS NULL',
                 [55],
-                [\Doctrine\DBAL\ParameterType::INTEGER]
+                [\Doctrine\DBAL\ParameterType::INTEGER],
             )
             ->willReturn(['7', '8']);
-        $connection->expects(self::exactly(2))
+        $connection
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params, array $types) use (&$linked): int {
                 self::assertSame('UPDATE subscriptions SET tenant_id = ?, updated_at = NOW() WHERE id = ?', $sql);
-                self::assertSame([\Doctrine\DBAL\ParameterType::INTEGER, \Doctrine\DBAL\ParameterType::INTEGER], $types);
+                self::assertSame(
+                    [\Doctrine\DBAL\ParameterType::INTEGER, \Doctrine\DBAL\ParameterType::INTEGER],
+                    $types,
+                );
                 $linked[] = $params;
 
                 return 1;
@@ -95,12 +101,13 @@ final class SubscriptionManagerTest extends TestCase
     public function testLinkPendingProvisionSubscriptionsDoesNotOverwriteAlreadyLinkedRows(): void
     {
         $connection = $this->connection();
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('fetchFirstColumn')
             ->with(
                 'SELECT id FROM subscriptions WHERE provision_id = ? AND tenant_id IS NULL',
                 [55],
-                [\Doctrine\DBAL\ParameterType::INTEGER]
+                [\Doctrine\DBAL\ParameterType::INTEGER],
             )
             ->willReturn([]);
         $connection->expects(self::never())->method('executeStatement');
@@ -114,12 +121,13 @@ final class SubscriptionManagerTest extends TestCase
     {
         $connection = $this->connection();
         $connection->method('lastInsertId')->willReturn('45');
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('fetchAssociative')
             ->with(
                 'SELECT id, processed_at, processing_status FROM payment_events WHERE id = ? FOR UPDATE',
                 [45],
-                [\Doctrine\DBAL\ParameterType::INTEGER]
+                [\Doctrine\DBAL\ParameterType::INTEGER],
             )
             ->willReturn([
                 'id' => 45,
@@ -128,7 +136,8 @@ final class SubscriptionManagerTest extends TestCase
             ]);
 
         $executions = [];
-        $connection->expects(self::exactly(2))
+        $connection
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params, array $types) use (&$executions): int {
                 $executions[] = [$sql, $params, $types];
@@ -147,7 +156,10 @@ final class SubscriptionManagerTest extends TestCase
         self::assertStringContainsString('ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)', $executions[0][0]);
         self::assertStringContainsString("processing_status = 'in_progress'", $executions[1][0]);
         self::assertSame([7, 20, 'BILLING.SUBSCRIPTION.ACTIVATED'], array_slice($executions[1][1], 0, 3));
-        self::assertSame([\Doctrine\DBAL\ParameterType::INTEGER, \Doctrine\DBAL\ParameterType::INTEGER], array_slice($executions[1][2], 0, 2));
+        self::assertSame(
+            [\Doctrine\DBAL\ParameterType::INTEGER, \Doctrine\DBAL\ParameterType::INTEGER],
+            array_slice($executions[1][2], 0, 2),
+        );
     }
 
     public function testFindMethodsReturnExpectedRows(): void
@@ -158,7 +170,7 @@ final class SubscriptionManagerTest extends TestCase
             ['id' => 2, 'gateway' => 'paypal'],
             false,
             ['id' => 4, 'status' => 'active'],
-            ['id' => 5, 'status' => 'past_due']
+            ['id' => 5, 'status' => 'past_due'],
         );
 
         $manager = $this->manager($connection);
@@ -172,10 +184,7 @@ final class SubscriptionManagerTest extends TestCase
     public function testGracePeriodQueriesAndEventProcessedFlag(): void
     {
         $connection = $this->connection();
-        $connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls(
-            [['id' => 1]],
-            [['id' => 2]]
-        );
+        $connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls([['id' => 1]], [['id' => 2]]);
         $connection->method('fetchOne')->willReturnOnConsecutiveCalls(false, 1);
 
         $manager = $this->manager($connection);
@@ -191,7 +200,8 @@ final class SubscriptionManagerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('error');
 
-        $connection->expects(self::exactly(2))
+        $connection
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params): int {
                 if (($params[4] ?? '') === 'evt-fail') {
@@ -202,23 +212,21 @@ final class SubscriptionManagerTest extends TestCase
             });
 
         $manager = $this->manager($connection, $logger);
-        $manager->logPaymentEvent(
-            new PaymentEvent('paypal', 'payment.approved', 'evt-ok', 'sub-1', ['ok' => true]),
-            1,
-            2
-        );
-        $manager->logPaymentEvent(
-            new PaymentEvent('paypal', 'payment.failed', 'evt-fail', 'sub-2', ['ok' => false]),
-            1,
-            2
-        );
+        $manager->logPaymentEvent(new PaymentEvent('paypal', 'payment.approved', 'evt-ok', 'sub-1', [
+            'ok' => true,
+        ]), 1, 2);
+        $manager->logPaymentEvent(new PaymentEvent('paypal', 'payment.failed', 'evt-fail', 'sub-2', [
+            'ok' => false,
+        ]), 1, 2);
     }
 
     public function testPaymentEventProcessingLifecycleReservesCompletesAndFails(): void
     {
         $connection = $this->connection();
         $connection->method('lastInsertId')->willReturn('42');
-        $connection->method('fetchAssociative')->willReturn(['id' => 42, 'processed_at' => null, 'processing_status' => 'failed']);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn(['id' => 42, 'processed_at' => null, 'processing_status' => 'failed']);
         $connection->expects(self::exactly(4))->method('executeStatement');
 
         $manager = $this->manager($connection);
@@ -233,11 +241,13 @@ final class SubscriptionManagerTest extends TestCase
     {
         $connection = $this->connection();
         $connection->method('lastInsertId')->willReturn('43');
-        $connection->method('fetchAssociative')->willReturn([
-            'id' => 43,
-            'processed_at' => '2026-04-24 20:00:00',
-            'processing_status' => 'completed',
-        ]);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 43,
+                'processed_at' => '2026-04-24 20:00:00',
+                'processing_status' => 'completed',
+            ]);
         $connection->expects(self::once())->method('executeStatement');
 
         $manager = $this->manager($connection);
@@ -253,14 +263,17 @@ final class SubscriptionManagerTest extends TestCase
     {
         $connection = $this->connection();
         $connection->method('lastInsertId')->willReturn('44');
-        $connection->method('fetchAssociative')->willReturn([
-            'id' => 44,
-            'processed_at' => null,
-            'processing_status' => 'in_progress',
-        ]);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 44,
+                'processed_at' => null,
+                'processing_status' => 'in_progress',
+            ]);
 
         $executedSql = [];
-        $connection->expects(self::exactly(2))
+        $connection
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql) use (&$executedSql): int {
                 $executedSql[] = $sql;
@@ -276,8 +289,11 @@ final class SubscriptionManagerTest extends TestCase
             2,
         ));
         self::assertTrue(
-            array_any($executedSql, static fn (string $sql): bool => str_contains($sql, "processing_status = 'in_progress'")),
-            'A locked in-progress duplicate should be reserved by the current processor rather than skipped.'
+            array_any($executedSql, static fn(string $sql): bool => str_contains(
+                $sql,
+                "processing_status = 'in_progress'",
+            )),
+            'A locked in-progress duplicate should be reserved by the current processor rather than skipped.',
         );
     }
 
@@ -304,9 +320,6 @@ final class SubscriptionManagerTest extends TestCase
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
-        return new SubscriptionManager(
-            $registry,
-            $logger ?? $this->createMock(LoggerInterface::class)
-        );
+        return new SubscriptionManager($registry, $logger ?? $this->createMock(LoggerInterface::class));
     }
 }

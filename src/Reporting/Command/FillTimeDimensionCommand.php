@@ -2,8 +2,8 @@
 
 namespace App\Reporting\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Reporting\Service\TimeDimensionSeeder;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,14 +38,13 @@ class FillTimeDimensionCommand extends PerTenantCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $startInput = (string)$input->getArgument('start');
+        $startInput = (string) $input->getArgument('start');
         $endInput = $input->getArgument('end');
-        $locale = (string)$input->getOption('locale');
-        $batchSize = (int)$input->getOption('batch-size');
+        $locale = (string) $input->getOption('locale');
+        $batchSize = (int) $input->getOption('batch-size');
 
         $startDate = new \DateTimeImmutable($startInput);
-        $endDate = $endInput ? new \DateTimeImmutable((string)$endInput) :
-            (new \DateTimeImmutable())->modify('+1 day');
+        $endDate = $endInput ? new \DateTimeImmutable((string) $endInput) : new \DateTimeImmutable()->modify('+1 day');
 
         if ($startDate >= $endDate) {
             $io->error('La fecha de inicio debe ser menor a la fecha fin.');
@@ -66,12 +65,7 @@ class FillTimeDimensionCommand extends PerTenantCommand
             );
 
             $io->progressFinish();
-            $io->success(
-                sprintf(
-                    'Dimensión de fechas completada. Filas procesadas: %d',
-                    $count
-                )
-            );
+            $io->success(sprintf('Dimensión de fechas completada. Filas procesadas: %d', $count));
 
             return Command::SUCCESS;
         } catch (\Throwable $exception) {

@@ -31,8 +31,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         private StockMovementRepository $repository,
         private KardexReferenceResolver $referenceResolver,
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array
@@ -41,10 +40,10 @@ final readonly class StockMovementProvider implements ProviderInterface
 
         $filters = [
             'warehouse' => $request?->query->get('warehouse'),
-            'product'   => $request?->query->get('product'),
-            'type'      => $request?->query->get('type') ?? $request?->query->get('movementType'),
-            'from'      => $request?->query->get('from'),
-            'to'        => $request?->query->get('to'),
+            'product' => $request?->query->get('product'),
+            'type' => $request?->query->get('type') ?? $request?->query->get('movementType'),
+            'from' => $request?->query->get('from'),
+            'to' => $request?->query->get('to'),
             'valuation' => $request?->query->get('valuation'),
         ];
 
@@ -53,10 +52,13 @@ final readonly class StockMovementProvider implements ProviderInterface
         }
 
         // Remove nulls
-        $filters = array_filter($filters, static fn ($v) => $v !== null && $v !== '');
+        $filters = array_filter($filters, static fn($v) => $v !== null && $v !== '');
 
-        $page    = max(1, (int) ($request?->query->get('page', 1) ?? 1));
-        $perPage = max(1, min(200, (int) ($request?->query->get('itemsPerPage', self::DEFAULT_PER_PAGE) ?? self::DEFAULT_PER_PAGE)));
+        $page = max(1, (int) ($request?->query->get('page', 1) ?? 1));
+        $perPage = max(1, min(
+            200,
+            (int) ($request?->query->get('itemsPerPage', self::DEFAULT_PER_PAGE) ?? self::DEFAULT_PER_PAGE),
+        ));
 
         $items = $this->repository->findKardex($filters, $page, $perPage);
         $this->referenceResolver->applyToMovements($items);

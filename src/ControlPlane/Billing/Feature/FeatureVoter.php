@@ -27,8 +27,7 @@ final class FeatureVoter extends Voter
 
     public function __construct(
         private readonly FeatureCheckerInterface $featureChecker,
-    ) {
-    }
+    ) {}
 
     /**
      * This voter only handles attributes that start with 'FEATURE_'.
@@ -44,8 +43,12 @@ final class FeatureVoter extends Voter
      * Converts 'FEATURE_EXCEL_EXPORT' → 'excel_export' and delegates to
      * FeatureCheckerInterface::hasFeature().
      */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?\Symfony\Component\Security\Core\Authorization\Voter\Vote $vote = null): bool
-    {
+    protected function voteOnAttribute(
+        string $attribute,
+        mixed $subject,
+        TokenInterface $token,
+        ?\Symfony\Component\Security\Core\Authorization\Voter\Vote $vote = null,
+    ): bool {
         $featureKey = strtolower(substr($attribute, \strlen(self::PREFIX)));
 
         return $this->featureChecker->hasFeature($featureKey);

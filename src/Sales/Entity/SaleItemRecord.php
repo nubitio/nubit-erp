@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Sales\Entity;
 
-use App\Catalog\Entity\Product;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use App\Catalog\Entity\Product;
 use App\Sales\Repository\SaleItemRecordRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -19,10 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     uriTemplate: '/sales/{id}/items.{_format}',
     operations: [new GetCollection()],
     uriVariables: [
-        'id' => new Link(
-            fromProperty: 'saleItemRecords',
-            fromClass: SaleRecord::class,
-        ),
+        'id' => new Link(fromProperty: 'saleItemRecords', fromClass: SaleRecord::class),
     ],
     normalizationContext: ['groups' => ['sale_item_record:read']],
     paginationEnabled: false,
@@ -75,13 +72,9 @@ class SaleItemRecord
     private string $grossAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]
-    #[ORM\Column(
-        name: 'discount_amount',
-        type: Types::DECIMAL,
-        precision: 12,
-        scale: 2,
-        options: ['default' => '0.00'],
-    )]
+    #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
     #[ApiProperty(description: 'sale_item_record.discount_amount.label')]
     private string $discountAmount = '0.00';
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\EventListener;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
-use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
+use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\Platform\Tenant\Context\TenantContext;
 
 #[AsDoctrineListener(event: Events::prePersist)]
 #[AsDoctrineListener(event: Events::postFlush)]
@@ -22,8 +22,7 @@ final readonly class QuotaEnforcementListener
         private QuotaEnforcerInterface $quotaService,
         private TenantContext $tenantContext,
         private QuotaResourceResolverInterface $quotaResourceResolver,
-    ) {
-    }
+    ) {}
 
     /**
      * @param LifecycleEventArgs<\Doctrine\Persistence\ObjectManager> $args

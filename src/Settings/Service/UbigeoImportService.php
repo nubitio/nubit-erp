@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Settings\Service;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 
 readonly class UbigeoImportService
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @param callable(int):void|null $progressCallback Callback invoked after each batch.
@@ -65,16 +64,16 @@ readonly class UbigeoImportService
 
                 // Skip blank rows (e.g. a trailing ",,," line): an empty code
                 // would be inserted as a PK and break IRI generation downstream.
-                $code = trim((string)$row[0]);
+                $code = trim((string) $row[0]);
                 if ($code === '') {
                     continue;
                 }
 
                 $batch[] = [
                     'code' => $code,
-                    'department' => trim((string)$row[1]),
-                    'province' => trim((string)$row[2]),
-                    'district' => trim((string)$row[3]),
+                    'department' => trim((string) $row[1]),
+                    'province' => trim((string) $row[2]),
+                    'district' => trim((string) $row[3]),
                 ];
 
                 if (count($batch) === $batchSize) {
@@ -133,14 +132,11 @@ readonly class UbigeoImportService
             $params[] = $row['district'];
         }
 
-        $sql = sprintf(
-            'INSERT INTO ubigeo (codigo, departamento, provincia, distrito) VALUES %s
+        $sql = sprintf('INSERT INTO ubigeo (codigo, departamento, provincia, distrito) VALUES %s
              ON DUPLICATE KEY UPDATE
                departamento = VALUES(departamento),
                provincia    = VALUES(provincia),
-               distrito     = VALUES(distrito)',
-            implode(',', $placeholders)
-        );
+               distrito     = VALUES(distrito)', implode(',', $placeholders));
 
         $this->connection->executeStatement($sql, $params);
     }

@@ -13,11 +13,15 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:control-plane:certificate:retry-sync', description: 'Retry a pending or failed Lycet certificate operation.')]
+#[AsCommand(
+    name: 'app:control-plane:certificate:retry-sync',
+    description: 'Retry a pending or failed Lycet certificate operation.',
+)]
 final class CertificateRetrySyncCommand extends Command
 {
-    public function __construct(private readonly CertificateLifecycleServiceInterface $certificates)
-    {
+    public function __construct(
+        private readonly CertificateLifecycleServiceInterface $certificates,
+    ) {
         parent::__construct();
     }
 
@@ -28,25 +32,39 @@ final class CertificateRetrySyncCommand extends Command
             ->addArgument('ruc', InputArgument::REQUIRED, 'Company RUC')
             ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Operation to retry: upsert or revoke')
             ->addOption('sol-user', null, InputOption::VALUE_OPTIONAL, 'SOL user required for upsert retry')
-            ->addOption('sol-pass-env', null, InputOption::VALUE_OPTIONAL, 'Environment variable containing the SOL password for upsert retry', 'SOL_PASS')
-            ->addOption('cert-file', null, InputOption::VALUE_OPTIONAL, 'PEM certificate path required for upsert retry');
+            ->addOption(
+                'sol-pass-env',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Environment variable containing the SOL password for upsert retry',
+                'SOL_PASS',
+            )
+            ->addOption(
+                'cert-file',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'PEM certificate path required for upsert retry',
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $operation = (string)($input->getOption('operation') ?? '');
+        $operation = (string) ($input->getOption('operation') ?? '');
 
         try {
             if ($operation === 'revoke') {
-                $this->certificates->retryRevocation((string)$input->getArgument('tenant'), (string)$input->getArgument('ruc'));
+                $this->certificates->retryRevocation(
+                    (string) $input->getArgument('tenant'),
+                    (string) $input->getArgument('ruc'),
+                );
                 $io->success('Certificate revocation synchronized with Lycet.');
 
                 return Command::SUCCESS;
             }
 
             if ($operation === 'upsert') {
-                $certFile = (string)($input->getOption('cert-file') ?? '');
+                $certFile = (string) ($input->getOption('cert-file') ?? '');
                 if ($certFile === '' || !file_exists($certFile)) {
                     $io->error('Valid --cert-file is required for upsert retry.');
 
@@ -54,11 +72,11 @@ final class CertificateRetrySyncCommand extends Command
                 }
 
                 $this->certificates->retryUpsertSync(
-                    (string)$input->getArgument('tenant'),
-                    (string)$input->getArgument('ruc'),
-                    (string)($input->getOption('sol-user') ?? ''),
-                    $this->readSolPassword((string)($input->getOption('sol-pass-env') ?? 'SOL_PASS')),
-                    (string)file_get_contents($certFile),
+                    (string) $input->getArgument('tenant'),
+                    (string) $input->getArgument('ruc'),
+                    (string) ($input->getOption('sol-user') ?? ''),
+                    $this->readSolPassword((string) ($input->getOption('sol-pass-env') ?? 'SOL_PASS')),
+                    (string) file_get_contents($certFile),
                 );
                 $io->success('Certificate upsert synchronized with Lycet.');
 

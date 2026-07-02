@@ -10,6 +10,5 @@ final readonly class CreateSubscriptionResult
         public string $gatewaySubscriptionId,
         public string $gatewayCustomerId,
         public string $approvalUrl,
-    ) {
-    }
+    ) {}
 }

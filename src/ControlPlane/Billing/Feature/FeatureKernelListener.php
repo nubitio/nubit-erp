@@ -25,8 +25,7 @@ final class FeatureKernelListener
 {
     public function __construct(
         private readonly FeatureCheckerInterface $featureChecker,
-    ) {
-    }
+    ) {}
 
     public function onKernelController(ControllerEvent $event): void
     {

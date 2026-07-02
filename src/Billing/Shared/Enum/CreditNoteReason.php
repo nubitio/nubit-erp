@@ -55,11 +55,15 @@ enum CreditNoteReason: string
      */
     public function annulsDocument(): bool
     {
-        return in_array($this, [
-            self::ANULACION_OPERACION,
-            self::ANULACION_ERROR_RUC,
-            self::DEVOLUCION_TOTAL,
-        ], true);
+        return in_array(
+            $this,
+            [
+                self::ANULACION_OPERACION,
+                self::ANULACION_ERROR_RUC,
+                self::DEVOLUCION_TOTAL,
+            ],
+            true,
+        );
     }
 
     /**
@@ -67,13 +71,10 @@ enum CreditNoteReason: string
      */
     public static function options(): array
     {
-        return array_map(
-            static fn (self $reason): array => [
-                'code' => $reason->value,
-                'description' => $reason->description(),
-                'annuls' => $reason->annulsDocument(),
-            ],
-            self::cases(),
-        );
+        return array_map(static fn(self $reason): array => [
+            'code' => $reason->value,
+            'description' => $reason->description(),
+            'annuls' => $reason->annulsDocument(),
+        ], self::cases());
     }
 }

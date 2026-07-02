@@ -28,13 +28,10 @@ readonly class TenantProvisionRepository
     /**
      * Inserts a "dispatched" provision row and returns its auto-increment id.
      */
-    public function recordDispatch(
-        int $tenantId,
-        string $tenantName,
-        string $domain,
-        string $adminUser,
-    ): int {
-        $sql = 'INSERT INTO tenant_provisions'
+    public function recordDispatch(int $tenantId, string $tenantName, string $domain, string $adminUser): int
+    {
+        $sql =
+            'INSERT INTO tenant_provisions'
             . ' (tenant_id, tenant_name, domain, admin_user, status, created_at)'
             . ' VALUES (?, ?, ?, ?, \'dispatched\', NOW())';
 
@@ -46,7 +43,7 @@ readonly class TenantProvisionRepository
                 ParameterType::STRING,
                 ParameterType::STRING,
                 ParameterType::STRING,
-            ]
+            ],
         );
 
         return (int) $this->cp->lastInsertId();
@@ -60,7 +57,7 @@ readonly class TenantProvisionRepository
         $this->cp->executeStatement(
             'UPDATE tenant_provisions SET status = ?, error_message = ?, completed_at = NOW() WHERE id = ?',
             ['failed', mb_substr($error, 0, 65535), $provisionId],
-            [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
+            [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER],
         );
     }
 
@@ -80,7 +77,7 @@ readonly class TenantProvisionRepository
         return $this->cp->fetchAllAssociative(
             'SELECT * FROM tenant_provisions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
             [$tenantId, 20],
-            [ParameterType::INTEGER, ParameterType::INTEGER]
+            [ParameterType::INTEGER, ParameterType::INTEGER],
         );
     }
 }

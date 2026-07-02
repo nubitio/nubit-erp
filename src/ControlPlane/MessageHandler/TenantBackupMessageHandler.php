@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\MessageHandler;
 
-use App\Efact\Audit\AuditLogger;
 use App\ControlPlane\Message\TenantBackupMessage;
+use App\Efact\Audit\AuditLogger;
 use Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -17,8 +17,7 @@ final readonly class TenantBackupMessageHandler
         private TenantBackupRunnerInterface $backupService,
         private AuditLogger $auditLogger,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(TenantBackupMessage $message): void
     {

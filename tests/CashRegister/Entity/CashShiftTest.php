@@ -4,28 +4,37 @@ declare(strict_types=1);
 
 namespace App\Tests\CashRegister\Entity;
 
-use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;
+use App\CashRegister\Enum\CashShiftStatus;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
-use App\CashRegister\Enum\CashShiftStatus;
+use App\Organization\Entity\Branch;
 use PHPUnit\Framework\TestCase;
 
 final class CashShiftTest extends TestCase
 {
     public function testCashShiftAccessors(): void
     {
-        $branch = (new Branch())->setName('Main');
-        $register = (new CashRegister())->setName('Caja 1')->setBranch($branch);
-        $role = (new Role())->setName('Cajero');
-        $openedBy = (new User())->setUsername('open')->setPassword('x')->setRole($role);
-        $closedBy = (new User())->setUsername('close')->setPassword('y')->setRole($role);
+        $branch = new Branch()->setName('Main');
+        $register = new CashRegister()
+            ->setName('Caja 1')
+            ->setBranch($branch);
+        $role = new Role()->setName('Cajero');
+        $openedBy = new User()
+            ->setUsername('open')
+            ->setPassword('x')
+            ->setRole($role);
+        $closedBy = new User()
+            ->setUsername('close')
+            ->setPassword('y')
+            ->setRole($role);
         $openedAt = new \DateTimeImmutable('2026-02-01 08:00:00');
         $closedAt = new \DateTimeImmutable('2026-02-01 18:00:00');
 
         $entity = new CashShift();
-        $entity->setCashRegister($register)
+        $entity
+            ->setCashRegister($register)
             ->setStatus(CashShiftStatus::OPEN)
             ->setOpeningBalance('100.00')
             ->setClosingBalance('150.00')

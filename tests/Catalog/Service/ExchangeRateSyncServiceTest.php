@@ -9,9 +9,9 @@ use App\Catalog\Enum\ExchangeRateSource;
 use App\Catalog\Repository\ExchangeRateRepository;
 use App\Catalog\Service\ExchangeRateSyncService;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -32,15 +32,10 @@ final class ExchangeRateSyncServiceTest extends TestCase
     {
         $this->httpClient = $this->createMock(HttpClientInterface::class);
         $this->repository = $this->createMock(ExchangeRateRepository::class);
-        $this->em         = $this->createMock(EntityManagerInterface::class);
-        $this->logger     = $this->createMock(LoggerInterface::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
 
-        $this->service = new ExchangeRateSyncService(
-            $this->repository,
-            $this->em,
-            $this->httpClient,
-            $this->logger,
-        );
+        $this->service = new ExchangeRateSyncService($this->repository, $this->em, $this->httpClient, $this->logger);
     }
 
     /** @param array<string, mixed> $data */
@@ -130,11 +125,13 @@ final class ExchangeRateSyncServiceTest extends TestCase
 
     public function testSyncPicksLastValidPeriodWhenMultiplePeriods(): void
     {
-        $this->stubBcrpResponse(['periods' => [
-            ['values' => ['3.700000']],
-            ['values' => ['n.d.']],
-            ['values' => ['3.850000']],
-        ]]);
+        $this->stubBcrpResponse([
+            'periods' => [
+                ['values' => ['3.700000']],
+                ['values' => ['n.d.']],
+                ['values' => ['3.850000']],
+            ],
+        ]);
         $this->repository->method('findByCurrency')->willReturn(null);
 
         $result = $this->service->sync();
@@ -145,11 +142,13 @@ final class ExchangeRateSyncServiceTest extends TestCase
 
     public function testSyncSkipsNdAndPicksFirstValidInReversedOrder(): void
     {
-        $this->stubBcrpResponse(['periods' => [
-            ['values' => ['3.700000']],
-            ['values' => ['3.750000']],
-            ['values' => ['n.d.']],
-        ]]);
+        $this->stubBcrpResponse([
+            'periods' => [
+                ['values' => ['3.700000']],
+                ['values' => ['3.750000']],
+                ['values' => ['n.d.']],
+            ],
+        ]);
         $this->repository->method('findByCurrency')->willReturn(null);
 
         $result = $this->service->sync();

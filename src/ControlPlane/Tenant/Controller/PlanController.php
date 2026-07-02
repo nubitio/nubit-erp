@@ -19,8 +19,7 @@ final class PlanController extends AbstractController
     public function __construct(
         private readonly PlanManager $planManager,
         private readonly AuditLogger $auditLogger,
-    ) {
-    }
+    ) {}
 
     #[Route('/admin/plans', name: 'admin_plan_index', methods: ['GET'])]
     public function index(): Response
@@ -40,9 +39,9 @@ final class PlanController extends AbstractController
         }
 
         try {
-            $name = strtolower(trim((string)$request->request->get('name', '')));
+            $name = strtolower(trim((string) $request->request->get('name', '')));
             $limits = $this->extractLimits($request);
-            $isDefault = (bool)$request->request->get('is_default', false);
+            $isDefault = (bool) $request->request->get('is_default', false);
 
             $this->planManager->createPlan($name, $limits, $isDefault);
             $this->auditLogger->log('plan.create', ['name' => $name, 'limits' => $limits, 'is_default' => $isDefault]);
@@ -64,9 +63,9 @@ final class PlanController extends AbstractController
         }
 
         try {
-            $name = strtolower(trim((string)$request->request->get('name', '')));
+            $name = strtolower(trim((string) $request->request->get('name', '')));
             $limits = $this->extractLimits($request);
-            $isDefault = (bool)$request->request->get('is_default', false);
+            $isDefault = (bool) $request->request->get('is_default', false);
 
             $this->planManager->updatePlan($id, $name, $limits, $isDefault);
             $this->auditLogger->log('plan.update', [
@@ -111,7 +110,7 @@ final class PlanController extends AbstractController
         $keys = ['users', 'customers', 'products', 'invoices', 'branches', 'storage_mb'];
         $limits = [];
         foreach ($keys as $key) {
-            $limits[$key] = (int)$request->request->get($key, -1);
+            $limits[$key] = (int) $request->request->get($key, -1);
         }
 
         return $limits;

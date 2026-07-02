@@ -27,8 +27,7 @@ class ExchangeRateController extends AbstractController
         private readonly ExchangeRateRepository $repository,
         private readonly ExchangeRateSyncService $syncService,
         private readonly EntityManagerInterface $em,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'exchange_rate_get', methods: ['GET'])]
     public function get(): JsonResponse

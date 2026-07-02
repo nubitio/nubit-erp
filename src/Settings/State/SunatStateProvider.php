@@ -14,8 +14,7 @@ final readonly class SunatStateProvider implements ProviderInterface
 {
     public function __construct(
         private SunatOperationalStateRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SunatOperationalState
     {

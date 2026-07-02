@@ -11,6 +11,5 @@ readonly class InvoiceSendProcessResult
         public ?string $error,
         public bool $paused,
         public ?string $skipReason,
-    ) {
-    }
+    ) {}
 }

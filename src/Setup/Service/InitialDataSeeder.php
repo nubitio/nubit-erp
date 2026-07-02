@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace App\Setup\Service;
 
-use App\Settings\Service\TenantSettingsService;
-use App\Settings\Service\SunatStateService;
 use App\CashRegister\Entity\CashMovementCategory;
+use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Entity\Category;
-use App\Contacts\Entity\Customer;
-use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
-use App\CashRegister\Enum\CashMovementType;
-use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
-use App\Contacts\Repository\CustomerRepository;
-use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Repository\LogisticOperationRepository;
 use App\Settings\Service\MenuSeedService;
+use App\Settings\Service\SunatStateService;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Throwable;
 
@@ -42,8 +42,7 @@ readonly class InitialDataSeeder
         private CategoryRepository $categoryRepository,
         private CustomerRepository $customerRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
-    ) {
-    }
+    ) {}
 
     public function seed(): void
     {
@@ -82,14 +81,14 @@ readonly class InitialDataSeeder
         $this->getOrCreateUnitOfMeasure('NIU', 'Unidad', 1, 1.0, true);
 
         $operations = [
-            ['Venta', 2],
-            ['Devolución de venta', 1],
-            ['Compra', 1],
-            ['Devolución de compra', 2],
+            ['Venta',                        2],
+            ['Devolución de venta',          1],
+            ['Compra',                       1],
+            ['Devolución de compra',         2],
             ['Ajuste de inventario entrada', 1],
-            ['Ajuste de inventario salida', 2],
-            ['Transferencia entrada', 1],
-            ['Transferencia salida', 2],
+            ['Ajuste de inventario salida',  2],
+            ['Transferencia entrada',        1],
+            ['Transferencia salida',         2],
         ];
         foreach ($operations as [$name, $type]) {
             $this->getOrCreateLogisticOperation($name, $type);
@@ -111,16 +110,16 @@ readonly class InitialDataSeeder
         }
 
         $cashMovementCategories = [
-            [CashMovementCategory::CASH_SALE, 'Venta en efectivo', CashMovementType::INCOME],
-            [CashMovementCategory::CREDIT_PAYMENT, 'Cobro de crédito', CashMovementType::INCOME],
-            [CashMovementCategory::CASH_REPLENISHMENT, 'Reposición de caja', CashMovementType::INCOME],
-            [CashMovementCategory::OTHER_INCOME, 'Otros ingresos', CashMovementType::INCOME],
-            [CashMovementCategory::OVERAGE_ADJUSTMENT, 'Ajuste por sobrante', CashMovementType::INCOME],
-            [CashMovementCategory::PETTY_CASH_EXPENSE, 'Gasto de caja chica', CashMovementType::EXPENSE],
-            [CashMovementCategory::CUSTOMER_REFUND, 'Devolución al cliente', CashMovementType::EXPENSE],
-            [CashMovementCategory::MANAGER_WITHDRAWAL, 'Retiro de efectivo', CashMovementType::EXPENSE],
-            [CashMovementCategory::BANK_DEPOSIT, 'Depósito bancario', CashMovementType::EXPENSE],
-            [CashMovementCategory::SHORTAGE_ADJUSTMENT, 'Ajuste por faltante', CashMovementType::EXPENSE],
+            [CashMovementCategory::CASH_SALE,           'Venta en efectivo',     CashMovementType::INCOME],
+            [CashMovementCategory::CREDIT_PAYMENT,      'Cobro de crédito',      CashMovementType::INCOME],
+            [CashMovementCategory::CASH_REPLENISHMENT,  'Reposición de caja',    CashMovementType::INCOME],
+            [CashMovementCategory::OTHER_INCOME,        'Otros ingresos',        CashMovementType::INCOME],
+            [CashMovementCategory::OVERAGE_ADJUSTMENT,  'Ajuste por sobrante',   CashMovementType::INCOME],
+            [CashMovementCategory::PETTY_CASH_EXPENSE,  'Gasto de caja chica',   CashMovementType::EXPENSE],
+            [CashMovementCategory::CUSTOMER_REFUND,     'Devolución al cliente', CashMovementType::EXPENSE],
+            [CashMovementCategory::MANAGER_WITHDRAWAL,  'Retiro de efectivo',    CashMovementType::EXPENSE],
+            [CashMovementCategory::BANK_DEPOSIT,        'Depósito bancario',     CashMovementType::EXPENSE],
+            [CashMovementCategory::SHORTAGE_ADJUSTMENT, 'Ajuste por faltante',   CashMovementType::EXPENSE],
         ];
         foreach ($cashMovementCategories as [$code, $name, $type]) {
             $this->getOrCreateCashMovementCategory($code, $name, $type);
@@ -140,10 +139,7 @@ readonly class InitialDataSeeder
         $operationTypes = [
             ['0101', 'Venta Interna'],
             ['0200', 'Exportación de bienes'],
-            [
-                '1001',
-                'Operación sujeta al Sistema de Pago de Obligaciones Tributarias con el Gobierno Central',
-            ],
+            ['1001', 'Operación sujeta al Sistema de Pago de Obligaciones Tributarias con el Gobierno Central'],
             ['1004', 'Operación Sujeta a Detracción- Servicios de Transporte Carga'],
         ];
         foreach ($operationTypes as [$code, $name]) {
@@ -299,7 +295,7 @@ readonly class InitialDataSeeder
         string $name,
         int $type,
         float $ratio,
-        bool $reference
+        bool $reference,
     ): void {
         $existing = $this->unitOfMeasureRepository->findOneBy(['code' => $code]);
         if ($existing instanceof UnitOfMeasure) {
@@ -324,8 +320,7 @@ readonly class InitialDataSeeder
             return;
         }
 
-        $category = new Category()
-            ->setName($name);
+        $category = new Category()->setName($name);
         $this->entityManager->persist($category);
         $this->entityManager->flush();
     }
@@ -344,12 +339,8 @@ readonly class InitialDataSeeder
         $this->entityManager->flush();
     }
 
-    private function getOrCreateSunatCatalog(
-        int $catalog,
-        string $code,
-        string $name,
-        ?float $percentage = null
-    ): void {
+    private function getOrCreateSunatCatalog(int $catalog, string $code, string $name, ?float $percentage = null): void
+    {
         $existing = $this->sunatCatalogRepository->findOneBy([
             'catalog' => $catalog,
             'code' => $code,
@@ -358,7 +349,7 @@ readonly class InitialDataSeeder
             return;
         }
 
-        $entry = (new SunatCatalog())
+        $entry = new SunatCatalog()
             ->setCatalog($catalog)
             ->setCode($code)
             ->setDescription($name)

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Service;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Exception\QuotaExceededException;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Exception\QuotaExceededException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
+use Nubit\Platform\Tenant\Context\TenantContext;
 
 final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSummaryInterface
 {
@@ -26,8 +26,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
         private PlanManager $planManager,
         private TenantResourceCatalog $resourceCatalog,
         private ConnectionRegistry $connectionRegistry,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, array<string, int>>
@@ -36,7 +35,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
     {
         $result = [];
         foreach ($this->planManager->getPlans() as $plan) {
-            $result[(string)$plan['name']] = (array)$plan['limits'];
+            $result[(string) $plan['name']] = (array) $plan['limits'];
         }
 
         return $result;
@@ -59,7 +58,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             return new QuotaCheckResult(false, $resource, 0, 0);
         }
 
-        $plan = (string)($tenant['plan'] ?? 'free');
+        $plan = (string) ($tenant['plan'] ?? 'free');
         $limits = $this->planManager->getLimitsForPlan($plan);
         $limit = $limits[$resource] ?? -1;
 
@@ -80,7 +79,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
 
         $this->acquireQuotaLock($connection, $tenantName, $resource);
 
-        $current = (int)$connection->fetchOne(
+        $current = (int) $connection->fetchOne(
             'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName),
         );
 
@@ -94,7 +93,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             if ($result->limit === 0 && $result->current === 0) {
                 throw new ServiceException(
                     sprintf('Quota check failed closed for resource "%s"', $result->resource),
-                    429
+                    429,
                 );
             }
 
@@ -112,7 +111,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
 
-        $plan = (string)($tenant['plan'] ?? 'free');
+        $plan = (string) ($tenant['plan'] ?? 'free');
         $limits = $this->planManager->getLimitsForPlan($plan);
 
         /** @var TenantConnection $connection */
@@ -129,7 +128,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
                 if ($tableName === null) {
                     $current = 0;
                 } else {
-                    $current = (int)$connection->fetchOne(
+                    $current = (int) $connection->fetchOne(
                         'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName),
                     );
                 }
@@ -141,15 +140,15 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
         }
 
         try {
-            $storageBytes = (int)$connection->fetchOne(
+            $storageBytes = (int) $connection->fetchOne(
                 'SELECT COALESCE(ROUND(SUM(data_length + index_length), 0), 0)
                  FROM information_schema.tables WHERE table_schema = ?',
-                [(string)($tenant['connection'] ?? $tenantName)]
+                [(string) ($tenant['connection'] ?? $tenantName)],
             );
         } catch (\Throwable) {
             $storageBytes = 0;
         }
-        $storageLimitMb = (int)($limits['storage_mb'] ?? -1);
+        $storageLimitMb = (int) ($limits['storage_mb'] ?? -1);
         $storageLimitBytes = $storageLimitMb === -1 ? -1 : $storageLimitMb * 1024 * 1024;
         $summary['storage_bytes'] = ['current' => $storageBytes, 'limit' => $storageLimitBytes];
 
@@ -196,7 +195,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             return;
         }
 
-        $acquired = (int)$connection->fetchOne('SELECT GET_LOCK(?, 5)', [$lockName]);
+        $acquired = (int) $connection->fetchOne('SELECT GET_LOCK(?, 5)', [$lockName]);
         if ($acquired !== 1) {
             throw new ServiceException('Could not acquire quota lock', 429);
         }

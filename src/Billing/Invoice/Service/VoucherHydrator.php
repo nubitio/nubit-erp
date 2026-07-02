@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Service;
 
-use App\Efact\Domain\Money;
 use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Invoice\Dto\HydratedVoucher;
 use App\Billing\Invoice\Dto\HydratedVoucherItem;
+use App\Efact\Domain\Money;
 use DateTimeImmutable;
 use Greenter\Model\Company\Address;
 
@@ -18,13 +18,11 @@ class VoucherHydrator implements VoucherHydratorInterface
      */
     public function hydrate(Voucher $voucher): HydratedVoucher
     {
-        $moneyToFloat = static fn (mixed $value): float => Money::toFloat(Money::money($value));
-        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval(
-            $value
-        );
-        $toNullableInt = static fn (mixed $value): ?int => $value === null || $value === '' ? null : intval(
-            $value
-        );
+        $moneyToFloat = static fn(mixed $value): float => Money::toFloat(Money::money($value));
+        $toNullableFloat = static fn(mixed $value): ?float => $value === null || $value === ''
+            ? null
+            : floatval($value);
+        $toNullableInt = static fn(mixed $value): ?int => $value === null || $value === '' ? null : intval($value);
 
         $voucherItems = array_map(function ($item) use ($moneyToFloat, $toNullableFloat) {
             return new HydratedVoucherItem(
@@ -43,12 +41,12 @@ class VoucherHydrator implements VoucherHydratorInterface
             );
         }, $voucher->voucher_items);
 
-        $customerAddress = new Address()
-            ->setDireccion(strval($voucher->customer_address));
+        $customerAddress = new Address()->setDireccion(strval($voucher->customer_address));
 
-        $itemDiscountTotal = array_sum(
-            array_map(static fn (HydratedVoucherItem $i): float => $i->discountAmount, $voucherItems)
-        );
+        $itemDiscountTotal = array_sum(array_map(
+            static fn(HydratedVoucherItem $i): float => $i->discountAmount,
+            $voucherItems,
+        ));
         $globalDiscountAmount = $moneyToFloat($voucher->voucher_discount_amount);
         $voucherDiscountTotal = round($itemDiscountTotal + $globalDiscountAmount, 2);
 
@@ -70,8 +68,11 @@ class VoucherHydrator implements VoucherHydratorInterface
             voucherSeries: strval($voucher->voucher_series),
             voucherNumber: strval($voucher->voucher_number),
             voucherPaymentMethod: intval($voucher->voucher_payment_method),
-            voucherDate: DateTimeImmutable::createFromFormat('!Y-m-d', substr(strval($voucher->voucher_date), 0, 10), new \DateTimeZone('America/Lima'))
-                ?: new DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('America/Lima')),
+            voucherDate: DateTimeImmutable::createFromFormat(
+                '!Y-m-d',
+                substr(strval($voucher->voucher_date), 0, 10),
+                new \DateTimeZone('America/Lima'),
+            ) ?: new DateTimeImmutable(strval($voucher->voucher_date), new \DateTimeZone('America/Lima')),
             voucherCurrency: strval($voucher->voucher_currency),
             voucherExchangeRate: $toNullableFloat($voucher->voucher_exchange_rate),
             voucherDiscountAmount: $globalDiscountAmount,

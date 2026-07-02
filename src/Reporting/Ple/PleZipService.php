@@ -12,8 +12,7 @@ final readonly class PleZipService
     public function __construct(
         private SalesLedgerExporter $salesExporter,
         private PurchaseLedgerExporter $purchaseExporter,
-    ) {
-    }
+    ) {}
 
     public function createArchive(string $period): Response
     {
@@ -54,10 +53,7 @@ final readonly class PleZipService
 
         $response = new Response($content);
         $response->headers->set('Content-Type', 'application/zip');
-        $response->headers->set(
-            'Content-Disposition',
-            sprintf('attachment; filename="PLE_%s.zip"', $period),
-        );
+        $response->headers->set('Content-Disposition', sprintf('attachment; filename="PLE_%s.zip"', $period));
         $response->headers->set('Cache-Control', 'no-cache, no-store');
         $response->headers->set('Pragma', 'no-cache');
 

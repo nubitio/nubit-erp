@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Invoice\Domain;
 
 use App\Billing\Invoice\Domain\InvoiceSendRetryService;
-use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -23,8 +23,8 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->connection     = $this->createMock(Connection::class);
-        $this->logger         = $this->createMock(LoggerInterface::class);
+        $this->connection = $this->createMock(Connection::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
 
         $this->featureChecker->method('hasFeature')->willReturn(true);
@@ -63,9 +63,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testFetchCandidateIdsReturnsArrayOfStringIds(): void
     {
-        $this->connection
-            ->method('fetchFirstColumn')
-            ->willReturn(['uuid-1', 'uuid-2', 'uuid-3']);
+        $this->connection->method('fetchFirstColumn')->willReturn(['uuid-1', 'uuid-2', 'uuid-3']);
 
         $result = $this->service->fetchCandidateIds(10, 0);
 
@@ -74,9 +72,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testFetchCandidateIdsCastsToString(): void
     {
-        $this->connection
-            ->method('fetchFirstColumn')
-            ->willReturn([1, 2, 3]);
+        $this->connection->method('fetchFirstColumn')->willReturn([1, 2, 3]);
 
         $result = $this->service->fetchCandidateIds(3, 0);
 
@@ -92,7 +88,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
             $this->featureChecker,
             retryMaxAttempts: $maxAttempts,
             retryBaseSeconds: $baseSeconds,
-            retryMaxSeconds:  $maxSeconds,
+            retryMaxSeconds: $maxSeconds,
         );
     }
 
@@ -103,7 +99,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
     public function testGetRetryPolicyHappyPath(): void
     {
         $service = $this->makeServiceWithRetry(5, 30, 900);
-        $policy  = $service->getRetryPolicy('tenant_test');
+        $policy = $service->getRetryPolicy('tenant_test');
 
         self::assertSame(5, $policy['max_attempts']);
         self::assertSame(30, $policy['base_seconds']);
@@ -143,14 +139,13 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testEvaluateEligibilityWithZeroAttempts(): void
     {
-        $this->connection
-            ->method('fetchAssociative')
-            ->willReturn(['attempts' => '0', 'last_attempt_at' => null]);
+        $this->connection->method('fetchAssociative')->willReturn(['attempts' => '0', 'last_attempt_at' => null]);
 
-        $result = $this->service->evaluateRetryEligibility(
-            'doc-id',
-            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
-        );
+        $result = $this->service->evaluateRetryEligibility('doc-id', [
+            'max_attempts' => 8,
+            'base_seconds' => 60,
+            'max_seconds' => 1800,
+        ]);
 
         self::assertTrue($result['eligible']);
         self::assertSame('eligible', $result['reason']);
@@ -163,10 +158,11 @@ final class InvoiceSendRetryServiceTest extends TestCase
             ->method('fetchAssociative')
             ->willReturn(['attempts' => '8', 'last_attempt_at' => date('Y-m-d H:i:s', time() - 3600)]);
 
-        $result = $this->service->evaluateRetryEligibility(
-            'doc-id',
-            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
-        );
+        $result = $this->service->evaluateRetryEligibility('doc-id', [
+            'max_attempts' => 8,
+            'base_seconds' => 60,
+            'max_seconds' => 1800,
+        ]);
 
         self::assertFalse($result['eligible']);
         self::assertSame('max_attempts', $result['reason']);
@@ -175,14 +171,13 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testEvaluateEligibilityWithAttemptsButNoLastAttemptAt(): void
     {
-        $this->connection
-            ->method('fetchAssociative')
-            ->willReturn(['attempts' => '3', 'last_attempt_at' => null]);
+        $this->connection->method('fetchAssociative')->willReturn(['attempts' => '3', 'last_attempt_at' => null]);
 
-        $result = $this->service->evaluateRetryEligibility(
-            'doc-id',
-            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
-        );
+        $result = $this->service->evaluateRetryEligibility('doc-id', [
+            'max_attempts' => 8,
+            'base_seconds' => 60,
+            'max_seconds' => 1800,
+        ]);
 
         self::assertTrue($result['eligible']);
         self::assertSame('eligible', $result['reason']);
@@ -198,10 +193,11 @@ final class InvoiceSendRetryServiceTest extends TestCase
             ->method('fetchAssociative')
             ->willReturn(['attempts' => '1', 'last_attempt_at' => $lastAttempt]);
 
-        $result = $this->service->evaluateRetryEligibility(
-            'doc-id',
-            ['max_attempts' => 8, 'base_seconds' => 3600, 'max_seconds' => 7200],
-        );
+        $result = $this->service->evaluateRetryEligibility('doc-id', [
+            'max_attempts' => 8,
+            'base_seconds' => 3600,
+            'max_seconds' => 7200,
+        ]);
 
         self::assertFalse($result['eligible']);
         self::assertSame('backoff', $result['reason']);
@@ -217,10 +213,11 @@ final class InvoiceSendRetryServiceTest extends TestCase
             ->method('fetchAssociative')
             ->willReturn(['attempts' => '1', 'last_attempt_at' => $lastAttempt]);
 
-        $result = $this->service->evaluateRetryEligibility(
-            'doc-id',
-            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
-        );
+        $result = $this->service->evaluateRetryEligibility('doc-id', [
+            'max_attempts' => 8,
+            'base_seconds' => 60,
+            'max_seconds' => 1800,
+        ]);
 
         self::assertTrue($result['eligible']);
         self::assertSame('eligible', $result['reason']);
@@ -236,12 +233,9 @@ final class InvoiceSendRetryServiceTest extends TestCase
         $this->connection
             ->expects(self::once())
             ->method('insert')
-            ->with(
-                'tax_document_event',
-                self::callback(static function (array $data): bool {
-                    return $data['status'] === 'pending' && $data['code'] === 'backoff';
-                })
-            );
+            ->with('tax_document_event', self::callback(static function (array $data): bool {
+                return $data['status'] === 'pending' && $data['code'] === 'backoff';
+            }));
 
         $this->service->recordRetrySkipEvent('doc-id', 'backoff', 2, 120);
     }
@@ -251,34 +245,25 @@ final class InvoiceSendRetryServiceTest extends TestCase
         $this->connection
             ->expects(self::once())
             ->method('insert')
-            ->with(
-                'tax_document_event',
-                self::callback(static function (array $data): bool {
-                    return $data['status'] === 'error' && $data['code'] === 'max_attempts';
-                })
-            );
+            ->with('tax_document_event', self::callback(static function (array $data): bool {
+                return $data['status'] === 'error' && $data['code'] === 'max_attempts';
+            }));
 
         $this->service->recordRetrySkipEvent('doc-id', 'max_attempts', 8, 0);
     }
 
     public function testRecordRetrySkipEventEligibleDoesNotInsert(): void
     {
-        $this->connection
-            ->expects(self::never())
-            ->method('insert');
+        $this->connection->expects(self::never())->method('insert');
 
         $this->service->recordRetrySkipEvent('doc-id', 'eligible', 0, 0);
     }
 
     public function testRecordRetrySkipEventDbFailureLogsWarningAndDoesNotThrow(): void
     {
-        $this->connection
-            ->method('insert')
-            ->willThrowException(new RuntimeException('DB error'));
+        $this->connection->method('insert')->willThrowException(new RuntimeException('DB error'));
 
-        $this->logger
-            ->expects(self::once())
-            ->method('warning');
+        $this->logger->expects(self::once())->method('warning');
 
         // Should not throw
         $this->service->recordRetrySkipEvent('doc-id', 'backoff', 2, 60);
@@ -290,9 +275,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testGetCurrentStatusReturnsStringStatus(): void
     {
-        $this->connection
-            ->method('fetchOne')
-            ->willReturn('0');
+        $this->connection->method('fetchOne')->willReturn('0');
 
         $result = $this->service->getCurrentStatus('doc-id');
 
@@ -301,9 +284,7 @@ final class InvoiceSendRetryServiceTest extends TestCase
 
     public function testGetCurrentStatusReturnsFalseAsEmptyString(): void
     {
-        $this->connection
-            ->method('fetchOne')
-            ->willReturn(false);
+        $this->connection->method('fetchOne')->willReturn(false);
 
         $result = $this->service->getCurrentStatus('doc-id');
 

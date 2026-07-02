@@ -12,8 +12,7 @@ final readonly class SubdomainValidator
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{available:bool,reason:string,normalized:string,domain:string}
@@ -84,7 +83,7 @@ final readonly class SubdomainValidator
         $reserved = $this->cp()->fetchOne(
             'SELECT 1 FROM reserved_subdomains WHERE name = ? LIMIT 1',
             [$subdomain],
-            [ParameterType::STRING]
+            [ParameterType::STRING],
         );
 
         return $reserved !== false;
@@ -95,7 +94,7 @@ final readonly class SubdomainValidator
         $exists = $this->cp()->fetchOne(
             'SELECT 1 FROM tenants WHERE name = ? LIMIT 1',
             [$tenantName],
-            [ParameterType::STRING]
+            [ParameterType::STRING],
         );
 
         return $exists !== false;
@@ -106,7 +105,7 @@ final readonly class SubdomainValidator
         $exists = $this->cp()->fetchOne(
             'SELECT 1 FROM tenant_domains WHERE domain = ? LIMIT 1',
             [$domain],
-            [ParameterType::STRING]
+            [ParameterType::STRING],
         );
 
         return $exists !== false;
@@ -114,12 +113,12 @@ final readonly class SubdomainValidator
 
     private function buildDomain(string $subdomain): string
     {
-        $root = trim((string) (
-            $_ENV['ONBOARDING_DOMAIN']
-            ?? $_SERVER['ONBOARDING_DOMAIN']
-            ?? getenv('ONBOARDING_DOMAIN')
-            ?: 'localhost'
-        ));
+        $root = trim(
+            (string) (
+                $_ENV['ONBOARDING_DOMAIN'] ?? $_SERVER['ONBOARDING_DOMAIN'] ?? getenv('ONBOARDING_DOMAIN')
+                ?: 'localhost'
+            ),
+        );
 
         if ($root === '') {
             $root = 'localhost';

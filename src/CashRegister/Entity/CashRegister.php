@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\CashRegister\Entity;
 
-use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -13,20 +12,21 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
+use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashRegisterOpenProcessor;
-use App\CashRegister\State\CashRegisterShiftsProvider;
 use App\CashRegister\State\CashRegistersByBranchProvider;
-use App\CashRegister\Entity\CashSession;
+use App\CashRegister\State\CashRegisterShiftsProvider;
+use App\Organization\Entity\Branch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashRegisterRepository::class)]
@@ -58,10 +58,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             uriTemplate: '/cash-registers/{id}/shifts',
             uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: CashRegister::class,
-                ),
+                'id' => new Link(fromProperty: 'id', fromClass: CashRegister::class),
             ],
             paginationEnabled: true,
             normalizationContext: ['groups' => ['cash_session:read']],

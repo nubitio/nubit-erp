@@ -16,8 +16,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'app:control-plane:certificate:upsert', description: 'Upload or renew a tenant SUNAT certificate.')]
 final class CertificateUpsertCommand extends Command
 {
-    public function __construct(private readonly CertificateLifecycleServiceInterface $certificates)
-    {
+    public function __construct(
+        private readonly CertificateLifecycleServiceInterface $certificates,
+    ) {
         parent::__construct();
     }
 
@@ -35,7 +36,7 @@ final class CertificateUpsertCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $certFile = (string)($input->getOption('cert-file') ?? '');
+        $certFile = (string) ($input->getOption('cert-file') ?? '');
         if ($certFile === '' || !file_exists($certFile)) {
             $io->error('Valid --cert-file is required.');
 
@@ -44,12 +45,12 @@ final class CertificateUpsertCommand extends Command
 
         try {
             $certificate = $this->certificates->upsert(
-                (string)$input->getArgument('tenant'),
-                (string)$input->getArgument('ruc'),
-                (string)($input->getOption('sol-user') ?? ''),
-                (string)($input->getOption('sol-pass') ?? ''),
-                (string)file_get_contents($certFile),
-                $input->getOption('uploaded-by') !== null ? (string)$input->getOption('uploaded-by') : 'cli',
+                (string) $input->getArgument('tenant'),
+                (string) $input->getArgument('ruc'),
+                (string) ($input->getOption('sol-user') ?? ''),
+                (string) ($input->getOption('sol-pass') ?? ''),
+                (string) file_get_contents($certFile),
+                $input->getOption('uploaded-by') !== null ? (string) $input->getOption('uploaded-by') : 'cli',
             );
         } catch (\Throwable $e) {
             $io->error($e->getMessage());
@@ -62,7 +63,7 @@ final class CertificateUpsertCommand extends Command
             $certificate->id,
             $certificate->ruc,
             $certificate->status->value,
-            $certificate->expiresAt->format('Y-m-d')
+            $certificate->expiresAt->format('Y-m-d'),
         ));
 
         return Command::SUCCESS;

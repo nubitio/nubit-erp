@@ -102,17 +102,17 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
             null,
             InputOption::VALUE_REQUIRED,
             'Replacement issue date: original or today',
-            'original'
+            'original',
         );
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $date = (string)$input->getOption('date');
-        $execute = (bool)$input->getOption('execute');
-        $limit = max(0, (int)$input->getOption('limit'));
-        $issueDateMode = (string)$input->getOption('issue-date-mode');
+        $date = (string) $input->getOption('date');
+        $execute = (bool) $input->getOption('execute');
+        $limit = max(0, (int) $input->getOption('limit'));
+        $issueDateMode = (string) $input->getOption('issue-date-mode');
 
         if (!$this->isValidDate($date)) {
             $io->error('Provide --date in YYYY-MM-DD format.');
@@ -134,16 +134,16 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
         }
 
         $io->title(sprintf('Rejected invoice replacements for %s', $date));
-        $io->table(
-            ['ID', 'Type', 'Current Number', 'SUNAT Status', 'Already Replaced'],
-            array_map(static fn (array $row): array => [
-                (string)$row['tax_document_id'],
-                (string)$row['document_type'],
-                (string)$row['series'] . '-' . (string)$row['number'],
-                (string)$row['sunat_status'],
-                ((int)$row['replacement_events']) > 0 ? 'yes' : 'no',
-            ], $rejected)
-        );
+        $io->table(['ID', 'Type', 'Current Number', 'SUNAT Status', 'Already Replaced'], array_map(
+            static fn(array $row): array => [
+                (string) $row['tax_document_id'],
+                (string) $row['document_type'],
+                (string) $row['series'] . '-' . (string) $row['number'],
+                (string) $row['sunat_status'],
+                (int) $row['replacement_events'] > 0 ? 'yes' : 'no',
+            ],
+            $rejected,
+        ));
 
         if (!$execute) {
             $io->warning('Dry-run only. Re-run with --execute to create replacement documents.');
@@ -157,8 +157,8 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
 
         try {
             foreach ($rejected as $row) {
-                if ((int)$row['replacement_events'] > 0) {
-                    $skipped[] = [(string)$row['tax_document_id'], 'replacement already exists'];
+                if ((int) $row['replacement_events'] > 0) {
+                    $skipped[] = [(string) $row['tax_document_id'], 'replacement already exists'];
                     continue;
                 }
 
@@ -241,19 +241,17 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
      */
     private function createReplacement(array $old, string $issueDateMode): array
     {
-        $oldId = (string)$old['tax_document_id'];
-        $newId = (string)$this->connection->fetchOne('SELECT UUID()');
-        $newNumber = $this->nextNumber((string)$old['document_type'], (string)$old['series']);
-        $newIssueDate = $issueDateMode === 'today'
-            ? date('Y-m-d H:i:s')
-            : (string)$old['issue_date'];
+        $oldId = (string) $old['tax_document_id'];
+        $newId = (string) $this->connection->fetchOne('SELECT UUID()');
+        $newNumber = $this->nextNumber((string) $old['document_type'], (string) $old['series']);
+        $newIssueDate = $issueDateMode === 'today' ? date('Y-m-d H:i:s') : (string) $old['issue_date'];
 
-        $document = $this->buildReplacementDocumentRow($old, $newId, (string)$newNumber, $newIssueDate);
+        $document = $this->buildReplacementDocumentRow($old, $newId, (string) $newNumber, $newIssueDate);
         $this->connection->insert('tax_document', $document);
         $this->copyLines($oldId, $newId);
 
-        $oldNumber = (string)$old['series'] . '-' . (string)$old['number'];
-        $newFullNumber = (string)$old['series'] . '-' . (string)$newNumber;
+        $oldNumber = (string) $old['series'] . '-' . (string) $old['number'];
+        $newFullNumber = (string) $old['series'] . '-' . (string) $newNumber;
         $payload = json_encode([
             'old_tax_document_id' => $oldId,
             'old_number' => $oldNumber,
@@ -265,7 +263,7 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
             'tax_document_id' => $oldId,
             'event_type' => 'sunat_replacement_created',
             'status' => 'replaced',
-            'code' => (string)$old['sunat_status'],
+            'code' => (string) $old['sunat_status'],
             'message' => 'Replacement tax document created after SUNAT rejection',
             'payload_json' => $payload,
             'created_at' => date('Y-m-d H:i:s'),
@@ -290,19 +288,16 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
 
     private function nextNumber(string $documentType, string $series): int
     {
-        return (int)$this->connection->fetchOne(
-            '
+        return (int) $this->connection->fetchOne('
             SELECT IFNULL(MAX(CAST(number AS UNSIGNED)), 0) + 1
             FROM tax_document
             WHERE document_type = :document_type
               AND series = :series
             FOR UPDATE
-            ',
-            [
-                'document_type' => $documentType,
-                'series' => $series,
-            ]
-        );
+            ', [
+            'document_type' => $documentType,
+            'series' => $series,
+        ]);
     }
 
     /**
@@ -322,7 +317,8 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
         $row['issue_date'] = $issueDate;
         $row['number'] = $newNumber;
         $row['sunat_status'] = 'pendiente';
-        $row['sunat_message'] = 'Replacement for rejected document ' . (string)$old['series'] . '-' . (string)$old['number'];
+        $row['sunat_message'] =
+            'Replacement for rejected document ' . (string) $old['series'] . '-' . (string) $old['number'];
         $row['digest'] = null;
         $row['cdr_path'] = null;
         $row['void_ticket'] = null;
@@ -337,20 +333,26 @@ final class ReplaceRejectedInvoicesCommand extends PerTenantCommand
 
     private function copyLines(string $oldId, string $newId): void
     {
-        $lineColumns = array_filter(self::LINE_COLUMNS, static fn (string $column): bool => $column !== 'tax_document_id');
-        $selectColumns = implode(', ', array_map(static fn (string $column): string => '`' . $column . '`', $lineColumns));
+        $lineColumns = array_filter(
+            self::LINE_COLUMNS,
+            static fn(string $column): bool => $column !== 'tax_document_id',
+        );
+        $selectColumns = implode(', ', array_map(
+            static fn(string $column): string => '`' . $column . '`',
+            $lineColumns,
+        ));
         $insertColumns = '`tax_document_id`, ' . $selectColumns;
 
         $this->connection->executeStatement(
             sprintf(
                 'INSERT INTO tax_document_line (%s) SELECT :new_id, %s FROM tax_document_line WHERE tax_document_id = :old_id ORDER BY line_number',
                 $insertColumns,
-                $selectColumns
+                $selectColumns,
             ),
             [
                 'new_id' => $newId,
                 'old_id' => $oldId,
-            ]
+            ],
         );
     }
 

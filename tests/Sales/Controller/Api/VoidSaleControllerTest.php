@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Controller\Api;
 
-use App\Sales\Controller\Api\VoidSale;
-use App\Identity\Security\Security;
 use App\Identity\Dto\AuthUserDto;
+use App\Identity\Security\Security;
+use App\Sales\Controller\Api\VoidSale;
 use App\Sales\Port\SaleVoiderInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;

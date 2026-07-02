@@ -54,7 +54,7 @@ final class SaleEntityTest extends TestCase
 
     public function testSaleRecordHasInvoiceFluent(): void
     {
-        $sale = (new SaleRecord())->setHasInvoice(true);
+        $sale = new SaleRecord()->setHasInvoice(true);
 
         self::assertTrue($sale->isHasInvoice());
     }
@@ -76,7 +76,7 @@ final class SaleEntityTest extends TestCase
 
     public function testSaleRecordGlosaRoundTrip(): void
     {
-        $sale = (new SaleRecord())->setGlosa('Test note');
+        $sale = new SaleRecord()->setGlosa('Test note');
 
         self::assertSame('Test note', $sale->getGlosa());
     }
@@ -102,14 +102,14 @@ final class SaleEntityTest extends TestCase
 
     public function testSaleItemRecordUnitPriceRoundTrip(): void
     {
-        $item = (new SaleItemRecord())->setUnitPrice('25.50');
+        $item = new SaleItemRecord()->setUnitPrice('25.50');
 
         self::assertSame('25.50', $item->getUnitPrice());
     }
 
     public function testSaleItemRecordNetAmountRoundTrip(): void
     {
-        $item = (new SaleItemRecord())->setNetAmount('76.50');
+        $item = new SaleItemRecord()->setNetAmount('76.50');
 
         self::assertSame('76.50', $item->getNetAmount());
     }

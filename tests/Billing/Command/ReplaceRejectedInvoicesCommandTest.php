@@ -41,12 +41,7 @@ final class ReplaceRejectedInvoicesCommandTest extends TestCase
             'updated_at' => '2026-05-19 10:06:00',
         ];
 
-        $row = $this->callBuildReplacementDocumentRow(
-            $old,
-            'new-id',
-            '124',
-            '2026-05-20 11:00:00'
-        );
+        $row = $this->callBuildReplacementDocumentRow($old, 'new-id', '124', '2026-05-20 11:00:00');
 
         self::assertSame('new-id', $row['tax_document_id']);
         self::assertSame('2026-05-20 11:00:00', $row['issue_date']);

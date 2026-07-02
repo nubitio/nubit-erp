@@ -13,6 +13,5 @@ final readonly class ProductSearchResultDto
         public float $salePrice,
         public ?float $stock,
         public ?float $minStock,
-    ) {
-    }
+    ) {}
 }

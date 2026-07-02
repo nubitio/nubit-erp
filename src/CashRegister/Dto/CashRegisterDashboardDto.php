@@ -31,6 +31,5 @@ class CashRegisterDashboardDto
         /** @var string Total sales (all payment methods) for the open shift today, as decimal string */
         #[Groups(['cash_register_dashboard:read'])]
         public string $todaySales = '0.00',
-    ) {
-    }
+    ) {}
 }

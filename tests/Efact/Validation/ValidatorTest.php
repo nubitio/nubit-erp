@@ -13,8 +13,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ValidatorTest extends TestCase
 {
-    private function makeValidator(int $violationCount = 0, string $path = 'field', string $message = 'Error'): Validator
-    {
+    private function makeValidator(
+        int $violationCount = 0,
+        string $path = 'field',
+        string $message = 'Error',
+    ): Validator {
         $violations = [];
         for ($i = 0; $i < $violationCount; $i++) {
             $violations[] = new ConstraintViolation($message, $message, [], null, $path, null);

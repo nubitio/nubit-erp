@@ -25,7 +25,8 @@ class ProductBomItemRepository extends ServiceEntityRepository
      */
     public function findByParent(string $parentProductId): array
     {
-        return $this->createQueryBuilder('bom')
+        return $this
+            ->createQueryBuilder('bom')
             ->join('bom.componentProduct', 'c')
             ->where('IDENTITY(bom.parentProduct) = :parentId')
             ->setParameter('parentId', $parentProductId)

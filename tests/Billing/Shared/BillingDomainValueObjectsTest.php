@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Shared;
 
-use App\Billing\Message\SendInvoiceMessage;
-use App\Billing\Receipt\Domain\Receipt;
-use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Invoice\Domain\InvoiceSendProcessResult;
 use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Invoice\Domain\VoucherItem;
+use App\Billing\Message\SendInvoiceMessage;
+use App\Billing\Receipt\Domain\Receipt;
+use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Shared\Enum\ChargeType;
 use App\Billing\Shared\Enum\OperationType;

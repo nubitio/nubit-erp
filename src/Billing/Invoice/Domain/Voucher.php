@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use NumberFormatter;
 use App\Efact\Domain\Money;
+use NumberFormatter;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 class Voucher
@@ -60,8 +60,7 @@ class Voucher
         public ?int $voucher_status = null,
         /** @var VoucherItem[] */
         public array $voucher_items = [],
-    ) {
-    }
+    ) {}
 
     #[SerializedName('voucher_sale_amount_text')]
     public function getVoucherTotalText(): string

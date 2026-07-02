@@ -10,8 +10,7 @@ final readonly class DetraccionQuery
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function forPeriod(string $period = ''): array
@@ -20,12 +19,9 @@ final readonly class DetraccionQuery
             $period = date('Ym');
         }
 
-        $cuenta = $this->connection->fetchOne(
-            "SELECT detraction_account FROM tenant_settings LIMIT 1",
-        );
+        $cuenta = $this->connection->fetchOne('SELECT detraction_account FROM tenant_settings LIMIT 1');
 
-        $items = $this->connection->fetchAllAssociative(
-            "SELECT
+        $items = $this->connection->fetchAllAssociative("SELECT
                 td.series,
                 td.number,
                 COALESCE(c.razon_social, '—') as cliente,
@@ -40,9 +36,9 @@ final readonly class DetraccionQuery
              WHERE td.detraction_amount IS NOT NULL AND td.detraction_amount > 0
                AND DATE_FORMAT(td.issue_date,'%Y%m') = :period
                AND td.void_ticket IS NULL AND td.void_correlation IS NULL
-             ORDER BY td.issue_date DESC",
-            ['period' => $period],
-        );
+             ORDER BY td.issue_date DESC", [
+            'period' => $period,
+        ]);
 
         $depositado = 0.0;
         $pendiente = 0.0;

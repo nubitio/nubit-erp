@@ -22,6 +22,6 @@ final class SecretCipherTest extends TestCase
 
     public function testDecryptKeepsLegacyPlaintextCompatible(): void
     {
-        self::assertSame('legacy-secret', (new SecretCipher('unit-test-secret'))->decrypt('legacy-secret'));
+        self::assertSame('legacy-secret', new SecretCipher('unit-test-secret')->decrypt('legacy-secret'));
     }
 }

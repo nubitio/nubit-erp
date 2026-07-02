@@ -13,10 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:backup',
-    description: 'Create a mariadb-dump backup of a tenant database.',
-)]
+#[AsCommand(name: 'app:tenant:backup', description: 'Create a mariadb-dump backup of a tenant database.')]
 class TenantBackupCommand extends Command
 {
     public function __construct(
@@ -61,7 +58,7 @@ class TenantBackupCommand extends Command
             return Command::FAILURE;
         }
 
-        $sizeMb = round($result['size_bytes'] / 1024 / 1024, 2);
+        $sizeMb = round(($result['size_bytes'] / 1024) / 1024, 2);
         $io->success(sprintf(
             'Backup #%d saved: %s (%s MB, %s)',
             $result['id'],

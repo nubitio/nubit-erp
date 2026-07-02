@@ -19,6 +19,5 @@ final readonly class CertificateMetadata
         public string $fingerprintSha256,
         public \DateTimeImmutable $validFrom,
         public \DateTimeImmutable $expiresAt,
-    ) {
-    }
+    ) {}
 }

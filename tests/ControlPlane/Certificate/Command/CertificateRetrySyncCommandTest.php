@@ -53,7 +53,8 @@ final class CertificateRetrySyncCommandTest extends TestCase
 
         try {
             $service = $this->createMock(CertificateLifecycleServiceInterface::class);
-            $service->expects(self::once())
+            $service
+                ->expects(self::once())
                 ->method('retryUpsertSync')
                 ->with('acme', '20123456789', '20123456789MODDATOS', 'secret', 'certificate-pem')
                 ->willReturn($this->certificate());

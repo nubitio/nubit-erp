@@ -37,7 +37,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $movement->setAmount('50.00');
         $movement->setDescription('Test movement');
         $movement->setCategory($category); // setCategory syncs $type from category
-        $movement->setType($type);         // override after setCategory
+        $movement->setType($type); // override after setCategory
         $movement->setCreatedAt(new \DateTimeImmutable()); // required: no default
 
         return $movement;
@@ -48,21 +48,15 @@ final class CashMovementWriteProcessorTest extends TestCase
     public function testDeleteExecutesSqlAndReturnsNull(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(
-                self::stringContains('DELETE FROM cash_movements'),
-                [42],
-            );
+            ->with(self::stringContains('DELETE FROM cash_movements'), [42]);
 
         $security = $this->createStub(Security::class);
         $processor = new CashMovementWriteProcessor($conn, $security);
 
-        $result = $processor->process(
-            $this->makeMovement(),
-            new Delete(),
-            ['id' => '42'],
-        );
+        $result = $processor->process($this->makeMovement(), new Delete(), ['id' => '42']);
 
         self::assertNull($result);
     }
@@ -119,7 +113,8 @@ final class CashMovementWriteProcessorTest extends TestCase
     public function testPostInsertsRowAndSetsIdOnEntity(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
             ->with(self::stringContains('INSERT INTO cash_movements'));
         $conn->method('lastInsertId')->willReturn('99');
@@ -142,13 +137,15 @@ final class CashMovementWriteProcessorTest extends TestCase
         $capturedParams = [];
 
         $conn = $this->createStub(Connection::class);
-        $conn->method('executeStatement')
-            ->willReturnCallback(static function (string $sql, array $params) use (&$capturedSql, &$capturedParams): int {
-                $capturedSql = $sql;
-                $capturedParams = $params;
+        $conn->method('executeStatement')->willReturnCallback(static function (string $sql, array $params) use (
+            &$capturedSql,
+            &$capturedParams,
+        ): int {
+            $capturedSql = $sql;
+            $capturedParams = $params;
 
-                return 1;
-            });
+            return 1;
+        });
         $conn->method('lastInsertId')->willReturn('1');
 
         $security = $this->createStub(Security::class);
@@ -166,9 +163,7 @@ final class CashMovementWriteProcessorTest extends TestCase
     public function testPatchUpdatesExistingRow(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
-            ->method('executeStatement')
-            ->with(self::stringContains('UPDATE cash_movements'));
+        $conn->expects(self::once())->method('executeStatement')->with(self::stringContains('UPDATE cash_movements'));
 
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));

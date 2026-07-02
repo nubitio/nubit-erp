@@ -16,8 +16,8 @@ use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -73,13 +73,13 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
 
     public function testSaleItemMovementIsMappedToInventoryV2Draft(): void
     {
-        $this->port->applyMovementFromSaleItem(
-            $this->sale(tipoId: 2),
-            $this->item($this->product('prod-1'), 3.0),
-            2,
-        );
+        $this->port->applyMovementFromSaleItem($this->sale(tipoId: 2), $this->item($this->product('prod-1'), 3.0), 2);
 
-        self::assertEqualsWithDelta(-3.0, (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']), 0.001);
+        self::assertEqualsWithDelta(
+            -3.0,
+            (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']),
+            0.001,
+        );
 
         $movement = $this->conn->fetchAssociative('SELECT * FROM stock_movements WHERE product_id = ?', ['prod-1']);
         self::assertIsArray($movement);
@@ -92,13 +92,13 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
 
     public function testPurchaseItemMovementIsMappedToPositiveInventoryV2Draft(): void
     {
-        $this->port->applyMovementFromSaleItem(
-            $this->sale(tipoId: 1),
-            $this->item($this->product('prod-1'), 4.0),
-            1,
-        );
+        $this->port->applyMovementFromSaleItem($this->sale(tipoId: 1), $this->item($this->product('prod-1'), 4.0), 1);
 
-        self::assertEqualsWithDelta(4.0, (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']), 0.001);
+        self::assertEqualsWithDelta(
+            4.0,
+            (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']),
+            0.001,
+        );
 
         $movement = $this->conn->fetchAssociative('SELECT * FROM stock_movements WHERE product_id = ?', ['prod-1']);
         self::assertIsArray($movement);
@@ -115,8 +115,15 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
         $this->port->applyMovementFromSaleItem($sale, $item, 1);
         $this->port->applyMovementFromSaleItem($sale, $item, 1);
 
-        self::assertEqualsWithDelta(-2.0, (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']), 0.001);
-        self::assertSame(1, (int) $this->conn->fetchOne('SELECT COUNT(*) FROM stock_movements WHERE product_id = ?', ['prod-1']));
+        self::assertEqualsWithDelta(
+            -2.0,
+            (float) $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE product_id = ?', ['prod-1']),
+            0.001,
+        );
+        self::assertSame(
+            1,
+            (int) $this->conn->fetchOne('SELECT COUNT(*) FROM stock_movements WHERE product_id = ?', ['prod-1']),
+        );
     }
 
     private function product(string $id): Product&MockObject
@@ -159,51 +166,51 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
     private function createSchema(): void
     {
         $this->conn->executeStatement(<<<'SQL'
-CREATE TABLE stock_movements (
-    id VARCHAR(36) NOT NULL,
-    warehouse_id VARCHAR(36) NOT NULL,
-    product_id VARCHAR(36) NOT NULL,
-    occurred_at DATETIME NOT NULL,
-    movement_type VARCHAR(32) NOT NULL,
-    quantity_delta DECIMAL(18,6) NOT NULL,
-    qty_delta_base DECIMAL(18,6) NOT NULL,
-    qty_original DECIMAL(18,6) NOT NULL,
-    unit_id INTEGER DEFAULT NULL,
-    source_type VARCHAR(64) NOT NULL,
-    source_id VARCHAR(128) NOT NULL,
-    note TEXT DEFAULT NULL,
-    idempotency_key VARCHAR(64) NOT NULL,
-    sync_status VARCHAR(20) NOT NULL DEFAULT 'SYNCED',
-    synced_at DATETIME DEFAULT NULL,
-    version_no INTEGER NOT NULL DEFAULT 1,
-    last_modified_at DATETIME NOT NULL,
-    created_at DATETIME NOT NULL,
-    lot_id VARCHAR(36) DEFAULT NULL,
-    PRIMARY KEY (id),
-    UNIQUE (idempotency_key)
-)
-SQL);
+            CREATE TABLE stock_movements (
+                id VARCHAR(36) NOT NULL,
+                warehouse_id VARCHAR(36) NOT NULL,
+                product_id VARCHAR(36) NOT NULL,
+                occurred_at DATETIME NOT NULL,
+                movement_type VARCHAR(32) NOT NULL,
+                quantity_delta DECIMAL(18,6) NOT NULL,
+                qty_delta_base DECIMAL(18,6) NOT NULL,
+                qty_original DECIMAL(18,6) NOT NULL,
+                unit_id INTEGER DEFAULT NULL,
+                source_type VARCHAR(64) NOT NULL,
+                source_id VARCHAR(128) NOT NULL,
+                note TEXT DEFAULT NULL,
+                idempotency_key VARCHAR(64) NOT NULL,
+                sync_status VARCHAR(20) NOT NULL DEFAULT 'SYNCED',
+                synced_at DATETIME DEFAULT NULL,
+                version_no INTEGER NOT NULL DEFAULT 1,
+                last_modified_at DATETIME NOT NULL,
+                created_at DATETIME NOT NULL,
+                lot_id VARCHAR(36) DEFAULT NULL,
+                PRIMARY KEY (id),
+                UNIQUE (idempotency_key)
+            )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-CREATE TABLE stock_items (
-    warehouse_id VARCHAR(36) NOT NULL,
-    product_id VARCHAR(36) NOT NULL,
-    qty_on_hand DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-    qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_movement_id VARCHAR(36) DEFAULT NULL,
-    version INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (warehouse_id, product_id)
-)
-SQL);
+            CREATE TABLE stock_items (
+                warehouse_id VARCHAR(36) NOT NULL,
+                product_id VARCHAR(36) NOT NULL,
+                qty_on_hand DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                last_movement_id VARCHAR(36) DEFAULT NULL,
+                version INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (warehouse_id, product_id)
+            )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-CREATE TABLE stock_balances (
-    warehouse_id VARCHAR(36) NOT NULL,
-    product_id VARCHAR(36) NOT NULL,
-    on_hand_qty DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-    PRIMARY KEY (warehouse_id, product_id)
-)
-SQL);
+            CREATE TABLE stock_balances (
+                warehouse_id VARCHAR(36) NOT NULL,
+                product_id VARCHAR(36) NOT NULL,
+                on_hand_qty DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                PRIMARY KEY (warehouse_id, product_id)
+            )
+            SQL);
     }
 }

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Billing\Controller;
 
 use App\Billing\Extension\RemoteEscposImage;
-use App\Efact\Service\LogoProvider;
-use App\Settings\Service\TenantSettingsService;
-use App\Sales\Dto\SaleItemDto;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Efact\Service\LogoProvider;
 use App\Sales\Domain\DocType;
+use App\Sales\Dto\SaleItemDto;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
@@ -55,8 +55,7 @@ class PrintESCPOSController extends AbstractController
         private readonly TenantSettingsService $tenantSettings,
         #[Autowire('%env(PRINTER_LINE_WIDTH)%')]
         private readonly int $printerLineWidth,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -71,11 +70,7 @@ class PrintESCPOSController extends AbstractController
 
         $commands = $this->printCommands($id, $lineWidth, $baseUrl, $imageMode, $lineStyle, $paperWidth);
 
-        return new Response(
-            $commands,
-            Response::HTTP_OK,
-            ['Content-Type' => 'application/octet-stream']
-        );
+        return new Response($commands, Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
     }
 
     /**
@@ -97,7 +92,8 @@ class PrintESCPOSController extends AbstractController
         $hrSolid = $this->hr($solidChar, $width);
 
         $voucher = $this->taxDocumentRepository->getVoucher($saleId);
-        $currencySymbol = self::CURRENCY_SYMBOLS[$voucher->voucher_currency ?? 'PEN'] ?? ($voucher->voucher_currency ?? 'S/');
+        $currencySymbol =
+            self::CURRENCY_SYMBOLS[$voucher->voucher_currency ?? 'PEN'] ?? $voucher->voucher_currency ?? 'S/';
         $logoMaxPixels = (int) ((self::PAPER_PIXEL_WIDTH_MAP[$paperWidth] ?? self::PAPER_PIXEL_WIDTH_MAP[80]) * 0.5);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke(), $logoMaxPixels);
 
@@ -127,7 +123,7 @@ class PrintESCPOSController extends AbstractController
             $printer->text('RUC: ' . ($voucher->company_id ?? '-') . "\n");
         }
 
-        $address = !empty($voucher->branch_address) ? $voucher->branch_address : ($voucher->company_address ?? '-');
+        $address = !empty($voucher->branch_address) ? $voucher->branch_address : $voucher->company_address ?? '-';
         $phone = !empty($voucher->branch_phone) ? $voucher->branch_phone : $voucher->company_phone;
 
         $printer->text($this->wrap($address, $width));
@@ -155,14 +151,17 @@ class PrintESCPOSController extends AbstractController
         $printer->text($hrSolid);
 
         $tz = new \DateTimeZone('America/Lima');
-        $date = $voucher->voucher_date ? new \DateTime((string)$voucher->voucher_date, $tz) : new \DateTime('now', $tz);
+        $date = $voucher->voucher_date
+            ? new \DateTime((string) $voucher->voucher_date, $tz)
+            : new \DateTime('now', $tz);
 
         $printer->setJustification(Printer::JUSTIFY_LEFT);
         $printer->text($this->lr('Fecha:', $date->format('d/m/Y'), $width));
         $printer->text($this->lr('Moneda:', $voucher->voucher_currency ?: 'PEN', $width));
 
-        $paymentLabel = $voucher->voucher_payment_method_name
-            ?? (((int)$voucher->voucher_payment_method === 2) ? 'CREDITO' : 'CONTADO');
+        $paymentLabel =
+            $voucher->voucher_payment_method_name
+            ?? ((int) $voucher->voucher_payment_method === 2 ? 'CREDITO' : 'CONTADO');
         $printer->text($this->lr('Pago:', $paymentLabel, $width));
 
         $printer->text($hrDashed);
@@ -184,7 +183,7 @@ class PrintESCPOSController extends AbstractController
 
         // ITEMS (header)
         $printer->setEmphasis(true);
-        $printer->text((string)new SaleItemDto($width, 'DESCRIPCION', 'P.UNIT', 'IMPORTE'));
+        $printer->text((string) new SaleItemDto($width, 'DESCRIPCION', 'P.UNIT', 'IMPORTE'));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
@@ -192,10 +191,10 @@ class PrintESCPOSController extends AbstractController
             // Principal line: description + unit price + total
             $saleItem = new SaleItemDto($width, $item->product_name, $item->unit_price, $item->total);
 
-            $printer->text((string)$saleItem);
+            $printer->text((string) $saleItem);
 
             // Secondary line: quantity + unit
-            $qty = $this->formatQuantity((float)$item->quantity);
+            $qty = $this->formatQuantity((float) $item->quantity);
             $uom = $item->product_uom ?? '';
             $printer->text('  ' . trim($qty . ' ' . $uom) . "\n");
         }
@@ -203,37 +202,46 @@ class PrintESCPOSController extends AbstractController
         $printer->text($hrDashed);
 
         // TOTALS
-        if ((float)$voucher->voucher_discount_percentage > 0) {
-            $printer->text((string)new SaleItemDto(
-                $width,
-                'DESCUENTO',
-                '',
-                '-' . $currencySymbol . ' ' . $voucher->voucher_discount_amount
-            ));
+        if ((float) $voucher->voucher_discount_percentage > 0) {
+            $printer->text(
+                (string) new SaleItemDto(
+                    $width,
+                    'DESCUENTO',
+                    '',
+                    '-' . $currencySymbol . ' ' . $voucher->voucher_discount_amount,
+                ),
+            );
         }
 
-        $app_option_rc_get = (int)$this->tenantSettings->getRc();
-        $app_option_igv_get = (int)$this->tenantSettings->getIgv();
+        $app_option_rc_get = (int) $this->tenantSettings->getRc();
+        $app_option_igv_get = (int) $this->tenantSettings->getIgv();
         $hasDetraction = $voucher->voucher_detraction_amount && $voucher->voucher_detraction_amount > 0;
 
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
-            $printer->text((string)new SaleItemDto($width, 'OP. GRAVADA', '', $currencySymbol . ' ' . $voucher->voucher_taxed_amount));
             $printer->text(
-                (string)new SaleItemDto(
+                (string) new SaleItemDto(
+                    $width,
+                    'OP. GRAVADA',
+                    '',
+                    $currencySymbol . ' ' . $voucher->voucher_taxed_amount,
+                ),
+            );
+            $printer->text(
+                (string) new SaleItemDto(
                     $width,
                     'IGV (' . $app_option_igv_get . '%)',
                     '',
-                    $currencySymbol . ' ' . $voucher->voucher_tax_amount
-                )
+                    $currencySymbol . ' ' . $voucher->voucher_tax_amount,
+                ),
             );
-            if ($app_option_rc_get >= 1 && (float)$voucher->voucher_consumption_surcharge_amount > 0) {
+            if ($app_option_rc_get >= 1 && (float) $voucher->voucher_consumption_surcharge_amount > 0) {
                 $printer->text(
-                    (string)new SaleItemDto(
+                    (string) new SaleItemDto(
                         $width,
                         'RC (' . $app_option_rc_get . '%)',
                         '',
-                        $currencySymbol . ' ' . $voucher->voucher_consumption_surcharge_amount
-                    )
+                        $currencySymbol . ' ' . $voucher->voucher_consumption_surcharge_amount,
+                    ),
                 );
             }
         }
@@ -241,7 +249,9 @@ class PrintESCPOSController extends AbstractController
         // FINAL TOTAL
         $printer->text($hrSolid);
         $printer->setEmphasis(true);
-        $printer->text((string)new SaleItemDto($width, 'TOTAL', '', $currencySymbol . ' ' . $voucher->voucher_sale_amount));
+        $printer->text(
+            (string) new SaleItemDto($width, 'TOTAL', '', $currencySymbol . ' ' . $voucher->voucher_sale_amount),
+        );
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
@@ -249,27 +259,28 @@ class PrintESCPOSController extends AbstractController
         if ($hasDetraction) {
             $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
             $printer->text(
-                (string)new SaleItemDto(
+                (string) new SaleItemDto(
                     $width,
                     'DETRACCION (' . $detractionPercent . '%)',
                     '',
-                    'S/ ' . $voucher->voucher_detraction_amount
-                )
+                    'S/ ' . $voucher->voucher_detraction_amount,
+                ),
             );
             $detractionType = trim(
-                ($voucher->voucher_detraction_code ?? '') .
-                ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
+                ($voucher->voucher_detraction_code ?? '')
+                . ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : ''),
             );
             $paymentDescription = $voucher->voucher_detraction_payment_description;
             $detractionPayment = trim(
-                ($voucher->voucher_detraction_payment_method ?? '') .
-                ($paymentDescription ? ' - ' . $paymentDescription : '')
+                ($voucher->voucher_detraction_payment_method ?? '')
+                . ($paymentDescription ? ' - ' . $paymentDescription : ''),
             );
 
             $printer->text($this->wrap('Tipo detracción: ' . ($detractionType !== '' ? $detractionType : '-'), $width));
-            $printer->text(
-                $this->wrap('Medio pago: ' . ($detractionPayment !== '' ? $detractionPayment : '-'), $width)
-            );
+            $printer->text($this->wrap(
+                'Medio pago: ' . ($detractionPayment !== '' ? $detractionPayment : '-'),
+                $width,
+            ));
 
             if (!empty($voucher->voucher_detraction_account)) {
                 $printer->text($this->wrap('CTA detracción: ' . $voucher->voucher_detraction_account, $width));
@@ -279,9 +290,9 @@ class PrintESCPOSController extends AbstractController
         }
 
         if (
-            !empty($voucher->voucher_bank_name) ||
-            !empty($voucher->voucher_bank_account) ||
-            !empty($voucher->voucher_bank_cci)
+            !empty($voucher->voucher_bank_name)
+            || !empty($voucher->voucher_bank_account)
+            || !empty($voucher->voucher_bank_cci)
         ) {
             $printer->text('Datos bancarios para depósito / transferencia:' . "\n");
             $printer->text('Banco: ' . ($voucher->voucher_bank_name ?: '-') . "\n");
@@ -364,7 +375,6 @@ class PrintESCPOSController extends AbstractController
 
         return wordwrap($text, $width, "\n", true) . "\n";
     }
-
 
     private function formatQuantity(float $quantity): string
     {

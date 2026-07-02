@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Application;
 
-use Nubit\ApiPlatform\Http\BaseController;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Export\PdfExporter;
-use App\Efact\Service\CompanyContext;
-use App\Settings\Service\TenantSettingsService;
 use App\Billing\Receipt\Domain\ReceiptCdrUseCase;
 use App\Billing\Receipt\Domain\ReceiptPdfUseCase;
 use App\Billing\Receipt\Domain\ReceiptRequest;
@@ -16,11 +11,16 @@ use App\Billing\Receipt\Domain\ReceiptShowUseCase;
 use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Receipt\Domain\ReceiptXmlUseCase;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Efact\Service\CompanyContext;
 use App\Sales\Domain\DocType;
+use App\Settings\Service\TenantSettingsService;
 use Brick\Math\Exception\MathException;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
+use Nubit\ApiPlatform\Http\BaseController;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Export\PdfExporter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -88,9 +88,7 @@ class ReceiptController extends BaseController
         $preview = $request->get('preview');
 
         $format = strval($request->get('format', 'ticket'));
-        $template = $format === 'a4'
-            ? 'invoice/invoice_a4.html.twig'
-            : 'invoice/invoice.html.twig';
+        $template = $format === 'a4' ? 'invoice/invoice_a4.html.twig' : 'invoice/invoice.html.twig';
         $content = $this->renderView($template, [
             'qr' => $qr,
             'voucher' => $voucher,
@@ -110,10 +108,8 @@ class ReceiptController extends BaseController
      * @throws FilesystemException
      */
     #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
-    public function xml(
-        ReceiptXmlUseCase $receiptXmlUseCase,
-        string $payload,
-    ): StreamedResponse {
+    public function xml(ReceiptXmlUseCase $receiptXmlUseCase, string $payload): StreamedResponse
+    {
         $fileResponse = $receiptXmlUseCase($this->getReceiptRequest($payload));
 
         $response = new StreamedResponse(function () use ($fileResponse): void {
@@ -121,10 +117,7 @@ class ReceiptController extends BaseController
         });
 
         $response->headers->set('Content-Type', 'text/xml');
-        $response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="' . $fileResponse->name . '"'
-        );
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
 
         return $response;
     }
@@ -133,10 +126,8 @@ class ReceiptController extends BaseController
      * @throws FilesystemException
      */
     #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
-    public function cdr(
-        ReceiptCdrUseCase $receiptCdrUseCase,
-        string $payload,
-    ): StreamedResponse {
+    public function cdr(ReceiptCdrUseCase $receiptCdrUseCase, string $payload): StreamedResponse
+    {
         $fileResponse = $receiptCdrUseCase($this->getReceiptRequest($payload));
 
         $response = new StreamedResponse(function () use ($fileResponse): void {
@@ -144,10 +135,7 @@ class ReceiptController extends BaseController
         });
 
         $response->headers->set('Content-Type', 'application/zip');
-        $response->headers->set(
-            'Content-Disposition',
-            'attachment; filename="' . $fileResponse->name . '"'
-        );
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
 
         return $response;
     }
@@ -156,12 +144,9 @@ class ReceiptController extends BaseController
      * @throws ServiceException
      */
     #[Route('/receipt/{payload}/pdf', name: 'receipt_pdf', methods: ['GET'])]
-    public function pdf(
-        Request $request,
-        ReceiptPdfUseCase $receiptPdfUseCase,
-        string $payload,
-    ): StreamedResponse {
-        $preview = (bool)$request->query->get('preview', false);
+    public function pdf(Request $request, ReceiptPdfUseCase $receiptPdfUseCase, string $payload): StreamedResponse
+    {
+        $preview = (bool) $request->query->get('preview', false);
 
         $fileResponse = $receiptPdfUseCase($this->getReceiptRequest($payload));
 
@@ -173,15 +158,9 @@ class ReceiptController extends BaseController
         $response->headers->set('Content-Type', 'application/pdf');
 
         if ($preview) {
-            $response->headers->set(
-                'Content-Disposition',
-                'inline; filename="' . $fileResponse->name . '"'
-            );
+            $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
         } else {
-            $response->headers->set(
-                'Content-Disposition',
-                'attachment; filename="' . $fileResponse->name . '"'
-            );
+            $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
         }
 
         return $response;

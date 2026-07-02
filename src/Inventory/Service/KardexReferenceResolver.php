@@ -16,8 +16,7 @@ final readonly class KardexReferenceResolver
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     public function resolve(?string $sourceType, ?string $sourceId): ?string
     {
@@ -88,7 +87,9 @@ final readonly class KardexReferenceResolver
             $documentId = $this->extractDocumentId($sourceId);
             $movement->sourceReference = match ($sourceType) {
                 'LEGACY_MOVIMIENTO_ITEM' => $saleRefs[$documentId] ?? $this->resolveSaleReference($documentId),
-                'PURCHASE_ITEM', 'PURCHASE_VOID' => $purchaseRefs[$documentId] ?? $this->resolvePurchaseReference($documentId),
+                'PURCHASE_ITEM', 'PURCHASE_VOID' => $purchaseRefs[$documentId] ?? $this->resolvePurchaseReference(
+                    $documentId,
+                ),
                 'CREDIT_NOTE' => $taxRefs[$documentId] ?? $this->resolveTaxDocumentReference($documentId),
                 'STOCK_ENTRY' => $entryRefs[$documentId] ?? $this->resolveStockEntryReference($documentId),
                 'PRODUCT_STOCK_TRANSFER' => $this->formatInternalReference('TR', null),
@@ -138,17 +139,14 @@ final readonly class KardexReferenceResolver
         return $refs[$entryId] ?? null;
     }
 
-    private function resolveVoidReference(string $sourceId): ?string
+    private function resolveVoidReference(string $sourceId): string
     {
         $movementId = str_starts_with($sourceId, 'VOID:') ? substr($sourceId, 5) : $sourceId;
-        $row = $this->connection->fetchAssociative(
-            <<<SQL
+        $row = $this->connection->fetchAssociative(<<<SQL
             SELECT sm.source_type, sm.source_id
             FROM stock_movements sm
             WHERE sm.id = ?
-            SQL,
-            [$movementId],
-        );
+            SQL, [$movementId]);
 
         if ($row === false) {
             return 'Anulación';
@@ -176,8 +174,7 @@ final readonly class KardexReferenceResolver
         }
 
         $placeholders = implode(',', array_fill(0, count($saleIds), '?'));
-        $rows = $this->connection->fetchAllAssociative(
-            <<<SQL
+        $rows = $this->connection->fetchAllAssociative(<<<SQL
             SELECT
                 s.id,
                 s.legacy_movimiento_id,
@@ -192,9 +189,7 @@ final readonly class KardexReferenceResolver
             WHERE s.id IN ($placeholders)
                OR s.legacy_movimiento_id IN ($placeholders)
             ORDER BY td.created_at DESC
-            SQL,
-            array_merge($saleIds, $saleIds),
-        );
+            SQL, array_merge($saleIds, $saleIds));
 
         $refs = [];
         foreach ($rows as $row) {
@@ -237,14 +232,11 @@ final readonly class KardexReferenceResolver
         }
 
         $placeholders = implode(',', array_fill(0, count($purchaseIds), '?'));
-        $rows = $this->connection->fetchAllAssociative(
-            <<<SQL
+        $rows = $this->connection->fetchAllAssociative(<<<SQL
             SELECT id, supplier_doc_series, supplier_doc_number, receipt_no
             FROM goods_receipts
             WHERE id IN ($placeholders)
-            SQL,
-            $purchaseIds,
-        );
+            SQL, $purchaseIds);
 
         $refs = [];
         foreach ($rows as $row) {
@@ -277,22 +269,16 @@ final readonly class KardexReferenceResolver
         }
 
         $placeholders = implode(',', array_fill(0, count($taxDocumentIds), '?'));
-        $rows = $this->connection->fetchAllAssociative(
-            <<<SQL
+        $rows = $this->connection->fetchAllAssociative(<<<SQL
             SELECT tax_document_id, series, number, document_type
             FROM tax_document
             WHERE tax_document_id IN ($placeholders)
-            SQL,
-            $taxDocumentIds,
-        );
+            SQL, $taxDocumentIds);
 
         $refs = [];
         foreach ($rows as $row) {
             $id = (string) $row['tax_document_id'];
-            $reference = $this->formatSeriesNumber(
-                $row['series'] ?? null,
-                $row['number'] ?? null,
-            );
+            $reference = $this->formatSeriesNumber($row['series'] ?? null, $row['number'] ?? null);
             if ($reference !== null) {
                 $refs[$id] = $reference;
             }
@@ -315,14 +301,11 @@ final readonly class KardexReferenceResolver
         }
 
         $placeholders = implode(',', array_fill(0, count($entryIds), '?'));
-        $rows = $this->connection->fetchAllAssociative(
-            <<<SQL
+        $rows = $this->connection->fetchAllAssociative(<<<SQL
             SELECT id, type
             FROM stock_entries
             WHERE id IN ($placeholders)
-            SQL,
-            $entryIds,
-        );
+            SQL, $entryIds);
 
         $refs = [];
         foreach ($rows as $row) {

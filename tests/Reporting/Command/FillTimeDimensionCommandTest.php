@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Reporting\Command;
 
-use App\Reporting\Command\FillTimeDimensionCommand;
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Reporting\Command\FillTimeDimensionCommand;
 use App\Reporting\Service\TimeDimensionSeeder;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -36,14 +36,15 @@ final class FillTimeDimensionCommandTest extends TestCase
     public function testSeedsTimeDimensionSuccessfully(): void
     {
         $seeder = $this->createMock(TimeDimensionSeeder::class);
-        $seeder->expects(self::once())
+        $seeder
+            ->expects(self::once())
             ->method('seed')
             ->with(
                 self::isInstanceOf(\DateTimeImmutable::class),
                 self::isInstanceOf(\DateTimeImmutable::class),
                 100,
                 'en_US',
-                self::isCallable()
+                self::isCallable(),
             )
             ->willReturn(365);
 
@@ -56,7 +57,10 @@ final class FillTimeDimensionCommandTest extends TestCase
         ]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertStringContainsString('Dimensión de fechas completada. Filas procesadas: 365', $tester->getDisplay());
+        self::assertStringContainsString(
+            'Dimensión de fechas completada. Filas procesadas: 365',
+            $tester->getDisplay(),
+        );
     }
 
     public function testReturnsFailureWhenSeederThrows(): void
@@ -77,14 +81,16 @@ final class FillTimeDimensionCommandTest extends TestCase
     private function newCommand(TimeDimensionSeeder $seeder): FillTimeDimensionCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
+        $tenantManager
+            ->method('getTenants')
+            ->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
 
         $command = new FillTimeDimensionCommand($seeder);
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         return $command;

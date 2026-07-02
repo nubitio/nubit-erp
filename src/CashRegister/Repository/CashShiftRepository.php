@@ -32,7 +32,6 @@ class CashShiftRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
     //    public function findOneBySomeField($value): ?CashShift
     //    {
     //        return $this->createQueryBuilder('c')

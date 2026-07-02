@@ -7,9 +7,9 @@ namespace App\Tests\ControlPlane\Command;
 use App\ControlPlane\Tenant\Command\TenantSetupCommand;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -22,7 +22,8 @@ final class TenantSetupCommandTest extends TestCase
     public function testUsesDefaultValuesWhenRunNonInteractivelyWithoutOptions(): void
     {
         $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
-        $initialSetupService->expects(self::once())
+        $initialSetupService
+            ->expects(self::once())
             ->method('configure')
             ->with(self::callback(function (InitialTenantSetupRequest $input): bool {
                 self::assertSame('admin', $input->adminUsername);
@@ -51,7 +52,8 @@ final class TenantSetupCommandTest extends TestCase
     public function testUsesOptionValuesWhenProvided(): void
     {
         $initialSetupService = $this->createMock(InitialTenantSetupPortInterface::class);
-        $initialSetupService->expects(self::once())
+        $initialSetupService
+            ->expects(self::once())
             ->method('configure')
             ->with(self::callback(function (InitialTenantSetupRequest $input): bool {
                 self::assertSame('ops-admin', $input->adminUsername);
@@ -105,15 +107,19 @@ final class TenantSetupCommandTest extends TestCase
     private function newCommand(InitialTenantSetupPortInterface $initialSetupService): TenantSetupCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
-        $tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']);
+        $tenantManager
+            ->method('getTenants')
+            ->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
+        $tenantManager
+            ->method('getTenantByName')
+            ->willReturn(['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']);
 
         $command = new TenantSetupCommand($initialSetupService);
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         return $command;

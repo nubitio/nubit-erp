@@ -17,6 +17,5 @@ final readonly class ProductImportMessage
         public ?int $tenantId = null,
         public ?string $tenantDomain = null,
         public ?string $requestId = null,
-    ) {
-    }
+    ) {}
 }

@@ -69,23 +69,16 @@ final class CleanExpiredFeatureOverridesCommand extends Command
         }
 
         if ($dryRun) {
-            $io->info(sprintf(
-                'Dry run: %d expired feature override(s) would be marked as cleaned.',
-                count($expired),
-            ));
+            $io->info(sprintf('Dry run: %d expired feature override(s) would be marked as cleaned.', count($expired)));
 
             return Command::SUCCESS;
         }
 
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
         $cleaned = 0;
 
         foreach ($expired as $override) {
-            $affected = $this->cp->update(
-                'tenant_feature_overrides',
-                ['cleaned_at' => $now],
-                ['id' => $override->id],
-            );
+            $affected = $this->cp->update('tenant_feature_overrides', ['cleaned_at' => $now], ['id' => $override->id]);
 
             if ($affected > 0) {
                 ++$cleaned;

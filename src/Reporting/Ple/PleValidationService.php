@@ -13,8 +13,7 @@ final readonly class PleValidationService
         private PurchaseLedgerExporter $purchaseExporter,
         private PleLedgerValidator $validator,
         private CompanyContext $companyContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @param 'sales'|'purchases'|null $book
@@ -34,7 +33,10 @@ final readonly class PleValidationService
 
         if ($book === null || $book === 'purchases') {
             $purchasePreview = $this->purchaseExporter->preview($period);
-            $purchaseIssues = array_merge($companyIssues, $this->validator->validatePurchasesBook($purchasePreview, $period));
+            $purchaseIssues = array_merge($companyIssues, $this->validator->validatePurchasesBook(
+                $purchasePreview,
+                $period,
+            ));
             $books['purchases'] = $this->bookValidation($purchaseIssues);
         }
 
@@ -49,7 +51,7 @@ final readonly class PleValidationService
         return [
             'period' => $period,
             'valid' => $valid,
-            'validatedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'validatedAt' => new \DateTimeImmutable()->format(\DateTimeInterface::ATOM),
             'books' => $books,
         ];
     }

@@ -11,8 +11,7 @@ final readonly class KardexCostSqlHelper
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     public function purchaseItemJoinSql(): string
     {

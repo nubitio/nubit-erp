@@ -12,7 +12,7 @@ final class ConfigKeyTest extends TestCase
 {
     public function testAllCasesHaveUniqueValues(): void
     {
-        $values = array_map(static fn (ConfigKey $key): string => $key->value, ConfigKey::cases());
+        $values = array_map(static fn(ConfigKey $key): string => $key->value, ConfigKey::cases());
 
         self::assertSame(array_unique($values), $values);
     }
@@ -27,12 +27,12 @@ final class ConfigKeyTest extends TestCase
     public static function provideTechnicalKeys(): array
     {
         return [
-            'RECEIPT_REQUIRED'          => [ConfigKey::RECEIPT_REQUIRED],
-            'SUNAT_SEND_ENABLED'        => [ConfigKey::SUNAT_SEND_ENABLED],
-            'SUNAT_REJECTION_STREAK'    => [ConfigKey::SUNAT_REJECTION_STREAK],
+            'RECEIPT_REQUIRED' => [ConfigKey::RECEIPT_REQUIRED],
+            'SUNAT_SEND_ENABLED' => [ConfigKey::SUNAT_SEND_ENABLED],
+            'SUNAT_REJECTION_STREAK' => [ConfigKey::SUNAT_REJECTION_STREAK],
             'SUNAT_REJECTION_THRESHOLD' => [ConfigKey::SUNAT_REJECTION_THRESHOLD],
-            'CPE_CLIENT_ID'             => [ConfigKey::CPE_CLIENT_ID],
-            'CPE_CLIENT_SECRET'         => [ConfigKey::CPE_CLIENT_SECRET],
+            'CPE_CLIENT_ID' => [ConfigKey::CPE_CLIENT_ID],
+            'CPE_CLIENT_SECRET' => [ConfigKey::CPE_CLIENT_SECRET],
         ];
     }
 
@@ -46,10 +46,10 @@ final class ConfigKeyTest extends TestCase
     public static function provideNonTechnicalKeys(): array
     {
         return [
-            'IGV'              => [ConfigKey::IGV],
-            'AUTO_INVOICE'     => [ConfigKey::AUTO_INVOICE],
+            'IGV' => [ConfigKey::IGV],
+            'AUTO_INVOICE' => [ConfigKey::AUTO_INVOICE],
             'DEFAULT_CURRENCY' => [ConfigKey::DEFAULT_CURRENCY],
-            'PRINT_METHOD'     => [ConfigKey::PRINT_METHOD],
+            'PRINT_METHOD' => [ConfigKey::PRINT_METHOD],
         ];
     }
 

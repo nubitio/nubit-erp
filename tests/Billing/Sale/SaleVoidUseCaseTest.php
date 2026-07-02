@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Sale;
 
-use App\Efact\Audit\AuditLogger;
-use Nubit\Platform\Exception\ServiceException;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Sale\Void\CashRefundRegistrar;
+use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
@@ -15,24 +17,22 @@ use App\Billing\Sale\Void\VoidStrategyInterface;
 use App\Billing\Service\SaleV2Loader;
 use App\Billing\Shared\ErrorMessages;
 use App\CashRegister\Entity\CashMovementCategory;
-use App\Catalog\Entity\PaymentMethod;
-use App\Sales\Entity\SaleRecord;
-use App\Billing\Entity\TaxDocument;
 use App\CashRegister\Enum\CashMovementType;
-use App\Billing\Repository\TaxDocumentEventRepository;
-use App\Billing\Repository\TaxDocumentRepository;
+use App\Catalog\Entity\PaymentMethod;
+use App\Efact\Audit\AuditLogger;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use App\Sales\Domain\SaleStatus;
-use App\Billing\Sale\Void\StockVoidReverserInterface;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\State\CashSessionResolverInterface;
 use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
-use PHPUnit\Framework\MockObject\MockObject;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -67,7 +67,7 @@ final class SaleVoidUseCaseTest extends TestCase
 
     public function testThrowsAlreadyVoidedWhenSaleIsVoided(): void
     {
-        $sale = (new SaleRecord())->setId('sale-1');
+        $sale = new SaleRecord()->setId('sale-1');
         $sale->setStatus('VOIDED');
 
         $em = $this->createStub(EntityManagerInterface::class);
@@ -179,7 +179,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $response = $useCase('sale-nv', 'Test reason', 1);
 
@@ -205,7 +210,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $useCase('sale-reason', 'Anulación por error de datos', 1);
 
@@ -230,7 +240,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $useCase('sale-status', 'reason', 1);
 
@@ -255,7 +270,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $useCase('sale-flush', 'reason', 1);
     }
@@ -282,11 +302,14 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
-        $salesWriteGateway->expects(self::once())
-            ->method('markVoided')
-            ->with($sale, 'sync-reason');
+        $salesWriteGateway->expects(self::once())->method('markVoided')->with($sale, 'sync-reason');
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $useCase('sale-sync', 'sync-reason', 1);
     }
@@ -309,10 +332,14 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
-        $salesWriteGateway->method('markVoided')
-            ->willThrowException(new \RuntimeException('V2 sync failed'));
+        $salesWriteGateway->method('markVoided')->willThrowException(new \RuntimeException('V2 sync failed'));
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         // Should NOT throw — sync failure is swallowed and logged
         $response = $useCase('sale-sync-fail', 'reason', 1);
@@ -339,11 +366,11 @@ final class SaleVoidUseCaseTest extends TestCase
         // V2: CashRefundRegistrar uses DBAL Connection + CashSessionResolver
         $dbalConnection = $this->createMock(Connection::class);
         $dbalConnection->method('fetchAssociative')->willReturn(['id' => 7]); // category found
-        $dbalConnection->expects(self::once())->method('executeStatement');   // row written
+        $dbalConnection->expects(self::once())->method('executeStatement'); // row written
 
         /** @var MockObject&CashSessionResolverInterface $cashSessionResolver */
         $cashSessionResolver = $this->createStub(CashSessionResolverInterface::class);
-        $cashSessionResolver->method('tryResolveForSale')->willReturn(42);   // session found
+        $cashSessionResolver->method('tryResolveForSale')->willReturn(42); // session found
 
         $cashRefundRegistrar = new CashRefundRegistrar($dbalConnection, $cashSessionResolver, new NullLogger());
 
@@ -692,14 +719,16 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // → NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
-        $saleV2Loader->expects(self::once())
-            ->method('loadAsSale')
-            ->with('v2-uuid')
-            ->willReturn($v2Sale);
+        $saleV2Loader->expects(self::once())->method('loadAsSale')->with('v2-uuid')->willReturn($v2Sale);
 
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         // NOTA_VENTA path with no legacy persist — should succeed.
         $response = $useCase('v2-uuid', 'Test void', 1);
@@ -732,7 +761,12 @@ final class SaleVoidUseCaseTest extends TestCase
 
         $salesWriteGateway = $this->createStub(SalesWriteGateway::class);
 
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+        );
 
         $useCase('v2-only', 'Void reason', 1);
     }
@@ -756,8 +790,8 @@ final class SaleVoidUseCaseTest extends TestCase
      */
     private function buildSunatVoidService(VoidStrategyInterface $strategy): SunatVoidService
     {
-        $sunatVoidService = (new \ReflectionClass(SunatVoidService::class))->newInstanceWithoutConstructor();
-        $prop = (new \ReflectionClass(SunatVoidService::class))->getProperty('strategies');
+        $sunatVoidService = new \ReflectionClass(SunatVoidService::class)->newInstanceWithoutConstructor();
+        $prop = new \ReflectionClass(SunatVoidService::class)->getProperty('strategies');
         $prop->setValue($sunatVoidService, [$strategy]);
 
         return $sunatVoidService;
@@ -766,8 +800,7 @@ final class SaleVoidUseCaseTest extends TestCase
     private function makeSunatVoidResponse(bool $success, ?string $message = null): SunatVoidResponse
     {
         /** @var \App\Billing\Sunat\Model\Response\SummaryResponse $rawResponse */
-        $rawResponse = (new \ReflectionClass(\App\Billing\Sunat\Model\Response\SummaryResponse::class))
-            ->newInstanceWithoutConstructor();
+        $rawResponse = new \ReflectionClass(\App\Billing\Sunat\Model\Response\SummaryResponse::class)->newInstanceWithoutConstructor();
 
         return new SunatVoidResponse(
             rawResponse: $rawResponse,
@@ -787,7 +820,7 @@ final class SaleVoidUseCaseTest extends TestCase
      */
     private function setPrivateProperty(object $object, string $propertyName, mixed $value): void
     {
-        $prop = (new \ReflectionClass($object))->getProperty($propertyName);
+        $prop = new \ReflectionClass($object)->getProperty($propertyName);
         $prop->setValue($object, $value);
     }
 
@@ -797,11 +830,10 @@ final class SaleVoidUseCaseTest extends TestCase
      * TaxDocumentEventRepository is also final, so we bypass its constructor via reflection
      * and inject a mock ManagerRegistry so that recordEvent() can call getManager()->persist().
      */
-    private function buildTaxDocumentVoidUpdater(
-        ?EntityManagerInterface $em = null,
-    ): TaxDocumentVoidUpdater {
+    private function buildTaxDocumentVoidUpdater(?EntityManagerInterface $em = null): TaxDocumentVoidUpdater
+    {
         /** @var TaxDocumentEventRepository $taxDocEventRepo */
-        $taxDocEventRepo = (new \ReflectionClass(TaxDocumentEventRepository::class))->newInstanceWithoutConstructor();
+        $taxDocEventRepo = new \ReflectionClass(TaxDocumentEventRepository::class)->newInstanceWithoutConstructor();
 
         // Wire a mock ManagerRegistry so that recordEvent() → registry->getManager()->persist() works
         $mockObjectManager = $this->createStub(ObjectManager::class);
@@ -810,13 +842,10 @@ final class SaleVoidUseCaseTest extends TestCase
         $mockRegistry = $this->createStub(ManagerRegistry::class);
         $mockRegistry->method('getManager')->willReturn($mockObjectManager);
 
-        $registryProp = (new \ReflectionClass(TaxDocumentEventRepository::class))->getProperty('registry');
+        $registryProp = new \ReflectionClass(TaxDocumentEventRepository::class)->getProperty('registry');
         $registryProp->setValue($taxDocEventRepo, $mockRegistry);
 
-        return new TaxDocumentVoidUpdater(
-            $em ?? $this->createMock(EntityManagerInterface::class),
-            $taxDocEventRepo,
-        );
+        return new TaxDocumentVoidUpdater($em ?? $this->createMock(EntityManagerInterface::class), $taxDocEventRepo);
     }
 
     private function buildUseCase(
@@ -830,17 +859,17 @@ final class SaleVoidUseCaseTest extends TestCase
     ): SaleVoidUseCase {
         if ($sunatVoidService === null) {
             /** @var SunatVoidService $sunatVoidService */
-            $sunatVoidService = (new \ReflectionClass(SunatVoidService::class))->newInstanceWithoutConstructor();
+            $sunatVoidService = new \ReflectionClass(SunatVoidService::class)->newInstanceWithoutConstructor();
         }
 
         if ($cashRefundRegistrar === null) {
             /** @var CashRefundRegistrar $cashRefundRegistrar */
-            $cashRefundRegistrar = (new \ReflectionClass(CashRefundRegistrar::class))->newInstanceWithoutConstructor();
+            $cashRefundRegistrar = new \ReflectionClass(CashRefundRegistrar::class)->newInstanceWithoutConstructor();
         }
 
         if ($taxDocumentVoidUpdater === null) {
             /** @var TaxDocumentVoidUpdater $taxDocumentVoidUpdater */
-            $taxDocumentVoidUpdater = (new \ReflectionClass(TaxDocumentVoidUpdater::class))->newInstanceWithoutConstructor();
+            $taxDocumentVoidUpdater = new \ReflectionClass(TaxDocumentVoidUpdater::class)->newInstanceWithoutConstructor();
         }
 
         return new SaleVoidUseCase(

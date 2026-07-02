@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Certificate;
 
-use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mercure\HubInterface;
@@ -29,14 +29,16 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         private HubInterface $hub,
         private LoggerInterface $logger,
         private string $mailerFrom = 'noreply@efact.app',
-    ) {
-    }
+    ) {}
 
     public function sendExpiringAlerts(int $days = 30): int
     {
         $sent = 0;
         foreach ($this->repository->findExpiringWithin($days) as $certificate) {
-            if ($certificate->lastAlertedAt !== null && $certificate->lastAlertedAt > (new \DateTimeImmutable())->modify('-1 day')) {
+            if (
+                $certificate->lastAlertedAt !== null
+                && $certificate->lastAlertedAt > new \DateTimeImmutable()->modify('-1 day')
+            ) {
                 continue;
             }
 
@@ -47,7 +49,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
             $body = sprintf(
                 'El certificado SUNAT del tenant %s vence el %s. Renueva el certificado para evitar fallas de facturación electrónica.',
                 $certificate->tenantName,
-                $certificate->expiresAt->format('Y-m-d')
+                $certificate->expiresAt->format('Y-m-d'),
             );
             $actionUrl = '/admin/tenants/' . $certificate->tenantId . '/certificates';
 
@@ -88,12 +90,12 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         /** @var Connection $connection */
         $connection = $this->connectionRegistry->getConnection('tenant');
         $rows = $connection->fetchAllAssociative(
-            'SELECT username FROM usuario WHERE rol_id IN (1, 2) AND deleted_at IS NULL'
+            'SELECT username FROM usuario WHERE rol_id IN (1, 2) AND deleted_at IS NULL',
         );
 
         $emails = [];
         foreach ($rows as $row) {
-            $email = trim((string)($row['username'] ?? ''));
+            $email = trim((string) ($row['username'] ?? ''));
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $emails[] = mb_strtolower($email);
             }
@@ -111,7 +113,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
             return;
         }
 
-        $email = (new Email())
+        $email = new Email()
             ->from($this->mailerFrom)
             ->subject($title)
             ->text($body);
@@ -123,8 +125,12 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         $this->mailer->send($email);
     }
 
-    private function publishMercure(TenantCertificate $certificate, string $title, string $body, string $actionUrl): void
-    {
+    private function publishMercure(
+        TenantCertificate $certificate,
+        string $title,
+        string $body,
+        string $actionUrl,
+    ): void {
         $payload = [
             'type' => NotificationType::CERTIFICATE_EXPIRING,
             'tenant' => $certificate->tenantName,
@@ -135,10 +141,12 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         ];
 
         try {
-            $this->hub->publish(new Update(
-                sprintf('tenant/%s/notifications', $certificate->tenantName),
-                json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
-            ));
+            $this->hub->publish(
+                new Update(
+                    sprintf('tenant/%s/notifications', $certificate->tenantName),
+                    json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+                ),
+            );
         } catch (\Throwable $e) {
             $this->logger->warning('Certificate Mercure alert publish failed', [
                 'certificate_id' => $certificate->id,

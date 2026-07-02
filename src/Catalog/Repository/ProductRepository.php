@@ -24,7 +24,8 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function searchByTerm(string $term, int $limit = 5): array
     {
-        $qb = $this->createQueryBuilder('p')
+        $qb = $this
+            ->createQueryBuilder('p')
             ->select('p.id', 'p.code', 'p.name', 'p.salePrice', 'p.minStock')
             ->where('LOWER(p.name) LIKE :term OR LOWER(p.code) LIKE :term')
             ->setParameter('term', '%' . mb_strtolower($term) . '%')
@@ -32,7 +33,7 @@ class ProductRepository extends ServiceEntityRepository
             ->orderBy('p.name', 'ASC');
 
         return array_map(
-            static fn (array $row): ProductSearchResultDto => new ProductSearchResultDto(
+            static fn(array $row): ProductSearchResultDto => new ProductSearchResultDto(
                 (string) $row['id'],
                 $row['code'],
                 (string) $row['name'],
@@ -40,7 +41,7 @@ class ProductRepository extends ServiceEntityRepository
                 null, // stock is sourced from stock_items via product_stock tool, not the legacy column
                 null !== $row['minStock'] ? (float) $row['minStock'] : null,
             ),
-            $qb->getQuery()->getArrayResult()
+            $qb->getQuery()->getArrayResult(),
         );
     }
 }

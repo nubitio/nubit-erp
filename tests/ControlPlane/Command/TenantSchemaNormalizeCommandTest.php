@@ -13,8 +13,9 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
     public function testBuildMenuIdNormalizationAddsPrimaryAndModifyStatements(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturnCallback(
-            static function (string $sql): int {
+        $connection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql): int {
                 if (str_contains($sql, 'information_schema.tables')) {
                     return 1;
                 }
@@ -26,16 +27,15 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
                 }
 
                 return 0;
-            }
-        );
-        $connection->method('fetchAssociative')->willReturn(
-            [
+            });
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
                 'data_type' => 'int',
                 'is_nullable' => 'YES',
                 'extra' => '',
                 'column_key' => '',
-            ]
-        );
+            ]);
 
         $command = new TenantSchemaNormalizeCommand($connection);
 
@@ -46,15 +46,16 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
                 'ALTER TABLE menu ADD PRIMARY KEY (id)',
                 'ALTER TABLE menu MODIFY id INT NOT NULL AUTO_INCREMENT',
             ],
-            $sql
+            $sql,
         );
     }
 
     public function testBuildUnidadCodeNormalizationIncludesFallbacksAndNotNull(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturnCallback(
-            static function (string $sql, array $params): int {
+        $connection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql, array $params): int {
                 if (str_contains($sql, 'information_schema.tables')) {
                     return ($params['table'] ?? '') === 'unidad' ? 1 : 0;
                 }
@@ -67,10 +68,8 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
                 }
 
                 return 0;
-            }
-        );
-        $connection->method('fetchAssociative')
-            ->willReturn(['is_nullable' => 'YES']);
+            });
+        $connection->method('fetchAssociative')->willReturn(['is_nullable' => 'YES']);
 
         $command = new TenantSchemaNormalizeCommand($connection);
         $sql = $this->invokePrivate($command, 'buildUnidadCodeNormalization');
@@ -86,26 +85,24 @@ final class TenantSchemaNormalizeCommandTest extends TestCase
     {
         $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
-        $connection->method('fetchAssociative')->willReturn(
-            [
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
                 'column_type' => 'char(11)',
                 'is_nullable' => 'NO',
                 'collation_name' => 'utf8mb4_general_ci',
-            ]
-        );
+            ]);
 
         $command = new TenantSchemaNormalizeCommand($connection);
 
-        $sql = $this->invokePrivate(
-            $command,
-            'buildTypeOnlyAlter',
-            ['cliente', 'ruc', 'varchar(11)', 'utf8mb4_unicode_ci']
-        );
+        $sql = $this->invokePrivate($command, 'buildTypeOnlyAlter', [
+            'cliente',
+            'ruc',
+            'varchar(11)',
+            'utf8mb4_unicode_ci',
+        ]);
 
-        self::assertSame(
-            'ALTER TABLE `cliente` MODIFY `ruc` VARCHAR(11) COLLATE utf8mb4_unicode_ci NOT NULL',
-            $sql
-        );
+        self::assertSame('ALTER TABLE `cliente` MODIFY `ruc` VARCHAR(11) COLLATE utf8mb4_unicode_ci NOT NULL', $sql);
     }
 
     /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use App\Settings\Service\TenantSettingsService;
-use App\Identity\Dto\AuthUserDto;
-use App\Inventory\Core\Enum\StockPolicy;
 use App\Catalog\Entity\Product;
+use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
+use App\Inventory\Core\Enum\StockPolicy;
+use App\Settings\Service\TenantSettingsService;
 
 /**
  * Resolves the negative stock policy for the legacy sales pipeline.
@@ -25,8 +25,7 @@ final readonly class NegativeStockPolicyResolver
 {
     public function __construct(
         private TenantSettingsService $tenantSettings,
-    ) {
-    }
+    ) {}
 
     public function resolvePolicy(): StockPolicy
     {
@@ -41,8 +40,8 @@ final readonly class NegativeStockPolicyResolver
     {
         return match ($policy) {
             StockPolicy::ALLOW_NEGATIVE => true,
-            StockPolicy::WARNING_ONLY   => $this->isAdmin($user),
-            StockPolicy::STRICT         => false,
+            StockPolicy::WARNING_ONLY => $this->isAdmin($user),
+            StockPolicy::STRICT => false,
         };
     }
 

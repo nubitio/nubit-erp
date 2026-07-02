@@ -14,10 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:usage',
-    description: 'Collect and display usage metrics for tenants.',
-)]
+#[AsCommand(name: 'app:tenant:usage', description: 'Collect and display usage metrics for tenants.')]
 class TenantUsageCommand extends Command
 {
     public function __construct(
@@ -29,14 +26,12 @@ class TenantUsageCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addArgument('tenant', InputArgument::OPTIONAL, 'Specific tenant (checks all if omitted)')
-            ->addOption(
-                'store',
-                null,
-                InputOption::VALUE_NONE,
-                'Store metrics in control plane for historical tracking',
-            );
+        $this->addArgument('tenant', InputArgument::OPTIONAL, 'Specific tenant (checks all if omitted)')->addOption(
+            'store',
+            null,
+            InputOption::VALUE_NONE,
+            'Store metrics in control plane for historical tracking',
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -78,10 +73,7 @@ class TenantUsageCommand extends Command
                 ];
             }
 
-            $io->table(
-                ['Tenant', 'Users', 'Customers', 'Products', 'Invoices', 'Storage'],
-                $summaryRows,
-            );
+            $io->table(['Tenant', 'Users', 'Customers', 'Products', 'Invoices', 'Storage'], $summaryRows);
         }
 
         if ($store) {
@@ -106,9 +98,7 @@ class TenantUsageCommand extends Command
 
         $rows = [];
         foreach ($metrics as $metric => $value) {
-            $displayValue = $metric === 'storage_bytes'
-                ? $this->formatBytes($value)
-                : (string) $value;
+            $displayValue = $metric === 'storage_bytes' ? $this->formatBytes($value) : (string) $value;
             $rows[] = [$metric, $displayValue];
         }
 

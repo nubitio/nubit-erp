@@ -26,8 +26,7 @@ final readonly class PlanManager
         private LoggerInterface $logger,
         private TenantResourceCatalog $resourceCatalog,
         private ?PlanFeatureManager $planFeatureManager = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, array{id: int, name: string, limits: array<string, int>, is_default: bool}>
@@ -126,7 +125,7 @@ final readonly class PlanManager
 
         if (!preg_match('/^[a-z0-9_-]+$/', $name)) {
             throw new InvalidArgumentException(
-                'Plan name must contain only lowercase letters, numbers, hyphens and underscores'
+                'Plan name must contain only lowercase letters, numbers, hyphens and underscores',
             );
         }
         $limits = $this->normalizeLimits($limits);
@@ -138,7 +137,7 @@ final readonly class PlanManager
             throw new InvalidArgumentException(sprintf('Plan "%s" already exists', $name));
         }
 
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
         if ($isDefault) {
             $conn->executeStatement('UPDATE plans SET is_default = 0');
@@ -181,18 +180,22 @@ final readonly class PlanManager
             throw new InvalidArgumentException(sprintf('Plan "%s" already exists', $name));
         }
 
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
         if ($isDefault) {
             $conn->executeStatement('UPDATE plans SET is_default = 0');
         }
 
-        $conn->update('plans', [
-            'name' => $name,
-            'limits_json' => json_encode($limits, JSON_THROW_ON_ERROR),
-            'is_default' => $isDefault ? 1 : 0,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $conn->update(
+            'plans',
+            [
+                'name' => $name,
+                'limits_json' => json_encode($limits, JSON_THROW_ON_ERROR),
+                'is_default' => $isDefault ? 1 : 0,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
 
         if ($oldPlan['name'] !== $name) {
             $conn->update('tenants', ['plan' => $name], ['plan' => $oldPlan['name']]);
@@ -217,7 +220,7 @@ final readonly class PlanManager
             throw new InvalidArgumentException('Cannot delete the default plan');
         }
 
-        $tenantsUsing = (int)$conn->fetchOne('SELECT COUNT(*) FROM tenants WHERE plan = ?', [$plan['name']]);
+        $tenantsUsing = (int) $conn->fetchOne('SELECT COUNT(*) FROM tenants WHERE plan = ?', [$plan['name']]);
         if ($tenantsUsing > 0) {
             throw new InvalidArgumentException(sprintf(
                 'Cannot delete plan "%s": %d tenant(s) are using it',
@@ -281,13 +284,13 @@ final readonly class PlanManager
     private function hydrate(array $row): array
     {
         /** @var array<string, int> $limits */
-        $limits = json_decode((string)$row['limits_json'], true, 512, JSON_THROW_ON_ERROR);
+        $limits = json_decode((string) $row['limits_json'], true, 512, JSON_THROW_ON_ERROR);
 
         return [
-            'id' => (int)$row['id'],
-            'name' => (string)$row['name'],
+            'id' => (int) $row['id'],
+            'name' => (string) $row['name'],
             'limits' => $limits,
-            'is_default' => (bool)$row['is_default'],
+            'is_default' => (bool) $row['is_default'],
         ];
     }
 

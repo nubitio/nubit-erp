@@ -58,7 +58,8 @@ final class PriceListApplyProviderTest extends TestCase
     public function testProvidePassesPriceListIdToQuery(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('fetchAllAssociative')
             ->with(self::anything(), ['id' => 7])
             ->willReturn([]);

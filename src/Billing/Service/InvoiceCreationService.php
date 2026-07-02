@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Service;
 
-use App\Catalog\Entity\UnitOfMeasure;
 use App\Billing\Shared\ErrorMessages;
-use App\Sales\Entity\SaleRecord;
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Sales\Domain\DocType;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
@@ -21,8 +21,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
     public function __construct(
         private Connection $connection,
         private SaleCurrencyResolver $saleCurrencyResolver,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{success: bool, message: string, invoiceId?: string}
@@ -76,10 +75,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
         $connection = $this->connection;
 
-        $localId = $connection->fetchOne(
-            'select local_id from almacen where almacen_id = ?',
-            [$sale->getAlmacen()?->getId()]
-        );
+        $localId = $connection->fetchOne('select local_id from almacen where almacen_id = ?', [$sale->getAlmacen()?->getId()]);
 
         $lines = [];
         foreach ($sale->getSaleItemRecords() as $item) {
@@ -93,9 +89,9 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         $invoiceCalculator = new InvoiceCalculator(
             $lines,
             $sale->getDescuento() ?? '0',
-            (string)($sale->getIgv() ?? '0'),
-            (string)($sale->getRecargoConsumo() ?? '0'),
-            $sale->getTotal() !== null ? (string)$sale->getTotal() : null,
+            (string) ($sale->getIgv() ?? '0'),
+            (string) ($sale->getRecargoConsumo() ?? '0'),
+            $sale->getTotal() !== null ? (string) $sale->getTotal() : null,
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
         $saleId = $sale->getId();
@@ -109,32 +105,28 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
         // Resolve the V2 sale_id (sales.id) for the FK to the sales table.
         // Must happen before the dedup check so it can be used in the WHERE clause.
-        $v2SaleId = $connection->fetchOne(
-            'SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1',
-            ['id' => $saleId]
-        );
+        $v2SaleId = $connection->fetchOne('SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1', [
+            'id' => $saleId,
+        ]);
         $resolvedV2SaleId = is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null;
 
         $connection->beginTransaction();
         try {
-            $voucherType = strlen(
-                $sale->getCliente()?->getRuc() ?? ''
-            ) === 11 ? DocType::FACTURA->value : DocType::BOLETA->value;
+            $voucherType = strlen($sale->getCliente()?->getRuc() ?? '') === 11
+                ? DocType::FACTURA->value
+                : DocType::BOLETA->value;
 
-            $existingInvoice = $connection->fetchOne(
-                "SELECT tax_document_id
+            $existingInvoice = $connection->fetchOne('SELECT tax_document_id
                  FROM tax_document
                  WHERE (movimiento_id = :saleId
                     OR (:v2SaleId IS NOT NULL AND sale_id = :v2SaleId))
                    AND document_type IN (:facturaDocType, :boletaDocType)
-                 LIMIT 1 FOR UPDATE",
-                [
-                    'saleId' => $saleId,
-                    'v2SaleId' => $resolvedV2SaleId,
-                    'facturaDocType' => DocType::FACTURA->value,
-                    'boletaDocType' => DocType::BOLETA->value,
-                ]
-            );
+                 LIMIT 1 FOR UPDATE', [
+                'saleId' => $saleId,
+                'v2SaleId' => $resolvedV2SaleId,
+                'facturaDocType' => DocType::FACTURA->value,
+                'boletaDocType' => DocType::BOLETA->value,
+            ]);
             if (is_string($existingInvoice) && $existingInvoice !== '') {
                 $connection->commit();
 
@@ -144,17 +136,14 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 ];
             }
 
-            $series = $connection->fetchOne(
-                'SELECT series
+            $series = $connection->fetchOne('SELECT series
                         FROM local_comprobante
                         WHERE local_id = :localId
                           AND tipo_comprobante_id = :voucherType
-                        LIMIT 1',
-                [
-                    'localId' => $localId,
-                    'voucherType' => $voucherType,
-                ]
-            );
+                        LIMIT 1', [
+                'localId' => $localId,
+                'voucherType' => $voucherType,
+            ]);
 
             if (!$series) {
                 $connection->rollBack();
@@ -165,17 +154,14 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 ];
             }
 
-            $nextNumber = $connection->fetchOne(
-                'SELECT IFNULL(MAX(CAST(number AS SIGNED)), 0) + 1
+            $nextNumber = $connection->fetchOne('SELECT IFNULL(MAX(CAST(number AS SIGNED)), 0) + 1
                  FROM tax_document
                  WHERE series = :series
                    AND document_type = :voucherType
-                 FOR UPDATE',
-                [
-                    'series' => $series,
-                    'voucherType' => $voucherType,
-                ]
-            );
+                 FOR UPDATE', [
+                'series' => $series,
+                'voucherType' => $voucherType,
+            ]);
 
             $taxDocumentId = (string) $this->connection->fetchOne('SELECT UUID()');
 
@@ -218,8 +204,11 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                     'line_number' => $lineNumber,
                     'product_id' => $saleItem?->getProduct()?->getId(),
                     'product_code' => $saleItem?->getProduct()?->getCode(),
-                    'product_name' => $saleItem?->getNameSnapshot() ?: ($saleItem?->getProduct()?->getName() ?? '-'),
-                    'product_uom' => $saleItem?->getProduct()?->getUnitOfMeasure()?->getCode() ?? $saleItem?->getUomSnapshot(),
+                    'product_name' => $saleItem?->getNameSnapshot() ?: $saleItem?->getProduct()?->getName() ?? '-',
+                    'product_uom' => $saleItem
+                        ?->getProduct()
+                        ?->getUnitOfMeasure()
+                        ?->getCode() ?? $saleItem?->getUomSnapshot(),
                     'quantity' => $line->quantity,
                     'unit_price' => $line->unitPrice,
                     'unit_value' => $line->unitValue,
@@ -266,18 +255,18 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         if ($this->tableExists('sales')) {
             $this->connection->executeStatement(
                 <<<'SQL'
-UPDATE sales
-SET grand_total = :total,
-    paid_total = :total,
-    balance_due = 0,
-    updated_at = UTC_TIMESTAMP(),
-    sync_status = 'SYNCED'
-WHERE id = :sale_id OR legacy_movimiento_id = :sale_id
-SQL,
+                    UPDATE sales
+                    SET grand_total = :total,
+                        paid_total = :total,
+                        balance_due = 0,
+                        updated_at = UTC_TIMESTAMP(),
+                        sync_status = 'SYNCED'
+                    WHERE id = :sale_id OR legacy_movimiento_id = :sale_id
+                    SQL,
                 [
                     'total' => $total,
                     'sale_id' => $saleId,
-                ]
+                ],
             );
         }
     }
@@ -286,15 +275,15 @@ SQL,
     {
         $exists = $this->connection->fetchOne(
             <<<'SQL'
-SELECT 1
-FROM information_schema.tables
-WHERE table_schema = DATABASE()
-  AND table_name = :table_name
-LIMIT 1
-SQL,
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table_name
+                LIMIT 1
+                SQL,
             [
                 'table_name' => $tableName,
-            ]
+            ],
         );
 
         return $exists !== false;

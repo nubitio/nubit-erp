@@ -13,12 +13,9 @@ use App\Billing\Invoice\Domain\Voucher;
 #[ApiResource(
     shortName: 'Invoice',
     operations: [
-        new Post(
-            input: InvoiceCreateDto::class,
-            output: Voucher::class,
-        ),
+        new Post(input: InvoiceCreateDto::class, output: Voucher::class),
     ],
-    processor: MakeInvoice::class
+    processor: MakeInvoice::class,
 )]
 class InvoiceCreateDto
 {

@@ -15,6 +15,5 @@ final readonly class CashSessionPaymentMethodSalesDto
         public string $paymentMethod,
         #[Groups(['cash_x_report:read'])]
         public string $amount,
-    ) {
-    }
+    ) {}
 }

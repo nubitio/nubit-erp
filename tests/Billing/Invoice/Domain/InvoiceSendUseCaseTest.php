@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Invoice\Domain;
 
-use App\Efact\Audit\AuditLogger;
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Service\CompanyContext;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Invoice\Domain\InvoiceSendUseCase;
+use App\Billing\Invoice\Domain\SunatSendControlService;
+use App\Billing\Repository\TaxDocumentEventRepository;
 use App\Billing\Sunat\Domain\BillConsultUseCase;
 use App\Billing\Sunat\Domain\BillSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
-use App\Billing\Invoice\Domain\InvoiceSendUseCase;
-use App\Billing\Invoice\Domain\SunatSendControlService;
-use App\Billing\Entity\TaxDocument;
-use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Efact\Audit\AuditLogger;
+use App\Efact\Service\CompanyContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
@@ -24,6 +21,9 @@ use Greenter\Model\Response\CdrResponse;
 use Greenter\Model\Response\Error;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -46,30 +46,30 @@ final class InvoiceSendUseCaseTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->billSendUseCase           = $this->createMock(BillSendUseCase::class);
-        $this->billConsultUseCase        = $this->createMock(BillConsultUseCase::class);
-        $this->sunatSendControlService   = $this->createMock(SunatSendControlService::class);
-        $this->filesystemOperator        = $this->createMock(FilesystemOperator::class);
-        $this->companyContext             = $this->createMock(CompanyContext::class);
-        $this->doctrine                  = $this->createMock(ManagerRegistry::class);
-        $this->auditLogger               = $this->createMock(AuditLogger::class);
-        $this->entityManager             = $this->createMock(EntityManagerInterface::class);
+        $this->billSendUseCase = $this->createMock(BillSendUseCase::class);
+        $this->billConsultUseCase = $this->createMock(BillConsultUseCase::class);
+        $this->sunatSendControlService = $this->createMock(SunatSendControlService::class);
+        $this->filesystemOperator = $this->createMock(FilesystemOperator::class);
+        $this->companyContext = $this->createMock(CompanyContext::class);
+        $this->doctrine = $this->createMock(ManagerRegistry::class);
+        $this->auditLogger = $this->createMock(AuditLogger::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->doctrine->method('getManager')->willReturn($this->entityManager);
 
         // TaxDocumentEventRepository is final — bypass constructor via reflection
         /** @var TaxDocumentEventRepository $taxDocEventRepo */
-        $taxDocEventRepo = (new \ReflectionClass(TaxDocumentEventRepository::class))->newInstanceWithoutConstructor();
+        $taxDocEventRepo = new \ReflectionClass(TaxDocumentEventRepository::class)->newInstanceWithoutConstructor();
         $mockObjectManager = $this->createStub(ObjectManager::class);
         $mockObjectManager->method('persist'); // no-op
         $mockRegistryForRepo = $this->createStub(ManagerRegistry::class);
         $mockRegistryForRepo->method('getManager')->willReturn($mockObjectManager);
-        $registryProp = (new \ReflectionClass(TaxDocumentEventRepository::class))->getProperty('registry');
+        $registryProp = new \ReflectionClass(TaxDocumentEventRepository::class)->getProperty('registry');
         $registryProp->setValue($taxDocEventRepo, $mockRegistryForRepo);
         $this->taxDocumentEventRepository = $taxDocEventRepo;
 
         $tenantContext = new TenantContext();
-        $slugger       = $this->createStub(SluggerInterface::class);
+        $slugger = $this->createStub(SluggerInterface::class);
         $this->fileManager = new FileManager($this->filesystemOperator, $tenantContext, $slugger);
 
         $this->useCase = new InvoiceSendUseCase(
@@ -101,21 +101,21 @@ final class InvoiceSendUseCaseTest extends TestCase
 
     private function makeSuccessResponse(string $name = 'DOC-NAME', string $code = '0'): DocumentResponse
     {
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode($code)
             ->setDescription('La factura es valida')
             ->setId('F001-1');
 
-        $billResult = (new BillResult())
+        $billResult = new BillResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse)
             ->setCdrZip(base64_encode('fake-cdr-zip'));
 
-        $response                  = new DocumentResponse();
-        $response->name            = $name;
-        $response->xml             = '<xml/>';
-        $response->hash            = 'hash123';
-        $response->sunatResponse   = $billResult;
+        $response = new DocumentResponse();
+        $response->name = $name;
+        $response->xml = '<xml/>';
+        $response->hash = 'hash123';
+        $response->sunatResponse = $billResult;
 
         return $response;
     }
@@ -125,15 +125,15 @@ final class InvoiceSendUseCaseTest extends TestCase
         string $errorCode = '500',
         string $errorMessage = 'Error',
     ): DocumentResponse {
-        $billResult = (new BillResult())
+        $billResult = new BillResult()
             ->setSuccess(false)
             ->setError(new Error($errorCode, $errorMessage));
 
-        $response                  = new DocumentResponse();
-        $response->name            = $name;
-        $response->xml             = '<xml/>';
-        $response->hash            = 'hash123';
-        $response->sunatResponse   = $billResult;
+        $response = new DocumentResponse();
+        $response->name = $name;
+        $response->xml = '<xml/>';
+        $response->hash = 'hash123';
+        $response->sunatResponse = $billResult;
 
         return $response;
     }
@@ -183,8 +183,7 @@ final class InvoiceSendUseCaseTest extends TestCase
         $this->filesystemOperator->expects(self::atLeast(2))->method('write');
         // taxDocumentEventRepository is a real (non-mock) object — we cannot call expects() on it.
         // Instead we verify the audit log fires (which happens after recordEvent).
-        $this->auditLogger->expects(self::once())->method('log')
-            ->with('invoice.send', self::arrayHasKey('success'));
+        $this->auditLogger->expects(self::once())->method('log')->with('invoice.send', self::arrayHasKey('success'));
 
         $result = $this->useCase->__invoke('td-1');
 
@@ -204,11 +203,11 @@ final class InvoiceSendUseCaseTest extends TestCase
         $this->sunatSendControlService->method('isSunatRejection')->willReturn(false);
 
         // consult recovers with accepted CDR
-        $cdrResponse   = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('0')
             ->setDescription('Aceptado')
             ->setId('F001-1');
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse)
             ->setCdrZip(base64_encode('cdr-zip'));
@@ -235,7 +234,7 @@ final class InvoiceSendUseCaseTest extends TestCase
         $this->sunatSendControlService->method('isSunatRejection')->willReturn(false);
 
         // consult returns not-success
-        $consultResult = (new StatusCdrResult())->setSuccess(false);
+        $consultResult = new StatusCdrResult()->setSuccess(false);
         $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
 
         $taxDocument->expects(self::once())->method('setSunatStatus')->with('pendiente');
@@ -254,19 +253,20 @@ final class InvoiceSendUseCaseTest extends TestCase
 
         $this->sunatSendControlService->method('isSunatRejection')->willReturn(false);
 
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('3462')
             ->setDescription('La tasa del IGV debe corresponder con una tasa vigente.');
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse);
 
         $this->billConsultUseCase->method('__invoke')->willReturn($consultResult);
 
         $taxDocument->expects(self::once())->method('setSunatStatus')->with('3462');
-        $taxDocument->expects(self::once())->method('setSunatMessage')->with(
-            'La tasa del IGV debe corresponder con una tasa vigente.'
-        );
+        $taxDocument
+            ->expects(self::once())
+            ->method('setSunatMessage')
+            ->with('La tasa del IGV debe corresponder con una tasa vigente.');
 
         $this->useCase->__invoke('td-1');
     }

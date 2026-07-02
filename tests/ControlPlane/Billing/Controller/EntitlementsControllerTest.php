@@ -12,8 +12,8 @@ use App\ControlPlane\Billing\Service\TenantUsageSummaryInterface;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -37,10 +37,10 @@ final class EntitlementsControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tenantContext      = $this->createMock(TenantContext::class);
-        $this->tenantManager      = $this->createMock(TenantManager::class);
-        $this->quotaService       = $this->createMock(TenantUsageSummaryInterface::class);
-        $this->featureChecker     = $this->createMock(FeatureCheckerInterface::class);
+        $this->tenantContext = $this->createMock(TenantContext::class);
+        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->quotaService = $this->createMock(TenantUsageSummaryInterface::class);
+        $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
         $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
     }
 
@@ -56,8 +56,8 @@ final class EntitlementsControllerTest extends TestCase
                 'users' => ['limit' => 10, 'current' => 3],
             ],
             features: [
-                'excel_export' => ['enabled' => true,  'source' => 'plan', 'config' => []],
-                'api_access'   => ['enabled' => false, 'source' => 'plan', 'config' => []],
+                'excel_export' => ['enabled' => true, 'source' => 'plan', 'config' => []],
+                'api_access' => ['enabled' => false, 'source' => 'plan', 'config' => []],
             ],
             debugMode: false,
         );
@@ -77,8 +77,8 @@ final class EntitlementsControllerTest extends TestCase
             plan: 'basic',
             limits: [],
             features: [
-                'excel_export' => ['enabled' => true,  'source' => 'plan',     'config' => []],
-                'api_access'   => ['enabled' => false, 'source' => 'override', 'config' => ['reason' => 'trial']],
+                'excel_export' => ['enabled' => true, 'source' => 'plan', 'config' => []],
+                'api_access' => ['enabled' => false, 'source' => 'override', 'config' => ['reason' => 'trial']],
             ],
             debugMode: true,
         );
@@ -124,23 +124,31 @@ final class EntitlementsControllerTest extends TestCase
     public function testReturns200WithPlanLimitsAndFeatures(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->willReturn([
-            'id' => 1, 'name' => 'acme', 'plan' => 'basic',
-        ]);
-        $this->quotaService->method('getUsageSummary')->willReturn([
-            'users'         => ['current' => 3,    'limit' => 10],
-            'customers'     => ['current' => 247,  'limit' => 1000],
-            'products'      => ['current' => 89,   'limit' => 500],
-            'invoices'      => ['current' => 1247, 'limit' => 5000],
-            'branches'      => ['current' => 1,    'limit' => 5],
-            'storage_bytes' => ['current' => 47185920, 'limit' => 1048576000], // 45 MB / 1000 MB
-        ]);
-        $this->featureChecker->method('getEntitlements')->willReturn([
-            'excel_export'      => ['enabled' => true,  'config' => []],
-            'pdf_bulk_download' => ['enabled' => true,  'config' => []],
-            'api_access'        => ['enabled' => false, 'config' => []],
-            'advanced_reports'  => ['enabled' => true,  'config' => []],
-        ]);
+        $this->tenantManager
+            ->method('getTenantByName')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+                'plan' => 'basic',
+            ]);
+        $this->quotaService
+            ->method('getUsageSummary')
+            ->willReturn([
+                'users' => ['current' => 3, 'limit' => 10],
+                'customers' => ['current' => 247, 'limit' => 1000],
+                'products' => ['current' => 89, 'limit' => 500],
+                'invoices' => ['current' => 1247, 'limit' => 5000],
+                'branches' => ['current' => 1, 'limit' => 5],
+                'storage_bytes' => ['current' => 47185920, 'limit' => 1048576000], // 45 MB / 1000 MB
+            ]);
+        $this->featureChecker
+            ->method('getEntitlements')
+            ->willReturn([
+                'excel_export' => ['enabled' => true, 'config' => []],
+                'pdf_bulk_download' => ['enabled' => true, 'config' => []],
+                'api_access' => ['enabled' => false, 'config' => []],
+                'advanced_reports' => ['enabled' => true, 'config' => []],
+            ]);
 
         $controller = $this->buildController();
         $response = $controller->__invoke(new Request());
@@ -153,11 +161,11 @@ final class EntitlementsControllerTest extends TestCase
         self::assertSame('basic', $data['plan']);
 
         // Limits
-        self::assertSame(['limit' => 10,   'current' => 3], $data['limits']['users']);
+        self::assertSame(['limit' => 10, 'current' => 3], $data['limits']['users']);
         self::assertSame(['limit' => 1000, 'current' => 247], $data['limits']['customers']);
-        self::assertSame(['limit' => 500,  'current' => 89], $data['limits']['products']);
+        self::assertSame(['limit' => 500, 'current' => 89], $data['limits']['products']);
         self::assertSame(['limit' => 5000, 'current' => 1247], $data['limits']['invoices']);
-        self::assertSame(['limit' => 5,    'current' => 1], $data['limits']['branches']);
+        self::assertSame(['limit' => 5, 'current' => 1], $data['limits']['branches']);
         self::assertSame(['limit' => 1000, 'current' => 45], $data['limits']['storage_mb']);
 
         // Features (flat booleans in normal mode)
@@ -170,13 +178,19 @@ final class EntitlementsControllerTest extends TestCase
     public function testDebugModeRequiresBothHeaderAndAdminRole(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->willReturn([
-            'id' => 1, 'name' => 'acme', 'plan' => 'basic',
-        ]);
+        $this->tenantManager
+            ->method('getTenantByName')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+                'plan' => 'basic',
+            ]);
         $this->quotaService->method('getUsageSummary')->willReturn([]);
-        $this->featureChecker->method('getEntitlements')->willReturn([
-            'excel_export' => ['enabled' => true, 'config' => []],
-        ]);
+        $this->featureChecker
+            ->method('getEntitlements')
+            ->willReturn([
+                'excel_export' => ['enabled' => true, 'config' => []],
+            ]);
         // No active overrides
         $this->overrideRepository->method('findActiveByTenant')->willReturn([]);
 
@@ -196,14 +210,20 @@ final class EntitlementsControllerTest extends TestCase
     public function testDebugModeShowsSourceWhenHeaderAndAdminPresent(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->willReturn([
-            'id' => 42, 'name' => 'acme', 'plan' => 'basic',
-        ]);
+        $this->tenantManager
+            ->method('getTenantByName')
+            ->willReturn([
+                'id' => 42,
+                'name' => 'acme',
+                'plan' => 'basic',
+            ]);
         $this->quotaService->method('getUsageSummary')->willReturn([]);
-        $this->featureChecker->method('getEntitlements')->willReturn([
-            'excel_export' => ['enabled' => true,  'config' => []],
-            'api_access'   => ['enabled' => false, 'config' => []],
-        ]);
+        $this->featureChecker
+            ->method('getEntitlements')
+            ->willReturn([
+                'excel_export' => ['enabled' => true, 'config' => []],
+                'api_access' => ['enabled' => false, 'config' => []],
+            ]);
 
         // api_access comes from an active override
         $override = new TenantFeatureOverride(

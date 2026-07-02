@@ -13,8 +13,7 @@ final class PrintSaleInvoice extends AbstractController
 {
     public function __construct(
         private readonly SaleInvoicePrinterInterface $saleInvoicePrinter,
-    ) {
-    }
+    ) {}
 
     public function __invoke(string $id, Request $request): Response
     {

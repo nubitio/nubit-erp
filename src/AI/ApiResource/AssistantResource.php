@@ -23,6 +23,4 @@ use App\AI\Dto\AssistantResponse;
     ],
     paginationEnabled: false,
 )]
-class AssistantResource
-{
-}
+class AssistantResource {}

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Efact\Doctrine\DBAL;
 
-use Nubit\Platform\Exception\ServiceException;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Exception;
+use Nubit\Platform\Exception\ServiceException;
 use Override;
 use Symfony\Component\Security\Core\Exception\RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -48,7 +48,7 @@ class TenantConnection extends Connection
      */
     public function switchTenantParams(array $tenant): void
     {
-        $connection = trim((string)($tenant['connection'] ?? ''));
+        $connection = trim((string) ($tenant['connection'] ?? ''));
         if ($connection === '') {
             throw new ServiceException('Tenant connection is required');
         }
@@ -101,7 +101,7 @@ class TenantConnection extends Connection
 
     private function resolveConfigPath(): string
     {
-        $envPath = (string)($_ENV['TENANTS_CONFIG_PATH'] ?? getenv('TENANTS_CONFIG_PATH') ?: '');
+        $envPath = (string) ($_ENV['TENANTS_CONFIG_PATH'] ?? getenv('TENANTS_CONFIG_PATH') ?: '');
         if ('' !== $envPath) {
             return $this->normalizePath($envPath);
         }
@@ -150,7 +150,7 @@ class TenantConnection extends Connection
             throw new ServiceException('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn (array $item): bool => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn(array $item): bool => $item['name'] === $tenantName))[0];
 
         return $tenant;
     }

@@ -28,16 +28,15 @@ final readonly class UserNotificationService implements UserNotificationServiceI
     /** @var array<string, int> */
     private const array ROLE_INT_MAP = [
         'ROLE_SUPER_ADMIN' => 1,
-        'ROLE_ADMIN'       => 2,
-        'ROLE_CASHIER'     => 3,
+        'ROLE_ADMIN' => 2,
+        'ROLE_CASHIER' => 3,
     ];
 
     public function __construct(
         private Connection $connection,
         private HubInterface $mercureHub,
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns the scheme+host of the current request, used to build the
@@ -97,13 +96,13 @@ final readonly class UserNotificationService implements UserNotificationServiceI
         string $createdAt,
     ): array {
         return [
-            'userId'    => $userId,
-            'type'      => $type,
-            'severity'  => $severity,
-            'title'     => $title,
-            'body'      => $body,
+            'userId' => $userId,
+            'type' => $type,
+            'severity' => $severity,
+            'title' => $title,
+            'body' => $body,
             'actionUrl' => $actionUrl,
-            'readAt'    => null,
+            'readAt' => null,
             'createdAt' => $createdAt,
         ];
     }
@@ -121,21 +120,27 @@ final readonly class UserNotificationService implements UserNotificationServiceI
         string $body,
         ?string $actionUrl = null,
     ): void {
-        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 
         $this->connection->insert('user_notification', [
-            'user_id'    => $userId,
-            'type'       => $type,
-            'severity'   => $severity,
-            'title'      => $title,
-            'body'       => $body,
+            'user_id' => $userId,
+            'type' => $type,
+            'severity' => $severity,
+            'title' => $title,
+            'body' => $body,
             'action_url' => $actionUrl,
-            'read_at'    => null,
+            'read_at' => null,
             'created_at' => $now,
         ]);
 
         $this->publishToMercure($userId, $this->notificationPayload(
-            $userId, $type, $severity, $title, $body, $actionUrl, $now,
+            $userId,
+            $type,
+            $severity,
+            $title,
+            $body,
+            $actionUrl,
+            $now,
         ));
     }
 
@@ -174,24 +179,30 @@ final readonly class UserNotificationService implements UserNotificationServiceI
             return;
         }
 
-        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 
         foreach ($rows as $row) {
             $userId = (int) $row['usuario_id'];
 
             $this->connection->insert('user_notification', [
-                'user_id'    => $userId,
-                'type'       => $type,
-                'severity'   => $severity,
-                'title'      => $title,
-                'body'       => $body,
+                'user_id' => $userId,
+                'type' => $type,
+                'severity' => $severity,
+                'title' => $title,
+                'body' => $body,
                 'action_url' => $actionUrl,
-                'read_at'    => null,
+                'read_at' => null,
                 'created_at' => $now,
             ]);
 
             $this->publishToMercure($userId, $this->notificationPayload(
-                $userId, $type, $severity, $title, $body, $actionUrl, $now,
+                $userId,
+                $type,
+                $severity,
+                $title,
+                $body,
+                $actionUrl,
+                $now,
             ));
         }
     }
@@ -204,12 +215,16 @@ final readonly class UserNotificationService implements UserNotificationServiceI
      */
     public function hasDuplicateRecent(int $userId, string $type, int $withinSeconds = 86400): bool
     {
-        $since = (new DateTimeImmutable())->modify("-{$withinSeconds} seconds")->format('Y-m-d H:i:s');
+        $since = new DateTimeImmutable()
+            ->modify("-{$withinSeconds} seconds")
+            ->format('Y-m-d H:i:s');
 
-        $count = (int) $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM user_notification WHERE user_id = ? AND type = ? AND created_at >= ?',
-            [$userId, $type, $since],
-        );
+        $count =
+            (int) $this->connection->fetchOne('SELECT COUNT(*) FROM user_notification WHERE user_id = ? AND type = ? AND created_at >= ?', [
+                $userId,
+                $type,
+                $since,
+            ]);
 
         return $count > 0;
     }
@@ -248,7 +263,7 @@ final readonly class UserNotificationService implements UserNotificationServiceI
             return;
         }
 
-        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 
         foreach ($rows as $row) {
             $userId = (int) $row['usuario_id'];
@@ -258,18 +273,24 @@ final readonly class UserNotificationService implements UserNotificationServiceI
             }
 
             $this->connection->insert('user_notification', [
-                'user_id'    => $userId,
-                'type'       => $type,
-                'severity'   => $severity,
-                'title'      => $title,
-                'body'       => $body,
+                'user_id' => $userId,
+                'type' => $type,
+                'severity' => $severity,
+                'title' => $title,
+                'body' => $body,
                 'action_url' => $actionUrl,
-                'read_at'    => null,
+                'read_at' => null,
                 'created_at' => $now,
             ]);
 
             $this->publishToMercure($userId, $this->notificationPayload(
-                $userId, $type, $severity, $title, $body, $actionUrl, $now,
+                $userId,
+                $type,
+                $severity,
+                $title,
+                $body,
+                $actionUrl,
+                $now,
             ));
         }
     }

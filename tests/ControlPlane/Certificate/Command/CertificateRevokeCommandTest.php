@@ -26,9 +26,7 @@ final class CertificateRevokeCommandTest extends TestCase
     public function testRevokesCertificate(): void
     {
         $service = $this->createMock(CertificateLifecycleServiceInterface::class);
-        $service->expects(self::once())
-            ->method('revoke')
-            ->with('acme', '20123456789', 'ops@example.com', 'rotated');
+        $service->expects(self::once())->method('revoke')->with('acme', '20123456789', 'ops@example.com', 'rotated');
 
         $tester = new CommandTester(new CertificateRevokeCommand($service));
 

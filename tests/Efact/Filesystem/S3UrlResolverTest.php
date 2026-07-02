@@ -100,7 +100,6 @@ final class S3UrlResolverTest extends TestCase
         );
     }
 
-
     public function testDomainBucketFallbackBuildsVanityUrlWhenPublicUrlIsMissing(): void
     {
         $resolver = new S3UrlResolver(

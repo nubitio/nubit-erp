@@ -15,8 +15,7 @@ final readonly class RejectedDocumentReplacementResult
         public bool $success,
         public string $message,
         public ?string $newId = null,
-    ) {
-    }
+    ) {}
 
     public static function success(string $message, ?string $newId = null): self
     {

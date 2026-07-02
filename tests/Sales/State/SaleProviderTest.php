@@ -9,9 +9,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Sales\State\SaleProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SaleProvider::class)]
@@ -31,10 +31,7 @@ class SaleProviderTest extends TestCase
         $this->collectionProvider = $this->createMock(ProviderInterface::class);
         $this->itemProvider = $this->createMock(ProviderInterface::class);
 
-        $this->saleProvider = new SaleProvider(
-            $this->collectionProvider,
-            $this->itemProvider,
-        );
+        $this->saleProvider = new SaleProvider($this->collectionProvider, $this->itemProvider);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
@@ -48,7 +45,8 @@ class SaleProviderTest extends TestCase
     private function captureCollectionContext(Operation $operation, array $context = []): array
     {
         $capturedContext = [];
-        $this->collectionProvider->method('provide')
+        $this->collectionProvider
+            ->method('provide')
             ->willReturnCallback(function (Operation $op, array $uriVars, array $ctx) use (&$capturedContext): array {
                 $capturedContext = $ctx;
                 return [];
@@ -127,7 +125,8 @@ class SaleProviderTest extends TestCase
         $op = new Get();
         $expectedResult = new \stdClass();
 
-        $this->itemProvider->expects($this->once())
+        $this->itemProvider
+            ->expects($this->once())
             ->method('provide')
             ->with($op, ['id' => 'sale-uuid'], [])
             ->willReturn($expectedResult);

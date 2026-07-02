@@ -6,18 +6,15 @@ namespace App\Inventory\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Repository\LogisticOperationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: LogisticOperationRepository::class)]
 #[ORM\Table(name: 'operacion')]
-#[ApiResource(
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 class LogisticOperation
 {
     #[Groups(['inbound:read', 'outbound:read'])]

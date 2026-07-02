@@ -10,16 +10,13 @@ final class NumberHelper
         float $number,
         int $decimals = 2,
         string $decimalSeparator = '.',
-        string $thousandsSeparator = ','
+        string $thousandsSeparator = ',',
     ): string {
         return number_format($number, $decimals, $decimalSeparator, $thousandsSeparator);
     }
 
-    public static function formatCurrency(
-        float $amount,
-        string $currency = 'USD',
-        int $decimals = 2
-    ): string {
+    public static function formatCurrency(float $amount, string $currency = 'USD', int $decimals = 2): string
+    {
         return $currency . ' ' . self::format($amount, $decimals);
     }
 
@@ -39,7 +36,7 @@ final class NumberHelper
 
     public static function isEven(int $number): bool
     {
-        return $number % 2 === 0;
+        return ($number % 2) === 0;
     }
 
     public static function isOdd(int $number): bool

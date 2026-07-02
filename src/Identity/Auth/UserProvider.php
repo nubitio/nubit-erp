@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Identity\Auth;
 
-use Override;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Override;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -21,16 +21,17 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $user = $this->entityManager->getRepository(User::class)->findOneBy([
-            'username' => $identifier,
-            'deletedAt' => null,
-        ]);
+        $user = $this->entityManager
+            ->getRepository(User::class)
+            ->findOneBy([
+                'username' => $identifier,
+                'deletedAt' => null,
+            ]);
 
         if (!$user instanceof User) {
             throw new UserNotFoundException();
@@ -43,12 +44,7 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof User) {
-            throw new UnsupportedUserException(
-                sprintf(
-                    'Instances of "%s" are not supported.',
-                    $user::class
-                )
-            );
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
         return $this->loadUserByIdentifier($user->getUserIdentifier());
@@ -61,17 +57,10 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
     }
 
     #[Override]
-    public function upgradePassword(
-        PasswordAuthenticatedUserInterface $user,
-        string $newHashedPassword
-    ): void {
+    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+    {
         if (!$user instanceof User) {
-            throw new UnsupportedUserException(
-                sprintf(
-                    'Instances of "%s" are not supported.',
-                    $user::class
-                )
-            );
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
         $user->setPassword($newHashedPassword);

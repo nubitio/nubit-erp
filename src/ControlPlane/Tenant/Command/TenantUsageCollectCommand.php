@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\Efact\Audit\AuditLogger;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
+use App\Efact\Audit\AuditLogger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,10 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'app:tenant:usage:collect',
-    description: 'Collect and store usage metrics for all active tenants.',
-)]
+#[AsCommand(name: 'app:tenant:usage:collect', description: 'Collect and store usage metrics for all active tenants.')]
 #[AsCronTask('15 * * * *')]
 final class TenantUsageCollectCommand extends Command
 {

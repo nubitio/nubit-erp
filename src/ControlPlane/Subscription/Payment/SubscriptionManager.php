@@ -14,8 +14,7 @@ final readonly class SubscriptionManager
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{subscription_id:int}
@@ -39,8 +38,8 @@ final readonly class SubscriptionManager
             'gateway_subscription_id' => $gatewaySubscriptionId,
             'gateway_customer_id' => $gatewayCustomerId,
             'status' => 'pending',
-            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+            'updated_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
 
         return ['subscription_id' => (int) $conn->lastInsertId()];
@@ -71,8 +70,8 @@ final readonly class SubscriptionManager
             'gateway_subscription_id' => $gatewaySubscriptionId,
             'gateway_customer_id' => $gatewayCustomerId,
             'status' => 'pending',
-            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+            'updated_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
 
         return ['subscription_id' => (int) $conn->lastInsertId()];
@@ -208,7 +207,7 @@ final readonly class SubscriptionManager
              LEFT JOIN tenants t ON t.id = s.tenant_id
              WHERE s.status = 'past_due'
                AND s.current_period_end IS NOT NULL
-               AND DATE_ADD(s.current_period_end, INTERVAL s.grace_period_days DAY) < NOW()"
+               AND DATE_ADD(s.current_period_end, INTERVAL s.grace_period_days DAY) < NOW()",
         );
     }
 
@@ -338,13 +337,9 @@ final readonly class SubscriptionManager
 
     public function completePaymentEvent(int $paymentEventId): void
     {
-        $this->cp()->executeStatement(
-            "UPDATE payment_events
+        $this->cp()->executeStatement("UPDATE payment_events
              SET processing_status = 'completed', processed_at = NOW(), last_error = NULL, updated_at = NOW()
-             WHERE id = ?",
-            [$paymentEventId],
-            [ParameterType::INTEGER],
-        );
+             WHERE id = ?", [$paymentEventId], [ParameterType::INTEGER]);
     }
 
     public function failPaymentEvent(PaymentEvent $event, ?int $subscriptionId, ?int $tenantId, string $error): void

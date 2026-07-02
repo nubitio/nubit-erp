@@ -23,36 +23,32 @@ final class InventorySummaryServiceTest extends TestCase
         ]);
 
         $this->connection->executeStatement(<<<'SQL'
-            CREATE TABLE producto (
-                producto_id TEXT NOT NULL PRIMARY KEY,
-                categoria_id TEXT NOT NULL,
-                precio_compra NUMERIC(10,2) DEFAULT NULL,
-                stock_minimo NUMERIC(12,3) DEFAULT NULL
-            )
-        SQL);
+                CREATE TABLE producto (
+                    producto_id TEXT NOT NULL PRIMARY KEY,
+                    categoria_id TEXT NOT NULL,
+                    precio_compra NUMERIC(10,2) DEFAULT NULL,
+                    stock_minimo NUMERIC(12,3) DEFAULT NULL
+                )
+            SQL);
 
         $this->connection->executeStatement(<<<'SQL'
-            CREATE TABLE stock_items (
-                warehouse_id TEXT NOT NULL,
-                product_id TEXT NOT NULL,
-                qty_on_hand NUMERIC(18,6) NOT NULL DEFAULT 0,
-                PRIMARY KEY (warehouse_id, product_id)
-            )
-        SQL);
+                CREATE TABLE stock_items (
+                    warehouse_id TEXT NOT NULL,
+                    product_id TEXT NOT NULL,
+                    qty_on_hand NUMERIC(18,6) NOT NULL DEFAULT 0,
+                    PRIMARY KEY (warehouse_id, product_id)
+                )
+            SQL);
 
-        $this->connection->executeStatement(
-            "INSERT INTO producto (producto_id, categoria_id, precio_compra, stock_minimo) VALUES
+        $this->connection->executeStatement("INSERT INTO producto (producto_id, categoria_id, precio_compra, stock_minimo) VALUES
                 ('p1', 'cat-office', 10.00, 50),
                 ('p2', 'cat-office', 5.50, 20),
-                ('p3', 'cat-grocery', 8.00, 10)"
-        );
+                ('p3', 'cat-grocery', 8.00, 10)");
 
-        $this->connection->executeStatement(
-            "INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand) VALUES
+        $this->connection->executeStatement("INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand) VALUES
                 ('wh1', 'p1', 100),
                 ('wh1', 'p2', 5),
-                ('wh2', 'p3', 0)"
-        );
+                ('wh2', 'p3', 0)");
 
         $this->service = new InventorySummaryService($this->connection);
     }

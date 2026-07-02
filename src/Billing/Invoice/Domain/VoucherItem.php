@@ -21,6 +21,5 @@ class VoucherItem
         public ?string $tax_percentage = null,
         public ?string $tax_type = null,
         public ?string $total = null,
-    ) {
-    }
+    ) {}
 }

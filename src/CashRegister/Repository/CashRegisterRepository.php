@@ -41,7 +41,8 @@ class CashRegisterRepository extends ServiceEntityRepository
      */
     public function findRealByBranchId(int $branchId): array
     {
-        return $this->createQueryBuilder('cr')
+        return $this
+            ->createQueryBuilder('cr')
             ->where('cr.branch = :branchId')
             ->andWhere('cr.name != :sentinel')
             ->setParameter('branchId', $branchId)

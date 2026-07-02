@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use App\Settings\Service\SunatStateService;
-use App\Efact\Service\SettingsService;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
+use App\Efact\Service\SettingsService;
+use App\Settings\Service\SunatStateService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -32,8 +32,7 @@ readonly class SunatSendControlService
         private LoggerInterface $logger,
         private string $mailerFrom = 'noreply@efact.app',
         private ?SettingsService $settings = null,
-    ) {
-    }
+    ) {}
 
     public function isSunatSendingEnabled(?string $tenantName): bool
     {
@@ -96,7 +95,7 @@ readonly class SunatSendControlService
         }
 
         if ($code !== null && $code !== '' && ctype_digit($code)) {
-            $numericCode = (int)$code;
+            $numericCode = (int) $code;
             if ($numericCode >= 2000 && $numericCode < 4000) {
                 return true;
             }
@@ -108,13 +107,12 @@ readonly class SunatSendControlService
     public function requiresConsult(?string $code, string $message): bool
     {
         if ($code !== null && $code !== '' && ctype_digit($code)) {
-            if (isset(self::CONSULT_REQUIRED_CODES[(int)$code])) {
+            if (isset(self::CONSULT_REQUIRED_CODES[(int) $code])) {
                 return true;
             }
         }
 
-        return stripos($message, 'ya esta informado') !== false
-            || stripos($message, 'ya está informado') !== false;
+        return stripos($message, 'ya esta informado') !== false || stripos($message, 'ya está informado') !== false;
     }
 
     public function pauseSunatSendingAfterRejection(
@@ -210,8 +208,8 @@ readonly class SunatSendControlService
     private function getAlertRecipients(?string $tenantName): array
     {
         try {
-            $rawRecipients = trim((string)($this->settings?->get(self::ALERT_RECIPIENTS_KEY, '') ?? ''));
-            $accountingEmail = trim((string)($this->settings?->get(self::ACCOUNTING_EMAIL_KEY, '') ?? ''));
+            $rawRecipients = trim((string) ($this->settings?->get(self::ALERT_RECIPIENTS_KEY, '') ?? ''));
+            $accountingEmail = trim((string) ($this->settings?->get(self::ACCOUNTING_EMAIL_KEY, '') ?? ''));
         } catch (Throwable $exception) {
             $this->logger->error('Failed to resolve SUNAT alert recipients', [
                 'tenant' => $tenantName,
@@ -226,7 +224,7 @@ readonly class SunatSendControlService
         $valid = [];
 
         foreach ($candidates as $candidate) {
-            $email = trim((string)$candidate);
+            $email = trim((string) $candidate);
             if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 continue;
             }

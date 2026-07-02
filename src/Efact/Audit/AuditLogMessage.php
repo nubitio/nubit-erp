@@ -13,6 +13,5 @@ final readonly class AuditLogMessage
         public string $actor,
         public ?string $channel,
         public ?string $requestId,
-    ) {
-    }
+    ) {}
 }

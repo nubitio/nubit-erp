@@ -32,8 +32,7 @@ readonly class TenantNotificationService
         private MailerInterface $mailer,
         private LoggerInterface $logger,
         private string $mailerFrom = 'noreply@efact.app',
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, array{label:string,severity:string}>
@@ -64,13 +63,13 @@ readonly class TenantNotificationService
         $rows = $cp->fetchAllAssociative(
             'SELECT * FROM tenant_notification_targets WHERE tenant_id = ? ORDER BY event_key, channel',
             [$tenantId],
-            [ParameterType::INTEGER]
+            [ParameterType::INTEGER],
         );
 
         foreach ($rows as &$row) {
             $row['recipients'] = $this->decodeJsonList($row['recipients_json'] ?? null);
             $row['config'] = $this->decodeJsonAssoc($row['config_json'] ?? null);
-            $row['is_enabled'] = (int)($row['is_enabled'] ?? 0) === 1;
+            $row['is_enabled'] = (int) ($row['is_enabled'] ?? 0) === 1;
         }
         unset($row);
 
@@ -105,7 +104,7 @@ readonly class TenantNotificationService
                     }
 
                     $enabled = !empty($data['enabled']) ? 1 : 0;
-                    $severity = trim((string)$data['severity']);
+                    $severity = trim((string) $data['severity']);
                     $severity = in_array($severity, ['critical', 'warning', 'info'], true)
                         ? $severity
                         : self::EVENT_DEFINITIONS[$eventKey]['severity'];
@@ -113,7 +112,7 @@ readonly class TenantNotificationService
                     $config = $data['config'];
 
                     $cp->executeStatement(
-                        "
+                        '
                         INSERT INTO tenant_notification_targets
                             (tenant_id, event_key, channel, severity, is_enabled, recipients_json, config_json)
                         VALUES
@@ -123,7 +122,7 @@ readonly class TenantNotificationService
                             is_enabled = VALUES(is_enabled),
                             recipients_json = VALUES(recipients_json),
                             config_json = VALUES(config_json)
-                        ",
+                        ',
                         [
                             'tenant_id' => $tenantId,
                             'event_key' => $eventKey,
@@ -141,7 +140,7 @@ readonly class TenantNotificationService
                             'is_enabled' => ParameterType::INTEGER,
                             'recipients_json' => ParameterType::STRING,
                             'config_json' => ParameterType::STRING,
-                        ]
+                        ],
                     );
                 }
             }
@@ -174,15 +173,15 @@ readonly class TenantNotificationService
             return 0;
         }
 
-        $tenantId = (int)$tenant['id'];
+        $tenantId = (int) $tenant['id'];
         $targets = $cp->fetchAllAssociative(
-            "
+            '
             SELECT *
             FROM tenant_notification_targets
             WHERE tenant_id = :tenant_id
               AND event_key = :event_key
               AND is_enabled = 1
-            ",
+            ',
             [
                 'tenant_id' => $tenantId,
                 'event_key' => $eventKey,
@@ -190,19 +189,19 @@ readonly class TenantNotificationService
             [
                 'tenant_id' => ParameterType::INTEGER,
                 'event_key' => ParameterType::STRING,
-            ]
+            ],
         );
 
         if ($targets === []) {
             return 0;
         }
 
-        $finalSeverity = $severity ?: (self::EVENT_DEFINITIONS[$eventKey]['severity'] ?? 'info');
+        $finalSeverity = $severity ?: self::EVENT_DEFINITIONS[$eventKey]['severity'] ?? 'info';
         $sent = 0;
 
         foreach ($targets as $target) {
-            $channel = (string)($target['channel'] ?? '');
-            $targetSeverity = (string)($target['severity'] ?? $finalSeverity);
+            $channel = (string) ($target['channel'] ?? '');
+            $targetSeverity = (string) ($target['severity'] ?? $finalSeverity);
             $recipients = $this->decodeJsonList($target['recipients_json'] ?? null);
             $config = $this->decodeJsonAssoc($target['config_json'] ?? null);
 
@@ -215,7 +214,7 @@ readonly class TenantNotificationService
                         $subject,
                         $message,
                         $payload,
-                        $config
+                        $config,
                     ),
                     'webhook' => $this->sendWebhook(
                         $recipients,
@@ -224,7 +223,7 @@ readonly class TenantNotificationService
                         $payload,
                         $targetSeverity,
                         $tenantName,
-                        $config
+                        $config,
                     ),
                     default => false,
                 };
@@ -237,7 +236,7 @@ readonly class TenantNotificationService
                     $recipients,
                     $payload + ['subject' => $subject, 'message' => $message],
                     $deliverySent ? 'sent' : 'skipped',
-                    null
+                    null,
                 );
 
                 if ($deliverySent) {
@@ -252,7 +251,7 @@ readonly class TenantNotificationService
                     $recipients,
                     $payload + ['subject' => $subject, 'message' => $message],
                     'failed',
-                    $exception->getMessage()
+                    $exception->getMessage(),
                 );
                 $this->logger->error('Notification dispatch failed', [
                     'tenant' => $tenantName,
@@ -286,14 +285,14 @@ readonly class TenantNotificationService
         }
 
         $target = $cp->fetchAssociative(
-            "
+            '
             SELECT *
             FROM tenant_notification_targets
             WHERE tenant_id = :tenant_id
               AND event_key = :event_key
               AND channel = :channel
             LIMIT 1
-            ",
+            ',
             [
                 'tenant_id' => $tenantId,
                 'event_key' => $eventKey,
@@ -303,18 +302,18 @@ readonly class TenantNotificationService
                 'tenant_id' => ParameterType::INTEGER,
                 'event_key' => ParameterType::STRING,
                 'channel' => ParameterType::STRING,
-            ]
+            ],
         );
 
         if (!is_array($target)) {
             return false;
         }
 
-        if ((int)($target['is_enabled'] ?? 0) !== 1) {
+        if ((int) ($target['is_enabled'] ?? 0) !== 1) {
             return false;
         }
 
-        $severity = (string)($target['severity'] ?? self::EVENT_DEFINITIONS[$eventKey]['severity']);
+        $severity = (string) ($target['severity'] ?? self::EVENT_DEFINITIONS[$eventKey]['severity']);
         $subject = sprintf('[TEST][%s] %s', strtoupper($channel), self::EVENT_DEFINITIONS[$eventKey]['label']);
         $message = implode("\n", [
             'This is a test notification.',
@@ -352,7 +351,7 @@ readonly class TenantNotificationService
                 $recipients,
                 $payload + ['subject' => $subject, 'message' => $message],
                 $sent ? 'sent' : 'skipped',
-                null
+                null,
             );
 
             return $sent;
@@ -365,7 +364,7 @@ readonly class TenantNotificationService
                 $recipients,
                 $payload + ['subject' => $subject, 'message' => $message],
                 'failed',
-                $exception->getMessage()
+                $exception->getMessage(),
             );
             throw $exception;
         }
@@ -378,13 +377,13 @@ readonly class TenantNotificationService
     {
         $emails = array_values(array_filter(
             $recipients,
-            static fn (string $value): bool => filter_var($value, FILTER_VALIDATE_EMAIL) !== false
+            static fn(string $value): bool => filter_var($value, FILTER_VALIDATE_EMAIL) !== false,
         ));
         if ($emails === []) {
             return false;
         }
 
-        $email = (new Email())
+        $email = new Email()
             ->from($this->mailerFrom)
             ->subject($subject)
             ->text($message);
@@ -411,12 +410,12 @@ readonly class TenantNotificationService
         array $payload,
         array $config,
     ): bool {
-        $accessKey = (string)($config['access_key'] ?? ($_ENV['BIRD_ACCESS_KEY'] ?? ''));
-        $workspaceId = (string)($config['workspace_id'] ?? ($_ENV['BIRD_WORKSPACE_ID'] ?? ''));
-        $channelId = (string)($config['channel_id'] ?? ($_ENV['BIRD_CHANNEL_ID'] ?? ''));
-        $projectId = (string)($config['project_id'] ?? ($_ENV['BIRD_PROJECT_ID'] ?? ''));
-        $versionId = (string)($config['version_id'] ?? ($_ENV['BIRD_VERSION_ID'] ?? ''));
-        $locale = (string)($config['locale'] ?? 'es');
+        $accessKey = (string) ($config['access_key'] ?? $_ENV['BIRD_ACCESS_KEY'] ?? '');
+        $workspaceId = (string) ($config['workspace_id'] ?? $_ENV['BIRD_WORKSPACE_ID'] ?? '');
+        $channelId = (string) ($config['channel_id'] ?? $_ENV['BIRD_CHANNEL_ID'] ?? '');
+        $projectId = (string) ($config['project_id'] ?? $_ENV['BIRD_PROJECT_ID'] ?? '');
+        $versionId = (string) ($config['version_id'] ?? $_ENV['BIRD_VERSION_ID'] ?? '');
+        $locale = (string) ($config['locale'] ?? 'es');
         /** @var array<string, string> $parameterMap */
         $parameterMap = is_array($config['parameter_map'] ?? null) ? $config['parameter_map'] : [];
 
@@ -433,8 +432,8 @@ readonly class TenantNotificationService
             foreach ($parameterMap as $key => $payloadKey) {
                 $parameters[] = [
                     'type' => 'string',
-                    'key' => (string)$key,
-                    'value' => (string)($payload[$payloadKey] ?? ''),
+                    'key' => (string) $key,
+                    'value' => (string) ($payload[$payloadKey] ?? ''),
                 ];
             }
         } else {
@@ -510,7 +509,7 @@ readonly class TenantNotificationService
         $headers = ['Content-Type' => 'application/json'];
         if (is_array($config['headers'] ?? null)) {
             foreach ($config['headers'] as $name => $value) {
-                $headers[(string)$name] = (string)$value;
+                $headers[(string) $name] = (string) $value;
             }
         }
 
@@ -639,7 +638,7 @@ readonly class TenantNotificationService
     {
         $normalized = [];
         foreach ($rawRecipients as $item) {
-            $value = trim((string)$item);
+            $value = trim((string) $item);
             if ($value === '') {
                 continue;
             }

@@ -11,9 +11,9 @@ use App\ControlPlane\Certificate\CertificateStatusPolicy;
 use App\ControlPlane\Certificate\TenantCertificate;
 use App\ControlPlane\Certificate\TenantCertificateRepositoryInterface;
 use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
-use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
@@ -27,17 +27,22 @@ final class CertificateLifecycleServiceTest extends TestCase
         $current = $this->certificate(id: 11, status: CertificateStatus::Active);
 
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->expects(self::exactly(2))
+        $repository
+            ->expects(self::exactly(2))
             ->method('findActiveByTenantAndRuc')
             ->with(1, '20123456789')
             ->willReturnOnConsecutiveCalls($previous, $current);
-        $repository->expects(self::once())
+        $repository
+            ->expects(self::once())
             ->method('insert')
             ->with(
                 1,
@@ -51,7 +56,8 @@ final class CertificateLifecycleServiceTest extends TestCase
         $repository->expects(self::once())->method('markSuperseded')->with(10, 11);
 
         $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
-        $billing->expects(self::once())
+        $billing
+            ->expects(self::once())
             ->method('upsertCompany')
             ->with('20123456789', '20123456789MODDATOS', 'secret', $pem);
 
@@ -85,13 +91,17 @@ final class CertificateLifecycleServiceTest extends TestCase
     public function testRevokeMarksMetadataAndRemovesCompanyFromLycet(): void
     {
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->expects(self::once())
+        $repository
+            ->expects(self::once())
             ->method('findActiveByTenantAndRuc')
             ->with(1, '20123456789')
             ->willReturn($this->certificate(id: 10, status: CertificateStatus::Active));
@@ -118,15 +128,21 @@ final class CertificateLifecycleServiceTest extends TestCase
         $pem = $this->createSelfSignedCertificatePem('Acme Cert');
 
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
         $repository->expects(self::once())->method('findActiveByTenantAndRuc')->willReturn(null);
         $repository->expects(self::once())->method('insert')->willReturn(11);
-        $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet unavailable');
+        $repository
+            ->expects(self::once())
+            ->method('markLycetSyncFailed')
+            ->with(11, 'upsert_failed', 'lycet unavailable');
         $repository->expects(self::never())->method('markSuperseded');
 
         $billing = $this->createStub(ElectronicBillingCompanyPortInterface::class);
@@ -156,15 +172,24 @@ final class CertificateLifecycleServiceTest extends TestCase
     public function testRevokeFailureDoesNotMarkCertificateRevoked(): void
     {
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->method('findActiveByTenantAndRuc')->with(1, '20123456789')->willReturn($this->certificate(id: 10, status: CertificateStatus::Active));
+        $repository
+            ->method('findActiveByTenantAndRuc')
+            ->with(1, '20123456789')
+            ->willReturn($this->certificate(id: 10, status: CertificateStatus::Active));
         $repository->expects(self::once())->method('markRevocationPending')->with(10, 'ops@example.com', 'compromised');
-        $repository->expects(self::once())->method('markLycetSyncFailed')->with(10, 'revocation_failed', 'lycet unavailable');
+        $repository
+            ->expects(self::once())
+            ->method('markLycetSyncFailed')
+            ->with(10, 'revocation_failed', 'lycet unavailable');
         $repository->expects(self::never())->method('revoke');
 
         $billing = $this->createStub(ElectronicBillingCompanyPortInterface::class);
@@ -186,10 +211,13 @@ final class CertificateLifecycleServiceTest extends TestCase
     public function testRetryRevocationCompletesPendingRemove(): void
     {
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $certificate = $this->certificate(id: 10, status: CertificateStatus::Active);
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
@@ -217,14 +245,18 @@ final class CertificateLifecycleServiceTest extends TestCase
         $pem = $this->createSelfSignedCertificatePem('Acme Retry Cert');
 
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $certificate = $this->certificate(id: 11, status: CertificateStatus::Active);
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->expects(self::once())
+        $repository
+            ->expects(self::once())
             ->method('findByTenantAndFingerprint')
             ->with(1, self::isString())
             ->willReturn($certificate);
@@ -234,7 +266,8 @@ final class CertificateLifecycleServiceTest extends TestCase
         $repository->expects(self::once())->method('findByTenantAndId')->with(1, 11)->willReturn($certificate);
 
         $billing = $this->createMock(ElectronicBillingCompanyPortInterface::class);
-        $billing->expects(self::once())
+        $billing
+            ->expects(self::once())
             ->method('upsertCompany')
             ->with('20123456789', '20123456789MODDATOS', 'secret', $pem);
 
@@ -247,7 +280,13 @@ final class CertificateLifecycleServiceTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
         );
 
-        self::assertSame($certificate, $service->retryUpsertSync('acme', '20123456789', '20123456789MODDATOS', 'secret', $pem));
+        self::assertSame($certificate, $service->retryUpsertSync(
+            'acme',
+            '20123456789',
+            '20123456789MODDATOS',
+            'secret',
+            $pem,
+        ));
     }
 
     public function testRetryUpsertFailureKeepsRecoverableFailureState(): void
@@ -255,15 +294,24 @@ final class CertificateLifecycleServiceTest extends TestCase
         $pem = $this->createSelfSignedCertificatePem('Acme Retry Cert');
 
         $tenantRegistry = $this->createMock(TenantRegistryInterface::class);
-        $tenantRegistry->method('getTenantByName')->with('acme')->willReturn([
-            'id' => 1,
-            'name' => 'acme',
-        ]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->with('acme')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'acme',
+            ]);
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
-        $repository->method('findByTenantAndFingerprint')->with(1, self::isString())->willReturn($this->certificate(id: 11, status: CertificateStatus::Active));
+        $repository
+            ->method('findByTenantAndFingerprint')
+            ->with(1, self::isString())
+            ->willReturn($this->certificate(id: 11, status: CertificateStatus::Active));
         $repository->expects(self::once())->method('markLycetSyncPending')->with(11, 'upsert_pending');
-        $repository->expects(self::once())->method('markLycetSyncFailed')->with(11, 'upsert_failed', 'lycet still unavailable');
+        $repository
+            ->expects(self::once())
+            ->method('markLycetSyncFailed')
+            ->with(11, 'upsert_failed', 'lycet still unavailable');
         $repository->expects(self::never())->method('markLycetSynced');
         $repository->expects(self::never())->method('markOtherActiveCertificatesSuperseded');
 

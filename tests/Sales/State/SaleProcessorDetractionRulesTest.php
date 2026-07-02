@@ -11,7 +11,7 @@ final class SaleProcessorDetractionRulesTest extends TestCase
 {
     public function testDetractionThresholdIsZeroForNoMinimumCodes(): void
     {
-        $calculator = (new \ReflectionClass(DetractionCalculator::class))->newInstanceWithoutConstructor();
+        $calculator = new \ReflectionClass(DetractionCalculator::class)->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod(DetractionCalculator::class, 'getThreshold');
 
         self::assertSame(0.0, $method->invoke($calculator, '008'));
@@ -22,7 +22,7 @@ final class SaleProcessorDetractionRulesTest extends TestCase
 
     public function testDetractionThresholdDefaultsToSevenHundredForOtherCodes(): void
     {
-        $calculator = (new \ReflectionClass(DetractionCalculator::class))->newInstanceWithoutConstructor();
+        $calculator = new \ReflectionClass(DetractionCalculator::class)->newInstanceWithoutConstructor();
         $method = new \ReflectionMethod(DetractionCalculator::class, 'getThreshold');
 
         self::assertSame(700.0, $method->invoke($calculator, '037'));

@@ -12,10 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsCommand(
-    name: 'app:control-plane:migrate',
-    description: 'Run Doctrine migrations for the control plane database.',
-)]
+#[AsCommand(name: 'app:control-plane:migrate', description: 'Run Doctrine migrations for the control plane database.')]
 class ControlPlaneMigrateCommand extends Command
 {
     public function __construct(
@@ -31,13 +28,9 @@ class ControlPlaneMigrateCommand extends Command
 
         $this->dependencyFactory->getMetadataStorage()->ensureInitialized();
 
-        $targetVersion = $this->dependencyFactory
-            ->getVersionAliasResolver()
-            ->resolveVersionAlias('latest');
+        $targetVersion = $this->dependencyFactory->getVersionAliasResolver()->resolveVersionAlias('latest');
 
-        $plan = $this->dependencyFactory
-            ->getMigrationPlanCalculator()
-            ->getPlanUntilVersion($targetVersion);
+        $plan = $this->dependencyFactory->getMigrationPlanCalculator()->getPlanUntilVersion($targetVersion);
 
         if ($plan->count() === 0) {
             $io->writeln('No migrations to execute.');

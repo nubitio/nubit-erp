@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Billing\Sale\Void;
 
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Config\EfactConstants as Constants;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sunat\Domain\SummaryCreateUseCase;
+use App\Efact\Config\EfactConstants as Constants;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
-use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 use Psr\Log\LoggerInterface;
 
 final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
@@ -21,8 +21,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function supports(string $documentType): bool
     {
@@ -40,10 +39,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
             'reason' => $reason,
         ]);
 
-        $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType(
-            $saleId,
-            DocType::BOLETA->value,
-        );
+        $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType($saleId, DocType::BOLETA->value);
 
         if ($taxDocument === null) {
             throw SaleException::notIssued();
@@ -55,7 +51,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
                 Constants::INVOICE_DIR . '/' . $response->name . '/' . $response->name . '.xml',
-                $response->xml
+                $response->xml,
             );
         } else {
             $this->logger->error('Error al anular el comprobante', [
@@ -64,7 +60,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
                 'message' => $response->sunatResponse->getError()?->getMessage() ?? 'Error desconocido',
             ]);
             throw new ServiceException(
-                'Error al anular el comprobante' . $response->sunatResponse->getError()?->getMessage()
+                'Error al anular el comprobante' . $response->sunatResponse->getError()?->getMessage(),
             );
         }
 

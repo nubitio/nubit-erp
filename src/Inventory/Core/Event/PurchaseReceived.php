@@ -10,6 +10,5 @@ final readonly class PurchaseReceived
         public string $purchaseId,
         public string $warehouseId,
         public \DateTimeImmutable $happenedAt,
-    ) {
-    }
+    ) {}
 }

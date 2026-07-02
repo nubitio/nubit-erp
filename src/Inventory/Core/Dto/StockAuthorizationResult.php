@@ -9,8 +9,7 @@ final readonly class StockAuthorizationResult
     private function __construct(
         public bool $granted,
         public ?string $reason = null,
-    ) {
-    }
+    ) {}
 
     public static function granted(): self
     {

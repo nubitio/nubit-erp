@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Setup\Service;
 
-use App\Catalog\Entity\Category;
-use App\Catalog\Entity\PaymentMethod;
-use App\Catalog\Entity\UnitOfMeasure;
+use App\Billing\Entity\TaxDocument;
 use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceLineInput;
-use App\Contacts\Entity\Customer;
-use App\Billing\Entity\TaxDocument;
-use App\Inventory\Entity\LogisticOperation;
+use App\Catalog\Entity\Category;
+use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
-use App\Inventory\Entity\ProductStock;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Contacts\Entity\Supplier;
-use App\Inventory\Entity\Warehouse;
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Repository\CategoryRepository;
-use App\Contacts\Repository\CustomerRepository;
-use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\ProductRepository;
-use App\Contacts\Repository\SupplierRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Entity\Supplier;
+use App\Contacts\Repository\CustomerRepository;
+use App\Contacts\Repository\SupplierRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
+use App\Inventory\Repository\LogisticOperationRepository;
 use App\Inventory\Repository\WarehouseRepository;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -215,8 +215,7 @@ final readonly class TestDataSeeder
         private SupplierRepository $supplierRepository,
         private CustomerRepository $customerRepository,
         private ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, int>
@@ -226,7 +225,7 @@ final readonly class TestDataSeeder
         int $productCount = 500,
         int $supplierCount = 20,
         int $saleCount = 200,
-        int $batchSize = 50
+        int $batchSize = 50,
     ): array {
         $stats = [
             'categories_created' => 0,
@@ -264,7 +263,7 @@ final readonly class TestDataSeeder
             $warehouse,
             $paymentMethods,
             $logisticOperation,
-            $batchSize
+            $batchSize,
         );
 
         // Invoices are created with sales, so they're the same count
@@ -339,12 +338,10 @@ final readonly class TestDataSeeder
      */
     private function getAllChildCategories(): array
     {
-        return array_values(
-            array_filter(
-                $this->categoryRepository->findAll(),
-                static fn (Category $cat) => $cat->getParent() !== null
-            )
-        );
+        return array_values(array_filter(
+            $this->categoryRepository->findAll(),
+            static fn(Category $cat) => $cat->getParent() !== null,
+        ));
     }
 
     /**
@@ -377,7 +374,7 @@ final readonly class TestDataSeeder
     {
         $created = 0;
         for ($i = 1; $i <= $count; ++$i) {
-            $ruc = '20' . str_pad((string)(400000000 + $i), 9, '0', STR_PAD_LEFT);
+            $ruc = '20' . str_pad((string) (400000000 + $i), 9, '0', STR_PAD_LEFT);
             $existing = $this->supplierRepository->findOneBy(['ruc' => $ruc]);
 
             if (!$existing instanceof Supplier) {
@@ -390,12 +387,12 @@ final readonly class TestDataSeeder
                     ->setRuc($ruc)
                     ->setBusinessName($sector . ' ' . chr(64 + ($i % 26) + 1) . $i . ' ' . $type)
                     ->setFiscalAddress('Av. Industrial ' . (100 + $i) . ' ' . $city)
-                    ->setPhone('+51 9' . str_pad((string)(10000000 + $i), 8, '0', STR_PAD_LEFT));
+                    ->setPhone('+51 9' . str_pad((string) (10000000 + $i), 8, '0', STR_PAD_LEFT));
 
                 $this->entityManager->persist($supplier);
                 ++$created;
 
-                if (0 === $created % $batchSize) {
+                if (0 === ($created % $batchSize)) {
                     $this->entityManager->flush();
                     $this->entityManager->clear();
                 }
@@ -412,10 +409,10 @@ final readonly class TestDataSeeder
     {
         $created = 0;
         for ($i = 1; $i <= $count; ++$i) {
-            $isCompany = $i % 3 !== 0;
+            $isCompany = ($i % 3) !== 0;
             $ruc = $isCompany
-                ? '20' . str_pad((string)(100000000 + $i), 9, '0', STR_PAD_LEFT)
-                : '10' . str_pad((string)(100000 + $i), 6, '0', STR_PAD_LEFT);
+                ? '20' . str_pad((string) (100000000 + $i), 9, '0', STR_PAD_LEFT)
+                : '10' . str_pad((string) (100000 + $i), 6, '0', STR_PAD_LEFT);
 
             $existing = $this->customerRepository->findOneBy(['ruc' => $ruc]);
 
@@ -438,13 +435,13 @@ final readonly class TestDataSeeder
                     ->setRuc($ruc)
                     ->setBusinessName($businessName)
                     ->setFiscalAddress('Jr. Comercio ' . (100 + $i) . ' ' . $city)
-                    ->setPhone('+51 9' . str_pad((string)(20000000 + $i), 8, '0', STR_PAD_LEFT))
+                    ->setPhone('+51 9' . str_pad((string) (20000000 + $i), 8, '0', STR_PAD_LEFT))
                     ->setEmail('cliente' . $i . '@test.com');
 
                 $this->entityManager->persist($customer);
                 ++$created;
 
-                if (0 === $created % $batchSize) {
+                if (0 === ($created % $batchSize)) {
                     $this->entityManager->flush();
                     $this->entityManager->clear();
                 }
@@ -460,8 +457,7 @@ final readonly class TestDataSeeder
 
     private function syncLegacyProductStockMirrorToStockItems(): void
     {
-        $this->connection->executeStatement(
-            <<<'SQL'
+        $this->connection->executeStatement(<<<'SQL'
             INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
             SELECT CAST(ps.warehouse_id AS CHAR), CAST(ps.product_id AS CHAR), ps.stock, 0, NOW(), 1
             FROM product_stock ps
@@ -470,8 +466,7 @@ final readonly class TestDataSeeder
                 qty_reserved = 0,
                 updated_at = NOW(),
                 version = version + 1
-            SQL
-        );
+            SQL);
     }
 
     /**
@@ -483,17 +478,17 @@ final readonly class TestDataSeeder
         array $categories,
         array $units,
         Warehouse $warehouse,
-        int $batchSize
+        int $batchSize,
     ): int {
         $created = 0;
         $warehouseId = $warehouse->getId();
 
         // Get IDs to reload entities after clearing
-        $categoryIds = array_map(fn ($c) => $c->getId(), $categories);
-        $unitIds = array_map(fn ($u) => $u->getId(), $units);
+        $categoryIds = array_map(fn($c) => $c->getId(), $categories);
+        $unitIds = array_map(fn($u) => $u->getId(), $units);
 
         for ($i = 1; $i <= $count; ++$i) {
-            $code = 'PROD-' . str_pad((string)$i, 6, '0', STR_PAD_LEFT);
+            $code = 'PROD-' . str_pad((string) $i, 6, '0', STR_PAD_LEFT);
             $existing = $this->productRepository->findOneBy(['code' => $code]);
 
             if (!$existing instanceof Product) {
@@ -531,7 +526,7 @@ final readonly class TestDataSeeder
                 $this->entityManager->persist($productStock);
                 ++$created;
 
-                if (0 === $created % $batchSize) {
+                if (0 === ($created % $batchSize)) {
                     $this->entityManager->flush();
                     $this->entityManager->clear();
                 }
@@ -558,17 +553,17 @@ final readonly class TestDataSeeder
         Warehouse $warehouse,
         array $paymentMethods,
         LogisticOperation $logisticOperation,
-        int $batchSize
+        int $batchSize,
     ): int {
         $created = 0;
         $warehouseId = $warehouse->getId();
         $logisticOperationId = $logisticOperation->getId();
 
         // Get IDs for all entities to avoid detachment issues
-        $customerIds = array_map(fn ($c) => $c->getId(), $customers);
-        $supplierIds = array_map(fn ($s) => $s->getId(), $suppliers);
-        $paymentMethodIds = array_map(fn ($p) => $p->getId(), $paymentMethods);
-        $productIds = array_map(fn ($p) => $p->getId(), $products);
+        $customerIds = array_map(fn($c) => $c->getId(), $customers);
+        $supplierIds = array_map(fn($s) => $s->getId(), $suppliers);
+        $paymentMethodIds = array_map(fn($p) => $p->getId(), $paymentMethods);
+        $productIds = array_map(fn($p) => $p->getId(), $products);
 
         for ($i = 1; $i <= $count; ++$i) {
             $glosa = 'Venta Test #' . $i;
@@ -649,10 +644,7 @@ final readonly class TestDataSeeder
 
             $lines = [];
             foreach ($sale->getSaleItemRecords() as $item) {
-                $lines[] = new InvoiceLineInput(
-                    quantity: $item->getQty(),
-                    unitPrice: $item->getUnitPrice()
-                );
+                $lines[] = new InvoiceLineInput(quantity: $item->getQty(), unitPrice: $item->getUnitPrice());
             }
 
             $invoiceAmounts = new InvoiceCalculator(
@@ -660,13 +652,13 @@ final readonly class TestDataSeeder
                 $sale->getDescuento() ?? '0',
                 (string) ($sale->getIgv() ?? '0'),
                 (string) ($sale->getRecargoConsumo() ?? '0'),
-                $sale->getTotal() !== null ? (string) $sale->getTotal() : null
+                $sale->getTotal() !== null ? (string) $sale->getTotal() : null,
             )->calculate();
 
             // Create corresponding tax document
             $taxDocument = new TaxDocument();
             $taxDocument->setCustomer($customer);
-            $taxDocument->setDocumentType(($customer->getRuc()[0] === '1') ? '03' : '01');
+            $taxDocument->setDocumentType($customer->getRuc()[0] === '1' ? '03' : '01');
             $taxDocument->setIssueDate($saleDate);
             $taxDocument->setSeries($series);
             $taxDocument->setNumber($sale->getNumero());
@@ -691,7 +683,7 @@ final readonly class TestDataSeeder
             $this->entityManager->persist($taxDocument);
             ++$created;
 
-            if (0 === $created % $batchSize) {
+            if (0 === ($created % $batchSize)) {
                 $this->entityManager->flush();
                 $this->entityManager->clear();
             }

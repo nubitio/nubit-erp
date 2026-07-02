@@ -26,14 +26,17 @@ readonly class InvokeHydraOperationProcessor implements ProcessorInterface
         private HttpClientInterface $httpClient,
         #[Autowire('%app.api_base_url%')]
         private string $apiBaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * @param InvokeHydraOperation $data
      */
-    public function process(mixed $data, Operation $_operation, array $_uriVariables = [], array $_context = []): CallToolResult
-    {
+    public function process(
+        mixed $data,
+        Operation $_operation,
+        array $_uriVariables = [],
+        array $_context = [],
+    ): CallToolResult {
         $method = strtoupper($data->method);
 
         if (!in_array($method, self::ALLOWED_METHODS, true)) {

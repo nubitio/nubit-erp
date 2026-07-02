@@ -51,13 +51,9 @@ class ProductBomItem
      * Wastage multiplier. 1.0 = no wastage. 1.05 = consume 5% extra.
      * Applied as: effective_qty = component_qty_base * wastage_factor.
      */
-    #[ORM\Column(
-        name: 'wastage_factor',
-        type: Types::DECIMAL,
-        precision: 7,
-        scale: 4,
-        options: ['default' => '1.0000'],
-    )]
+    #[ORM\Column(name: 'wastage_factor', type: Types::DECIMAL, precision: 7, scale: 4, options: [
+        'default' => '1.0000',
+    ])]
     private string $wastageFactor = '1.0000';
 
     /** When true, this component can be omitted (substitutable ingredient). */

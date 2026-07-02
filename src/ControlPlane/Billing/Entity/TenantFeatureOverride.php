@@ -24,8 +24,7 @@ final class TenantFeatureOverride
         public readonly ?string $reason,
         public readonly ?\DateTimeImmutable $cleanedAt,
         public readonly \DateTimeImmutable $createdAt,
-    ) {
-    }
+    ) {}
 
     public function isEnabled(): bool
     {

@@ -22,7 +22,9 @@ final class SunatVoidServiceTest extends TestCase
     {
         $invoiceStrategy = $this->createMock(VoidStrategyInterface::class);
         $invoiceStrategy->method('supports')->with('01')->willReturn(true);
-        $invoiceStrategy->expects(self::once())->method('void')
+        $invoiceStrategy
+            ->expects(self::once())
+            ->method('void')
             ->with('sale-1', 'Motivo')
             ->willReturn($this->makeResponse());
 
@@ -42,7 +44,9 @@ final class SunatVoidServiceTest extends TestCase
 
         $receiptStrategy = $this->createMock(VoidStrategyInterface::class);
         $receiptStrategy->method('supports')->with('03')->willReturn(true);
-        $receiptStrategy->expects(self::once())->method('void')
+        $receiptStrategy
+            ->expects(self::once())
+            ->method('void')
             ->with('sale-2', 'Otro motivo')
             ->willReturn($this->makeResponse());
 

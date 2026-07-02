@@ -30,13 +30,16 @@ final class TaxDocumentVoidUpdaterTest extends TestCase
         $entityManager->expects(self::once())->method('persist')->with($taxDocument);
 
         $eventRepo = $this->createMock(TaxDocumentEventRepository::class);
-        $eventRepo->expects(self::once())->method('recordEvent')->with(
-            taxDocument: $taxDocument,
-            eventType: 'sunat_void',
-            statusCode: 'TKT-9999',
-            statusMessage: 'Comunicación de baja enviada',
-            payload: ['voided' => 1],
-        );
+        $eventRepo
+            ->expects(self::once())
+            ->method('recordEvent')
+            ->with(
+                taxDocument: $taxDocument,
+                eventType: 'sunat_void',
+                statusCode: 'TKT-9999',
+                statusMessage: 'Comunicación de baja enviada',
+                payload: ['voided' => 1],
+            );
 
         $updater = new TaxDocumentVoidUpdater($entityManager, $eventRepo);
         $updater->applyVoidResult($taxDocument, $response, 1);
@@ -61,13 +64,16 @@ final class TaxDocumentVoidUpdaterTest extends TestCase
         $entityManager->expects(self::once())->method('persist');
 
         $eventRepo = $this->createMock(TaxDocumentEventRepository::class);
-        $eventRepo->expects(self::once())->method('recordEvent')->with(
-            taxDocument: $taxDocument,
-            eventType: 'sunat_void',
-            statusCode: 'TKT-0001',
-            statusMessage: 'Solicitud de anulación',
-            payload: ['voided' => 0],
-        );
+        $eventRepo
+            ->expects(self::once())
+            ->method('recordEvent')
+            ->with(
+                taxDocument: $taxDocument,
+                eventType: 'sunat_void',
+                statusCode: 'TKT-0001',
+                statusMessage: 'Solicitud de anulación',
+                payload: ['voided' => 0],
+            );
 
         $updater = new TaxDocumentVoidUpdater($entityManager, $eventRepo);
         $updater->applyVoidResult($taxDocument, $response, 0);

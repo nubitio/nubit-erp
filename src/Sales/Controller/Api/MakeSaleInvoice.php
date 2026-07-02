@@ -14,8 +14,7 @@ final class MakeSaleInvoice extends AbstractController
 {
     public function __construct(
         private readonly InvoiceCreatorInterface $invoiceCreator,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

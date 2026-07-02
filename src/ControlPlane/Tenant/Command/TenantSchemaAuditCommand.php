@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -51,12 +51,7 @@ final class TenantSchemaAuditCommand extends PerTenantCommand
             InputOption::VALUE_OPTIONAL,
             'Tenant name to use as canonical baseline. Defaults to first processed tenant.',
         );
-        $this->addOption(
-            'strict',
-            null,
-            InputOption::VALUE_NONE,
-            'Return failure when schema drift is detected.',
-        );
+        $this->addOption('strict', null, InputOption::VALUE_NONE, 'Return failure when schema drift is detected.');
         $this->addOption(
             'strict-fk-actions',
             null,
@@ -99,16 +94,13 @@ final class TenantSchemaAuditCommand extends PerTenantCommand
                 @mkdir($dir, 0775, true);
             }
 
-            file_put_contents(
-                $outputPath,
-                json_encode([
-                    'baseline_tenant' => $this->baselineTenant,
-                    'drift' => $this->driftByTenant,
-                    'summary' => $this->driftSummaryByTenant,
-                    'normalize_fk_actions' => $this->normalizeFkActions,
-                    'generated_at' => (new \DateTimeImmutable())->format(DATE_ATOM),
-                ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-            );
+            file_put_contents($outputPath, json_encode([
+                'baseline_tenant' => $this->baselineTenant,
+                'drift' => $this->driftByTenant,
+                'summary' => $this->driftSummaryByTenant,
+                'normalize_fk_actions' => $this->normalizeFkActions,
+                'generated_at' => new \DateTimeImmutable()->format(DATE_ATOM),
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             $io->note(sprintf('Schema audit report written to %s', $outputPath));
         }
 
@@ -164,19 +156,16 @@ final class TenantSchemaAuditCommand extends PerTenantCommand
         $summary = $this->buildDriftSummary($drift);
         $this->driftSummaryByTenant[$tenantName] = $summary;
         $io->warning(sprintf('Schema drift detected against baseline tenant %s.', $this->baselineTenant));
-        $io->table(
-            ['Category', 'Missing', 'Extra'],
+        $io->table(['Category', 'Missing', 'Extra'], [
+            ['Tables', (string) count($drift['tables_missing']), (string) count($drift['tables_extra'])],
+            ['Columns', (string) count($drift['columns_missing']), (string) count($drift['columns_extra'])],
+            ['Indexes', (string) count($drift['indexes_missing']), (string) count($drift['indexes_extra'])],
             [
-                ['Tables', (string) count($drift['tables_missing']), (string) count($drift['tables_extra'])],
-                ['Columns', (string) count($drift['columns_missing']), (string) count($drift['columns_extra'])],
-                ['Indexes', (string) count($drift['indexes_missing']), (string) count($drift['indexes_extra'])],
-                [
-                    'Constraints',
-                    (string) count($drift['constraints_missing']),
-                    (string) count($drift['constraints_extra']),
-                ],
+                'Constraints',
+                (string) count($drift['constraints_missing']),
+                (string) count($drift['constraints_extra']),
             ],
-        );
+        ]);
         $io->note(sprintf(
             'Critical drift count: %d (columns=%d, constraints=%d, tables=%d, indexes=%d).',
             $summary['critical_total'],
@@ -254,10 +243,10 @@ final class TenantSchemaAuditCommand extends PerTenantCommand
             ORDER BY tc.table_name, tc.constraint_type, tc.constraint_name
             SQL);
 
-        $tableSignatures = array_values(array_filter(array_map(
-            static fn (mixed $table): string => strtolower((string) $table),
-            $tables,
-        ), static fn (string $table): bool => $table !== 'doctrine_migration_versions'));
+        $tableSignatures = array_values(array_filter(
+            array_map(static fn(mixed $table): string => strtolower((string) $table), $tables),
+            static fn(string $table): bool => $table !== 'doctrine_migration_versions',
+        ));
 
         $columnSignatures = [];
         foreach ($columns as $column) {

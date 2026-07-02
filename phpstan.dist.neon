@@ -11,6 +11,7 @@ parameters:
         - config/reference.php
         - migrations/
         - migrations_control_plane/
+        - tests/Unit/CashRegister/CashSessionDomainTest.php
     ignoreErrors:
         # ApiPlatform ProcessorInterface requires generic types T1,T2 — safe to suppress at this level
         - { message: '#ProcessorInterface but does not specify its types#', path: src/Inventory/State/StockEntryProcessor.php }

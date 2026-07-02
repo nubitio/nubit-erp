@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Receipt\Domain;
 
+use App\Billing\Entity\TaxDocument;
 use App\Billing\Receipt\Domain\Receipt;
 use App\Billing\Receipt\Domain\ReceiptCdrUseCase;
 use App\Billing\Receipt\Domain\ReceiptRequest;
 use App\Billing\Receipt\Domain\ReceiptShowUseCase;
 use App\Billing\Receipt\Domain\ReceiptType;
-use App\Billing\Entity\TaxDocument;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Efact\Service\CompanyContext;
 use Nubit\Platform\Exception\NotFoundException;

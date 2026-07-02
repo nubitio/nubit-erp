@@ -33,14 +33,12 @@ final class VerticalPresetApplierTest extends TestCase
         $warehouseRepo = $this->createMock(WarehouseRepository::class);
         $warehouseRepo->method('count')->willReturn(0);
 
-        $branch = (new Branch())->setName('Principal');
+        $branch = new Branch()->setName('Principal');
         $branchRepo = $this->createMock(BranchRepository::class);
         $branchRepo->method('findOneBy')->willReturn($branch);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::once())
-            ->method('persist')
-            ->with(self::isInstanceOf(Warehouse::class));
+        $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Warehouse::class));
         $em->expects(self::once())->method('flush');
 
         $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);

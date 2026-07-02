@@ -18,8 +18,7 @@ final readonly class TenantRuntimeConfigProvider
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
         private VerticalPresetRegistry $presetRegistry,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -68,14 +67,18 @@ final readonly class TenantRuntimeConfigProvider
                 'warehouses' => $warehouseCount,
             ],
             'defaults' => [
-                'branch' => $defaultBranch === null ? null : [
-                    'id' => $defaultBranch->getId(),
-                    'name' => $defaultBranch->getName(),
-                ],
-                'warehouse' => $defaultWarehouse === null ? null : [
-                    'id' => $defaultWarehouse->getId(),
-                    'name' => $defaultWarehouse->getName(),
-                ],
+                'branch' => $defaultBranch === null
+                    ? null
+                    : [
+                        'id' => $defaultBranch->getId(),
+                        'name' => $defaultBranch->getName(),
+                    ],
+                'warehouse' => $defaultWarehouse === null
+                    ? null
+                    : [
+                        'id' => $defaultWarehouse->getId(),
+                        'name' => $defaultWarehouse->getName(),
+                    ],
             ],
             'capabilities' => [
                 'sales.core' => $this->capability(true),

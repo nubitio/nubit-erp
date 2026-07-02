@@ -29,9 +29,12 @@ class TenantUsagePruneCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addOption('days', null, InputOption::VALUE_REQUIRED, 'Retention in days', '90')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show how many rows would be removed');
+        $this->addOption('days', null, InputOption::VALUE_REQUIRED, 'Retention in days', '90')->addOption(
+            'dry-run',
+            null,
+            InputOption::VALUE_NONE,
+            'Only show how many rows would be removed',
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -42,27 +45,19 @@ class TenantUsagePruneCommand extends Command
 
         /** @var Connection $controlPlane */
         $controlPlane = $this->connectionRegistry->getConnection('control_plane');
-        $cutoff = (new \DateTimeImmutable(sprintf('-%d days', $days)))->format('Y-m-d H:i:s');
+        $cutoff = new \DateTimeImmutable(sprintf('-%d days', $days))->format('Y-m-d H:i:s');
 
-        $toDelete = (int) $controlPlane->fetchOne(
-            'SELECT COUNT(*) FROM tenant_usage WHERE collected_at < ?',
-            [$cutoff],
-        );
+        $toDelete = (int) $controlPlane->fetchOne('SELECT COUNT(*) FROM tenant_usage WHERE collected_at < ?', [
+            $cutoff,
+        ]);
 
         if ($dryRun) {
-            $io->info(sprintf(
-                'Dry run: %d rows older than %s would be deleted.',
-                $toDelete,
-                $cutoff,
-            ));
+            $io->info(sprintf('Dry run: %d rows older than %s would be deleted.', $toDelete, $cutoff));
 
             return Command::SUCCESS;
         }
 
-        $deleted = $controlPlane->executeStatement(
-            'DELETE FROM tenant_usage WHERE collected_at < ?',
-            [$cutoff],
-        );
+        $deleted = $controlPlane->executeStatement('DELETE FROM tenant_usage WHERE collected_at < ?', [$cutoff]);
 
         $io->success(sprintf(
             'Deleted %d row(s) from tenant_usage (cutoff: %s, previously matched: %d).',

@@ -22,9 +22,7 @@ final class PlanManagerTest extends TestCase
         $item = $this->createStub(ItemInterface::class);
 
         $cache = $this->createStub(CacheInterface::class);
-        $cache->method('get')->willReturnCallback(
-            static fn (string $key, callable $cb): mixed => $cb($item)
-        );
+        $cache->method('get')->willReturnCallback(static fn(string $key, callable $cb): mixed => $cb($item));
 
         return $cache;
     }

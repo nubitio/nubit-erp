@@ -9,8 +9,8 @@ use App\ControlPlane\Billing\Feature\TenantFeatureOverrideManager;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -35,15 +35,12 @@ final class CacheInvalidationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->overrideRepository  = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
-        $this->featureCache        = $this->createMock(TagAwareCacheInterface::class);
-        $this->connection          = $this->createMock(Connection::class);
-        $this->connectionRegistry  = $this->createMock(ConnectionRegistry::class);
+        $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
+        $this->featureCache = $this->createMock(TagAwareCacheInterface::class);
+        $this->connection = $this->createMock(Connection::class);
+        $this->connectionRegistry = $this->createMock(ConnectionRegistry::class);
 
-        $this->connectionRegistry
-            ->method('getConnection')
-            ->with('control_plane')
-            ->willReturn($this->connection);
+        $this->connectionRegistry->method('getConnection')->with('control_plane')->willReturn($this->connection);
     }
 
     // -------------------------------------------------------------------------
@@ -81,9 +78,7 @@ final class CacheInvalidationTest extends TestCase
         $tenantId = 42;
 
         // No existing override → INSERT path.
-        $this->overrideRepository
-            ->method('findByTenantAndKey')
-            ->willReturn(null);
+        $this->overrideRepository->method('findByTenantAndKey')->willReturn(null);
 
         $this->connection->method('insert')->willReturn(1);
 
@@ -121,9 +116,7 @@ final class CacheInvalidationTest extends TestCase
             createdAt: new \DateTimeImmutable(),
         );
 
-        $this->overrideRepository
-            ->method('findByTenantAndKey')
-            ->willReturn($existingOverride);
+        $this->overrideRepository->method('findByTenantAndKey')->willReturn($existingOverride);
 
         $this->connection->method('update')->willReturn(1);
 

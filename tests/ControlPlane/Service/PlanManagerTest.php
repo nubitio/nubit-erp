@@ -8,8 +8,8 @@ use App\ControlPlane\Billing\Service\PlanManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -29,7 +29,12 @@ final class PlanManagerTest extends TestCase
 
     public function testGetLimitsForPlanFailsClosedWhenPlansUnavailable(): void
     {
-        $manager = new PlanManager($this->registry, $this->cacheReturning([]), new NullLogger(), $this->resourceCatalog);
+        $manager = new PlanManager(
+            $this->registry,
+            $this->cacheReturning([]),
+            new NullLogger(),
+            $this->resourceCatalog,
+        );
 
         $limits = $manager->getLimitsForPlan('free');
 
@@ -48,7 +53,12 @@ final class PlanManagerTest extends TestCase
             ['id' => 2, 'name' => 'pro', 'limits' => ['users' => 20], 'is_default' => false],
         ];
 
-        $manager = new PlanManager($this->registry, $this->cacheReturning($plans), new NullLogger(), $this->resourceCatalog);
+        $manager = new PlanManager(
+            $this->registry,
+            $this->cacheReturning($plans),
+            new NullLogger(),
+            $this->resourceCatalog,
+        );
 
         self::assertSame(['users' => 20], $manager->getLimitsForPlan('pro'));
         self::assertSame(['users' => 1], $manager->getLimitsForPlan('missing'));
@@ -60,28 +70,51 @@ final class PlanManagerTest extends TestCase
     public function testGetPlanAndGetPlanByNameHydrateDatabaseRows(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchAssociative')->willReturnMap([
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [7], [], [
-                'id' => 7,
-                'name' => 'starter',
-                'limits_json' => '{"users":3}',
-                'is_default' => 0,
-            ]],
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE name = ?', ['starter'], [], [
-                'id' => 7,
-                'name' => 'starter',
-                'limits_json' => '{"users":3}',
-                'is_default' => 0,
-            ]],
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [999], [], false],
-        ]);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturnMap([
+                [
+                    'SELECT id, name, limits_json, is_default FROM plans WHERE id = ?',
+                    [7],
+                    [],
+                    [
+                        'id' => 7,
+                        'name' => 'starter',
+                        'limits_json' => '{"users":3}',
+                        'is_default' => 0,
+                    ],
+                ],
+                [
+                    'SELECT id, name, limits_json, is_default FROM plans WHERE name = ?',
+                    ['starter'],
+                    [],
+                    [
+                        'id' => 7,
+                        'name' => 'starter',
+                        'limits_json' => '{"users":3}',
+                        'is_default' => 0,
+                    ],
+                ],
+                ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [999], [], false],
+            ]);
 
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
-        $manager = new PlanManager($this->registry, $this->cacheReturning([]), new NullLogger(), $this->resourceCatalog);
+        $manager = new PlanManager(
+            $this->registry,
+            $this->cacheReturning([]),
+            new NullLogger(),
+            $this->resourceCatalog,
+        );
 
-        self::assertSame(['id' => 7, 'name' => 'starter', 'limits' => ['users' => 3], 'is_default' => false], $manager->getPlan(7));
-        self::assertSame(['id' => 7, 'name' => 'starter', 'limits' => ['users' => 3], 'is_default' => false], $manager->getPlanByName('starter'));
+        self::assertSame(
+            ['id' => 7, 'name' => 'starter', 'limits' => ['users' => 3], 'is_default' => false],
+            $manager->getPlan(7),
+        );
+        self::assertSame(
+            ['id' => 7, 'name' => 'starter', 'limits' => ['users' => 3], 'is_default' => false],
+            $manager->getPlanByName('starter'),
+        );
         self::assertNull($manager->getPlan(999));
     }
 
@@ -90,7 +123,12 @@ final class PlanManagerTest extends TestCase
         $connection = $this->createStub(Connection::class);
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
-        $manager = new PlanManager($this->registry, $this->cacheReturning([]), new NullLogger(), $this->resourceCatalog);
+        $manager = new PlanManager(
+            $this->registry,
+            $this->cacheReturning([]),
+            new NullLogger(),
+            $this->resourceCatalog,
+        );
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Plan name is required');
@@ -103,7 +141,12 @@ final class PlanManagerTest extends TestCase
         $connection->method('fetchOne')->willReturn(1);
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
-        $manager = new PlanManager($this->registry, $this->cacheReturning([]), new NullLogger(), $this->resourceCatalog);
+        $manager = new PlanManager(
+            $this->registry,
+            $this->cacheReturning([]),
+            new NullLogger(),
+            $this->resourceCatalog,
+        );
 
         try {
             $manager->createPlan('Pro Plan', ['users' => 10]);
@@ -129,18 +172,20 @@ final class PlanManagerTest extends TestCase
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(false);
         $connection->expects(self::once())->method('executeStatement')->with('UPDATE plans SET is_default = 0');
-        $connection->expects(self::once())->method('insert')->with(
-            'plans',
-            self::callback(function (array $data): bool {
+        $connection
+            ->expects(self::once())
+            ->method('insert')
+            ->with('plans', self::callback(function (array $data): bool {
                 $limits = json_decode((string) $data['limits_json'], true);
 
-                return $data['name'] === 'enterprise'
+                return (
+                    $data['name'] === 'enterprise'
                     && $data['is_default'] === 1
                     && $limits['users'] === 50
                     && $limits['customers'] === -1
-                    && $limits['storage_mb'] === -1;
-            })
-        );
+                    && $limits['storage_mb'] === -1
+                );
+            }));
 
         $this->registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
@@ -154,26 +199,40 @@ final class PlanManagerTest extends TestCase
     public function testUpdatePlanAndDeletePlanValidateAndApplyRules(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->method('fetchAssociative')->willReturnMap([
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [5], [], [
-                'id' => 5,
-                'name' => 'pro',
-                'limits_json' => '{"users":10}',
-                'is_default' => 0,
-            ]],
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [6], [], [
-                'id' => 6,
-                'name' => 'free',
-                'limits_json' => '{"users":1}',
-                'is_default' => 1,
-            ]],
-            ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [99], [], false],
-        ]);
-        $connection->method('fetchOne')->willReturnMap([
-            ['SELECT id FROM plans WHERE name = ? AND id <> ?', ['pro-plus', 5], [], false],
-            ['SELECT COUNT(*) FROM tenants WHERE plan = ?', ['free'], [], 2],
-            ['SELECT COUNT(*) FROM tenants WHERE plan = ?', ['pro'], [], 0],
-        ]);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturnMap([
+                [
+                    'SELECT id, name, limits_json, is_default FROM plans WHERE id = ?',
+                    [5],
+                    [],
+                    [
+                        'id' => 5,
+                        'name' => 'pro',
+                        'limits_json' => '{"users":10}',
+                        'is_default' => 0,
+                    ],
+                ],
+                [
+                    'SELECT id, name, limits_json, is_default FROM plans WHERE id = ?',
+                    [6],
+                    [],
+                    [
+                        'id' => 6,
+                        'name' => 'free',
+                        'limits_json' => '{"users":1}',
+                        'is_default' => 1,
+                    ],
+                ],
+                ['SELECT id, name, limits_json, is_default FROM plans WHERE id = ?', [99], [], false],
+            ]);
+        $connection
+            ->method('fetchOne')
+            ->willReturnMap([
+                ['SELECT id FROM plans WHERE name = ? AND id <> ?', ['pro-plus', 5], [], false],
+                ['SELECT COUNT(*) FROM tenants WHERE plan = ?', ['free'], [], 2],
+                ['SELECT COUNT(*) FROM tenants WHERE plan = ?', ['pro'], [], 0],
+            ]);
 
         $connection->expects(self::once())->method('executeStatement')->with('UPDATE plans SET is_default = 0');
         $connection->expects(self::exactly(2))->method('update');
@@ -211,11 +270,13 @@ final class PlanManagerTest extends TestCase
     private function cacheReturning(array $plans): CacheInterface&MockObject
     {
         $cache = $this->createMock(CacheInterface::class);
-        $cache->method('get')->willReturnCallback(static function (string $key, callable $callback) use ($plans): array {
-            unset($key, $callback);
+        $cache
+            ->method('get')
+            ->willReturnCallback(static function (string $key, callable $callback) use ($plans): array {
+                unset($key, $callback);
 
-            return $plans;
-        });
+                return $plans;
+            });
 
         return $cache;
     }

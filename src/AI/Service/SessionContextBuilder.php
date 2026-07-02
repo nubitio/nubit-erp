@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\AI\Service;
 
 use DateTimeImmutable;
-use DateTimeZone;
 use DateTimeInterface;
-use Nubit\Platform\Tenant\Context\TenantContext;
+use DateTimeZone;
+use Doctrine\DBAL\Connection;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
-use Doctrine\DBAL\Connection;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Bundle\SecurityBundle\Security;
 use Throwable;
 
@@ -31,8 +31,7 @@ final readonly class SessionContextBuilder
         private JWTManager $jwtManager,
         private TenantContext $tenantContext,
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     public function build(): string
     {
@@ -42,9 +41,9 @@ final readonly class SessionContextBuilder
         $userName = (string) ($payload['username'] ?? 'desconocido');
         $role = $this->resolveRoleLabel((int) ($payload['role'] ?? 0));
         $rawBranchId = $payload['branchId'] ?? null;
-        $branchId = (in_array($rawBranchId, [null, false, ''], true)) ? null : (string) $rawBranchId;
+        $branchId = in_array($rawBranchId, [null, false, ''], true) ? null : (string) $rawBranchId;
         $rawBranchName = $payload['branchName'] ?? null;
-        $branchName = (in_array($rawBranchName, [null, false, ''], true)) ? null : (string) $rawBranchName;
+        $branchName = in_array($rawBranchName, [null, false, ''], true) ? null : (string) $rawBranchName;
 
         [$cashRegisterId, $cashSessionStatus] = $this->resolveCashSession($branchId);
 
@@ -109,7 +108,7 @@ final readonly class SessionContextBuilder
                         opened_at DESC
                     LIMIT 1
                     SQL,
-                ['branch_id' => $branchId]
+                ['branch_id' => $branchId],
             );
         } catch (Throwable) {
             return [null, 'NONE'];

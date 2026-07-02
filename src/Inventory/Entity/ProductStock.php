@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Inventory\Entity;
 
-use App\Catalog\Entity\Product;
-use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use App\Catalog\Entity\Product;
 use App\Inventory\Repository\ProductStockRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -99,24 +99,24 @@ class ProductStock
 
     public function getStock(): float
     {
-        return (float)$this->stock;
+        return (float) $this->stock;
     }
 
     public function setStock(float $stock): static
     {
-        $this->stock = (string)$stock;
+        $this->stock = (string) $stock;
 
         return $this;
     }
 
     public function getMinStock(): float
     {
-        return (float)$this->minStock;
+        return (float) $this->minStock;
     }
 
     public function setMinStock(float $minStock): static
     {
-        $this->minStock = (string)$minStock;
+        $this->minStock = (string) $minStock;
 
         return $this;
     }

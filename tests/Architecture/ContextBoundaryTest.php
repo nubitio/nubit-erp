@@ -31,10 +31,7 @@ final class ContextBoundaryTest extends TestCase
 
     public function testPlatformDoesNotImportAppNamespace(): void
     {
-        $violations = $this->findUseStatementViolations(
-            __DIR__ . '/../../src/Platform',
-            '/^use App\\\\/m',
-        );
+        $violations = $this->findUseStatementViolations(__DIR__ . '/../../src/Platform', '/^use App\\\\/m');
 
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
@@ -156,10 +153,7 @@ final class ContextBoundaryTest extends TestCase
 
     public function testLegacyInventoryLedgerServiceHasBeenRemoved(): void
     {
-        $violations = $this->findContentViolations(
-            __DIR__ . '/../../src',
-            '/InventoryLedgerService/',
-        );
+        $violations = $this->findContentViolations(__DIR__ . '/../../src', '/InventoryLedgerService/');
 
         self::assertSame([], $violations, $this->formatViolations($violations));
     }
@@ -223,9 +217,10 @@ final class ContextBoundaryTest extends TestCase
 
         $violations = [];
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \FilesystemIterator::SKIP_DOTS,
+        ));
 
         foreach ($iterator as $file) {
             if (!$file instanceof \SplFileInfo || $file->getExtension() !== 'php') {
@@ -252,20 +247,18 @@ final class ContextBoundaryTest extends TestCase
      * @param list<string> $allowedPathFragments
      * @return list<string>
      */
-    private function findContentViolations(
-        string $directory,
-        string $pattern,
-        array $allowedPathFragments = [],
-    ): array {
+    private function findContentViolations(string $directory, string $pattern, array $allowedPathFragments = []): array
+    {
         if (!is_dir($directory)) {
             return [];
         }
 
         $violations = [];
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \FilesystemIterator::SKIP_DOTS,
+        ));
 
         foreach ($iterator as $file) {
             if (!$file instanceof \SplFileInfo || !in_array($file->getExtension(), ['php', 'yaml', 'yml'], true)) {

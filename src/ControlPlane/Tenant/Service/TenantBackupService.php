@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -12,6 +11,7 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Tenant\Contract\TenantBackupRunnerInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -26,8 +26,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
         private LoggerInterface $logger,
         #[Autowire(env: 'BACKUP_DATABASE_URL')]
         private string $backupDatabaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{id: int, filename: string, storage_path: string, size_bytes: int, storage_type: string}
@@ -40,8 +39,8 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             throw new RuntimeException(sprintf('Tenant "%s" not found.', $tenantName));
         }
 
-        $dbName = (string)($tenant['connection'] ?? $tenantName);
-        $tenantId = (int)$tenant['id'];
+        $dbName = (string) ($tenant['connection'] ?? $tenantName);
+        $tenantId = (int) $tenant['id'];
         $timestamp = date('Ymd_His');
         $filename = sprintf('%s_%s.sql.gz', $dbName, $timestamp);
         $localDir = 'var/backups';
@@ -62,12 +61,12 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             'backup_type' => $backupType,
             'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
-        $backupId = (int)$conn->lastInsertId();
+        $backupId = (int) $conn->lastInsertId();
 
         try {
             $this->executeDump($dbName, $localPath);
 
-            $sizeBytes = (int)filesize($localPath);
+            $sizeBytes = (int) filesize($localPath);
             $storagePath = $localPath;
 
             if ($uploadToS3) {
@@ -89,12 +88,16 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             }
 
             $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
-            $conn->update('tenant_backups', [
-                'storage_path' => $storagePath,
-                'size_bytes' => $sizeBytes,
-                'status' => 'completed',
-                'completed_at' => $now,
-            ], ['id' => $backupId]);
+            $conn->update(
+                'tenant_backups',
+                [
+                    'storage_path' => $storagePath,
+                    'size_bytes' => $sizeBytes,
+                    'status' => 'completed',
+                    'completed_at' => $now,
+                ],
+                ['id' => $backupId],
+            );
 
             return [
                 'id' => $backupId,
@@ -105,11 +108,15 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
                 'backup_type' => $backupType,
             ];
         } catch (\Throwable $e) {
-            $conn->update('tenant_backups', [
-                'status' => 'failed',
-                'error_message' => mb_substr($e->getMessage(), 0, 2000),
-                'completed_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
-            ], ['id' => $backupId]);
+            $conn->update(
+                'tenant_backups',
+                [
+                    'status' => 'failed',
+                    'error_message' => mb_substr($e->getMessage(), 0, 2000),
+                    'completed_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+                ],
+                ['id' => $backupId],
+            );
 
             @unlink($localPath);
 
@@ -135,7 +142,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
              WHERE tenant_id = ?
              ORDER BY created_at DESC
              LIMIT ?',
-            [(int)$tenant['id'], $limit],
+            [(int) $tenant['id'], $limit],
             [ParameterType::INTEGER, ParameterType::INTEGER],
         );
     }
@@ -185,7 +192,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
         $conn = $this->getControlPlaneConnection();
 
         if ($backup['storage_type'] === 's3') {
-            $storagePath = (string)$backup['storage_path'];
+            $storagePath = (string) $backup['storage_path'];
             if ($storagePath !== '') {
                 try {
                     $this->defaultFilesystem->delete($storagePath);
@@ -198,7 +205,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
                 }
             }
         } elseif ($backup['storage_type'] === 'local') {
-            $localPath = (string)$backup['storage_path'];
+            $localPath = (string) $backup['storage_path'];
             if ($localPath !== '' && file_exists($localPath)) {
                 @unlink($localPath);
             }
@@ -216,7 +223,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
         $backup = $this->getBackup($backupId);
 
         if ($backup['storage_type'] === 'local') {
-            $path = (string)$backup['storage_path'];
+            $path = (string) $backup['storage_path'];
             if (!file_exists($path)) {
                 throw new RuntimeException('Local backup file not found.');
             }
@@ -225,7 +232,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
         }
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'backup_') . '.sql.gz';
-        $stream = $this->defaultFilesystem->readStream((string)$backup['storage_path']);
+        $stream = $this->defaultFilesystem->readStream((string) $backup['storage_path']);
         $local = fopen($tmpFile, 'w');
         if ($local === false) {
             throw new RuntimeException('Cannot create temp file for download.');
@@ -255,15 +262,14 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
         }
 
         $conn = $this->getControlPlaneConnection();
-        $tenant = $conn->fetchAssociative(
-            'SELECT id, name, connection FROM tenants WHERE id = ?',
-            [(int)$backup['tenant_id']],
-        );
+        $tenant = $conn->fetchAssociative('SELECT id, name, connection FROM tenants WHERE id = ?', [
+            (int) $backup['tenant_id'],
+        ]);
         if ($tenant === false) {
             throw new RuntimeException('Tenant not found for this backup.');
         }
 
-        $dbName = (string)($tenant['connection'] ?: $tenant['name']);
+        $dbName = (string) ($tenant['connection'] ?: $tenant['name']);
         $localFile = $this->downloadBackup($backupId);
 
         try {
@@ -286,10 +292,9 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
      */
     private function getBackup(int $backupId): array
     {
-        $backup = $this->getControlPlaneConnection()->fetchAssociative(
-            'SELECT * FROM tenant_backups WHERE id = ?',
-            [$backupId],
-        );
+        $backup = $this->getControlPlaneConnection()->fetchAssociative('SELECT * FROM tenant_backups WHERE id = ?', [
+            $backupId,
+        ]);
 
         if ($backup === false) {
             throw new RuntimeException(sprintf('Backup #%d not found.', $backupId));
@@ -301,10 +306,10 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
     private function executeDump(string $dbName, string $outputPath): void
     {
         $params = $this->getConnectionParams();
-        $host = (string)($params['host'] ?? 'localhost');
-        $port = (string)($params['port'] ?? '3306');
-        $user = (string)($params['user'] ?? 'root');
-        $password = (string)($params['password'] ?? '');
+        $host = (string) ($params['host'] ?? 'localhost');
+        $port = (string) ($params['port'] ?? '3306');
+        $user = (string) ($params['user'] ?? 'root');
+        $password = (string) ($params['password'] ?? '');
 
         $dumpCmd = [
             'mariadb-dump',
@@ -321,8 +326,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
             $dbName,
         ]);
 
-        $shellCmd = implode(' ', array_map('escapeshellarg', $dumpCmd))
-            . ' | gzip > ' . escapeshellarg($outputPath);
+        $shellCmd = implode(' ', array_map('escapeshellarg', $dumpCmd)) . ' | gzip > ' . escapeshellarg($outputPath);
 
         $process = Process::fromShellCommandline(
             'bash -o pipefail -c ' . escapeshellarg($shellCmd),
@@ -344,10 +348,10 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
     private function executeRestore(string $dbName, string $filePath): void
     {
         $params = $this->getConnectionParams();
-        $host = (string)($params['host'] ?? 'localhost');
-        $port = (string)($params['port'] ?? '3306');
-        $user = (string)($params['user'] ?? 'root');
-        $password = (string)($params['password'] ?? '');
+        $host = (string) ($params['host'] ?? 'localhost');
+        $port = (string) ($params['port'] ?? '3306');
+        $user = (string) ($params['user'] ?? 'root');
+        $password = (string) ($params['password'] ?? '');
 
         $restoreCmd = [
             'mariadb',
@@ -358,8 +362,8 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
 
         $restoreCmd[] = $dbName;
 
-        $shellCmd = 'gunzip -c ' . escapeshellarg($filePath)
-            . ' | ' . implode(' ', array_map('escapeshellarg', $restoreCmd));
+        $shellCmd =
+            'gunzip -c ' . escapeshellarg($filePath) . ' | ' . implode(' ', array_map('escapeshellarg', $restoreCmd));
 
         $process = Process::fromShellCommandline(
             'bash -o pipefail -c ' . escapeshellarg($shellCmd),

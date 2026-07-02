@@ -29,10 +29,10 @@ final class KnowledgeRetrieverTest extends TestCase
     private function makeChunk(string $title, string $content, string $source, array $vector): array
     {
         return [
-            'title'   => $title,
+            'title' => $title,
             'content' => $content,
-            'source'  => $source,
-            'vector'  => $vector,
+            'source' => $source,
+            'vector' => $vector,
         ];
     }
 
@@ -63,12 +63,12 @@ final class KnowledgeRetrieverTest extends TestCase
         $idf = ['factura' => 2.0, 'venta' => 1.5];
 
         $chunkA = $this->makeChunk('Facturas', 'Factura electrónica', 'doc-a', [
-            'factura' => 0.9,  // high match for "factura"
-            'venta'   => 0.1,
+            'factura' => 0.9, // high match for "factura"
+            'venta' => 0.1,
         ]);
         $chunkB = $this->makeChunk('Ventas', 'Proceso de venta', 'doc-b', [
             'factura' => 0.1,
-            'venta'   => 0.9,
+            'venta' => 0.9,
         ]);
 
         $retriever = new KnowledgeRetriever($this->makeIndex([$chunkB, $chunkA], $idf));
@@ -84,10 +84,9 @@ final class KnowledgeRetrieverTest extends TestCase
     public function testReturnsAtMostLimitResults(): void
     {
         $idf = ['producto' => 1.0];
-        $chunks = array_map(
-            fn (int $i): array => $this->makeChunk("Chunk $i", "producto info $i", "src-$i", ['producto' => 0.5]),
-            range(1, 10)
-        );
+        $chunks = array_map(fn(int $i): array => $this->makeChunk("Chunk $i", "producto info $i", "src-$i", [
+            'producto' => 0.5,
+        ]), range(1, 10));
 
         $retriever = new KnowledgeRetriever($this->makeIndex($chunks, $idf));
         $results = $retriever->search('producto', limit: 3);

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Command;
 
-use App\Settings\Command\ImportUbigeoCommand;
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Settings\Command\ImportUbigeoCommand;
 use App\Settings\Service\UbigeoImportService;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -37,7 +37,8 @@ final class ImportUbigeoCommandTest extends TestCase
         file_put_contents($tmpFile, "010101,AMAZONAS,CHACHAPOYAS,CHACHAPOYAS\n");
 
         $importService = $this->createMock(UbigeoImportService::class);
-        $importService->expects(self::once())
+        $importService
+            ->expects(self::once())
             ->method('import')
             ->with(
                 filePath: $tmpFile,
@@ -45,7 +46,7 @@ final class ImportUbigeoCommandTest extends TestCase
                 skipHeader: true,
                 batchSize: 50,
                 disableChecks: true,
-                progressCallback: self::isCallable()
+                progressCallback: self::isCallable(),
             )
             ->willReturn(1);
 
@@ -84,14 +85,16 @@ final class ImportUbigeoCommandTest extends TestCase
     private function newCommand(UbigeoImportService $importService): ImportUbigeoCommand
     {
         $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
+        $tenantManager
+            ->method('getTenants')
+            ->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
 
         $command = new ImportUbigeoCommand($importService);
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         return $command;

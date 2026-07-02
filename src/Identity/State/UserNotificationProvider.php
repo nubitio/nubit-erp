@@ -6,8 +6,8 @@ namespace App\Identity\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Identity\Security\Security;
 use App\Identity\Entity\UserNotification;
+use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -22,8 +22,7 @@ final readonly class UserNotificationProvider implements ProviderInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<UserNotification>
@@ -39,14 +38,12 @@ final readonly class UserNotificationProvider implements ProviderInterface
 
         /** @var list<UserNotification> $result */
         $result = $this->entityManager
-            ->createQuery(
-                <<<'DQL'
+            ->createQuery(<<<'DQL'
                     SELECT n FROM App\Identity\Entity\UserNotification n
                     WHERE n.userId = :userId
                       AND (n.readAt IS NULL OR n.createdAt >= :since)
                     ORDER BY n.createdAt DESC
-                DQL,
-            )
+                DQL)
             ->setParameter('userId', $user->userId)
             ->setParameter('since', new \DateTimeImmutable('-7 days'))
             ->setMaxResults(50)

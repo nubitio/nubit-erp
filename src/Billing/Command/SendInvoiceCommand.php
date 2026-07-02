@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Billing\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
-use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\Billing\Invoice\Domain\InvoiceSendOrchestrator;
 use App\Billing\Invoice\Domain\InvoiceSendRetryService;
 use App\Billing\Invoice\Domain\SunatSendControlService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,10 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'invoice:send',
-    description: 'Send pending invoices to SUNAT',
-)]
+#[AsCommand(name: 'invoice:send', description: 'Send pending invoices to SUNAT')]
 #[AsCronTask('*/5 * * * *')]
 class SendInvoiceCommand extends PerTenantCommand
 {
@@ -94,12 +91,7 @@ class SendInvoiceCommand extends PerTenantCommand
             }
 
             foreach ($pendingIds as $taxDocumentId) {
-                $result = $this->orchestrator->process(
-                    $taxDocumentId,
-                    $retryPolicy,
-                    $rejectionThreshold,
-                    $tenantName
-                );
+                $result = $this->orchestrator->process($taxDocumentId, $retryPolicy, $rejectionThreshold, $tenantName);
 
                 if ($result->sent) {
                     $sent++;
@@ -142,13 +134,8 @@ class SendInvoiceCommand extends PerTenantCommand
             $io->table(['Invoice ID', 'Error'], $errors);
         }
 
-        $durationMs = (int)((microtime(true) - $startedAt) * 1000);
-        $io->success(sprintf(
-            'Completed. Sent: %d, Failed: %d, Duration: %d ms',
-            $sent,
-            count($errors),
-            $durationMs
-        ));
+        $durationMs = (int) ((microtime(true) - $startedAt) * 1000);
+        $io->success(sprintf('Completed. Sent: %d, Failed: %d, Duration: %d ms', $sent, count($errors), $durationMs));
 
         $this->logger->info('Invoice send command completed', [
             'pending_total' => $pendingTotal,
@@ -168,7 +155,7 @@ class SendInvoiceCommand extends PerTenantCommand
             $subject = sprintf('[SUNAT] Documentos bloqueados por max attempts - %s', $tenantName);
             $message = sprintf(
                 'Se detectaron %d comprobantes bloqueados por max attempts en esta corrida.',
-                $skippedByMaxAttempts
+                $skippedByMaxAttempts,
             );
             $this->notificationService->dispatchForTenantName(
                 tenantName: $tenantName,

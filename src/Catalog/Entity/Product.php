@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace App\Catalog\Entity;
 
-use Nubit\AdminBundle\Media\Entity\Media;
-use App\Inventory\Entity\ProductStock;
-use App\Inventory\Entity\Warehouse;
-use App\Catalog\Entity\Category;
-use App\Catalog\Entity\SunatCatalog;
-use App\Catalog\Entity\UnitOfMeasure;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -17,19 +11,25 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Attribute\Auditable;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use App\Catalog\Entity\Category;
+use App\Catalog\Entity\SunatCatalog;
+use App\Catalog\Entity\UnitOfMeasure;
+use App\Catalog\Repository\ProductRepository;
+use App\Catalog\State\ProductStockController;
+use App\Efact\Validator as AppAssert;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
-use App\Catalog\Repository\ProductRepository;
-use App\Catalog\State\ProductStockController;
-use App\Efact\Validator as AppAssert;
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\AdminBundle\Media\Entity\Media;
+use Nubit\ApiPlatform\Attribute\Auditable;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -130,7 +130,14 @@ class Product
     private bool $isActive = true;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read', 'product:write', 'sale_item:read', 'sale_item_record:read', 'purchase_item:read', 'stock_item:read'])]
+    #[Groups([
+        'product:read',
+        'product:write',
+        'sale_item:read',
+        'sale_item_record:read',
+        'purchase_item:read',
+        'stock_item:read',
+    ])]
     #[ApiProperty(description: 'product.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
@@ -169,10 +176,15 @@ class Product
      * @var Collection<int, ProductStock>
      */
     #[Groups(['product:read'])]
-    #[ORM\OneToMany(targetEntity: ProductStock::class, mappedBy: 'product', cascade: [
-        'persist',
-        'remove',
-    ], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: ProductStock::class,
+        mappedBy: 'product',
+        cascade: [
+            'persist',
+            'remove',
+        ],
+        orphanRemoval: true,
+    )]
     private Collection $stocks;
 
     #[Groups(['product:read', 'product:write'])]
@@ -336,7 +348,9 @@ class Product
 
     public function setLotTrackingStrategy(LotTrackingStrategy|string $strategy): static
     {
-        $this->lotTrackingStrategy = $strategy instanceof LotTrackingStrategy ? $strategy->value : LotTrackingStrategy::from($strategy)->value;
+        $this->lotTrackingStrategy = $strategy instanceof LotTrackingStrategy
+            ? $strategy->value
+            : LotTrackingStrategy::from($strategy)->value;
 
         return $this;
     }

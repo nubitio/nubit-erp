@@ -15,8 +15,7 @@ final readonly class BranchContextAdapter implements BranchContextInterface
 {
     public function __construct(
         private BranchContextServiceInterface $branchContextService,
-    ) {
-    }
+    ) {}
 
     public function getCurrentBranchId(): ?string
     {

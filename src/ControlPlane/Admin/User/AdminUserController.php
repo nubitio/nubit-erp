@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Admin\User;
 
-use App\Efact\Audit\AuditLogger;
 use App\ControlPlane\Admin\Security\ControlPlaneUser;
+use App\Efact\Audit\AuditLogger;
 use Doctrine\DBAL\Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,8 +27,7 @@ final class AdminUserController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly AuditLogger $auditLogger,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -57,10 +56,10 @@ final class AdminUserController extends AbstractController
                 return $this->redirectToRoute('admin_user_new');
             }
 
-            $username        = strtolower(trim((string) $request->request->get('username', '')));
-            $password        = (string) $request->request->get('password', '');
+            $username = strtolower(trim((string) $request->request->get('username', '')));
+            $password = (string) $request->request->get('password', '');
             $confirmPassword = (string) $request->request->get('confirm_password', '');
-            $roles           = $this->filterRoles((array) $request->request->all('roles'));
+            $roles = $this->filterRoles((array) $request->request->all('roles'));
 
             $errors = $this->validateUsername($username);
             $errors = array_merge($errors, $this->validatePassword($password));
@@ -83,7 +82,7 @@ final class AdminUserController extends AbstractController
                 }
 
                 return $this->render('admin/user/new.html.twig', [
-                    'username'      => $username,
+                    'username' => $username,
                     'selected_roles' => $roles,
                     'allowed_roles' => self::ALLOWED_ROLES,
                 ]);
@@ -94,15 +93,15 @@ final class AdminUserController extends AbstractController
 
             $actor = $this->getUser()?->getUserIdentifier() ?? 'system';
             $this->auditLogger->log('admin_user.create', [
-                'actor'    => $actor,
+                'actor' => $actor,
                 'new_user' => $username,
-                'user_id'  => $newId,
-                'roles'    => $roles,
+                'user_id' => $newId,
+                'roles' => $roles,
             ]);
             $this->logger->info('Admin user created', [
-                'actor'    => $actor,
+                'actor' => $actor,
                 'new_user' => $username,
-                'user_id'  => $newId,
+                'user_id' => $newId,
             ]);
 
             $this->addFlash('success', sprintf('Admin user "%s" created successfully.', $username));
@@ -111,7 +110,7 @@ final class AdminUserController extends AbstractController
         }
 
         return $this->render('admin/user/new.html.twig', [
-            'username'      => '',
+            'username' => '',
             'selected_roles' => ['ROLE_ADMIN'],
             'allowed_roles' => self::ALLOWED_ROLES,
         ]);
@@ -137,34 +136,34 @@ final class AdminUserController extends AbstractController
                 return $this->redirectToRoute('admin_user_edit', ['id' => $id]);
             }
 
-            $roles    = $this->filterRoles((array) $request->request->all('roles'));
+            $roles = $this->filterRoles((array) $request->request->all('roles'));
             $isActive = $request->request->getBoolean('is_active', true);
 
             if ($roles === []) {
                 $this->addFlash('error', 'At least one role must be selected.');
 
                 return $this->render('admin/user/edit.html.twig', [
-                    'user'          => $this->decodeUserRoles($user),
+                    'user' => $this->decodeUserRoles($user),
                     'allowed_roles' => self::ALLOWED_ROLES,
                 ]);
             }
 
             $this->adminUserRepository->update($id, [
-                'roles'     => $roles,
+                'roles' => $roles,
                 'is_active' => $isActive,
             ]);
 
             $actor = $this->getUser()?->getUserIdentifier() ?? 'system';
             $this->auditLogger->log('admin_user.edit', [
-                'actor'   => $actor,
+                'actor' => $actor,
                 'user_id' => $id,
                 'username' => (string) $user['username'],
-                'roles'   => $roles,
+                'roles' => $roles,
                 'is_active' => $isActive,
             ]);
             $this->logger->info('Admin user edited', [
-                'actor'    => $actor,
-                'user_id'  => $id,
+                'actor' => $actor,
+                'user_id' => $id,
                 'username' => (string) $user['username'],
             ]);
 
@@ -174,7 +173,7 @@ final class AdminUserController extends AbstractController
         }
 
         return $this->render('admin/user/edit.html.twig', [
-            'user'          => $this->decodeUserRoles($user),
+            'user' => $this->decodeUserRoles($user),
             'allowed_roles' => self::ALLOWED_ROLES,
         ]);
     }
@@ -210,7 +209,9 @@ final class AdminUserController extends AbstractController
         $currentUser = $this->getUser();
         if ($currentUser !== null && $currentUser->getUserIdentifier() === (string) $user['username']) {
             if ($this->isAjax($request)) {
-                return $this->json(['error' => 'You cannot deactivate your own account.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+                return $this->json([
+                    'error' => 'You cannot deactivate your own account.',
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
             $this->addFlash('error', 'You cannot deactivate your own account.');
 
@@ -225,26 +226,26 @@ final class AdminUserController extends AbstractController
         }
 
         $newStatus = !$wasActive;
-        $actor     = $currentUser?->getUserIdentifier() ?? 'system';
+        $actor = $currentUser?->getUserIdentifier() ?? 'system';
 
         $this->auditLogger->log('admin_user.toggle', [
-            'actor'      => $actor,
-            'user_id'    => $id,
-            'username'   => (string) $user['username'],
-            'is_active'  => $newStatus,
+            'actor' => $actor,
+            'user_id' => $id,
+            'username' => (string) $user['username'],
+            'is_active' => $newStatus,
         ]);
         $this->logger->info('Admin user toggled', [
-            'actor'     => $actor,
-            'user_id'   => $id,
-            'username'  => (string) $user['username'],
+            'actor' => $actor,
+            'user_id' => $id,
+            'username' => (string) $user['username'],
             'is_active' => $newStatus,
         ]);
 
         if ($this->isAjax($request)) {
             return $this->json([
-                'status'    => 'ok',
+                'status' => 'ok',
                 'is_active' => $newStatus,
-                'message'   => sprintf(
+                'message' => sprintf(
                     'User "%s" %s.',
                     (string) $user['username'],
                     $newStatus ? 'activated' : 'deactivated',
@@ -280,9 +281,9 @@ final class AdminUserController extends AbstractController
             return $this->redirectToRoute('admin_user_index');
         }
 
-        $password        = (string) $request->request->get('password', '');
+        $password = (string) $request->request->get('password', '');
         $confirmPassword = (string) $request->request->get('confirm_password', '');
-        $errors          = $this->validatePassword($password);
+        $errors = $this->validatePassword($password);
 
         if ($password !== $confirmPassword) {
             $errors[] = 'Passwords do not match.';
@@ -301,13 +302,13 @@ final class AdminUserController extends AbstractController
 
         $actor = $this->getUser()?->getUserIdentifier() ?? 'system';
         $this->auditLogger->log('admin_user.reset_password', [
-            'actor'    => $actor,
-            'user_id'  => $id,
+            'actor' => $actor,
+            'user_id' => $id,
             'username' => (string) $user['username'],
         ]);
         $this->logger->info('Admin user password reset', [
-            'actor'    => $actor,
-            'user_id'  => $id,
+            'actor' => $actor,
+            'user_id' => $id,
             'username' => (string) $user['username'],
         ]);
 
@@ -368,12 +369,7 @@ final class AdminUserController extends AbstractController
     private function hashPassword(string $plainPassword): string
     {
         // Temporary user object required by UserPasswordHasherInterface — only used for hashing
-        $tempUser = new ControlPlaneUser(
-            id: 0,
-            username: '_temp',
-            password: '',
-            roles: [],
-        );
+        $tempUser = new ControlPlaneUser(id: 0, username: '_temp', password: '', roles: []);
 
         return $this->passwordHasher->hashPassword($tempUser, $plainPassword);
     }
@@ -381,10 +377,7 @@ final class AdminUserController extends AbstractController
     private function isAjax(Request $request): bool
     {
         return $request->isXmlHttpRequest()
-            || str_contains(
-                strtolower((string) $request->headers->get('Accept', '')),
-                'application/json',
-            );
+        || str_contains(strtolower((string) $request->headers->get('Accept', '')), 'application/json');
     }
 
     /**
@@ -397,7 +390,7 @@ final class AdminUserController extends AbstractController
     private function decodeUserRoles(array $user): array
     {
         $rolesRaw = $user['roles'] ?? '[]';
-        $decoded  = json_decode(is_string($rolesRaw) ? $rolesRaw : '[]', true);
+        $decoded = json_decode(is_string($rolesRaw) ? $rolesRaw : '[]', true);
         $user['roles'] = is_array($decoded) ? $decoded : [];
 
         return $user;

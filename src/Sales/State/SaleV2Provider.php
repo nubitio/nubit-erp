@@ -7,8 +7,8 @@ namespace App\Sales\State;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\PaymentMethodRepository;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Repository\SaleRecordRepository;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -35,8 +35,7 @@ readonly class SaleV2Provider implements ProviderInterface
         private ProviderInterface $itemProvider,
         private SaleRecordRepository $saleRecordRepository,
         private PaymentMethodRepository $paymentMethodRepository,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null

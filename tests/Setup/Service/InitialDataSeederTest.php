@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace App\Tests\Setup\Service;
 
-use App\Settings\Service\TenantSettingsService;
-use App\Settings\Service\SunatStateService;
-use App\CashRegister\Repository\CashMovementCategoryRepository;
-use App\Catalog\Repository\CategoryRepository;
-use App\Contacts\Repository\CustomerRepository;
 use App\CashRegister\Entity\CashMovementCategory;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Entity\Category;
-use App\Contacts\Entity\Customer;
-use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
-use App\Inventory\Repository\LogisticOperationRepository;
+use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
-use App\Setup\Service\InitialDataSeeder;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Repository\LogisticOperationRepository;
 use App\Settings\Service\MenuSeedService;
+use App\Settings\Service\SunatStateService;
+use App\Settings\Service\TenantSettingsService;
+use App\Setup\Service\InitialDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +34,7 @@ final class InitialDataSeederTest extends TestCase
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
         $tenantSettings = $this->createMock(TenantSettingsService::class);
-        $sunatState     = $this->createMock(SunatStateService::class);
+        $sunatState = $this->createMock(SunatStateService::class);
         $tenantSettings->expects($this->atLeastOnce())->method('get');
         $tenantSettings->expects($this->once())->method('save');
         $sunatState->expects($this->atLeastOnce())->method('get');

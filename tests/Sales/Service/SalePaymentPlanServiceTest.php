@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Service;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SalePaymentPlanService;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\TestCase;
 
 final class SalePaymentPlanServiceTest extends TestCase

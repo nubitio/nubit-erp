@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use DateTimeImmutable;
 use App\AI\Context\BranchContextInterface;
+use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -13,8 +13,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 #[AsTool(
     name: 'stock_alert',
     description: 'Returns a list of products that are at or below their minimum stock level, '
-        . 'sorted by urgency (fewest days to stockout first). '
-        . 'Includes estimated days to stockout based on 30-day sales velocity.',
+    . 'sorted by urgency (fewest days to stockout first). '
+    . 'Includes estimated days to stockout based on 30-day sales velocity.',
     method: 'stockAlert',
 )]
 final readonly class StockAlertTool
@@ -24,8 +24,7 @@ final readonly class StockAlertTool
     public function __construct(
         private Connection $connection,
         private BranchContextInterface $branchContextService,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns products at or below minimum stock, sorted by urgency.
@@ -76,7 +75,7 @@ final readonly class StockAlertTool
         }
 
         // Compute 30-day sales velocity for each product
-        $productIds = array_map(static fn (array $r): string => $r['product_id'], $rows);
+        $productIds = array_map(static fn(array $r): string => $r['product_id'], $rows);
         $thirtyDaysAgo = new DateTimeImmutable('-30 days')->format('Y-m-d H:i:s');
         $now = new DateTimeImmutable()->format('Y-m-d H:i:s');
 

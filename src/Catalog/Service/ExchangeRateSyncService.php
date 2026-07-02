@@ -17,16 +17,14 @@ use Throwable;
 readonly class ExchangeRateSyncService
 {
     // BCRP serie PD04638PD = tipo de cambio venta USD/PEN
-    private const string BCRP_URL =
-        'https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04638PD/json/hoy/hoy/ing';
+    private const string BCRP_URL = 'https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04638PD/json/hoy/hoy/ing';
 
     public function __construct(
         private ExchangeRateRepository $repository,
         private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Syncs the USD rate from BCRP and returns the updated entity.

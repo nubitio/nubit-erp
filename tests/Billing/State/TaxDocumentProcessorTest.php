@@ -7,20 +7,20 @@ namespace App\Tests\Billing\State;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use Nubit\Platform\Exception\ServiceException;
-use App\Identity\Auth\BranchContextService;
-use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
-use Nubit\AdminBundle\Auth\JWTManager;
 use App\Billing\Dto\SeriesResultDto;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
-use App\Organization\Repository\BranchRepository;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
+use App\Identity\Auth\BranchContextService;
+use App\Organization\Repository\BranchRepository;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManager;
+use Nubit\Platform\Exception\ServiceException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use ReflectionClass;
@@ -80,32 +80,21 @@ final class TaxDocumentProcessorTest extends TestCase
      */
     public function testNewCreditNoteIsProcessedSuccessfully(): void
     {
-        $relatedDoc = $this->buildRelatedTaxDocument(
-            isVoided: false,
-            series: 'F001',
-        );
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'F001');
 
-        $creditNote = $this->buildNewCreditNote(
-            relatedTaxDocument: $relatedDoc,
-            reasonCode: '01',
-        );
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '01');
 
         $this->taxDocumentRepository
             ->method('getTaxDocumentSeriesByBranch')
             ->willReturn(new SeriesResultDto(series: 'BC01', associatedSeries: 'F001'));
 
-        $this->taxDocumentRepository
-            ->method('getNextSequenceNumber')
-            ->willReturn(1);
+        $this->taxDocumentRepository->method('getNextSequenceNumber')->willReturn(1);
 
         $this->taxDocumentRepository
             ->method('getSalesCurrencyForSaleId')
             ->willReturn(['currency' => 'PEN', 'exchange_rate' => null]);
 
-        $this->persistProcessor
-            ->expects(self::once())
-            ->method('process')
-            ->willReturnArgument(0);
+        $this->persistProcessor->expects(self::once())->method('process')->willReturnArgument(0);
 
         $processor = $this->buildProcessor();
         $result = $processor->process($creditNote, new Post(), [], []);
@@ -128,34 +117,24 @@ final class TaxDocumentProcessorTest extends TestCase
     public function testSeriesMismatchThrowsServiceException(): void
     {
         // The sale's invoice field starts with 'B001' — different from associatedSeries 'F001'.
-        $relatedDoc = $this->buildRelatedTaxDocument(
-            isVoided: false,
-            series: 'B001',
-        );
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'B001');
 
-        $creditNote = $this->buildNewCreditNote(
-            relatedTaxDocument: $relatedDoc,
-            reasonCode: '01',
-        );
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '01');
 
         // Branch's configured series expects F001 invoices but the sale has a B001 invoice.
         $this->taxDocumentRepository
             ->method('getTaxDocumentSeriesByBranch')
             ->willReturn(new SeriesResultDto(series: 'BC01', associatedSeries: 'F001'));
 
-        $this->taxDocumentRepository
-            ->method('getNextSequenceNumber')
-            ->willReturn(1);
+        $this->taxDocumentRepository->method('getNextSequenceNumber')->willReturn(1);
 
-        $this->persistProcessor
-            ->expects(self::never())
-            ->method('process');
+        $this->persistProcessor->expects(self::never())->method('process');
 
         $processor = $this->buildProcessor();
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage(
-            'La serie de la nota de crédito no coincide con la serie del documento afectado.'
+            'La serie de la nota de crédito no coincide con la serie del documento afectado.',
         );
 
         $processor->process($creditNote, new Post(), [], []);
@@ -171,19 +150,11 @@ final class TaxDocumentProcessorTest extends TestCase
      */
     public function testVoidedRelatedDocumentThrowsServiceException(): void
     {
-        $relatedDoc = $this->buildRelatedTaxDocument(
-            isVoided: true,
-            series: 'F001',
-        );
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: true, series: 'F001');
 
-        $creditNote = $this->buildNewCreditNote(
-            relatedTaxDocument: $relatedDoc,
-            reasonCode: '01',
-        );
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '01');
 
-        $this->persistProcessor
-            ->expects(self::never())
-            ->method('process');
+        $this->persistProcessor->expects(self::never())->method('process');
 
         $processor = $this->buildProcessor();
 
@@ -205,14 +176,12 @@ final class TaxDocumentProcessorTest extends TestCase
     public function testDeleteProcessedDocumentThrowsServiceException(): void
     {
         $processedDoc = new TaxDocument();
-        $processedDoc->setSunatStatus('0');   // any non-null value → isProcessed() = true
+        $processedDoc->setSunatStatus('0'); // any non-null value → isProcessed() = true
 
         // We need to initialise required non-nullable fields to avoid errors on
         // any pre-check code paths (none in the delete branch, but safer practice).
 
-        $this->removeProcessor
-            ->expects(self::never())
-            ->method('process');
+        $this->removeProcessor->expects(self::never())->method('process');
 
         $processor = $this->buildProcessor();
 
@@ -320,10 +289,7 @@ final class TaxDocumentProcessorTest extends TestCase
         /** @var JWTManager $jwtManagerStub */
         $jwtManagerStub = $jwtManagerReflection->newInstanceWithoutConstructor();
         $jwtManagerReflection->getProperty('secret')->setValue($jwtManagerStub, $secret);
-        $jwtManagerReflection->getProperty('logger')->setValue(
-            $jwtManagerStub,
-            new NullLogger()
-        );
+        $jwtManagerReflection->getProperty('logger')->setValue($jwtManagerStub, new NullLogger());
 
         // Build BranchContextService via reflection (final readonly).
         $branchContextReflection = new ReflectionClass(BranchContextService::class);

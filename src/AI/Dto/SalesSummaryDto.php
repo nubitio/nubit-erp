@@ -12,6 +12,5 @@ final readonly class SalesSummaryDto
         public int $totalSales,
         public float $totalAmount,
         public float $averageTicket,
-    ) {
-    }
+    ) {}
 }

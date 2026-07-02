@@ -81,7 +81,7 @@ final class DateHelper
     public static function diffInMinutes(DateTimeInterface $from, DateTimeInterface $to): int
     {
         $diff = $from->diff($to);
-        return (($diff->days * 24 + $diff->h) * 60) + $diff->i;
+        return ((($diff->days * 24) + $diff->h) * 60) + $diff->i;
     }
 
     public static function addDays(DateTimeInterface $date, int $days): DateTimeImmutable

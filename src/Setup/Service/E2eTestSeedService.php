@@ -4,38 +4,38 @@ declare(strict_types=1);
 
 namespace App\Setup\Service;
 
+use App\CashRegister\Entity\CashRegister;
+use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
-use App\Catalog\Entity\UnitOfMeasure;
-use App\Setup\Dto\InitialSetupInput;
-use App\Organization\Entity\Branch;
-use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
-use App\Inventory\Entity\ProductStock;
-use App\Identity\Entity\Role;
-use App\CashRegister\Entity\CashRegister;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Identity\Entity\User;
+use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Entity\VoucherType;
-use App\Inventory\Entity\Warehouse;
-use App\Organization\Repository\BranchRepository;
-use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Repository\CategoryRepository;
-use App\Organization\Repository\CompanyRepository;
-use App\Contacts\Repository\CustomerRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\ProductRepository;
-use App\Inventory\Repository\ProductStockRepository;
-use App\Identity\Repository\RoleRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Identity\Repository\UserRepository;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Identity\Entity\Role;
+use App\Identity\Entity\User;
+use App\Identity\Repository\RoleRepository;
+use App\Identity\Repository\UserRepository;
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
+use App\Inventory\Repository\ProductStockRepository;
 use App\Inventory\Repository\WarehouseRepository;
-use App\Setup\InitialSetupService;
+use App\Organization\Entity\Branch;
+use App\Organization\Repository\BranchRepository;
+use App\Organization\Repository\CompanyRepository;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Settings\Service\TenantSettingsService;
+use App\Setup\Dto\InitialSetupInput;
+use App\Setup\InitialSetupService;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
@@ -53,6 +53,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_PRODUCT_NAME = 'Producto CI E2E';
     private const string E2E_PRODUCT_2_CODE = 'E2E-CI-PRODUCT-2';
     private const string E2E_PRODUCT_2_NAME = 'Producto CI E2E 2';
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly Connection $connection,
@@ -73,8 +74,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly VoucherSeriesRepository $voucherSeriesRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
         private readonly CashRegisterRepository $cashRegisterRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{username: string, password: string, saleId: string}
@@ -131,12 +131,11 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function purgeE2ePurchases(): void
     {
-        $purchaseIds = $this->connection->fetchFirstColumn(
-            'SELECT gr.id FROM goods_receipts gr
+        $purchaseIds = $this->connection->fetchFirstColumn('SELECT gr.id FROM goods_receipts gr
              INNER JOIN usuario u ON u.usuario_id = gr.buyer_user_id
-             WHERE u.username = :username',
-            ['username' => self::E2E_USERNAME]
-        );
+             WHERE u.username = :username', [
+            'username' => self::E2E_USERNAME,
+        ]);
 
         if ($purchaseIds === []) {
             return;
@@ -147,19 +146,19 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
              WHERE source_type = 'PURCHASE_ITEM'
              AND SUBSTRING_INDEX(source_id, ':', 1) IN (?)",
             [$purchaseIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM goods_receipt_items WHERE goods_receipt_id IN (?)',
             [$purchaseIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM goods_receipts WHERE id IN (?)',
             [$purchaseIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
     }
 
@@ -245,9 +244,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         $warehouse = new Warehouse();
-        $warehouse
-            ->setName('Almacen CI E2E')
-            ->setBranch($branch);
+        $warehouse->setName('Almacen CI E2E')->setBranch($branch);
 
         $this->entityManager->persist($warehouse);
         $this->entityManager->flush();
@@ -288,10 +285,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         $voucherSeries = new VoucherSeries();
-        $voucherSeries
-            ->setBranch($branch)
-            ->setVoucherType($voucherType)
-            ->setSeries($series);
+        $voucherSeries->setBranch($branch)->setVoucherType($voucherType)->setSeries($series);
 
         $this->entityManager->persist($voucherSeries);
     }
@@ -322,8 +316,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $product = $this->productRepository->findOneBy(['code' => $code]);
         if ($product instanceof Product) {
             // Always reset to known-good state so previous test runs don't affect stock or price
-            $product
-                ->setSalePrice('10.00');
+            $product->setSalePrice('10.00');
             $this->entityManager->flush();
         } else {
             $category = $this->categoryRepository->findOneBy([]);
@@ -355,30 +348,26 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             $productStock->updateTimestamps();
         } else {
             $productStock = new ProductStock();
-            $productStock
-                ->setProduct($product)
-                ->setWarehouse($warehouse)
-                ->setStock(100.0)
-                ->setMinStock(0.0);
+            $productStock->setProduct($product)->setWarehouse($warehouse)->setStock(100.0)->setMinStock(0.0);
             $this->entityManager->persist($productStock);
         }
         $this->entityManager->flush();
 
         $this->connection->executeStatement(
             <<<'SQL'
-            INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
-            VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
-            ON DUPLICATE KEY UPDATE
-                qty_on_hand = VALUES(qty_on_hand),
-                qty_reserved = 0,
-                updated_at = NOW(),
-                version = version + 1
-            SQL,
+                INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+                VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
+                ON DUPLICATE KEY UPDATE
+                    qty_on_hand = VALUES(qty_on_hand),
+                    qty_reserved = 0,
+                    updated_at = NOW(),
+                    version = version + 1
+                SQL,
             [
                 'warehouse_id' => (string) $warehouse->getId(),
                 'product_id' => (string) $product->getId(),
                 'qty_on_hand' => '100.000000',
-            ]
+            ],
         );
 
         return $product;
@@ -448,12 +437,11 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     {
         // Identify E2E sales by the seller (ci_e2e_user). The old `glosa` column
         // was on the legacy `movimiento` table and no longer exists in `sales`.
-        $saleIds = $this->connection->fetchFirstColumn(
-            'SELECT s.id FROM sales s
+        $saleIds = $this->connection->fetchFirstColumn('SELECT s.id FROM sales s
              INNER JOIN usuario u ON u.usuario_id = s.seller_user_id
-             WHERE u.username = :username',
-            ['username' => self::E2E_USERNAME]
-        );
+             WHERE u.username = :username', [
+            'username' => self::E2E_USERNAME,
+        ]);
 
         if ($saleIds === []) {
             return;
@@ -470,41 +458,39 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->connection->executeStatement(
             'DELETE FROM cash_movements WHERE sale_id IN (?)',
             [$saleIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document_event WHERE tax_document_id IN '
             . '(SELECT tax_document_id FROM tax_document WHERE sale_id IN (?))',
             [$saleIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document_line WHERE tax_document_id IN '
             . '(SELECT tax_document_id FROM tax_document WHERE sale_id IN (?))',
             [$saleIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document WHERE sale_id IN (?)',
             [$saleIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
 
         $this->connection->executeStatement(
             'DELETE FROM sales WHERE id IN (?)',
             [$saleIds],
-            [ArrayParameterType::STRING]
+            [ArrayParameterType::STRING],
         );
     }
 
     private function resolveUserRole(): Role
     {
-        $role = $this->roleRepository->find(3)
-            ?? $this->roleRepository->find(2)
-            ?? $this->roleRepository->find(1);
+        $role = $this->roleRepository->find(3) ?? $this->roleRepository->find(2) ?? $this->roleRepository->find(1);
 
         if (!$role instanceof Role) {
             throw new \RuntimeException('No role found for E2E user.');
@@ -515,8 +501,8 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function resolvePaymentMethod(): PaymentMethod
     {
-        $paymentMethod = $this->paymentMethodRepository->find(PaymentMethod::CASH)
-            ?? $this->paymentMethodRepository->findOneBy([]);
+        $paymentMethod =
+            $this->paymentMethodRepository->find(PaymentMethod::CASH) ?? $this->paymentMethodRepository->findOneBy([]);
 
         if (!$paymentMethod instanceof PaymentMethod) {
             throw new \RuntimeException('No payment method found for sales.');
@@ -530,16 +516,15 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         // Delete any sales still linked to these sessions before removing the sessions.
         // The FK fk_sales_session_branch (sales.cash_session_id → cash_sessions.id) has no
         // CASCADE, so we must clean up referencing rows first.
-        $sessionIds = $this->connection->fetchFirstColumn(
-            'SELECT id FROM cash_sessions WHERE cash_register_id = :register_id',
-            ['register_id' => $cashRegister->getId()],
-        );
+        $sessionIds = $this->connection->fetchFirstColumn('SELECT id FROM cash_sessions WHERE cash_register_id = :register_id', [
+            'register_id' => $cashRegister->getId(),
+        ]);
 
         if ($sessionIds !== []) {
             $orphanSaleIds = $this->connection->fetchFirstColumn(
                 'SELECT id FROM sales WHERE cash_session_id IN (?)',
                 [$sessionIds],
-                [ArrayParameterType::STRING]
+                [ArrayParameterType::STRING],
             );
             if ($orphanSaleIds !== []) {
                 $this->purgeSalesByIds($orphanSaleIds);
@@ -547,10 +532,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         // cash_movements rows are deleted automatically via ON DELETE CASCADE on cash_session_id.
-        $this->connection->executeStatement(
-            'DELETE FROM cash_sessions WHERE cash_register_id = :register_id',
-            ['register_id' => $cashRegister->getId()],
-        );
+        $this->connection->executeStatement('DELETE FROM cash_sessions WHERE cash_register_id = :register_id', [
+            'register_id' => $cashRegister->getId(),
+        ]);
     }
 
     private function upsertCashRegister(Branch $branch): CashRegister
@@ -561,9 +545,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         $cashRegister = new CashRegister();
-        $cashRegister
-            ->setName('Caja CI E2E')
-            ->setBranch($branch);
+        $cashRegister->setName('Caja CI E2E')->setBranch($branch);
 
         $this->entityManager->persist($cashRegister);
         $this->entityManager->flush();

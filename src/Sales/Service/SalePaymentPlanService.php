@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Sales\Service;
 
 use App\Catalog\Entity\PaymentMethod;
-use Nubit\Platform\Exception\ServiceException;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
+use Nubit\Platform\Exception\ServiceException;
 
 /**
  * Resolves and validates payment lines for Sales V2 (single and mixed payments).
@@ -77,7 +77,7 @@ final class SalePaymentPlanService
             throw new ServiceException(sprintf(
                 'La suma de pagos (%s) no coincide con el total de la venta (%s).',
                 Money::toString($sumMoney),
-                Money::toString($total)
+                Money::toString($total),
             ));
         }
 
@@ -107,10 +107,7 @@ final class SalePaymentPlanService
      */
     private function resolvePaymentMethodId(array $payment): ?int
     {
-        $raw = $payment['payment_method_id']
-            ?? $payment['paymentMethodId']
-            ?? $payment['methodId']
-            ?? null;
+        $raw = $payment['payment_method_id'] ?? $payment['paymentMethodId'] ?? $payment['methodId'] ?? null;
 
         if (is_int($raw)) {
             return $raw > 0 ? $raw : null;

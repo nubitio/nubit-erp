@@ -32,8 +32,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
         private string $apiToken,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception

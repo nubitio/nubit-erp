@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Controller;
 
+use App\ControlPlane\Backup\BinlogBackupService;
 use App\ControlPlane\Billing\Service\PlanManager;
-use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
+use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
+use App\ControlPlane\Message\TenantBackupMessage;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use App\ControlPlane\Tenant\Repository\TenantPaymentEventRepository;
 use App\ControlPlane\Tenant\Repository\TenantProvisionRepository;
@@ -17,8 +19,6 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use App\Efact\Audit\AuditLogger;
-use App\ControlPlane\Message\TenantBackupMessage;
-use App\ControlPlane\Backup\BinlogBackupService;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -51,8 +51,7 @@ class TenantController extends AbstractController
         private readonly CertificateLifecycleServiceInterface $certificateLifecycleService,
         private readonly LoggerInterface $logger,
         private readonly MessageBusInterface $messageBus,
-    ) {
-    }
+    ) {}
 
     #[Route('/{id}/certificates', name: 'admin_tenant_certificates', methods: ['GET'])]
     public function certificates(int $id): Response
@@ -65,7 +64,7 @@ class TenantController extends AbstractController
         }
 
         try {
-            $certificates = $this->certificateLifecycleService->list((string)$tenant['name']);
+            $certificates = $this->certificateLifecycleService->list((string) $tenant['name']);
         } catch (\Throwable $exception) {
             $this->addFlash('error', 'Unable to load certificates: ' . $exception->getMessage());
             $certificates = [];
@@ -102,17 +101,17 @@ class TenantController extends AbstractController
 
         try {
             $this->certificateLifecycleService->upsert(
-                (string)$tenant['name'],
-                trim((string)$request->request->get('ruc', '')),
-                trim((string)$request->request->get('sol_user', '')),
-                (string)$request->request->get('sol_pass', ''),
-                (string)file_get_contents($file->getPathname()),
+                (string) $tenant['name'],
+                trim((string) $request->request->get('ruc', '')),
+                trim((string) $request->request->get('sol_user', '')),
+                (string) $request->request->get('sol_pass', ''),
+                (string) file_get_contents($file->getPathname()),
                 $this->getUser()?->getUserIdentifier() ?? 'admin-ui',
             );
             $this->auditLogger->log('tenant.certificate.upsert', [
                 'tenant_id' => $id,
-                'tenant_name' => (string)$tenant['name'],
-                'ruc' => trim((string)$request->request->get('ruc', '')),
+                'tenant_name' => (string) $tenant['name'],
+                'ruc' => trim((string) $request->request->get('ruc', '')),
             ]);
             $this->addFlash('success', 'Certificate uploaded/renewed.');
         } catch (\Throwable $exception) {
@@ -133,7 +132,7 @@ class TenantController extends AbstractController
         }
 
         try {
-            $certificate = $this->certificateLifecycleService->detail((string)$tenant['name'], $certificateId);
+            $certificate = $this->certificateLifecycleService->detail((string) $tenant['name'], $certificateId);
         } catch (\Throwable $exception) {
             $this->addFlash('error', 'Unable to load certificate: ' . $exception->getMessage());
 
@@ -162,7 +161,7 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_index');
         }
 
-        $reason = trim((string)$request->request->get('reason', ''));
+        $reason = trim((string) $request->request->get('reason', ''));
         if ($reason === '') {
             $this->addFlash('error', 'Revocation reason is required.');
 
@@ -171,14 +170,14 @@ class TenantController extends AbstractController
 
         try {
             $this->certificateLifecycleService->revoke(
-                (string)$tenant['name'],
+                (string) $tenant['name'],
                 $ruc,
                 $this->getUser()?->getUserIdentifier() ?? 'admin-ui',
                 $reason,
             );
             $this->auditLogger->log('tenant.certificate.revoke', [
                 'tenant_id' => $id,
-                'tenant_name' => (string)$tenant['name'],
+                'tenant_name' => (string) $tenant['name'],
                 'ruc' => $ruc,
             ]);
             $this->addFlash('success', 'Certificate revoked.');
@@ -226,7 +225,7 @@ class TenantController extends AbstractController
         $paymentEvents = [];
 
         try {
-            $tenantName = (string)($tenant['name'] ?? '');
+            $tenantName = (string) ($tenant['name'] ?? '');
             if ($tenantName !== '') {
                 $quotaSummary = $this->tenantQuotaService->getUsageSummary($tenantName);
                 $usageLatest = $this->tenantUsageService->getLatestMetrics($tenantName);
@@ -294,7 +293,7 @@ class TenantController extends AbstractController
             foreach ($channels as $channel) {
                 $matrix[$eventKey][$channel] = [
                     'enabled' => false,
-                    'severity' => (string)$def['severity'],
+                    'severity' => (string) $def['severity'],
                     'recipients' => [],
                     'config' => [],
                 ];
@@ -302,15 +301,15 @@ class TenantController extends AbstractController
         }
 
         foreach ($targets as $target) {
-            $eventKey = (string)($target['event_key'] ?? '');
-            $channel = (string)($target['channel'] ?? '');
+            $eventKey = (string) ($target['event_key'] ?? '');
+            $channel = (string) ($target['channel'] ?? '');
             if (!isset($matrix[$eventKey][$channel])) {
                 continue;
             }
 
             $matrix[$eventKey][$channel] = [
-                'enabled' => (bool)($target['is_enabled'] ?? false),
-                'severity' => (string)($target['severity'] ?? $definitions[$eventKey]['severity']),
+                'enabled' => (bool) ($target['is_enabled'] ?? false),
+                'severity' => (string) ($target['severity'] ?? $definitions[$eventKey]['severity']),
                 'recipients' => is_array($target['recipients'] ?? null) ? $target['recipients'] : [],
                 'config' => is_array($target['config'] ?? null) ? $target['config'] : [],
             ];
@@ -346,29 +345,25 @@ class TenantController extends AbstractController
 
         foreach (array_keys($definitions) as $eventKey) {
             foreach ($channels as $channel) {
-                $enabled = (string)$request->request->get("enabled_{$eventKey}_{$channel}", '') === '1';
-                $severity = trim((string)$request->request->get(
+                $enabled = (string) $request->request->get("enabled_{$eventKey}_{$channel}", '') === '1';
+                $severity = trim((string) $request->request->get(
                     "severity_{$eventKey}_{$channel}",
-                    (string)$definitions[$eventKey]['severity']
+                    (string) $definitions[$eventKey]['severity'],
                 ));
-                $recipientsRaw = trim((string)$request->request->get("recipients_{$eventKey}_{$channel}", ''));
+                $recipientsRaw = trim((string) $request->request->get("recipients_{$eventKey}_{$channel}", ''));
                 $recipients = $recipientsRaw === ''
                     ? []
                     : array_values(array_filter(array_map(
-                        static fn (string $value): string => trim($value),
-                        preg_split('/[\n,;]+/', $recipientsRaw) ?: []
+                        static fn(string $value): string => trim($value),
+                        preg_split('/[\n,;]+/', $recipientsRaw) ?: [],
                     )));
 
-                $configRaw = trim((string)$request->request->get("config_{$eventKey}_{$channel}", ''));
+                $configRaw = trim((string) $request->request->get("config_{$eventKey}_{$channel}", ''));
                 $config = [];
                 if ($configRaw !== '') {
                     $decoded = json_decode($configRaw, true);
                     if (!is_array($decoded)) {
-                        $this->addFlash('error', sprintf(
-                            'Invalid JSON config for %s / %s.',
-                            $eventKey,
-                            $channel
-                        ));
+                        $this->addFlash('error', sprintf('Invalid JSON config for %s / %s.', $eventKey, $channel));
 
                         return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
                     }
@@ -388,7 +383,7 @@ class TenantController extends AbstractController
             $this->tenantNotificationService->saveTenantTargets($id, $targets);
             $this->auditLogger->log('tenant.notifications.update', [
                 'tenant_id' => $id,
-                'tenant_name' => (string)($tenant['name'] ?? ''),
+                'tenant_name' => (string) ($tenant['name'] ?? ''),
             ]);
             $this->addFlash('success', 'Notification settings updated.');
         } catch (\Throwable $exception) {
@@ -414,8 +409,8 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_index');
         }
 
-        $eventKey = trim((string)$request->get('event_key', ''));
-        $channel = trim((string)$request->get('channel', ''));
+        $eventKey = trim((string) $request->get('event_key', ''));
+        $channel = trim((string) $request->get('channel', ''));
 
         if ($eventKey === '' || $channel === '') {
             $this->addFlash('error', 'Event and channel are required for test notification.');
@@ -428,20 +423,20 @@ class TenantController extends AbstractController
                 tenantId: $id,
                 eventKey: $eventKey,
                 channel: $channel,
-                tenantName: (string)($tenant['name'] ?? ''),
+                tenantName: (string) ($tenant['name'] ?? ''),
             );
 
             if ($sent) {
                 $this->addFlash('success', sprintf(
                     'Test notification sent for event "%s" via channel "%s".',
                     $eventKey,
-                    $channel
+                    $channel,
                 ));
             } else {
                 $this->addFlash('warning', sprintf(
                     'No test notification sent for event "%s" via channel "%s" (check enable flag and recipients).',
                     $eventKey,
-                    $channel
+                    $channel,
                 ));
             }
         } catch (\Throwable $exception) {
@@ -449,7 +444,7 @@ class TenantController extends AbstractController
                 'Test notification failed for event "%s" via channel "%s": %s',
                 $eventKey,
                 $channel,
-                $exception->getMessage()
+                $exception->getMessage(),
             ));
         }
 
@@ -466,8 +461,8 @@ class TenantController extends AbstractController
         }
 
         $tenant = [
-            'name' => trim((string)$request->request->get('name', '')),
-            'connection' => trim((string)$request->request->get('connection', '')),
+            'name' => trim((string) $request->request->get('name', '')),
+            'connection' => trim((string) $request->request->get('connection', '')),
         ];
 
         try {
@@ -493,8 +488,8 @@ class TenantController extends AbstractController
         }
 
         $tenant = [
-            'name' => trim((string)$request->request->get('name', '')),
-            'connection' => trim((string)$request->request->get('connection', '')),
+            'name' => trim((string) $request->request->get('name', '')),
+            'connection' => trim((string) $request->request->get('connection', '')),
         ];
 
         try {
@@ -617,8 +612,8 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
         }
 
-        $domain = trim((string)$request->request->get('domain', ''));
-        $isPrimary = (bool)$request->request->get('is_primary', false);
+        $domain = trim((string) $request->request->get('domain', ''));
+        $isPrimary = (bool) $request->request->get('is_primary', false);
 
         try {
             $this->tenantManager->addTenantDomain($id, $domain, $isPrimary);
@@ -637,11 +632,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
-    #[Route(
-        '/{tenantId}/domains/{domainId}/primary',
-        name: 'admin_tenant_domain_primary',
-        methods: ['POST']
-    )]
+    #[Route('/{tenantId}/domains/{domainId}/primary', name: 'admin_tenant_domain_primary', methods: ['POST'])]
     public function setPrimaryDomain(int $tenantId, int $domainId, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -664,11 +655,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
     }
 
-    #[Route(
-        '/{tenantId}/domains/{domainId}/delete',
-        name: 'admin_tenant_domain_delete',
-        methods: ['POST']
-    )]
+    #[Route('/{tenantId}/domains/{domainId}/delete', name: 'admin_tenant_domain_delete', methods: ['POST'])]
     public function deleteDomain(int $tenantId, int $domainId, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -696,11 +683,10 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
         }
 
-        $plan = trim((string)$request->request->get('plan', ''));
-        $expectsJson = $request->isXmlHttpRequest() || str_contains(
-            strtolower((string)$request->headers->get('Accept', '')),
-            'application/json'
-        );
+        $plan = trim((string) $request->request->get('plan', ''));
+        $expectsJson =
+            $request->isXmlHttpRequest()
+            || str_contains(strtolower((string) $request->headers->get('Accept', '')), 'application/json');
 
         if ($plan === '') {
             if ($expectsJson) {
@@ -739,7 +725,7 @@ class TenantController extends AbstractController
             return $this->json(['error' => 'Tenant not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $tenantName = (string)($tenant['name'] ?? '');
+        $tenantName = (string) ($tenant['name'] ?? '');
         $quotaSummary = $this->tenantQuotaService->getUsageSummary($tenantName);
         $usageLatest = $this->tenantUsageService->getLatestMetrics($tenantName);
         $usageHistory = $this->tenantUsageService->getRecentHistory($tenantName, 24);
@@ -769,24 +755,19 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_index');
         }
 
-        $adminUser = trim((string)$request->request->get('admin_user', 'admin'));
-        $adminPass = (string)$request->request->get('admin_pass', '');
-        $domain = trim((string)$request->request->get('domain', ''));
+        $adminUser = trim((string) $request->request->get('admin_user', 'admin'));
+        $adminPass = (string) $request->request->get('admin_pass', '');
+        $domain = trim((string) $request->request->get('domain', ''));
 
         if ($domain === '') {
             $domain = $this->tenantManager->getPrimaryDomain($id) ?? '';
         }
 
-        $provisionId = $this->provisionRepository->recordDispatch(
-            $id,
-            (string)$tenant['name'],
-            $domain,
-            $adminUser,
-        );
+        $provisionId = $this->provisionRepository->recordDispatch($id, (string) $tenant['name'], $domain, $adminUser);
 
         $result = $this->commandRunner->run(new ProvisionCommandRequest(
-            tenant: (string)$tenant['name'],
-            tenantDisplayName: (string)$tenant['name'],
+            tenant: (string) $tenant['name'],
+            tenantDisplayName: (string) $tenant['name'],
             domain: $domain,
             adminUser: $adminUser,
             adminPassword: $adminPass,
@@ -880,10 +861,7 @@ class TenantController extends AbstractController
         }
 
         try {
-            $this->messageBus->dispatch(new TenantBackupMessage(
-                tenantId: $id,
-                tenantName: (string) $tenant['name'],
-            ));
+            $this->messageBus->dispatch(new TenantBackupMessage(tenantId: $id, tenantName: (string) $tenant['name']));
             $this->addFlash('success', 'Backup queued. It will appear in the list when completed.');
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Backup could not be queued: ' . $e->getMessage());
@@ -990,8 +968,8 @@ class TenantController extends AbstractController
         $alerts = [];
 
         foreach ($quotaSummary as $resource => $usage) {
-            $limit = (int)$usage['limit'];
-            $current = (int)$usage['current'];
+            $limit = (int) $usage['limit'];
+            $current = (int) $usage['current'];
             if ($limit <= 0) {
                 continue;
             }
@@ -1005,7 +983,7 @@ class TenantController extends AbstractController
             }
         }
 
-        usort($alerts, static fn (array $a, array $b): int => $b['percent'] <=> $a['percent']);
+        usort($alerts, static fn(array $a, array $b): int => $b['percent'] <=> $a['percent']);
 
         return $alerts;
     }

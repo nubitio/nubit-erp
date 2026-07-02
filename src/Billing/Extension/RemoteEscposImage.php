@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Billing\Extension;
 
+use Exception;
 use Imagick;
 use ImagickPixel;
-use Throwable;
-use Exception;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\GdEscposImage;
 use Mike42\Escpos\ImagickEscposImage;
+use Throwable;
 
 class RemoteEscposImage extends EscposImage
 {

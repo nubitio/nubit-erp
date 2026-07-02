@@ -25,8 +25,8 @@ final readonly class CertificateMetadataExtractor
 
         $subject = isset($parsed['subject']) && is_array($parsed['subject']) ? $parsed['subject'] : [];
         $issuer = isset($parsed['issuer']) && is_array($parsed['issuer']) ? $parsed['issuer'] : [];
-        $validFrom = isset($parsed['validFrom_time_t']) ? (int)$parsed['validFrom_time_t'] : 0;
-        $validTo = isset($parsed['validTo_time_t']) ? (int)$parsed['validTo_time_t'] : 0;
+        $validFrom = isset($parsed['validFrom_time_t']) ? (int) $parsed['validFrom_time_t'] : 0;
+        $validTo = isset($parsed['validTo_time_t']) ? (int) $parsed['validTo_time_t'] : 0;
 
         if ($validFrom <= 0 || $validTo <= 0) {
             throw new \InvalidArgumentException('Certificate validity dates are missing.');
@@ -37,10 +37,12 @@ final readonly class CertificateMetadataExtractor
             subject: $subject,
             issuerCn: $this->commonName($issuer),
             issuer: $issuer,
-            serialNumber: isset($parsed['serialNumberHex']) ? (string)$parsed['serialNumberHex'] : ((string)($parsed['serialNumber'] ?? '')),
+            serialNumber: isset($parsed['serialNumberHex'])
+                ? (string) $parsed['serialNumberHex']
+                : (string) ($parsed['serialNumber'] ?? ''),
             fingerprintSha256: strtolower(str_replace(':', '', $fingerprint)),
-            validFrom: (new \DateTimeImmutable())->setTimestamp($validFrom),
-            expiresAt: (new \DateTimeImmutable())->setTimestamp($validTo),
+            validFrom: new \DateTimeImmutable()->setTimestamp($validFrom),
+            expiresAt: new \DateTimeImmutable()->setTimestamp($validTo),
         );
     }
 
@@ -50,8 +52,8 @@ final readonly class CertificateMetadataExtractor
     private function commonName(array $name): ?string
     {
         foreach (['CN', 'commonName'] as $key) {
-            if (isset($name[$key]) && is_scalar($name[$key]) && trim((string)$name[$key]) !== '') {
-                return trim((string)$name[$key]);
+            if (isset($name[$key]) && is_scalar($name[$key]) && trim((string) $name[$key]) !== '') {
+                return trim((string) $name[$key]);
             }
         }
 

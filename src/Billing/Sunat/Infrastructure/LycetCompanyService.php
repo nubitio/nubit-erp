@@ -32,8 +32,7 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
         private string $apiToken,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string,string> $urls
@@ -55,8 +54,8 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
         $url = $this->lycetUrl("configuration/company/{$ruc}");
 
         $payload = [
-            'SOL_USER'    => $solUser,
-            'SOL_PASS'    => $solPass,
+            'SOL_USER' => $solUser,
+            'SOL_PASS' => $solPass,
             'certificate' => base64_encode($certPem),
         ];
 
@@ -79,7 +78,7 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
         try {
             $response = $this->httpClient->request('PUT', $url, [
                 'headers' => ['Content-Type' => 'application/json'],
-                'json'    => $payload,
+                'json' => $payload,
             ]);
 
             $response->getContent(); // throws on 4xx/5xx
@@ -105,7 +104,7 @@ readonly class LycetCompanyService implements LycetCompanyServiceInterface
         try {
             $response = $this->httpClient->request('PUT', $url, [
                 'headers' => ['Content-Type' => 'application/json'],
-                'json'    => ['logo' => base64_encode($imageData)],
+                'json' => ['logo' => base64_encode($imageData)],
             ]);
 
             $response->getContent();

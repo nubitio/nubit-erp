@@ -18,8 +18,7 @@ final readonly class StockItemStatusExtension implements QueryCollectionExtensio
 {
     public function __construct(
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
     public function applyToCollection(
         QueryBuilder $queryBuilder,
@@ -53,14 +52,11 @@ final readonly class StockItemStatusExtension implements QueryCollectionExtensio
                 ->andWhere("{$prodAlias}.minStock IS NOT NULL")
                 ->andWhere("{$prodAlias}.minStock > 0")
                 ->andWhere("{$alias}.qtyOnHand <= {$prodAlias}.minStock"),
-            'ok' => $queryBuilder
-                ->andWhere(
-                    "{$alias}.qtyOnHand > 0 AND (
+            'ok' => $queryBuilder->andWhere("{$alias}.qtyOnHand > 0 AND (
                         {$prodAlias}.minStock IS NULL
                         OR {$prodAlias}.minStock <= 0
                         OR {$alias}.qtyOnHand > {$prodAlias}.minStock
-                    )",
-                ),
+                    )"),
         };
     }
 }

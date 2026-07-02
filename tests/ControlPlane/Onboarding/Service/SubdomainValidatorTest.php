@@ -7,8 +7,8 @@ namespace App\Tests\ControlPlane\Onboarding\Service;
 use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
@@ -22,9 +22,7 @@ final class SubdomainValidatorTest extends TestCase
         $this->registry = $this->createMock(ConnectionRegistry::class);
         $this->connection = $this->createMock(Connection::class);
 
-        $this->registry->method('getConnection')
-            ->with('control_plane')
-            ->willReturn($this->connection);
+        $this->registry->method('getConnection')->with('control_plane')->willReturn($this->connection);
 
         $_ENV['ONBOARDING_DOMAIN'] = 'app.efact.app';
     }
@@ -42,9 +40,7 @@ final class SubdomainValidatorTest extends TestCase
 
     public function testRejectsReservedSubdomain(): void
     {
-        $this->connection->expects($this->once())
-            ->method('fetchOne')
-            ->willReturn(1);
+        $this->connection->expects($this->once())->method('fetchOne')->willReturn(1);
 
         $validator = new SubdomainValidator($this->registry);
         $result = $validator->check('admin');
@@ -55,9 +51,7 @@ final class SubdomainValidatorTest extends TestCase
 
     public function testReturnsAvailableWhenNoConflictExists(): void
     {
-        $this->connection->expects($this->exactly(3))
-            ->method('fetchOne')
-            ->willReturn(false);
+        $this->connection->expects($this->exactly(3))->method('fetchOne')->willReturn(false);
 
         $validator = new SubdomainValidator($this->registry);
         $result = $validator->check('acme');

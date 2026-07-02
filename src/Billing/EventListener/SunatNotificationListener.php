@@ -26,8 +26,7 @@ final readonly class SunatNotificationListener
     public function __construct(
         private UserNotificationServiceInterface $notificationService,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @param LifecycleEventArgs<\Doctrine\Persistence\ObjectManager> $args
@@ -46,14 +45,14 @@ final readonly class SunatNotificationListener
             return;
         }
 
-        $doc       = $entity->getTaxDocument();
-        $docId     = $doc->getId() ?? '';
-        $code      = $entity->getCode() ?? '';
-        $message   = $entity->getMessage() ?? 'Sin detalle';
+        $doc = $entity->getTaxDocument();
+        $docId = $doc->getId() ?? '';
+        $code = $entity->getCode() ?? '';
+        $message = $entity->getMessage() ?? 'Sin detalle';
         $actionUrl = '/sales?filter=sunat_error';
 
         $title = sprintf('Error SUNAT: %s', $code !== '' ? "Código {$code}" : 'documento rechazado');
-        $body  = sprintf('Documento %s fue rechazado por SUNAT: %s', $docId !== '' ? "#{$docId}" : 'reciente', $message);
+        $body = sprintf('Documento %s fue rechazado por SUNAT: %s', $docId !== '' ? "#{$docId}" : 'reciente', $message);
 
         try {
             $this->notificationService->notifyByRoles(
@@ -67,8 +66,8 @@ final readonly class SunatNotificationListener
         } catch (Exception $e) {
             // Never let a notification failure break the main persist flow.
             $this->logger->error('SunatNotificationListener: failed to write notification', [
-                'exception'       => $e->getMessage(),
-                'taxDocumentId'   => $docId,
+                'exception' => $e->getMessage(),
+                'taxDocumentId' => $docId,
                 'taxDocumentEvent' => $entity->getId(),
             ]);
         }

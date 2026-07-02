@@ -27,8 +27,7 @@ final readonly class SalesLedgerExporter
     public function __construct(
         private Connection $connection,
         private CompanyContext $companyContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @param string $period Periodo en formato AAAAMM
@@ -177,32 +176,32 @@ final readonly class SalesLedgerExporter
         $placeholders = implode(',', array_fill(0, count(self::SALE_DOC_TYPES), '?'));
 
         $sql = <<<SQL
-            SELECT
-                td.document_type,
-                td.series,
-                td.number,
-                td.issue_date,
-                td.taxable_amount,
-                td.igv_amount,
-                td.total,
-                td.currency,
-                td.exchange_rate,
-                td.operation_type,
-                td.void_ticket,
-                td.void_correlation,
-                c.ruc          AS customer_doc,
-                c.razon_social AS customer_name,
-                rel.document_type AS modified_doc_type,
-                rel.series        AS modified_series,
-                rel.number        AS modified_number,
-                rel.issue_date    AS modified_issue_date
-            FROM tax_document td
-            LEFT JOIN cliente c ON c.id = td.customer_id
-            LEFT JOIN tax_document rel ON rel.tax_document_id = td.related_tax_document_id
-            WHERE td.issue_date BETWEEN ? AND ?
-              AND td.document_type IN ($placeholders)
-            ORDER BY td.issue_date, td.series, CAST(td.number AS UNSIGNED)
-        SQL;
+                SELECT
+                    td.document_type,
+                    td.series,
+                    td.number,
+                    td.issue_date,
+                    td.taxable_amount,
+                    td.igv_amount,
+                    td.total,
+                    td.currency,
+                    td.exchange_rate,
+                    td.operation_type,
+                    td.void_ticket,
+                    td.void_correlation,
+                    c.ruc          AS customer_doc,
+                    c.razon_social AS customer_name,
+                    rel.document_type AS modified_doc_type,
+                    rel.series        AS modified_series,
+                    rel.number        AS modified_number,
+                    rel.issue_date    AS modified_issue_date
+                FROM tax_document td
+                LEFT JOIN cliente c ON c.id = td.customer_id
+                LEFT JOIN tax_document rel ON rel.tax_document_id = td.related_tax_document_id
+                WHERE td.issue_date BETWEEN ? AND ?
+                  AND td.document_type IN ($placeholders)
+                ORDER BY td.issue_date, td.series, CAST(td.number AS UNSIGNED)
+            SQL;
 
         $params = array_merge([$start, $end], self::SALE_DOC_TYPES);
 
@@ -232,42 +231,42 @@ final readonly class SalesLedgerExporter
         $modifiedDate = $this->toDate($row['modified_issue_date'] ?? null);
 
         return PleWriter::record([
-            $periodKey,                                   // 1  Periodo
-            $cuo,                                         // 2  CUO
-            $cuo,                                         // 3  Correlativo del asiento
-            PleWriter::date($issueDate),                  // 4  Fecha de emisión
-            '',                                           // 5  Fecha de vencimiento/pago
-            (string) $row['document_type'],               // 6  Tipo de comprobante (Tabla 10)
-            (string) $row['series'],                      // 7  Serie
-            (string) $row['number'],                      // 8  Número
-            '',                                           // 9  Número final (rango de tickets)
-            $docTypeId,                                   // 10 Tipo doc. identidad cliente (Tabla 2)
-            $docNumber,                                   // 11 Número doc. identidad cliente
+            $periodKey, // 1  Periodo
+            $cuo, // 2  CUO
+            $cuo, // 3  Correlativo del asiento
+            PleWriter::date($issueDate), // 4  Fecha de emisión
+            '', // 5  Fecha de vencimiento/pago
+            (string) $row['document_type'], // 6  Tipo de comprobante (Tabla 10)
+            (string) $row['series'], // 7  Serie
+            (string) $row['number'], // 8  Número
+            '', // 9  Número final (rango de tickets)
+            $docTypeId, // 10 Tipo doc. identidad cliente (Tabla 2)
+            $docNumber, // 11 Número doc. identidad cliente
             (string) ($row['customer_name'] ?? 'VARIOS'), // 12 Razón social / nombre del cliente
-            '0.00',                                       // 13 Valor facturado de exportación
-            PleWriter::amount($taxable),                  // 14 Base imponible gravada
-            '0.00',                                       // 15 Descuento de la base imponible
-            PleWriter::amount($igv),                      // 16 IGV / IPM
-            '0.00',                                       // 17 Descuento del IGV / IPM
-            '0.00',                                       // 18 Importe exonerado
-            '0.00',                                       // 19 Importe inafecto
-            '0.00',                                       // 20 ISC
-            '0.00',                                       // 21 Base imponible IVAP
-            '0.00',                                       // 22 IVAP
-            '0.00',                                       // 23 ICBPER
-            '0.00',                                       // 24 Otros tributos y cargos
-            PleWriter::amount($total),                    // 25 Importe total
-            $currency,                                    // 26 Moneda (Tabla 4)
-            $exchangeRate,                                // 27 Tipo de cambio
-            PleWriter::date($modifiedDate),               // 28 Fecha emisión doc. modificado
-            (string) ($row['modified_doc_type'] ?? ''),   // 29 Tipo doc. modificado (Tabla 10)
-            (string) ($row['modified_series'] ?? ''),     // 30 Serie doc. modificado
-            '',                                           // 31 Código de dependencia aduanera (DAM)
-            (string) ($row['modified_number'] ?? ''),     // 32 Número doc. modificado
-            '',                                           // 33 Identificación contrato/proyecto
-            '',                                           // 34 Error tipo 1 (inconsistencia TC)
-            '',                                           // 35 Indicador cancelado con medio de pago
-            $state,                                       // 36 Estado
+            '0.00', // 13 Valor facturado de exportación
+            PleWriter::amount($taxable), // 14 Base imponible gravada
+            '0.00', // 15 Descuento de la base imponible
+            PleWriter::amount($igv), // 16 IGV / IPM
+            '0.00', // 17 Descuento del IGV / IPM
+            '0.00', // 18 Importe exonerado
+            '0.00', // 19 Importe inafecto
+            '0.00', // 20 ISC
+            '0.00', // 21 Base imponible IVAP
+            '0.00', // 22 IVAP
+            '0.00', // 23 ICBPER
+            '0.00', // 24 Otros tributos y cargos
+            PleWriter::amount($total), // 25 Importe total
+            $currency, // 26 Moneda (Tabla 4)
+            $exchangeRate, // 27 Tipo de cambio
+            PleWriter::date($modifiedDate), // 28 Fecha emisión doc. modificado
+            (string) ($row['modified_doc_type'] ?? ''), // 29 Tipo doc. modificado (Tabla 10)
+            (string) ($row['modified_series'] ?? ''), // 30 Serie doc. modificado
+            '', // 31 Código de dependencia aduanera (DAM)
+            (string) ($row['modified_number'] ?? ''), // 32 Número doc. modificado
+            '', // 33 Identificación contrato/proyecto
+            '', // 34 Error tipo 1 (inconsistencia TC)
+            '', // 35 Indicador cancelado con medio de pago
+            $state, // 36 Estado
         ]);
     }
 

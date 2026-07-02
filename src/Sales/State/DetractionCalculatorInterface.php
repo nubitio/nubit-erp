@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Sales\Entity\SaleRecord;
+use Nubit\Platform\Exception\ServiceException;
 
 interface DetractionCalculatorInterface
 {

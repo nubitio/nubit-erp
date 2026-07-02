@@ -14,8 +14,7 @@ final readonly class KardexSummaryService
         private FifoKardexValuator $fifoValuator,
         private WeightedAverageKardexValuator $weightedAverageValuator,
         private KardexCostSqlHelper $kardexCostSql,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{
@@ -168,41 +167,35 @@ final readonly class KardexSummaryService
 
         $whereClause = 'WHERE ' . implode(' AND ', $where);
 
-        $aggregate = $this->connection->fetchAssociative(
-            <<<SQL
+        $aggregate = $this->connection->fetchAssociative(<<<SQL
+            SELECT
+                COALESCE(SUM(CASE WHEN sm.qty_delta_base > 0 THEN sm.qty_delta_base ELSE 0 END), 0) AS total_in,
+                COALESCE(SUM(CASE WHEN sm.qty_delta_base < 0 THEN ABS(sm.qty_delta_base) ELSE 0 END), 0) AS total_out,
+                COUNT(*) AS movement_count,
+                MIN(sm.occurred_at) AS period_from,
+                MAX(sm.occurred_at) AS period_to
+            FROM stock_movements sm
+            {$whereClause}
+            SQL, $params);
+
+        $balanceRow = $this->connection->fetchAssociative(<<<SQL
+            SELECT inner_q.running_balance
+            FROM (
                 SELECT
-                    COALESCE(SUM(CASE WHEN sm.qty_delta_base > 0 THEN sm.qty_delta_base ELSE 0 END), 0) AS total_in,
-                    COALESCE(SUM(CASE WHEN sm.qty_delta_base < 0 THEN ABS(sm.qty_delta_base) ELSE 0 END), 0) AS total_out,
-                    COUNT(*) AS movement_count,
-                    MIN(sm.occurred_at) AS period_from,
-                    MAX(sm.occurred_at) AS period_to
+                    sm.qty_delta_base,
+                    SUM(sm.qty_delta_base) OVER (
+                        PARTITION BY sm.warehouse_id, sm.product_id
+                        ORDER BY sm.occurred_at ASC, sm.created_at ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) AS running_balance,
+                    sm.occurred_at,
+                    sm.created_at
                 FROM stock_movements sm
                 {$whereClause}
-                SQL,
-            $params,
-        );
-
-        $balanceRow = $this->connection->fetchAssociative(
-            <<<SQL
-                SELECT inner_q.running_balance
-                FROM (
-                    SELECT
-                        sm.qty_delta_base,
-                        SUM(sm.qty_delta_base) OVER (
-                            PARTITION BY sm.warehouse_id, sm.product_id
-                            ORDER BY sm.occurred_at ASC, sm.created_at ASC
-                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-                        ) AS running_balance,
-                        sm.occurred_at,
-                        sm.created_at
-                    FROM stock_movements sm
-                    {$whereClause}
-                ) AS inner_q
-                ORDER BY inner_q.occurred_at DESC, inner_q.created_at DESC
-                LIMIT 1
-                SQL,
-            $params,
-        );
+            ) AS inner_q
+            ORDER BY inner_q.occurred_at DESC, inner_q.created_at DESC
+            LIMIT 1
+            SQL, $params);
 
         $totalIn = number_format((float) ($aggregate['total_in'] ?? 0), 6, '.', '');
         $totalOut = number_format((float) ($aggregate['total_out'] ?? 0), 6, '.', '');
@@ -238,7 +231,7 @@ final readonly class KardexSummaryService
             return null;
         }
 
-        return (new \DateTimeImmutable((string) $value))->format('Y-m-d');
+        return new \DateTimeImmutable((string) $value)->format('Y-m-d');
     }
 
     private function buildPeriodLabel(?string $from, ?string $to, int $movementCount): string
@@ -298,23 +291,20 @@ final readonly class KardexSummaryService
         $purchaseItemJoin = $this->kardexCostSql->purchaseItemJoinSql();
         $inboundUnitCost = $this->kardexCostSql->inboundUnitCostExpression();
 
-        $rows = $this->connection->fetchAllAssociative(
-            <<<SQL
-                SELECT
-                    sm.warehouse_id,
-                    sm.qty_delta_base,
-                    {$inboundUnitCost} AS inbound_unit_cost
-                FROM stock_movements sm
-                LEFT JOIN producto p ON p.producto_id = sm.product_id
-                LEFT JOIN stock_lots sl ON sl.id = sm.lot_id
-                {$purchaseItemJoin}
-                {$whereClause}
-                ORDER BY sm.occurred_at ASC, sm.created_at ASC
-                SQL,
-            $params,
-        );
+        $rows = $this->connection->fetchAllAssociative(<<<SQL
+            SELECT
+                sm.warehouse_id,
+                sm.qty_delta_base,
+                {$inboundUnitCost} AS inbound_unit_cost
+            FROM stock_movements sm
+            LEFT JOIN producto p ON p.producto_id = sm.product_id
+            LEFT JOIN stock_lots sl ON sl.id = sm.lot_id
+            {$purchaseItemJoin}
+            {$whereClause}
+            ORDER BY sm.occurred_at ASC, sm.created_at ASC
+            SQL, $params);
 
-        return array_map(static fn (array $row): array => [
+        return array_map(static fn(array $row): array => [
             'warehouse_id' => (string) $row['warehouse_id'],
             'qty_delta' => number_format((float) $row['qty_delta_base'], 6, '.', ''),
             'inbound_unit_cost' => $row['inbound_unit_cost'] !== null

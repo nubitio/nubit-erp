@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use DateTimeInterface;
 use App\AI\Repository\SunatRejectionQueryInterface;
+use DateTimeInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -34,8 +34,7 @@ final readonly class SunatStatusTool
 
     public function __construct(
         private SunatRejectionQueryInterface $rejectionQuery,
-    ) {
-    }
+    ) {}
 
     /**
      * @param int $limit Maximum number of recent rejected documents to return (1–50).

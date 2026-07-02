@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sales\Service;
 
-use App\Settings\Service\TenantSettingsService;
 use App\Catalog\Repository\ExchangeRateRepository;
 use App\Sales\Entity\SaleRecord;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 
 readonly class SaleCurrencyResolver
@@ -18,8 +18,7 @@ readonly class SaleCurrencyResolver
         private Connection $connection,
         private TenantSettingsService $tenantSettings,
         private ExchangeRateRepository $exchangeRateRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{currency: string, exchange_rate: string}
@@ -30,15 +29,16 @@ readonly class SaleCurrencyResolver
         $snapshot = $saleId !== null ? $this->findInSalesTable($saleId) : null;
 
         $currency = $this->normalizeCurrency(
-            $sale->getCurrency() !== '' ? $sale->getCurrency() : ($snapshot['currency'] ?? null)
-            ?? $this->tenantSettings->getDefaultCurrency()->value
+            $sale->getCurrency() !== ''
+                ? $sale->getCurrency()
+                : $snapshot['currency'] ?? $this->tenantSettings->getDefaultCurrency()->value,
         );
 
         $exchangeRate = $this->normalizeExchangeRate(
             $currency,
             $sale->getExchangeRate() !== '' && $sale->getExchangeRate() !== '1.000000'
                 ? $sale->getExchangeRate()
-                : ($snapshot['exchange_rate'] ?? null)
+                : $snapshot['exchange_rate'] ?? null,
         );
 
         return [
@@ -54,7 +54,7 @@ readonly class SaleCurrencyResolver
     {
         $snapshot = $this->findInSalesTable($saleId);
         $currency = $this->normalizeCurrency(
-            $snapshot['currency'] ?? $this->tenantSettings->getDefaultCurrency()->value
+            $snapshot['currency'] ?? $this->tenantSettings->getDefaultCurrency()->value,
         );
         $exchangeRate = $this->normalizeExchangeRate($currency, $snapshot['exchange_rate'] ?? null);
 
@@ -71,13 +71,13 @@ readonly class SaleCurrencyResolver
     {
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
-SELECT s.currency, s.exchange_rate
-FROM sales s
-WHERE s.id = :id OR s.legacy_movimiento_id = :id
-ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
-LIMIT 1
-SQL,
-            ['id' => $saleId]
+                SELECT s.currency, s.exchange_rate
+                FROM sales s
+                WHERE s.id = :id OR s.legacy_movimiento_id = :id
+                ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
+                LIMIT 1
+                SQL,
+            ['id' => $saleId],
         );
 
         if (!is_array($row)) {
@@ -85,14 +85,14 @@ SQL,
         }
 
         return [
-            'currency' => isset($row['currency']) ? (string)$row['currency'] : null,
-            'exchange_rate' => isset($row['exchange_rate']) ? (string)$row['exchange_rate'] : null,
+            'currency' => isset($row['currency']) ? (string) $row['currency'] : null,
+            'exchange_rate' => isset($row['exchange_rate']) ? (string) $row['exchange_rate'] : null,
         ];
     }
 
     private function normalizeCurrency(?string $value): string
     {
-        $currency = strtoupper(trim((string)$value));
+        $currency = strtoupper(trim((string) $value));
 
         if ($currency === self::USD) {
             return self::USD;
@@ -107,16 +107,16 @@ SQL,
             return '1.000000';
         }
 
-        $candidate = trim((string)$rawExchangeRate);
-        if ($candidate === '' || !is_numeric($candidate) || (float)$candidate <= 0) {
+        $candidate = trim((string) $rawExchangeRate);
+        if ($candidate === '' || !is_numeric($candidate) || (float) $candidate <= 0) {
             $usdRate = $this->exchangeRateRepository->findByCurrency('USD');
             $candidate = $usdRate !== null ? $usdRate->getRate() : '3.800000';
         }
 
-        if (!is_numeric($candidate) || (float)$candidate <= 0) {
+        if (!is_numeric($candidate) || (float) $candidate <= 0) {
             $candidate = '1';
         }
 
-        return number_format((float)$candidate, 6, '.', '');
+        return number_format((float) $candidate, 6, '.', '');
     }
 }

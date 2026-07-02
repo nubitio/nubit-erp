@@ -23,8 +23,7 @@ final readonly class ReconciliationService
     public function __construct(
         private Connection $connection,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Run reconciliation for all (warehouse, product) pairs in stock_items.
@@ -46,18 +45,14 @@ final readonly class ReconciliationService
 
         foreach ($rows as $row) {
             try {
-                $status = $this->reconcileOne(
-                    $row['warehouse_id'],
-                    $row['product_id'],
-                    $row['qty_on_hand']
-                );
+                $status = $this->reconcileOne($row['warehouse_id'], $row['product_id'], $row['qty_on_hand']);
                 ++$results[$status];
             } catch (\Throwable $e) {
                 ++$results['error'];
                 $this->logger->error('Reconciliation error', [
                     'warehouse_id' => $row['warehouse_id'],
-                    'product_id'   => $row['product_id'],
-                    'error'        => $e->getMessage(),
+                    'product_id' => $row['product_id'],
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -76,11 +71,11 @@ final readonly class ReconciliationService
     {
         $ledgerSum = $this->connection->fetchOne(
             <<<'SQL'
-            SELECT COALESCE(SUM(qty_delta_base), '0.000000')
-            FROM stock_movements
-            WHERE warehouse_id = :w AND product_id = :p
-            SQL,
-            ['w' => $warehouseId, 'p' => $productId]
+                SELECT COALESCE(SUM(qty_delta_base), '0.000000')
+                FROM stock_movements
+                WHERE warehouse_id = :w AND product_id = :p
+                SQL,
+            ['w' => $warehouseId, 'p' => $productId],
         );
 
         $ledgerSum = (string) ($ledgerSum ?: '0');
@@ -93,30 +88,30 @@ final readonly class ReconciliationService
 
         $this->connection->executeStatement(
             <<<'SQL'
-            INSERT INTO inventory_reconciliation_runs
-                (id, warehouse_id, product_id, ledger_sum, stock_items_qty, diff, status, run_at)
-            VALUES
-                (:id, :w, :p, :ledger_sum, :stock_items_qty, :diff, :status, :run_at)
-            SQL,
+                INSERT INTO inventory_reconciliation_runs
+                    (id, warehouse_id, product_id, ledger_sum, stock_items_qty, diff, status, run_at)
+                VALUES
+                    (:id, :w, :p, :ledger_sum, :stock_items_qty, :diff, :status, :run_at)
+                SQL,
             [
-                'id'             => Uuid::v7()->toRfc4122(),
-                'w'              => $warehouseId,
-                'p'              => $productId,
-                'ledger_sum'     => $ledgerSum,
+                'id' => Uuid::v7()->toRfc4122(),
+                'w' => $warehouseId,
+                'p' => $productId,
+                'ledger_sum' => $ledgerSum,
                 'stock_items_qty' => $stockItemsQty,
-                'diff'           => $diff,
-                'status'         => $status,
-                'run_at'         => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            ]
+                'diff' => $diff,
+                'status' => $status,
+                'run_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+            ],
         );
 
         if ($status === 'DRIFT') {
             $this->logger->warning('Inventory drift detected', [
-                'warehouse_id'    => $warehouseId,
-                'product_id'      => $productId,
-                'ledger_sum'      => $ledgerSum,
+                'warehouse_id' => $warehouseId,
+                'product_id' => $productId,
+                'ledger_sum' => $ledgerSum,
                 'stock_items_qty' => $stockItemsQty,
-                'diff'            => $diff,
+                'diff' => $diff,
             ]);
         }
 
@@ -130,7 +125,8 @@ final readonly class ReconciliationService
      */
     private function fetchStockItemPairs(?string $warehouseId, ?string $productId): array
     {
-        $qb = $this->connection->createQueryBuilder()
+        $qb = $this->connection
+            ->createQueryBuilder()
             ->select('warehouse_id', 'product_id', 'qty_on_hand')
             ->from('stock_items');
 

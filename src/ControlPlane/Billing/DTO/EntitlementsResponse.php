@@ -27,8 +27,7 @@ final class EntitlementsResponse
         public readonly array $limits,
         public readonly array $features,
         public readonly bool $debugMode = false,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -41,8 +40,8 @@ final class EntitlementsResponse
             if ($this->debugMode) {
                 $featuresPayload[$key] = [
                     'enabled' => $feature['enabled'],
-                    'source'  => $feature['source'],
-                    'config'  => $feature['config'],
+                    'source' => $feature['source'],
+                    'config' => $feature['config'],
                 ];
             } else {
                 $featuresPayload[$key] = $feature['enabled'];
@@ -50,8 +49,8 @@ final class EntitlementsResponse
         }
 
         return [
-            'plan'     => $this->plan,
-            'limits'   => $this->limits,
+            'plan' => $this->plan,
+            'limits' => $this->limits,
             'features' => $featuresPayload,
         ];
     }

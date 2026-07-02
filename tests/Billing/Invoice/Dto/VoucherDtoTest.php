@@ -19,12 +19,12 @@ final class VoucherDtoTest extends TestCase
     public function testFromArrayMapsKnownKeys(): void
     {
         $row = [
-            'sale_id'           => 'sale-001',
+            'sale_id' => 'sale-001',
             'customer_doc_type' => '6',
-            'customer_name'     => 'Empresa ABC',
-            'voucher_type'      => '01',
-            'voucher_series'    => 'F001',
-            'voucher_number'    => '42',
+            'customer_name' => 'Empresa ABC',
+            'voucher_type' => '01',
+            'voucher_series' => 'F001',
+            'voucher_number' => '42',
         ];
 
         $dto = VoucherHeaderDto::fromArray($row);
@@ -49,7 +49,7 @@ final class VoucherDtoTest extends TestCase
     public function testApplyAmountsUpdatesFields(): void
     {
         $dto = new VoucherHeaderDto();
-        $amounts = (new InvoiceAmounts())
+        $amounts = new InvoiceAmounts()
             ->setTaxedAmount('84.75')
             ->setTax('15.25')
             ->setChargesAmount('0.00')
@@ -71,17 +71,13 @@ final class VoucherDtoTest extends TestCase
     public function testToVoucherProducesVoucherWithItems(): void
     {
         $dto = VoucherHeaderDto::fromArray([
-            'sale_id'        => 'sale-42',
-            'voucher_type'   => '01',
+            'sale_id' => 'sale-42',
+            'voucher_type' => '01',
             'voucher_series' => 'F001',
             'voucher_number' => '100',
         ]);
 
-        $item = new VoucherItem(
-            product_name: 'Producto A',
-            quantity: '2',
-            unit_price: '50.00',
-        );
+        $item = new VoucherItem(product_name: 'Producto A', quantity: '2', unit_price: '50.00');
 
         $voucher = $dto->toVoucher([$item]);
 
@@ -98,12 +94,12 @@ final class VoucherDtoTest extends TestCase
     public function testVoucherLineDtoFromArray(): void
     {
         $row = [
-            'product_id'   => 'prod-001',
+            'product_id' => 'prod-001',
             'product_name' => 'Laptop',
-            'quantity'     => '1',
-            'unit_price'   => '2500.00',
-            'tax_amount'   => '450.00',
-            'total'        => '2950.00',
+            'quantity' => '1',
+            'unit_price' => '2500.00',
+            'tax_amount' => '450.00',
+            'total' => '2950.00',
         ];
 
         $dto = VoucherLineDto::fromArray($row);

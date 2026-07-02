@@ -14,8 +14,7 @@ final readonly class SunatVoidResponse
         public string $ticket,
         public bool $success,
         public ?string $message,
-    ) {
-    }
+    ) {}
 
     public function getCorrelation(): ?string
     {

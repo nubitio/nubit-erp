@@ -25,17 +25,17 @@ namespace App\Inventory\Core\Enum;
  */
 enum StockEntryType: string
 {
-    case RECEIPT    = 'RECEIPT';
-    case ISSUE      = 'ISSUE';
-    case TRANSFER   = 'TRANSFER';
+    case RECEIPT = 'RECEIPT';
+    case ISSUE = 'ISSUE';
+    case TRANSFER = 'TRANSFER';
     case ADJUSTMENT = 'ADJUSTMENT';
 
     public function label(): string
     {
         return match ($this) {
-            self::RECEIPT    => 'Entrada manual',
-            self::ISSUE      => 'Salida manual',
-            self::TRANSFER   => 'Traslado',
+            self::RECEIPT => 'Entrada manual',
+            self::ISSUE => 'Salida manual',
+            self::TRANSFER => 'Traslado',
             self::ADJUSTMENT => 'Ajuste de stock',
         };
     }
@@ -45,9 +45,9 @@ enum StockEntryType: string
     public function movementTypes(): array
     {
         return match ($this) {
-            self::RECEIPT    => [StockMovementType::MANUAL_IN],
-            self::ISSUE      => [StockMovementType::MANUAL_OUT],
-            self::TRANSFER   => [StockMovementType::TRANSFER_OUT, StockMovementType::TRANSFER_IN],
+            self::RECEIPT => [StockMovementType::MANUAL_IN],
+            self::ISSUE => [StockMovementType::MANUAL_OUT],
+            self::TRANSFER => [StockMovementType::TRANSFER_OUT, StockMovementType::TRANSFER_IN],
             self::ADJUSTMENT => [StockMovementType::ADJUSTMENT],
         };
     }
@@ -71,7 +71,7 @@ enum StockEntryType: string
     {
         return match ($this) {
             self::ISSUE, self::TRANSFER => true,
-            default                     => false,
+            default => false,
         };
     }
 }

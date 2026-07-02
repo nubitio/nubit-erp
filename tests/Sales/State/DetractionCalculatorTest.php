@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Contacts\Entity\Customer;
 use App\Catalog\Entity\Product;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Repository\SunatCatalogRepository;
+use App\Contacts\Entity\Customer;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\State\DetractionCalculator;
 use Doctrine\Common\Collections\ArrayCollection;
-use PHPUnit\Framework\MockObject\MockObject;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -57,8 +57,13 @@ final class DetractionCalculatorTest extends TestCase
     /**
      * @param list<SaleItemRecord> $items
      */
-    private function makeSale(?Customer $customer, string $total, array $items = [], string $currency = 'PEN', string $exchangeRate = '1.000000'): SaleRecord&MockObject
-    {
+    private function makeSale(
+        ?Customer $customer,
+        string $total,
+        array $items = [],
+        string $currency = 'PEN',
+        string $exchangeRate = '1.000000',
+    ): SaleRecord&MockObject {
         $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn($total);

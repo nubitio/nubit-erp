@@ -20,11 +20,11 @@ final readonly class AmountFormatterService
         $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
         $amountString = Money::toString(Money::money($amount));
         $parts = explode('.', $amountString);
-        $integerPart = (int)$parts[0];
+        $integerPart = (int) $parts[0];
         $decimalPart = $parts[1] ?? '00';
 
         $formattedInteger = $formatter->format($integerPart);
 
-        return mb_strtoupper("SON " . $formattedInteger . " CON " . $decimalPart . " / 100 " . $currency);
+        return mb_strtoupper('SON ' . $formattedInteger . ' CON ' . $decimalPart . ' / 100 ' . $currency);
     }
 }

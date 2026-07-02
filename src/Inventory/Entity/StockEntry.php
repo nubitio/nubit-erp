@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Enum\StockEntryType;
 use App\Inventory\Repository\StockEntryRepository;
@@ -18,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,13 +41,12 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(),
         new Get(),
-        new Get(
-            uriTemplate: '/stock-entries/{id}/items',
-            normalizationContext: ['groups' => ['stock_entry_items:read']],
-        ),
+        new Get(uriTemplate: '/stock-entries/{id}/items', normalizationContext: ['groups' => [
+            'stock_entry_items:read',
+        ]]),
         new Post(processor: StockEntryProcessor::class),
     ],
-    normalizationContext:   ['groups' => ['stock_entry:read']],
+    normalizationContext: ['groups' => ['stock_entry:read']],
     denormalizationContext: ['groups' => ['stock_entry:write']],
     filters: [DataGridFilter::class],
     security: "is_granted('ROLE_USER')",
@@ -140,7 +139,7 @@ class StockEntry
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->items     = new ArrayCollection();
+        $this->items = new ArrayCollection();
     }
 
     // ─── Accessors ────────────────────────────────────────────────────────────
@@ -154,6 +153,7 @@ class StockEntry
     {
         return $this->type;
     }
+
     public function setType(?StockEntryType $type): static
     {
         $this->type = $type;
@@ -169,6 +169,7 @@ class StockEntry
     {
         return $this->warehouse;
     }
+
     public function setWarehouse(?Warehouse $w): static
     {
         $this->warehouse = $w;
@@ -179,6 +180,7 @@ class StockEntry
     {
         return $this->targetWarehouse;
     }
+
     public function setTargetWarehouse(?Warehouse $w): static
     {
         $this->targetWarehouse = $w;
@@ -189,6 +191,7 @@ class StockEntry
     {
         return $this->operation;
     }
+
     public function setOperation(?LogisticOperation $op): static
     {
         $this->operation = $op;
@@ -199,6 +202,7 @@ class StockEntry
     {
         return $this->reason;
     }
+
     public function setReason(?string $reason): static
     {
         $this->reason = $reason;
@@ -208,14 +212,14 @@ class StockEntry
     public function getReasonLabel(): ?string
     {
         return match ($this->reason) {
-            'INITIAL_STOCK'    => 'Carga inicial',
+            'INITIAL_STOCK' => 'Carga inicial',
             'COUNT_CORRECTION' => 'Corrección por conteo',
-            'LOSS'             => 'Pérdida / merma',
-            'DAMAGE'           => 'Producto dañado',
-            'THEFT'            => 'Robo / sustracción',
-            'EXPIRY'           => 'Producto vencido',
-            'OTHER'            => 'Otro',
-            default            => $this->reason,
+            'LOSS' => 'Pérdida / merma',
+            'DAMAGE' => 'Producto dañado',
+            'THEFT' => 'Robo / sustracción',
+            'EXPIRY' => 'Producto vencido',
+            'OTHER' => 'Otro',
+            default => $this->reason,
         };
     }
 
@@ -223,6 +227,7 @@ class StockEntry
     {
         return $this->note;
     }
+
     public function setNote(?string $note): static
     {
         $this->note = $note;
@@ -233,6 +238,7 @@ class StockEntry
     {
         return $this->createdBy;
     }
+
     public function setCreatedBy(?User $user): static
     {
         $this->createdBy = $user;

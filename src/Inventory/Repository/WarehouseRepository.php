@@ -23,7 +23,8 @@ class WarehouseRepository extends ServiceEntityRepository
      */
     public function findIdsByBranchId(string $branchId): array
     {
-        $result = $this->createQueryBuilder('w')
+        $result = $this
+            ->createQueryBuilder('w')
             ->select('w.id')
             ->where('w.branch = :branchId')
             ->setParameter('branchId', $branchId)

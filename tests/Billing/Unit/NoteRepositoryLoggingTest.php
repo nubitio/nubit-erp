@@ -6,10 +6,10 @@ namespace App\Tests\Billing\Unit;
 
 use App\Billing\Sunat\Infrastructure\NoteRepository;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
+use Greenter\Model\Company\Company;
 use Greenter\Model\Response\BillResult;
 use Greenter\Model\Response\Error;
 use Greenter\Model\Sale\Note;
-use Greenter\Model\Company\Company;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
@@ -49,10 +49,8 @@ final class NoteRepositoryLoggingTest extends TestCase
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private function makeRepository(
-        LoggerInterface $billingLogger,
-        MockHttpClient $httpClient,
-    ): NoteRepository {
+    private function makeRepository(LoggerInterface $billingLogger, MockHttpClient $httpClient): NoteRepository
+    {
         return new NoteRepository(
             $this->serializer,
             $httpClient,
@@ -66,11 +64,8 @@ final class NoteRepositoryLoggingTest extends TestCase
      * Build a Note with a Company whose RUC acts as tenant_id.
      * The note's getName() is derived from serie + correlativo.
      */
-    private function makeNote(
-        string $ruc = '20123456789',
-        string $serie = 'FC01',
-        string $correlativo = '1',
-    ): Note {
+    private function makeNote(string $ruc = '20123456789', string $serie = 'FC01', string $correlativo = '1'): Note
+    {
         $company = new Company();
         $company->setRuc($ruc);
 
@@ -91,19 +86,19 @@ final class NoteRepositoryLoggingTest extends TestCase
         string $errorCode = '',
         string $errorMessage = '',
     ): DocumentResponse {
-        $billResult = (new BillResult())->setSuccess($success);
+        $billResult = new BillResult()->setSuccess($success);
 
         if ($errorCode !== '' || $errorMessage !== '') {
-            $error = (new Error())
+            $error = new Error()
                 ->setCode($errorCode)
                 ->setMessage($errorMessage);
             $billResult->setError($error);
         }
 
         $doc = new DocumentResponse();
-        $doc->name          = 'FC01-1';
-        $doc->xml           = '<xml/>';
-        $doc->hash          = 'abc';
+        $doc->name = 'FC01-1';
+        $doc->xml = '<xml/>';
+        $doc->hash = 'abc';
         $doc->sunatResponse = $billResult;
 
         return $doc;
@@ -117,22 +112,23 @@ final class NoteRepositoryLoggingTest extends TestCase
      */
     public function testSuccessPathLogsInfoWithAllSixContextKeys(): void
     {
-        $capturedLevel   = null;
+        $capturedLevel = null;
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedLevel, &$capturedContext): void {
-                $capturedLevel   = $level;
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedLevel,
+            &$capturedContext,
+        ): void {
+            $capturedLevel = $level;
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(success: true);
         $this->serializer->method('serialize')->willReturn('{}');
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $repo->send($this->makeNote());
 
@@ -151,18 +147,18 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(success: true);
         $this->serializer->method('serialize')->willReturn('{}');
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $note = $this->makeNote(ruc: '20999888777', serie: 'FC01', correlativo: '42');
 
@@ -183,15 +179,16 @@ final class NoteRepositoryLoggingTest extends TestCase
      */
     public function testSunatRejectionLogsWarningWithAllSixContextKeys(): void
     {
-        $capturedLevel   = null;
+        $capturedLevel = null;
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedLevel, &$capturedContext): void {
-                $capturedLevel   = $level;
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedLevel,
+            &$capturedContext,
+        ): void {
+            $capturedLevel = $level;
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(
             success: false,
@@ -202,7 +199,7 @@ final class NoteRepositoryLoggingTest extends TestCase
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $repo->send($this->makeNote());
 
@@ -221,11 +218,11 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(
             success: false,
@@ -236,7 +233,7 @@ final class NoteRepositoryLoggingTest extends TestCase
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $note = $this->makeNote(ruc: '20111222333', serie: 'FC01', correlativo: '7');
 
@@ -259,15 +256,16 @@ final class NoteRepositoryLoggingTest extends TestCase
      */
     public function testExceptionPathLogsErrorWithAllSixContextKeys(): void
     {
-        $capturedLevel   = null;
+        $capturedLevel = null;
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedLevel, &$capturedContext): void {
-                $capturedLevel   = $level;
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedLevel,
+            &$capturedContext,
+        ): void {
+            $capturedLevel = $level;
+            $capturedContext = $context;
+        });
 
         $this->serializer->method('serialize')->willReturn('{}');
 
@@ -299,11 +297,11 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $this->serializer->method('serialize')->willReturn('{}');
 
@@ -332,15 +330,13 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $logWasCalled = false;
 
-        $billingLogger = $this->createSpyLogger(
-            function () use (&$logWasCalled): void {
-                $logWasCalled = true;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function () use (&$logWasCalled): void {
+            $logWasCalled = true;
+        });
 
         $this->serializer->method('serialize')->willReturn('{}');
 
-        $original   = new \RuntimeException('Network failure');
+        $original = new \RuntimeException('Network failure');
         $httpClient = new MockHttpClient(function () use ($original): never {
             throw $original;
         });
@@ -367,18 +363,18 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(success: true);
         $this->serializer->method('serialize')->willReturn('{}');
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $repo->send($this->makeNote());
 
@@ -394,11 +390,11 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $this->serializer->method('serialize')->willReturn('{}');
 
@@ -415,7 +411,11 @@ final class NoteRepositoryLoggingTest extends TestCase
 
         self::assertNotNull($capturedContext);
         self::assertIsInt($capturedContext['duration_ms'], 'duration_ms must be an integer on exception path');
-        self::assertGreaterThanOrEqual(0, $capturedContext['duration_ms'], 'duration_ms must be >= 0 on exception path');
+        self::assertGreaterThanOrEqual(
+            0,
+            $capturedContext['duration_ms'],
+            'duration_ms must be >= 0 on exception path',
+        );
     }
 
     // ── AC-7: missing company / unknown tenant_id ─────────────────────────────
@@ -432,11 +432,11 @@ final class NoteRepositoryLoggingTest extends TestCase
     {
         $capturedContext = null;
 
-        $billingLogger = $this->createSpyLogger(
-            function (string $level, string $message, array $context) use (&$capturedContext): void {
-                $capturedContext = $context;
-            }
-        );
+        $billingLogger = $this->createSpyLogger(function (string $level, string $message, array $context) use (
+            &$capturedContext,
+        ): void {
+            $capturedContext = $context;
+        });
 
         $documentResponse = $this->makeDocumentResponse(success: true);
         $this->serializer->method('serialize')->willReturn('{}');
@@ -452,7 +452,7 @@ final class NoteRepositoryLoggingTest extends TestCase
         $note->setCorrelativo('1');
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
-        $repo       = $this->makeRepository($billingLogger, $httpClient);
+        $repo = $this->makeRepository($billingLogger, $httpClient);
 
         $repo->send($note);
 
@@ -472,11 +472,11 @@ final class NoteRepositoryLoggingTest extends TestCase
      */
     private function createSpyLogger(callable $onLog): LoggerInterface
     {
-        return new class ($onLog) implements LoggerInterface {
+        return new class($onLog) implements LoggerInterface {
             /** @param callable(string, string, array<string,mixed>): void $onLog */
-            public function __construct(private readonly mixed $onLog)
-            {
-            }
+            public function __construct(
+                private readonly mixed $onLog,
+            ) {}
 
             public function emergency(\Stringable|string $message, array $context = []): void
             {

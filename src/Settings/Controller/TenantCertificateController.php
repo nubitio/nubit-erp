@@ -30,8 +30,7 @@ final class TenantCertificateController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly CompanyRepository $companyRepository,
         private readonly CertificateLifecycleServiceInterface $certificates,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -31,13 +31,7 @@ final class PurchasesV2ReconcileCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->addOption(
-            'days',
-            null,
-            InputOption::VALUE_OPTIONAL,
-            'Rolling window in days.',
-            30
-        );
+        $this->addOption('days', null, InputOption::VALUE_OPTIONAL, 'Rolling window in days.', 30);
     }
 
     #[Override]
@@ -55,35 +49,37 @@ final class PurchasesV2ReconcileCommand extends PerTenantCommand
             return Command::SUCCESS;
         }
 
-        $from = (new \DateTimeImmutable('today', new \DateTimeZone('America/Lima')))->modify(sprintf('-%d days', $days - 1))->format('Y-m-d');
+        $from = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'))
+            ->modify(sprintf('-%d days', $days - 1))
+            ->format('Y-m-d');
 
         $legacyRows = $this->connection->fetchAllAssociative(
             <<<'SQL'
-SELECT
-    DATE(COALESCE(fecha, date_created)) AS day,
-    COUNT(*) AS cnt,
-    ROUND(COALESCE(SUM(total), 0), 2) AS total_amount
-FROM movimiento
-WHERE tipo_id = 1
-  AND DATE(COALESCE(fecha, date_created)) >= :from
-GROUP BY DATE(COALESCE(fecha, date_created))
-ORDER BY DATE(COALESCE(fecha, date_created))
-SQL,
-            ['from' => $from]
+                SELECT
+                    DATE(COALESCE(fecha, date_created)) AS day,
+                    COUNT(*) AS cnt,
+                    ROUND(COALESCE(SUM(total), 0), 2) AS total_amount
+                FROM movimiento
+                WHERE tipo_id = 1
+                  AND DATE(COALESCE(fecha, date_created)) >= :from
+                GROUP BY DATE(COALESCE(fecha, date_created))
+                ORDER BY DATE(COALESCE(fecha, date_created))
+                SQL,
+            ['from' => $from],
         );
 
         $v2Rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
-SELECT
-    DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) AS day,
-    COUNT(*) AS cnt,
-    ROUND(COALESCE(SUM(grand_total), 0), 2) AS total_amount
-FROM goods_receipts
-WHERE DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) >= :from
-GROUP BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
-ORDER BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
-SQL,
-            ['from' => $from]
+                SELECT
+                    DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) AS day,
+                    COUNT(*) AS cnt,
+                    ROUND(COALESCE(SUM(grand_total), 0), 2) AS total_amount
+                FROM goods_receipts
+                WHERE DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) >= :from
+                GROUP BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
+                ORDER BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
+                SQL,
+            ['from' => $from],
         );
 
         $legacyMap = $this->toDayMap($legacyRows);
@@ -120,10 +116,7 @@ SQL,
             return Command::SUCCESS;
         }
 
-        $io->table(
-            ['Day', 'Legacy Cnt', 'V2 Cnt', 'Cnt Diff', 'Legacy Total', 'V2 Total', 'Amount Diff'],
-            $rows
-        );
+        $io->table(['Day', 'Legacy Cnt', 'V2 Cnt', 'Cnt Diff', 'Legacy Total', 'V2 Total', 'Amount Diff'], $rows);
 
         if ($hasMismatch) {
             $io->warning('Purchases V2 reconcile detected mismatches.');

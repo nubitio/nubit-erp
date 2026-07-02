@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Sale\Void;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Billing\Sunat\Domain\VoidedCreateUseCase;
-use App\Billing\Sunat\Model\Response\SummaryResponse;
-use App\Billing\Sale\Void\InvoiceVoidStrategy;
-use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Sale\Void\InvoiceVoidStrategy;
+use App\Billing\Sale\Void\SunatVoidResponse;
+use App\Billing\Sunat\Domain\VoidedCreateUseCase;
+use App\Billing\Sunat\Model\Response\SummaryResponse;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use Greenter\Model\Response\SummaryResult;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -101,11 +101,7 @@ final class InvoiceVoidStrategyTest extends TestCase
         $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findLatestAcceptedBySaleAndType')->willReturn(null);
 
-        $sut = new InvoiceVoidStrategy(
-            $repo,
-            $this->createMock(VoidedCreateUseCase::class),
-            $this->makeFileManager(),
-        );
+        $sut = new InvoiceVoidStrategy($repo, $this->createMock(VoidedCreateUseCase::class), $this->makeFileManager());
 
         $this->expectException(SaleException::class);
 
@@ -124,11 +120,7 @@ final class InvoiceVoidStrategyTest extends TestCase
         $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
-        $summaryResponse = $this->makeSummaryResponse(
-            name: 'RA-20250101-00001',
-            success: true,
-            ticket: 'TICKET-001',
-        );
+        $summaryResponse = $this->makeSummaryResponse(name: 'RA-20250101-00001', success: true, ticket: 'TICKET-001');
 
         $useCase = $this->createStub(VoidedCreateUseCase::class);
         $useCase->method('__invoke')->willReturn($summaryResponse);
@@ -185,7 +177,8 @@ final class InvoiceVoidStrategyTest extends TestCase
         $summaryResponse = $this->makeSummaryResponse();
 
         $useCase = $this->createMock(VoidedCreateUseCase::class);
-        $useCase->expects(self::once())
+        $useCase
+            ->expects(self::once())
             ->method('__invoke')
             ->with('77', 'razón de anulación')
             ->willReturn($summaryResponse);
@@ -203,18 +196,16 @@ final class InvoiceVoidStrategyTest extends TestCase
         $capturedDocType = null;
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findLatestAcceptedBySaleAndType')
-            ->willReturnCallback(static function (string $saleId, string $docType) use (&$capturedSaleId, &$capturedDocType): null {
-                $capturedSaleId = $saleId;
-                $capturedDocType = $docType;
-                return null;
-            });
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturnCallback(static function (
+            string $saleId,
+            string $docType,
+        ) use (&$capturedSaleId, &$capturedDocType): null {
+            $capturedSaleId = $saleId;
+            $capturedDocType = $docType;
+            return null;
+        });
 
-        $sut = new InvoiceVoidStrategy(
-            $repo,
-            $this->createMock(VoidedCreateUseCase::class),
-            $this->makeFileManager(),
-        );
+        $sut = new InvoiceVoidStrategy($repo, $this->createMock(VoidedCreateUseCase::class), $this->makeFileManager());
 
         try {
             $sut->void('sale-004', 'Anular');

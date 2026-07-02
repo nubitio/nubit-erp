@@ -17,8 +17,7 @@ final readonly class ControlPlaneUser implements UserInterface, PasswordAuthenti
         private string $username,
         private string $password,
         private array $roles,
-    ) {
-    }
+    ) {}
 
     public function getId(): int
     {
@@ -41,9 +40,7 @@ final readonly class ControlPlaneUser implements UserInterface, PasswordAuthenti
         return array_values(array_unique($roles));
     }
 
-    public function eraseCredentials(): void
-    {
-    }
+    public function eraseCredentials(): void {}
 
     public function getPassword(): string
     {

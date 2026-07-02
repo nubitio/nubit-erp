@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Billing\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Settings\Service\SunatStateService;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,10 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'invoice:retry:reset',
-    description: 'Reset retry state for one invoice so it can be resent',
-)]
+#[AsCommand(name: 'invoice:retry:reset', description: 'Reset retry state for one invoice so it can be resent')]
 class ResetInvoiceRetryCommand extends PerTenantCommand
 {
     public function __construct(
@@ -37,26 +34,23 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
             'allow-rejected',
             null,
             InputOption::VALUE_NONE,
-            'Allow resetting documents rejected by SUNAT (2xxx-3xxx)'
+            'Allow resetting documents rejected by SUNAT (2xxx-3xxx)',
         );
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $taxDocumentId = trim((string)$input->getArgument('tax_document_id'));
-        $allowRejected = (bool)$input->getOption('allow-rejected');
+        $taxDocumentId = trim((string) $input->getArgument('tax_document_id'));
+        $allowRejected = (bool) $input->getOption('allow-rejected');
 
-        $row = $this->connection->fetchAssociative(
-            "
+        $row = $this->connection->fetchAssociative("
             SELECT tax_document_id, document_type, sunat_status
             FROM tax_document
             WHERE tax_document_id = :tax_document_id
               AND document_type IN ('01', '03')
             LIMIT 1
-            ",
-            ['tax_document_id' => $taxDocumentId]
-        );
+            ", ['tax_document_id' => $taxDocumentId]);
 
         if (!is_array($row)) {
             $io->error('Tax document not found for invoice/receipt types (01/03).');
@@ -64,14 +58,12 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
             return Command::FAILURE;
         }
 
-        $sunatStatus = (string)($row['sunat_status'] ?? '');
+        $sunatStatus = (string) ($row['sunat_status'] ?? '');
         if (!$allowRejected && $this->isRejectedStatus($sunatStatus)) {
-            $io->error(
-                sprintf(
-                    'Document has SUNAT rejected status (%s). Use --allow-rejected if you really want to reset it.',
-                    $sunatStatus
-                )
-            );
+            $io->error(sprintf(
+                'Document has SUNAT rejected status (%s). Use --allow-rejected if you really want to reset it.',
+                $sunatStatus,
+            ));
 
             return Command::FAILURE;
         }
@@ -80,31 +72,27 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
         $this->connection->beginTransaction();
 
         try {
-            $updatedEvents = $this->connection->executeStatement(
-                "
+            $updatedEvents = $this->connection->executeStatement("
                 UPDATE tax_document_event
                 SET status = 'reset'
                 WHERE tax_document_id = :tax_document_id
                   AND event_type = 'sunat_send'
                   AND status IN ('error', 'pending')
-                ",
-                ['tax_document_id' => $taxDocumentId]
-            );
+                ", [
+                'tax_document_id' => $taxDocumentId,
+            ]);
 
-            $this->connection->executeStatement(
-                "
+            $this->connection->executeStatement("
                 UPDATE tax_document
                 SET sunat_status = 'pendiente',
                     sunat_message = :message,
                     updated_at = NOW()
                 WHERE tax_document_id = :tax_document_id
                   AND (sunat_status IS NULL OR sunat_status <> '0')
-                ",
-                [
-                    'tax_document_id' => $taxDocumentId,
-                    'message' => 'Manual retry reset',
-                ]
-            );
+                ", [
+                'tax_document_id' => $taxDocumentId,
+                'message' => 'Manual retry reset',
+            ]);
 
             $payload = json_encode([
                 'updated_events' => $updatedEvents,
@@ -139,7 +127,7 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
         $io->success(sprintf(
             'Retry state reset for %s. Previous pending/error send events updated: %d',
             $taxDocumentId,
-            $updatedEvents
+            $updatedEvents,
         ));
 
         return Command::SUCCESS;
@@ -151,7 +139,7 @@ class ResetInvoiceRetryCommand extends PerTenantCommand
             return false;
         }
 
-        $numeric = (int)$status;
+        $numeric = (int) $status;
 
         return $numeric >= 2000 && $numeric < 4000;
     }

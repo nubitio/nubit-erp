@@ -17,19 +17,18 @@ final class DashboardServiceTest extends TestCase
     public function testGetTenantStatsReturnsCountsFromDatabase(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturnMap([
-            ['SELECT COUNT(*) FROM tenants', [], [], 12],
-            ["SELECT COUNT(*) FROM tenants WHERE status = 'active'", [], [], 10],
-            ["SELECT COUNT(*) FROM tenants WHERE status = 'suspended'", [], [], 1],
-            ["SELECT COUNT(*) FROM tenants WHERE deleted_at IS NOT NULL", [], [], 1],
-        ]);
+        $connection
+            ->method('fetchOne')
+            ->willReturnMap([
+                ['SELECT COUNT(*) FROM tenants', [], [], 12],
+                ["SELECT COUNT(*) FROM tenants WHERE status = 'active'", [], [], 10],
+                ["SELECT COUNT(*) FROM tenants WHERE status = 'suspended'", [], [], 1],
+                ['SELECT COUNT(*) FROM tenants WHERE deleted_at IS NOT NULL', [], [], 1],
+            ]);
 
         $service = $this->newService($connection);
 
-        self::assertSame(
-            ['total' => 12, 'active' => 10, 'suspended' => 1, 'deleted' => 1],
-            $service->getTenantStats()
-        );
+        self::assertSame(['total' => 12, 'active' => 10, 'suspended' => 1, 'deleted' => 1], $service->getTenantStats());
     }
 
     public function testGetTenantStatsReturnsSafeDefaultsOnFailure(): void
@@ -42,26 +41,22 @@ final class DashboardServiceTest extends TestCase
 
         $service = $this->newService($connection, $logger);
 
-        self::assertSame(
-            ['total' => 0, 'active' => 0, 'suspended' => 0, 'deleted' => 0],
-            $service->getTenantStats()
-        );
+        self::assertSame(['total' => 0, 'active' => 0, 'suspended' => 0, 'deleted' => 0], $service->getTenantStats());
     }
 
     public function testGetPlanStatsReturnsValuesAndDefaultsToZeroOnError(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturnMap([
-            ['SELECT COUNT(*) FROM plans', [], [], 3],
-            ["SELECT COUNT(*) FROM tenants WHERE plan IS NULL OR plan = ''", [], [], 2],
-        ]);
+        $connection
+            ->method('fetchOne')
+            ->willReturnMap([
+                ['SELECT COUNT(*) FROM plans', [], [], 3],
+                ["SELECT COUNT(*) FROM tenants WHERE plan IS NULL OR plan = ''", [], [], 2],
+            ]);
 
         $service = $this->newService($connection);
 
-        self::assertSame(
-            ['total_plans' => 3, 'tenants_without_plan' => 2],
-            $service->getPlanStats()
-        );
+        self::assertSame(['total_plans' => 3, 'tenants_without_plan' => 2], $service->getPlanStats());
 
         $failingConnection = $this->createStub(Connection::class);
         $failingConnection->method('fetchOne')->willThrowException(new \RuntimeException('boom'));
@@ -69,10 +64,7 @@ final class DashboardServiceTest extends TestCase
         $logger->expects(self::once())->method('warning');
 
         $failingService = $this->newService($failingConnection, $logger);
-        self::assertSame(
-            ['total_plans' => 0, 'tenants_without_plan' => 0],
-            $failingService->getPlanStats()
-        );
+        self::assertSame(['total_plans' => 0, 'tenants_without_plan' => 0], $failingService->getPlanStats());
     }
 
     public function testAuditAndBackupStatsReturnFallbacksWhenConnectionFails(): void
@@ -88,7 +80,7 @@ final class DashboardServiceTest extends TestCase
         self::assertSame([], $service->getRecentAuditSummary());
         self::assertSame(
             ['total_backups' => 0, 'last_backup_at' => null, 'total_size_bytes' => 0, 'failed_count' => 0],
-            $service->getBackupStats()
+            $service->getBackupStats(),
         );
     }
 
@@ -97,9 +89,6 @@ final class DashboardServiceTest extends TestCase
         $connectionRegistry = $this->createMock(ConnectionRegistry::class);
         $connectionRegistry->method('getConnection')->with('control_plane')->willReturn($connection);
 
-        return new DashboardService(
-            $connectionRegistry,
-            $logger ?? $this->createMock(LoggerInterface::class)
-        );
+        return new DashboardService($connectionRegistry, $logger ?? $this->createMock(LoggerInterface::class));
     }
 }

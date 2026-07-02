@@ -25,8 +25,7 @@ final readonly class UserNotificationReadAllProcessor implements ProcessorInterf
     public function __construct(
         private Connection $connection,
         private Security $security,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -40,10 +39,9 @@ final readonly class UserNotificationReadAllProcessor implements ProcessorInterf
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
         }
 
-        $this->connection->executeStatement(
-            'UPDATE user_notification SET read_at = NOW() WHERE user_id = ? AND read_at IS NULL',
-            [$user->userId],
-        );
+        $this->connection->executeStatement('UPDATE user_notification SET read_at = NOW() WHERE user_id = ? AND read_at IS NULL', [
+            $user->userId,
+        ]);
 
         return null;
     }

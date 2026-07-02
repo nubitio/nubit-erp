@@ -17,6 +17,5 @@ final readonly class InitialTenantSetupRequest
         public string $branchName,
         public ?string $branchAddress,
         public ?string $branchPhone,
-    ) {
-    }
+    ) {}
 }

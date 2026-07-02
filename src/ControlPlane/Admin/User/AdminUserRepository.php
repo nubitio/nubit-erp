@@ -27,11 +27,9 @@ final class AdminUserRepository
     public function findAll(): array
     {
         /** @var array<int, array{id: int, username: string, roles: string, is_active: bool, last_login_at: ?string, created_at: string}> $rows */
-        $rows = $this->connection->fetchAllAssociative(
-            'SELECT id, username, roles, is_active, last_login_at, created_at
+        $rows = $this->connection->fetchAllAssociative('SELECT id, username, roles, is_active, last_login_at, created_at
              FROM control_plane_admin_users
-             ORDER BY created_at DESC',
-        );
+             ORDER BY created_at DESC');
 
         return $rows;
     }
@@ -43,13 +41,10 @@ final class AdminUserRepository
      */
     public function findById(int $id): ?array
     {
-        $row = $this->connection->fetchAssociative(
-            'SELECT id, username, roles, is_active, last_login_at, created_at
+        $row = $this->connection->fetchAssociative('SELECT id, username, roles, is_active, last_login_at, created_at
              FROM control_plane_admin_users
              WHERE id = ?
-             LIMIT 1',
-            [$id],
-        );
+             LIMIT 1', [$id]);
 
         if ($row === false) {
             return null;
@@ -66,13 +61,10 @@ final class AdminUserRepository
      */
     public function findByUsername(string $username): ?array
     {
-        $row = $this->connection->fetchAssociative(
-            'SELECT id, username, roles, is_active, last_login_at, created_at
+        $row = $this->connection->fetchAssociative('SELECT id, username, roles, is_active, last_login_at, created_at
              FROM control_plane_admin_users
              WHERE username = ?
-             LIMIT 1',
-            [$username],
-        );
+             LIMIT 1', [$username]);
 
         if ($row === false) {
             return null;
@@ -92,14 +84,15 @@ final class AdminUserRepository
     public function create(string $username, string $passwordHash, array $roles): int
     {
         $qb = $this->connection->createQueryBuilder();
-        $qb->insert('control_plane_admin_users')
+        $qb
+            ->insert('control_plane_admin_users')
             ->values([
-                'username'      => ':username',
+                'username' => ':username',
                 'password_hash' => ':password_hash',
-                'roles'         => ':roles',
-                'is_active'     => ':is_active',
-                'created_at'    => 'NOW()',
-                'updated_at'    => 'NOW()',
+                'roles' => ':roles',
+                'is_active' => ':is_active',
+                'created_at' => 'NOW()',
+                'updated_at' => 'NOW()',
             ])
             ->setParameter('username', $username)
             ->setParameter('password_hash', $passwordHash)
@@ -126,23 +119,21 @@ final class AdminUserRepository
         }
 
         $qb = $this->connection->createQueryBuilder();
-        $qb->update('control_plane_admin_users')
-            ->where('id = :id')
-            ->setParameter('id', $id);
+        $qb->update('control_plane_admin_users')->where('id = :id')->setParameter('id', $id);
 
         if (isset($fields['password_hash'])) {
-            $qb->set('password_hash', ':password_hash')
-                ->setParameter('password_hash', (string) $fields['password_hash']);
+            $qb->set('password_hash', ':password_hash')->setParameter(
+                'password_hash',
+                (string) $fields['password_hash'],
+            );
         }
 
         if (isset($fields['roles']) && is_array($fields['roles'])) {
-            $qb->set('roles', ':roles')
-                ->setParameter('roles', json_encode($fields['roles'], JSON_THROW_ON_ERROR));
+            $qb->set('roles', ':roles')->setParameter('roles', json_encode($fields['roles'], JSON_THROW_ON_ERROR));
         }
 
         if (array_key_exists('is_active', $fields)) {
-            $qb->set('is_active', ':is_active')
-                ->setParameter('is_active', (bool) $fields['is_active'] ? 1 : 0);
+            $qb->set('is_active', ':is_active')->setParameter('is_active', (bool) $fields['is_active'] ? 1 : 0);
         }
 
         $qb->set('updated_at', 'NOW()');

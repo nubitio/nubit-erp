@@ -12,14 +12,15 @@ final class TaxDocumentLineTest extends TestCase
 {
     public function testTaxDocumentLineAccessors(): void
     {
-        $taxDocument = (new TaxDocument())
+        $taxDocument = new TaxDocument()
             ->setDocumentType('01')
             ->setSeries('F001')
             ->setNumber('12');
         $createdAt = new \DateTimeImmutable('2026-02-10 12:00:00');
 
         $line = new TaxDocumentLine();
-        $line->setTaxDocument($taxDocument)
+        $line
+            ->setTaxDocument($taxDocument)
             ->setLineNumber(1)
             ->setProductId('P1')
             ->setProductCode('PRD-1')

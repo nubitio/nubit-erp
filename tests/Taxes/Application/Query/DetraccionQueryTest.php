@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Taxes\Application\Query;
 
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Connection;
 use App\Taxes\Application\Query\DetraccionQuery;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 
 final class DetraccionQueryTest extends TestCase
@@ -21,6 +21,7 @@ final class DetraccionQueryTest extends TestCase
         ]);
 
         $pdo = $this->connection->getNativeConnection();
+        self::assertInstanceOf(\PDO::class, $pdo);
         $pdo->sqliteCreateFunction('DATE_FORMAT', function (?string $date, string $format): ?string {
             if (null === $date) {
                 return null;
@@ -83,17 +84,33 @@ final class DetraccionQueryTest extends TestCase
 
         // One deposited, one pending
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 'd1', 'document_type' => '01', 'series' => 'F001', 'number' => '100',
-            'issue_date' => '2026-06-05', 'customer_id' => 1, 'total' => 5900,
-            'detraction_code' => '001', 'detraction_percent' => 4, 'detraction_amount' => 200,
+            'tax_document_id' => 'd1',
+            'document_type' => '01',
+            'series' => 'F001',
+            'number' => '100',
+            'issue_date' => '2026-06-05',
+            'customer_id' => 1,
+            'total' => 5900,
+            'detraction_code' => '001',
+            'detraction_percent' => 4,
+            'detraction_amount' => 200,
             'detraction_deposited_at' => '2026-06-10 10:00:00',
-            'taxable_amount' => 5000, 'igv_amount' => 900,
+            'taxable_amount' => 5000,
+            'igv_amount' => 900,
         ]);
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 'd2', 'document_type' => '01', 'series' => 'F001', 'number' => '101',
-            'issue_date' => '2026-06-15', 'customer_id' => 2, 'total' => 3776,
-            'detraction_code' => '005', 'detraction_percent' => 12, 'detraction_amount' => 384,
-            'taxable_amount' => 3200, 'igv_amount' => 576,
+            'tax_document_id' => 'd2',
+            'document_type' => '01',
+            'series' => 'F001',
+            'number' => '101',
+            'issue_date' => '2026-06-15',
+            'customer_id' => 2,
+            'total' => 3776,
+            'detraction_code' => '005',
+            'detraction_percent' => 12,
+            'detraction_amount' => 384,
+            'taxable_amount' => 3200,
+            'igv_amount' => 576,
         ]);
 
         $query = new DetraccionQuery($this->connection);
@@ -122,10 +139,19 @@ final class DetraccionQueryTest extends TestCase
         $this->connection->insert('tenant_settings', ['id' => 1]);
 
         $this->connection->insert('tax_document', [
-            'tax_document_id' => 'd1', 'document_type' => '01', 'series' => 'F001', 'number' => '100',
-            'issue_date' => '2026-06-05', 'customer_id' => 1, 'total' => 5900,
-            'detraction_code' => '001', 'detraction_percent' => 4, 'detraction_amount' => 200,
-            'void_ticket' => 'T123', 'taxable_amount' => 5000, 'igv_amount' => 900,
+            'tax_document_id' => 'd1',
+            'document_type' => '01',
+            'series' => 'F001',
+            'number' => '100',
+            'issue_date' => '2026-06-05',
+            'customer_id' => 1,
+            'total' => 5900,
+            'detraction_code' => '001',
+            'detraction_percent' => 4,
+            'detraction_amount' => 200,
+            'void_ticket' => 'T123',
+            'taxable_amount' => 5000,
+            'igv_amount' => 900,
         ]);
 
         $query = new DetraccionQuery($this->connection);

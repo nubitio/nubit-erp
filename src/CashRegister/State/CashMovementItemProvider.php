@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
@@ -15,6 +14,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -28,8 +28,7 @@ readonly class CashMovementItemProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -40,12 +39,9 @@ readonly class CashMovementItemProvider implements ProviderInterface
     {
         $id = (int) ($uriVariables['id'] ?? 0);
 
-        $row = $this->connection->fetchAssociative(
-            'SELECT id, cash_session_id, movement_type, category_id, amount, description, created_at
+        $row = $this->connection->fetchAssociative('SELECT id, cash_session_id, movement_type, category_id, amount, description, created_at
              FROM cash_movements
-             WHERE id = ?',
-            [$id]
-        );
+             WHERE id = ?', [$id]);
 
         if ($row === false) {
             throw new NotFoundHttpException(sprintf('CashMovement not found: %d', $id));
@@ -59,7 +55,7 @@ readonly class CashMovementItemProvider implements ProviderInterface
 
         $type = match ($row['movement_type']) {
             'CASH_OUT' => CashMovementType::EXPENSE,
-            default    => CashMovementType::INCOME,
+            default => CashMovementType::INCOME,
         };
         $movement->setType($type);
         $movement->setAmount((string) $row['amount']);

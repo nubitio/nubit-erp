@@ -9,11 +9,11 @@ use App\ControlPlane\Certificate\CertificateStatus;
 use App\ControlPlane\Certificate\CertificateStatusPolicy;
 use App\ControlPlane\Certificate\TenantCertificate;
 use App\ControlPlane\Certificate\TenantCertificateRepositoryInterface;
-use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Mailer\MailerInterface;
@@ -41,10 +41,12 @@ final class CertificateAlertServiceTest extends TestCase
         $tenantSwitcher->expects(self::once())->method('switchConnection')->with('acme');
 
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchAllAssociative')->willReturn([
-            ['username' => 'admin@acme.com'],
-            ['username' => 'notanemail'],
-        ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                ['username' => 'admin@acme.com'],
+                ['username' => 'notanemail'],
+            ]);
 
         $connectionRegistry = $this->createStub(ConnectionRegistry::class);
         $connectionRegistry->method('getConnection')->willReturn($connection);
@@ -53,7 +55,8 @@ final class CertificateAlertServiceTest extends TestCase
         $mailer->expects(self::once())->method('send')->with(self::isInstanceOf(Email::class));
 
         $userNotificationService = $this->createMock(UserNotificationServiceInterface::class);
-        $userNotificationService->expects(self::once())
+        $userNotificationService
+            ->expects(self::once())
             ->method('notifyByRolesDeduped')
             ->with(
                 ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'],
@@ -66,7 +69,8 @@ final class CertificateAlertServiceTest extends TestCase
             );
 
         $hub = $this->createMock(HubInterface::class);
-        $hub->expects(self::once())
+        $hub
+            ->expects(self::once())
             ->method('publish')
             ->with(self::callback(function (Update $update): bool {
                 self::assertStringContainsString('tenant/acme/notifications', $update->getTopics()[0]);
@@ -127,8 +131,20 @@ final class CertificateAlertServiceTest extends TestCase
 
     public function testSendExpiringAlertsContinuesOnFailureAndLogsError(): void
     {
-        $cert1 = $this->certificate(id: 1, status: CertificateStatus::ExpiringSoon, expiresAt: new \DateTimeImmutable('+10 days'), lastAlertedAt: null);
-        $cert2 = $this->certificate(id: 2, status: CertificateStatus::ExpiringSoon, expiresAt: new \DateTimeImmutable('+20 days'), lastAlertedAt: null, tenantName: 'beta', tenantId: 2);
+        $cert1 = $this->certificate(
+            id: 1,
+            status: CertificateStatus::ExpiringSoon,
+            expiresAt: new \DateTimeImmutable('+10 days'),
+            lastAlertedAt: null,
+        );
+        $cert2 = $this->certificate(
+            id: 2,
+            status: CertificateStatus::ExpiringSoon,
+            expiresAt: new \DateTimeImmutable('+20 days'),
+            lastAlertedAt: null,
+            tenantName: 'beta',
+            tenantId: 2,
+        );
 
         $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
         $repository->method('findExpiringWithin')->willReturn([$cert1, $cert2]);
@@ -137,7 +153,8 @@ final class CertificateAlertServiceTest extends TestCase
         $repository->expects(self::once())->method('markAlerted')->with(2);
 
         $tenantSwitcher = $this->createStub(TenantConnectionSwitcherInterface::class);
-        $tenantSwitcher->method('switchConnection')
+        $tenantSwitcher
+            ->method('switchConnection')
             ->willReturnCallback(function (string $name): void {
                 if ($name === 'acme') {
                     throw new \RuntimeException('Connection failed');

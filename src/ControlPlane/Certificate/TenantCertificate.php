@@ -28,6 +28,5 @@ final readonly class TenantCertificate
         public string $lycetSyncStatus = 'synced',
         public ?string $lycetSyncError = null,
         public ?\DateTimeImmutable $lycetSyncUpdatedAt = null,
-    ) {
-    }
+    ) {}
 }

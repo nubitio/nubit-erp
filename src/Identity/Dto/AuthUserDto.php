@@ -12,8 +12,7 @@ final readonly class AuthUserDto
         public ?int $role = null,
         /** @var array<string>|null */
         public ?array $roles = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $jwtPayload
@@ -24,7 +23,7 @@ final readonly class AuthUserDto
             userId: $jwtPayload['userId'],
             username: $jwtPayload['username'],
             role: $jwtPayload['role'],
-            roles: $jwtPayload['roles']
+            roles: $jwtPayload['roles'],
         );
     }
 }

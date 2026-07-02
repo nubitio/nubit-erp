@@ -16,11 +16,14 @@ final readonly class TenantSettingsPatchProcessor implements ProcessorInterface
     public function __construct(
         private TenantSettingsService $service,
         private RequestStack $requestStack,
-    ) {
-    }
+    ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): TenantSettings
-    {
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = [],
+    ): TenantSettings {
         /** @var TenantSettings $data */
         $settings = $this->service->get();
 

@@ -13,6 +13,5 @@ final readonly class RecentSaleDto
         public ?string $invoice,
         public ?string $series,
         public ?string $number,
-    ) {
-    }
+    ) {}
 }

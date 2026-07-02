@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Subscription\Controller;
 
-use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Onboarding\Service\AccountService;
+use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Subscription\Service\SubscriptionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +18,7 @@ final class SubscriptionController extends AbstractController
     public function __construct(
         private readonly AccountService $accountService,
         private readonly SubscriptionService $subscriptionService,
-    ) {
-    }
+    ) {}
 
     #[Route('/account/tenant/{tenantId}', name: 'onboarding_tenant_detail', methods: ['GET'])]
     public function tenantDetail(int $tenantId, Request $request): Response
@@ -80,12 +79,20 @@ final class SubscriptionController extends AbstractController
                 $newPlan,
                 $billingCycle,
                 $gateway,
-                $this->generateUrl('onboarding_subscription_return', [
-                    'tenantId' => $tenantId,
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
-                $this->generateUrl('onboarding_subscription_cancel', [
-                    'tenantId' => $tenantId,
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
+                $this->generateUrl(
+                    'onboarding_subscription_return',
+                    [
+                        'tenantId' => $tenantId,
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
+                $this->generateUrl(
+                    'onboarding_subscription_cancel',
+                    [
+                        'tenantId' => $tenantId,
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
             );
 
             return $this->redirect($result['approval_url']);
@@ -122,12 +129,20 @@ final class SubscriptionController extends AbstractController
                 $tenantId,
                 $accountId,
                 $newGateway,
-                $this->generateUrl('onboarding_subscription_return', [
-                    'tenantId' => $tenantId,
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
-                $this->generateUrl('onboarding_subscription_cancel', [
-                    'tenantId' => $tenantId,
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
+                $this->generateUrl(
+                    'onboarding_subscription_return',
+                    [
+                        'tenantId' => $tenantId,
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
+                $this->generateUrl(
+                    'onboarding_subscription_cancel',
+                    [
+                        'tenantId' => $tenantId,
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
             );
 
             return $this->redirect($result['approval_url']);
@@ -141,7 +156,7 @@ final class SubscriptionController extends AbstractController
     #[Route(
         '/account/tenant/{tenantId}/cancel-subscription',
         name: 'onboarding_cancel_subscription',
-        methods: ['POST']
+        methods: ['POST'],
     )]
     public function cancelSubscription(int $tenantId, Request $request): Response
     {

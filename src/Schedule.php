@@ -16,35 +16,27 @@ readonly class Schedule implements ScheduleProviderInterface
 {
     public function __construct(
         private CacheInterface $cache,
-    ) {
-    }
+    ) {}
 
     public function getSchedule(): SymfonySchedule
     {
         return new SymfonySchedule()
             ->stateful($this->cache) // ensure missed tasks are executed
             ->processOnlyLastMissedRun(true) // ensure only last missed task is run
-
             // Daily AI morning briefing — runs at 07:30 America/Lima every day.
             // RunCommandMessage dispatches "app:ai:briefing:generate" via Symfony Messenger.
-            ->add(
-                RecurringMessage::cron(
-                    '30 7 * * *',
-                    new RunCommandMessage('app:ai:briefing:generate', throwOnFailure: false),
-                    'America/Lima',
-                )
-            )
-
+            ->add(RecurringMessage::cron(
+                '30 7 * * *',
+                new RunCommandMessage('app:ai:briefing:generate', throwOnFailure: false),
+                'America/Lima',
+            ))
             // Stock-low in-app notifications — runs every 6 hours.
             // Emits stock_low notifications for all products at or below min_stock,
             // deduplicated per user within a 24-hour sliding window.
-            ->add(
-                RecurringMessage::cron(
-                    '0 */6 * * *',
-                    new RunCommandMessage('app:notification:generate-stock', throwOnFailure: false),
-                    'America/Lima',
-                )
-            )
-        ;
+            ->add(RecurringMessage::cron(
+                '0 */6 * * *',
+                new RunCommandMessage('app:notification:generate-stock', throwOnFailure: false),
+                'America/Lima',
+            ));
     }
 }

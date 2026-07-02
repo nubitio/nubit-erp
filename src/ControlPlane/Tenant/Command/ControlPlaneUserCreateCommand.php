@@ -15,10 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:control-plane:user:create',
-    description: 'Create or update a control plane admin user.',
-)]
+#[AsCommand(name: 'app:control-plane:user:create', description: 'Create or update a control plane admin user.')]
 final class ControlPlaneUserCreateCommand extends Command
 {
     public function __construct(
@@ -31,12 +28,7 @@ final class ControlPlaneUserCreateCommand extends Command
     {
         $this
             ->addArgument('username', InputArgument::REQUIRED, 'Control plane username')
-            ->addOption(
-                'password',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'User password (if omitted, prompt hidden)',
-            )
+            ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'User password (if omitted, prompt hidden)')
             ->addOption(
                 'roles',
                 null,
@@ -44,12 +36,7 @@ final class ControlPlaneUserCreateCommand extends Command
                 'Comma-separated roles (default: ROLE_ADMIN)',
                 'ROLE_ADMIN',
             )
-            ->addOption(
-                'inactive',
-                null,
-                InputOption::VALUE_NONE,
-                'Create or update user as inactive',
-            );
+            ->addOption('inactive', null, InputOption::VALUE_NONE, 'Create or update user as inactive');
     }
 
     /**
@@ -89,7 +76,7 @@ final class ControlPlaneUserCreateCommand extends Command
         $rolesRaw = (string) $input->getOption('roles');
         $roles = array_values(array_filter(
             array_map('trim', explode(',', $rolesRaw)),
-            static fn (string $role): bool => $role !== ''
+            static fn(string $role): bool => $role !== '',
         ));
         if ($roles === []) {
             $roles = ['ROLE_ADMIN'];
@@ -107,23 +94,19 @@ final class ControlPlaneUserCreateCommand extends Command
 
         $conn->executeStatement(
             <<<'SQL'
-                INSERT INTO control_plane_admin_users
-                    (username, password_hash, roles, is_active, created_at, updated_at)
-                VALUES (?, ?, ?, ?, NOW(), NOW())
-                ON DUPLICATE KEY UPDATE
-                    password_hash = VALUES(password_hash),
-                    roles = VALUES(roles),
-                    is_active = VALUES(is_active),
-                    updated_at = NOW()
-            SQL,
+                    INSERT INTO control_plane_admin_users
+                        (username, password_hash, roles, is_active, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, NOW(), NOW())
+                    ON DUPLICATE KEY UPDATE
+                        password_hash = VALUES(password_hash),
+                        roles = VALUES(roles),
+                        is_active = VALUES(is_active),
+                        updated_at = NOW()
+                SQL,
             [$username, $hash, json_encode($roles), $isActive ? 1 : 0],
         );
 
-        $io->success(sprintf(
-            'Control plane user "%s" saved (%s).',
-            $username,
-            $isActive ? 'active' : 'inactive',
-        ));
+        $io->success(sprintf('Control plane user "%s" saved (%s).', $username, $isActive ? 'active' : 'inactive'));
 
         return Command::SUCCESS;
     }

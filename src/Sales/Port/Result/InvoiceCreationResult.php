@@ -16,14 +16,10 @@ final readonly class InvoiceCreationResult
         public string $message,
         public mixed $detraccionMonto = null,
         public mixed $detraccionCodigo = null,
-    ) {
-    }
+    ) {}
 
-    public static function success(
-        string $message,
-        mixed $detraccionMonto = null,
-        mixed $detraccionCodigo = null,
-    ): self {
+    public static function success(string $message, mixed $detraccionMonto = null, mixed $detraccionCodigo = null): self
+    {
         return new self(true, $message, $detraccionMonto, $detraccionCodigo);
     }
 

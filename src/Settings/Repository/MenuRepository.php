@@ -32,7 +32,6 @@ class MenuRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
     //    public function findOneBySomeField($value): ?Menu
     //    {
     //        return $this->createQueryBuilder('m')

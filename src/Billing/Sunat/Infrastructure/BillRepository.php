@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Infrastructure;
 
-use Override;
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Billing\Sunat\Domain\BillRepositoryInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\Billing\Sunat\Domain\FileRequest;
 use App\Billing\Sunat\Model\Report\Extra;
 use App\Billing\Sunat\Model\Report\Parameters;
@@ -16,7 +13,10 @@ use App\Billing\Sunat\Model\Response\DocumentResponse;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Override;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -39,8 +39,7 @@ readonly class BillRepository implements BillRepositoryInterface
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
         private string $apiToken,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws TransportExceptionInterface
@@ -85,11 +84,11 @@ readonly class BillRepository implements BillRepositoryInterface
             $sunatMessage = $cdr?->getDescription() ?? '';
 
             $logContext = [
-                'sunat_code'      => $sunatCode,
-                'sunat_message'   => $sunatMessage,
-                'success'         => $success,
-                'duration_ms'     => $durationMs,
-                'tenant_id'       => $tenantId,
+                'sunat_code' => $sunatCode,
+                'sunat_message' => $sunatMessage,
+                'success' => $success,
+                'duration_ms' => $durationMs,
+                'tenant_id' => $tenantId,
                 'tax_document_id' => $taxDocumentId,
             ];
 
@@ -104,14 +103,14 @@ readonly class BillRepository implements BillRepositoryInterface
             $durationMs = (int) ((hrtime(true) - $start) / 1_000_000);
 
             $this->billingLogger->error('sunat.send', [
-                'sunat_code'      => '',
-                'sunat_message'   => '',
-                'success'         => false,
-                'duration_ms'     => $durationMs,
-                'tenant_id'       => $tenantId,
+                'sunat_code' => '',
+                'sunat_message' => '',
+                'success' => false,
+                'duration_ms' => $durationMs,
+                'tenant_id' => $tenantId,
                 'tax_document_id' => $taxDocumentId,
-                'url'             => $safeUrl,
-                'exception'       => $e,
+                'url' => $safeUrl,
+                'exception' => $e,
             ]);
 
             $this->maskAndRethrow($e);
@@ -151,20 +150,10 @@ readonly class BillRepository implements BillRepositoryInterface
     #[Override]
     public function getPdf(Invoice $invoice): string
     {
-        $fileRequest = new FileRequest(
-            $invoice,
-            new Parameters(
-                user: new User(
-                    extras: [
-                        new Extra(
-                            'FORMA DE PAGO',
-                            $invoice->getFormaPago() instanceof FormaPagoCredito ? 'CREDITO' : 'CONTADO'
-                        ),
-                        new Extra('OBS', strval($invoice->getObservacion())),
-                    ],
-                )
-            )
-        );
+        $fileRequest = new FileRequest($invoice, new Parameters(user: new User(extras: [
+            new Extra('FORMA DE PAGO', $invoice->getFormaPago() instanceof FormaPagoCredito ? 'CREDITO' : 'CONTADO'),
+            new Extra('OBS', strval($invoice->getObservacion())),
+        ])));
 
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
         $url = $this->lycetUrl('invoice/pdf');

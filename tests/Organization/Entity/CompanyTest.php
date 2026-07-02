@@ -13,9 +13,10 @@ final class CompanyTest extends TestCase
     public function testCompanyAccessors(): void
     {
         $company = new Company();
-        $logo = (new Media())->setPath('/logo.png');
+        $logo = new Media()->setPath('/logo.png');
 
-        $company->setRuc('20100000001')
+        $company
+            ->setRuc('20100000001')
             ->setBusinessName('ACME SAC')
             ->setTradeName('ACME')
             ->setFiscalAddress('Av. Peru 123')

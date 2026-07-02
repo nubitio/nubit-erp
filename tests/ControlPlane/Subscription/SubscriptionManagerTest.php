@@ -26,8 +26,7 @@ final class SubscriptionManagerTest extends TestCase
     public function testCreateInsertsRowAndReturnsSubscriptionId(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())->method('insert')
-            ->with('subscriptions', self::arrayHasKey('status'));
+        $conn->expects(self::once())->method('insert')->with('subscriptions', self::arrayHasKey('status'));
         $conn->method('lastInsertId')->willReturn('7');
 
         $mgr = $this->makeManager($conn);
@@ -39,8 +38,10 @@ final class SubscriptionManagerTest extends TestCase
     public function testCreatePendingInsertsRowWithNullTenantId(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())->method('insert')
-            ->with('subscriptions', self::callback(static fn (array $d) => $d['tenant_id'] === null));
+        $conn
+            ->expects(self::once())
+            ->method('insert')
+            ->with('subscriptions', self::callback(static fn(array $d) => $d['tenant_id'] === null));
         $conn->method('lastInsertId')->willReturn('3');
 
         $mgr = $this->makeManager($conn);
@@ -55,11 +56,13 @@ final class SubscriptionManagerTest extends TestCase
     {
         $conn = $this->createMock(Connection::class);
         $conn->method('fetchOne')->willReturn('monthly');
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(self::stringContains('UPDATE subscriptions'), self::callback(
-                static fn (array $p) => $p[0] === 'active'
-            ));
+            ->with(
+                self::stringContains('UPDATE subscriptions'),
+                self::callback(static fn(array $p) => $p[0] === 'active'),
+            );
 
         $this->makeManager($conn)->activate(10);
     }
@@ -67,11 +70,10 @@ final class SubscriptionManagerTest extends TestCase
     public function testMarkPastDueExecutesUpdateWithPastDueStatus(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(self::anything(), self::callback(
-                static fn (array $p) => $p[0] === 'past_due'
-            ));
+            ->with(self::anything(), self::callback(static fn(array $p) => $p[0] === 'past_due'));
 
         $this->makeManager($conn)->markPastDue(10);
     }
@@ -79,11 +81,10 @@ final class SubscriptionManagerTest extends TestCase
     public function testCancelExecutesUpdateWithCancelledStatus(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(self::stringContains('cancelled_at'), self::callback(
-                static fn (array $p) => $p[0] === 'cancelled'
-            ));
+            ->with(self::stringContains('cancelled_at'), self::callback(static fn(array $p) => $p[0] === 'cancelled'));
 
         $this->makeManager($conn)->cancel(10);
     }
@@ -91,11 +92,10 @@ final class SubscriptionManagerTest extends TestCase
     public function testSuspendExecutesUpdateWithSuspendedStatus(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(self::anything(), self::callback(
-                static fn (array $p) => $p[0] === 'suspended'
-            ));
+            ->with(self::anything(), self::callback(static fn(array $p) => $p[0] === 'suspended'));
 
         $this->makeManager($conn)->suspend(10);
     }
@@ -105,11 +105,13 @@ final class SubscriptionManagerTest extends TestCase
     public function testLinkTenantExecutesUpdate(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(self::stringContains('tenant_id'), self::callback(
-                static fn (array $p) => $p[0] === 42 && $p[1] === 10
-            ));
+            ->with(
+                self::stringContains('tenant_id'),
+                self::callback(static fn(array $p) => $p[0] === 42 && $p[1] === 10),
+            );
 
         $this->makeManager($conn)->linkTenant(10, 42);
     }

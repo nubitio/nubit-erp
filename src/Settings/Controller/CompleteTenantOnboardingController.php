@@ -23,8 +23,7 @@ final class CompleteTenantOnboardingController extends AbstractController
         private readonly TenantSettingsRepository $settingsRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly TenantRuntimeConfigProvider $runtimeConfigProvider,
-    ) {
-    }
+    ) {}
 
     public function __invoke(): JsonResponse
     {

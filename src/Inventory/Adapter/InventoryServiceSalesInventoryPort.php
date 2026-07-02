@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Inventory\Adapter;
 
 use App\Catalog\Entity\Product;
-use Nubit\Platform\Exception\ServiceException;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
@@ -15,6 +14,7 @@ use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Exception;
+use Nubit\Platform\Exception\ServiceException;
 
 /**
  * Inventory V2 adapter for the sale inventory port used by Sales.
@@ -26,15 +26,11 @@ final readonly class InventoryServiceSalesInventoryPort implements SalesInventor
 {
     public function __construct(
         private InventoryService $inventoryService,
-    ) {
-    }
+    ) {}
 
     public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
     {
-        return (float) $this->inventoryService->getOnHand(
-            (string) $warehouse->getId(),
-            (string) $product->getId(),
-        );
+        return (float) $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
     }
 
     /**

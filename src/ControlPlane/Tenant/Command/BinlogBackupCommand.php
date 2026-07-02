@@ -12,10 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'app:binlog:backup',
-    description: 'Backup MariaDB binary logs for point-in-time recovery.',
-)]
+#[AsCommand(name: 'app:binlog:backup', description: 'Backup MariaDB binary logs for point-in-time recovery.')]
 #[AsCronTask('*/15 * * * *')]
 class BinlogBackupCommand extends Command
 {

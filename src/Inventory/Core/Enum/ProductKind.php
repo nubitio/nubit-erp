@@ -13,7 +13,7 @@ namespace App\Inventory\Core\Enum;
  */
 enum ProductKind: string
 {
-    case GOOD    = 'GOOD';
+    case GOOD = 'GOOD';
     case SERVICE = 'SERVICE';
     case DIGITAL = 'DIGITAL';
 
@@ -23,7 +23,7 @@ enum ProductKind: string
     public static function fromLegacyTypeId(int $typeId): self
     {
         return match ($typeId) {
-            1       => self::GOOD,
+            1 => self::GOOD,
             default => self::SERVICE,
         };
     }
@@ -35,8 +35,8 @@ enum ProductKind: string
     {
         return match (strtoupper($productType)) {
             'STOCKABLE', 'COMPOSITE', 'CONSUMABLE' => self::GOOD,
-            'DIGITAL'                               => self::DIGITAL,
-            default                                 => self::SERVICE,
+            'DIGITAL' => self::DIGITAL,
+            default => self::SERVICE,
         };
     }
 }

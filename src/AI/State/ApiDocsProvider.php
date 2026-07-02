@@ -23,8 +23,7 @@ readonly class ApiDocsProvider implements ProviderInterface
         private HttpClientInterface $httpClient,
         #[Autowire('%app.api_base_url%')]
         private string $apiBaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      */
@@ -45,11 +44,7 @@ readonly class ApiDocsProvider implements ProviderInterface
         }
 
         return new ReadResourceResult([
-            new TextResourceContents(
-                uri: 'resource://efact/api-docs',
-                mimeType: 'application/ld+json',
-                text: $body,
-            ),
+            new TextResourceContents(uri: 'resource://efact/api-docs', mimeType: 'application/ld+json', text: $body),
         ]);
     }
 }

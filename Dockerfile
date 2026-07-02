@@ -10,7 +10,9 @@ ARG FRANKENPHP_VERSION=1.10
 # -----------------------------------------------------------------------------
 # Mago PHP toolchain
 # -----------------------------------------------------------------------------
-FROM ghcr.io/carthage-software/mago:latest AS mago
+# Pinned to match the schema version declared in mago.toml; :latest (>=1.42)
+# enforces stricter exit codes that fail on the current baseline.
+FROM ghcr.io/carthage-software/mago:1.40.0 AS mago
 
 # -----------------------------------------------------------------------------
 # Base image with FrankenPHP

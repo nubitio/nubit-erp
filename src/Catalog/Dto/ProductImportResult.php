@@ -14,8 +14,7 @@ final class ProductImportResult
         public int $created = 0,
         public int $updated = 0,
         public array $errors = [],
-    ) {
-    }
+    ) {}
 
     public function addError(int $row, string $message): void
     {
@@ -33,7 +32,7 @@ final class ProductImportResult
         return [
             'created' => $this->created,
             'updated' => $this->updated,
-            'errors'  => $this->errors,
+            'errors' => $this->errors,
         ];
     }
 }

@@ -8,6 +8,5 @@ class AssistantResponse
 {
     public function __construct(
         public readonly string $message,
-    ) {
-    }
+    ) {}
 }

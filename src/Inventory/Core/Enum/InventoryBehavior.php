@@ -19,9 +19,9 @@ namespace App\Inventory\Core\Enum;
  */
 enum InventoryBehavior: string
 {
-    case TRACKED     = 'TRACKED';
+    case TRACKED = 'TRACKED';
     case NOT_TRACKED = 'NOT_TRACKED';
-    case COMPOSITE   = 'COMPOSITE';
+    case COMPOSITE = 'COMPOSITE';
 
     public function tracksInventory(): bool
     {
@@ -44,9 +44,9 @@ enum InventoryBehavior: string
     public static function fromProductType(string $productType): self
     {
         return match (strtoupper($productType)) {
-            'COMPOSITE'            => self::COMPOSITE,
-            'SERVICE', 'DIGITAL'   => self::NOT_TRACKED,
-            default                => self::TRACKED,
+            'COMPOSITE' => self::COMPOSITE,
+            'SERVICE', 'DIGITAL' => self::NOT_TRACKED,
+            default => self::TRACKED,
         };
     }
 }

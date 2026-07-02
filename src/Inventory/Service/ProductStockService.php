@@ -25,8 +25,7 @@ class ProductStockService
         private ProductStockRepository $productStockRepository,
         private WarehouseRepository $warehouseRepository,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     private ?InventoryService $inventoryService = null;
 
@@ -41,7 +40,11 @@ class ProductStockService
      */
     public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
     {
-        if ($this->inventoryService instanceof InventoryService && $product->getId() !== null && $warehouse->getId() !== null) {
+        if (
+            $this->inventoryService instanceof InventoryService
+            && $product->getId() !== null
+            && $warehouse->getId() !== null
+        ) {
             return (float) $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
         }
 
@@ -56,10 +59,17 @@ class ProductStockService
     public function updateStockForProductInWarehouse(
         Product $product,
         Warehouse $warehouse,
-        float $newStock
+        float $newStock,
     ): ProductStock {
-        if ($this->inventoryService instanceof InventoryService && $product->getId() !== null && $warehouse->getId() !== null) {
-            $currentStock = $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
+        if (
+            $this->inventoryService instanceof InventoryService
+            && $product->getId() !== null
+            && $warehouse->getId() !== null
+        ) {
+            $currentStock = $this->inventoryService->getOnHand(
+                (string) $warehouse->getId(),
+                (string) $product->getId(),
+            );
             $targetStock = number_format($newStock, 6, '.', '');
             $delta = bcsub($targetStock, $currentStock, 6);
 
@@ -76,7 +86,8 @@ class ProductStockService
                         sourceId: Uuid::v7()->toRfc4122(),
                         note: 'Ajuste manual de stock',
                     ),
-                    behavior: InventoryBehavior::tryFrom($product->getInventoryBehavior()) ?? InventoryBehavior::TRACKED,
+                    behavior: InventoryBehavior::tryFrom($product->getInventoryBehavior())
+                    ?? InventoryBehavior::TRACKED,
                 );
             }
 
@@ -111,7 +122,7 @@ class ProductStockService
         Product $product,
         Warehouse $sourceWarehouse,
         Warehouse $targetWarehouse,
-        float $quantity
+        float $quantity,
     ): bool {
         if ($quantity <= 0) {
             $this->logger->error('Cannot transfer non-positive quantity', [

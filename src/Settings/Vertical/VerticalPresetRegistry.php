@@ -17,10 +17,8 @@ final readonly class VerticalPresetRegistry
     /**
      * @param iterable<VerticalPresetInterface> $presets
      */
-    public function __construct(
-        #[AutowireIterator('app.vertical_preset')]
-        iterable $presets,
-    ) {
+    public function __construct(#[AutowireIterator('app.vertical_preset')] iterable $presets)
+    {
         $indexed = [];
         foreach ($presets as $preset) {
             $indexed[$preset->key()] = $preset;

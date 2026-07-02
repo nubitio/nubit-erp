@@ -6,17 +6,14 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\VoucherTypeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: VoucherTypeRepository::class)]
 #[ORM\Table(name: 'tipo_comprobante')]
-#[ApiResource(
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 class VoucherType
 {
     #[Groups(['voucher_series:read'])]

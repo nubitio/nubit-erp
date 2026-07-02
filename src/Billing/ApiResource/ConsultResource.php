@@ -10,37 +10,28 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use App\Billing\Controller\ConsultController;
 
-#[ApiResource(
-    shortName: 'Consult',
-    operations: [
-        new Get(
-            uriTemplate: '/consults/dni/{id}',
-            uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: ConsultResource::class,
-                ),
-            ],
-            defaults: ['docType' => 'dni'],
-            controller: ConsultController::class,
-            description: 'Retrieves DNI info.',
-            read: false,
-        ),
-        new Get(
-            uriTemplate: '/consults/ruc/{id}',
-            uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: ConsultResource::class,
-                ),
-            ],
-            defaults: ['docType' => 'ruc'],
-            controller: ConsultController::class,
-            description: 'Retrieves RUC info.',
-            read: false,
-        ),
-    ],
-)]
+#[ApiResource(shortName: 'Consult', operations: [
+    new Get(
+        uriTemplate: '/consults/dni/{id}',
+        uriVariables: [
+            'id' => new Link(fromProperty: 'id', fromClass: ConsultResource::class),
+        ],
+        defaults: ['docType' => 'dni'],
+        controller: ConsultController::class,
+        description: 'Retrieves DNI info.',
+        read: false,
+    ),
+    new Get(
+        uriTemplate: '/consults/ruc/{id}',
+        uriVariables: [
+            'id' => new Link(fromProperty: 'id', fromClass: ConsultResource::class),
+        ],
+        defaults: ['docType' => 'ruc'],
+        controller: ConsultController::class,
+        description: 'Retrieves RUC info.',
+        read: false,
+    ),
+])]
 class ConsultResource
 {
     public function __construct(
@@ -49,6 +40,5 @@ class ConsultResource
         public string $name,
         public string $address,
         public bool $active,
-    ) {
-    }
+    ) {}
 }

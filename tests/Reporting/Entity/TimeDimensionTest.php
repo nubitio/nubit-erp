@@ -55,7 +55,8 @@ final class TimeDimensionTest extends TestCase
         $td = new TimeDimension();
         $date = new DateTimeImmutable('2024-07-28');
 
-        $td->setId(20240728)
+        $td
+            ->setId(20240728)
             ->setDate($date)
             ->setYear(2024)
             ->setMonth(7)
@@ -85,7 +86,8 @@ final class TimeDimensionTest extends TestCase
     public function testNullableFieldsAcceptNull(): void
     {
         $td = new TimeDimension();
-        $td->setId(20240101)
+        $td
+            ->setId(20240101)
             ->setDate(null)
             ->setYear(null)
             ->setMonth(null)

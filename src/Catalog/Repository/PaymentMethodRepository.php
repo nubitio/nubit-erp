@@ -32,7 +32,6 @@ class PaymentMethodRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
     //    public function findOneBySomeField($value): ?PaymentMethod
     //    {
     //        return $this->createQueryBuilder('p')

@@ -28,8 +28,7 @@ class E2eSeedController extends AbstractController
 {
     public function __construct(
         private readonly E2eTestSeedServiceInterface $seedService,
-    ) {
-    }
+    ) {}
 
     public function seed(): JsonResponse
     {

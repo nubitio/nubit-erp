@@ -9,6 +9,5 @@ class PriceItemDto
     public function __construct(
         public ?string $productId = null,
         public ?string $price = null,
-    ) {
-    }
+    ) {}
 }

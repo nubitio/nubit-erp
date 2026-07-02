@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Sale\Void;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Billing\Sunat\Domain\SummaryCreateUseCase;
-use App\Billing\Sunat\Model\Response\SummaryResponse;
-use App\Billing\Sale\Void\ReceiptVoidStrategy;
-use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Sale\Void\ReceiptVoidStrategy;
+use App\Billing\Sale\Void\SunatVoidResponse;
+use App\Billing\Sunat\Domain\SummaryCreateUseCase;
+use App\Billing\Sunat\Model\Response\SummaryResponse;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use Greenter\Model\Response\SummaryResult;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -128,11 +128,7 @@ final class ReceiptVoidStrategyTest extends TestCase
         $repo = $this->createStub(TaxDocumentRepository::class);
         $repo->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
 
-        $summaryResponse = $this->makeSummaryResponse(
-            name: 'RC-20250101-00001',
-            success: true,
-            ticket: 'TICKET-002',
-        );
+        $summaryResponse = $this->makeSummaryResponse(name: 'RC-20250101-00001', success: true, ticket: 'TICKET-002');
 
         $useCase = $this->createStub(SummaryCreateUseCase::class);
         $useCase->method('__invoke')->willReturn($summaryResponse);
@@ -140,12 +136,7 @@ final class ReceiptVoidStrategyTest extends TestCase
         $filesystem = $this->createMock(FilesystemOperator::class);
         $filesystem->expects(self::once())->method('write'); // file written on success
 
-        $sut = new ReceiptVoidStrategy(
-            $repo,
-            $useCase,
-            $this->makeFileManager($filesystem),
-            new NullLogger(),
-        );
+        $sut = new ReceiptVoidStrategy($repo, $useCase, $this->makeFileManager($filesystem), new NullLogger());
 
         $result = $sut->void('sale-001', 'Anular boleta');
 
@@ -176,12 +167,7 @@ final class ReceiptVoidStrategyTest extends TestCase
         $filesystem = $this->createMock(FilesystemOperator::class);
         $filesystem->expects(self::never())->method('write'); // no file on failure
 
-        $sut = new ReceiptVoidStrategy(
-            $repo,
-            $useCase,
-            $this->makeFileManager($filesystem),
-            new NullLogger(),
-        );
+        $sut = new ReceiptVoidStrategy($repo, $useCase, $this->makeFileManager($filesystem), new NullLogger());
 
         $this->expectException(ServiceException::class);
 
@@ -199,19 +185,11 @@ final class ReceiptVoidStrategyTest extends TestCase
         $summaryResponse = $this->makeSummaryResponse();
 
         $useCase = $this->createMock(SummaryCreateUseCase::class);
-        $useCase->expects(self::once())
-            ->method('__invoke')
-            ->with('88')
-            ->willReturn($summaryResponse);
+        $useCase->expects(self::once())->method('__invoke')->with('88')->willReturn($summaryResponse);
 
         $filesystem = $this->createStub(FilesystemOperator::class);
 
-        $sut = new ReceiptVoidStrategy(
-            $repo,
-            $useCase,
-            $this->makeFileManager($filesystem),
-            new NullLogger(),
-        );
+        $sut = new ReceiptVoidStrategy($repo, $useCase, $this->makeFileManager($filesystem), new NullLogger());
 
         $sut->void('sale-003', 'Anular boleta');
     }
@@ -222,12 +200,14 @@ final class ReceiptVoidStrategyTest extends TestCase
         $capturedDocType = null;
 
         $repo = $this->createStub(TaxDocumentRepository::class);
-        $repo->method('findLatestAcceptedBySaleAndType')
-            ->willReturnCallback(static function (string $saleId, string $docType) use (&$capturedSaleId, &$capturedDocType): null {
-                $capturedSaleId = $saleId;
-                $capturedDocType = $docType;
-                return null;
-            });
+        $repo->method('findLatestAcceptedBySaleAndType')->willReturnCallback(static function (
+            string $saleId,
+            string $docType,
+        ) use (&$capturedSaleId, &$capturedDocType): null {
+            $capturedSaleId = $saleId;
+            $capturedDocType = $docType;
+            return null;
+        });
 
         $sut = new ReceiptVoidStrategy(
             $repo,

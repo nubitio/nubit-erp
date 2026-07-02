@@ -11,8 +11,8 @@ use App\Inventory\Core\Enum\StockPolicy;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
 use App\Settings\Repository\TenantSettingsRepository;
-use App\Settings\State\TenantSettingsProvider;
 use App\Settings\State\TenantSettingsPatchProcessor;
+use App\Settings\State\TenantSettingsProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -28,10 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'tenant_settings')]
 #[ApiResource(
     operations: [
-        new Get(
-            uriTemplate: '/tenant/settings',
-            provider: TenantSettingsProvider::class,
-        ),
+        new Get(uriTemplate: '/tenant/settings', provider: TenantSettingsProvider::class),
         new Patch(
             uriTemplate: '/tenant/settings',
             provider: TenantSettingsProvider::class,
@@ -120,6 +117,7 @@ class TenantSettings
     {
         return $this->igv;
     }
+
     public function setIgv(float $igv): static
     {
         $this->igv = $igv;
@@ -130,6 +128,7 @@ class TenantSettings
     {
         return $this->rc;
     }
+
     public function setRc(float $rc): static
     {
         $this->rc = $rc;
@@ -140,6 +139,7 @@ class TenantSettings
     {
         return $this->printLogo;
     }
+
     public function setPrintLogo(bool $printLogo): static
     {
         $this->printLogo = $printLogo;
@@ -150,6 +150,7 @@ class TenantSettings
     {
         return $this->requireCashRegister;
     }
+
     public function setRequireCashRegister(bool $requireCashRegister): static
     {
         $this->requireCashRegister = $requireCashRegister;
@@ -160,6 +161,7 @@ class TenantSettings
     {
         return $this->printMethod;
     }
+
     public function setPrintMethod(PrintMethod $printMethod): static
     {
         $this->printMethod = $printMethod;
@@ -170,6 +172,7 @@ class TenantSettings
     {
         return $this->autoInvoice;
     }
+
     public function setAutoInvoice(bool $autoInvoice): static
     {
         $this->autoInvoice = $autoInvoice;
@@ -180,6 +183,7 @@ class TenantSettings
     {
         return $this->defaultCurrency;
     }
+
     public function setDefaultCurrency(DefaultCurrency $defaultCurrency): static
     {
         $this->defaultCurrency = $defaultCurrency;
@@ -190,6 +194,7 @@ class TenantSettings
     {
         return $this->negativeStockPolicy;
     }
+
     public function setNegativeStockPolicy(StockPolicy $policy): static
     {
         $this->negativeStockPolicy = $policy;
@@ -200,6 +205,7 @@ class TenantSettings
     {
         return $this->vertical;
     }
+
     public function setVertical(string $vertical): static
     {
         $this->vertical = $vertical;
@@ -210,6 +216,7 @@ class TenantSettings
     {
         return $this->onboardingCompleted;
     }
+
     public function setOnboardingCompleted(bool $onboardingCompleted): static
     {
         $this->onboardingCompleted = $onboardingCompleted;

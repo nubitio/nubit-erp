@@ -80,7 +80,7 @@ final class MigrateStorageToTenantPrefixCommand extends Command
         }
 
         if ($tenantFilter !== null) {
-            $tenants = array_filter($tenants, static fn (array $t): bool => $t['name'] === $tenantFilter);
+            $tenants = array_filter($tenants, static fn(array $t): bool => $t['name'] === $tenantFilter);
             if ($tenants === []) {
                 $io->error(sprintf('Tenant "%s" not found', $tenantFilter));
 
@@ -142,11 +142,8 @@ final class MigrateStorageToTenantPrefixCommand extends Command
 
         try {
             $conn = $this->getControlPlaneConnection();
-            $backups = $conn->fetchAllAssociative(
-                'SELECT id, filename, storage_path FROM tenant_backups'
-                . " WHERE tenant_id = ? AND storage_type = 's3' AND status = 'completed'",
-                [$tenantId],
-            );
+            $backups = $conn->fetchAllAssociative('SELECT id, filename, storage_path FROM tenant_backups'
+            . " WHERE tenant_id = ? AND storage_type = 's3' AND status = 'completed'", [$tenantId]);
         } catch (Exception $e) {
             $io->error('Failed to query backups: ' . $e->getMessage());
 
@@ -164,14 +161,18 @@ final class MigrateStorageToTenantPrefixCommand extends Command
 
             try {
                 if ($this->copyFile($io, $sourcePath, $targetPath, $deleteOriginals)) {
-                    $conn->update('tenant_backups', [
-                        'storage_path' => $targetPath,
-                    ], ['id' => $backupId]);
+                    $conn->update(
+                        'tenant_backups',
+                        [
+                            'storage_path' => $targetPath,
+                        ],
+                        ['id' => $backupId],
+                    );
                     $migrated++;
                 } else {
                     $skipped++;
                 }
-            } catch (FilesystemException | Exception $e) {
+            } catch (FilesystemException|Exception $e) {
                 $errors++;
                 $this->logger->error('Failed to migrate backup', [
                     'tenant' => $tenantName,
@@ -267,8 +268,9 @@ final class MigrateStorageToTenantPrefixCommand extends Command
         $companyId = (string) $companyId;
 
         try {
-            $files = $this->defaultFilesystem->listContents($companyId . '/')
-                ->filter(static fn (StorageAttributes $attr): bool => $attr->isFile())
+            $files = $this->defaultFilesystem
+                ->listContents($companyId . '/')
+                ->filter(static fn(StorageAttributes $attr): bool => $attr->isFile())
                 ->toArray();
         } catch (FilesystemException $e) {
             $io->error('Failed to list invoice files: ' . $e->getMessage());
@@ -280,9 +282,7 @@ final class MigrateStorageToTenantPrefixCommand extends Command
             $sourcePath = $file->path();
             $filename = basename($sourcePath);
             $nameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
-            $docFullName = str_starts_with($nameWithoutExt, 'R-')
-                ? substr($nameWithoutExt, 2)
-                : $nameWithoutExt;
+            $docFullName = str_starts_with($nameWithoutExt, 'R-') ? substr($nameWithoutExt, 2) : $nameWithoutExt;
             $targetPath = $tenantName . '/' . Constants::INVOICE_DIR . '/' . $docFullName . '/' . $filename;
 
             try {

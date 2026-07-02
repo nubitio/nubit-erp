@@ -28,8 +28,7 @@ final class SunatDniScraper
     public function __construct(
         private readonly SunatRucScraper $rucScraper,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws LookupException
@@ -56,7 +55,7 @@ final class SunatDniScraper
         return new DocumentInfo(
             id: $dni,
             name: $info->name,
-            address: '',    // don't expose fiscal address for natural persons
+            address: '', // don't expose fiscal address for natural persons
             active: true,
         );
     }
@@ -72,9 +71,9 @@ final class SunatDniScraper
      */
     private function buildNaturalPersonRuc(string $dni): string
     {
-        $prefix  = '10' . $dni;
+        $prefix = '10' . $dni;
         $weights = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
-        $sum     = 0;
+        $sum = 0;
 
         for ($i = 0; $i < 10; ++$i) {
             $sum += (int) $prefix[$i] * $weights[$i];

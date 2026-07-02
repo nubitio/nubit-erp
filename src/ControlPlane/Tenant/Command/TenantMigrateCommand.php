@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Efact\Migrations\TenantMigrationFactory;
+use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Version\Direction;
+use Doctrine\Migrations\Version\ExecutionResult;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -15,14 +18,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Doctrine\Migrations\DependencyFactory;
-use Doctrine\Migrations\Version\Direction;
-use Doctrine\Migrations\Version\ExecutionResult;
 
-#[AsCommand(
-    name: 'app:tenants:migrate',
-    description: 'Run Doctrine migrations for all tenants.',
-)]
+#[AsCommand(name: 'app:tenants:migrate', description: 'Run Doctrine migrations for all tenants.')]
 class TenantMigrateCommand extends PerTenantCommand
 {
     public function __construct(
@@ -63,13 +60,9 @@ class TenantMigrateCommand extends PerTenantCommand
             return Command::SUCCESS;
         }
 
-        $targetVersion = $dependencyFactory
-            ->getVersionAliasResolver()
-            ->resolveVersionAlias('latest');
+        $targetVersion = $dependencyFactory->getVersionAliasResolver()->resolveVersionAlias('latest');
 
-        $plan = $dependencyFactory
-            ->getMigrationPlanCalculator()
-            ->getPlanUntilVersion($targetVersion);
+        $plan = $dependencyFactory->getMigrationPlanCalculator()->getPlanUntilVersion($targetVersion);
 
         if ($plan->count() === 0) {
             $io->writeln('No migrations to execute.');
@@ -100,11 +93,7 @@ class TenantMigrateCommand extends PerTenantCommand
                 continue;
             }
 
-            $metadataStorage->complete(new ExecutionResult(
-                $version,
-                Direction::UP,
-                new \DateTimeImmutable(),
-            ));
+            $metadataStorage->complete(new ExecutionResult($version, Direction::UP, new \DateTimeImmutable()));
             ++$marked;
         }
 

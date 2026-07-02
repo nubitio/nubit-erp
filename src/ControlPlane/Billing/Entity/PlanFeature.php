@@ -22,8 +22,7 @@ final class PlanFeature
         private ?array $configJson,
         public readonly \DateTimeImmutable $createdAt,
         public readonly \DateTimeImmutable $updatedAt,
-    ) {
-    }
+    ) {}
 
     public function isEnabled(): bool
     {

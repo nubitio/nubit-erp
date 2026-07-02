@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Get;
 use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
@@ -42,48 +42,41 @@ final class CashSessionXReportProviderTest extends TestCase
 
         $this->connection
             ->method('fetchAssociative')
-            ->willReturnCallback(
-                static function (string $sql, array $params) use ($sessionId): array {
-                    return ['id' => $sessionId, 'opening_amount' => '200.00'];
-                }
-            );
+            ->willReturnCallback(static function (string $sql, array $params) use ($sessionId): array {
+                return ['id' => $sessionId, 'opening_amount' => '200.00'];
+            });
 
         $this->connection
             ->method('fetchOne')
-            ->willReturnCallback(
-                static function (string $sql, array $params): string|int {
-                    // SALE_IN total
-                    if (str_contains($sql, "movement_type = 'SALE_IN'")) {
-                        return '500.00';
-                    }
-                    // CASH_IN total
-                    if (str_contains($sql, "movement_type = 'CASH_IN'")) {
-                        return '50.00';
-                    }
-                    // CASH_OUT total
-                    if (str_contains($sql, "movement_type = 'CASH_OUT'")) {
-                        return '20.00';
-                    }
-                    // Shift duration
-                    if (str_contains($sql, 'TIMESTAMPDIFF')) {
-                        return 60;
-                    }
-
-                    return '0';
+            ->willReturnCallback(static function (string $sql, array $params): string|int {
+                // SALE_IN total
+                if (str_contains($sql, "movement_type = 'SALE_IN'")) {
+                    return '500.00';
                 }
-            );
+                // CASH_IN total
+                if (str_contains($sql, "movement_type = 'CASH_IN'")) {
+                    return '50.00';
+                }
+                // CASH_OUT total
+                if (str_contains($sql, "movement_type = 'CASH_OUT'")) {
+                    return '20.00';
+                }
+                // Shift duration
+                if (str_contains($sql, 'TIMESTAMPDIFF')) {
+                    return 60;
+                }
+
+                return '0';
+            });
 
         $this->connection
             ->method('fetchAllAssociative')
             ->willReturn([
                 ['paymentMethodId' => 1, 'paymentMethod' => 'Efectivo', 'amount' => '300.00'],
-                ['paymentMethodId' => 2, 'paymentMethod' => 'Tarjeta',  'amount' => '200.00'],
+                ['paymentMethodId' => 2, 'paymentMethod' => 'Tarjeta', 'amount' => '200.00'],
             ]);
 
-        $result = $this->provider->provide(
-            new Get(uriTemplate: '/cash-shifts/{id}/x-report'),
-            ['id' => $cashShiftId],
-        );
+        $result = $this->provider->provide(new Get(uriTemplate: '/cash-shifts/{id}/x-report'), ['id' => $cashShiftId]);
 
         $this->assertInstanceOf(CashSessionXReportDto::class, $result);
         $this->assertSame('200.00', $result->openingBalance);

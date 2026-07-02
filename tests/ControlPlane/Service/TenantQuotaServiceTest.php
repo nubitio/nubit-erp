@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Service;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Efact\Doctrine\DBAL\TenantConnection;
-use Nubit\Platform\Exception\QuotaExceededException;
-use Nubit\Platform\Exception\ServiceException;
 use App\ControlPlane\Billing\Service\PlanManager;
 use App\ControlPlane\Billing\Service\QuotaCheckResult;
-use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
+use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
+use Nubit\Platform\Exception\QuotaExceededException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -31,7 +31,7 @@ final class TenantQuotaServiceTest extends TestCase
             tenantContext: new TenantContext(),
             tenantManager: $this->createMock(TenantManager::class),
             planManager: $this->planManagerWithPlans([]),
-            registry: $this->createMock(ConnectionRegistry::class)
+            registry: $this->createMock(ConnectionRegistry::class),
         );
 
         $open = $service->check('users');
@@ -53,7 +53,7 @@ final class TenantQuotaServiceTest extends TestCase
             tenantContext: $tenantContext,
             tenantManager: $tenantManager,
             planManager: $this->planManagerWithPlans([]),
-            registry: $this->createMock(ConnectionRegistry::class)
+            registry: $this->createMock(ConnectionRegistry::class),
         );
 
         $result = $service->check('users');
@@ -88,7 +88,7 @@ final class TenantQuotaServiceTest extends TestCase
             planManager: $this->planManagerWithPlans([
                 ['id' => 1, 'name' => 'free', 'limits' => ['users' => -1], 'is_default' => true],
             ]),
-            registry: $registryUnlimited
+            registry: $registryUnlimited,
         );
 
         $unlimited = $serviceUnlimited->check('users');
@@ -109,7 +109,7 @@ final class TenantQuotaServiceTest extends TestCase
             planManager: $this->planManagerWithPlans([
                 ['id' => 1, 'name' => 'free', 'limits' => ['users' => 10], 'is_default' => true],
             ]),
-            registry: $registryMissing
+            registry: $registryMissing,
         );
 
         $missing = $serviceMissingTable->check('users');
@@ -133,11 +133,7 @@ final class TenantQuotaServiceTest extends TestCase
         $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
-        $tenantConnection->method('fetchOne')->willReturnOnConsecutiveCalls(
-            1,
-            12,
-            0
-        );
+        $tenantConnection->method('fetchOne')->willReturnOnConsecutiveCalls(1, 12, 0);
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('tenant')->willReturn($tenantConnection);
@@ -150,7 +146,7 @@ final class TenantQuotaServiceTest extends TestCase
             tenantContext: $tenantContext,
             tenantManager: $tenantManager,
             planManager: $planManager,
-            registry: $registry
+            registry: $registry,
         );
 
         try {
@@ -166,7 +162,7 @@ final class TenantQuotaServiceTest extends TestCase
             tenantContext: $tenantContext,
             tenantManager: $tenantManager,
             planManager: $planManager,
-            registry: $registry
+            registry: $registry,
         );
 
         $this->expectException(ServiceException::class);
@@ -178,22 +174,25 @@ final class TenantQuotaServiceTest extends TestCase
     {
         $tenant = ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db', 'plan' => 'pro'];
         $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager->method('getTenantByName')->willReturnMap([
-            ['acme', $tenant],
-            ['missing', null],
-        ]);
+        $tenantManager
+            ->method('getTenantByName')
+            ->willReturnMap([
+                ['acme', $tenant],
+                ['missing', null],
+            ]);
 
         $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('switchTenantParams');
-        $tenantConnection->method('quoteSingleIdentifier')->willReturnCallback(
-            static fn (string $table): string => sprintf('`%s`', $table)
-        );
+        $tenantConnection
+            ->method('quoteSingleIdentifier')
+            ->willReturnCallback(static fn(string $table): string => sprintf('`%s`', $table));
         $schema = $this->createStub(AbstractSchemaManager::class);
         $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 
-        $tenantConnection->method('fetchOne')->willReturnCallback(
-            static function (string $sql): int {
+        $tenantConnection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql): int {
                 return match (true) {
                     str_contains($sql, 'GET_LOCK') => 1,
                     str_contains($sql, '`usuario`') => 3,
@@ -204,8 +203,7 @@ final class TenantQuotaServiceTest extends TestCase
                     str_contains($sql, 'information_schema.tables') => 1048576,
                     default => 0,
                 };
-            }
-        );
+            });
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('tenant')->willReturn($tenantConnection);
@@ -217,16 +215,21 @@ final class TenantQuotaServiceTest extends TestCase
             tenantContext: $tenantContext,
             tenantManager: $tenantManager,
             planManager: $this->planManagerWithPlans([
-                ['id' => 1, 'name' => 'pro', 'limits' => [
-                    'users' => 10,
-                    'customers' => 20,
-                    'products' => 30,
-                    'invoices' => 40,
-                    'branches' => 2,
-                    'storage_mb' => 2,
-                ], 'is_default' => true],
+                [
+                    'id' => 1,
+                    'name' => 'pro',
+                    'limits' => [
+                        'users' => 10,
+                        'customers' => 20,
+                        'products' => 30,
+                        'invoices' => 40,
+                        'branches' => 2,
+                        'storage_mb' => 2,
+                    ],
+                    'is_default' => true,
+                ],
             ]),
-            registry: $registry
+            registry: $registry,
         );
 
         $service->check('users');
@@ -253,7 +256,7 @@ final class TenantQuotaServiceTest extends TestCase
             $tenantManager,
             $planManager,
             new TenantResourceCatalog(),
-            $registry
+            $registry,
         );
     }
 
@@ -265,11 +268,13 @@ final class TenantQuotaServiceTest extends TestCase
         $registry = $this->createMock(ConnectionRegistry::class);
 
         $cache = $this->createMock(CacheInterface::class);
-        $cache->method('get')->willReturnCallback(static function (string $key, callable $callback) use ($plans): array {
-            unset($key, $callback);
+        $cache
+            ->method('get')
+            ->willReturnCallback(static function (string $key, callable $callback) use ($plans): array {
+                unset($key, $callback);
 
-            return $plans;
-        });
+                return $plans;
+            });
 
         return new PlanManager($registry, $cache, new NullLogger(), new TenantResourceCatalog());
     }

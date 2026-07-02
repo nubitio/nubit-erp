@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -24,8 +24,7 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
 
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -37,46 +36,41 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative(
-            'SELECT id, opening_amount FROM cash_sessions WHERE id = ?',
-            [$cashSessionId]
-        );
+        $session = $this->connection->fetchAssociative('SELECT id, opening_amount FROM cash_sessions WHERE id = ?', [
+            $cashSessionId,
+        ]);
 
         if ($session === false) {
-            $session = $this->connection->fetchAssociative(
-                'SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-                [$cashSessionId]
-            );
+            $session = $this->connection->fetchAssociative('SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?', [
+                $cashSessionId,
+            ]);
         }
 
         if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));
         }
 
-        $sessionId     = (int) $session['id'];
+        $sessionId = (int) $session['id'];
         $openingAmount = BigDecimal::of((string) $session['opening_amount']);
 
         $cashInRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
-            [$sessionId]
+            [$sessionId],
         );
         $cashInTotal = BigDecimal::of((string) ($cashInRaw ?: '0'));
 
         $cashOutRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
-            [$sessionId]
+            [$sessionId],
         );
         $cashOutTotal = BigDecimal::of((string) ($cashOutRaw ?: '0'));
 
-        $v2Sales = $this->connection->fetchAllAssociative(
-            "SELECT cm.payment_method_id, COALESCE(SUM(cm.amount), 0) AS total
+        $v2Sales = $this->connection->fetchAllAssociative("SELECT cm.payment_method_id, COALESCE(SUM(cm.amount), 0) AS total
              FROM cash_movements cm
              WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
-             GROUP BY cm.payment_method_id",
-            [$sessionId]
-        );
+             GROUP BY cm.payment_method_id", [$sessionId]);
 
         /** @var array<int, BigDecimal> $salesMap */
         $salesMap = [];
@@ -93,10 +87,9 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
             ->toScale(2, RoundingMode::HALF_UP)
             ->__toString();
 
-        $cashName = $this->connection->fetchOne(
-            'SELECT name FROM payment_method WHERE id = ?',
-            [self::CASH_PAYMENT_METHOD_ID]
-        ) ?: 'Efectivo';
+        $cashName = $this->connection->fetchOne('SELECT name FROM payment_method WHERE id = ?', [
+            self::CASH_PAYMENT_METHOD_ID,
+        ]) ?: 'Efectivo';
 
         $dtos = [
             new CashSessionClosureSummaryDto(
@@ -111,10 +104,8 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
                 continue;
             }
 
-            $pmName = $this->connection->fetchOne(
-                'SELECT name FROM payment_method WHERE id = ?',
-                [$pmId]
-            ) ?: 'Desconocido';
+            $pmName = $this->connection->fetchOne('SELECT name FROM payment_method WHERE id = ?', [$pmId])
+            ?: 'Desconocido';
 
             $dtos[] = new CashSessionClosureSummaryDto(
                 paymentMethodId: $pmId,

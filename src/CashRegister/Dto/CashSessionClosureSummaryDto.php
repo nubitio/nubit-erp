@@ -15,6 +15,5 @@ final readonly class CashSessionClosureSummaryDto
         public string $paymentMethod,
         #[Groups(['cash_closure_summary:read'])]
         public string $expectedAmount,
-    ) {
-    }
+    ) {}
 }

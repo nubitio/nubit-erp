@@ -10,8 +10,7 @@ final readonly class TaxSummaryQuery
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function compute(string $period = ''): array
@@ -24,32 +23,27 @@ final readonly class TaxSummaryQuery
         $vencimiento = $this->computeVencimiento($period);
 
         // IGV ventas
-        $ventas = $this->connection->fetchAssociative(
-            "SELECT COALESCE(SUM(taxable_amount),0) as base, COALESCE(SUM(igv_amount),0) as igv
+        $ventas = $this->connection->fetchAssociative("SELECT COALESCE(SUM(taxable_amount),0) as base, COALESCE(SUM(igv_amount),0) as igv
              FROM tax_document
              WHERE document_type IN ('01','03')
                AND DATE_FORMAT(issue_date,'%Y%m') = :period
                AND void_ticket IS NULL
-               AND void_correlation IS NULL",
-            ['period' => $period],
-        );
+               AND void_correlation IS NULL", [
+            'period' => $period,
+        ]);
 
         // IGV compras
-        $compras = $this->connection->fetchAssociative(
-            "SELECT COALESCE(SUM(subtotal),0) as base, COALESCE(SUM(tax_total),0) as igv
+        $compras = $this->connection->fetchAssociative("SELECT COALESCE(SUM(subtotal),0) as base, COALESCE(SUM(tax_total),0) as igv
              FROM goods_receipts
              WHERE DATE_FORMAT(issued_at,'%Y%m') = :period
-               AND status != 'VOIDED'",
-            ['period' => $period],
-        );
+               AND status != 'VOIDED'", ['period' => $period]);
 
         // Retenciones sufridas
-        $retenciones = $this->connection->fetchOne(
-            "SELECT COALESCE(SUM(amount),0) FROM retention_percepcion
+        $retenciones = $this->connection->fetchOne("SELECT COALESCE(SUM(amount),0) FROM retention_percepcion
              WHERE direction = 'sufrida'
-               AND DATE_FORMAT(period_date,'%Y%m') = :period",
-            ['period' => $period],
-        );
+               AND DATE_FORMAT(period_date,'%Y%m') = :period", [
+            'period' => $period,
+        ]);
 
         $debitoIgv = (float) ($ventas['igv'] ?? 0);
         $creditoIgv = (float) ($compras['igv'] ?? 0);
@@ -60,7 +54,7 @@ final readonly class TaxSummaryQuery
         $historial = [];
         for ($i = 0; $i < 6; ++$i) {
             $p = date('Ym', mktime(0, 0, 0, (int) substr($period, 4, 2) - $i, 1, (int) substr($period, 0, 4)));
-            $isCurrent = ($p === $period);
+            $isCurrent = $p === $period;
 
             if ($isCurrent) {
                 $historial[] = [
@@ -143,8 +137,18 @@ final readonly class TaxSummaryQuery
         }
 
         $months = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre',
+            'Enero',
+            'Febrero',
+            'Marzo',
+            'Abril',
+            'Mayo',
+            'Junio',
+            'Julio',
+            'Agosto',
+            'Setiembre',
+            'Octubre',
+            'Noviembre',
+            'Diciembre',
         ];
 
         return $months[$month - 1] . ' ' . $year;

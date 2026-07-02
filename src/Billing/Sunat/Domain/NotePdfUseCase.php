@@ -11,8 +11,7 @@ readonly class NotePdfUseCase
     public function __construct(
         private NoteCreateUseCase $noteCreateUseCase,
         private NoteRepositoryInterface $noteRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ServiceException

@@ -29,8 +29,8 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
         self::assertNotNull($constructor);
 
         $parameterNames = array_map(
-            static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
-            $constructor->getParameters()
+            static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
+            $constructor->getParameters(),
         );
 
         self::assertNotContains('cashMovementCategoryRepository', $parameterNames);
@@ -62,8 +62,8 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
         self::assertNotNull($constructor);
 
         $parameterNames = array_map(
-            static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
-            $constructor->getParameters()
+            static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
+            $constructor->getParameters(),
         );
 
         self::assertNotContains('purchasesWritePolicyResolver', $parameterNames);

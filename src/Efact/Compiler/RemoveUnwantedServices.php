@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Efact\Compiler;
 
+use App\Efact\Annotation\IgnoreAutowire;
+use Exception;
 use Override;
 use ReflectionClass;
-use Exception;
-use App\Efact\Annotation\IgnoreAutowire;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 

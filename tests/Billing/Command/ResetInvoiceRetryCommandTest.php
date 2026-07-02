@@ -35,16 +35,16 @@ final class ResetInvoiceRetryCommandTest extends TestCase
     public static function rejectedStatusProvider(): array
     {
         return [
-            'empty string → not rejected'       => ['',       false],
-            'non-numeric string → not rejected' => ['error',  false],
-            'pendiente → not rejected'           => ['pendiente', false],
-            '0 → not rejected (accepted)'        => ['0',      false],
-            '1999 → not rejected (below range)'  => ['1999',   false],
-            '2000 → rejected (lower bound)'      => ['2000',   true],
-            '2800 → rejected (common SUNAT code)' => ['2800',   true],
-            '3999 → rejected (upper bound)'      => ['3999',   true],
-            '4000 → not rejected (above range)'  => ['4000',   false],
-            '9999 → not rejected (above range)'  => ['9999',   false],
+            'empty string → not rejected' => ['', false],
+            'non-numeric string → not rejected' => ['error', false],
+            'pendiente → not rejected' => ['pendiente', false],
+            '0 → not rejected (accepted)' => ['0', false],
+            '1999 → not rejected (below range)' => ['1999', false],
+            '2000 → rejected (lower bound)' => ['2000', true],
+            '2800 → rejected (common SUNAT code)' => ['2800', true],
+            '3999 → rejected (upper bound)' => ['3999', true],
+            '4000 → not rejected (above range)' => ['4000', false],
+            '9999 → not rejected (above range)' => ['9999', false],
         ];
     }
 

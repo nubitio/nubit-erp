@@ -25,8 +25,8 @@ final class PriceListProviderTest extends TestCase
     {
         $provider = $this->makeProvider([
             ['id' => 'prod-1', 'name' => 'Producto A', 'price' => '100.0000', 'price_source' => 'base'],
-            ['id' => 'prod-2', 'name' => 'Producto B', 'price' => '90.0000',  'price_source' => 'multiplier'],
-            ['id' => 'prod-3', 'name' => 'Producto C', 'price' => '75.0000',  'price_source' => 'override'],
+            ['id' => 'prod-2', 'name' => 'Producto B', 'price' => '90.0000', 'price_source' => 'multiplier'],
+            ['id' => 'prod-3', 'name' => 'Producto C', 'price' => '75.0000', 'price_source' => 'override'],
         ]);
 
         $result = $provider->provide(new GetCollection(), ['id' => 1]);
@@ -64,7 +64,8 @@ final class PriceListProviderTest extends TestCase
     public function testProvidePassesPriceListIdToQuery(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('fetchAllAssociative')
             ->with(self::anything(), ['id' => 42])
             ->willReturn([]);

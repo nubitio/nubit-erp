@@ -16,8 +16,7 @@ final class AuditLogController extends AbstractController
 {
     public function __construct(
         private readonly AuditLogRepository $auditLogRepository,
-    ) {
-    }
+    ) {}
 
     #[Route('/admin/audit-log', name: 'admin_audit_log_index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -34,9 +33,7 @@ final class AuditLogController extends AbstractController
         $result = $this->auditLogRepository->getAuditLogs($filters, $page, $limit);
         $actions = $this->auditLogRepository->getDistinctActions();
 
-        $totalPages = $result['total'] > 0
-            ? (int) ceil($result['total'] / $limit)
-            : 1;
+        $totalPages = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
 
         return $this->render('admin/audit/index.html.twig', [
             'logs' => $result['rows'],

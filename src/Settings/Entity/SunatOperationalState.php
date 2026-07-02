@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
 use App\Settings\Repository\SunatOperationalStateRepository;
-use App\Settings\State\SunatStateProvider;
 use App\Settings\State\SunatStatePatchProcessor;
+use App\Settings\State\SunatStateProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -83,6 +83,7 @@ class SunatOperationalState
     {
         return $this->sendEnabled;
     }
+
     public function setSendEnabled(bool $sendEnabled): static
     {
         $this->sendEnabled = $sendEnabled;
@@ -93,6 +94,7 @@ class SunatOperationalState
     {
         return $this->receiptRequired;
     }
+
     public function setReceiptRequired(bool $receiptRequired): static
     {
         $this->receiptRequired = $receiptRequired;
@@ -103,6 +105,7 @@ class SunatOperationalState
     {
         return $this->rejectionStreak;
     }
+
     public function setRejectionStreak(int $rejectionStreak): static
     {
         $this->rejectionStreak = max(0, $rejectionStreak);
@@ -113,6 +116,7 @@ class SunatOperationalState
     {
         return $this->rejectionThreshold;
     }
+
     public function setRejectionThreshold(int $rejectionThreshold): static
     {
         $this->rejectionThreshold = max(1, $rejectionThreshold);

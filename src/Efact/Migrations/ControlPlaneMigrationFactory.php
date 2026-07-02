@@ -15,8 +15,7 @@ final class ControlPlaneMigrationFactory
 {
     public function __construct(
         private readonly string $projectDir,
-    ) {
-    }
+    ) {}
 
     public function createDependencyFactory(
         ConnectionRegistry $registry,

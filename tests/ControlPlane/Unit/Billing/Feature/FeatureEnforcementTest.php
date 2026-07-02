@@ -9,8 +9,8 @@ use App\ControlPlane\Billing\Feature\FeatureVoter;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -48,7 +48,7 @@ final class FeatureEnforcementTest extends TestCase
             ->willThrowException(new FeatureNotAvailableException('excel_export'));
 
         $listener = new FeatureKernelListener($this->featureChecker);
-        $event    = $this->makeControllerEvent(new ControllerWithFeatureAttribute());
+        $event = $this->makeControllerEvent(new ControllerWithFeatureAttribute());
 
         $this->expectException(FeatureNotAvailableException::class);
         $this->expectExceptionCode(402);
@@ -58,13 +58,11 @@ final class FeatureEnforcementTest extends TestCase
 
     public function testKernelListenerAllowsRequestForEnabledFeature(): void
     {
-        $this->featureChecker
-            ->method('requireFeature')
-            ->with('excel_export');
+        $this->featureChecker->method('requireFeature')->with('excel_export');
         // No exception thrown → feature is available.
 
         $listener = new FeatureKernelListener($this->featureChecker);
-        $event    = $this->makeControllerEvent(new ControllerWithFeatureAttribute());
+        $event = $this->makeControllerEvent(new ControllerWithFeatureAttribute());
 
         $listener->onKernelController($event);
 
@@ -78,7 +76,7 @@ final class FeatureEnforcementTest extends TestCase
         $this->featureChecker->expects(self::never())->method('requireFeature');
 
         $listener = new FeatureKernelListener($this->featureChecker);
-        $event    = $this->makeControllerEvent(static fn () => null);
+        $event = $this->makeControllerEvent(static fn() => null);
 
         $listener->onKernelController($event);
     }
@@ -89,13 +87,10 @@ final class FeatureEnforcementTest extends TestCase
 
     public function testVoterReturnsFalseForDisabledFeature(): void
     {
-        $this->featureChecker
-            ->method('hasFeature')
-            ->with('excel_export')
-            ->willReturn(false);
+        $this->featureChecker->method('hasFeature')->with('excel_export')->willReturn(false);
 
-        $voter  = new FeatureVoter($this->featureChecker);
-        $token  = new NullToken();
+        $voter = new FeatureVoter($this->featureChecker);
+        $token = new NullToken();
         $result = $voter->vote($token, null, ['FEATURE_EXCEL_EXPORT']);
 
         // Voter::ACCESS_DENIED = -1
@@ -104,13 +99,10 @@ final class FeatureEnforcementTest extends TestCase
 
     public function testVoterReturnsTrueForEnabledFeature(): void
     {
-        $this->featureChecker
-            ->method('hasFeature')
-            ->with('excel_export')
-            ->willReturn(true);
+        $this->featureChecker->method('hasFeature')->with('excel_export')->willReturn(true);
 
-        $voter  = new FeatureVoter($this->featureChecker);
-        $token  = new NullToken();
+        $voter = new FeatureVoter($this->featureChecker);
+        $token = new NullToken();
         $result = $voter->vote($token, null, ['FEATURE_EXCEL_EXPORT']);
 
         // Voter::ACCESS_GRANTED = 1
@@ -121,8 +113,8 @@ final class FeatureEnforcementTest extends TestCase
     {
         $this->featureChecker->expects(self::never())->method('hasFeature');
 
-        $voter  = new FeatureVoter($this->featureChecker);
-        $token  = new NullToken();
+        $voter = new FeatureVoter($this->featureChecker);
+        $token = new NullToken();
         $result = $voter->vote($token, null, ['ROLE_ADMIN']);
 
         // Voter::ACCESS_ABSTAIN = 0
@@ -135,7 +127,7 @@ final class FeatureEnforcementTest extends TestCase
 
     private function makeControllerEvent(callable $controller): ControllerEvent
     {
-        $kernel  = $this->createMock(HttpKernelInterface::class);
+        $kernel = $this->createMock(HttpKernelInterface::class);
         $request = Request::create('/test');
 
         return new ControllerEvent($kernel, $controller, $request, HttpKernelInterface::MAIN_REQUEST);
@@ -149,7 +141,5 @@ final class FeatureEnforcementTest extends TestCase
 #[RequiresFeature('excel_export')]
 final class ControllerWithFeatureAttribute
 {
-    public function __invoke(): void
-    {
-    }
+    public function __invoke(): void {}
 }

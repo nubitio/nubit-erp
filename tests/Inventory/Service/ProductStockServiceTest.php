@@ -18,8 +18,8 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ProductStockServiceTest extends TestCase
@@ -41,11 +41,12 @@ final class ProductStockServiceTest extends TestCase
 
         $persisted = [];
         $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects(self::exactly(1))->method('persist')->willReturnCallback(
-            static function (object $entity) use (&$persisted): void {
+        $entityManager
+            ->expects(self::exactly(1))
+            ->method('persist')
+            ->willReturnCallback(static function (object $entity) use (&$persisted): void {
                 $persisted[] = $entity;
-            }
-        );
+            });
         $entityManager->expects(self::once())->method('flush');
 
         $repository = $this->createMock(ProductStockRepository::class);
@@ -93,11 +94,16 @@ final class ProductStockServiceTest extends TestCase
         $target = new Warehouse();
 
         $repository = $this->createMock(ProductStockRepository::class);
-        $sourceStock = (new ProductStock())->setProduct($product)->setWarehouse($source)->setStock(3.0);
-        $repository->method('findByProductAndWarehouse')->willReturnMap([
-            [$product, $source, $sourceStock],
-            [$product, $target, null],
-        ]);
+        $sourceStock = new ProductStock()
+            ->setProduct($product)
+            ->setWarehouse($source)
+            ->setStock(3.0);
+        $repository
+            ->method('findByProductAndWarehouse')
+            ->willReturnMap([
+                [$product, $source, $sourceStock],
+                [$product, $target, null],
+            ]);
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::exactly(2))->method('error');
@@ -114,14 +120,22 @@ final class ProductStockServiceTest extends TestCase
         $source = new Warehouse();
         $target = new Warehouse();
 
-        $sourceStock = (new ProductStock())->setProduct($product)->setWarehouse($source)->setStock(8.0);
-        $targetStock = (new ProductStock())->setProduct($product)->setWarehouse($target)->setStock(2.0);
+        $sourceStock = new ProductStock()
+            ->setProduct($product)
+            ->setWarehouse($source)
+            ->setStock(8.0);
+        $targetStock = new ProductStock()
+            ->setProduct($product)
+            ->setWarehouse($target)
+            ->setStock(2.0);
 
         $repository = $this->createMock(ProductStockRepository::class);
-        $repository->method('findByProductAndWarehouse')->willReturnMap([
-            [$product, $source, $sourceStock],
-            [$product, $target, $targetStock],
-        ]);
+        $repository
+            ->method('findByProductAndWarehouse')
+            ->willReturnMap([
+                [$product, $source, $sourceStock],
+                [$product, $target, $targetStock],
+            ]);
         $repository->method('getTotalStockForProduct')->willReturn(10.0);
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -134,7 +148,7 @@ final class ProductStockServiceTest extends TestCase
         $service = $this->newService(
             entityManager: $entityManager,
             productStockRepository: $repository,
-            logger: $logger
+            logger: $logger,
         );
 
         self::assertTrue($service->transferStock($product, $source, $target, 3.0));
@@ -157,18 +171,18 @@ final class ProductStockServiceTest extends TestCase
 
         $stocks = [];
         $entityManager = $this->createStub(EntityManagerInterface::class);
-        $entityManager->method('persist')->willReturnCallback(
-            static function (object $entity) use (&$stocks): void {
+        $entityManager
+            ->method('persist')
+            ->willReturnCallback(static function (object $entity) use (&$stocks): void {
                 if ($entity instanceof ProductStock) {
                     $stocks[] = $entity->getStock();
                 }
-            }
-        );
+            });
 
         $service = $this->newService(
             entityManager: $entityManager,
             productStockRepository: $repository,
-            warehouseRepository: $warehouseRepository
+            warehouseRepository: $warehouseRepository,
         );
 
         $service->initializeStockForProduct($product, 4);
@@ -207,7 +221,7 @@ final class ProductStockServiceTest extends TestCase
     private function productWithId(string $id): Product
     {
         $product = new Product();
-        (new \ReflectionProperty(Product::class, 'id'))->setValue($product, $id);
+        new \ReflectionProperty(Product::class, 'id')->setValue($product, $id);
 
         return $product;
     }
@@ -215,7 +229,7 @@ final class ProductStockServiceTest extends TestCase
     private function warehouseWithId(string $id): Warehouse
     {
         $warehouse = new Warehouse();
-        (new \ReflectionProperty(Warehouse::class, 'id'))->setValue($warehouse, $id);
+        new \ReflectionProperty(Warehouse::class, 'id')->setValue($warehouse, $id);
 
         return $warehouse;
     }

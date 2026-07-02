@@ -34,9 +34,9 @@ final class SunatNotificationListenerTest extends TestCase
     public static function errorStatuses(): array
     {
         return [
-            'lowercase error'   => ['error'],
+            'lowercase error' => ['error'],
             'lowercase rejected' => ['rejected'],
-            'uppercase ERROR'   => ['ERROR'],
+            'uppercase ERROR' => ['ERROR'],
             'uppercase REJECTED' => ['REJECTED'],
         ];
     }
@@ -50,7 +50,9 @@ final class SunatNotificationListenerTest extends TestCase
         $event->setMessage('RUC no activo');
 
         $notifier = $this->createMock(UserNotificationServiceInterface::class);
-        $notifier->expects(self::once())->method('notifyByRoles')
+        $notifier
+            ->expects(self::once())
+            ->method('notifyByRoles')
             ->with(
                 ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'],
                 NotificationType::SUNAT_ERROR,
@@ -107,12 +109,12 @@ final class SunatNotificationListenerTest extends TestCase
         $event->setMessage('DB error');
 
         $notifier = $this->createStub(UserNotificationServiceInterface::class);
-        $notifier->method('notifyByRoles')->willThrowException(
-            $this->createStub(DbalException::class)
-        );
+        $notifier->method('notifyByRoles')->willThrowException($this->createStub(DbalException::class));
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('error')
+        $logger
+            ->expects(self::once())
+            ->method('error')
             ->with('SunatNotificationListener: failed to write notification', self::isArray());
 
         $listener = new SunatNotificationListener($notifier, $logger);

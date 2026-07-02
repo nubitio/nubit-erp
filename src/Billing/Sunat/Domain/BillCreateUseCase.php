@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Domain;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Domain\Money;
 use App\Billing\Invoice\Service\VoucherHydratorInterface;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Shared\Enum\ChargeType;
 use App\Billing\Shared\Enum\LegendCode;
 use App\Billing\Shared\Enum\OperationType;
 use App\Billing\Shared\Service\AmountFormatterService;
+use App\Efact\Domain\Money;
 use App\Organization\Repository\CompanyRepository;
-use App\Billing\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
 use Greenter\Model\Client\Client;
@@ -24,6 +23,7 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
+use Nubit\Platform\Exception\ServiceException;
 
 readonly class BillCreateUseCase
 {
@@ -33,8 +33,7 @@ readonly class BillCreateUseCase
         private CompanyRepository $companyRepository,
         private VoucherHydratorInterface $voucherHydrator,
         private AmountFormatterService $amountFormatterService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DateMalformedStringException
@@ -57,7 +56,8 @@ readonly class BillCreateUseCase
         $detractionPercent = $hydratedVoucher->voucherDetractionPercent;
         $detractionAmount = $hydratedVoucher->voucherDetractionAmount;
         $detractionValueRef = $hydratedVoucher->voucherDetractionValueRef;
-        $hasDetraction = $hydratedVoucher->voucherDetractionCode
+        $hasDetraction =
+            $hydratedVoucher->voucherDetractionCode
             || $detractionPercent !== null
             || $detractionAmount !== null
             || $hydratedVoucher->voucherDetractionPaymentMethod
@@ -68,16 +68,17 @@ readonly class BillCreateUseCase
         }
 
         if ($detractionAmount === null && $detractionPercent !== null) {
-            $detractionAmount = Money::toFloat(
-                Money::of($hydratedVoucher->voucherSaleAmount)->multipliedBy(Money::rate($detractionPercent))
-            );
+            $detractionAmount = Money::toFloat(Money::of($hydratedVoucher->voucherSaleAmount)->multipliedBy(Money::rate(
+                $detractionPercent,
+            )));
         }
 
         // SUNAT requires detraction amounts always in PEN (UBL currencyID="PEN").
         // When the invoice is in a foreign currency the stored amounts are in that
         // currency, so we must multiply by the exchange rate before handing them
         // to Greenter.
-        $isForeignCurrency = $hydratedVoucher->voucherCurrency !== 'PEN'
+        $isForeignCurrency =
+            $hydratedVoucher->voucherCurrency !== 'PEN'
             && $hydratedVoucher->voucherExchangeRate !== null
             && $hydratedVoucher->voucherExchangeRate > 0.0;
 
@@ -85,15 +86,15 @@ readonly class BillCreateUseCase
             $exchangeRate = (string) $hydratedVoucher->voucherExchangeRate;
 
             if ($detractionAmount !== null) {
-                $detractionAmount = Money::toFloat(
-                    Money::of($detractionAmount)->multipliedBy(Money::of($exchangeRate))
-                );
+                $detractionAmount = Money::toFloat(Money::of($detractionAmount)->multipliedBy(Money::of(
+                    $exchangeRate,
+                )));
             }
 
             if ($detractionValueRef !== null) {
-                $detractionValueRef = Money::toFloat(
-                    Money::of($detractionValueRef)->multipliedBy(Money::of($exchangeRate))
-                );
+                $detractionValueRef = Money::toFloat(Money::of($detractionValueRef)->multipliedBy(Money::of(
+                    $exchangeRate,
+                )));
             }
         }
 
@@ -111,9 +112,9 @@ readonly class BillCreateUseCase
             ->setCorrelativo($hydratedVoucher->voucherNumber)
             ->setFechaEmision($hydratedVoucher->voucherDate)
             ->setFormaPago(
-                2 === $hydratedVoucher->voucherPaymentMethod ? new FormaPagoCredito(
-                    $hydratedVoucher->voucherSaleAmount
-                ) : new FormaPagoContado()
+                2 === $hydratedVoucher->voucherPaymentMethod
+                    ? new FormaPagoCredito($hydratedVoucher->voucherSaleAmount)
+                    : new FormaPagoContado(),
             )
             ->setTipoMoneda($hydratedVoucher->voucherCurrency)
             ->setClient($customer)
@@ -122,14 +123,10 @@ readonly class BillCreateUseCase
             ->setTotalImpuestos($hydratedVoucher->voucherTotalTaxes)
             ->setSumOtrosCargos($hydratedVoucher->voucherConsumptionSurchargeAmount)
             ->setValorVenta(
-                Money::of($hydratedVoucher->voucherSaleValue)->minus(
-                    Money::of($hydratedVoucher->voucherDiscountAmount)
-                )->toFloat()
+                Money::of($hydratedVoucher->voucherSaleValue)->minus(Money::of($hydratedVoucher->voucherDiscountAmount))->toFloat(),
             )
             ->setSubTotal(
-                Money::of($hydratedVoucher->voucherSaleAmount)->minus(
-                    Money::of($hydratedVoucher->voucherConsumptionSurchargeAmount)
-                )->toFloat()
+                Money::of($hydratedVoucher->voucherSaleAmount)->minus(Money::of($hydratedVoucher->voucherConsumptionSurchargeAmount))->toFloat(),
             )
             ->setMtoImpVenta($hydratedVoucher->voucherSaleAmount)
             ->setCompany($this->billUtils->getCompany());
@@ -181,9 +178,10 @@ readonly class BillCreateUseCase
         $details = [];
 
         foreach ($hydratedVoucher->voucherItems as $item) {
-            $lineIgvPercentage = $item->taxType === '10' && $hydratedVoucher->voucherTaxPercentage !== null
-                ? $hydratedVoucher->voucherTaxPercentage
-                : $item->taxPercentage;
+            $lineIgvPercentage =
+                $item->taxType === '10' && $hydratedVoucher->voucherTaxPercentage !== null
+                    ? $hydratedVoucher->voucherTaxPercentage
+                    : $item->taxPercentage;
 
             $detail = new SaleDetail()
                 ->setCodProducto($item->productCode)
@@ -203,9 +201,7 @@ readonly class BillCreateUseCase
             if ($item->discountAmount > 0.0) {
                 $detail->setDescuento($item->discountAmount);
 
-                $baseAmount = Money::toFloat(
-                    Money::of($item->quantity)->multipliedBy(Money::of($item->unitPrice))
-                );
+                $baseAmount = Money::toFloat(Money::of($item->quantity)->multipliedBy(Money::of($item->unitPrice)));
                 $factor = $item->discountPercent !== null
                     ? $item->discountPercent / 100.0
                     : ($baseAmount > 0.0 ? $item->discountAmount / $baseAmount : 0.0);
@@ -223,7 +219,7 @@ readonly class BillCreateUseCase
 
         $strTotal = $this->amountFormatterService->formatAmountInWords(
             $hydratedVoucher->voucherSaleAmount,
-            $hydratedVoucher->voucherCurrency
+            $hydratedVoucher->voucherCurrency,
         );
 
         $legend = new Legend()

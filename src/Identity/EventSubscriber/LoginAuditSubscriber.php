@@ -17,8 +17,7 @@ final readonly class LoginAuditSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private AuditLogger $auditLogger,
-    ) {
-    }
+    ) {}
 
     public static function getSubscribedEvents(): array
     {

@@ -82,8 +82,7 @@ readonly class ReplaceRejectedDocumentService
     public function __construct(
         private Connection $connection,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates a replacement for the most recent rejected tax_document
@@ -102,7 +101,11 @@ readonly class ReplaceRejectedDocumentService
         }
 
         if ((int) ($rejected['replacement_events'] ?? 0) > 0) {
-            return ['success' => false, 'message' => 'Ya existe un comprobante de reemplazo para este documento.', 'newId' => null];
+            return [
+                'success' => false,
+                'message' => 'Ya existe un comprobante de reemplazo para este documento.',
+                'newId' => null,
+            ];
         }
 
         $this->connection->beginTransaction();
@@ -129,7 +132,11 @@ readonly class ReplaceRejectedDocumentService
                 'exception' => $e->getMessage(),
             ]);
 
-            return ['success' => false, 'message' => 'Error al crear el reemplazo: ' . $e->getMessage(), 'newId' => null];
+            return [
+                'success' => false,
+                'message' => 'Error al crear el reemplazo: ' . $e->getMessage(),
+                'newId' => null,
+            ];
         }
     }
 
@@ -139,8 +146,7 @@ readonly class ReplaceRejectedDocumentService
     private function findRejectedForSale(string $saleId): ?array
     {
         /** @var array<string, mixed>|false $row */
-        $row = $this->connection->fetchAssociative(
-            "
+        $row = $this->connection->fetchAssociative("
             SELECT td.*,
               (
                 SELECT COUNT(1)
@@ -155,9 +161,7 @@ readonly class ReplaceRejectedDocumentService
               AND CAST(td.sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
             ORDER BY td.created_at DESC
             LIMIT 1
-            ",
-            ['id' => $saleId]
-        );
+            ", ['id' => $saleId]);
 
         return $row !== false ? $row : null;
     }
@@ -171,9 +175,7 @@ readonly class ReplaceRejectedDocumentService
         $oldId = (string) $old['tax_document_id'];
         $newId = (string) $this->connection->fetchOne('SELECT UUID()');
         $newNumber = $this->nextNumber((string) $old['document_type'], (string) $old['series']);
-        $newIssueDate = $issueDateMode === 'today'
-            ? date('Y-m-d H:i:s')
-            : (string) $old['issue_date'];
+        $newIssueDate = $issueDateMode === 'today' ? date('Y-m-d H:i:s') : (string) $old['issue_date'];
 
         $document = $this->buildReplacementRow($old, $newId, (string) $newNumber, $newIssueDate);
         $this->connection->insert('tax_document', $document);
@@ -217,19 +219,16 @@ readonly class ReplaceRejectedDocumentService
 
     private function nextNumber(string $documentType, string $series): int
     {
-        return (int) $this->connection->fetchOne(
-            "
+        return (int) $this->connection->fetchOne('
             SELECT IFNULL(MAX(CAST(number AS UNSIGNED)), 0) + 1
             FROM tax_document
             WHERE document_type = :document_type
               AND series = :series
             FOR UPDATE
-            ",
-            [
-                'document_type' => $documentType,
-                'series' => $series,
-            ]
-        );
+            ', [
+            'document_type' => $documentType,
+            'series' => $series,
+        ]);
     }
 
     /**
@@ -249,7 +248,8 @@ readonly class ReplaceRejectedDocumentService
         $row['issue_date'] = $issueDate;
         $row['number'] = $newNumber;
         $row['sunat_status'] = 'pendiente';
-        $row['sunat_message'] = 'Replacement for rejected document ' . (string) $old['series'] . '-' . (string) $old['number'];
+        $row['sunat_message'] =
+            'Replacement for rejected document ' . (string) $old['series'] . '-' . (string) $old['number'];
         $row['digest'] = null;
         $row['cdr_path'] = null;
         $row['void_ticket'] = null;
@@ -264,17 +264,17 @@ readonly class ReplaceRejectedDocumentService
 
     private function copyLines(string $oldId, string $newId): void
     {
-        $lineColumns = array_filter(self::LINE_COLUMNS, static fn (string $c): bool => $c !== 'tax_document_id');
-        $selectColumns = implode(', ', array_map(static fn (string $c): string => '`' . $c . '`', $lineColumns));
+        $lineColumns = array_filter(self::LINE_COLUMNS, static fn(string $c): bool => $c !== 'tax_document_id');
+        $selectColumns = implode(', ', array_map(static fn(string $c): string => '`' . $c . '`', $lineColumns));
         $insertColumns = '`tax_document_id`, ' . $selectColumns;
 
         $this->connection->executeStatement(
             sprintf(
                 'INSERT INTO tax_document_line (%s) SELECT :new_id, %s FROM tax_document_line WHERE tax_document_id = :old_id ORDER BY line_number',
                 $insertColumns,
-                $selectColumns
+                $selectColumns,
             ),
-            ['new_id' => $newId, 'old_id' => $oldId]
+            ['new_id' => $newId, 'old_id' => $oldId],
         );
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\EventListener;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\ControlPlane\EventListener\QuotaEnforcementListener;
-use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
-use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Nubit\Platform\Quota\Contract\QuotaEnforcerInterface;
+use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
 
 final class QuotaEnforcementListenerTest extends TestCase
@@ -39,10 +39,7 @@ final class QuotaEnforcementListenerTest extends TestCase
         $enforcer->expects(self::never())->method('enforce');
 
         $resolver = $this->createMock(QuotaResourceResolverInterface::class);
-        $resolver->expects(self::once())
-            ->method('resolveResource')
-            ->with($entity)
-            ->willReturn(null);
+        $resolver->expects(self::once())->method('resolveResource')->with($entity)->willReturn(null);
 
         $listener = new QuotaEnforcementListener($enforcer, $tenantContext, $resolver);
 
@@ -59,10 +56,7 @@ final class QuotaEnforcementListenerTest extends TestCase
         $enforcer->expects(self::once())->method('enforce')->with('users');
 
         $resolver = $this->createMock(QuotaResourceResolverInterface::class);
-        $resolver->expects(self::once())
-            ->method('resolveResource')
-            ->with($entity)
-            ->willReturn('users');
+        $resolver->expects(self::once())->method('resolveResource')->with($entity)->willReturn('users');
 
         $listener = new QuotaEnforcementListener($enforcer, $tenantContext, $resolver);
 

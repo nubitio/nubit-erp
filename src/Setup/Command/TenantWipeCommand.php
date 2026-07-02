@@ -75,10 +75,10 @@ final class TenantWipeCommand extends Command
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io          = new SymfonyStyle($input, $output);
-        $tenantName  = $input->getOption('tenant');
+        $io = new SymfonyStyle($input, $output);
+        $tenantName = $input->getOption('tenant');
         $wipeCatalog = (bool) $input->getOption('wipe-catalog');
-        $force       = (bool) $input->getOption('force');
+        $force = (bool) $input->getOption('force');
 
         // ---- --tenant is mandatory ----------------------------------------
         if (!$tenantName) {

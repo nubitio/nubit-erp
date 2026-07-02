@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace App\Setup\Command;
 
-use Override;
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Setup\Service\InitialDataSeeder;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
+use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:seed:initial-data',
-    description: 'Seed initial reference data (idempotent).',
-    help: <<<'TXT'
-Seed initial reference data (idempotent).
-TXT
-)]
+#[AsCommand(name: 'app:seed:initial-data', description: 'Seed initial reference data (idempotent).', help: <<<'TXT'
+    Seed initial reference data (idempotent).
+    TXT)]
 class SeedInitialDataCommand extends PerTenantCommand
 {
     public function __construct(

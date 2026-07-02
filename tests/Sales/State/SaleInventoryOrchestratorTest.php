@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Inventory\Core\Enum\StockPolicy;
-use App\Settings\Service\TenantSettingsService;
-use App\Identity\Dto\AuthUserDto;
 use App\Catalog\Entity\Product;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Inventory\Entity\Warehouse;
+use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
+use App\Inventory\Core\Enum\StockPolicy;
+use App\Inventory\Entity\Warehouse;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\State\NegativeStockPolicyResolver;
 use App\Sales\State\SaleInventoryOrchestrator;
-use Doctrine\DBAL\Connection;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\Common\Collections\ArrayCollection;
-use PHPUnit\Framework\MockObject\MockObject;
+use Doctrine\DBAL\Connection;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -117,8 +117,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         string $dualWrite = 'true',
         string $readFromStockItems = 'true',
     ): void {
-        $this->tenantSettings->method('getNegativeStockPolicy')
-            ->willReturn(StockPolicy::from($stockPolicy));
+        $this->tenantSettings->method('getNegativeStockPolicy')->willReturn(StockPolicy::from($stockPolicy));
     }
 
     /**
@@ -126,8 +125,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
      */
     private function stubStockBalance(float $qty): void
     {
-        $this->connection->method('fetchOne')
-            ->willReturn((string) $qty);
+        $this->connection->method('fetchOne')->willReturn((string) $qty);
     }
 
     /**
@@ -135,12 +133,14 @@ final class SaleInventoryOrchestratorTest extends TestCase
      */
     private function stubSuccessfulLedgerWrite(): void
     {
-        $this->connection->method('fetchAssociative')->willReturn([
-            'on_hand_qty' => '100.000000',
-            'reserved_qty' => '0.000000',
-            'available_qty' => '100.000000',
-            'avg_cost' => null,
-        ]);
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'on_hand_qty' => '100.000000',
+                'reserved_qty' => '0.000000',
+                'available_qty' => '100.000000',
+                'avg_cost' => null,
+            ]);
         $this->connection->method('executeStatement')->willReturn(1);
     }
 
@@ -197,8 +197,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->configureSettings('STRICT', 'legacy'); // STRICT — but stock is sufficient
         $this->stubStockBalance(10.0); // plenty of stock
         $this->stubSuccessfulLedgerWrite();
-        $this->validationPolicy->method('validateSale')
-            ->willReturn(StockValidationResult::allowed());
+        $this->validationPolicy->method('validateSale')->willReturn(StockValidationResult::allowed());
 
         $this->connection->expects(self::once())->method('beginTransaction');
 
@@ -218,7 +217,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('STRICT', 'legacy');
         $this->stubStockBalance(5.0); // not enough
-        $this->validationPolicy->method('validateSale')
+        $this->validationPolicy
+            ->method('validateSale')
             ->willReturn(StockValidationResult::blocked('Stock insuficiente para venta'));
 
         $this->expectException(ServiceException::class);
@@ -241,8 +241,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->configureSettings('ALLOW_NEGATIVE', 'legacy'); // ALLOW_NEGATIVE
         $this->stubStockBalance(1.0); // below requested qty
         $this->stubSuccessfulLedgerWrite();
-        $this->validationPolicy->method('validateSale')
-            ->willReturn(StockValidationResult::allowed());
+        $this->validationPolicy->method('validateSale')->willReturn(StockValidationResult::allowed());
 
         // Should not throw
         $this->connection->expects(self::once())->method('beginTransaction');
@@ -264,7 +263,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->configureSettings('WARNING_ONLY', 'legacy'); // WARNING_ONLY — warning = allowed
         $this->stubStockBalance(1.0);
         $this->stubSuccessfulLedgerWrite();
-        $this->validationPolicy->method('validateSale')
+        $this->validationPolicy
+            ->method('validateSale')
             ->willReturn(StockValidationResult::warning('Stock bajo, permite continuar'));
 
         $adminUser = new AuthUserDto(userId: 1, username: 'admin', roles: ['ROLE_ADMIN']);
@@ -287,7 +287,8 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('WARNING_ONLY', 'legacy');
         $this->stubStockBalance(1.0);
-        $this->validationPolicy->method('validateSale')
+        $this->validationPolicy
+            ->method('validateSale')
             ->willReturn(StockValidationResult::blocked('Stock insuficiente bajo WARNING_ONLY para no-admin'));
 
         $regularUser = new AuthUserDto(userId: 2, username: 'cashier', roles: ['ROLE_USER']);
@@ -336,9 +337,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->configureSettings('STRICT', 'v2_authoritative'); // core validation ON
         $this->stubStockBalance(3.0);
 
-        $this->validationPolicy
-            ->method('validateSale')
-            ->willReturn(StockValidationResult::blocked('STRICT'));
+        $this->validationPolicy->method('validateSale')->willReturn(StockValidationResult::blocked('STRICT'));
 
         $this->expectException(ServiceException::class);
 
@@ -360,9 +359,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $this->stubStockBalance(1.0);
         $this->stubSuccessfulLedgerWrite();
 
-        $this->validationPolicy
-            ->method('validateSale')
-            ->willReturn(StockValidationResult::warning('Low stock'));
+        $this->validationPolicy->method('validateSale')->willReturn(StockValidationResult::warning('Low stock'));
 
         $this->connection->expects(self::once())->method('beginTransaction');
 
@@ -468,15 +465,16 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
         $this->configureSettings('ALLOW_NEGATIVE', 'legacy');
         $this->stubStockBalance(10.0);
-        $this->validationPolicy->method('validateSale')
-            ->willReturn(StockValidationResult::allowed());
+        $this->validationPolicy->method('validateSale')->willReturn(StockValidationResult::allowed());
 
-        $this->connection->method('fetchAssociative')->willReturn([
-            'on_hand_qty' => '100.000000',
-            'reserved_qty' => '0.000000',
-            'available_qty' => '100.000000',
-            'avg_cost' => null,
-        ]);
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'on_hand_qty' => '100.000000',
+                'reserved_qty' => '0.000000',
+                'available_qty' => '100.000000',
+                'avg_cost' => null,
+            ]);
         $this->connection->method('executeStatement')->willReturn(1);
 
         // Two items → two transactions
@@ -489,9 +487,9 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
 final readonly class TestSalesInventoryPort implements SalesInventoryPortInterface
 {
-    public function __construct(private Connection $connection)
-    {
-    }
+    public function __construct(
+        private Connection $connection,
+    ) {}
 
     public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
     {

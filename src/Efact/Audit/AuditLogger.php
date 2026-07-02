@@ -19,18 +19,13 @@ readonly class AuditLogger
         private TenantRegistryInterface $tenantManager,
         private LoggerInterface $logger,
         private MessageBusInterface $bus,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $metadata
      */
-    public function log(
-        string $action,
-        array $metadata = [],
-        ?int $tenantId = null,
-        ?string $actor = null,
-    ): void {
+    public function log(string $action, array $metadata = [], ?int $tenantId = null, ?string $actor = null): void
+    {
         $actor = $this->resolveActor($actor, $metadata);
         $tenantId = $tenantId ?? $this->tenantContext->getTenantId() ?? $this->resolveTenantId($metadata);
         $requestId = $this->tenantContext->getRequestId();

@@ -12,8 +12,7 @@ final readonly class SendDespatchMessage
     public function __construct(
         public string $despatchGuideId,
         private string $tenantId,
-    ) {
-    }
+    ) {}
 
     public function getTenantId(): string
     {

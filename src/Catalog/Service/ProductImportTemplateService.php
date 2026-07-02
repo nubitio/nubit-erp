@@ -29,17 +29,17 @@ final readonly class ProductImportTemplateService
 {
     /** Column letter → [header label, is_required] */
     private const array COLUMNS = [
-        'A' => ['Código',                          false],
-        'B' => ['Nombre',                          true],
-        'C' => ['Categoría',                       true],
-        'D' => ['Unidad de medida',                true],
-        'E' => ['Precio de venta',                 true],
-        'F' => ['Precio de compra',                false],
-        'G' => ['SKU',                             false],
-        'H' => ['Código de barras',                false],
-        'I' => ['Tipo de producto',                false],
-        'J' => ['Comportamiento de inventario',    false],
-        'K' => ['Stock mínimo',                    false],
+        'A' => ['Código', false],
+        'B' => ['Nombre', true],
+        'C' => ['Categoría', true],
+        'D' => ['Unidad de medida', true],
+        'E' => ['Precio de venta', true],
+        'F' => ['Precio de compra', false],
+        'G' => ['SKU', false],
+        'H' => ['Código de barras', false],
+        'I' => ['Tipo de producto', false],
+        'J' => ['Comportamiento de inventario', false],
+        'K' => ['Stock mínimo', false],
     ];
 
     /** Fixed enum values (Spanish label → raw value stored in DB) */
@@ -53,24 +53,21 @@ final readonly class ProductImportTemplateService
     public function __construct(
         private CategoryRepository $categoryRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
-    ) {
-    }
+    ) {}
 
     public function build(): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()
-            ->setTitle('Plantilla importación de productos')
-            ->setCreator('eFact');
+        $spreadsheet->getProperties()->setTitle('Plantilla importación de productos')->setCreator('eFact');
 
-        $mainSheet  = $spreadsheet->getActiveSheet();
+        $mainSheet = $spreadsheet->getActiveSheet();
         $mainSheet->setTitle('Productos');
 
         $refsSheet = $spreadsheet->createSheet();
         $refsSheet->setTitle('_refs');
 
         $categories = $this->categoryRepository->findBy([], ['name' => 'ASC']);
-        $units       = $this->unitOfMeasureRepository->findBy([], ['name' => 'ASC']);
+        $units = $this->unitOfMeasureRepository->findBy([], ['name' => 'ASC']);
 
         $this->buildRefsSheet($refsSheet, $categories, $units);
         $this->buildMainSheet($mainSheet, count($categories), count($units));
@@ -128,40 +125,67 @@ final readonly class ProductImportTemplateService
             $sheet->setCellValue($cell, $text);
 
             $bgColor = $required ? 'C0392B' : '7F8C8D'; // red vs grey
-            $sheet->getStyle($cell)->applyFromArray([
-                'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 11],
-                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF' . $bgColor]],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
-                'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']]],
-            ]);
+            $sheet
+                ->getStyle($cell)
+                ->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 11],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF' . $bgColor]],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'wrapText' => true,
+                    ],
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']],
+                    ],
+                ]);
         }
 
         $sheet->getRowDimension(1)->setRowHeight(36);
 
         // ---- Sample row (row 2) ----
-        $sheet->fromArray([
-            'PROD-001',
-            'Producto de ejemplo',
-            '',  // category: filled via dropdown
-            '',  // unit:     filled via dropdown
-            '10.00',
-            '7.50',
-            'SKU-001',
-            '1234567890123',
-            'Bien',
-            'Inventario controlado',
-            '5',
-        ], null, 'A2');
+        $sheet->fromArray(
+            [
+                'PROD-001',
+                'Producto de ejemplo',
+                '', // category: filled via dropdown
+                '', // unit:     filled via dropdown
+                '10.00',
+                '7.50',
+                'SKU-001',
+                '1234567890123',
+                'Bien',
+                'Inventario controlado',
+                '5',
+            ],
+            null,
+            'A2',
+        );
 
-        $sheet->getStyle('A2:K2')->applyFromArray([
-            'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFECF0F1']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']]],
-            'font'    => ['color' => ['argb' => 'FF7F8C8D'], 'italic' => true],
-        ]);
+        $sheet
+            ->getStyle('A2:K2')
+            ->applyFromArray([
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFECF0F1']],
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']],
+                ],
+                'font' => ['color' => ['argb' => 'FF7F8C8D'], 'italic' => true],
+            ]);
 
         // ---- Column widths ----
-        $widths = ['A' => 16, 'B' => 36, 'C' => 24, 'D' => 22, 'E' => 16,
-                   'F' => 16, 'G' => 16, 'H' => 20, 'I' => 18, 'J' => 30, 'K' => 14];
+        $widths = [
+            'A' => 16,
+            'B' => 36,
+            'C' => 24,
+            'D' => 22,
+            'E' => 16,
+            'F' => 16,
+            'G' => 16,
+            'H' => 20,
+            'I' => 18,
+            'J' => 30,
+            'K' => 14,
+        ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
         }
@@ -171,7 +195,7 @@ final readonly class ProductImportTemplateService
 
         // ---- Data validation (rows 2 to 10001 = up to 10k rows) ----
         $first = 2;
-        $last  = 10001;
+        $last = 10001;
 
         // Category dropdown → _refs!$A$1:$A$<n>
         if ($categoryCount > 0) {
@@ -187,14 +211,20 @@ final readonly class ProductImportTemplateService
         $this->addListValidation($sheet, "I{$first}:I{$last}", '_refs!$C$1:$C$' . count(self::PRODUCT_KIND_OPTIONS));
 
         // inventoryBehavior dropdown → _refs!$D$1:$D$3
-        $this->addListValidation($sheet, "J{$first}:J{$last}", '_refs!$D$1:$D$' . count(self::INVENTORY_BEHAVIOR_OPTIONS));
+        $this->addListValidation(
+            $sheet,
+            "J{$first}:J{$last}",
+            '_refs!$D$1:$D$' . count(self::INVENTORY_BEHAVIOR_OPTIONS),
+        );
 
         // ---- Instructions note in M1 ----
         $sheet->setCellValue('M1', '* Campos obligatorios  |  Fila 2 es de ejemplo, bórrela antes de importar');
-        $sheet->getStyle('M1')->applyFromArray([
-            'font'      => ['italic' => true, 'color' => ['argb' => 'FF7F8C8D'], 'size' => 10],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-        ]);
+        $sheet
+            ->getStyle('M1')
+            ->applyFromArray([
+                'font' => ['italic' => true, 'color' => ['argb' => 'FF7F8C8D'], 'size' => 10],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+            ]);
         $sheet->getColumnDimension('M')->setWidth(60);
     }
 

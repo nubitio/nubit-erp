@@ -4,32 +4,32 @@ declare(strict_types=1);
 
 namespace App\Tests\Setup;
 
-use App\Settings\Service\TenantSettingsService;
-use App\Settings\Service\SunatStateService;
 use App\CashRegister\Entity\CashMovementCategory;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Entity\Category;
-use App\Contacts\Entity\Customer;
-use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\PaymentMethod;
-use App\Identity\Entity\Role;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
-use App\Organization\Repository\BranchRepository;
-use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
-use App\Organization\Repository\CompanyRepository;
-use App\Contacts\Repository\CustomerRepository;
-use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
-use App\Identity\Repository\RoleRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Identity\Repository\UserRepository;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
-use App\Settings\Service\MenuSeedService;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Identity\Entity\Role;
+use App\Identity\Repository\RoleRepository;
+use App\Identity\Repository\UserRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Repository\LogisticOperationRepository;
+use App\Organization\Repository\BranchRepository;
+use App\Organization\Repository\CompanyRepository;
 use App\Reporting\Service\TimeDimensionSeeder;
+use App\Settings\Service\MenuSeedService;
+use App\Settings\Service\SunatStateService;
+use App\Settings\Service\TenantSettingsService;
 use App\Settings\Service\UbigeoImportService;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
@@ -44,7 +44,7 @@ final class InitialSetupServiceTest extends TestCase
     public function testSeedSettingsUsesAuthoritativeDefaults(): void
     {
         $tenantSettings = $this->createMock(TenantSettingsService::class);
-        $sunatState     = $this->createMock(SunatStateService::class);
+        $sunatState = $this->createMock(SunatStateService::class);
 
         // TenantSettings entity is created via getOrCreate() → save()
         $tenantSettings->expects($this->atLeastOnce())->method('get');
@@ -79,7 +79,7 @@ final class InitialSetupServiceTest extends TestCase
         $service = $this->newService(
             userRepository: $userRepository,
             companyRepository: $companyRepository,
-            branchRepository: $branchRepository
+            branchRepository: $branchRepository,
         );
 
         $status = $service->status();
@@ -94,14 +94,11 @@ final class InitialSetupServiceTest extends TestCase
         $connection = $this->createMock(Connection::class);
         $connection->expects(self::exactly(3))->method('executeStatement');
 
-        $superAdmin = (new Role())->setName('Super Administrador');
+        $superAdmin = new Role()->setName('Super Administrador');
         $roleRepository = $this->createMock(RoleRepository::class);
         $roleRepository->method('find')->with(1)->willReturn($superAdmin);
 
-        $service = $this->newService(
-            connection: $connection,
-            roleRepository: $roleRepository
-        );
+        $service = $this->newService(connection: $connection, roleRepository: $roleRepository);
 
         $result = $this->invokePrivate($service, 'ensureDefaultRoles');
         self::assertSame($superAdmin, $result);
@@ -116,10 +113,7 @@ final class InitialSetupServiceTest extends TestCase
         $roleRepository->method('find')->willReturn(null);
         $roleRepository->method('findOneBy')->willReturn(null);
 
-        $service = $this->newService(
-            connection: $connection,
-            roleRepository: $roleRepository
-        );
+        $service = $this->newService(connection: $connection, roleRepository: $roleRepository);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('No se pudo preparar el rol de super administrador.');
@@ -168,7 +162,7 @@ final class InitialSetupServiceTest extends TestCase
             unitOfMeasureRepository: $unitRepo,
             categoryRepository: $categoryRepo,
             customerRepository: $customerRepo,
-            sunatCatalogRepository: $sunatRepo
+            sunatCatalogRepository: $sunatRepo,
         );
 
         $this->invokePrivate($service, 'seedReferenceData');

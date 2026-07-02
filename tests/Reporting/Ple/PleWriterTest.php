@@ -14,14 +14,18 @@ final class PleWriterTest extends TestCase
 {
     public function testFileNameUsesSunatIndicators(): void
     {
-        self::assertSame(
-            'LE2012345678920260600140100001111.txt',
-            PleWriter::fileName('20123456789', '202606', '140100', true),
-        );
-        self::assertSame(
-            'LE2012345678920260600080100001011.txt',
-            PleWriter::fileName('20123456789', '202606', '080100', false),
-        );
+        self::assertSame('LE2012345678920260600140100001111.txt', PleWriter::fileName(
+            '20123456789',
+            '202606',
+            '140100',
+            true,
+        ));
+        self::assertSame('LE2012345678920260600080100001011.txt', PleWriter::fileName(
+            '20123456789',
+            '202606',
+            '080100',
+            false,
+        ));
     }
 
     public function testCreditNoteAmountsAreNegativeInSalesLedger(): void

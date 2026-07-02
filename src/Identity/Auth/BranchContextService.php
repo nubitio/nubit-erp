@@ -17,8 +17,7 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
     public function __construct(
         private SecurityComponent $security,
         private JWTManagerInterface $jwtManager,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the branch ID from the current JWT token
@@ -38,7 +37,7 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
 
         $branchId = $payload['branchId'] ?? null;
 
-        return $branchId !== null ? (string)$branchId : null;
+        return $branchId !== null ? (string) $branchId : null;
     }
 
     /**

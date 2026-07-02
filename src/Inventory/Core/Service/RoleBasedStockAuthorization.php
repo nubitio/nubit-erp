@@ -33,11 +33,8 @@ final class RoleBasedStockAuthorization implements StockAuthorizationPolicyInter
     /**
      * @param array<int, string> $roles
      */
-    public function canOverrideStrictPolicy(
-        Product $product,
-        string $actorId,
-        array $roles,
-    ): StockAuthorizationResult {
+    public function canOverrideStrictPolicy(Product $product, string $actorId, array $roles): StockAuthorizationResult
+    {
         // Authorization is role-based only; $product is part of the interface
         // contract to allow future product-specific overrides (e.g. controlled
         // substances) but is intentionally unused in this implementation.
@@ -48,12 +45,10 @@ final class RoleBasedStockAuthorization implements StockAuthorizationPolicyInter
             }
         }
 
-        return StockAuthorizationResult::denied(
-            sprintf(
-                'Actor %s lacks any of [%s] to override strict stock policy',
-                $actorId,
-                implode(', ', self::OVERRIDE_ROLES),
-            )
-        );
+        return StockAuthorizationResult::denied(sprintf(
+            'Actor %s lacks any of [%s] to override strict stock policy',
+            $actorId,
+            implode(', ', self::OVERRIDE_ROLES),
+        ));
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Sale\Void;
 
+use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
 use App\Sales\Entity\SaleRecord;
-use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\Sales\State\CashSessionResolverInterface;
 use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -28,15 +28,16 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 42);
+        $resolver = $this->createResolverMock(sessionId: 42);
 
         // Simulate category lookup returning a row
-        $connection->method('fetchAssociative')
-            ->with(self::stringContains('cash_movement_category'), ['code' => CashMovementCategory::CUSTOMER_REFUND])
-            ->willReturn(['id' => 7]);
+        $connection->method('fetchAssociative')->with(self::stringContains('cash_movement_category'), [
+            'code' => CashMovementCategory::CUSTOMER_REFUND,
+        ])->willReturn(['id' => 7]);
 
         $executed = false;
-        $connection->method('executeStatement')
+        $connection
+            ->method('executeStatement')
             ->willReturnCallback(static function () use (&$executed): int {
                 $executed = true;
 
@@ -55,17 +56,21 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 5);
+        $resolver = $this->createResolverMock(sessionId: 5);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 3]);
 
         /** @var string|null $capturedSql */
-        $capturedSql  = null;
+        $capturedSql = null;
         /** @var array<string, mixed>|null $capturedParams */
         $capturedParams = null;
-        $connection->method('executeStatement')
-            ->willReturnCallback(static function (string $sql, array $params) use (&$capturedSql, &$capturedParams): int {
-                $capturedSql    = $sql;
+        $connection
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql, array $params) use (
+                &$capturedSql,
+                &$capturedParams,
+            ): int {
+                $capturedSql = $sql;
                 $capturedParams = $params;
 
                 return 1;
@@ -85,12 +90,13 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 1);
+        $resolver = $this->createResolverMock(sessionId: 1);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 2]);
 
         $capturedSql = '';
-        $connection->method('executeStatement')
+        $connection
+            ->method('executeStatement')
             ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
                 $capturedSql = $sql;
 
@@ -109,13 +115,14 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 10);
+        $resolver = $this->createResolverMock(sessionId: 10);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 4]);
 
         /** @var array<string, mixed>|null $capturedParams */
         $capturedParams = null;
-        $connection->method('executeStatement')
+        $connection
+            ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params) use (&$capturedParams): int {
                 $capturedParams = $params;
 
@@ -139,7 +146,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: null);
+        $resolver = $this->createResolverMock(sessionId: null);
 
         $connection->expects(self::never())->method('fetchAssociative');
         $connection->expects(self::never())->method('executeStatement');
@@ -154,7 +161,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: null);
+        $resolver = $this->createResolverMock(sessionId: null);
 
         $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
 
@@ -172,7 +179,7 @@ final class CashRefundRegistrarTest extends TestCase
         // No tipo_pago → getTipoPago() returns null → early return
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: null);
+        $resolver = $this->createResolverMock(sessionId: null);
 
         $connection->expects(self::never())->method('fetchAssociative');
         $connection->expects(self::never())->method('executeStatement');
@@ -185,14 +192,14 @@ final class CashRefundRegistrarTest extends TestCase
     public function testDoesNothingWhenSaleHasNonCashPaymentMethod(): void
     {
         $paymentMethod = new PaymentMethod();
-        $prop          = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
+        $prop = new \ReflectionClass(PaymentMethod::class)->getProperty('id');
         $prop->setValue($paymentMethod, 2); // credit card
 
         $sale = $this->makeSale(id: 'sale-card', total: '500.00');
         $sale->setTipoPago($paymentMethod);
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: null);
+        $resolver = $this->createResolverMock(sessionId: null);
 
         $connection->expects(self::never())->method('fetchAssociative');
         $connection->expects(self::never())->method('executeStatement');
@@ -212,7 +219,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 3);
+        $resolver = $this->createResolverMock(sessionId: 3);
 
         $connection->method('fetchAssociative')->willReturn(false); // category missing
 
@@ -232,12 +239,13 @@ final class CashRefundRegistrarTest extends TestCase
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
         $connection = $this->createConnectionMock();
-        $resolver   = $this->createResolverMock(sessionId: 9);
+        $resolver = $this->createResolverMock(sessionId: 9);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 1]);
 
         $capturedSql = '';
-        $connection->method('executeStatement')
+        $connection
+            ->method('executeStatement')
             ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
                 $capturedSql = $sql;
 
@@ -257,7 +265,7 @@ final class CashRefundRegistrarTest extends TestCase
     private function makeCashPaymentMethod(): PaymentMethod
     {
         $paymentMethod = new PaymentMethod();
-        $prop          = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
+        $prop = new \ReflectionClass(PaymentMethod::class)->getProperty('id');
         $prop->setValue($paymentMethod, PaymentMethod::CASH);
 
         return $paymentMethod;

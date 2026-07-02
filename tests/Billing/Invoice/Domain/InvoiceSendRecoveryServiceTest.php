@@ -67,7 +67,9 @@ final class InvoiceSendRecoveryServiceTest extends TestCase
         $consultUseCase->method('__invoke')->willThrowException(new \RuntimeException('SUNAT down'));
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())->method('warning')
+        $logger
+            ->expects(self::once())
+            ->method('warning')
             ->with('SUNAT consult recovery failed after send exception', self::isArray());
 
         $service = new InvoiceSendRecoveryService($consultUseCase, $logger);

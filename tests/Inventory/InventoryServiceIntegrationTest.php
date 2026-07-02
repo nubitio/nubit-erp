@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Inventory;
 
 use App\Catalog\Entity\Product;
-use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Contract\UnitConversionServiceInterface;
+use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
@@ -17,8 +17,8 @@ use App\Inventory\Core\Service\ReconciliationService;
 use App\Inventory\Core\Service\UnitConversionService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
@@ -106,7 +106,7 @@ final class InventoryServiceIntegrationTest extends TestCase
             warehouseId: 'wh-test',
             productId: 'prod-wine',
             movementType: StockMovementType::SALE,
-            qtyDeltaBase: '-1.000000',  // frontend value (ignored — backend recomputes)
+            qtyDeltaBase: '-1.000000', // frontend value (ignored — backend recomputes)
             unitId: 2,
             qtyOriginal: '1.000000',
             sourceType: 'sale',
@@ -131,9 +131,9 @@ final class InventoryServiceIntegrationTest extends TestCase
 
     public function testStrictPolicyBlocksSaleWhenStockIsZero(): void
     {
-        $service = $this->makeInventoryService(
-            policy: StockValidationResult::blocked('Insufficient stock (STRICT policy)'),
-        );
+        $service = $this->makeInventoryService(policy: StockValidationResult::blocked(
+            'Insufficient stock (STRICT policy)',
+        ));
 
         $product = $this->makeProduct('prod-a', InventoryBehavior::TRACKED);
 
@@ -176,16 +176,17 @@ final class InventoryServiceIntegrationTest extends TestCase
     public function testWarningOnlyAllowsSaleAndDispatchesWarningEvent(): void
     {
         $dispatchedEvents = [];
-        $this->dispatcher->method('dispatch')
+        $this->dispatcher
+            ->method('dispatch')
             ->willReturnCallback(function (object $event) use (&$dispatchedEvents): object {
                 $dispatchedEvents[] = $event;
 
                 return $event;
             });
 
-        $service = $this->makeInventoryService(
-            policy: StockValidationResult::warning('Stock would go negative (WARNING_ONLY)'),
-        );
+        $service = $this->makeInventoryService(policy: StockValidationResult::warning(
+            'Stock would go negative (WARNING_ONLY)',
+        ));
 
         $draft = $this->makeDraft('prod-b', '-1.000000', StockMovementType::SALE);
         $service->recordMovement($draft);
@@ -194,7 +195,7 @@ final class InventoryServiceIntegrationTest extends TestCase
         self::assertEqualsWithDelta(-1.0, (float) $service->getOnHand('wh-test', 'prod-b'), 0.001);
 
         // StockMovementRecorded event must have been dispatched
-        $recordedEvents = array_filter($dispatchedEvents, static fn ($e) => $e instanceof StockMovementRecorded);
+        $recordedEvents = array_filter($dispatchedEvents, static fn($e) => $e instanceof StockMovementRecorded);
         self::assertNotEmpty($recordedEvents, 'StockMovementRecorded event must be dispatched');
     }
 
@@ -243,9 +244,7 @@ final class InventoryServiceIntegrationTest extends TestCase
         self::assertEqualsWithDelta(8.0, (float) $service->getOnHand('wh-test', 'prod-c'), 0.001);
 
         // Only one ledger row should exist
-        $count = (int) $this->conn->fetchOne(
-            "SELECT COUNT(*) FROM stock_movements WHERE source_id = 'sale-dup-1'",
-        );
+        $count = (int) $this->conn->fetchOne("SELECT COUNT(*) FROM stock_movements WHERE source_id = 'sale-dup-1'");
         self::assertSame(1, $count);
     }
 
@@ -315,8 +314,8 @@ final class InventoryServiceIntegrationTest extends TestCase
         // Record 3 movements: +10, -3, -2 → on_hand = 5
         foreach ([
             ['+10.000000', StockMovementType::PURCHASE, 'po-1'],
-            ['-3.000000', StockMovementType::SALE, 'sale-r1'],
-            ['-2.000000', StockMovementType::SALE, 'sale-r2'],
+            ['-3.000000',  StockMovementType::SALE,     'sale-r1'],
+            ['-2.000000',  StockMovementType::SALE,     'sale-r2'],
         ] as [$qty, $type, $sourceId]) {
             $service->recordMovement($this->makeDraft('prod-r', $qty, $type, $sourceId));
         }
@@ -448,8 +447,7 @@ final class InventoryServiceIntegrationTest extends TestCase
 
     private function createSchema(): void
     {
-        $this->conn->executeStatement(
-            <<<'SQL'
+        $this->conn->executeStatement(<<<'SQL'
             CREATE TABLE stock_movements (
                 id VARCHAR(36) NOT NULL,
                 warehouse_id VARCHAR(36) NOT NULL,
@@ -473,11 +471,9 @@ final class InventoryServiceIntegrationTest extends TestCase
                 PRIMARY KEY (id),
                 UNIQUE (idempotency_key)
             )
-            SQL,
-        );
+            SQL);
 
-        $this->conn->executeStatement(
-            <<<'SQL'
+        $this->conn->executeStatement(<<<'SQL'
             CREATE TABLE stock_items (
                 warehouse_id VARCHAR(36) NOT NULL,
                 product_id VARCHAR(36) NOT NULL,
@@ -488,22 +484,29 @@ final class InventoryServiceIntegrationTest extends TestCase
                 version INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY (warehouse_id, product_id)
             )
-            SQL,
-        );
+            SQL);
 
-        $this->conn->executeStatement(
-            <<<'SQL'
+        $this->conn->executeStatement(<<<'SQL'
             CREATE TABLE product_units (
                 product_id VARCHAR(36) NOT NULL,
                 unit_id INTEGER NOT NULL,
                 conversion_to_base DECIMAL(18,6) NOT NULL,
                 PRIMARY KEY (product_id, unit_id)
             )
-            SQL,
-        );
+            SQL);
 
         // Seed product_units for base unit (factor = 1) for all test products
-        foreach (['prod-svc', 'prod-a', 'prod-b', 'prod-neg', 'prod-c', 'prod-t', 'prod-r', 'prod-drift', 'prod-wine'] as $pid) {
+        foreach ([
+            'prod-svc',
+            'prod-a',
+            'prod-b',
+            'prod-neg',
+            'prod-c',
+            'prod-t',
+            'prod-r',
+            'prod-drift',
+            'prod-wine',
+        ] as $pid) {
             $this->conn->insert('product_units', [
                 'product_id' => $pid,
                 'unit_id' => 1,
@@ -511,19 +514,16 @@ final class InventoryServiceIntegrationTest extends TestCase
             ]);
         }
 
-        $this->conn->executeStatement(
-            <<<'SQL'
+        $this->conn->executeStatement(<<<'SQL'
             CREATE TABLE stock_balances (
                 warehouse_id VARCHAR(36) NOT NULL,
                 product_id VARCHAR(36) NOT NULL,
                 on_hand_qty DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
                 PRIMARY KEY (warehouse_id, product_id)
             )
-            SQL,
-        );
+            SQL);
 
-        $this->conn->executeStatement(
-            <<<'SQL'
+        $this->conn->executeStatement(<<<'SQL'
             CREATE TABLE inventory_reconciliation_runs (
                 id VARCHAR(36) NOT NULL,
                 warehouse_id VARCHAR(36) NOT NULL,
@@ -535,7 +535,6 @@ final class InventoryServiceIntegrationTest extends TestCase
                 run_at DATETIME NOT NULL,
                 PRIMARY KEY (id)
             )
-            SQL,
-        );
+            SQL);
     }
 }

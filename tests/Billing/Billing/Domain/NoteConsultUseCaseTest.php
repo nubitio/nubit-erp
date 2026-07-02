@@ -24,12 +24,9 @@ final class NoteConsultUseCaseTest extends TestCase
     protected function setUp(): void
     {
         $this->noteCreateUseCase = $this->createMock(NoteCreateUseCase::class);
-        $this->noteRepository    = $this->createMock(NoteRepositoryInterface::class);
+        $this->noteRepository = $this->createMock(NoteRepositoryInterface::class);
 
-        $this->useCase = new NoteConsultUseCase(
-            $this->noteCreateUseCase,
-            $this->noteRepository,
-        );
+        $this->useCase = new NoteConsultUseCase($this->noteCreateUseCase, $this->noteRepository);
     }
 
     // -----------------------------------------------------------------------
@@ -39,20 +36,18 @@ final class NoteConsultUseCaseTest extends TestCase
     private function makeNote(string $tipoDoc = '07', string $serie = 'B001', string $correlativo = '1'): Note
     {
         $note = new Note();
-        $note->setTipoDoc($tipoDoc)
-            ->setSerie($serie)
-            ->setCorrelativo($correlativo);
+        $note->setTipoDoc($tipoDoc)->setSerie($serie)->setCorrelativo($correlativo);
 
         return $note;
     }
 
     private function makeStatusCdrResult(bool $success = true, string $code = '0'): StatusCdrResult
     {
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode($code)
             ->setDescription('La nota de credito es valida');
 
-        return (new StatusCdrResult())
+        return new StatusCdrResult()
             ->setSuccess($success)
             ->setCdrResponse($cdrResponse);
     }
@@ -65,15 +60,9 @@ final class NoteConsultUseCaseTest extends TestCase
     {
         $note = $this->makeNote();
 
-        $this->noteCreateUseCase
-            ->expects(self::once())
-            ->method('__invoke')
-            ->with('td-1')
-            ->willReturn($note);
+        $this->noteCreateUseCase->expects(self::once())->method('__invoke')->with('td-1')->willReturn($note);
 
-        $this->noteRepository
-            ->method('getStatus')
-            ->willReturn($this->makeStatusCdrResult());
+        $this->noteRepository->method('getStatus')->willReturn($this->makeStatusCdrResult());
 
         $this->useCase->__invoke('td-1');
     }
@@ -82,9 +71,7 @@ final class NoteConsultUseCaseTest extends TestCase
     {
         $note = $this->makeNote('07', 'B001', '5');
 
-        $this->noteCreateUseCase
-            ->method('__invoke')
-            ->willReturn($note);
+        $this->noteCreateUseCase->method('__invoke')->willReturn($note);
 
         $this->noteRepository
             ->expects(self::once())
@@ -97,16 +84,12 @@ final class NoteConsultUseCaseTest extends TestCase
 
     public function testInvokeReturnsStatusCdrResultFromRepository(): void
     {
-        $note          = $this->makeNote();
+        $note = $this->makeNote();
         $expectedResult = $this->makeStatusCdrResult(true, '0');
 
-        $this->noteCreateUseCase
-            ->method('__invoke')
-            ->willReturn($note);
+        $this->noteCreateUseCase->method('__invoke')->willReturn($note);
 
-        $this->noteRepository
-            ->method('getStatus')
-            ->willReturn($expectedResult);
+        $this->noteRepository->method('getStatus')->willReturn($expectedResult);
 
         $result = $this->useCase->__invoke('td-1');
 
@@ -115,16 +98,12 @@ final class NoteConsultUseCaseTest extends TestCase
 
     public function testInvokeReturnsFailedStatusCdrResultFromRepository(): void
     {
-        $note          = $this->makeNote();
-        $failedResult  = (new StatusCdrResult())->setSuccess(false);
+        $note = $this->makeNote();
+        $failedResult = new StatusCdrResult()->setSuccess(false);
 
-        $this->noteCreateUseCase
-            ->method('__invoke')
-            ->willReturn($note);
+        $this->noteCreateUseCase->method('__invoke')->willReturn($note);
 
-        $this->noteRepository
-            ->method('getStatus')
-            ->willReturn($failedResult);
+        $this->noteRepository->method('getStatus')->willReturn($failedResult);
 
         $result = $this->useCase->__invoke('td-1');
 
@@ -136,9 +115,7 @@ final class NoteConsultUseCaseTest extends TestCase
     {
         $note = $this->makeNote('08', 'F001', '10');
 
-        $this->noteCreateUseCase
-            ->method('__invoke')
-            ->willReturn($note);
+        $this->noteCreateUseCase->method('__invoke')->willReturn($note);
 
         $capturedNote = null;
         $this->noteRepository
@@ -163,9 +140,7 @@ final class NoteConsultUseCaseTest extends TestCase
     {
         $note = $this->makeNote('07', 'B001', '3');
 
-        $this->noteCreateUseCase
-            ->method('__invoke')
-            ->willReturn($note);
+        $this->noteCreateUseCase->method('__invoke')->willReturn($note);
 
         $capturedNote = null;
         $this->noteRepository

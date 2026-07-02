@@ -28,8 +28,7 @@ final readonly class DespatchBuilder
 
     public function __construct(
         private BillUtilsInterface $billUtils,
-    ) {
-    }
+    ) {}
 
     public function build(DespatchGuide $guide): Despatch
     {
@@ -37,13 +36,15 @@ final readonly class DespatchBuilder
         $recipientAddress->setDireccion($guide->getDestinationAddress());
 
         $recipient = new Client();
-        $recipient->setTipoDoc($guide->getRecipientDocType())
+        $recipient
+            ->setTipoDoc($guide->getRecipientDocType())
             ->setNumDoc($guide->getRecipientDocNumber())
             ->setRznSocial($guide->getRecipientName())
             ->setAddress($recipientAddress);
 
         $despatch = new Despatch();
-        $despatch->setVersion('2022')
+        $despatch
+            ->setVersion('2022')
             ->setTipoDoc($guide->getDocumentType())
             ->setSerie($guide->getSeries())
             ->setCorrelativo($guide->getNumber() ?? '')
@@ -62,7 +63,8 @@ final readonly class DespatchBuilder
         $destination = new Direction($guide->getDestinationUbigeo(), $guide->getDestinationAddress());
 
         $shipment = new Shipment();
-        $shipment->setCodTraslado($guide->getTransferReason())
+        $shipment
+            ->setCodTraslado($guide->getTransferReason())
             ->setModTraslado($guide->getTransportMode())
             ->setFecTraslado($this->toDateTime($guide->getTransferDate()))
             ->setPesoTotal((float) $guide->getTotalWeight())
@@ -86,7 +88,8 @@ final readonly class DespatchBuilder
     private function buildCarrier(DespatchGuide $guide): Transportist
     {
         $carrier = new Transportist();
-        $carrier->setTipoDoc($guide->getCarrierDocType())
+        $carrier
+            ->setTipoDoc($guide->getCarrierDocType())
             ->setNumDoc($guide->getCarrierDocNumber())
             ->setRznSocial($guide->getCarrierName())
             ->setNroMtc($guide->getCarrierMtc());
@@ -97,7 +100,8 @@ final readonly class DespatchBuilder
     private function buildDriver(DespatchGuide $guide): Driver
     {
         $driver = new Driver();
-        $driver->setTipo('Principal')
+        $driver
+            ->setTipo('Principal')
             ->setTipoDoc($guide->getDriverDocType())
             ->setNroDoc($guide->getDriverDocNumber())
             ->setLicencia($guide->getDriverLicense())
@@ -115,7 +119,8 @@ final readonly class DespatchBuilder
         $details = [];
         foreach ($guide->getLines() as $line) {
             $detail = new DespatchDetail();
-            $detail->setCodigo($line->getProductCode())
+            $detail
+                ->setCodigo($line->getProductCode())
                 ->setDescripcion($line->getDescription())
                 ->setUnidad($line->getUnit())
                 ->setCantidad((float) $line->getQuantity())

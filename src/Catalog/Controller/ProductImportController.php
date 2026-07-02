@@ -27,8 +27,7 @@ final class ProductImportController extends AbstractController
         private readonly TenantRegistryInterface $tenantRegistry,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
-    ) {
-    }
+    ) {}
 
     /**
      * GET /api/products/import/template
@@ -76,7 +75,7 @@ final class ProductImportController extends AbstractController
             'application/octet-stream',
         ];
         $mime = $file->getMimeType() ?? '';
-        $ext  = strtolower($file->getClientOriginalExtension());
+        $ext = strtolower($file->getClientOriginalExtension());
 
         if ($ext !== 'xlsx' && !in_array($mime, $allowedMimes, true)) {
             throw new BadRequestHttpException('Solo se aceptan archivos .xlsx.');
@@ -88,7 +87,7 @@ final class ProductImportController extends AbstractController
             mkdir($uploadDir, 0o755, true);
         }
 
-        $jobId    = Uuid::v4()->toRfc4122();
+        $jobId = Uuid::v4()->toRfc4122();
         $filename = $jobId . '.xlsx';
         $file->move($uploadDir, $filename);
         $filePath = $uploadDir . '/' . $filename;
@@ -112,19 +111,19 @@ final class ProductImportController extends AbstractController
         $topic = $tenantOrigin . '/api/product-imports/' . $jobId;
 
         $this->bus->dispatch(new ProductImportMessage(
-            jobId:        $jobId,
-            filePath:     $filePath,
+            jobId: $jobId,
+            filePath: $filePath,
             tenantOrigin: $tenantOrigin,
-            tenantName:   $tenant['name'] ?? null,
-            tenantId:     isset($tenant['id']) ? (int) $tenant['id'] : null,
+            tenantName: $tenant['name'] ?? null,
+            tenantId: isset($tenant['id']) ? (int) $tenant['id'] : null,
             tenantDomain: $tenant['domain'] ?? $tenantHost,
-            requestId:    (string) ($request->attributes->get('request_id') ?? ''),
+            requestId: (string) ($request->attributes->get('request_id') ?? ''),
         ));
 
         return $this->json([
-            'jobId'  => $jobId,
+            'jobId' => $jobId,
             'status' => 'queued',
-            'topic'  => $topic,
+            'topic' => $topic,
         ], Response::HTTP_ACCEPTED);
     }
 
@@ -134,8 +133,8 @@ final class ProductImportController extends AbstractController
         $tenantName = $this->tenantContext->getTenantName();
         if ($tenantName !== null && $tenantName !== '') {
             return [
-                'id'     => $this->tenantContext->getTenantId(),
-                'name'   => $tenantName,
+                'id' => $this->tenantContext->getTenantId(),
+                'name' => $tenantName,
                 'domain' => $this->tenantContext->getTenantDomain(),
             ];
         }

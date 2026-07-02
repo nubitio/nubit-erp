@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Efact\Service;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Efact\Filesystem\S3UrlResolver;
 use App\Efact\Config\EfactConstants;
+use App\Efact\Filesystem\S3UrlResolver;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Nubit\Platform\Tenant\Context\TenantContext;
 
 readonly class LogoProvider
 {
@@ -16,8 +16,7 @@ readonly class LogoProvider
         private Connection $connection,
         private S3UrlResolver $s3UrlResolver,
         private TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function __invoke(): string
     {
@@ -36,10 +35,9 @@ readonly class LogoProvider
         }
 
         try {
-            $media = $this->connection->fetchAssociative(
-                'SELECT path FROM media WHERE id = :id',
-                ['id' => $company['logo']]
-            );
+            $media = $this->connection->fetchAssociative('SELECT path FROM media WHERE id = :id', [
+                'id' => $company['logo'],
+            ]);
         } catch (Exception) {
             return '';
         }

@@ -32,7 +32,6 @@ class CashMovementRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
     //    public function findOneBySomeField($value): ?CashMovement
     //    {
     //        return $this->createQueryBuilder('c')

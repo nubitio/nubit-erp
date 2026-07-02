@@ -39,6 +39,5 @@ final readonly class CashSessionXReportDto
             ],
         ])]
         public array $salesByPaymentMethod,
-    ) {
-    }
+    ) {}
 }

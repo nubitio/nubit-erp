@@ -12,8 +12,7 @@ final readonly class PlePreviewService
     public function __construct(
         private SalesLedgerExporter $salesExporter,
         private PurchaseLedgerExporter $purchaseExporter,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -22,7 +21,7 @@ final readonly class PlePreviewService
     {
         return [
             'period' => $period,
-            'generatedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'generatedAt' => new \DateTimeImmutable()->format(\DateTimeInterface::ATOM),
             'books' => [
                 'sales' => $this->salesExporter->preview($period),
                 'purchases' => $this->purchaseExporter->preview($period),

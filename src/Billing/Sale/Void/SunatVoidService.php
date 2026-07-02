@@ -13,10 +13,8 @@ final readonly class SunatVoidService
      */
     private array $strategies;
 
-    public function __construct(
-        VoidStrategyInterface $invoiceStrategy,
-        VoidStrategyInterface $receiptStrategy,
-    ) {
+    public function __construct(VoidStrategyInterface $invoiceStrategy, VoidStrategyInterface $receiptStrategy)
+    {
         $this->strategies = [$invoiceStrategy, $receiptStrategy];
     }
 

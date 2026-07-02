@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Catalog\Entity\PaymentMethod;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\TableNotFoundException;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -64,18 +64,16 @@ final class SalesV2BackfillPaymentsCommand extends PerTenantCommand
         }
 
         if ($dryRun) {
-            $missingPayments = (int) $this->connection->fetchOne(
-                <<<'SQL'
-SELECT COUNT(*)
-FROM sales s
-WHERE s.legacy_movimiento_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sale_payments sp
-      WHERE sp.sale_id = s.id
-  )
-SQL
-            );
+            $missingPayments = (int) $this->connection->fetchOne(<<<'SQL'
+                SELECT COUNT(*)
+                FROM sales s
+                WHERE s.legacy_movimiento_id IS NOT NULL
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM sale_payments sp
+                      WHERE sp.sale_id = s.id
+                  )
+                SQL);
 
             $io->note(sprintf(
                 'Dry run: %d sale_payments would be created with payment_method_id=%d (cash).',
@@ -91,64 +89,64 @@ SQL
         try {
             $inserted = (int) $this->connection->executeStatement(
                 <<<'SQL'
-INSERT INTO sale_payments (
-    sale_id,
-    payment_method_id,
-    amount,
-    currency,
-    tendered_amount,
-    change_amount,
-    paid_at,
-    created_at,
-    local_uuid,
-    idempotency_key,
-    sync_status,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-)
-SELECT
-    s.id AS sale_id,
-    :cash_payment_method_id AS payment_method_id,
-    COALESCE(s.grand_total, 0.00) AS amount,
-    COALESCE(NULLIF(s.currency, ''), 'PEN') AS currency,
-    COALESCE(s.grand_total, 0.00) AS tendered_amount,
-    0.00 AS change_amount,
-    COALESCE(s.issued_at, s.created_at, NOW()) AS paid_at,
-    COALESCE(s.created_at, NOW()) AS created_at,
-    LOWER(
-        CONCAT(
-            SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 1, 8), '-',
-            SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 9, 4), '-',
-            SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 13, 4), '-',
-            SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 17, 4), '-',
-            SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 21, 12)
-        )
-    ) AS local_uuid,
-    LOWER(
-        CONCAT(
-            SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 1, 8), '-',
-            SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 9, 4), '-',
-            SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 13, 4), '-',
-            SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 17, 4), '-',
-            SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 21, 12)
-        )
-    ) AS idempotency_key,
-    'SYNCED' AS sync_status,
-    COALESCE(s.synced_at, s.issued_at, NOW()) AS synced_at,
-    NULL AS device_id,
-    1 AS version_no,
-    NOW() AS last_modified_at
-FROM sales s
-WHERE s.legacy_movimiento_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sale_payments sp
-      WHERE sp.sale_id = s.id
-  )
-SQL,
-                ['cash_payment_method_id' => $cashPaymentMethodId]
+                    INSERT INTO sale_payments (
+                        sale_id,
+                        payment_method_id,
+                        amount,
+                        currency,
+                        tendered_amount,
+                        change_amount,
+                        paid_at,
+                        created_at,
+                        local_uuid,
+                        idempotency_key,
+                        sync_status,
+                        synced_at,
+                        device_id,
+                        version_no,
+                        last_modified_at
+                    )
+                    SELECT
+                        s.id AS sale_id,
+                        :cash_payment_method_id AS payment_method_id,
+                        COALESCE(s.grand_total, 0.00) AS amount,
+                        COALESCE(NULLIF(s.currency, ''), 'PEN') AS currency,
+                        COALESCE(s.grand_total, 0.00) AS tendered_amount,
+                        0.00 AS change_amount,
+                        COALESCE(s.issued_at, s.created_at, NOW()) AS paid_at,
+                        COALESCE(s.created_at, NOW()) AS created_at,
+                        LOWER(
+                            CONCAT(
+                                SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 1, 8), '-',
+                                SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 9, 4), '-',
+                                SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 13, 4), '-',
+                                SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 17, 4), '-',
+                                SUBSTR(MD5(CONCAT('local:sale-payment:legacy:', s.id)), 21, 12)
+                            )
+                        ) AS local_uuid,
+                        LOWER(
+                            CONCAT(
+                                SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 1, 8), '-',
+                                SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 9, 4), '-',
+                                SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 13, 4), '-',
+                                SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 17, 4), '-',
+                                SUBSTR(MD5(CONCAT('idem:sale-payment:legacy:', s.id)), 21, 12)
+                            )
+                        ) AS idempotency_key,
+                        'SYNCED' AS sync_status,
+                        COALESCE(s.synced_at, s.issued_at, NOW()) AS synced_at,
+                        NULL AS device_id,
+                        1 AS version_no,
+                        NOW() AS last_modified_at
+                    FROM sales s
+                    WHERE s.legacy_movimiento_id IS NOT NULL
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM sale_payments sp
+                          WHERE sp.sale_id = s.id
+                      )
+                    SQL,
+                ['cash_payment_method_id' => $cashPaymentMethodId],
             );
 
             $this->connection->commit();
@@ -181,17 +179,16 @@ SQL,
 
     private function resolveCashPaymentMethodId(): ?int
     {
-        $id = $this->connection->fetchOne(
-            'SELECT id FROM payment_method WHERE id = :id LIMIT 1',
-            ['id' => PaymentMethod::CASH],
-        );
+        $id = $this->connection->fetchOne('SELECT id FROM payment_method WHERE id = :id LIMIT 1', [
+            'id' => PaymentMethod::CASH,
+        ]);
 
         if ($id !== false) {
             return (int) $id;
         }
 
         $fallback = $this->connection->fetchOne(
-            "SELECT id FROM payment_method WHERE LOWER(name) IN ('efectivo', 'cash') ORDER BY id ASC LIMIT 1"
+            "SELECT id FROM payment_method WHERE LOWER(name) IN ('efectivo', 'cash') ORDER BY id ASC LIMIT 1",
         );
 
         return $fallback === false ? null : (int) $fallback;

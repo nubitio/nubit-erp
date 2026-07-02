@@ -12,7 +12,7 @@ final class CertificateMetadataExtractorTest extends TestCase
     public function testExtractsMetadataFromPem(): void
     {
         $pem = $this->createSelfSignedCertificatePem('Demo Cert');
-        $metadata = (new CertificateMetadataExtractor())->extract($pem);
+        $metadata = new CertificateMetadataExtractor()->extract($pem);
 
         self::assertSame('Demo Cert', $metadata->subjectCn);
         self::assertNotSame('', $metadata->fingerprintSha256);
@@ -24,7 +24,7 @@ final class CertificateMetadataExtractorTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid certificate PEM.');
 
-        (new CertificateMetadataExtractor())->extract('not-a-cert');
+        new CertificateMetadataExtractor()->extract('not-a-cert');
     }
 
     private function createSelfSignedCertificatePem(string $commonName): string

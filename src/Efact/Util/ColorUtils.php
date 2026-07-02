@@ -14,7 +14,7 @@ final class ColorUtils
         $b = hexdec(substr($hexColor, 4, 2));
         $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
 
-        return ($yiq >= 128) ? '#000000' : '#FFFFFF';
+        return $yiq >= 128 ? '#000000' : '#FFFFFF';
     }
 
     /**
@@ -33,7 +33,7 @@ final class ColorUtils
             $h = 0;
             $s = 0;
         } else {
-            $s = $d / (1 - abs(2 * $l - 1));
+            $s = $d / (1 - abs((2 * $l) - 1));
             switch ($max) {
                 case $r:
                     $h = 60 * fmod(($g - $b) / $d, 6);
@@ -43,10 +43,10 @@ final class ColorUtils
 
                     break;
                 case $g:
-                    $h = 60 * (($b - $r) / $d + 2);
+                    $h = 60 * ((($b - $r) / $d) + 2);
                     break;
                 case $b:
-                    $h = 60 * (($r - $g) / $d + 4);
+                    $h = 60 * ((($r - $g) / $d) + 4);
                     break;
                 default:
                     $h = 0;
@@ -61,7 +61,7 @@ final class ColorUtils
      */
     public static function hslToRgb(float $h, float $s, float $l): array
     {
-        $c = (1 - abs(2 * $l - 1)) * $s;
+        $c = (1 - abs((2 * $l) - 1)) * $s;
         $x = $c * (1 - abs(fmod($h / 60, 2) - 1));
         $m = $l - ($c / 2);
         if ($h < 60) {

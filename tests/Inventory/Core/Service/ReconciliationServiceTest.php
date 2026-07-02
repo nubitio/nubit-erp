@@ -8,8 +8,8 @@ use App\Inventory\Core\Service\ReconciliationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -81,16 +81,18 @@ final class ReconciliationServiceTest extends TestCase
         $connection = $this->connectionWithLedgerSum('15.000000');
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
+        $logger
+            ->expects(self::once())
             ->method('warning')
             ->with(
                 'Inventory drift detected',
                 self::callback(
-                    static fn (array $ctx): bool =>
-                    $ctx['warehouse_id'] === 'wh-2' &&
-                    $ctx['product_id'] === 'prod-2' &&
-                    $ctx['ledger_sum'] === '15.000000' &&
-                    $ctx['stock_items_qty'] === '10.000000'
+                    static fn(array $ctx): bool => (
+                        $ctx['warehouse_id'] === 'wh-2'
+                        && $ctx['product_id'] === 'prod-2'
+                        && $ctx['ledger_sum'] === '15.000000'
+                        && $ctx['stock_items_qty'] === '10.000000'
+                    ),
                 ),
             );
 
@@ -129,18 +131,20 @@ final class ReconciliationServiceTest extends TestCase
         /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn('5.000000');
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('executeStatement')
             ->with(
                 self::stringContains('INSERT INTO inventory_reconciliation_runs'),
                 self::callback(
-                    static fn (array $params): bool =>
-                    $params['w'] === 'wh-audit' &&
-                    $params['p'] === 'prod-audit' &&
-                    $params['ledger_sum'] === '5.000000' &&
-                    $params['stock_items_qty'] === '5.000000' &&
-                    isset($params['id']) &&
-                    isset($params['run_at'])
+                    static fn(array $params): bool => (
+                        $params['w'] === 'wh-audit'
+                        && $params['p'] === 'prod-audit'
+                        && $params['ledger_sum'] === '5.000000'
+                        && $params['stock_items_qty'] === '5.000000'
+                        && isset($params['id'])
+                        && isset($params['run_at'])
+                    ),
                 ),
             );
 
@@ -283,19 +287,18 @@ final class ReconciliationServiceTest extends TestCase
         $connection->method('createQueryBuilder')->willReturn($qb);
 
         // fetchOne (ledger sum) throws a DB exception
-        $connection->method('fetchOne')
-            ->willThrowException(new \RuntimeException('DB connection lost'));
+        $connection->method('fetchOne')->willThrowException(new \RuntimeException('DB connection lost'));
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
+        $logger
+            ->expects(self::once())
             ->method('error')
             ->with(
                 'Reconciliation error',
                 self::callback(
-                    static fn (array $ctx): bool =>
-                    $ctx['warehouse_id'] === 'wh-err' &&
-                    $ctx['product_id'] === 'prod-err' &&
-                    str_contains($ctx['error'], 'DB connection lost')
+                    static fn(array $ctx): bool => $ctx['warehouse_id'] === 'wh-err'
+                    && $ctx['product_id'] === 'prod-err'
+                    && str_contains($ctx['error'], 'DB connection lost'),
                 ),
             );
 
@@ -323,14 +326,8 @@ final class ReconciliationServiceTest extends TestCase
         $qb = $this->createMock(QueryBuilder::class);
         $qb->method('select')->willReturnSelf();
         $qb->method('from')->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('andWhere')
-            ->with('warehouse_id = :w')
-            ->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('setParameter')
-            ->with('w', 'wh-filter')
-            ->willReturnSelf();
+        $qb->expects(self::once())->method('andWhere')->with('warehouse_id = :w')->willReturnSelf();
+        $qb->expects(self::once())->method('setParameter')->with('w', 'wh-filter')->willReturnSelf();
         $qb->method('executeQuery')->willReturn($resultMock);
 
         $connection->method('createQueryBuilder')->willReturn($qb);
@@ -354,14 +351,8 @@ final class ReconciliationServiceTest extends TestCase
         $qb = $this->createMock(QueryBuilder::class);
         $qb->method('select')->willReturnSelf();
         $qb->method('from')->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('andWhere')
-            ->with('product_id = :p')
-            ->willReturnSelf();
-        $qb->expects(self::once())
-            ->method('setParameter')
-            ->with('p', 'prod-filter')
-            ->willReturnSelf();
+        $qb->expects(self::once())->method('andWhere')->with('product_id = :p')->willReturnSelf();
+        $qb->expects(self::once())->method('setParameter')->with('p', 'prod-filter')->willReturnSelf();
         $qb->method('executeQuery')->willReturn($resultMock);
 
         $connection->method('createQueryBuilder')->willReturn($qb);
@@ -377,7 +368,7 @@ final class ReconciliationServiceTest extends TestCase
     public function testRunReturnsMixedCountsForMixedPairs(): void
     {
         $pairs = [
-            ['warehouse_id' => 'wh-m', 'product_id' => 'ok-prod',    'qty_on_hand' => '10.000000'],
+            ['warehouse_id' => 'wh-m', 'product_id' => 'ok-prod', 'qty_on_hand' => '10.000000'],
             ['warehouse_id' => 'wh-m', 'product_id' => 'drift-prod', 'qty_on_hand' => '10.000000'],
         ];
 
@@ -442,8 +433,7 @@ final class ReconciliationServiceTest extends TestCase
         $connection->method('createQueryBuilder')->willReturn($qb);
 
         if ($ledgerSums !== []) {
-            $connection->method('fetchOne')
-                ->willReturnOnConsecutiveCalls(...$ledgerSums);
+            $connection->method('fetchOne')->willReturnOnConsecutiveCalls(...$ledgerSums);
         }
 
         $connection->method('executeStatement')->willReturn(0);

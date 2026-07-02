@@ -21,8 +21,7 @@ final readonly class KardexExportService
         private KardexSummaryService $summaryService,
         private KardexReferenceResolver $referenceResolver,
         private Environment $twig,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array{
@@ -51,13 +50,16 @@ final readonly class KardexExportService
 
         $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation);
 
-        $filters = array_filter([
-            'product' => $productId,
-            'warehouse' => $warehouseId,
-            'from' => $from,
-            'to' => $to,
-            'valuation' => $valuation,
-        ], static fn ($value) => $value !== null && $value !== '');
+        $filters = array_filter(
+            [
+                'product' => $productId,
+                'warehouse' => $warehouseId,
+                'from' => $from,
+                'to' => $to,
+                'valuation' => $valuation,
+            ],
+            static fn($value) => $value !== null && $value !== '',
+        );
 
         $movements = $this->movementRepository->findKardexForExport($filters);
         $this->referenceResolver->applyToMovements($movements);
@@ -126,10 +128,17 @@ final readonly class KardexExportService
 
         $headerRow = $groupRow + 1;
         $headers = [
-            'Fecha', 'Tipo', 'Referencia',
-            'Cant.', 'Costo unit.', 'Total',
-            'Cant.', 'Costo unit.', 'Total',
-            'Stock', 'Valor',
+            'Fecha',
+            'Tipo',
+            'Referencia',
+            'Cant.',
+            'Costo unit.',
+            'Total',
+            'Cant.',
+            'Costo unit.',
+            'Total',
+            'Stock',
+            'Valor',
         ];
         foreach ($headers as $index => $label) {
             $sheet->setCellValue([$index + 1, $headerRow], $label);
@@ -137,46 +146,69 @@ final readonly class KardexExportService
 
         $dataRow = $headerRow + 1;
         foreach ($rows as $row) {
-            $sheet->fromArray([
-                $row['occurredAt'],
-                $row['movementType'],
-                $row['reference'],
-                $row['qtyIn'],
-                $row['unitCostIn'],
-                $row['lineValueIn'],
-                $row['qtyOut'],
-                $row['unitCostOut'],
-                $row['lineValueOut'],
-                $row['runningBalance'],
-                $row['runningValue'],
-            ], null, 'A' . $dataRow);
+            $sheet->fromArray(
+                [
+                    $row['occurredAt'],
+                    $row['movementType'],
+                    $row['reference'],
+                    $row['qtyIn'],
+                    $row['unitCostIn'],
+                    $row['lineValueIn'],
+                    $row['qtyOut'],
+                    $row['unitCostOut'],
+                    $row['lineValueOut'],
+                    $row['runningBalance'],
+                    $row['runningValue'],
+                ],
+                null,
+                'A' . $dataRow,
+            );
             ++$dataRow;
         }
 
         $lastRow = max($headerRow, $dataRow - 1);
-        $sheet->getStyle('A' . $groupRow . ':K' . $lastRow)->getBorders()->getBottom()
+        $sheet
+            ->getStyle('A' . $groupRow . ':K' . $lastRow)
+            ->getBorders()
+            ->getBottom()
             ->setBorderStyle(Border::BORDER_THIN)
             ->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFE5E7EB'));
-        $sheet->getStyle('A' . $groupRow . ':K' . $headerRow)->getBorders()->getTop()
+        $sheet
+            ->getStyle('A' . $groupRow . ':K' . $headerRow)
+            ->getBorders()
+            ->getTop()
             ->setBorderStyle(Border::BORDER_THIN)
             ->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFCBD5E1'));
 
         foreach (['C', 'F', 'I'] as $dividerCol) {
-            $sheet->getStyle($dividerCol . $groupRow . ':' . $dividerCol . $lastRow)->getBorders()->getRight()
+            $sheet
+                ->getStyle($dividerCol . $groupRow . ':' . $dividerCol . $lastRow)
+                ->getBorders()
+                ->getRight()
                 ->setBorderStyle(Border::BORDER_MEDIUM)
                 ->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF94A3B8'));
         }
 
-        $sheet->getStyle('A' . $groupRow . ':K' . $headerRow)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $groupRow . ':K' . $headerRow)->getFill()
+        $sheet
+            ->getStyle('A' . $groupRow . ':K' . $headerRow)
+            ->getFont()
+            ->setBold(true);
+        $sheet
+            ->getStyle('A' . $groupRow . ':K' . $headerRow)
+            ->getFill()
             ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('FFF8FAFC');
-        $sheet->getStyle('A' . $groupRow . ':K' . $headerRow)->getAlignment()
+            ->getStartColor()
+            ->setARGB('FFF8FAFC');
+        $sheet
+            ->getStyle('A' . $groupRow . ':K' . $headerRow)
+            ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         foreach (range('D', 'K') as $column) {
-            $sheet->getStyle($column . ($headerRow + 1) . ':' . $column . $lastRow)
-                ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet
+                ->getStyle($column . ($headerRow + 1) . ':' . $column . $lastRow)
+                ->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         }
 
         foreach (range('A', 'K') as $column) {
@@ -192,11 +224,14 @@ final readonly class KardexExportService
         $writer->save('php://output');
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function mapMovementRow(StockMovement $movement): array
     {
         return [
             'occurredAt' => $this->formatDate($movement->occurredAt),
-            'movementType' => $movement->movementTypeLabel ?? $movement->movementType,
+            'movementType' => $movement->movementTypeLabel ?? $movement->movementType ?? '',
             'reference' => $movement->sourceReference ?? '—',
             'qtyIn' => $this->formatQty($movement->qtyIn),
             'unitCostIn' => $movement->qtyIn ? $this->formatMoney($movement->unitCost) : '—',
@@ -215,7 +250,7 @@ final readonly class KardexExportService
             return '—';
         }
 
-        return (new \DateTimeImmutable($value))
+        return new \DateTimeImmutable($value)
             ->setTimezone(new \DateTimeZone('America/Lima'))
             ->format('d/m/Y');
     }

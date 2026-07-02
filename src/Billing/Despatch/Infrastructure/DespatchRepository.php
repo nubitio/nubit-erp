@@ -35,8 +35,7 @@ readonly class DespatchRepository implements DespatchRepositoryInterface
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
         private string $apiToken,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function sendDespatch(Despatch $despatch): DocumentResponse

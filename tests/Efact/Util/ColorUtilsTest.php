@@ -16,11 +16,11 @@ final class ColorUtilsTest extends TestCase
     public static function contrastProvider(): array
     {
         return [
-            'white background → black text'  => ['#FFFFFF', '#000000'],
-            'black background → white text'  => ['#000000', '#FFFFFF'],
-            'light yellow → black text'      => ['#FFFF00', '#000000'],
-            'dark blue → white text'         => ['#003366', '#FFFFFF'],
-            'without hash'                   => ['FFFFFF', '#000000'],
+            'white background → black text' => ['#FFFFFF', '#000000'],
+            'black background → white text' => ['#000000', '#FFFFFF'],
+            'light yellow → black text' => ['#FFFF00', '#000000'],
+            'dark blue → white text' => ['#003366', '#FFFFFF'],
+            'without hash' => ['FFFFFF', '#000000'],
         ];
     }
 

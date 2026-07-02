@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Invoice\Domain;
 
-use App\Settings\Service\SunatStateService;
-use App\Settings\Entity\SunatOperationalState;
-use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use App\Billing\Invoice\Domain\SunatSendControlService;
+use App\ControlPlane\Tenant\Service\TenantNotificationService;
+use App\Settings\Entity\SunatOperationalState;
+use App\Settings\Service\SunatStateService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -26,10 +26,10 @@ final class SunatSendControlServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->sunatState        = $this->createMock(SunatStateService::class);
+        $this->sunatState = $this->createMock(SunatStateService::class);
         $this->notificationService = $this->createMock(TenantNotificationService::class);
-        $this->mailer            = $this->createMock(MailerInterface::class);
-        $this->logger            = $this->createMock(LoggerInterface::class);
+        $this->mailer = $this->createMock(MailerInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->service = new SunatSendControlService(
             $this->sunatState,
@@ -56,7 +56,9 @@ final class SunatSendControlServiceTest extends TestCase
     public function testIsSunatSendingEnabledReturnsTrueOnException(): void
     {
         $this->sunatState->method('isSendEnabled')->willThrowException(new \RuntimeException('db'));
-        $this->logger->expects(self::once())->method('error')
+        $this->logger
+            ->expects(self::once())
+            ->method('error')
             ->with('Failed to read SUNAT send flag, using enabled fallback', self::arrayHasKey('tenant'));
 
         self::assertTrue($this->service->isSunatSendingEnabled('tenant-a'));
@@ -73,7 +75,9 @@ final class SunatSendControlServiceTest extends TestCase
     public function testGetRejectionThresholdReturnsFallbackOnException(): void
     {
         $this->sunatState->method('getRejectionThreshold')->willThrowException(new \RuntimeException('db'));
-        $this->logger->expects(self::once())->method('error')
+        $this->logger
+            ->expects(self::once())
+            ->method('error')
             ->with('Failed to read SUNAT rejection threshold, using fallback', self::arrayHasKey('tenant'));
 
         self::assertSame(3, $this->service->getRejectionThreshold('tenant-a'));
@@ -90,7 +94,9 @@ final class SunatSendControlServiceTest extends TestCase
     public function testIncrementRejectionStreakLogsErrorOnException(): void
     {
         $this->sunatState->method('incrementRejectionStreak')->willThrowException(new \RuntimeException('db'));
-        $this->logger->expects(self::once())->method('error')
+        $this->logger
+            ->expects(self::once())
+            ->method('error')
             ->with('Failed to increment SUNAT rejection streak', self::arrayHasKey('tenant'));
 
         self::assertSame(1, $this->service->incrementRejectionStreak('tenant-a'));
@@ -107,7 +113,9 @@ final class SunatSendControlServiceTest extends TestCase
     public function testResetRejectionStreakLogsErrorOnException(): void
     {
         $this->sunatState->method('resetRejectionStreak')->willThrowException(new \RuntimeException('db'));
-        $this->logger->expects(self::once())->method('error')
+        $this->logger
+            ->expects(self::once())
+            ->method('error')
             ->with('Failed to reset SUNAT rejection streak', self::arrayHasKey('tenant'));
 
         $this->service->resetRejectionStreak('tenant-a');
@@ -142,9 +150,7 @@ final class SunatSendControlServiceTest extends TestCase
     public function testPauseSunatSendingCallsPauseSendingAndDispatchesNotification(): void
     {
         $this->sunatState->expects(self::once())->method('pauseSending');
-        $this->notificationService->expects(self::once())
-            ->method('dispatchForTenantName')
-            ->willReturn(1);
+        $this->notificationService->expects(self::once())->method('dispatchForTenantName')->willReturn(1);
         $this->mailer->expects(self::never())->method('send');
 
         $this->service->pauseSunatSendingAfterRejection('doc-123', '2320', 'Rechazado', 3, 3, 'tenant-a');
@@ -154,7 +160,9 @@ final class SunatSendControlServiceTest extends TestCase
     {
         $this->sunatState->method('pauseSending')->willThrowException(new \RuntimeException('db'));
         $this->notificationService->method('dispatchForTenantName')->willReturn(1);
-        $this->logger->expects(self::once())->method('error')
+        $this->logger
+            ->expects(self::once())
+            ->method('error')
             ->with('Failed to persist SUNAT send pause flag', self::arrayHasKey('tenant'));
 
         $this->service->pauseSunatSendingAfterRejection('doc-err', '2320', 'Rechazado', 3, 3, 'tenant-a');
@@ -172,12 +180,12 @@ final class SunatSendControlServiceTest extends TestCase
     public static function rejectionCodeProvider(): array
     {
         return [
-            'code 2000 boundary'      => ['2000', 'error', true],
-            'code 3999 boundary'      => ['3999', 'error', true],
+            'code 2000 boundary' => ['2000', 'error', true],
+            'code 3999 boundary' => ['3999', 'error', true],
             'code 4000 not rejection' => ['4000', 'error', false],
-            'null code rechaz'        => [null, 'Rechazado por SUNAT', true],
-            'null code clean'         => [null, 'Connection timeout', false],
-            '1032 consult code'       => ['1032', 'ya esta informado', false],
+            'null code rechaz' => [null, 'Rechazado por SUNAT', true],
+            'null code clean' => [null, 'Connection timeout', false],
+            '1032 consult code' => ['1032', 'ya esta informado', false],
         ];
     }
 }

@@ -47,8 +47,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         private StockValidationPolicyInterface $stockValidationPolicy,
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -77,9 +76,9 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             $entryId = (string) $data->getId();
 
             match ($type) {
-                StockEntryType::RECEIPT    => $this->processReceipt($data, $entryId),
-                StockEntryType::ISSUE      => $this->processIssue($data, $entryId),
-                StockEntryType::TRANSFER   => $this->processTransfer($data, $entryId),
+                StockEntryType::RECEIPT => $this->processReceipt($data, $entryId),
+                StockEntryType::ISSUE => $this->processIssue($data, $entryId),
+                StockEntryType::TRANSFER => $this->processTransfer($data, $entryId),
                 StockEntryType::ADJUSTMENT => $this->processAdjustment($data, $entryId),
             };
         });
@@ -92,7 +91,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
     private function processReceipt(StockEntry $entry, string $entryId): void
     {
         $warehouseId = (string) $entry->getWarehouse()?->getId();
-        $note        = $this->buildNote($entry);
+        $note = $this->buildNote($entry);
 
         foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
@@ -100,7 +99,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 continue;
             }
 
-            $qty   = $item->getQty();
+            $qty = $item->getQty();
             $delta = $qty;
 
             $item->setQtyDelta($delta);
@@ -120,7 +119,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
     private function processIssue(StockEntry $entry, string $entryId): void
     {
         $warehouseId = (string) $entry->getWarehouse()?->getId();
-        $note        = $this->buildNote($entry);
+        $note = $this->buildNote($entry);
 
         foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
@@ -128,8 +127,8 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 continue;
             }
 
-            $qty    = $item->getQty();
-            $delta  = '-' . $qty;
+            $qty = $item->getQty();
+            $delta = '-' . $qty;
 
             $item->setQtyDelta($delta);
 
@@ -158,7 +157,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 continue;
             }
 
-            $qty   = $item->getQty();
+            $qty = $item->getQty();
             $lineSourceId = $this->lineSourceId($entryId, $item, $lineNo);
 
             $item->setQtyDelta('-' . $qty); // from source perspective
@@ -170,7 +169,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 '-' . $qty,
                 $item,
                 $lineSourceId . ':out',
-                'Traslado a ' . $targetName
+                'Traslado a ' . $targetName,
             );
 
             $this->record(
@@ -180,7 +179,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 $qty,
                 $item,
                 $lineSourceId . ':in',
-                'Traslado desde ' . $sourceName
+                'Traslado desde ' . $sourceName,
             );
         }
     }
@@ -188,7 +187,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
     private function processAdjustment(StockEntry $entry, string $entryId): void
     {
         $warehouseId = (string) $entry->getWarehouse()?->getId();
-        $reasonNote  = $this->buildNote($entry);
+        $reasonNote = $this->buildNote($entry);
 
         foreach ($entry->getItems() as $lineNo => $item) {
             $product = $item->getProduct();
@@ -198,7 +197,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 
             $productId = (string) $product?->getId();
             $qtyBefore = $this->inventoryService->getOnHand($warehouseId, $productId);
-            $delta     = bcsub($item->getQty(), $qtyBefore, 6);
+            $delta = bcsub($item->getQty(), $qtyBefore, 6);
 
             $item->setQtyBefore($qtyBefore);
             $item->setQtyDelta($delta);
@@ -307,15 +306,15 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         string $note,
     ): void {
         $this->inventoryService->recordMovement(new MovementDraft(
-            warehouseId:  $warehouseId,
-            productId:    (string) $product?->getId(),
+            warehouseId: $warehouseId,
+            productId: (string) $product?->getId(),
             movementType: $movementType,
             qtyDeltaBase: $delta,
-            unitId:       (int) ($item->getUnit()?->getId() ?? 0),
-            qtyOriginal:  ltrim(ltrim($delta, '+'), '-'),
-            sourceType:   'STOCK_ENTRY',
-            sourceId:     $sourceId,
-            note:         $note,
+            unitId: (int) ($item->getUnit()?->getId() ?? 0),
+            qtyOriginal: ltrim(ltrim($delta, '+'), '-'),
+            sourceType: 'STOCK_ENTRY',
+            sourceId: $sourceId,
+            note: $note,
         ));
     }
 
@@ -342,11 +341,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             return $item->getQty();
         }
 
-        return $this->unitConversion->toBase(
-            (string) $item->getProduct()?->getId(),
-            (int) $unitId,
-            $item->getQty(),
-        );
+        return $this->unitConversion->toBase((string) $item->getProduct()?->getId(), (int) $unitId, $item->getQty());
     }
 
     private function isTracked(mixed $product): bool

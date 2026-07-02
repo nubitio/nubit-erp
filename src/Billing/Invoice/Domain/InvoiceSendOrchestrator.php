@@ -15,8 +15,7 @@ readonly class InvoiceSendOrchestrator
         private SunatSendControlService $controlService,
         private InvoiceSendRecoveryService $recoveryService,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array{max_attempts:int,base_seconds:int,max_seconds:int} $retryPolicy
@@ -33,7 +32,7 @@ readonly class InvoiceSendOrchestrator
                 $taxDocumentId,
                 $retryEvaluation['reason'],
                 $retryEvaluation['attempts'],
-                $retryEvaluation['wait_seconds']
+                $retryEvaluation['wait_seconds'],
             );
 
             return new InvoiceSendProcessResult(
@@ -50,12 +49,7 @@ readonly class InvoiceSendOrchestrator
             if ($response->sunatResponse->isSuccess() || $currentStatus === '0') {
                 $this->controlService->resetRejectionStreak($tenantName);
 
-                return new InvoiceSendProcessResult(
-                    sent: true,
-                    error: null,
-                    paused: false,
-                    skipReason: null,
-                );
+                return new InvoiceSendProcessResult(sent: true, error: null, paused: false, skipReason: null);
             }
 
             $errorCode = $response->sunatResponse->getError()?->getCode();
@@ -69,12 +63,7 @@ readonly class InvoiceSendOrchestrator
             if (!$this->controlService->isSunatRejection($errorCode, $message)) {
                 $this->controlService->resetRejectionStreak($tenantName);
 
-                return new InvoiceSendProcessResult(
-                    sent: false,
-                    error: $message,
-                    paused: false,
-                    skipReason: null,
-                );
+                return new InvoiceSendProcessResult(sent: false, error: $message, paused: false, skipReason: null);
             }
 
             $streak = $this->controlService->incrementRejectionStreak($tenantName);
@@ -86,12 +75,7 @@ readonly class InvoiceSendOrchestrator
             ]);
 
             if ($streak < $rejectionThreshold) {
-                return new InvoiceSendProcessResult(
-                    sent: false,
-                    error: $message,
-                    paused: false,
-                    skipReason: null,
-                );
+                return new InvoiceSendProcessResult(sent: false, error: $message, paused: false, skipReason: null);
             }
 
             $this->controlService->pauseSunatSendingAfterRejection(
@@ -100,7 +84,7 @@ readonly class InvoiceSendOrchestrator
                 $message,
                 $streak,
                 $rejectionThreshold,
-                $tenantName
+                $tenantName,
             );
 
             return new InvoiceSendProcessResult(
@@ -108,7 +92,7 @@ readonly class InvoiceSendOrchestrator
                 error: sprintf(
                     'SUNAT sending paused after %d consecutive rejections (last code: %s).',
                     $streak,
-                    $errorCode ?? 'no-code'
+                    $errorCode ?? 'no-code',
                 ),
                 paused: true,
                 skipReason: null,
@@ -117,12 +101,7 @@ readonly class InvoiceSendOrchestrator
             if ($this->recoveryService->tryRecoverByConsult($taxDocumentId, $tenantName)) {
                 $this->controlService->resetRejectionStreak($tenantName);
 
-                return new InvoiceSendProcessResult(
-                    sent: true,
-                    error: null,
-                    paused: false,
-                    skipReason: null,
-                );
+                return new InvoiceSendProcessResult(sent: true, error: null, paused: false, skipReason: null);
             }
 
             $this->logger->error('Error sending invoice', [

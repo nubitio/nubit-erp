@@ -12,6 +12,5 @@ final readonly class TenantBackupMessage
     public function __construct(
         public int $tenantId,
         public string $tenantName,
-    ) {
-    }
+    ) {}
 }

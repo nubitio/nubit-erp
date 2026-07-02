@@ -16,8 +16,7 @@ final readonly class SecretCipher
     public function __construct(
         #[Autowire(env: 'APP_SECRET')]
         private string $appSecret,
-    ) {
-    }
+    ) {}
 
     public function encrypt(string $secret): string
     {
@@ -27,14 +26,7 @@ final readonly class SecretCipher
 
         $iv = random_bytes(self::IV_BYTES);
         $tag = '';
-        $ciphertext = openssl_encrypt(
-            $secret,
-            'aes-256-gcm',
-            $this->key(),
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag,
-        );
+        $ciphertext = openssl_encrypt($secret, 'aes-256-gcm', $this->key(), OPENSSL_RAW_DATA, $iv, $tag);
 
         if ($ciphertext === false) {
             throw new RuntimeException('Could not protect secret.');
@@ -55,7 +47,7 @@ final readonly class SecretCipher
         }
 
         $payload = base64_decode(substr($protectedSecret, strlen(self::PREFIX)), true);
-        if ($payload === false || strlen($payload) <= self::IV_BYTES + self::TAG_BYTES) {
+        if ($payload === false || strlen($payload) <= (self::IV_BYTES + self::TAG_BYTES)) {
             throw new RuntimeException('Protected secret is malformed.');
         }
 
@@ -63,14 +55,7 @@ final readonly class SecretCipher
         $tag = substr($payload, self::IV_BYTES, self::TAG_BYTES);
         $ciphertext = substr($payload, self::IV_BYTES + self::TAG_BYTES);
 
-        $plaintext = openssl_decrypt(
-            $ciphertext,
-            'aes-256-gcm',
-            $this->key(),
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag,
-        );
+        $plaintext = openssl_decrypt($ciphertext, 'aes-256-gcm', $this->key(), OPENSSL_RAW_DATA, $iv, $tag);
 
         if ($plaintext === false) {
             throw new RuntimeException('Protected secret could not be opened.');

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use DateTimeInterface;
-use Nubit\Platform\Exception\ServiceException;
 use App\AI\Dto\CashRegisterStatusDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashShift;
 use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\CashRegister\Repository\CashShiftRepository;
+use DateTimeInterface;
+use Nubit\Platform\Exception\ServiceException;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -24,8 +24,7 @@ final readonly class CashRegisterTools
     public function __construct(
         private CashRegisterRepository $cashRegisterRepository,
         private CashShiftRepository $cashShiftRepository,
-    ) {
-    }
+    ) {}
 
     public function cashRegisterStatus(int $cashRegisterId): CashRegisterStatusDto
     {
@@ -36,7 +35,8 @@ final readonly class CashRegisterTools
         }
 
         /** @var CashShift|null $latestShift */
-        $latestShift = $this->cashShiftRepository->createQueryBuilder('cs')
+        $latestShift = $this->cashShiftRepository
+            ->createQueryBuilder('cs')
             ->addSelect('cr')
             ->join('cs.cashRegister', 'cr')
             ->where('cr.id = :id')

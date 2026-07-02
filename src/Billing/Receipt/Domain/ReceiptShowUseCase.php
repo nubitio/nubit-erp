@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Domain;
 
+use App\Billing\Repository\TaxDocumentRepository;
+use App\Efact\Service\CompanyContext;
 use Nubit\Platform\Exception\NotFoundException;
 use Nubit\Platform\Exception\ServiceException;
-use App\Efact\Service\CompanyContext;
-use App\Billing\Repository\TaxDocumentRepository;
 
 readonly class ReceiptShowUseCase
 {
     public function __construct(
         private TaxDocumentRepository $taxDocumentRepository,
         private CompanyContext $companyContext,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ServiceException
@@ -38,7 +37,7 @@ readonly class ReceiptShowUseCase
 
         return new Receipt(
             company: $companyName,
-            type: ($invoice->getDocumentType()) === '01' ? 'FACTURA' : 'BOLETA',
+            type: $invoice->getDocumentType() === '01' ? 'FACTURA' : 'BOLETA',
             series: strval($invoice->getSeries()),
             number: strval($invoice->getNumber()),
             date: strval(\DateTimeImmutable::createFromInterface($invoice->getIssueDate())->format('Y-m-d')),
@@ -57,7 +56,7 @@ readonly class ReceiptShowUseCase
 
         return new Receipt(
             company: $companyName,
-            type: ($note->getDocumentType()) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
+            type: $note->getDocumentType() === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
             series: strval($note->getSeries()),
             number: strval($note->getNumber()),
             date: strval(\DateTimeImmutable::createFromInterface($note->getIssueDate())->format('Y-m-d')),

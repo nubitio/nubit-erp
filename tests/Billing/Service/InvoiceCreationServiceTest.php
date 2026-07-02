@@ -26,7 +26,7 @@ final class InvoiceCreationServiceTest extends TestCase
 
     public function testCreateForSaleFailsWhenSaleAlreadyHasInvoice(): void
     {
-        $sale = (new SaleRecord())
+        $sale = new SaleRecord()
             ->setId('sale-1')
             ->setHasInvoice(true)
             ->setInvoice('F001-20');
@@ -41,7 +41,7 @@ final class InvoiceCreationServiceTest extends TestCase
 
     public function testCreateForSaleFailsWhenDateExceedsAllowedWindow(): void
     {
-        $sale = (new SaleRecord())
+        $sale = new SaleRecord()
             ->setId('sale-1')
             ->setFecha(new \DateTimeImmutable('-4 days'));
 
@@ -56,13 +56,15 @@ final class InvoiceCreationServiceTest extends TestCase
     public function testSyncInvoicedSaleStateUpdatesOnlyV2SalesTable(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->method('fetchOne')->willReturnCallback(
-            static fn (string $sql, array $params): int => (($params['table_name'] ?? '') !== '') ? 1 : 0
-        );
+        $connection->method('fetchOne')->willReturnCallback(static fn(string $sql, array $params): int => (
+            $params['table_name'] ?? ''
+        )
+            !== ''
+                ? 1
+                : 0);
         // Only ONE executeStatement call: the sales-table UPDATE.
         // The legacy movimiento write-back has been removed.
-        $connection->expects(self::exactly(1))
-            ->method('executeStatement');
+        $connection->expects(self::exactly(1))->method('executeStatement');
 
         $service = $this->newService($connection);
 
@@ -72,23 +74,27 @@ final class InvoiceCreationServiceTest extends TestCase
     public function testNoMovimientoUpdateIsExecutedDuringInvoiceCreation(): void
     {
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturnCallback(
-            static fn (string $sql, array $params): int => (($params['table_name'] ?? '') !== '') ? 1 : 0
-        );
+        $connection->method('fetchOne')->willReturnCallback(static fn(string $sql, array $params): int => (
+            $params['table_name'] ?? ''
+        )
+            !== ''
+                ? 1
+                : 0);
 
         // Assert that no SQL containing "UPDATE movimiento" or "INSERT INTO movimiento"
         // is ever sent to the database.
-        $connection->method('executeStatement')
+        $connection
+            ->method('executeStatement')
             ->willReturnCallback(static function (string $sql): int {
                 self::assertStringNotContainsStringIgnoringCase(
                     'UPDATE movimiento',
                     $sql,
-                    'Legacy movimiento write-back must be removed: found UPDATE movimiento SQL.'
+                    'Legacy movimiento write-back must be removed: found UPDATE movimiento SQL.',
                 );
                 self::assertStringNotContainsStringIgnoringCase(
                     'INSERT INTO movimiento',
                     $sql,
-                    'Legacy movimiento write-back must be removed: found INSERT INTO movimiento SQL.'
+                    'Legacy movimiento write-back must be removed: found INSERT INTO movimiento SQL.',
                 );
 
                 return 1;

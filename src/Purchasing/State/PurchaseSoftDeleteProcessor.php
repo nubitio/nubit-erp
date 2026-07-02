@@ -22,8 +22,7 @@ final readonly class PurchaseSoftDeleteProcessor implements ProcessorInterface
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed

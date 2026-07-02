@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Settings\Service\TenantSettingsService;
 use App\Catalog\Entity\PaymentMethod;
-use App\Sales\Entity\SaleRecord;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Domain\DocType;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\State\SaleUtils;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Exception\ServiceException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SaleUtils::class)]
@@ -30,10 +30,7 @@ class SaleUtilsTest extends TestCase
         $this->connection = $this->createMock(Connection::class);
         $this->tenantSettings = $this->createMock(TenantSettingsService::class);
 
-        $this->utils = new SaleUtils(
-            $this->connection,
-            $this->tenantSettings,
-        );
+        $this->utils = new SaleUtils($this->connection, $this->tenantSettings);
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
@@ -112,8 +109,7 @@ class SaleUtilsTest extends TestCase
     public function testGetSaleNumberRollsBackAndThrowsOnException(): void
     {
         $this->connection->method('beginTransaction');
-        $this->connection->method('executeStatement')
-            ->willThrowException(new \RuntimeException('Lock timeout'));
+        $this->connection->method('executeStatement')->willThrowException(new \RuntimeException('Lock timeout'));
         $this->connection->expects($this->once())->method('rollBack');
         $this->connection->expects($this->never())->method('commit');
 
@@ -131,7 +127,8 @@ class SaleUtilsTest extends TestCase
 
         // Stub getSaleSeries and getSaleNumber via connection
         $fetchOneCallCount = 0;
-        $this->connection->method('fetchOne')
+        $this->connection
+            ->method('fetchOne')
             ->willReturnCallback(function () use (&$fetchOneCallCount): string {
                 ++$fetchOneCallCount;
                 return $fetchOneCallCount === 1 ? 'F001' : '1';
@@ -152,7 +149,8 @@ class SaleUtilsTest extends TestCase
         $sale = $this->buildSaleForFill(1, 5);
 
         $fetchOneCallCount = 0;
-        $this->connection->method('fetchOne')
+        $this->connection
+            ->method('fetchOne')
             ->willReturnCallback(function () use (&$fetchOneCallCount): string {
                 ++$fetchOneCallCount;
                 return $fetchOneCallCount === 1 ? 'B001' : '5';

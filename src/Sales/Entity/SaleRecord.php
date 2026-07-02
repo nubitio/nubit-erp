@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace App\Sales\Entity;
 
-use App\Inventory\Entity\Warehouse;
-use App\Contacts\Entity\Supplier;
-use App\Contacts\Entity\Customer;
-use App\Organization\Entity\Branch;
-use App\Catalog\Entity\PaymentMethod;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Catalog\Entity\PaymentMethod;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Entity\Supplier;
+use App\Inventory\Entity\Warehouse;
+use App\Organization\Entity\Branch;
 use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Http\ApiResponse;
 use App\Sales\Dto\VoidSaleDto;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\SaleProcessor;
@@ -31,6 +28,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -44,11 +44,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(),
         new Post(),
         new Patch(),
-        new Post(
-            uriTemplate: '/sales/{id}/invoice',
-            controller: MakeSaleInvoice::class,
-            name: 'sale_make_invoice'
-        ),
+        new Post(uriTemplate: '/sales/{id}/invoice', controller: MakeSaleInvoice::class, name: 'sale_make_invoice'),
         new Post(
             uriTemplate: '/sales/{id}/void',
             controller: VoidSale::class,
@@ -131,13 +127,9 @@ class SaleRecord
     private string $currency = 'PEN';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
-    #[ORM\Column(
-        name: 'exchange_rate',
-        type: Types::DECIMAL,
-        precision: 14,
-        scale: 6,
-        options: ['default' => '1.000000'],
-    )]
+    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 14, scale: 6, options: [
+        'default' => '1.000000',
+    ])]
     #[ApiProperty(description: 'sale_record.exchange_rate.label')]
     private string $exchangeRate = '1.000000';
 
@@ -187,12 +179,9 @@ class SaleRecord
     private ?\DateTimeImmutable $issuedDate = null;
 
     #[Groups(['sale_record:read'])]
-    #[ORM\Column(
-        name: 'created_at',
-        type: Types::DATETIME_MUTABLE,
-        nullable: true,
-        options: ['default' => 'CURRENT_TIMESTAMP'],
-    )]
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true, options: [
+        'default' => 'CURRENT_TIMESTAMP',
+    ])]
     #[ApiProperty(description: 'sale_record.created_at.label')]
     private ?DateTimeInterface $createdAt = null;
 
@@ -236,25 +225,45 @@ class SaleRecord
      *
      * @var Collection<int, SaleItemRecord>
      */
-    #[ORM\OneToMany(targetEntity: SaleItemRecord::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: SaleItemRecord::class,
+        mappedBy: 'saleRecord',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
     private Collection $saleItemRecords;
 
     /**
      * @var Collection<int, SalePayment>
      */
-    #[ORM\OneToMany(targetEntity: SalePayment::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: SalePayment::class,
+        mappedBy: 'saleRecord',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
     private Collection $salePayments;
 
     /**
      * @var Collection<int, SaleTax>
      */
-    #[ORM\OneToMany(targetEntity: SaleTax::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: SaleTax::class,
+        mappedBy: 'saleRecord',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
     private Collection $saleTaxes;
 
     /**
      * @var Collection<int, SaleDiscount>
      */
-    #[ORM\OneToMany(targetEntity: SaleDiscount::class, mappedBy: 'saleRecord', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: SaleDiscount::class,
+        mappedBy: 'saleRecord',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
     private Collection $saleDiscounts;
 
     // ── Transient fields enriched by SaleV2Provider ──────────────────────────
@@ -366,9 +375,9 @@ class SaleRecord
     public function __construct()
     {
         $this->saleItemRecords = new ArrayCollection();
-        $this->salePayments    = new ArrayCollection();
-        $this->saleTaxes       = new ArrayCollection();
-        $this->saleDiscounts   = new ArrayCollection();
+        $this->salePayments = new ArrayCollection();
+        $this->saleTaxes = new ArrayCollection();
+        $this->saleDiscounts = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -402,7 +411,7 @@ class SaleRecord
         $subtotal = (float) ($this->subtotal ?? '0');
         $base = $subtotal + $discountTotal;
         if ($base > 0 && $discountTotal > 0) {
-            $this->discountPercent = (string) round($discountTotal / $base * 100, 4);
+            $this->discountPercent = (string) round(($discountTotal / $base) * 100, 4);
         } else {
             $this->discountPercent = '0';
         }

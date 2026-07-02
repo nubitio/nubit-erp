@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use Override;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -24,14 +24,13 @@ readonly class SaleProvider implements ProviderInterface
         private ProviderInterface $collectionProvider,
         #[Autowire(service: 'api_platform.doctrine.orm.state.item_provider')]
         private ProviderInterface $itemProvider,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
             $type = $context['filters']['type'] ?? null;

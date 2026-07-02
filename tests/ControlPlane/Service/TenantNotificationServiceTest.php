@@ -8,8 +8,8 @@ use App\ControlPlane\Tenant\Service\TenantNotificationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -20,8 +20,9 @@ final class TenantNotificationServiceTest extends TestCase
     public function testGetTenantTargetsReturnsDecodedRows(): void
     {
         $connection = $this->readyConnection();
-        $connection->method('fetchAllAssociative')->willReturn(
-            [
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
                 [
                     'event_key' => TenantNotificationService::EVENT_SUNAT_PAUSED,
                     'channel' => 'email',
@@ -29,8 +30,7 @@ final class TenantNotificationServiceTest extends TestCase
                     'recipients_json' => '["admin@example.com"," admin@example.com "]',
                     'config_json' => '{"template":"x"}',
                 ],
-            ]
-        );
+            ]);
 
         $service = $this->serviceWithConnection($connection);
         $rows = $service->getTenantTargets(12);
@@ -82,33 +82,36 @@ final class TenantNotificationServiceTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects(self::once())->method('send');
 
-        $connection->method('fetchAssociative')->willReturn(
-            [
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
                 'id' => 9,
                 'name' => 'acme',
-            ]
-        );
-        $connection->method('fetchAllAssociative')->willReturn(
-            [
+            ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
                 [
                     'channel' => 'email',
                     'severity' => 'critical',
                     'recipients_json' => '["ops@example.com"]',
                     'config_json' => '{}',
                 ],
-            ]
-        );
-        $connection->expects(self::once())->method('insert')->with(
-            'tenant_notification_deliveries',
-            self::callback(static fn (array $row): bool => ($row['status'] ?? '') === 'sent')
-        );
+            ]);
+        $connection
+            ->expects(self::once())
+            ->method('insert')
+            ->with(
+                'tenant_notification_deliveries',
+                self::callback(static fn(array $row): bool => ($row['status'] ?? '') === 'sent'),
+            );
 
         $service = $this->serviceWithConnection($connection, $mailer);
         $sent = $service->dispatchForTenantName(
             tenantName: 'acme',
             eventKey: TenantNotificationService::EVENT_SUNAT_PAUSED,
             subject: 'Test',
-            message: 'Mensaje'
+            message: 'Mensaje',
         );
 
         self::assertSame(1, $sent);
@@ -125,7 +128,7 @@ final class TenantNotificationServiceTest extends TestCase
             tenantName: 'missing',
             eventKey: TenantNotificationService::EVENT_SUNAT_PAUSED,
             subject: 'Test',
-            message: 'Mensaje'
+            message: 'Mensaje',
         );
 
         self::assertSame(0, $sent);
@@ -143,10 +146,12 @@ final class TenantNotificationServiceTest extends TestCase
     public function testDispatchTestTargetByTenantIdReturnsFalseWhenTargetMissingOrDisabled(): void
     {
         $connection = $this->readyConnection();
-        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-            false,
-            ['is_enabled' => 0, 'recipients_json' => '[]', 'config_json' => '{}', 'severity' => 'info']
-        );
+        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(false, [
+            'is_enabled' => 0,
+            'recipients_json' => '[]',
+            'config_json' => '{}',
+            'severity' => 'info',
+        ]);
         $connection->expects(self::never())->method('insert');
 
         $service = $this->serviceWithConnection($connection);
@@ -154,13 +159,13 @@ final class TenantNotificationServiceTest extends TestCase
             2,
             TenantNotificationService::EVENT_SUNAT_PAUSED,
             'email',
-            'acme'
+            'acme',
         ));
         self::assertFalse($service->dispatchTestTargetByTenantId(
             2,
             TenantNotificationService::EVENT_SUNAT_PAUSED,
             'email',
-            'acme'
+            'acme',
         ));
     }
 
@@ -170,25 +175,28 @@ final class TenantNotificationServiceTest extends TestCase
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects(self::once())->method('send');
 
-        $connection->method('fetchAssociative')->willReturn(
-            [
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
                 'is_enabled' => 1,
                 'severity' => 'critical',
                 'recipients_json' => '["ops@example.com"]',
                 'config_json' => '{}',
-            ]
-        );
-        $connection->expects(self::once())->method('insert')->with(
-            'tenant_notification_deliveries',
-            self::callback(static fn (array $row): bool => ($row['status'] ?? '') === 'sent')
-        );
+            ]);
+        $connection
+            ->expects(self::once())
+            ->method('insert')
+            ->with(
+                'tenant_notification_deliveries',
+                self::callback(static fn(array $row): bool => ($row['status'] ?? '') === 'sent'),
+            );
 
         $service = $this->serviceWithConnection($connection, $mailer);
         $sent = $service->dispatchTestTargetByTenantId(
             4,
             TenantNotificationService::EVENT_SUNAT_PAUSED,
             'email',
-            'acme'
+            'acme',
         );
 
         self::assertTrue($sent);
@@ -213,7 +221,7 @@ final class TenantNotificationServiceTest extends TestCase
         return new TenantNotificationService(
             $registry,
             $mailer ?? $this->createMock(MailerInterface::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
     }
 

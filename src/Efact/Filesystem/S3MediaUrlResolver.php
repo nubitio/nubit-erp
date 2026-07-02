@@ -22,8 +22,7 @@ final readonly class S3MediaUrlResolver implements MediaUrlResolverInterface
         private TenantContext $tenantContext,
         #[Autowire(param: 'nubit_admin.media.directory')]
         private string $mediaDirectory,
-    ) {
-    }
+    ) {}
 
     public function resolve(Media $media): string
     {

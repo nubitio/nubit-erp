@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Entity;
 
-use App\Inventory\Entity\Warehouse;
-use App\Contacts\Entity\Supplier;
-use App\Identity\Entity\User;
-use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -16,7 +12,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use App\Contacts\Entity\Supplier;
+use App\Identity\Entity\User;
+use App\Inventory\Entity\Warehouse;
+use App\Organization\Entity\Branch;
 use App\Purchasing\Repository\PurchaseRepository;
 use App\Purchasing\State\PurchaseProcessor;
 use App\Purchasing\State\PurchaseProvider;
@@ -27,6 +26,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -40,16 +40,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(),
         new Get(),
         new Post(),
-        new Patch(
-            denormalizationContext: ['groups' => ['purchase:admin_patch']],
-            description: 'Update administrative fields only (note, supplier). Stock-affecting fields are immutable.',
-        ),
+        new Patch(denormalizationContext: ['groups' => [
+            'purchase:admin_patch',
+        ]], description: 'Update administrative fields only (note, supplier). Stock-affecting fields are immutable.'),
         new Delete(processor: PurchaseVoidProcessor::class, output: false),
     ],
-    normalizationContext:   ['groups' => ['purchase:read']],
+    normalizationContext: ['groups' => ['purchase:read']],
     denormalizationContext: ['groups' => ['purchase:write']],
     filters: [DataGridFilter::class],
-    provider:  PurchaseProvider::class,
+    provider: PurchaseProvider::class,
     processor: PurchaseProcessor::class,
     mercure: true,
 )]
@@ -108,13 +107,9 @@ class Purchase
     private string $currency = 'PEN';
 
     #[Groups(['purchase:read', 'purchase:write'])]
-    #[ORM\Column(
-        name: 'exchange_rate',
-        type: Types::DECIMAL,
-        precision: 14,
-        scale: 6,
-        options: ['default' => '1.000000'],
-    )]
+    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 14, scale: 6, options: [
+        'default' => '1.000000',
+    ])]
     #[ApiProperty(description: 'purchase.exchange_rate.label')]
     private string $exchangeRate = '1.000000';
 
@@ -165,12 +160,9 @@ class Purchase
     private ?DateTimeInterface $issuedAt = null;
 
     #[Groups(['purchase:read'])]
-    #[ORM\Column(
-        name: 'created_at',
-        type: Types::DATETIME_MUTABLE,
-        nullable: true,
-        options: ['default' => 'CURRENT_TIMESTAMP'],
-    )]
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true, options: [
+        'default' => 'CURRENT_TIMESTAMP',
+    ])]
     #[ApiProperty(description: 'purchase.created_at.label')]
     private ?DateTimeInterface $createdAt = null;
 
@@ -213,12 +205,9 @@ class Purchase
     private int $versionNo = 1;
 
     #[Groups(['purchase:read', 'purchase:write'])]
-    #[ORM\Column(
-        name: 'last_modified_at',
-        type: Types::DATETIME_MUTABLE,
-        nullable: true,
-        options: ['default' => 'CURRENT_TIMESTAMP'],
-    )]
+    #[ORM\Column(name: 'last_modified_at', type: Types::DATETIME_MUTABLE, nullable: true, options: [
+        'default' => 'CURRENT_TIMESTAMP',
+    ])]
     #[ApiProperty(description: 'purchase.last_modified_at.label')]
     private ?DateTimeInterface $lastModifiedAt = null;
 

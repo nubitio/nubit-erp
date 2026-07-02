@@ -14,8 +14,7 @@ final class TenantRuntimeConfigController extends AbstractController
 {
     public function __construct(
         private readonly TenantRuntimeConfigProvider $runtimeConfigProvider,
-    ) {
-    }
+    ) {}
 
     public function __invoke(): JsonResponse
     {

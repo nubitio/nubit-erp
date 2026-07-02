@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Efact\EventListener;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Efact\RateLimit\TenantRateLimiter;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -22,8 +22,7 @@ final readonly class TenantRateLimitListener
         private LoggerInterface $logger,
         #[Autowire('%kernel.environment%')]
         private string $kernelEnvironment,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RequestEvent $event): void
     {
@@ -59,8 +58,8 @@ final readonly class TenantRateLimitListener
             'message' => 'Too many requests',
         ], Response::HTTP_TOO_MANY_REQUESTS);
 
-        $response->headers->set('Retry-After', (string)$result->retryAfter);
-        $response->headers->set('X-RateLimit-Limit', (string)$result->limit);
+        $response->headers->set('Retry-After', (string) $result->retryAfter);
+        $response->headers->set('X-RateLimit-Limit', (string) $result->limit);
         $response->headers->set('X-RateLimit-Remaining', '0');
 
         $event->setResponse($response);
@@ -68,10 +67,12 @@ final readonly class TenantRateLimitListener
 
     private function isNonBusinessApiRequest(string $path): bool
     {
-        return $path === '/health/live'
+        return (
+            $path === '/health/live'
             || $path === '/api'
             || str_starts_with($path, '/api/docs')
             || str_starts_with($path, '/api/user-notifications')
-            || $path === '/api/tenant/runtime-config';
+            || $path === '/api/tenant/runtime-config'
+        );
     }
 }

@@ -18,9 +18,5 @@ interface StockAuthorizationPolicyInterface
     /**
      * @param array<int, string> $roles
      */
-    public function canOverrideStrictPolicy(
-        Product $product,
-        string $actorId,
-        array $roles,
-    ): StockAuthorizationResult;
+    public function canOverrideStrictPolicy(Product $product, string $actorId, array $roles): StockAuthorizationResult;
 }

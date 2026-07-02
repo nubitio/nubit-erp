@@ -10,6 +10,5 @@ final readonly class SaleCompleted
         public string $saleId,
         public string $warehouseId,
         public \DateTimeImmutable $happenedAt,
-    ) {
-    }
+    ) {}
 }

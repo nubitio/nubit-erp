@@ -7,16 +7,16 @@ namespace App\Purchasing\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Auth\BranchContextService;
+use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
+use App\Organization\Repository\BranchRepository;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Service\PurchaseReceiptSequenceService;
 use App\Purchasing\Service\PurchaseSupplierDocumentValidator;
-use App\Identity\Entity\User;
-use App\Organization\Repository\BranchRepository;
 use Override;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -36,8 +36,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private PurchaseInventoryService $purchaseInventoryService,
         private PurchaseReceiptSequenceService $purchaseReceiptSequenceService,
         private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed

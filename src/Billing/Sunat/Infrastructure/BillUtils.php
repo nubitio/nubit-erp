@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Infrastructure;
 
-use Override;
-use RuntimeException;
 use App\Billing\Sunat\Domain\BillUtilsInterface;
 use App\Organization\Repository\CompanyRepository;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
+use Override;
+use RuntimeException;
 
 readonly class BillUtils implements BillUtilsInterface
 {
     public function __construct(
-        private CompanyRepository $companyRepository
-    ) {
-    }
+        private CompanyRepository $companyRepository,
+    ) {}
 
     #[Override]
     public function getCompany(): Company
@@ -27,7 +26,8 @@ readonly class BillUtils implements BillUtilsInterface
         }
 
         $address = new Address();
-        $address->setUbigueo($companyEntity->getUbigeoCode() ?? '')
+        $address
+            ->setUbigueo($companyEntity->getUbigeoCode() ?? '')
             ->setCodigoPais('PE')
             ->setDepartamento($companyEntity->getDepartment() ?? '')
             ->setProvincia($companyEntity->getProvince() ?? '')
@@ -35,7 +35,8 @@ readonly class BillUtils implements BillUtilsInterface
             ->setDireccion($companyEntity->getFiscalAddress());
 
         $company = new Company();
-        $company->setRuc($companyEntity->getRuc())
+        $company
+            ->setRuc($companyEntity->getRuc())
             ->setRazonSocial($companyEntity->getBusinessName())
             ->setNombreComercial($companyEntity->getTradeName())
             ->setTelephone($companyEntity->getPhone())

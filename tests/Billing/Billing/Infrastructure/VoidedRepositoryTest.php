@@ -33,13 +33,7 @@ final class VoidedRepositoryTest extends TestCase
         string $apiBaseUrl = 'https://api.example.com/',
         string $apiToken = 'test-token',
     ): VoidedRepository {
-        return new VoidedRepository(
-            $this->connection,
-            $this->serializer,
-            $httpClient,
-            $apiBaseUrl,
-            $apiToken,
-        );
+        return new VoidedRepository($this->connection, $this->serializer, $httpClient, $apiBaseUrl, $apiToken);
     }
 
     // -----------------------------------------------------------------------
@@ -49,7 +43,8 @@ final class VoidedRepositoryTest extends TestCase
     public function testGetLastCorrelativeByDateReturnsCountWhenTablesExist(): void
     {
         // tableExists('sales') and tableExists('tax_document') both return truthy (1)
-        $this->connection->method('fetchOne')
+        $this->connection
+            ->method('fetchOne')
             ->willReturnCallback(function (string $sql, array $params): mixed {
                 if (str_contains($sql, 'information_schema')) {
                     return '1'; // table exists
@@ -74,7 +69,8 @@ final class VoidedRepositoryTest extends TestCase
         // legacy_movimiento_id = NULL). The JOIN must cover td.sale_id = s.id path.
         // The repository query uses a single COUNT that already covers both join arms,
         // so the test verifies the SQL contains the sale_id join condition.
-        $this->connection->method('fetchOne')
+        $this->connection
+            ->method('fetchOne')
             ->willReturnCallback(function (string $sql, array $params): mixed {
                 if (str_contains($sql, 'information_schema')) {
                     return '1'; // table exists
@@ -128,7 +124,7 @@ final class VoidedRepositoryTest extends TestCase
         $mockResponse = new MockResponse('{"name":"RA-001"}', ['http_code' => 200]);
         $httpClient = new MockHttpClient($mockResponse);
 
-        $repo   = $this->makeRepository($httpClient, 'https://api.example.com/', 'my-token');
+        $repo = $this->makeRepository($httpClient, 'https://api.example.com/', 'my-token');
         $result = $repo->voidInvoice($voided);
 
         self::assertSame($expectedResponse, $result);
@@ -143,7 +139,10 @@ final class VoidedRepositoryTest extends TestCase
 
         $capturedUrl = null;
         $mockResponse = new MockResponse('{}', ['http_code' => 200]);
-        $httpClient = new MockHttpClient(function (string $method, string $url) use (&$capturedUrl, $mockResponse): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url) use (
+            &$capturedUrl,
+            $mockResponse,
+        ): MockResponse {
             $capturedUrl = $url;
             return $mockResponse;
         });
@@ -167,12 +166,15 @@ final class VoidedRepositoryTest extends TestCase
 
         $capturedUrl = null;
         $mockResponse = new MockResponse('{}', ['http_code' => 200]);
-        $httpClient = new MockHttpClient(function (string $method, string $url) use (&$capturedUrl, $mockResponse): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url) use (
+            &$capturedUrl,
+            $mockResponse,
+        ): MockResponse {
             $capturedUrl = $url;
             return $mockResponse;
         });
 
-        $repo   = $this->makeRepository($httpClient, 'https://api.example.com/', 'test-token');
+        $repo = $this->makeRepository($httpClient, 'https://api.example.com/', 'test-token');
         $result = $repo->getStatus('TICKET-001', '20100000000');
 
         self::assertSame($expectedResult, $result);
@@ -188,7 +190,10 @@ final class VoidedRepositoryTest extends TestCase
 
         $capturedMethod = null;
         $mockResponse = new MockResponse('{}', ['http_code' => 200]);
-        $httpClient = new MockHttpClient(function (string $method, string $url) use (&$capturedMethod, $mockResponse): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url) use (
+            &$capturedMethod,
+            $mockResponse,
+        ): MockResponse {
             $capturedMethod = $method;
             return $mockResponse;
         });

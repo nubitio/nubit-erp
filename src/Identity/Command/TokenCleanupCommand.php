@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Nubit\AdminBundle\Auth\RefreshTokenStoreInterface;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,10 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'app:token:cleanup',
-    description: 'Clean up expired and revoked refresh tokens for all tenants',
-)]
+#[AsCommand(name: 'app:token:cleanup', description: 'Clean up expired and revoked refresh tokens for all tenants')]
 #[AsCronTask('0 0 * * *')] // every day at midnight
 class TokenCleanupCommand extends PerTenantCommand
 {

@@ -27,10 +27,8 @@ class HealthController extends AbstractController
     }
 
     #[Route('/health', name: 'health_check', methods: ['GET'])]
-    public function __invoke(
-        EntityManagerInterface $entityManager,
-        CacheInterface $cache,
-    ): JsonResponse {
+    public function __invoke(EntityManagerInterface $entityManager, CacheInterface $cache): JsonResponse
+    {
         $checks = [];
         $overall = 'ok';
 
@@ -46,7 +44,7 @@ class HealthController extends AbstractController
         // Redis (via cache adapter ping)
         try {
             // Store and retrieve a value to verify Redis connectivity
-            $cache->get('health_check_ping', fn () => true);
+            $cache->get('health_check_ping', fn() => true);
             $checks['redis'] = 'ok';
         } catch (Throwable) {
             $checks['redis'] = 'degraded';
@@ -83,7 +81,7 @@ class HealthController extends AbstractController
         try {
             $freeBytes = disk_free_space('/app/var');
             // Degraded if less than 100MB free
-            $checks['disk'] = $freeBytes !== false && $freeBytes > 100 * 1024 * 1024 ? 'ok' : 'degraded';
+            $checks['disk'] = $freeBytes !== false && $freeBytes > (100 * 1024 * 1024) ? 'ok' : 'degraded';
             if ($checks['disk'] === 'degraded') {
                 $overall = 'degraded';
             }
@@ -94,13 +92,10 @@ class HealthController extends AbstractController
 
         $statusCode = $overall === 'ok' ? Response::HTTP_OK : Response::HTTP_SERVICE_UNAVAILABLE;
 
-        return $this->json(
-            [
-                'status' => $overall,
-                'checks' => $checks,
-                'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
-            ],
-            $statusCode
-        );
+        return $this->json([
+            'status' => $overall,
+            'checks' => $checks,
+            'timestamp' => new DateTimeImmutable()->format(DATE_ATOM),
+        ], $statusCode);
     }
 }

@@ -63,7 +63,8 @@ class ProductStockRepository extends ServiceEntityRepository
      */
     public function findBelowMinimumStockByWarehouse(Warehouse $warehouse): array
     {
-        return $this->createQueryBuilder('ps')
+        return $this
+            ->createQueryBuilder('ps')
             ->where('ps.warehouse = :warehouse')
             ->andWhere('ps.stock <= ps.minStock')
             ->setParameter('warehouse', $warehouse)
@@ -78,10 +79,7 @@ class ProductStockRepository extends ServiceEntityRepository
      */
     public function findAllBelowMinimumStock(): array
     {
-        return $this->createQueryBuilder('ps')
-            ->where('ps.stock <= ps.minStock')
-            ->getQuery()
-            ->getResult();
+        return $this->createQueryBuilder('ps')->where('ps.stock <= ps.minStock')->getQuery()->getResult();
     }
 
     /**
@@ -89,7 +87,8 @@ class ProductStockRepository extends ServiceEntityRepository
      */
     public function getTotalStockForProduct(Product $product): float
     {
-        $result = $this->createQueryBuilder('ps')
+        $result = $this
+            ->createQueryBuilder('ps')
             ->select('SUM(ps.stock) as totalStock')
             ->where('ps.product = :product')
             ->setParameter('product', $product)

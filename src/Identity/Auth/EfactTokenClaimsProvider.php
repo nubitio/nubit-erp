@@ -19,8 +19,7 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
     public function __construct(
         private SelectedBranchContext $selectedBranch,
         private TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function claims(UserInterface $user, array $previousClaims = []): array
     {

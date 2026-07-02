@@ -19,6 +19,5 @@ final readonly class MovementDraft
         public string $sourceId,
         public ?string $note = null,
         public ?string $happenedAt = null,
-    ) {
-    }
+    ) {}
 }

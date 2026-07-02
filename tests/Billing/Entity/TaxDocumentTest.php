@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Entity;
 
-use App\Organization\Entity\Branch;
-use App\Contacts\Entity\Customer;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
+use App\Contacts\Entity\Customer;
+use App\Organization\Entity\Branch;
 use PHPUnit\Framework\TestCase;
 
 final class TaxDocumentTest extends TestCase
@@ -17,12 +17,15 @@ final class TaxDocumentTest extends TestCase
         $entity = new TaxDocument();
         $branch = new Branch();
         $customer = new Customer();
-        $line = (new TaxDocumentLine())->setProductName('Producto')->setLineNumber(1);
+        $line = new TaxDocumentLine()
+            ->setProductName('Producto')
+            ->setLineNumber(1);
         $issueDate = new \DateTimeImmutable('2026-02-20 10:00:00');
         $createdAt = new \DateTimeImmutable('2026-02-20 11:00:00');
         $updatedAt = new \DateTimeImmutable('2026-02-20 12:00:00');
 
-        $entity->setBranch($branch)
+        $entity
+            ->setBranch($branch)
             ->setCustomer($customer)
             ->setDocumentType('01')
             ->setIssueDate($issueDate)

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
-use App\Identity\Auth\BranchContextService;
-use Nubit\Platform\Export\XlsExporter;
-use Nubit\Platform\Report\ExportableReportInterface;
-use Nubit\Platform\Report\GridFilterApplier;
 use App\Efact\Util\DateHelper;
+use App\Identity\Auth\BranchContextService;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
-use PhpOffice\PhpSpreadsheet\Exception;
+use Nubit\Platform\Export\XlsExporter;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Report\ExportableReportInterface;
+use Nubit\Platform\Report\GridFilterApplier;
+use PhpOffice\PhpSpreadsheet\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -46,9 +46,9 @@ class SaleReportController extends AbstractController
      */
     public function __invoke(Request $request, BranchContextService $branchContext): StreamedResponse
     {
-        $reportKey = (string)$request->query->get('report', '');
-        $dateFrom  = (string)$request->query->get('date-from', '');
-        $dateTo    = (string)$request->query->get('date-to', '');
+        $reportKey = (string) $request->query->get('report', '');
+        $dateFrom = (string) $request->query->get('date-from', '');
+        $dateTo = (string) $request->query->get('date-to', '');
 
         $localId = $branchContext->getCurrentBranchId();
         if ($localId === null) {
@@ -64,9 +64,9 @@ class SaleReportController extends AbstractController
             throw new BadRequestHttpException('Reporte no encontrado.');
         }
 
-        $params     = $this->buildDateRangeParams($localId, $dateFrom, $dateTo);
+        $params = $this->buildDateRangeParams($localId, $dateFrom, $dateTo);
         $gridFilter = $this->gridFilterApplier->buildSql(
-            (string)$request->query->get('filter', ''),
+            (string) $request->query->get('filter', ''),
             $report->fieldMap(),
             $params,
         );
@@ -90,7 +90,7 @@ class SaleReportController extends AbstractController
         $utcTz = new DateTimeZone('UTC');
 
         $dateFrom = trim($dateFrom);
-        $dateTo   = trim($dateTo);
+        $dateTo = trim($dateTo);
 
         $fromBoundary = $dateFrom !== ''
             ? $this->parseLimaDateBoundary($dateFrom, 0, 0, 0)
@@ -100,14 +100,14 @@ class SaleReportController extends AbstractController
             : new DateTimeImmutable('9999-12-31 23:59:59', new DateTimeZone('America/Lima'));
 
         $from = $fromBoundary->setTimezone($utcTz);
-        $to   = $toBoundary->setTimezone($utcTz);
+        $to = $toBoundary->setTimezone($utcTz);
 
         return [
-            'local_id'     => $localId,
-            'date_from'    => $fromBoundary->format('Y-m-d'),
-            'date_to'      => $toBoundary->format('Y-m-d'),
+            'local_id' => $localId,
+            'date_from' => $fromBoundary->format('Y-m-d'),
+            'date_to' => $toBoundary->format('Y-m-d'),
             'instant_from' => $from->format('Y-m-d H:i:s'),
-            'instant_to'   => $to->format('Y-m-d H:i:s'),
+            'instant_to' => $to->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -126,9 +126,10 @@ class SaleReportController extends AbstractController
 
         $date = DateTimeImmutable::createFromFormat('Y-m-d', $dateStr, $limaTz);
         if ($date === false) {
-            throw new BadRequestHttpException(
-                sprintf('Fecha inválida "%s". El formato esperado es YYYY-MM-DD.', $dateStr)
-            );
+            throw new BadRequestHttpException(sprintf(
+                'Fecha inválida "%s". El formato esperado es YYYY-MM-DD.',
+                $dateStr,
+            ));
         }
 
         return $date->setTime($hour, $minute, $second);

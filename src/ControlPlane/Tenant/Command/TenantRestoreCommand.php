@@ -12,10 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:restore',
-    description: 'Restore a tenant database from a backup.',
-)]
+#[AsCommand(name: 'app:tenant:restore', description: 'Restore a tenant database from a backup.')]
 class TenantRestoreCommand extends Command
 {
     public function __construct(
@@ -40,10 +37,7 @@ class TenantRestoreCommand extends Command
             return Command::FAILURE;
         }
 
-        $message = sprintf(
-            'Restore tenant from backup #%d? This will overwrite the current database.',
-            $backupId,
-        );
+        $message = sprintf('Restore tenant from backup #%d? This will overwrite the current database.', $backupId);
         if (!$io->confirm($message, false)) {
             $io->note('Restore cancelled.');
 

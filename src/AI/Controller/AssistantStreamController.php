@@ -46,17 +46,12 @@ class AssistantStreamController extends AbstractController
         private readonly SerializerInterface $serializer,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): StreamedResponse
     {
         /** @var AssistantRequest $data */
-        $data = $this->serializer->deserialize(
-            $request->getContent(),
-            AssistantRequest::class,
-            'json',
-        );
+        $data = $this->serializer->deserialize($request->getContent(), AssistantRequest::class, 'json');
 
         // Build the message bag eagerly (no I/O, just DTO mapping)
         $messageBag = $this->buildMessageBag($data);
@@ -81,7 +76,9 @@ class AssistantStreamController extends AbstractController
 
                     if ($result instanceof StreamResult) {
                         foreach ($result->getContent() as $chunk) {
-                            $content = $chunk instanceof \Stringable ? (string) $chunk : (is_string($chunk) ? $chunk : '');
+                            $content = $chunk instanceof \Stringable
+                                ? (string) $chunk
+                                : (is_string($chunk) ? $chunk : '');
                             if ($content === '') {
                                 continue;
                             }
@@ -106,7 +103,7 @@ class AssistantStreamController extends AbstractController
             [
                 'Content-Type' => 'text/event-stream',
                 'Cache-Control' => 'no-cache, no-store',
-                'X-Accel-Buffering' => 'no',  // Disable Nginx/Caddy proxy buffering
+                'X-Accel-Buffering' => 'no', // Disable Nginx/Caddy proxy buffering
                 'Connection' => 'keep-alive',
             ],
         );
@@ -142,7 +139,7 @@ class AssistantStreamController extends AbstractController
 
         $userMessages = [];
         foreach ($data->messages as $i => $message) {
-            $isLast = ($i === $lastUserIndex);
+            $isLast = $i === $lastUserIndex;
             $userMessages[] = $this->convertMessage(
                 $message,
                 $isLast ? $imageAttachments : [],
@@ -152,9 +149,7 @@ class AssistantStreamController extends AbstractController
 
         $messageBag = new MessageBag(...$userMessages);
 
-        return $messageBag->withSystemMessage(
-            Message::forSystem($this->buildDynamicSystemPrompt($data)),
-        );
+        return $messageBag->withSystemMessage(Message::forSystem($this->buildDynamicSystemPrompt($data)));
     }
 
     private function buildDynamicSystemPrompt(AssistantRequest $data): string
@@ -164,20 +159,24 @@ class AssistantStreamController extends AbstractController
         // Inject screen context if provided
         $screenBlock = '';
         if ($data->screenContext !== null) {
-            $screenBlock = "\n## Pantalla activa del usuario\n"
-                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown') . "\n"
-                . ($data->screenContext->entityType !== null
-                    ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
-                    : '')
-                . ($data->screenContext->entityId !== null
-                    ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
-                    : '');
+            $screenBlock =
+                "\n## Pantalla activa del usuario\n"
+                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown')
+                . "\n"
+                . (
+                    $data->screenContext->entityType !== null
+                        ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
+                        : ''
+                )
+                . (
+                    $data->screenContext->entityId !== null
+                        ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
+                        : ''
+                );
         }
 
         $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
-        $staticPrompt = is_file($staticPromptPath)
-            ? (string) file_get_contents($staticPromptPath)
-            : '';
+        $staticPrompt = is_file($staticPromptPath) ? (string) file_get_contents($staticPromptPath) : '';
 
         return $contextBlock . $screenBlock . "\n\n---\n\n" . $staticPrompt;
     }

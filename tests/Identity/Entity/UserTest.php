@@ -7,8 +7,8 @@ namespace App\Tests\Identity\Entity;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[CoversClass(User::class)]
@@ -143,18 +143,19 @@ final class UserTest extends TestCase
         $user = new User();
         $user->setUsername('alice');
 
-        $other = new class ('alice') implements UserInterface {
+        $other = new class('alice') implements UserInterface {
             /** @param non-empty-string $id */
-            public function __construct(private string $id)
-            {
-            }
+            public function __construct(
+                private string $id,
+            ) {}
+
             public function getRoles(): array
             {
                 return [];
             }
-            public function eraseCredentials(): void
-            {
-            }
+
+            public function eraseCredentials(): void {}
+
             /** @return non-empty-string */
             public function getUserIdentifier(): string
             {

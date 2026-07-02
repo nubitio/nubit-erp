@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
-use App\Sales\Entity\SaleRecord;
+use App\Catalog\Repository\ProductBomItemRepository;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockMovementType;
-use App\Catalog\Repository\ProductBomItemRepository;
+use App\Sales\Entity\SaleRecord;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -30,8 +30,7 @@ final class BomExplosionService implements StockMovementEnricherInterface
     public function __construct(
         private readonly ProductBomItemRepository $bomItemRepository,
         private readonly EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @param list<MovementDraft> $baseMovements
@@ -51,8 +50,7 @@ final class BomExplosionService implements StockMovementEnricherInterface
                 continue;
             }
 
-            $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior())
-                ?? InventoryBehavior::TRACKED;
+            $behavior = InventoryBehavior::tryFrom($product->getInventoryBehavior()) ?? InventoryBehavior::TRACKED;
 
             if (!$behavior->requiresBomExplosion()) {
                 $enriched[] = $draft;
@@ -71,9 +69,7 @@ final class BomExplosionService implements StockMovementEnricherInterface
                 $componentQty = $line->effectiveQty($parentQtyAbs);
 
                 // Preserve the sign from the parent draft (negative = outbound)
-                $signedQty = str_starts_with($draft->qtyDeltaBase, '-')
-                    ? '-' . $componentQty
-                    : $componentQty;
+                $signedQty = str_starts_with($draft->qtyDeltaBase, '-') ? '-' . $componentQty : $componentQty;
 
                 $enriched[] = new MovementDraft(
                     warehouseId: $draft->warehouseId,
@@ -88,7 +84,7 @@ final class BomExplosionService implements StockMovementEnricherInterface
                         'BOM explosion from %s (factor×wastage: %s×%s)',
                         $draft->productId,
                         $line->getComponentQtyBase(),
-                        $line->getWastageFactor()
+                        $line->getWastageFactor(),
                     ),
                     happenedAt: $draft->happenedAt,
                 );

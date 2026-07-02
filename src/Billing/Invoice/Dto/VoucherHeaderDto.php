@@ -58,8 +58,7 @@ final class VoucherHeaderDto
         public ?string $voucherHash = null,
         public ?string $voucherQrData = null,
         public ?int $voucherStatus = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row
@@ -91,10 +90,7 @@ final class VoucherHeaderDto
             voucherDiscountAmount: self::stringOrNull($row, 'voucher_discount_amount'),
             voucherDiscountPercentage: self::stringOrNull($row, 'voucher_discount_percentage'),
             voucherConsumptionSurchargeAmount: self::stringOrNull($row, 'voucher_consumption_surcharge_amount'),
-            voucherConsumptionSurchargePercentage: self::stringOrNull(
-                $row,
-                'voucher_consumption_surcharge_percentage'
-            ),
+            voucherConsumptionSurchargePercentage: self::stringOrNull($row, 'voucher_consumption_surcharge_percentage'),
             voucherTaxedAmount: isset($row['voucher_taxed_amount']) ? (string) $row['voucher_taxed_amount'] : null,
             voucherTaxAmount: isset($row['voucher_tax_amount']) ? (string) $row['voucher_tax_amount'] : null,
             voucherTaxPercentage: self::stringOrNull($row, 'voucher_tax_percentage'),
@@ -106,10 +102,7 @@ final class VoucherHeaderDto
             voucherDetractionPercent: self::stringOrNull($row, 'voucher_detraction_percent'),
             voucherDetractionAmount: self::stringOrNull($row, 'voucher_detraction_amount'),
             voucherDetractionPaymentMethod: self::stringOrNull($row, 'voucher_detraction_payment_method'),
-            voucherDetractionPaymentDescription: self::stringOrNull(
-                $row,
-                'voucher_detraction_payment_description'
-            ),
+            voucherDetractionPaymentDescription: self::stringOrNull($row, 'voucher_detraction_payment_description'),
             voucherDetractionValueRef: self::stringOrNull($row, 'voucher_detraction_value_ref'),
             voucherDetractionAccount: self::stringOrNull($row, 'voucher_detraction_account'),
             voucherDetractionDescription: self::stringOrNull($row, 'voucher_detraction_description'),

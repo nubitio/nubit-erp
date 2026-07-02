@@ -51,7 +51,7 @@ class SunatSendToggleCommand extends PerTenantCommand
             $this->sunatStateService->save($state);
 
             $action = $pause ? 'paused' : 'enabled';
-            $streakNote = ($resetStreak || !$pause) ? ', streak reset to 0' : '';
+            $streakNote = $resetStreak || !$pause ? ', streak reset to 0' : '';
             $io->success(sprintf('SUNAT sending %s for tenant "%s"%s', $action, $this->currentTenantName, $streakNote));
 
             $this->logger->info('SUNAT sending toggled', [

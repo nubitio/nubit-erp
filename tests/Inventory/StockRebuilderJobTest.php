@@ -13,15 +13,13 @@ final class StockRebuilderJobTest extends TestCase
     public function testRebuildUsesLedgerSumAsSourceOfTruth(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('executeStatement')
-            ->with(
-                self::callback(static fn (string $sql): bool => str_contains($sql, 'SUM(sm.qty_delta_base)')),
-                [
-                    'warehouse_id' => 'wh-1',
-                    'product_id' => 'prod-1',
-                ]
-            )
+            ->with(self::callback(static fn(string $sql): bool => str_contains($sql, 'SUM(sm.qty_delta_base)')), [
+                'warehouse_id' => 'wh-1',
+                'product_id' => 'prod-1',
+            ])
             ->willReturn(1);
 
         $job = new StockRebuilderJob($connection);

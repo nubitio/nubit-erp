@@ -20,7 +20,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->auth    = new RoleBasedStockAuthorization();
+        $this->auth = new RoleBasedStockAuthorization();
         $this->product = new Product();
     }
 
@@ -28,11 +28,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     public function testSuperAdminIsGranted(): void
     {
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-1',
-            ['ROLE_USER', 'ROLE_SUPER_ADMIN'],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-1', ['ROLE_USER', 'ROLE_SUPER_ADMIN']);
 
         self::assertTrue($result->granted);
         self::assertNull($result->reason);
@@ -40,11 +36,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     public function testAdminIsGranted(): void
     {
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-2',
-            ['ROLE_ADMIN'],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-2', ['ROLE_ADMIN']);
 
         self::assertTrue($result->granted);
     }
@@ -64,11 +56,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     public function testRegularUserIsDenied(): void
     {
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-4',
-            ['ROLE_USER'],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-4', ['ROLE_USER']);
 
         self::assertFalse($result->granted);
         self::assertNotNull($result->reason);
@@ -77,11 +65,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     public function testEmptyRolesIsDenied(): void
     {
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-5',
-            [],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-5', []);
 
         self::assertFalse($result->granted);
     }
@@ -89,11 +73,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
     public function testCaseSensitiveRoleMatchDeniesLowercase(): void
     {
         // Roles are case-sensitive; 'role_admin' must not match 'ROLE_ADMIN'
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-6',
-            ['role_admin'],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-6', ['role_admin']);
 
         self::assertFalse($result->granted);
     }
@@ -102,11 +82,7 @@ final class RoleBasedStockAuthorizationTest extends TestCase
 
     public function testDenialReasonListsAllOverrideRoles(): void
     {
-        $result = $this->auth->canOverrideStrictPolicy(
-            $this->product,
-            'actor-7',
-            ['ROLE_USER'],
-        );
+        $result = $this->auth->canOverrideStrictPolicy($this->product, 'actor-7', ['ROLE_USER']);
 
         self::assertFalse($result->granted);
         self::assertStringContainsString('ROLE_INVENTORY_OVERRIDE', (string) $result->reason);

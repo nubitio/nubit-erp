@@ -6,11 +6,11 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Entity\VoucherType;
+use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Organization\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: VoucherSeriesRepository::class)]

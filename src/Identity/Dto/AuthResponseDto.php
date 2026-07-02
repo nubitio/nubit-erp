@@ -12,6 +12,5 @@ class AuthResponseDto
         public ?string $token = null,
         public ?string $refreshToken = null,
         public ?int $expiresAt = null,
-    ) {
-    }
+    ) {}
 }

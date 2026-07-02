@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Domain;
 
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sunat\Domain\FileResponse;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Filesystem\FileManager;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Efact\Service\CompanyContext;
-use App\Billing\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Filesystem\FileManager;
 
 readonly class ReceiptCdrUseCase
 {
@@ -18,8 +18,7 @@ readonly class ReceiptCdrUseCase
         private TaxDocumentRepository $taxDocumentRepository,
         private CompanyContext $companyContext,
         private FileManager $fileManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws FilesystemException
@@ -45,7 +44,7 @@ readonly class ReceiptCdrUseCase
 
         return new FileResponse(
             $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip'),
-            'R-' . $docFullName . '.zip'
+            'R-' . $docFullName . '.zip',
         );
     }
 
@@ -63,14 +62,9 @@ readonly class ReceiptCdrUseCase
         $cdrPath = Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip';
 
         if (!$this->fileManager->exists($cdrPath)) {
-            throw new ServiceException(
-                'CDR no disponible. Use Consulta CDR para sincronizar el estado con SUNAT.'
-            );
+            throw new ServiceException('CDR no disponible. Use Consulta CDR para sincronizar el estado con SUNAT.');
         }
 
-        return new FileResponse(
-            $this->fileManager->read($cdrPath),
-            'R-' . $docFullName . '.zip'
-        );
+        return new FileResponse($this->fileManager->read($cdrPath), 'R-' . $docFullName . '.zip');
     }
 }

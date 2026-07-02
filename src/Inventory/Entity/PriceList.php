@@ -12,16 +12,16 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\Platform\Http\ApiResponse;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use App\Inventory\Dto\PriceListDto;
 use App\Inventory\Dto\PriceListApplyDto;
+use App\Inventory\Dto\PriceListDto;
 use App\Inventory\Dto\PricesDto;
 use App\Inventory\Repository\PriceListRepository;
 use App\Inventory\State\PriceListApplyProvider;
 use App\Inventory\State\PriceListProcessor;
 use App\Inventory\State\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\Platform\Http\ApiResponse;
 
 #[ORM\Entity(repositoryClass: PriceListRepository::class)]
 #[ORM\Table(name: 'price_list')]
@@ -35,10 +35,7 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(
             uriTemplate: '/price-lists/{id}/prices',
             uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: PriceList::class,
-                ),
+                'id' => new Link(fromProperty: 'id', fromClass: PriceList::class),
             ],
             paginationEnabled: false,
             output: PriceListDto::class,
@@ -53,10 +50,7 @@ use Doctrine\ORM\Mapping as ORM;
         new GetCollection(
             uriTemplate: '/price-lists/{id}/apply',
             uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: PriceList::class,
-                ),
+                'id' => new Link(fromProperty: 'id', fromClass: PriceList::class),
             ],
             paginationEnabled: false,
             output: PriceListApplyDto::class,

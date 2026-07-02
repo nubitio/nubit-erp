@@ -15,8 +15,7 @@ final readonly class SendDespatchMessageHandler
     public function __construct(
         private DespatchSendUseCase $despatchSendUseCase,
         private LoggerInterface $billingLogger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(SendDespatchMessage $message): void
     {

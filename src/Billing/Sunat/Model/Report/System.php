@@ -12,6 +12,5 @@ readonly class System
     public function __construct(
         public ?string $logo = null,
         public ?string $hash = null,
-    ) {
-    }
+    ) {}
 }

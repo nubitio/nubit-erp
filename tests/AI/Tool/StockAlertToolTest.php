@@ -7,8 +7,8 @@ namespace App\Tests\AI\Tool;
 use App\AI\Context\BranchContextInterface;
 use App\AI\Tool\StockAlertTool;
 use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
@@ -33,11 +33,7 @@ final class StockAlertToolTest extends TestCase
     public function testReturnsEmptyAlertsWhenAllStockOk(): void
     {
         // No rows below min stock
-        $this->connection
-            ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls(
-                [], // belowMinSql returns nothing
-            );
+        $this->connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls([]); // belowMinSql returns nothing
 
         $result = $this->tool->stockAlert();
 
@@ -79,14 +75,12 @@ final class StockAlertToolTest extends TestCase
 
         // Velocity: A = 1/day (5 days), B = 0.5/day (6 days), C = no sales (null)
         $velocityRows = [
-            ['product_id' => '1', 'velocity' => '1.0'],  // 5/1 = 5.0 days
-            ['product_id' => '2', 'velocity' => '0.5'],  // 3/0.5 = 6.0 days
+            ['product_id' => '1', 'velocity' => '1.0'], // 5/1 = 5.0 days
+            ['product_id' => '2', 'velocity' => '0.5'], // 3/0.5 = 6.0 days
             // product '3' has no row → velocity 0 → null
         ];
 
-        $this->connection
-            ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls($belowMinRows, $velocityRows);
+        $this->connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls($belowMinRows, $velocityRows);
 
         $result = $this->tool->stockAlert();
 
@@ -123,9 +117,7 @@ final class StockAlertToolTest extends TestCase
         // No velocity rows for product 42
         $velocityRows = [];
 
-        $this->connection
-            ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls($belowMinRows, $velocityRows);
+        $this->connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls($belowMinRows, $velocityRows);
 
         $result = $this->tool->stockAlert();
 
@@ -153,9 +145,7 @@ final class StockAlertToolTest extends TestCase
             ];
         }
 
-        $this->connection
-            ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls($rows, []);
+        $this->connection->method('fetchAllAssociative')->willReturnOnConsecutiveCalls($rows, []);
 
         $result = $this->tool->stockAlert(999); // over the max
 

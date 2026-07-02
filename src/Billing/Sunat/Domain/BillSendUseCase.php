@@ -14,8 +14,7 @@ readonly class BillSendUseCase
         private BillCreateUseCase $billCreateUseCase,
         private BillRepositoryInterface $billRepository,
         private LoggerInterface $billingLogger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws \DateMalformedStringException

@@ -17,8 +17,7 @@ class DashboardController extends AbstractController
         private readonly DashboardRepository $repository,
         private readonly BranchContextService $branchContext,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -38,9 +37,7 @@ class DashboardController extends AbstractController
         }
 
         try {
-            $data = $isLite
-                ? $this->repository->getLiteOverview($branchId)
-                : $this->repository->getOverview($branchId);
+            $data = $isLite ? $this->repository->getLiteOverview($branchId) : $this->repository->getOverview($branchId);
         } catch (\Throwable $e) {
             $this->logger->error('Dashboard overview fatal error', [
                 'branch_id' => $branchId,

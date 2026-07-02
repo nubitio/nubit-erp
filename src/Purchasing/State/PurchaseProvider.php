@@ -24,8 +24,7 @@ readonly class PurchaseProvider implements ProviderInterface
         private ProviderInterface $collectionProvider,
         #[Autowire(service: 'api_platform.doctrine.orm.state.item_provider')]
         private ProviderInterface $itemProvider,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null

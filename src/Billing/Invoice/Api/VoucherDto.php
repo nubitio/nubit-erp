@@ -17,14 +17,14 @@ use App\Billing\Invoice\Domain\Voucher;
             uriVariables: [
                 'tax_document_id' => 'tax_document_id',
             ],
-            output: Voucher::class
+            output: Voucher::class,
         ),
         new Get(
             uriTemplate: '/invoices/{sale_id}/voucher',
             uriVariables: [
                 'sale_id' => 'sale_id',
             ],
-            output: Voucher::class
+            output: Voucher::class,
         ),
     ],
     provider: VoucherProvider::class,

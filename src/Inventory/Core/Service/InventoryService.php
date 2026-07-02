@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Service;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Catalog\Entity\Product;
-use App\Sales\Entity\SaleRecord;
-use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Contract\UnitConversionServiceInterface;
@@ -18,9 +15,12 @@ use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Event\StockMovementRecorded;
+use App\Inventory\Entity\Warehouse;
+use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Nubit\Platform\Exception\ServiceException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -49,8 +49,7 @@ final class InventoryService
         private readonly UnitConversionServiceInterface $unitConversion,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly iterable $enrichers = [],
-    ) {
-    }
+    ) {}
 
     // ─── Write path ─────────────────────────────────────────────────────────────
 
@@ -140,10 +139,10 @@ final class InventoryService
      */
     public function getOnHand(string $warehouseId, string $productId): string
     {
-        $qty = $this->connection->fetchOne(
-            'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-            ['w' => $warehouseId, 'p' => $productId]
-        );
+        $qty = $this->connection->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p', [
+            'w' => $warehouseId,
+            'p' => $productId,
+        ]);
         if ($qty !== false) {
             return (string) $qty;
         }
@@ -161,14 +160,14 @@ final class InventoryService
     {
         $this->connection->executeStatement(
             <<<'SQL'
-            INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
-            VALUES (:w, :p, 0, :qty, NOW(), 1)
-            ON DUPLICATE KEY UPDATE
-                qty_reserved = qty_reserved + VALUES(qty_reserved),
-                updated_at   = NOW(),
-                version      = version + 1
-            SQL,
-            ['w' => $warehouseId, 'p' => $productId, 'qty' => $qtyBase]
+                INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+                VALUES (:w, :p, 0, :qty, NOW(), 1)
+                ON DUPLICATE KEY UPDATE
+                    qty_reserved = qty_reserved + VALUES(qty_reserved),
+                    updated_at   = NOW(),
+                    version      = version + 1
+                SQL,
+            ['w' => $warehouseId, 'p' => $productId, 'qty' => $qtyBase],
         );
     }
 
@@ -181,13 +180,13 @@ final class InventoryService
     {
         $this->connection->executeStatement(
             <<<'SQL'
-            UPDATE stock_items
-            SET qty_reserved = GREATEST(0, qty_reserved - :qty),
-                updated_at   = NOW(),
-                version      = version + 1
-            WHERE warehouse_id = :w AND product_id = :p
-            SQL,
-            ['w' => $warehouseId, 'p' => $productId, 'qty' => $qtyBase]
+                UPDATE stock_items
+                SET qty_reserved = GREATEST(0, qty_reserved - :qty),
+                    updated_at   = NOW(),
+                    version      = version + 1
+                WHERE warehouse_id = :w AND product_id = :p
+                SQL,
+            ['w' => $warehouseId, 'p' => $productId, 'qty' => $qtyBase],
         );
     }
 
@@ -202,11 +201,7 @@ final class InventoryService
 
         // Use absolute value of qtyOriginal for conversion (factor lookup is always positive).
         $absQtyOriginal = ltrim(ltrim($draft->qtyOriginal, '+'), '-');
-        $qtyBase = $this->unitConversion->toBase(
-            $draft->productId,
-            $draft->unitId,
-            $absQtyOriginal
-        );
+        $qtyBase = $this->unitConversion->toBase($draft->productId, $draft->unitId, $absQtyOriginal);
 
         // Strip any leading +/- from qtyBase (toBase may add them), then apply direction from delta.
         $absQtyBase = ltrim(ltrim($qtyBase, '+'), '-');
@@ -246,50 +241,50 @@ final class InventoryService
     private function persistMovement(MovementDraft $movement): void
     {
         $movementId = Uuid::v7()->toRfc4122();
-        $occurredAt = $movement->happenedAt ?? (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $occurredAt = $movement->happenedAt ?? new \DateTimeImmutable()->format('Y-m-d H:i:s');
 
         $this->connection->beginTransaction();
         try {
             try {
-                $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+                $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
                 $this->connection->executeStatement(
                     <<<'SQL'
-                    INSERT INTO stock_movements (
-                        id,
-                        warehouse_id, product_id,
-                        occurred_at, movement_type,
-                        quantity_delta, qty_delta_base, qty_original,
-                        unit_id,
-                        source_type, source_id,
-                        note, idempotency_key,
-                        sync_status, synced_at, version_no, last_modified_at, created_at
-                    ) VALUES (
-                        :id,
-                        :warehouse_id, :product_id,
-                        :occurred_at, :movement_type,
-                        :qty_delta, :qty_delta_base, :qty_original,
-                        :unit_id,
-                        :source_type, :source_id,
-                        :note, :idempotency_key,
-                        'SYNCED', :now, 1, :now, :now
-                    )
-                    SQL,
+                        INSERT INTO stock_movements (
+                            id,
+                            warehouse_id, product_id,
+                            occurred_at, movement_type,
+                            quantity_delta, qty_delta_base, qty_original,
+                            unit_id,
+                            source_type, source_id,
+                            note, idempotency_key,
+                            sync_status, synced_at, version_no, last_modified_at, created_at
+                        ) VALUES (
+                            :id,
+                            :warehouse_id, :product_id,
+                            :occurred_at, :movement_type,
+                            :qty_delta, :qty_delta_base, :qty_original,
+                            :unit_id,
+                            :source_type, :source_id,
+                            :note, :idempotency_key,
+                            'SYNCED', :now, 1, :now, :now
+                        )
+                        SQL,
                     [
-                        'id'              => $movementId,
-                        'warehouse_id'    => $movement->warehouseId,
-                        'product_id'      => $movement->productId,
-                        'occurred_at'     => $occurredAt,
-                        'movement_type'   => $movement->movementType->value,
-                        'qty_delta'       => $movement->qtyOriginal,
-                        'qty_delta_base'  => $movement->qtyDeltaBase,
-                        'qty_original'    => $movement->qtyOriginal,
-                        'unit_id'         => $movement->unitId ?: null,
-                        'source_type'     => $movement->sourceType,
-                        'source_id'       => $movement->sourceId,
-                        'note'            => $movement->note,
+                        'id' => $movementId,
+                        'warehouse_id' => $movement->warehouseId,
+                        'product_id' => $movement->productId,
+                        'occurred_at' => $occurredAt,
+                        'movement_type' => $movement->movementType->value,
+                        'qty_delta' => $movement->qtyOriginal,
+                        'qty_delta_base' => $movement->qtyDeltaBase,
+                        'qty_original' => $movement->qtyOriginal,
+                        'unit_id' => $movement->unitId ?: null,
+                        'source_type' => $movement->sourceType,
+                        'source_id' => $movement->sourceId,
+                        'note' => $movement->note,
                         'idempotency_key' => $this->buildIdempotencyKey($movement),
-                        'now'             => $now,
-                    ]
+                        'now' => $now,
+                    ],
                 );
             } catch (UniqueConstraintViolationException) {
                 // Idempotent replay: movement already applied; skip silently.
@@ -336,30 +331,26 @@ final class InventoryService
      */
     private function upsertStockItem(MovementDraft $movement, string $movementId): void
     {
-        $now    = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
         $params = [
-            'w'     => $movement->warehouseId,
-            'p'     => $movement->productId,
+            'w' => $movement->warehouseId,
+            'p' => $movement->productId,
             'delta' => $movement->qtyDeltaBase,
-            'now'   => $now,
-            'mid'   => $movementId,
+            'now' => $now,
+            'mid' => $movementId,
         ];
 
         if ($this->connection->getDatabasePlatform() instanceof SQLitePlatform) {
             // SQLite does not support ON DUPLICATE KEY UPDATE.
             // INSERT OR IGNORE creates the row with 0 qty if it doesn't exist;
             // the UPDATE then adds the delta in both cases.
-            $this->connection->executeStatement(
-                <<<'SQL'
+            $this->connection->executeStatement(<<<'SQL'
                 INSERT OR IGNORE INTO stock_items
                     (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, last_movement_id, version)
                 VALUES
                     (:w, :p, 0, 0, :now, :mid, 0)
-                SQL,
-                $params,
-            );
-            $this->connection->executeStatement(
-                <<<'SQL'
+                SQL, $params);
+            $this->connection->executeStatement(<<<'SQL'
                 UPDATE stock_items
                 SET qty_on_hand      = qty_on_hand + :delta,
                     updated_at       = :now,
@@ -367,16 +358,13 @@ final class InventoryService
                     version          = version + 1
                 WHERE warehouse_id = :w
                   AND product_id   = :p
-                SQL,
-                $params,
-            );
+                SQL, $params);
 
             return;
         }
 
         // MariaDB / MySQL: single atomic statement, no race condition possible.
-        $this->connection->executeStatement(
-            <<<'SQL'
+        $this->connection->executeStatement(<<<'SQL'
             INSERT INTO stock_items
                 (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, last_movement_id, version)
             VALUES
@@ -386,9 +374,7 @@ final class InventoryService
                 updated_at       = VALUES(updated_at),
                 last_movement_id = VALUES(last_movement_id),
                 version          = version + 1
-            SQL,
-            $params,
-        );
+            SQL, $params);
     }
 
     private function buildIdempotencyKey(MovementDraft $movement): string

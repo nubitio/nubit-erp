@@ -5,23 +5,24 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Post;
-use App\Identity\Security\Security;
-use App\Identity\Auth\BranchContextService;
-use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
-use Nubit\AdminBundle\Auth\JWTManager;
-use App\Identity\Dto\AuthUserDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
-use App\Organization\Entity\Branch;
+use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashSession;
-use App\Identity\Entity\User;
-use App\Organization\Repository\BranchRepository;
 use App\CashRegister\State\CashRegisterOpenProcessor;
+use App\Identity\Auth\BranchContextService;
+use App\Identity\Dto\AuthUserDto;
+use App\Identity\Entity\User;
+use App\Identity\Security\Security;
+use App\Organization\Entity\Branch;
+use App\Organization\Repository\BranchRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\JWT;
-use PHPUnit\Framework\MockObject\MockObject;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Nubit\AdminBundle\Auth\JWTManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\SecurityBundle\Security as SymfonySecurity;
@@ -51,9 +52,7 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->branchRepository = $this->createMock(BranchRepository::class);
         $this->connection = $this->createMock(Connection::class);
 
-        $this->entityManager
-            ->method('getConnection')
-            ->willReturn($this->connection);
+        $this->entityManager->method('getConnection')->willReturn($this->connection);
     }
 
     /**
@@ -87,12 +86,16 @@ final class CashRegisterOpenProcessorTest extends TestCase
             ->willReturnCallback(static function (string $class, mixed $id): object {
                 return match ($class) {
                     User::class => new User(),
-                    default     => new $class(),
+                    default => new $class(),
                 };
             });
 
         $branch = new Branch();
+        $this->setBranchId($branch, 'branch-1');
         $this->branchRepository->method('find')->willReturn($branch);
+
+        $cashRegister = new CashRegister()->setBranch($branch);
+        $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
 
         $processor = new CashRegisterOpenProcessor(
             entityManager: $this->entityManager,
@@ -119,26 +122,31 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $authUser = new AuthUserDto(userId: 2, username: 'cajero2');
         $this->security->method('connectedUser')->willReturn($authUser);
 
-        $this->entityManager->method('persist')->willReturnCallback(fn () => null);
-        $this->entityManager->method('flush')->willReturnCallback(fn () => null);
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
         $this->entityManager
             ->method('getReference')
             ->willReturnCallback(static function (string $class, mixed $id): object {
                 return match ($class) {
                     User::class => new User(),
-                    default     => new $class(),
+                    default => new $class(),
                 };
             });
 
         $branch = new Branch();
+        $this->setBranchId($branch, 'branch-42');
         $this->branchRepository->method('find')->willReturn($branch);
+
+        $cashRegister = new CashRegister()->setBranch($branch);
+        $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
 
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('rollBack');
         $this->connection->expects($this->never())->method('commit');
 
         // Build UniqueConstraintViolationException using a mock Driver\Exception
-        $driverEx = new class ('Duplicate entry', '23000', 1062) extends \Exception implements \Doctrine\DBAL\Driver\Exception {
+        $driverEx = new class('Duplicate entry', '23000', 1062) extends \Exception implements
+            \Doctrine\DBAL\Driver\Exception {
             public function __construct(
                 string $message,
                 private readonly string $sqlState,
@@ -154,9 +162,7 @@ final class CashRegisterOpenProcessorTest extends TestCase
         };
         $uniqueViolation = new UniqueConstraintViolationException($driverEx, null);
 
-        $this->connection
-            ->method('executeStatement')
-            ->willThrowException($uniqueViolation);
+        $this->connection->method('executeStatement')->willThrowException($uniqueViolation);
 
         $processor = new CashRegisterOpenProcessor(
             entityManager: $this->entityManager,
@@ -206,5 +212,11 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $reflection->getProperty('jwtManager')->setValue($stub, $jwtManager);
 
         return $stub;
+    }
+
+    private function setBranchId(Branch $branch, string $id): void
+    {
+        $reflection = new \ReflectionClass(Branch::class);
+        $reflection->getProperty('id')->setValue($branch, $id);
     }
 }

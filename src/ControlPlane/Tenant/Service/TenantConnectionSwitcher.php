@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Driver\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 
 readonly class TenantConnectionSwitcher implements TenantConnectionSwitcherInterface
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private TenantManager $tenantManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ServiceException

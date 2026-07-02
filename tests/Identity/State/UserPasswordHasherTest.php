@@ -100,7 +100,7 @@ final class UserPasswordHasherTest extends TestCase
 
     public function testUserApiResourceConfiguresPasswordValidationAndHasherPerOperation(): void
     {
-        $resource = (new ReflectionClass(User::class))->getAttributes(ApiResource::class)[0]->newInstance();
+        $resource = new ReflectionClass(User::class)->getAttributes(ApiResource::class)[0]->newInstance();
 
         $postOperation = null;
         $putOperation = null;
@@ -130,7 +130,7 @@ final class UserPasswordHasherTest extends TestCase
 
         $plainPassword = new ReflectionClass(User::class)->getProperty('plainPassword');
         $attributes = $plainPassword->getAttributes();
-        $constraintClasses = array_map(static fn ($attribute): string => $attribute->getName(), $attributes);
+        $constraintClasses = array_map(static fn($attribute): string => $attribute->getName(), $attributes);
 
         self::assertContains(NotBlank::class, $constraintClasses);
         self::assertContains(Length::class, $constraintClasses);

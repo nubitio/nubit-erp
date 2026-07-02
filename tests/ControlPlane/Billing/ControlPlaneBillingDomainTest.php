@@ -202,18 +202,21 @@ final class ControlPlaneBillingDomainTest extends TestCase
     public static function entityProvider(): array
     {
         return [
-            'User'         => [new User(), true, 'users'],
-            'Customer'     => [new Customer(), true, 'customers'],
-            'Product'      => [new Product(), true, 'products'],
-            'TaxDocument'  => [new TaxDocument(), true, 'invoices'],
-            'Branch'       => [new Branch(), true, 'branches'],
-            'stdClass'     => [new \stdClass(), false, null],
+            'User' => [new User(), true, 'users'],
+            'Customer' => [new Customer(), true, 'customers'],
+            'Product' => [new Product(), true, 'products'],
+            'TaxDocument' => [new TaxDocument(), true, 'invoices'],
+            'Branch' => [new Branch(), true, 'branches'],
+            'stdClass' => [new \stdClass(), false, null],
         ];
     }
 
     #[DataProvider('entityProvider')]
-    public function testEfactEntityQuotaResourceResolver(object $entity, bool $supported, ?string $expectedResource): void
-    {
+    public function testEfactEntityQuotaResourceResolver(
+        object $entity,
+        bool $supported,
+        ?string $expectedResource,
+    ): void {
         $resolver = new EfactEntityQuotaResourceResolver();
 
         self::assertSame($supported, $resolver->supports($entity));

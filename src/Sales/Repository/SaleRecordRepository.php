@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Sales\Repository;
 
 use App\Catalog\Entity\PaymentMethod;
-use App\Sales\Entity\SaleRecord;
 use App\Catalog\Repository\PaymentMethodRepository;
+use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
@@ -26,7 +26,8 @@ class SaleRecordRepository extends ServiceEntityRepository
      */
     public function findByAnyId(string $id): ?SaleRecord
     {
-        $result = $this->createQueryBuilder('s')
+        $result = $this
+            ->createQueryBuilder('s')
             ->where('s.id = :id OR s.legacyMovimientoId = :id')
             ->setParameter('id', $id)
             ->setMaxResults(1)
@@ -66,27 +67,23 @@ class SaleRecordRepository extends ServiceEntityRepository
         }
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
-            sprintf(
-                <<<'SQL'
-SELECT
-    td.tax_document_id,
-    td.movimiento_id,
-    td.sale_id,
-    td.document_type,
-    td.series,
-    td.number,
-    td.sunat_status
-FROM tax_document td
-WHERE (td.movimiento_id IN (%s) OR td.sale_id IN (%s))
-  AND td.reason_code IS NULL
-ORDER BY td.created_at DESC
-SQL,
-                $placeholders,
-                $placeholders
-            ),
-            array_merge($ids, $ids)
-        );
+        $rows = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchAllAssociative(sprintf(<<<'SQL'
+                SELECT
+                    td.tax_document_id,
+                    td.movimiento_id,
+                    td.sale_id,
+                    td.document_type,
+                    td.series,
+                    td.number,
+                    td.sunat_status
+                FROM tax_document td
+                WHERE (td.movimiento_id IN (%s) OR td.sale_id IN (%s))
+                  AND td.reason_code IS NULL
+                ORDER BY td.created_at DESC
+                SQL, $placeholders, $placeholders), array_merge($ids, $ids));
 
         // Index by movimiento_id (legacy path) and by sale_id (V2 path)
         $byMovimientoId = [];
@@ -111,7 +108,7 @@ SQL,
             $saleId = $record->getId();
             $legacyId = $record->getLegacyMovimientoId();
 
-            $taxRow = $byMovimientoId[$saleId] ?? ($legacyId ? ($byMovimientoId[$legacyId] ?? null) : null);
+            $taxRow = $byMovimientoId[$saleId] ?? ($legacyId ? $byMovimientoId[$legacyId] ?? null : null);
 
             if ($taxRow === null) {
                 continue;
@@ -122,12 +119,10 @@ SQL,
             $record->setInvoiceFullNumber(sprintf('%s-%s', $taxRow['series'], $taxRow['number']));
             $record->setSunatStatus($taxRow['sunat_status'] !== null ? (string) $taxRow['sunat_status'] : null);
             $record->setDocumentType((string) $taxRow['document_type']);
-            $record->setPublicReceiptUrl(
-                \App\Billing\Receipt\ReceiptPayload::publicUrl(
-                    (string) $taxRow['document_type'],
-                    (string) $taxRow['tax_document_id'],
-                )
-            );
+            $record->setPublicReceiptUrl(\App\Billing\Receipt\ReceiptPayload::publicUrl(
+                (string) $taxRow['document_type'],
+                (string) $taxRow['tax_document_id'],
+            ));
         }
     }
 
@@ -157,18 +152,15 @@ SQL,
         }
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
-            sprintf(
-                <<<'SQL'
-SELECT sp.sale_id, sp.payment_method_id
-FROM sale_payments sp
-WHERE sp.sale_id IN (%s)
-ORDER BY sp.sale_id, sp.id ASC
-SQL,
-                $placeholders
-            ),
-            $ids
-        );
+        $rows = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchAllAssociative(sprintf(<<<'SQL'
+                SELECT sp.sale_id, sp.payment_method_id
+                FROM sale_payments sp
+                WHERE sp.sale_id IN (%s)
+                ORDER BY sp.sale_id, sp.id ASC
+                SQL, $placeholders), $ids);
 
         $pmIds = array_unique(array_column($rows, 'payment_method_id'));
         $paymentMethods = [];

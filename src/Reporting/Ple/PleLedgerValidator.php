@@ -37,12 +37,29 @@ final class PleLedgerValidator
             $index = isset($row['index']) ? (int) $row['index'] : null;
             $this->assertDateInPeriod($issues, $index, (string) ($row['issueDate'] ?? ''), $period);
             $this->assertDocumentType($issues, $index, (string) ($row['documentType'] ?? ''), self::SALE_DOC_TYPES);
-            $this->assertRequiredField($issues, $index, 'series', (string) ($row['series'] ?? ''), 'La serie es obligatoria.');
-            $this->assertRequiredField($issues, $index, 'number', (string) ($row['number'] ?? ''), 'El número es obligatorio.');
+            $this->assertRequiredField(
+                $issues,
+                $index,
+                'series',
+                (string) ($row['series'] ?? ''),
+                'La serie es obligatoria.',
+            );
+            $this->assertRequiredField(
+                $issues,
+                $index,
+                'number',
+                (string) ($row['number'] ?? ''),
+                'El número es obligatorio.',
+            );
 
             $documentType = (string) ($row['documentType'] ?? '');
             if ($documentType === '01') {
-                $this->assertRuc($issues, $index, (string) ($row['counterpartyDoc'] ?? ''), 'La factura requiere RUC de 11 dígitos.');
+                $this->assertRuc(
+                    $issues,
+                    $index,
+                    (string) ($row['counterpartyDoc'] ?? ''),
+                    'La factura requiere RUC de 11 dígitos.',
+                );
             }
 
             if (($row['state'] ?? '1') === '1') {
@@ -79,8 +96,20 @@ final class PleLedgerValidator
             $index = isset($row['index']) ? (int) $row['index'] : null;
             $this->assertDateInPeriod($issues, $index, (string) ($row['issueDate'] ?? ''), $period);
             $this->assertPurchaseDocumentType($issues, $index, (string) ($row['documentType'] ?? ''));
-            $this->assertRequiredField($issues, $index, 'series', (string) ($row['series'] ?? ''), 'La serie del comprobante de compra es obligatoria.');
-            $this->assertRequiredField($issues, $index, 'number', (string) ($row['number'] ?? ''), 'El número del comprobante de compra es obligatorio.');
+            $this->assertRequiredField(
+                $issues,
+                $index,
+                'series',
+                (string) ($row['series'] ?? ''),
+                'La serie del comprobante de compra es obligatoria.',
+            );
+            $this->assertRequiredField(
+                $issues,
+                $index,
+                'number',
+                (string) ($row['number'] ?? ''),
+                'El número del comprobante de compra es obligatorio.',
+            );
             $this->assertAmounts($issues, $index, $row);
         }
 
@@ -100,7 +129,11 @@ final class PleLedgerValidator
 
         $parsed = \DateTimeImmutable::createFromFormat('d/m/Y', $issueDate);
         if ($parsed === false || $parsed->format('Ym') !== $period) {
-            $issues[] = $this->issue($row, 'DATE_OUT_OF_PERIOD', 'La fecha de emisión debe pertenecer al periodo seleccionado.');
+            $issues[] = $this->issue(
+                $row,
+                'DATE_OUT_OF_PERIOD',
+                'La fecha de emisión debe pertenecer al periodo seleccionado.',
+            );
         }
     }
 
@@ -111,7 +144,11 @@ final class PleLedgerValidator
     private function assertDocumentType(array &$issues, ?int $row, string $documentType, array $allowed): void
     {
         if ($documentType === '' || !in_array($documentType, $allowed, true)) {
-            $issues[] = $this->issue($row, 'INVALID_DOC_TYPE', 'El tipo de comprobante no es válido para el registro de ventas.');
+            $issues[] = $this->issue(
+                $row,
+                'INVALID_DOC_TYPE',
+                'El tipo de comprobante no es válido para el registro de ventas.',
+            );
         }
     }
 
@@ -132,13 +169,8 @@ final class PleLedgerValidator
     /**
      * @param list<array{severity: string, row: ?int, code: string, message: string}> $issues
      */
-    private function assertRequiredField(
-        array &$issues,
-        ?int $row,
-        string $field,
-        string $value,
-        string $message,
-    ): void {
+    private function assertRequiredField(array &$issues, ?int $row, string $field, string $value, string $message): void
+    {
         if (trim($value) === '') {
             $issues[] = $this->issue($row, 'MISSING_' . strtoupper($field), $message);
         }
@@ -165,11 +197,7 @@ final class PleLedgerValidator
         $total = (float) ($row['total'] ?? 0);
 
         if (abs($total - ($taxable + $igv)) > 0.02) {
-            $issues[] = $this->issue(
-                $rowIndex,
-                'AMOUNT_MISMATCH',
-                'El total no coincide con base imponible + IGV.',
-            );
+            $issues[] = $this->issue($rowIndex, 'AMOUNT_MISMATCH', 'El total no coincide con base imponible + IGV.');
         }
     }
 

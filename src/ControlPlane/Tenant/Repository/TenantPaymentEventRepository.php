@@ -41,7 +41,7 @@ readonly class TenantPaymentEventRepository
         return $this->cp->fetchAllAssociative(
             'SELECT * FROM payment_events WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
             [$tenantId, 50],
-            [ParameterType::INTEGER, ParameterType::INTEGER]
+            [ParameterType::INTEGER, ParameterType::INTEGER],
         );
     }
 }

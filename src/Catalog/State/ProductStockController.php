@@ -7,8 +7,8 @@ namespace App\Catalog\State;
 use App\Catalog\Entity\Product;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Service\ProductStockService;
-use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,8 +18,7 @@ class ProductStockController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ProductStockService $productStockService,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {

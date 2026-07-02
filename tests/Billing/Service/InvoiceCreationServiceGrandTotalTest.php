@@ -7,8 +7,8 @@ namespace App\Tests\Billing\Service;
 use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceCreationService;
 use App\Billing\Service\InvoiceLineInput;
-use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -121,69 +121,66 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
         $grandTotalWritten = null;
 
         $connection = $this->createMock(Connection::class);
-        $connection->method('fetchOne')
-            ->willReturnCallback(
-                static function (string $sql, array $params = []) {
-                    // local_id for the warehouse lookup
-                    if (str_contains($sql, 'almacen')) {
-                        return 'local-1';
-                    }
+        $connection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql, array $params = []) {
+                // local_id for the warehouse lookup
+                if (str_contains($sql, 'almacen')) {
+                    return 'local-1';
+                }
 
-                    // Existing invoice check — return false so we proceed
-                    if (str_contains($sql, 'tax_document_id') && str_contains($sql, 'FOR UPDATE')) {
-                        return false;
-                    }
-
-                    // Series lookup from local_comprobante
-                    if (str_contains($sql, 'local_comprobante')) {
-                        return 'F001';
-                    }
-
-                    // Next invoice number
-                    if (str_contains($sql, 'IFNULL') || str_contains($sql, 'MAX(')) {
-                        return '1';
-                    }
-
-                    // UUID generation
-                    if (str_contains($sql, 'UUID')) {
-                        return 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
-                    }
-
-                    // V2 sale_id lookup in sales table
-                    if (str_contains($sql, 'legacy_movimiento_id')) {
-                        return 'v2-sale-id-1';
-                    }
-
-                    // information_schema table-existence check:
-                    // allow 'sales', block 'movimiento' so only one executeStatement fires.
-                    if (str_contains($sql, 'information_schema')) {
-                        return isset($params['table_name']) && $params['table_name'] === 'sales' ? 1 : false;
-                    }
-
+                // Existing invoice check — return false so we proceed
+                if (str_contains($sql, 'tax_document_id') && str_contains($sql, 'FOR UPDATE')) {
                     return false;
                 }
-            );
+
+                // Series lookup from local_comprobante
+                if (str_contains($sql, 'local_comprobante')) {
+                    return 'F001';
+                }
+
+                // Next invoice number
+                if (str_contains($sql, 'IFNULL') || str_contains($sql, 'MAX(')) {
+                    return '1';
+                }
+
+                // UUID generation
+                if (str_contains($sql, 'UUID')) {
+                    return 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+                }
+
+                // V2 sale_id lookup in sales table
+                if (str_contains($sql, 'legacy_movimiento_id')) {
+                    return 'v2-sale-id-1';
+                }
+
+                // information_schema table-existence check:
+                // allow 'sales', block 'movimiento' so only one executeStatement fires.
+                if (str_contains($sql, 'information_schema')) {
+                    return isset($params['table_name']) && $params['table_name'] === 'sales' ? 1 : false;
+                }
+
+                return false;
+            });
 
         $connection->method('beginTransaction');
         $connection->method('commit');
         $connection->method('insert');
 
         // Capture the grand_total value written to the sales table.
-        $connection->expects(self::atLeastOnce())
+        $connection
+            ->expects(self::atLeastOnce())
             ->method('executeStatement')
-            ->willReturnCallback(
-                static function (string $sql, array $params = []) use (&$grandTotalWritten): int {
-                    if (str_contains($sql, 'grand_total')) {
-                        $grandTotalWritten = $params['total'] ?? null;
-                    }
-
-                    return 1;
+            ->willReturnCallback(static function (string $sql, array $params = []) use (&$grandTotalWritten): int {
+                if (str_contains($sql, 'grand_total')) {
+                    $grandTotalWritten = $params['total'] ?? null;
                 }
-            );
+
+                return 1;
+            });
 
         $resolver = $this->createStub(SaleCurrencyResolver::class);
-        $resolver->method('resolveForSaleId')
-            ->willReturn(['currency' => 'PEN', 'exchange_rate' => '1.00']);
+        $resolver->method('resolveForSaleId')->willReturn(['currency' => 'PEN', 'exchange_rate' => '1.00']);
 
         $service = new InvoiceCreationService($connection, $resolver);
         $result = $service->createForSale($sale);
@@ -196,7 +193,7 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
         self::assertSame(
             $originalTotal,
             $grandTotalWritten,
-            'grand_total must equal the original sale total, not the IGV-recalculated document total'
+            'grand_total must equal the original sale total, not the IGV-recalculated document total',
         );
     }
 
@@ -211,7 +208,7 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
     private function buildSaleWithFourItems(string $total): SaleRecord
     {
         $now = new \DateTimeImmutable('now');
-        $sale = (new SaleRecord())
+        $sale = new SaleRecord()
             ->setId('sale-igv-test-1')
             ->setFecha($now)
             ->setDateCreated($now)

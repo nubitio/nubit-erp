@@ -25,8 +25,7 @@ final class SendDespatchGuide extends AbstractController
         private readonly DespatchGuideRepository $guideRepository,
         private readonly MessageBusInterface $messageBus,
         private readonly TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     #[IsGranted('ROLE_ADMIN')]
     public function __invoke(Request $request): Response
@@ -42,15 +41,12 @@ final class SendDespatchGuide extends AbstractController
             throw new ServiceException('La guía de remisión ya fue enviada a SUNAT.');
         }
 
-        $this->messageBus->dispatch(new SendDespatchMessage(
-            $id,
-            (string) ($this->tenantContext->getTenantId() ?? 'unknown'),
-        ));
-
-        return new ApiResponse(
-            success: true,
-            message: 'Guía de remisión encolada para envío a SUNAT.',
-            payload: ['id' => $id],
+        $this->messageBus->dispatch(
+            new SendDespatchMessage($id, (string) ($this->tenantContext->getTenantId() ?? 'unknown')),
         );
+
+        return new ApiResponse(success: true, message: 'Guía de remisión encolada para envío a SUNAT.', payload: [
+            'id' => $id,
+        ]);
     }
 }

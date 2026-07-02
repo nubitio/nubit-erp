@@ -18,7 +18,7 @@ final class UniqueEntity extends Constraint
         public array $fields,
         ?string $message = null,
         ?array $groups = null,
-        mixed $payload = null
+        mixed $payload = null,
     ) {
         parent::__construct(options: null, groups: $groups, payload: $payload);
         $this->message = $message ?? $this->message;

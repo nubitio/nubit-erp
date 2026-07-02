@@ -81,13 +81,7 @@ final readonly class SubscriptionService
 
         $email = $this->getAccountEmail($accountId);
 
-        $result = $paymentGateway->createSubscription(
-            $newPlan,
-            $billingCycle,
-            $email,
-            $returnUrl,
-            $cancelUrl,
-        );
+        $result = $paymentGateway->createSubscription($newPlan, $billingCycle, $email, $returnUrl, $cancelUrl);
 
         $this->subscriptionManager->create(
             tenantId: $tenantId,
@@ -126,9 +120,8 @@ final readonly class SubscriptionService
         }
 
         $plan = (string) $current['plan'];
-        $billingCycle = BillingCycle::tryFrom(
-            (string) ($current['billing_cycle'] ?? 'monthly')
-        ) ?? BillingCycle::Monthly;
+        $billingCycle =
+            BillingCycle::tryFrom((string) ($current['billing_cycle'] ?? 'monthly')) ?? BillingCycle::Monthly;
 
         return $this->changePlan($tenantId, $accountId, $plan, $billingCycle, $newGateway, $returnUrl, $cancelUrl);
     }

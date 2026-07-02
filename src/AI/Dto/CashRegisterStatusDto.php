@@ -18,6 +18,5 @@ final readonly class CashRegisterStatusDto
         public ?float $expectedAmount,
         public ?float $countedAmount,
         public ?float $difference,
-    ) {
-    }
+    ) {}
 }

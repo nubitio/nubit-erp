@@ -15,8 +15,7 @@ final readonly class ExchangeRateProvider implements ProviderInterface
 {
     public function __construct(
         private ExchangeRateRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ExchangeRate
     {

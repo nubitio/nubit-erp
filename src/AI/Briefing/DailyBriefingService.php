@@ -6,14 +6,14 @@ namespace App\AI\Briefing;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Throwable;
-use Nubit\Platform\Cache\CacheManager;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Cache\CacheManager;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
+use Throwable;
 
 /**
  * Generates a daily AI-narrated morning briefing for a tenant.
@@ -35,8 +35,7 @@ final readonly class DailyBriefingService
         private Connection $connection,
         private CacheManager $cacheManager,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Generate (or return from cache) the daily briefing for the current tenant context.
@@ -60,7 +59,9 @@ final readonly class DailyBriefingService
                 return $cached;
             }
         } catch (InvalidArgumentException $invalidArgumentException) {
-            $this->logger->warning('DailyBriefingService: cache read failed', ['exception' => $invalidArgumentException->getMessage()]);
+            $this->logger->warning('DailyBriefingService: cache read failed', [
+                'exception' => $invalidArgumentException->getMessage(),
+            ]);
         }
 
         $data = $this->gatherData($date);
@@ -74,7 +75,9 @@ final readonly class DailyBriefingService
         try {
             $this->cacheManager->set($cacheKey, $briefing, self::CACHE_TTL);
         } catch (InvalidArgumentException $invalidArgumentException) {
-            $this->logger->warning('DailyBriefingService: cache write failed', ['exception' => $invalidArgumentException->getMessage()]);
+            $this->logger->warning('DailyBriefingService: cache write failed', [
+                'exception' => $invalidArgumentException->getMessage(),
+            ]);
         }
 
         return $briefing;
@@ -103,30 +106,29 @@ final readonly class DailyBriefingService
             ->format('Y-m-d');
 
         return [
-            'sales_total'      => $this->fetchYesterdaySalesTotal($yesterday),
-            'sales_count'      => $this->fetchYesterdaySalesCount($yesterday),
-            'top_products'     => $this->fetchTopProducts($yesterday),
-            'low_stock_count'  => $this->fetchLowStockCount(),
+            'sales_total' => $this->fetchYesterdaySalesTotal($yesterday),
+            'sales_count' => $this->fetchYesterdaySalesCount($yesterday),
+            'top_products' => $this->fetchTopProducts($yesterday),
+            'low_stock_count' => $this->fetchLowStockCount(),
             'sunat_rejections' => $this->fetchSunatRejections(),
-            'is_holiday'       => $this->fetchIsHoliday($date),
-            'holiday_name'     => $this->fetchHolidayName($date),
-            'is_payday_week'   => $this->isPaydayWeek($date),
+            'is_holiday' => $this->fetchIsHoliday($date),
+            'holiday_name' => $this->fetchHolidayName($date),
+            'is_payday_week' => $this->isPaydayWeek($date),
         ];
     }
 
     private function fetchYesterdaySalesTotal(string $yesterday): float
     {
         try {
-            $value = $this->connection->fetchOne(
-                "SELECT COALESCE(SUM(bds.net_sales), 0)
+            $value = $this->connection->fetchOne('SELECT COALESCE(SUM(bds.net_sales), 0)
                  FROM branch_daily_summary bds
-                 WHERE bds.summary_date = ?",
-                [$yesterday],
-            );
+                 WHERE bds.summary_date = ?', [$yesterday]);
 
             return (float) $value;
         } catch (Throwable $throwable) {
-            $this->logger->debug('DailyBriefingService: sales total query failed', ['exception' => $throwable->getMessage()]);
+            $this->logger->debug('DailyBriefingService: sales total query failed', [
+                'exception' => $throwable->getMessage(),
+            ]);
 
             return 0.0;
         }
@@ -135,16 +137,15 @@ final readonly class DailyBriefingService
     private function fetchYesterdaySalesCount(string $yesterday): int
     {
         try {
-            $value = $this->connection->fetchOne(
-                "SELECT COALESCE(SUM(bds.sales_count), 0)
+            $value = $this->connection->fetchOne('SELECT COALESCE(SUM(bds.sales_count), 0)
                  FROM branch_daily_summary bds
-                 WHERE bds.summary_date = ?",
-                [$yesterday],
-            );
+                 WHERE bds.summary_date = ?', [$yesterday]);
 
             return (int) $value;
         } catch (Throwable $throwable) {
-            $this->logger->debug('DailyBriefingService: sales count query failed', ['exception' => $throwable->getMessage()]);
+            $this->logger->debug('DailyBriefingService: sales count query failed', [
+                'exception' => $throwable->getMessage(),
+            ]);
 
             return 0;
         }
@@ -157,27 +158,23 @@ final readonly class DailyBriefingService
     {
         try {
             /** @var array<int, array<string, mixed>> $rows */
-            $rows = $this->connection->fetchAllAssociative(
-                "SELECT COALESCE(p.descripcion, 'Sin producto') AS product,
+            $rows = $this->connection->fetchAllAssociative("SELECT COALESCE(p.descripcion, 'Sin producto') AS product,
                         COALESCE(SUM(pds.net_sales), 0) AS total
                  FROM product_daily_summary pds
                  LEFT JOIN producto p ON pds.product_id = p.producto_id
                  WHERE pds.summary_date = ?
                  GROUP BY pds.product_id, p.descripcion
                  ORDER BY total DESC
-                 LIMIT 3",
-                [$yesterday],
-            );
+                 LIMIT 3", [$yesterday]);
 
-            return array_map(
-                static fn (array $row): array => [
-                    'product' => (string) $row['product'],
-                    'total'   => (float) $row['total'],
-                ],
-                $rows
-            );
+            return array_map(static fn(array $row): array => [
+                'product' => (string) $row['product'],
+                'total' => (float) $row['total'],
+            ], $rows);
         } catch (Throwable $throwable) {
-            $this->logger->debug('DailyBriefingService: top products query failed', ['exception' => $throwable->getMessage()]);
+            $this->logger->debug('DailyBriefingService: top products query failed', [
+                'exception' => $throwable->getMessage(),
+            ]);
 
             return [];
         }
@@ -186,18 +183,18 @@ final readonly class DailyBriefingService
     private function fetchLowStockCount(): int
     {
         try {
-            $value = $this->connection->fetchOne(
-                "SELECT COUNT(DISTINCT si.product_id)
+            $value = $this->connection->fetchOne('SELECT COUNT(DISTINCT si.product_id)
                  FROM stock_items si
                  JOIN producto p ON p.producto_id = si.product_id
                  WHERE p.stock_minimo IS NOT NULL
                    AND p.stock_minimo > 0
-                   AND si.qty_on_hand <= p.stock_minimo",
-            );
+                   AND si.qty_on_hand <= p.stock_minimo');
 
             return (int) $value;
         } catch (Throwable $throwable) {
-            $this->logger->debug('DailyBriefingService: low stock count query failed', ['exception' => $throwable->getMessage()]);
+            $this->logger->debug('DailyBriefingService: low stock count query failed', [
+                'exception' => $throwable->getMessage(),
+            ]);
 
             return 0;
         }
@@ -210,17 +207,16 @@ final readonly class DailyBriefingService
                 ->modify('-24 hours')
                 ->format('Y-m-d H:i:s');
 
-            $value = $this->connection->fetchOne(
-                "SELECT COUNT(*)
+            $value = $this->connection->fetchOne("SELECT COUNT(*)
                  FROM tax_document_event
                  WHERE status = 'error'
-                   AND created_at >= ?",
-                [$since],
-            );
+                   AND created_at >= ?", [$since]);
 
             return (int) $value;
         } catch (Throwable $throwable) {
-            $this->logger->debug('DailyBriefingService: SUNAT rejections query failed', ['exception' => $throwable->getMessage()]);
+            $this->logger->debug('DailyBriefingService: SUNAT rejections query failed', [
+                'exception' => $throwable->getMessage(),
+            ]);
 
             return 0;
         }
@@ -229,10 +225,9 @@ final readonly class DailyBriefingService
     private function fetchIsHoliday(string $date): bool
     {
         try {
-            $value = $this->connection->fetchOne(
-                "SELECT COALESCE(holiday, 0) FROM time_dimension WHERE `date` = ?",
-                [$date],
-            );
+            $value = $this->connection->fetchOne('SELECT COALESCE(holiday, 0) FROM time_dimension WHERE `date` = ?', [
+                $date,
+            ]);
 
             return (bool) $value;
         } catch (Throwable) {
@@ -243,10 +238,9 @@ final readonly class DailyBriefingService
     private function fetchHolidayName(string $date): ?string
     {
         try {
-            $value = $this->connection->fetchOne(
-                "SELECT `event` FROM time_dimension WHERE `date` = ? AND holiday = 1",
-                [$date],
-            );
+            $value = $this->connection->fetchOne('SELECT `event` FROM time_dimension WHERE `date` = ? AND holiday = 1', [
+                $date,
+            ]);
 
             if ($value === false || $value === null) {
                 return null;
@@ -293,7 +287,7 @@ final readonly class DailyBriefingService
                 Message::forSystem(
                     'Eres un asistente de negocios conciso para una empresa peruana de facturación electrónica. '
                     . 'Responde siempre en español, en formato de lista con viñetas. '
-                    . 'Máximo 150 palabras. Resalta alertas urgentes con ⚠️.'
+                    . 'Máximo 150 palabras. Resalta alertas urgentes con ⚠️.',
                 ),
                 Message::ofUser($prompt),
             );
@@ -307,13 +301,13 @@ final readonly class DailyBriefingService
 
             $this->logger->warning('DailyBriefingService: AI returned non-string content', [
                 'tenant' => $tenantName,
-                'type'   => \gettype($content),
+                'type' => \gettype($content),
             ]);
 
             return self::DEFAULT_MESSAGE;
         } catch (Throwable $throwable) {
             $this->logger->error('DailyBriefingService: AI call failed', [
-                'tenant'    => $tenantName,
+                'tenant' => $tenantName,
                 'exception' => $throwable->getMessage(),
             ]);
 
@@ -354,8 +348,7 @@ final readonly class DailyBriefingService
             $calendarNote .= 'Estamos en semana de pagos (quincena/fin de mes). ';
         }
 
-        return sprintf(
-            <<<'PROMPT'
+        return sprintf(<<<'PROMPT'
             Genera el resumen matutino del negocio para la empresa "%s" correspondiente al día %s.
 
             DATOS DE AYER:
@@ -373,16 +366,7 @@ final readonly class DailyBriefingService
             - Si hay productos bajo stock mínimo o rechazos SUNAT, márcalos con ⚠️ y ponlos primero.
             - Tono profesional y motivador, como un asistente de negocios.
             - No inventes datos que no aparezcan arriba.
-            PROMPT,
-            $tenantName,
-            $date,
-            $data['sales_total'],
-            $data['sales_count'],
-            $topProductsText,
-            $data['low_stock_count'],
-            $data['sunat_rejections'],
-            $calendarNote !== '' ? $calendarNote : 'Día laboral normal.',
-        );
+            PROMPT, $tenantName, $date, $data['sales_total'], $data['sales_count'], $topProductsText, $data['low_stock_count'], $data['sunat_rejections'], $calendarNote !== '' ? $calendarNote : 'Día laboral normal.');
     }
 
     // -------------------------------------------------------------------------
@@ -403,10 +387,12 @@ final readonly class DailyBriefingService
      */
     private function isDataEmpty(array $data): bool
     {
-        return $data['sales_total'] === 0.0
+        return (
+            $data['sales_total'] === 0.0
             && $data['sales_count'] === 0
             && $data['top_products'] === []
             && $data['low_stock_count'] === 0
-            && $data['sunat_rejections'] === 0;
+            && $data['sunat_rejections'] === 0
+        );
     }
 }

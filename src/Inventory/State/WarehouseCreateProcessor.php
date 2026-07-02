@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
-use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -29,17 +29,14 @@ final readonly class WarehouseCreateProcessor implements ProcessorInterface
         private ProcessorInterface $inner,
         private EntityManagerInterface $entityManager,
         private FeatureCheckerInterface $featureChecker,
-    ) {
-    }
+    ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $branch = $data instanceof Warehouse ? $data->getBranch() : null;
 
         if ($branch instanceof Branch) {
-            $existing = $this->entityManager
-                ->getRepository(Warehouse::class)
-                ->count(['branch' => $branch]);
+            $existing = $this->entityManager->getRepository(Warehouse::class)->count(['branch' => $branch]);
 
             if ($existing >= 1) {
                 // Already has a warehouse — require multi_warehouse to add more

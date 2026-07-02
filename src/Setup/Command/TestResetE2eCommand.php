@@ -10,10 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(
-    name: 'app:test:reset-e2e',
-    description: 'Cleans E2E credentials and seeded sales used in CI/testing.',
-)]
+#[AsCommand(name: 'app:test:reset-e2e', description: 'Cleans E2E credentials and seeded sales used in CI/testing.')]
 final class TestResetE2eCommand extends Command
 {
     public function __construct(

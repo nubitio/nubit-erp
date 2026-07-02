@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Invoice\Domain;
 
-use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -19,8 +19,7 @@ readonly class InvoiceSendRetryService
         private int $retryMaxAttempts = 8,
         private int $retryBaseSeconds = 60,
         private int $retryMaxSeconds = 1800,
-    ) {
-    }
+    ) {}
 
     public function countCandidateDocuments(): int
     {
@@ -32,8 +31,7 @@ readonly class InvoiceSendRetryService
             return 0;
         }
 
-        return (int)$this->connection->fetchOne(
-            "
+        return (int) $this->connection->fetchOne("
             SELECT COUNT(1) AS total
             FROM tax_document
             WHERE document_type IN ('01', '03')
@@ -50,8 +48,7 @@ readonly class InvoiceSendRetryService
                   )
                 )
               )
-            "
-        );
+            ");
     }
 
     /**
@@ -87,10 +84,10 @@ readonly class InvoiceSendRetryService
             [
                 'limit' => ParameterType::INTEGER,
                 'offset' => ParameterType::INTEGER,
-            ]
+            ],
         );
 
-        return array_map(static fn (mixed $id): string => (string)$id, $ids);
+        return array_map(static fn(mixed $id): string => (string) $id, $ids);
     }
 
     /**
@@ -101,7 +98,7 @@ readonly class InvoiceSendRetryService
         return [
             'max_attempts' => max(1, $this->retryMaxAttempts),
             'base_seconds' => max(1, $this->retryBaseSeconds),
-            'max_seconds'  => max($this->retryBaseSeconds, $this->retryMaxSeconds),
+            'max_seconds' => max($this->retryBaseSeconds, $this->retryMaxSeconds),
         ];
     }
 
@@ -111,19 +108,16 @@ readonly class InvoiceSendRetryService
      */
     public function evaluateRetryEligibility(string $taxDocumentId, array $retryPolicy): array
     {
-        $row = $this->connection->fetchAssociative(
-            "
+        $row = $this->connection->fetchAssociative("
             SELECT COUNT(1) AS attempts, MAX(created_at) AS last_attempt_at
             FROM tax_document_event
             WHERE tax_document_id = :tax_document_id
               AND event_type = 'sunat_send'
               AND status IN ('error', 'pending')
-            ",
-            ['tax_document_id' => $taxDocumentId],
-        );
+            ", ['tax_document_id' => $taxDocumentId]);
 
-        $attempts = max(0, (int)(is_array($row) ? ($row['attempts'] ?? 0) : 0));
-        $lastAttemptAt = is_array($row) && isset($row['last_attempt_at']) ? (string)$row['last_attempt_at'] : '';
+        $attempts = max(0, (int) (is_array($row) ? $row['attempts'] ?? 0 : 0));
+        $lastAttemptAt = is_array($row) && isset($row['last_attempt_at']) ? (string) $row['last_attempt_at'] : '';
 
         if ($attempts <= 0) {
             return [
@@ -153,10 +147,7 @@ readonly class InvoiceSendRetryService
         }
 
         $power = max(0, $attempts - 1);
-        $backoff = (int)min(
-            $retryPolicy['max_seconds'],
-            $retryPolicy['base_seconds'] * (2 ** $power)
-        );
+        $backoff = (int) min($retryPolicy['max_seconds'], $retryPolicy['base_seconds'] * (2 ** $power));
         $lastAttemptTs = strtotime($lastAttemptAt);
         $elapsed = $lastAttemptTs === false ? $backoff : max(0, time() - $lastAttemptTs);
 
@@ -177,12 +168,8 @@ readonly class InvoiceSendRetryService
         ];
     }
 
-    public function recordRetrySkipEvent(
-        string $taxDocumentId,
-        string $reason,
-        int $attempts,
-        int $waitSeconds,
-    ): void {
+    public function recordRetrySkipEvent(string $taxDocumentId, string $reason, int $attempts, int $waitSeconds): void
+    {
         if (!in_array($reason, ['backoff', 'max_attempts'], true)) {
             return;
         }
@@ -220,9 +207,8 @@ readonly class InvoiceSendRetryService
 
     public function getCurrentStatus(string $taxDocumentId): string
     {
-        return (string)$this->connection->fetchOne(
-            'SELECT sunat_status FROM tax_document WHERE tax_document_id = ?',
-            [$taxDocumentId]
-        );
+        return (string) $this->connection->fetchOne('SELECT sunat_status FROM tax_document WHERE tax_document_id = ?', [
+            $taxDocumentId,
+        ]);
     }
 }

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Invoice\Domain;
 
-use Nubit\Platform\Exception\ServiceException;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Invoice\Domain\ValidateInvoiceUseCase;
+use App\Billing\Invoice\Domain\Voucher;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Efact\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
 use App\Settings\Entity\ConfigKey;
-use App\Billing\Invoice\Domain\ValidateInvoiceUseCase;
-use App\Billing\Invoice\Domain\Voucher;
-use App\Billing\Entity\TaxDocument;
-use App\Billing\Repository\TaxDocumentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Model\CpeData;
 use Greenter\Sunat\ConsultaCpe\Model\CpeResponse;
@@ -19,6 +18,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -52,10 +52,7 @@ final class ValidateInvoiceUseCaseTest extends TestCase
 
     public function testThrowsServiceExceptionWhenTaxDocumentNotFound(): void
     {
-        $this->taxDocumentRepository
-            ->method('find')
-            ->with('non-existent-id')
-            ->willReturn(null);
+        $this->taxDocumentRepository->method('find')->with('non-existent-id')->willReturn(null);
 
         $httpClient = new Client();
 
@@ -141,7 +138,10 @@ final class ValidateInvoiceUseCaseTest extends TestCase
         $taxDocument = $this->createMock(TaxDocument::class);
         $taxDocument->expects(self::once())->method('setSunatStatus')->with('');
         $taxDocument->expects(self::once())->method('setSunatMessage')->with('');
-        $taxDocument->expects(self::once())->method('setUpdatedAt')->with(self::isInstanceOf(\DateTime::class));
+        $taxDocument
+            ->expects(self::once())
+            ->method('setUpdatedAt')
+            ->with(self::isInstanceOf(\DateTime::class));
 
         $this->taxDocumentRepository->method('find')->willReturn($taxDocument);
 
@@ -155,7 +155,8 @@ final class ValidateInvoiceUseCaseTest extends TestCase
         $this->taxDocumentRepository->method('getVoucherByTaxDocumentId')->willReturn($voucher);
         $this->companyContext->method('getId')->willReturn('20123456789');
 
-        $this->settings->method('get')
+        $this->settings
+            ->method('get')
             ->willReturnMap([
                 [ConfigKey::CPE_CLIENT_ID->value, null, 'client-id-value'],
                 [ConfigKey::CPE_CLIENT_SECRET->value, null, 'client-secret-value'],
@@ -235,7 +236,7 @@ final class ValidateInvoiceUseCaseTest extends TestCase
         $consultaResponseBody = json_encode([
             'success' => true,
             'message' => 'OK',
-            'data' => ['estadoCp' => '1'],  // Not '0' — should NOT flush
+            'data' => ['estadoCp' => '1'], // Not '0' — should NOT flush
             'errorCode' => null,
         ]);
 

@@ -9,8 +9,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -40,21 +40,28 @@ final class TenantManagerLifecycleTest extends TestCase
         //   1. planExists check   → plan row found (non-false)
         //   2. getTenant SELECT   → tenant row (for cache invalidation)
         //   3. getTenantDomains fetchAllAssociative → []  (inside invalidateTenantDomainCaches via getTenantDomains)
-        $connection->method('fetchOne')
-            ->willReturnOnConsecutiveCalls('starter', ['id' => 5, 'name' => 'acme', 'connection' => 'default']);
+        $connection->method('fetchOne')->willReturnOnConsecutiveCalls('starter', [
+            'id' => 5,
+            'name' => 'acme',
+            'connection' => 'default',
+        ]);
 
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 5, 'name' => 'acme', 'connection' => 'default', 'status' => 'active', 'plan' => 'starter']);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 5,
+                'name' => 'acme',
+                'connection' => 'default',
+                'status' => 'active',
+                'plan' => 'starter',
+            ]);
 
         $connection->method('fetchAllAssociative')->willReturn([]);
 
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('update')
-            ->with(
-                'tenants',
-                self::callback(static fn (array $data): bool => $data['plan'] === 'starter'),
-                ['id' => 5],
-            )
+            ->with('tenants', self::callback(static fn(array $data): bool => $data['plan'] === 'starter'), ['id' => 5])
             ->willReturn(1);
 
         $manager = $this->dbManager($connection);
@@ -72,8 +79,7 @@ final class TenantManagerLifecycleTest extends TestCase
         // fetchOne calls:
         //   1. planExists   → plan found
         //   2. tenant exists check → false (not found)
-        $connection->method('fetchOne')
-            ->willReturnOnConsecutiveCalls('starter', false);
+        $connection->method('fetchOne')->willReturnOnConsecutiveCalls('starter', false);
 
         $connection->method('update')->willReturn(0);
 
@@ -93,15 +99,21 @@ final class TenantManagerLifecycleTest extends TestCase
         $connection = $this->dbConnection(true);
 
         // fetchOne: planExists → found, tenant exists → found (id returned)
-        $connection->method('fetchOne')
-            ->willReturnOnConsecutiveCalls('gold', 42);
+        $connection->method('fetchOne')->willReturnOnConsecutiveCalls('gold', 42);
 
         // update returns 0 (same plan, no rows changed) — must NOT throw
         $connection->method('update')->willReturn(0);
 
         // getTenant (called inside changePlan for cache invalidation)
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 42, 'name' => 'globex', 'connection' => 'default', 'status' => 'active', 'plan' => 'gold']);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 42,
+                'name' => 'globex',
+                'connection' => 'default',
+                'status' => 'active',
+                'plan' => 'gold',
+            ]);
 
         $connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -134,10 +146,12 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testGetTenantDomainsReturnsDomainRows(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAllAssociative')->willReturn([
-            ['id' => 1, 'domain' => 'primary.example.test', 'is_primary' => 1],
-            ['id' => 2, 'domain' => 'alias.example.test', 'is_primary' => 0],
-        ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                ['id' => 1, 'domain' => 'primary.example.test', 'is_primary' => 1],
+                ['id' => 2, 'domain' => 'alias.example.test', 'is_primary' => 0],
+            ]);
 
         $manager = $this->dbManager($connection);
         $domains = $manager->getTenantDomains(5);
@@ -228,12 +242,10 @@ final class TenantManagerLifecycleTest extends TestCase
         file_put_contents($configPath, "- { id: 10, name: fallback-tenant, connection: default }\n");
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::atLeastOnce())
+        $logger
+            ->expects(self::atLeastOnce())
             ->method('warning')
-            ->with(
-                self::stringContains('Control plane not ready'),
-                self::arrayHasKey('operation'),
-            );
+            ->with(self::stringContains('Control plane not ready'), self::arrayHasKey('operation'));
 
         $manager = new TenantManager(
             $configPath,
@@ -256,8 +268,15 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testGetTenantInDatabaseModeReturnsRow(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 3, 'name' => 'acme', 'connection' => 'default', 'status' => 'active', 'plan' => 'starter']);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 3,
+                'name' => 'acme',
+                'connection' => 'default',
+                'status' => 'active',
+                'plan' => 'starter',
+            ]);
 
         $manager = $this->dbManager($connection);
         $tenant = $manager->getTenant(3);
@@ -282,8 +301,15 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testGetTenantByNameInDatabaseModeReturnsRow(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 4, 'name' => 'globex', 'connection' => 'globex_db', 'status' => 'active', 'plan' => 'gold']);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'id' => 4,
+                'name' => 'globex',
+                'connection' => 'globex_db',
+                'status' => 'active',
+                'plan' => 'gold',
+            ]);
 
         $manager = $this->dbManager($connection);
         $tenant = $manager->getTenantByName('globex');
@@ -308,7 +334,8 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testGetTenantByDomainInDatabaseModeReturnsRow(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAssociative')
+        $connection
+            ->method('fetchAssociative')
             ->willReturn(['id' => 5, 'name' => 'acme', 'connection' => 'acme_db', 'status' => 'active']);
 
         $manager = $this->dbManager($connection);
@@ -336,8 +363,7 @@ final class TenantManagerLifecycleTest extends TestCase
         $connection = $this->dbConnection(true);
         // update returns 1 → success branch; getTenant called for cache
         $connection->method('update')->willReturn(1);
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 7, 'name' => 'acme', 'connection' => 'default']);
+        $connection->method('fetchAssociative')->willReturn(['id' => 7, 'name' => 'acme', 'connection' => 'default']);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         $manager = $this->dbManager($connection);
@@ -366,8 +392,7 @@ final class TenantManagerLifecycleTest extends TestCase
     {
         $connection = $this->dbConnection(true);
         $connection->method('update')->willReturn(1);
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 8, 'name' => 'globex', 'connection' => 'default']);
+        $connection->method('fetchAssociative')->willReturn(['id' => 8, 'name' => 'globex', 'connection' => 'default']);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
         $manager = $this->dbManager($connection);
@@ -413,19 +438,17 @@ final class TenantManagerLifecycleTest extends TestCase
         $connection = $this->dbConnection(true);
 
         // getTenant call → returns the tenant (for cache invalidation after delete)
-        $connection->method('fetchAssociative')
+        $connection
+            ->method('fetchAssociative')
             ->willReturn(['id' => 11, 'name' => 'delme', 'connection' => 'default', 'status' => 'active']);
 
         // The domain cache invalidation calls fetchAllAssociative (getTenantDomains)
         $connection->method('fetchAllAssociative')->willReturn([]);
 
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('update')
-            ->with(
-                'tenants',
-                self::callback(static fn (array $d): bool => $d['status'] === 'deleted'),
-                ['id' => 11],
-            );
+            ->with('tenants', self::callback(static fn(array $d): bool => $d['status'] === 'deleted'), ['id' => 11]);
 
         $manager = $this->dbManager($connection);
         $manager->deleteTenant(11);
@@ -439,7 +462,8 @@ final class TenantManagerLifecycleTest extends TestCase
     {
         $connection = $this->dbConnection(true);
         // First fetchAssociative (getTenant for old cache) → found
-        $connection->method('fetchAssociative')
+        $connection
+            ->method('fetchAssociative')
             ->willReturn(['id' => 12, 'name' => 'old-name', 'connection' => 'default']);
         // fetchOne for duplicate check → found (another tenant has the same name)
         $connection->method('fetchOne')->willReturn(99);
@@ -454,8 +478,7 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testUpdateTenantInDatabaseModeNotFoundThrows(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAssociative')
-            ->willReturn(['id' => 13, 'name' => 'old', 'connection' => 'default']);
+        $connection->method('fetchAssociative')->willReturn(['id' => 13, 'name' => 'old', 'connection' => 'default']);
         // No duplicate found
         $connection->method('fetchOne')->willReturn(false);
         // update returns 0 → tenant not found
@@ -498,7 +521,10 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testYamlUpdateTenantDuplicateNameThrows(): void
     {
         $configPath = $this->tempPath('tenants-upd-dup.yml');
-        file_put_contents($configPath, "- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n");
+        file_put_contents(
+            $configPath,
+            "- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n",
+        );
 
         $manager = new TenantManager(
             $configPath,
@@ -599,14 +625,14 @@ final class TenantManagerLifecycleTest extends TestCase
 
         $manager->addTenant(['name' => 'new-tenant', 'connection' => 'new_conn']);
 
-        $tenants = (new TenantManager(
+        $tenants = new TenantManager(
             $configPath,
             'yaml',
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
             $this->createMock(TagAwareCacheInterface::class),
-        ))->getTenants();
+        )->getTenants();
 
         self::assertCount(1, $tenants);
         self::assertSame('new-tenant', $tenants[0]['name']);
@@ -632,14 +658,14 @@ final class TenantManagerLifecycleTest extends TestCase
 
         $manager->updateTenant(1, ['name' => 'acme-updated', 'connection' => 'c2']);
 
-        $tenants = (new TenantManager(
+        $tenants = new TenantManager(
             $configPath,
             'yaml',
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
             $this->createMock(TagAwareCacheInterface::class),
-        ))->getTenants();
+        )->getTenants();
 
         self::assertSame('acme-updated', $tenants[0]['name']);
     }
@@ -651,7 +677,10 @@ final class TenantManagerLifecycleTest extends TestCase
     public function testDeleteTenantInDatabaseFallsBackToYamlWhenControlPlaneNotReady(): void
     {
         $configPath = $this->tempPath('tenants-del-fallback.yml');
-        file_put_contents($configPath, "- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n");
+        file_put_contents(
+            $configPath,
+            "- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n",
+        );
 
         $manager = new TenantManager(
             $configPath,
@@ -664,14 +693,14 @@ final class TenantManagerLifecycleTest extends TestCase
 
         $manager->deleteTenant(1);
 
-        $tenants = (new TenantManager(
+        $tenants = new TenantManager(
             $configPath,
             'yaml',
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
             $this->createMock(TagAwareCacheInterface::class),
-        ))->getTenants();
+        )->getTenants();
 
         self::assertCount(1, $tenants);
         self::assertSame('globex', $tenants[0]['name']);
@@ -797,7 +826,7 @@ final class TenantManagerLifecycleTest extends TestCase
 
     private function inMemoryCache(): CacheInterface
     {
-        return new class () implements CacheInterface {
+        return new class() implements CacheInterface {
             /** @var array<string, mixed> */
             private array $store = [];
 
@@ -807,7 +836,7 @@ final class TenantManagerLifecycleTest extends TestCase
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
-                    $item = new class () implements ItemInterface {
+                    $item = new class() implements ItemInterface {
                         public function getKey(): string
                         {
                             return 'cache-item';

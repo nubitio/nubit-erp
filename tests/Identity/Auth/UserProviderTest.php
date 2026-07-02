@@ -38,7 +38,8 @@ final class UserProviderTest extends TestCase
         $this->entityManager->method('getRepository')->with(User::class)->willReturn($this->repository);
         $user = $this->createUser('active-user');
 
-        $this->repository->expects(self::once())
+        $this->repository
+            ->expects(self::once())
             ->method('findOneBy')
             ->with([
                 'username' => 'active-user',
@@ -53,7 +54,8 @@ final class UserProviderTest extends TestCase
     {
         $this->repository = $this->createMock(EntityRepository::class);
         $this->entityManager->method('getRepository')->with(User::class)->willReturn($this->repository);
-        $this->repository->expects(self::once())
+        $this->repository
+            ->expects(self::once())
             ->method('findOneBy')
             ->with([
                 'username' => 'deleted-user',
@@ -73,7 +75,8 @@ final class UserProviderTest extends TestCase
         $this->entityManager->method('getRepository')->with(User::class)->willReturn($this->repository);
         $activeUser = $this->createUser('refresh-deleted-user');
 
-        $this->repository->expects(self::once())
+        $this->repository
+            ->expects(self::once())
             ->method('findOneBy')
             ->with([
                 'username' => 'refresh-deleted-user',
@@ -96,7 +99,8 @@ final class UserProviderTest extends TestCase
         $this->entityManager->method('getRepository')->with(User::class)->willReturn($this->repository);
         $user = $this->createUser('refresh-user');
 
-        $this->repository->expects(self::once())
+        $this->repository
+            ->expects(self::once())
             ->method('findOneBy')
             ->with([
                 'username' => 'refresh-user',
@@ -111,15 +115,13 @@ final class UserProviderTest extends TestCase
     {
         $this->expectException(UnsupportedUserException::class);
 
-        $unsupportedUser = new class () extends stdClass implements UserInterface {
+        $unsupportedUser = new class() extends stdClass implements UserInterface {
             public function getRoles(): array
             {
                 return [];
             }
 
-            public function eraseCredentials(): void
-            {
-            }
+            public function eraseCredentials(): void {}
 
             public function getUserIdentifier(): string
             {
@@ -134,7 +136,7 @@ final class UserProviderTest extends TestCase
     {
         $role = new Role();
 
-        return (new User())
+        return new User()
             ->setUsername($username)
             ->setPassword('hashed-password')
             ->setRole($role)

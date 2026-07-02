@@ -22,6 +22,5 @@ class PriceListDto
         public ?string $name = null,
         public ?string $price = null,
         public string $priceSource = 'base',
-    ) {
-    }
+    ) {}
 }

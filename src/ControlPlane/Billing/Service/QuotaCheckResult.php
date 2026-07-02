@@ -11,6 +11,5 @@ final readonly class QuotaCheckResult
         public string $resource,
         public int $current,
         public int $limit,
-    ) {
-    }
+    ) {}
 }

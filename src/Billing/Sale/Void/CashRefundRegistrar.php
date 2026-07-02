@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Sale\Void;
 
+use App\CashRegister\Entity\CashMovementCategory;
 use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
-use App\CashRegister\Entity\CashMovementCategory;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\CashSessionResolverInterface;
 use DateTimeImmutable;
@@ -19,8 +19,7 @@ final readonly class CashRefundRegistrar
         private Connection $connection,
         private CashSessionResolverInterface $cashSessionResolver,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function register(SaleRecord $sale, int $userId): void
     {
@@ -39,10 +38,9 @@ final readonly class CashRefundRegistrar
             return;
         }
 
-        $category = $this->connection->fetchAssociative(
-            'SELECT id FROM cash_movement_category WHERE code = :code LIMIT 1',
-            ['code' => CashMovementCategory::CUSTOMER_REFUND],
-        );
+        $category = $this->connection->fetchAssociative('SELECT id FROM cash_movement_category WHERE code = :code LIMIT 1', [
+            'code' => CashMovementCategory::CUSTOMER_REFUND,
+        ]);
 
         if ($category === false) {
             $this->logger->error('Cash refund category not found in cash_movement_category', [
@@ -53,14 +51,14 @@ final readonly class CashRefundRegistrar
             return;
         }
 
-        $saleId   = $sale->getId();
-        $serie    = $sale->getSerie() ?? '';
-        $numero   = $sale->getNumero() ?? '';
-        $amount   = Money::toString(Money::money($sale->getTotal() ?? '0'));
-        $now      = new DateTimeImmutable();
-        $seed     = sprintf('cash-refund:%s:%d', $saleId, $cashSessionId);
-        $hex      = md5($seed);
-        $uuid     = sprintf(
+        $saleId = $sale->getId();
+        $serie = $sale->getSerie() ?? '';
+        $numero = $sale->getNumero() ?? '';
+        $amount = Money::toString(Money::money($sale->getTotal() ?? '0'));
+        $now = new DateTimeImmutable();
+        $seed = sprintf('cash-refund:%s:%d', $saleId, $cashSessionId);
+        $hex = md5($seed);
+        $uuid = sprintf(
             '%s-%s-%s-%s-%s',
             substr($hex, 0, 8),
             substr($hex, 8, 4),
@@ -68,8 +66,8 @@ final readonly class CashRefundRegistrar
             substr($hex, 16, 4),
             substr($hex, 20, 12),
         );
-        $idemHex  = md5('idem:' . $seed);
-        $idemKey  = sprintf(
+        $idemHex = md5('idem:' . $seed);
+        $idemKey = sprintf(
             '%s-%s-%s-%s-%s',
             substr($idemHex, 0, 8),
             substr($idemHex, 8, 4),
@@ -77,68 +75,68 @@ final readonly class CashRefundRegistrar
             substr($idemHex, 16, 4),
             substr($idemHex, 20, 12),
         );
-        $nowSql   = $now->format('Y-m-d H:i:s');
+        $nowSql = $now->format('Y-m-d H:i:s');
 
         $this->connection->executeStatement(
             <<<'SQL'
-INSERT INTO cash_movements (
-    cash_session_id,
-    movement_type,
-    category_id,
-    sale_id,
-    return_id,
-    payment_method_id,
-    amount,
-    description,
-    created_by,
-    created_at,
-    local_uuid,
-    idempotency_key,
-    sync_status,
-    synced_at,
-    device_id,
-    version_no,
-    last_modified_at
-) VALUES (
-    :cash_session_id,
-    'REFUND_OUT',
-    :category_id,
-    :sale_id,
-    NULL,
-    :payment_method_id,
-    :amount,
-    :description,
-    :created_by,
-    :created_at,
-    :local_uuid,
-    :idempotency_key,
-    'SYNCED',
-    :synced_at,
-    NULL,
-    1,
-    :last_modified_at
-)
-ON DUPLICATE KEY UPDATE
-    amount           = VALUES(amount),
-    description      = VALUES(description),
-    synced_at        = VALUES(synced_at),
-    version_no       = version_no + 1,
-    last_modified_at = VALUES(last_modified_at)
-SQL,
+                INSERT INTO cash_movements (
+                    cash_session_id,
+                    movement_type,
+                    category_id,
+                    sale_id,
+                    return_id,
+                    payment_method_id,
+                    amount,
+                    description,
+                    created_by,
+                    created_at,
+                    local_uuid,
+                    idempotency_key,
+                    sync_status,
+                    synced_at,
+                    device_id,
+                    version_no,
+                    last_modified_at
+                ) VALUES (
+                    :cash_session_id,
+                    'REFUND_OUT',
+                    :category_id,
+                    :sale_id,
+                    NULL,
+                    :payment_method_id,
+                    :amount,
+                    :description,
+                    :created_by,
+                    :created_at,
+                    :local_uuid,
+                    :idempotency_key,
+                    'SYNCED',
+                    :synced_at,
+                    NULL,
+                    1,
+                    :last_modified_at
+                )
+                ON DUPLICATE KEY UPDATE
+                    amount           = VALUES(amount),
+                    description      = VALUES(description),
+                    synced_at        = VALUES(synced_at),
+                    version_no       = version_no + 1,
+                    last_modified_at = VALUES(last_modified_at)
+                SQL,
             [
-                'cash_session_id'   => $cashSessionId,
-                'category_id'       => (int) $category['id'],
-                'sale_id'           => $saleId,
+                'cash_session_id' => $cashSessionId,
+                'category_id' => (int) $category['id'],
+                'sale_id' => $saleId,
                 'payment_method_id' => PaymentMethod::CASH,
-                'amount'            => $amount,
-                'description'       => 'Anulación de venta ' . $serie . '-' . $numero,
-                'created_by'        => $userId,
-                'created_at'        => $nowSql,
-                'local_uuid'        => $uuid,
-                'idempotency_key'   => $idemKey,
-                'synced_at'         => $nowSql,
-                'last_modified_at'  => $nowSql,
-            ]
+                'amount' => $amount,
+                'description' => 'Anulación de venta ' . $serie . '-' . $numero,
+                'created_by' => $userId,
+                'created_at' => $nowSql,
+                'local_uuid' => $uuid,
+                'idempotency_key' => $idemKey,
+                'synced_at' => $nowSql,
+                'last_modified_at' => $nowSql,
+            ],
         );
     }
 }

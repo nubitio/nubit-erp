@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Adapter;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Billing\Controller\PrintESCPOSController;
 use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\Sale\SaleVoidUseCase;
@@ -19,6 +18,7 @@ use App\Sales\Port\Result\RejectedDocumentReplacementResult;
 use App\Sales\Port\SaleInvoicePrinterInterface;
 use App\Sales\Port\SaleVoiderInterface;
 use App\Sales\State\DetractionCalculatorInterface;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -39,8 +39,7 @@ final readonly class SaleInvoicingAdapter implements
         private DetractionCalculatorInterface $detractionCalculator,
         private PrintESCPOSController $printESCPOSController,
         private ReplaceRejectedDocumentService $replaceRejectedDocumentService,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{success: bool, message?: string, invoiceId?: string}

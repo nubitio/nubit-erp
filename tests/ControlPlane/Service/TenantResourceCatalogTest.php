@@ -13,10 +13,7 @@ final class TenantResourceCatalogTest extends TestCase
     {
         $catalog = new TenantResourceCatalog();
 
-        $this->assertSame(
-            ['tax_document'],
-            $catalog->tablesForResource('invoices')
-        );
+        $this->assertSame(['tax_document'], $catalog->tablesForResource('invoices'));
     }
 
     public function testAllowedPlanKeysContainStorageAndCoreResources(): void

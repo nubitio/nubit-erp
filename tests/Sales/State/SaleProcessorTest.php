@@ -8,35 +8,35 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
-use Nubit\Platform\Exception\ServiceException;
-use App\Identity\Auth\BranchContextService;
-use App\Settings\Service\TenantSettingsService;
-use App\Identity\Dto\AuthUserDto;
-use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashShift;
-use App\Contacts\Entity\Customer;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
-use App\Organization\Repository\BranchRepository;
-use App\Contacts\Repository\CustomerRepository;
+use App\Catalog\Entity\Product;
 use App\Catalog\Repository\SunatCatalogRepository;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Identity\Auth\BranchContextService;
+use App\Identity\Dto\AuthUserDto;
+use App\Identity\Security\Security;
+use App\Inventory\Core\Contract\SalesInventoryPortInterface;
+use App\Inventory\Entity\Warehouse;
+use App\Organization\Entity\Branch;
+use App\Organization\Repository\BranchRepository;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
-use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Sales\Service\SalePaymentPlanService;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
 use App\Sales\State\SaleProcessor;
-use App\Sales\State\SaleUtils;
 use App\Sales\State\SalesWriteGateway;
-use App\Catalog\Entity\Product;
-use App\Inventory\Core\Contract\SalesInventoryPortInterface;
-use App\Inventory\Entity\Warehouse;
+use App\Sales\State\SaleUtils;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -160,14 +160,10 @@ final class SaleProcessorTest extends TestCase
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
 
         // Default: persistProcessor returns the sale unchanged
-        $this->persistProcessor
-            ->method('process')
-            ->willReturnArgument(0);
+        $this->persistProcessor->method('process')->willReturnArgument(0);
 
         // Default: connectedUser returns a test user
-        $this->security
-            ->method('connectedUser')
-            ->willReturn(new AuthUserDto(userId: 42, username: 'test_user'));
+        $this->security->method('connectedUser')->willReturn(new AuthUserDto(userId: 42, username: 'test_user'));
     }
 
     // =========================================================================
@@ -182,15 +178,9 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSale(tipoId: 1);
 
-        $this->persistProcessor
-            ->expects($this->once())
-            ->method('process')
-            ->willReturnArgument(0);
+        $this->persistProcessor->expects($this->once())->method('process')->willReturnArgument(0);
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($sale, $result);
         self::assertNotNull($sale->getId(), 'New sale must have an ID assigned');
@@ -206,15 +196,9 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildExistingSale(tipoId: 1);
 
-        $this->persistProcessor
-            ->expects($this->once())
-            ->method('process')
-            ->willReturnArgument(0);
+        $this->persistProcessor->expects($this->once())->method('process')->willReturnArgument(0);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Put(),
-        );
+        $this->buildAndRunProcessor($sale, new Put());
 
         self::assertNotNull($sale->getDateUpdated(), 'Updated sale must have date_updated set');
         self::assertSame(42, $sale->getUpdatedBy());
@@ -228,19 +212,11 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildExistingSale(tipoId: 2);
 
-        $this->removeProcessor
-            ->expects($this->once())
-            ->method('process')
-            ->willReturn(null);
+        $this->removeProcessor->expects($this->once())->method('process')->willReturn(null);
 
-        $this->persistProcessor
-            ->expects($this->never())
-            ->method('process');
+        $this->persistProcessor->expects($this->never())->method('process');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Delete(),
-        );
+        $this->buildAndRunProcessor($sale, new Delete());
     }
 
     // -------------------------------------------------------------------------
@@ -252,19 +228,12 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         // getRepository should NOT be called (no tipoPago → block skipped)
-        $this->entityManager
-            ->expects($this->never())
-            ->method('getRepository');
+        $this->entityManager->expects($this->never())->method('getRepository');
 
         // Operational sales use salesWriteGateway->write(), not persistProcessor.
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write');
+        $this->salesWriteGateway->expects($this->once())->method('write');
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($sale, $result);
     }
@@ -282,11 +251,7 @@ final class SaleProcessorTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/caja abierta/');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -299,15 +264,9 @@ final class SaleProcessorTest extends TestCase
 
         // No tipoPago → cash-shift block not entered at all
         // Operational sales use salesWriteGateway->write(), not persistProcessor.
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write');
+        $this->salesWriteGateway->expects($this->once())->method('write');
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
 
         self::assertSame($sale, $result);
     }
@@ -323,10 +282,7 @@ final class SaleProcessorTest extends TestCase
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 1);
 
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write')
-            ->with($sale, 1);
+        $this->salesWriteGateway->expects($this->once())->method('write')->with($sale, 1);
 
         $result = $this->buildAndRunProcessor($sale, new Post());
 
@@ -343,10 +299,7 @@ final class SaleProcessorTest extends TestCase
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 99);
 
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write')
-            ->with($sale, 99);
+        $this->salesWriteGateway->expects($this->once())->method('write')->with($sale, 99);
 
         $this->buildAndRunProcessor($sale, new Post());
     }
@@ -361,9 +314,7 @@ final class SaleProcessorTest extends TestCase
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
 
-        $this->salesWriteGateway
-            ->method('write')
-            ->willThrowException(new \RuntimeException('Sales V2 write error'));
+        $this->salesWriteGateway->method('write')->willThrowException(new \RuntimeException('Sales V2 write error'));
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/Sales V2/');
@@ -386,7 +337,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 2);
 
         $warehouse = new Warehouse();
-        (new ReflectionClass(Warehouse::class))->getProperty('id')->setValue($warehouse, 'wh-test');
+        new ReflectionClass(Warehouse::class)
+            ->getProperty('id')
+            ->setValue($warehouse, 'wh-test');
         $sale->setAlmacen($warehouse);
 
         $product = new Product();
@@ -407,17 +360,12 @@ final class SaleProcessorTest extends TestCase
 
         $this->inventoryOrchestrator = $this->buildInventoryOrchestratorStub(shouldThrow: true);
 
-        $this->persistProcessor
-            ->expects($this->never())
-            ->method('process');
+        $this->persistProcessor->expects($this->never())->method('process');
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/Stock insuficiente/');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------
@@ -429,15 +377,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(null);
 
-        $this->saleInvoicing
-            ->expects($this->never())
-            ->method('createAndDispatchInvoiceForSaleId');
+        $this->saleInvoicing->expects($this->never())->method('createAndDispatchInvoiceForSaleId');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -454,11 +396,7 @@ final class SaleProcessorTest extends TestCase
             ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => false, 'message' => 'skipped']);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -475,11 +413,7 @@ final class SaleProcessorTest extends TestCase
             ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => true, 'invoiceId' => 'inv-abc-123']);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -495,11 +429,7 @@ final class SaleProcessorTest extends TestCase
             ->method('createAndDispatchInvoiceForSaleId')
             ->willThrowException(new \RuntimeException('SUNAT unavailable'));
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'false',
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'false');
 
         self::assertSame($sale, $result);
     }
@@ -513,20 +443,16 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildExistingSale(tipoId: 2);
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setEmitInvoice(null);
 
-        $this->saleInvoicing
-            ->expects($this->never())
-            ->method('createAndDispatchInvoiceForSaleId');
+        $this->saleInvoicing->expects($this->never())->method('createAndDispatchInvoiceForSaleId');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Put(),
-            autoInvoice: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Put(), autoInvoice: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -543,11 +469,7 @@ final class SaleProcessorTest extends TestCase
             ->method('createAndDispatchInvoiceForSaleId')
             ->willReturn(['success' => false, 'message' => 'not ready']);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -559,15 +481,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(false);
 
-        $this->saleInvoicing
-            ->expects($this->never())
-            ->method('createAndDispatchInvoiceForSaleId');
+        $this->saleInvoicing->expects($this->never())->method('createAndDispatchInvoiceForSaleId');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -579,15 +495,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 1);
         $sale->setEmitInvoice(true);
 
-        $this->saleInvoicing
-            ->expects($this->never())
-            ->method('createAndDispatchInvoiceForSaleId');
+        $this->saleInvoicing->expects($this->never())->method('createAndDispatchInvoiceForSaleId');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            autoInvoice: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), autoInvoice: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -600,7 +510,9 @@ final class SaleProcessorTest extends TestCase
         // No customer set on purpose
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
@@ -608,19 +520,11 @@ final class SaleProcessorTest extends TestCase
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
-        $this->customerRepository
-            ->method('findDefaultAnonymous')
-            ->willReturn($defaultCustomer);
+        $this->customerRepository->method('findDefaultAnonymous')->willReturn($defaultCustomer);
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
 
         self::assertSame($defaultCustomer, $sale->getCliente());
     }
@@ -636,22 +540,14 @@ final class SaleProcessorTest extends TestCase
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
-        $this->customerRepository
-            ->method('findDefaultAnonymous')
-            ->willReturn(null);
+        $this->customerRepository->method('findDefaultAnonymous')->willReturn(null);
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/cliente general/');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -664,7 +560,9 @@ final class SaleProcessorTest extends TestCase
         $sale->setCliente($this->createMock(Customer::class));
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
@@ -672,19 +570,11 @@ final class SaleProcessorTest extends TestCase
         $this->mockCashShiftRepository($cashShift);
 
         // entityManager::find must NOT be called for Customer
-        $this->entityManager
-            ->expects($this->never())
-            ->method('find');
+        $this->entityManager->expects($this->never())->method('find');
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -700,19 +590,11 @@ final class SaleProcessorTest extends TestCase
         $this->mockCashShiftRepository($cashShift);
 
         // entityManager::find must NOT be called for Customer
-        $this->entityManager
-            ->expects($this->never())
-            ->method('find');
+        $this->entityManager->expects($this->never())->method('find');
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
     }
 
     // -------------------------------------------------------------------------
@@ -738,28 +620,23 @@ final class SaleProcessorTest extends TestCase
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '10.00');
 
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write');
+        $this->salesWriteGateway->expects($this->once())->method('write');
 
         $this->salesWriteGateway
             ->expects($this->once())
             ->method('writeCashSaleMovement')
             ->with(
                 $this->anything(), // saleId
-                77,                // cashSessionId
+                77, // cashSessionId
                 $this->anything(), // createdBy
-                '10.00',           // amount
-                null,              // categoryId
+                '10.00', // amount
+                null, // categoryId
                 $this->anything(), // paymentMethodId
                 $this->anything(), // createdAt
                 $this->anything(), // description
             );
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------
@@ -773,8 +650,7 @@ final class SaleProcessorTest extends TestCase
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '10.00');
 
-        $this->salesWriteGateway
-            ->method('write');
+        $this->salesWriteGateway->method('write');
 
         $this->salesWriteGateway
             ->method('writeCashSaleMovement')
@@ -783,12 +659,8 @@ final class SaleProcessorTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/movimiento de caja/');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
     }
-
 
     // -------------------------------------------------------------------------
     // TC-31: Legacy cash movement skipped when category not found
@@ -799,16 +671,16 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->createMock(Customer::class));
 
         $cashShift = $this->buildCashShift();
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '50.00');
 
@@ -831,9 +703,7 @@ final class SaleProcessorTest extends TestCase
                 return $cashShiftRepo;
             });
 
-        $this->entityManager
-            ->expects($this->never())
-            ->method('persist');
+        $this->entityManager->expects($this->never())->method('persist');
 
         $result = $this->buildAndRunProcessor(
             $sale,
@@ -858,14 +728,11 @@ final class SaleProcessorTest extends TestCase
         // which sets detraccionCodigo → null; proving applyFromItems was invoked with this sale).
         $sale->setDetraccionCodigo('999');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
 
         self::assertNull(
             $sale->getDetraccionCodigo(),
-            'detractionCalculator::applyFromItems() must have been called — it clears detraccionCodigo when customer has no RUC'
+            'detractionCalculator::applyFromItems() must have been called — it clears detraccionCodigo when customer has no RUC',
         );
     }
 
@@ -884,10 +751,7 @@ final class SaleProcessorTest extends TestCase
         $item->setNameSnapshot('Item');
         $sale->addSaleItemRecord($item);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
 
         self::assertTrue($sale->getSaleItemRecords()->contains($item));
         self::assertSame('100.00', $sale->getSubtotal());
@@ -903,19 +767,15 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 2);
         $branch = new Branch();
         // Give the branch an id so CashSessionResolver can resolve it after it's set on the sale
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-42');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-42');
 
         $this->branchContextService = $this->buildBranchContextStubWithRealToken('branch-42');
 
-        $this->branchRepository
-            ->method('find')
-            ->with('branch-42')
-            ->willReturn($branch);
+        $this->branchRepository->method('find')->with('branch-42')->willReturn($branch);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($branch, $sale->getBranch());
     }
@@ -929,21 +789,14 @@ final class SaleProcessorTest extends TestCase
         // Sale needs branch+fecha so CashSessionResolver doesn't throw when V2 write runs
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
-        $this->salesWriteGateway
-            ->expects($this->once())
-            ->method('write');
+        $this->salesWriteGateway->expects($this->once())->method('write');
 
-        $this->persistProcessor
-            ->expects($this->never())
-            ->method('process');
+        $this->persistProcessor->expects($this->never())->method('process');
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 55);
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($sale, $result);
     }
@@ -957,7 +810,9 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->createMock(Customer::class));
@@ -965,22 +820,13 @@ final class SaleProcessorTest extends TestCase
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
 
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
+        $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '50.00');
 
-        $this->entityManager
-            ->expects($this->never())
-            ->method('persist');
+        $this->entityManager->expects($this->never())->method('persist');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            requireCashRegister: 'false',
-            disableLegacyCashMovement: 'true',
-        );
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false', disableLegacyCashMovement: 'true');
     }
 
     // -------------------------------------------------------------------------
@@ -994,11 +840,7 @@ final class SaleProcessorTest extends TestCase
         $request = new Request();
         $request->headers->set('X-Offline-Sale', 'true');
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            context: ['request' => $request],
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
 
         self::assertSame($sale, $result);
     }
@@ -1012,10 +854,7 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setHasInvoice(true); // client tries to set it true
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
 
         self::assertFalse($sale->isHasInvoice(), 'New sale: has_invoice must always be forced to false');
     }
@@ -1029,8 +868,8 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 1);
         $sale->setWriteItems([
             [
-                'qty'             => 3,
-                'unitPrice'       => '33.33',
+                'qty' => 3,
+                'unitPrice' => '33.33',
                 'discountPercent' => '0',
             ],
         ]);
@@ -1042,7 +881,11 @@ final class SaleProcessorTest extends TestCase
 
         /** @var \App\Sales\Entity\SaleItemRecord $item */
         $item = $items[0];
-        $this->assertSame('0.00', $item->getDiscountAmount(), 'AC-3: discountPercent=0 must produce discountAmount=0.00');
+        $this->assertSame(
+            '0.00',
+            $item->getDiscountAmount(),
+            'AC-3: discountPercent=0 must produce discountAmount=0.00',
+        );
         $this->assertSame('99.99', $item->getNetAmount(), 'AC-3: total must equal qty × unitPrice when discount=0');
     }
 
@@ -1055,8 +898,8 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 1);
         $sale->setWriteItems([
             [
-                'qty'             => 1,
-                'unitPrice'       => '100.00',
+                'qty' => 1,
+                'unitPrice' => '100.00',
                 'discountPercent' => '101',
             ],
         ]);
@@ -1076,8 +919,8 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSale(tipoId: 1);
         $sale->setWriteItems([
             [
-                'qty'             => 1,
-                'unitPrice'       => '50.00',
+                'qty' => 1,
+                'unitPrice' => '50.00',
                 'discountPercent' => '-1',
             ],
         ]);
@@ -1183,7 +1026,9 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSale($tipoId);
         $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
@@ -1226,7 +1071,7 @@ final class SaleProcessorTest extends TestCase
 
     private function buildCashShift(): CashShift
     {
-        return (new ReflectionClass(CashShift::class))->newInstanceWithoutConstructor();
+        return new ReflectionClass(CashShift::class)->newInstanceWithoutConstructor();
     }
 
     private function mockCashShiftRepository(?CashShift $cashShift): void
@@ -1276,7 +1121,7 @@ final class SaleProcessorTest extends TestCase
         if ($rc->hasProperty('jwtManager')) {
             $jwtMgrClass = (string) $rc->getProperty('jwtManager')->getType();
             if (class_exists($jwtMgrClass)) {
-                $jwtStub = (new ReflectionClass($jwtMgrClass))->newInstanceWithoutConstructor();
+                $jwtStub = new ReflectionClass($jwtMgrClass)->newInstanceWithoutConstructor();
                 $rc->getProperty('jwtManager')->setValue($stub, $jwtStub);
             }
         }
@@ -1337,7 +1182,7 @@ final class SaleProcessorTest extends TestCase
         /** @var SaleInventoryOrchestrator $stub */
         $stub = $rc->newInstanceWithoutConstructor();
 
-        $salesInventory = new class () implements SalesInventoryPortInterface {
+        $salesInventory = new class() implements SalesInventoryPortInterface {
             public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
             {
                 return 0.0;
@@ -1348,8 +1193,7 @@ final class SaleProcessorTest extends TestCase
                 \App\Sales\Entity\SaleItemRecord $item,
                 int $lineNo,
                 bool $enforceNonNegativeStock = true,
-            ): void {
-            }
+            ): void {}
         };
 
         $rc->getProperty('salesInventory')->setValue($stub, $salesInventory);
@@ -1358,11 +1202,11 @@ final class SaleProcessorTest extends TestCase
         /** @var \App\Inventory\Core\Contract\StockValidationPolicyInterface&MockObject $svp */
         $svp = $this->createStub(\App\Inventory\Core\Contract\StockValidationPolicyInterface::class);
         if ($shouldThrow) {
-            $svp->method('validateSale')
-                ->willReturn(\App\Inventory\Core\Dto\StockValidationResult::blocked('insufficient stock'));
+            $svp->method('validateSale')->willReturn(\App\Inventory\Core\Dto\StockValidationResult::blocked(
+                'insufficient stock',
+            ));
         } else {
-            $svp->method('validateSale')
-                ->willReturn(\App\Inventory\Core\Dto\StockValidationResult::allowed());
+            $svp->method('validateSale')->willReturn(\App\Inventory\Core\Dto\StockValidationResult::allowed());
         }
         $rc->getProperty('stockValidationPolicy')->setValue($stub, $svp);
 
@@ -1376,10 +1220,10 @@ final class SaleProcessorTest extends TestCase
         $policySettings = $this->createStub(TenantSettingsService::class);
 
         if ($shouldThrow) {
-            $policySettings->method('getNegativeStockPolicy')
-                ->willReturn(\App\Inventory\Core\Enum\StockPolicy::STRICT);
+            $policySettings->method('getNegativeStockPolicy')->willReturn(\App\Inventory\Core\Enum\StockPolicy::STRICT);
         } else {
-            $policySettings->method('getNegativeStockPolicy')
+            $policySettings
+                ->method('getNegativeStockPolicy')
                 ->willReturn(\App\Inventory\Core\Enum\StockPolicy::ALLOW_NEGATIVE);
         }
 
@@ -1455,9 +1299,7 @@ final class SaleProcessorTest extends TestCase
                     'closed_at' => null,
                 ]);
         } else {
-            $connMock
-                ->method('fetchAssociative')
-                ->willReturn(false);
+            $connMock->method('fetchAssociative')->willReturn(false);
         }
 
         $rc->getProperty('connection')->setValue($stub, $connMock);
@@ -1485,7 +1327,7 @@ final class SaleProcessorTest extends TestCase
                 $depClass = $type->getName();
                 if (class_exists($depClass) || interface_exists($depClass)) {
                     try {
-                        $depStub = (new ReflectionClass($depClass))->newInstanceWithoutConstructor();
+                        $depStub = new ReflectionClass($depClass)->newInstanceWithoutConstructor();
                         $prop->setValue($stub, $depStub);
                         continue;
                     } catch (\Throwable) {
@@ -1493,7 +1335,7 @@ final class SaleProcessorTest extends TestCase
                     }
                 }
             }
-            if (!($type instanceof ReflectionNamedType) || $type->allowsNull()) {
+            if (!$type instanceof ReflectionNamedType || $type->allowsNull()) {
                 $prop->setValue($stub, null);
             }
         }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller\Api;
 
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Invoice\Domain\InvoiceSendUseCase;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\CreditNoteService;
 use Exception;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Http\ApiResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +23,7 @@ class SendTaxDocument extends AbstractController
         private readonly CreditNoteService $creditNoteService,
         private readonly TaxDocumentRepository $taxDocumentRepository,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {
@@ -44,32 +43,20 @@ class SendTaxDocument extends AbstractController
             }
 
             if ($result->sunatResponse->isSuccess()) {
-                return
-                    new ApiResponse(
-                        true,
-                        $result->sunatResponse->getCdrResponse()
-                            ?->getDescription() ?: ''
-                    );
+                return new ApiResponse(true, $result->sunatResponse->getCdrResponse()?->getDescription() ?: '');
             }
 
             $this->logger->error('Error sending document', [
                 'result' => $result->sunatResponse->getError()?->getMessage(),
             ]);
 
-            return new ApiResponse(
-                false,
-                $result->sunatResponse->getError()?->getMessage() ?: ''
-            );
-        } catch (Exception | FilesystemException $e) {
+            return new ApiResponse(false, $result->sunatResponse->getError()?->getMessage() ?: '');
+        } catch (Exception|FilesystemException $e) {
             $this->logger->error('Error sending document', [
                 'exception' => $e,
             ]);
 
-            return new ApiResponse(
-                success: false,
-                message: 'Error sending document',
-                payload: $e->getMessage(),
-            );
+            return new ApiResponse(success: false, message: 'Error sending document', payload: $e->getMessage());
         }
     }
 }

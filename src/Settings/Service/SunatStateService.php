@@ -20,8 +20,7 @@ readonly class SunatStateService
     public function __construct(
         private SunatOperationalStateRepository $repository,
         private EntityManagerInterface $em,
-    ) {
-    }
+    ) {}
 
     public function get(): SunatOperationalState
     {

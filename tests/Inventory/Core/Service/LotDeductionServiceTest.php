@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Inventory\Core\Service;
 
-use Nubit\Platform\Exception\ServiceException;
-use App\Inventory\Entity\StockLot;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Service\LotDeductionService;
+use App\Inventory\Entity\StockLot;
 use App\Inventory\Repository\StockLotRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -44,9 +44,7 @@ final class LotDeductionServiceTest extends TestCase
     {
         $lot = $this->makeLot('10.000000');
 
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([$lot]);
+        $this->repository->method('findForFifo')->willReturn([$lot]);
 
         $this->em->expects(self::once())->method('persist')->with($lot);
 
@@ -61,9 +59,7 @@ final class LotDeductionServiceTest extends TestCase
     {
         $lot = $this->makeLot('3.500000');
 
-        $this->repository
-            ->method('findForFefo')
-            ->willReturn([$lot]);
+        $this->repository->method('findForFefo')->willReturn([$lot]);
 
         $this->em->expects(self::once())->method('persist');
 
@@ -79,9 +75,7 @@ final class LotDeductionServiceTest extends TestCase
         $lot1 = $this->makeLot('3.000000');
         $lot2 = $this->makeLot('4.000000');
 
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([$lot1, $lot2]);
+        $this->repository->method('findForFifo')->willReturn([$lot1, $lot2]);
 
         $this->em->expects(self::exactly(2))->method('persist');
 
@@ -98,9 +92,7 @@ final class LotDeductionServiceTest extends TestCase
     {
         $lot = $this->makeLot('2.000000');
 
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([$lot]);
+        $this->repository->method('findForFifo')->willReturn([$lot]);
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/insuficiente/');
@@ -110,9 +102,7 @@ final class LotDeductionServiceTest extends TestCase
 
     public function testDeductThrowsWhenNoLotsAvailable(): void
     {
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([]);
+        $this->repository->method('findForFifo')->willReturn([]);
 
         $this->expectException(ServiceException::class);
 
@@ -135,9 +125,7 @@ final class LotDeductionServiceTest extends TestCase
         // Lot has 0.999999 — deducting 1.000000 would leave 0.000001 (epsilon)
         $lot = $this->makeLot('0.999999');
 
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([$lot]);
+        $this->repository->method('findForFifo')->willReturn([$lot]);
 
         $this->em->expects(self::once())->method('persist');
 
@@ -154,9 +142,7 @@ final class LotDeductionServiceTest extends TestCase
     {
         $lot = $this->makeLot('1.000000');
 
-        $this->repository
-            ->method('findForFifo')
-            ->willReturn([$lot]);
+        $this->repository->method('findForFifo')->willReturn([$lot]);
 
         $this->em->expects(self::once())->method('persist');
 
@@ -171,9 +157,7 @@ final class LotDeductionServiceTest extends TestCase
 
     public function testReceiveCreatesNewLotWhenNotFound(): void
     {
-        $this->repository
-            ->method('findByLotNumber')
-            ->willReturn(null);
+        $this->repository->method('findByLotNumber')->willReturn(null);
 
         $productRef = $this->createStub(\App\Catalog\Entity\Product::class);
         $warehouseRef = $this->createStub(\App\Inventory\Entity\Warehouse::class);
@@ -206,9 +190,7 @@ final class LotDeductionServiceTest extends TestCase
     {
         $existing = $this->makeLot('5.000000');
 
-        $this->repository
-            ->method('findByLotNumber')
-            ->willReturn($existing);
+        $this->repository->method('findByLotNumber')->willReturn($existing);
 
         $this->em->expects(self::once())->method('persist');
 

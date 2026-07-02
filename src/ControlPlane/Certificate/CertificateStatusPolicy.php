@@ -8,8 +8,7 @@ final readonly class CertificateStatusPolicy
 {
     public function __construct(
         private int $expiringSoonDays = 30,
-    ) {
-    }
+    ) {}
 
     public function statusFor(\DateTimeImmutable $expiresAt, ?\DateTimeImmutable $now = null): CertificateStatus
     {

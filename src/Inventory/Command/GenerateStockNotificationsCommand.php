@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Inventory\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Identity\Notification\NotificationType;
 use App\Identity\Notification\UserNotificationService;
 use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -59,8 +59,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp(
-            <<<'HELP'
+        $this->setHelp(<<<'HELP'
             Queries every tenant's stock_items table (V2 source of truth) joined to
             producto.stock_minimo for rows where qty_on_hand <= stock_minimo,
             then emits a <info>stock_low</info> in-app notification to all admin and super-admin
@@ -68,8 +67,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
 
             This command is wired to the Symfony Scheduler and runs automatically
             every 6 hours.
-            HELP
-        );
+            HELP);
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -86,7 +84,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
                 return self::SUCCESS;
             }
 
-            $since     = new DateTimeImmutable(sprintf('-%d seconds', self::DEDUP_WINDOW_SECONDS));
+            $since = new DateTimeImmutable(sprintf('-%d seconds', self::DEDUP_WINDOW_SECONDS));
             $adminRows = $this->fetchAdminUserIds();
 
             if ($adminRows === []) {
@@ -96,16 +94,16 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
             }
 
             $notified = 0;
-            $skipped  = 0;
+            $skipped = 0;
 
             foreach ($belowMin as $row) {
-                $productName   = (string) $row['product_name'];
+                $productName = (string) $row['product_name'];
                 $warehouseName = (string) $row['warehouse_name'];
-                $qty           = (float)  $row['qty_on_hand'];
-                $minQty        = (float)  $row['min_stock'];
+                $qty = (float) $row['qty_on_hand'];
+                $minQty = (float) $row['min_stock'];
 
                 $title = sprintf('Stock bajo: %s', $productName);
-                $body  = sprintf(
+                $body = sprintf(
                     'El producto "%s" (almacén: %s) tiene stock actual de %.3f unidades, '
                     . 'por debajo del mínimo configurado de %.3f unidades.',
                     $productName,
@@ -117,13 +115,11 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
                 foreach ($adminRows as $adminRow) {
                     $userId = (int) $adminRow['usuario_id'];
 
-                    if (
-                        $this->userNotificationRepository->existsUnreadForUserAndType(
-                            $userId,
-                            NotificationType::STOCK_LOW,
-                            $since,
-                        )
-                    ) {
+                    if ($this->userNotificationRepository->existsUnreadForUserAndType(
+                        $userId,
+                        NotificationType::STOCK_LOW,
+                        $since,
+                    )) {
                         ++$skipped;
                         continue;
                     }
@@ -151,7 +147,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->logger->error('GenerateStockNotificationsCommand: failed for tenant', [
-                'tenant'    => $tenantName,
+                'tenant' => $tenantName,
                 'exception' => $e->getMessage(),
             ]);
             $io->error(sprintf('[ERROR] Failed for %s: %s', $tenantName, $e->getMessage()));
@@ -170,8 +166,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
     private function fetchBelowMinStock(): array
     {
         /** @var list<array{product_name: string, warehouse_name: string, qty_on_hand: string, min_stock: string}> $rows */
-        $rows = $this->connection->fetchAllAssociative(
-            <<<'SQL'
+        $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
                 p.descripcion   AS product_name,
                 a.nombre        AS warehouse_name,
@@ -184,8 +179,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
               AND p.stock_minimo > 0
               AND si.qty_on_hand <= p.stock_minimo
             ORDER BY (si.qty_on_hand / p.stock_minimo) ASC
-            SQL
-        );
+            SQL);
 
         return $rows;
     }

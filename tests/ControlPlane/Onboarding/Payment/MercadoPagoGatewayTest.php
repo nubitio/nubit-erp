@@ -20,7 +20,7 @@ final class MercadoPagoGatewayTest extends TestCase
         string $accessToken = 'test-access-token',
         string $webhookSecret = 'test-webhook-secret',
         string $planMapJson = '{}',
-        MockHttpClient|null $httpClient = null,
+        ?MockHttpClient $httpClient = null,
     ): MercadoPagoGateway {
         return new MercadoPagoGateway(
             logger: $this->createMock(LoggerInterface::class),
@@ -40,11 +40,9 @@ final class MercadoPagoGatewayTest extends TestCase
 
     public function testResolvePlanConfigResolvesKnownKey(): void
     {
-        $planMap = '{"basic_monthly":{"amount":29.9,"currency":"PEN"},'
-            . '"pro_annual":{"amount":799,"currency":"PEN"}}';
-        $gateway = $this->buildGateway(
-            planMapJson: $planMap,
-        );
+        $planMap =
+            '{"basic_monthly":{"amount":29.9,"currency":"PEN"},' . '"pro_annual":{"amount":799,"currency":"PEN"}}';
+        $gateway = $this->buildGateway(planMapJson: $planMap);
 
         $config = $this->invokePrivate($gateway, 'resolvePlanConfig', ['basic', BillingCycle::Monthly]);
         self::assertSame(29.9, $config['amount']);
@@ -57,9 +55,7 @@ final class MercadoPagoGatewayTest extends TestCase
 
     public function testResolvePlanConfigThrowsForMissingKey(): void
     {
-        $gateway = $this->buildGateway(
-            planMapJson: '{"basic_monthly":{"amount":29.9,"currency":"PEN"}}',
-        );
+        $gateway = $this->buildGateway(planMapJson: '{"basic_monthly":{"amount":29.9,"currency":"PEN"}}');
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('No MercadoPago pricing configured for: pro_annual');
@@ -70,10 +66,15 @@ final class MercadoPagoGatewayTest extends TestCase
     {
         $gateway = $this->buildGateway(webhookSecret: 'secret');
 
-        $request = Request::create('/webhook?data.id=123', 'POST', server: [
-            'HTTP_X_SIGNATURE' => 'ts=1,v1=invalid',
-            'HTTP_X_REQUEST_ID' => 'req-1',
-        ], content: '{"id":"evt-1","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-1"}}');
+        $request = Request::create(
+            '/webhook?data.id=123',
+            'POST',
+            server: [
+                'HTTP_X_SIGNATURE' => 'ts=1,v1=invalid',
+                'HTTP_X_REQUEST_ID' => 'req-1',
+            ],
+            content: '{"id":"evt-1","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-1"}}',
+        );
 
         self::assertNull($gateway->handleWebhook($request));
     }
@@ -93,10 +94,15 @@ final class MercadoPagoGatewayTest extends TestCase
         $hash = hash_hmac('sha256', $manifest, $secret);
 
         $gateway = $this->buildGateway(webhookSecret: $secret);
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_X_SIGNATURE' => "ts=$ts,v1=$hash",
-            'HTTP_X_REQUEST_ID' => $requestId,
-        ], content: '{"id":"evt-9","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-1"}}');
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_X_SIGNATURE' => "ts=$ts,v1=$hash",
+                'HTTP_X_REQUEST_ID' => $requestId,
+            ],
+            content: '{"id":"evt-9","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-1"}}',
+        );
         $request->query->set('data.id', 'sub-1');
 
         $event = $gateway->handleWebhook($request);
@@ -125,8 +131,7 @@ final class MercadoPagoGatewayTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         // verifyWebhookSignature logs 'timestamp out of window';
         // handleWebhook then logs 'signature verification failed'
-        $logger->expects(self::exactly(2))
-            ->method('warning');
+        $logger->expects(self::exactly(2))->method('warning');
 
         $gateway = new MercadoPagoGateway(
             logger: $logger,
@@ -136,12 +141,17 @@ final class MercadoPagoGatewayTest extends TestCase
             planMapJson: '{}',
         );
 
-        $content = '{"id":"evt-stale","type":"subscription_preapproval",'
-            . '"action":"authorized","data":{"id":"sub-stale"}}';
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_X_SIGNATURE' => "ts=$staleTs,v1=$hash",
-            'HTTP_X_REQUEST_ID' => $requestId,
-        ], content: $content);
+        $content =
+            '{"id":"evt-stale","type":"subscription_preapproval",' . '"action":"authorized","data":{"id":"sub-stale"}}';
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_X_SIGNATURE' => "ts=$staleTs,v1=$hash",
+                'HTTP_X_REQUEST_ID' => $requestId,
+            ],
+            content: $content,
+        );
         $request->query->set('data.id', $dataId);
 
         // handleWebhook returns null when verifyWebhookSignature returns null (replay-guard rejection)
@@ -162,12 +172,18 @@ final class MercadoPagoGatewayTest extends TestCase
         $hash = hash_hmac('sha256', $manifest, $secret);
 
         $gateway = $this->buildGateway(webhookSecret: $secret);
-        $content = '{"id":"evt-future","type":"subscription_preapproval",'
+        $content =
+            '{"id":"evt-future","type":"subscription_preapproval",'
             . '"action":"authorized","data":{"id":"sub-future"}}';
-        $request = Request::create('/webhook', 'POST', server: [
-            'HTTP_X_SIGNATURE' => "ts=$futureTs,v1=$hash",
-            'HTTP_X_REQUEST_ID' => $requestId,
-        ], content: $content);
+        $request = Request::create(
+            '/webhook',
+            'POST',
+            server: [
+                'HTTP_X_SIGNATURE' => "ts=$futureTs,v1=$hash",
+                'HTTP_X_REQUEST_ID' => $requestId,
+            ],
+            content: $content,
+        );
         $request->query->set('data.id', $dataId);
 
         self::assertNull($gateway->handleWebhook($request));
@@ -179,16 +195,11 @@ final class MercadoPagoGatewayTest extends TestCase
      */
     public function testApiRequestThrowsOnHttpErrorResponse(): void
     {
-        $mockResponse = new MockResponse(
-            '{"message":"Unauthorized","error":"unauthorized"}',
-            ['http_code' => 401],
-        );
+        $mockResponse = new MockResponse('{"message":"Unauthorized","error":"unauthorized"}', ['http_code' => 401]);
         $httpClient = new MockHttpClient($mockResponse);
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('error')
-            ->with('MercadoPago API error', self::arrayHasKey('http_code'));
+        $logger->expects(self::once())->method('error')->with('MercadoPago API error', self::arrayHasKey('http_code'));
 
         $gateway = new MercadoPagoGateway(
             logger: $logger,
@@ -206,10 +217,7 @@ final class MercadoPagoGatewayTest extends TestCase
 
     public function testCredentialsAreStoredViaConstructorInjection(): void
     {
-        $gateway = $this->buildGateway(
-            accessToken: 'APP_USR-token-123',
-            webhookSecret: 'wh-secret-abc',
-        );
+        $gateway = $this->buildGateway(accessToken: 'APP_USR-token-123', webhookSecret: 'wh-secret-abc');
 
         $reflection = new \ReflectionClass($gateway);
 

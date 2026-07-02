@@ -6,12 +6,12 @@ namespace App\Tests\Catalog;
 
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
+use App\Catalog\Entity\Product;
 use App\Catalog\Entity\ProductBomItem;
 use App\Catalog\Entity\ProductUnit;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
-use App\Catalog\Entity\Product;
 use PHPUnit\Framework\TestCase;
 
 /**

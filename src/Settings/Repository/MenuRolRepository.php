@@ -32,7 +32,6 @@ class MenuRolRepository extends ServiceEntityRepository
     //            ->getResult()
     //        ;
     //    }
-
     //    public function findOneBySomeField($value): ?MenuRol
     //    {
     //        return $this->createQueryBuilder('m')

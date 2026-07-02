@@ -42,8 +42,7 @@ final class TenantFeatureOverrideController extends AbstractController
         private readonly TenantFeatureOverrideManager $overrideManager,
         private readonly TenantFeatureOverrideRepositoryInterface $overrideRepository,
         private readonly AuditLogger $auditLogger,
-    ) {
-    }
+    ) {}
 
     // -------------------------------------------------------------------------
     // List
@@ -62,8 +61,8 @@ final class TenantFeatureOverrideController extends AbstractController
         $overrides = $this->overrideRepository->findAllByTenant($id);
 
         return $this->render('admin/tenant/features/index.html.twig', [
-            'tenant'       => $tenant,
-            'overrides'    => $overrides,
+            'tenant' => $tenant,
+            'overrides' => $overrides,
             'feature_keys' => self::FEATURE_KEYS,
         ]);
     }
@@ -83,16 +82,16 @@ final class TenantFeatureOverrideController extends AbstractController
         }
 
         return $this->render('admin/tenant/features/form.html.twig', [
-            'tenant'       => $tenant,
-            'override'     => null,
-            'mode'         => 'create',
+            'tenant' => $tenant,
+            'override' => null,
+            'mode' => 'create',
             'feature_keys' => self::FEATURE_KEYS,
-            'values'       => [
+            'values' => [
                 'featureKey' => '',
-                'isEnabled'  => true,
+                'isEnabled' => true,
                 'configJson' => '',
-                'expiresAt'  => '',
-                'reason'     => '',
+                'expiresAt' => '',
+                'reason' => '',
             ],
         ]);
     }
@@ -114,10 +113,10 @@ final class TenantFeatureOverrideController extends AbstractController
         }
 
         $featureKey = trim((string) $request->request->get('featureKey', ''));
-        $isEnabled  = (bool) $request->request->get('isEnabled', false);
+        $isEnabled = (bool) $request->request->get('isEnabled', false);
         $configJson = trim((string) $request->request->get('configJson', ''));
-        $expiresAt  = trim((string) $request->request->get('expiresAt', ''));
-        $reason     = trim((string) $request->request->get('reason', ''));
+        $expiresAt = trim((string) $request->request->get('expiresAt', ''));
+        $reason = trim((string) $request->request->get('reason', ''));
 
         if (!in_array($featureKey, self::FEATURE_KEYS, true)) {
             $this->addFlash('error', sprintf('Invalid feature key: "%s".', $featureKey));
@@ -126,24 +125,24 @@ final class TenantFeatureOverrideController extends AbstractController
         }
 
         try {
-            $configArray    = $this->parseConfigJson($configJson !== '' ? $configJson : null);
-            $expiresAtDate  = $expiresAt !== '' ? new \DateTimeImmutable($expiresAt) : null;
+            $configArray = $this->parseConfigJson($configJson !== '' ? $configJson : null);
+            $expiresAtDate = $expiresAt !== '' ? new \DateTimeImmutable($expiresAt) : null;
 
             $this->overrideManager->setOverride(
-                tenantId:   $id,
+                tenantId: $id,
                 featureKey: $featureKey,
-                isEnabled:  $isEnabled,
-                config:     $configArray,
-                expiresAt:  $expiresAtDate,
-                reason:     $reason !== '' ? $reason : null,
+                isEnabled: $isEnabled,
+                config: $configArray,
+                expiresAt: $expiresAtDate,
+                reason: $reason !== '' ? $reason : null,
             );
 
             $this->auditLogger->log('tenant.feature_override.create', [
-                'tenant_id'   => $id,
+                'tenant_id' => $id,
                 'tenant_name' => (string) ($tenant['name'] ?? ''),
                 'feature_key' => $featureKey,
-                'is_enabled'  => $isEnabled,
-                'expires_at'  => $expiresAtDate?->format('Y-m-d H:i:s'),
+                'is_enabled' => $isEnabled,
+                'expires_at' => $expiresAtDate?->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('success', sprintf('Feature override for "%s" created successfully.', $featureKey));
@@ -180,18 +179,18 @@ final class TenantFeatureOverrideController extends AbstractController
         }
 
         return $this->render('admin/tenant/features/form.html.twig', [
-            'tenant'       => $tenant,
-            'override'     => $override,
-            'mode'         => 'edit',
+            'tenant' => $tenant,
+            'override' => $override,
+            'mode' => 'edit',
             'feature_keys' => self::FEATURE_KEYS,
-            'values'       => [
+            'values' => [
                 'featureKey' => $override->featureKey,
-                'isEnabled'  => $override->isEnabled(),
+                'isEnabled' => $override->isEnabled(),
                 'configJson' => $override->getConfigJson() !== null
                     ? json_encode($override->getConfigJson(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)
                     : '',
-                'expiresAt'  => $override->expiresAt?->format('Y-m-d\TH:i') ?? '',
-                'reason'     => $override->reason ?? '',
+                'expiresAt' => $override->expiresAt?->format('Y-m-d\TH:i') ?? '',
+                'reason' => $override->reason ?? '',
             ],
         ]);
     }
@@ -212,30 +211,30 @@ final class TenantFeatureOverrideController extends AbstractController
             return $this->redirectToRoute('admin_tenant_index');
         }
 
-        $isEnabled  = (bool) $request->request->get('isEnabled', false);
+        $isEnabled = (bool) $request->request->get('isEnabled', false);
         $configJson = trim((string) $request->request->get('configJson', ''));
-        $expiresAt  = trim((string) $request->request->get('expiresAt', ''));
-        $reason     = trim((string) $request->request->get('reason', ''));
+        $expiresAt = trim((string) $request->request->get('expiresAt', ''));
+        $reason = trim((string) $request->request->get('reason', ''));
 
         try {
-            $configArray   = $this->parseConfigJson($configJson !== '' ? $configJson : null);
+            $configArray = $this->parseConfigJson($configJson !== '' ? $configJson : null);
             $expiresAtDate = $expiresAt !== '' ? new \DateTimeImmutable($expiresAt) : null;
 
             $this->overrideManager->setOverride(
-                tenantId:   $id,
+                tenantId: $id,
                 featureKey: $key,
-                isEnabled:  $isEnabled,
-                config:     $configArray,
-                expiresAt:  $expiresAtDate,
-                reason:     $reason !== '' ? $reason : null,
+                isEnabled: $isEnabled,
+                config: $configArray,
+                expiresAt: $expiresAtDate,
+                reason: $reason !== '' ? $reason : null,
             );
 
             $this->auditLogger->log('tenant.feature_override.update', [
-                'tenant_id'   => $id,
+                'tenant_id' => $id,
                 'tenant_name' => (string) ($tenant['name'] ?? ''),
                 'feature_key' => $key,
-                'is_enabled'  => $isEnabled,
-                'expires_at'  => $expiresAtDate?->format('Y-m-d H:i:s'),
+                'is_enabled' => $isEnabled,
+                'expires_at' => $expiresAtDate?->format('Y-m-d H:i:s'),
             ]);
 
             $this->addFlash('success', sprintf('Feature override for "%s" updated successfully.', $key));
@@ -274,7 +273,7 @@ final class TenantFeatureOverrideController extends AbstractController
             $this->overrideManager->removeOverride($id, $key);
 
             $this->auditLogger->log('tenant.feature_override.delete', [
-                'tenant_id'   => $id,
+                'tenant_id' => $id,
                 'tenant_name' => (string) ($tenant['name'] ?? ''),
                 'feature_key' => $key,
             ]);

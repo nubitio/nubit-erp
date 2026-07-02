@@ -7,5 +7,5 @@ namespace App\Catalog\Enum;
 enum ExchangeRateSource: string
 {
     case BCRP_AUTO = 'BCRP_AUTO';
-    case MANUAL    = 'MANUAL';
+    case MANUAL = 'MANUAL';
 }

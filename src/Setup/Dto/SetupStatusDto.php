@@ -11,6 +11,5 @@ readonly class SetupStatusDto
         public int $userCount,
         public int $companyCount,
         public int $branchCount,
-    ) {
-    }
+    ) {}
 }

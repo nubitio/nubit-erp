@@ -24,7 +24,7 @@ class TaxDocumentEvent
         name: 'tax_document_id',
         referencedColumnName: 'tax_document_id',
         nullable: false,
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
     )]
     private TaxDocument $taxDocument;
 

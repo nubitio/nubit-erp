@@ -19,13 +19,9 @@ use App\Settings\State\RoleMenuProvider;
             output: RoleMenuDto::class,
             provider: RoleMenuProvider::class,
         ),
-        new Post(
-            uriTemplate: '/role-menu',
-            input: RoleMenuResource::class,
-            processor: RoleMenuProcessor::class,
-        ),
+        new Post(uriTemplate: '/role-menu', input: RoleMenuResource::class, processor: RoleMenuProcessor::class),
     ],
-    paginationEnabled: false
+    paginationEnabled: false,
 )]
 class RoleMenuResource
 {
@@ -35,6 +31,5 @@ class RoleMenuResource
          * @var int[]
          */
         public array $permissions,
-    ) {
-    }
+    ) {}
 }

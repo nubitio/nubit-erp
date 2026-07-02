@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Contacts\Entity;
 
-use App\Inventory\Entity\PriceList;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Validator as AppAssert;
+use App\Inventory\Entity\PriceList;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'cliente')]
-#[ApiResource(
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
 class Customer
 {

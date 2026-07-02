@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace App\CashRegister\Entity;
 
-use RuntimeException;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
+use RuntimeException;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashMovementCategoryRepository::class)]
 #[ORM\Table(name: 'cash_movement_category')]
 #[ORM\UniqueConstraint(columns: ['code'])]
-#[ApiResource(
-    exceptionToStatus: [
-        RuntimeException::class => 400,
-    ],
-    mercure: true,
-)]
+#[ApiResource(exceptionToStatus: [
+    RuntimeException::class => 400,
+], mercure: true)]
 #[ORM\HasLifecycleCallbacks]
 class CashMovementCategory
 {

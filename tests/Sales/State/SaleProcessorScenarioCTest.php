@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\SaleProcessor;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -35,10 +35,7 @@ final class SaleProcessorScenarioCTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         // No legacy shift, so 3 queries: register+issuedAt, branch+issuedAt, latest — all return false
-        $connection
-            ->expects($this->exactly(3))
-            ->method('fetchAssociative')
-            ->willReturn(false);
+        $connection->expects($this->exactly(3))->method('fetchAssociative')->willReturn(false);
 
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-abc', cashRegisterId: 1, issuedAt: '2026-03-01 10:00:00');
@@ -57,10 +54,7 @@ final class SaleProcessorScenarioCTest extends TestCase
     public function testScenarioAResolverThrowsWithNoSession(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection
-            ->expects($this->exactly(3))
-            ->method('fetchAssociative')
-            ->willReturn(false);
+        $connection->expects($this->exactly(3))->method('fetchAssociative')->willReturn(false);
 
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-abc', cashRegisterId: 1, issuedAt: '2026-03-01 10:00:00');
@@ -85,13 +79,13 @@ final class SaleProcessorScenarioCTest extends TestCase
             ->method('fetchAssociative')
             ->willReturnOnConsecutiveCalls(
                 false, // register+issuedAt → no match
-                [     // branch+issuedAt → found (resolver short-circuits here, latest not called)
+                [ // branch+issuedAt → found (resolver short-circuits here, latest not called)
                     'id' => 42,
                     'cash_register_id' => 1,
                     'branch_id' => 'branch-abc',
                     'opened_at' => '2026-03-01 08:00:00',
                     'closed_at' => null,
-                ]
+                ],
             );
 
         $resolver = new CashSessionResolver($connection);
@@ -121,21 +115,21 @@ final class SaleProcessorScenarioCTest extends TestCase
         $this->assertStringContainsString(
             'tryResolveForSale(',
             $source,
-            'SaleProcessor must call CashSessionResolver::tryResolveForSale() for the non-required path'
+            'SaleProcessor must call CashSessionResolver::tryResolveForSale() for the non-required path',
         );
 
         // The call must be inside a ternary/conditional guarded by $requireOpenSession
         $this->assertStringContainsString(
             '$requireOpenSession',
             $source,
-            'SaleProcessor must reference $requireOpenSession to select the resolver method'
+            'SaleProcessor must reference $requireOpenSession to select the resolver method',
         );
 
         // Must NOT call resolveForSale unconditionally (both paths must be present)
         $this->assertStringContainsString(
             'resolveForSale(',
             $source,
-            'SaleProcessor must still call CashSessionResolver::resolveForSale() for the required path'
+            'SaleProcessor must still call CashSessionResolver::resolveForSale() for the required path',
         );
     }
 
@@ -157,16 +151,13 @@ final class SaleProcessorScenarioCTest extends TestCase
             }
         }
 
-        $this->assertNotNull(
-            $cashSessionIdParam,
-            'SalesWriteGateway::write() must have a $cashSessionId parameter'
-        );
+        $this->assertNotNull($cashSessionIdParam, 'SalesWriteGateway::write() must have a $cashSessionId parameter');
 
         $type = $cashSessionIdParam->getType();
         $this->assertInstanceOf(\ReflectionNamedType::class, $type);
         $this->assertTrue(
             $type->allowsNull(),
-            'SalesWriteGateway::write()::$cashSessionId must be nullable (?int) to support Scenario C'
+            'SalesWriteGateway::write()::$cashSessionId must be nullable (?int) to support Scenario C',
         );
     }
 

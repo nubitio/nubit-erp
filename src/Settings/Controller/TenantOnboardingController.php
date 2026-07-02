@@ -34,8 +34,7 @@ final class TenantOnboardingController extends AbstractController
         private readonly VoucherSeriesRepository $voucherSeriesRepository,
         private readonly VoucherTypeRepository $voucherTypeRepository,
         private readonly EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     #[Route('/snapshot', name: 'snapshot', methods: ['GET'])]
     public function snapshot(): JsonResponse
@@ -115,9 +114,7 @@ final class TenantOnboardingController extends AbstractController
             $payload = $request->toArray();
             $branch = $this->requireBranch();
             $warehouse = $this->defaultWarehouse();
-            $warehouse
-                ->setName($this->requiredString($payload, 'name'))
-                ->setBranch($branch);
+            $warehouse->setName($this->requiredString($payload, 'name'))->setBranch($branch);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
@@ -203,10 +200,7 @@ final class TenantOnboardingController extends AbstractController
             'voucherType' => $voucherType,
         ]);
         $record = $existing ?? new VoucherSeries();
-        $record
-            ->setBranch($branch)
-            ->setVoucherType($voucherType)
-            ->setSeries($series);
+        $record->setBranch($branch)->setVoucherType($voucherType)->setSeries($series);
 
         $this->entityManager->persist($record);
     }
@@ -217,9 +211,15 @@ final class TenantOnboardingController extends AbstractController
     private function buildSnapshot(): array
     {
         return [
-            'company' => ($company = $this->companyRepository->findOneBy([])) === null ? null : $this->serializeCompany($company),
-            'branch' => ($branch = $this->branchRepository->findOneBy([], ['name' => 'ASC'])) === null ? null : $this->serializeBranch($branch),
-            'warehouse' => ($warehouse = $this->warehouseRepository->findOneBy([], ['name' => 'ASC'])) === null ? null : $this->serializeWarehouse($warehouse),
+            'company' => ($company = $this->companyRepository->findOneBy([])) === null
+                ? null
+                : $this->serializeCompany($company),
+            'branch' => ($branch = $this->branchRepository->findOneBy([], ['name' => 'ASC'])) === null
+                ? null
+                : $this->serializeBranch($branch),
+            'warehouse' => ($warehouse = $this->warehouseRepository->findOneBy([], ['name' => 'ASC'])) === null
+                ? null
+                : $this->serializeWarehouse($warehouse),
         ];
     }
 

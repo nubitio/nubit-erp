@@ -6,8 +6,8 @@ namespace App\Identity\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Security\Security;
 use App\Identity\Entity\UserNotification;
+use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -27,15 +27,18 @@ final readonly class UserNotificationReadProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
-    ) {
-    }
+    ) {}
 
     /**
      * @param UserNotification $data
      */
     #[Override]
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): UserNotification
-    {
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = [],
+    ): UserNotification {
         $user = $this->security->connectedUser();
 
         if ($user === null) {

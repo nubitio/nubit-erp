@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Inventory\State;
 
-use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Nubit\Platform\Http\ApiResponse;
 use App\Inventory\Dto\PricesDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Nubit\Platform\Http\ApiResponse;
+use Override;
 
 /**
  * @implements ProcessorInterface<mixed, mixed>
@@ -19,8 +19,7 @@ readonly class PriceListProcessor implements ProcessorInterface
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -37,37 +36,28 @@ readonly class PriceListProcessor implements ProcessorInterface
         array $context = [],
     ): ApiResponse {
         $sql = <<<SQL
-INSERT INTO price_list_detail (product_id, price_list_id, price)
-VALUES (:productId, :priceListId, :price)
-ON DUPLICATE KEY UPDATE price = :price
-SQL;
+            INSERT INTO price_list_detail (product_id, price_list_id, price)
+            VALUES (:productId, :priceListId, :price)
+            ON DUPLICATE KEY UPDATE price = :price
+            SQL;
 
         $this->connection->beginTransaction();
         try {
             foreach ($data->prices as $price) {
-                $this->connection->executeStatement(
-                    $sql,
-                    [
-                        'productId' => $price->productId,
-                        'priceListId' => $data->priceListId,
-                        'price' => $price->price,
-                    ]
-                );
+                $this->connection->executeStatement($sql, [
+                    'productId' => $price->productId,
+                    'priceListId' => $data->priceListId,
+                    'price' => $price->price,
+                ]);
             }
 
             $this->connection->commit();
 
-            return new ApiResponse(
-                success: true,
-                message: 'Precios actualizados correctamente'
-            );
+            return new ApiResponse(success: true, message: 'Precios actualizados correctamente');
         } catch (Exception) {
             $this->connection->rollBack();
 
-            return new ApiResponse(
-                success: false,
-                message: 'Error al actualizar los precios'
-            );
+            return new ApiResponse(success: false, message: 'Error al actualizar los precios');
         }
     }
 }

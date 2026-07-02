@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Service;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Filesystem\FileManager;
-use App\Efact\Service\CompanyContext;
+use App\Billing\Entity\TaxDocument;
+use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Billing\Service\CreditNoteService;
 use App\Billing\Sunat\Domain\NoteConsultUseCase;
 use App\Billing\Sunat\Domain\NoteSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
-use App\Billing\Service\CreditNoteService;
-use App\Billing\Entity\TaxDocument;
-use App\Billing\Repository\TaxDocumentEventRepository;
+use App\Efact\Service\CompanyContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\BillResult;
 use Greenter\Model\Response\CdrResponse;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemOperator;
+use Nubit\Platform\Filesystem\FileManager;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -75,12 +75,12 @@ final class CreditNoteServiceLoggingTest extends TestCase
     private function makeTaxDocumentEventRepository(): TaxDocumentEventRepository
     {
         /** @var TaxDocumentEventRepository $repo */
-        $repo = (new \ReflectionClass(TaxDocumentEventRepository::class))->newInstanceWithoutConstructor();
+        $repo = new \ReflectionClass(TaxDocumentEventRepository::class)->newInstanceWithoutConstructor();
 
         $mockRegistry = $this->createStub(ManagerRegistry::class);
         $mockRegistry->method('getManager')->willReturn($this->createStub(EntityManagerInterface::class));
 
-        $registryProp = (new \ReflectionClass(TaxDocumentEventRepository::class))->getProperty('registry');
+        $registryProp = new \ReflectionClass(TaxDocumentEventRepository::class)->getProperty('registry');
         $registryProp->setValue($repo, $mockRegistry);
 
         return $repo;
@@ -130,23 +130,22 @@ final class CreditNoteServiceLoggingTest extends TestCase
 
         $this->companyContext->method('getId')->willReturn('tenant-xyz');
 
-        $this->noteSendUseCase->method('__invoke')
-            ->willReturn($this->makeSuccessResponseWithoutCdrZip());
+        $this->noteSendUseCase->method('__invoke')->willReturn($this->makeSuccessResponseWithoutCdrZip());
 
         $cause = new \RuntimeException('SUNAT consult timeout');
         $this->noteConsultUseCase->method('__invoke')->willThrowException($cause);
 
         // Assert: logger->error() is called exactly once with the right event name and context keys
-        $this->logger->expects($this->once())
+        $this->logger
+            ->expects($this->once())
             ->method('error')
-            ->with(
-                'credit_note.send.failed',
-                $this->callback(static function (array $context): bool {
-                    return array_key_exists('exception', $context)
-                        && array_key_exists('tenant_id', $context)
-                        && array_key_exists('tax_document_id', $context);
-                })
-            );
+            ->with('credit_note.send.failed', $this->callback(static function (array $context): bool {
+                return (
+                    array_key_exists('exception', $context)
+                    && array_key_exists('tenant_id', $context)
+                    && array_key_exists('tax_document_id', $context)
+                );
+            }));
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('SUNAT consult timeout');
@@ -159,19 +158,20 @@ final class CreditNoteServiceLoggingTest extends TestCase
         $creditNote = $this->createMock(TaxDocument::class);
         $creditNote->method('getId')->willReturn('note-1');
 
-        $cdrResponse = (new CdrResponse())
+        $cdrResponse = new CdrResponse()
             ->setCode('3462')
             ->setDescription('La tasa del IGV debe corresponder con una tasa vigente.');
-        $consultResult = (new StatusCdrResult())
+        $consultResult = new StatusCdrResult()
             ->setSuccess(true)
             ->setCdrResponse($cdrResponse);
 
         $this->noteConsultUseCase->method('__invoke')->willReturn($consultResult);
 
         $creditNote->expects(self::once())->method('setSunatStatus')->with('3462');
-        $creditNote->expects(self::once())->method('setSunatMessage')->with(
-            'La tasa del IGV debe corresponder con una tasa vigente.'
-        );
+        $creditNote
+            ->expects(self::once())
+            ->method('setSunatMessage')
+            ->with('La tasa del IGV debe corresponder con una tasa vigente.');
         $creditNote->expects(self::once())->method('setUpdatedAt');
 
         self::assertSame($consultResult, $this->makeService()->consultCdr($creditNote));
@@ -189,23 +189,21 @@ final class CreditNoteServiceLoggingTest extends TestCase
         // CompanyContext returns empty string — simulates missing tenant context
         $this->companyContext->method('getId')->willReturn('');
 
-        $this->noteSendUseCase->method('__invoke')
-            ->willReturn($this->makeSuccessResponseWithoutCdrZip());
+        $this->noteSendUseCase->method('__invoke')->willReturn($this->makeSuccessResponseWithoutCdrZip());
 
-        $this->noteConsultUseCase->method('__invoke')
-            ->willThrowException(new \RuntimeException('network error'));
+        $this->noteConsultUseCase->method('__invoke')->willThrowException(new \RuntimeException('network error'));
 
         $capturedContext = null;
-        $this->logger->expects($this->once())
+        $this->logger
+            ->expects($this->once())
             ->method('error')
-            ->with(
-                'credit_note.send.failed',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
+            ->with('credit_note.send.failed', $this->callback(static function (array $context) use (
+                &$capturedContext,
+            ): bool {
+                $capturedContext = $context;
 
-                    return true;
-                })
-            );
+                return true;
+            }));
 
         try {
             $this->makeService()->sendToSunat($creditNote);
@@ -217,7 +215,7 @@ final class CreditNoteServiceLoggingTest extends TestCase
         $this->assertSame(
             'unknown',
             $capturedContext['tenant_id'],
-            'tenant_id must fall back to "unknown" when CompanyContext returns empty string'
+            'tenant_id must fall back to "unknown" when CompanyContext returns empty string',
         );
     }
 
@@ -231,23 +229,22 @@ final class CreditNoteServiceLoggingTest extends TestCase
 
         $this->companyContext->method('getId')->willReturn('tenant-abc');
 
-        $this->noteSendUseCase->method('__invoke')
-            ->willReturn($this->makeSuccessResponseWithoutCdrZip());
+        $this->noteSendUseCase->method('__invoke')->willReturn($this->makeSuccessResponseWithoutCdrZip());
 
         $cause = new \RuntimeException('CDR fetch failed: SSL error');
         $this->noteConsultUseCase->method('__invoke')->willThrowException($cause);
 
         $capturedContext = null;
-        $this->logger->expects($this->once())
+        $this->logger
+            ->expects($this->once())
             ->method('error')
-            ->with(
-                'credit_note.send.failed',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
+            ->with('credit_note.send.failed', $this->callback(static function (array $context) use (
+                &$capturedContext,
+            ): bool {
+                $capturedContext = $context;
 
-                    return true;
-                })
-            );
+                return true;
+            }));
 
         try {
             $this->makeService()->sendToSunat($creditNote);
@@ -271,8 +268,7 @@ final class CreditNoteServiceLoggingTest extends TestCase
 
         $this->companyContext->method('getId')->willReturn('tenant-rethrow');
 
-        $this->noteSendUseCase->method('__invoke')
-            ->willReturn($this->makeSuccessResponseWithoutCdrZip());
+        $this->noteSendUseCase->method('__invoke')->willReturn($this->makeSuccessResponseWithoutCdrZip());
 
         $original = new \LogicException('original exception');
         $this->noteConsultUseCase->method('__invoke')->willThrowException($original);

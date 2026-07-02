@@ -66,7 +66,7 @@ final readonly class PlanFeatureRepository implements PlanFeatureRepositoryInter
      */
     public function upsert(string $planName, string $featureKey, bool $isEnabled, ?array $config): void
     {
-        $now        = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
         $configJson = $config !== null ? json_encode($config, JSON_THROW_ON_ERROR) : null;
 
         $this->cp->executeStatement(
@@ -78,7 +78,14 @@ final readonly class PlanFeatureRepository implements PlanFeatureRepositoryInter
                  config_json = VALUES(config_json),
                  updated_at  = VALUES(updated_at)',
             [$planName, $featureKey, $isEnabled ? 1 : 0, $configJson, $now, $now],
-            [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER, ParameterType::STRING, ParameterType::STRING, ParameterType::STRING],
+            [
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::INTEGER,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+            ],
         );
     }
 

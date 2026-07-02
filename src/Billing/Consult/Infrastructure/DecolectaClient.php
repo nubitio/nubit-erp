@@ -40,8 +40,7 @@ final class DecolectaClient
         private readonly LoggerInterface $logger,
         /** Injected from %env(DECOLECTA_TOKEN)% — null/empty string means "not configured". */
         private readonly ?string $decolectaToken,
-    ) {
-    }
+    ) {}
 
     public function isConfigured(): bool
     {
@@ -65,10 +64,10 @@ final class DecolectaClient
 
         if ('' === $fullName) {
             // Build from parts as fallback
-            $firstName  = trim((string) ($data['first_name'] ?? ''));
-            $firstLast  = trim((string) ($data['first_last_name'] ?? ''));
+            $firstName = trim((string) ($data['first_name'] ?? ''));
+            $firstLast = trim((string) ($data['first_last_name'] ?? ''));
             $secondLast = trim((string) ($data['second_last_name'] ?? ''));
-            $fullName   = implode(' ', array_filter([$firstLast, $secondLast, $firstName]));
+            $fullName = implode(' ', array_filter([$firstLast, $secondLast, $firstName]));
         }
 
         if ('' === $fullName) {
@@ -78,7 +77,7 @@ final class DecolectaClient
         return new DocumentInfo(
             id: (string) ($data['document_number'] ?? $dni),
             name: $fullName,
-            address: '',    // RENIEC does not expose address
+            address: '', // RENIEC does not expose address
             active: true,
         );
     }
@@ -101,9 +100,9 @@ final class DecolectaClient
             throw LookupException::notFound('RUC', $ruc);
         }
 
-        $estado    = strtoupper(trim((string) ($data['estado'] ?? 'ACTIVO')));
+        $estado = strtoupper(trim((string) ($data['estado'] ?? 'ACTIVO')));
         $condicion = strtoupper(trim((string) ($data['condicion'] ?? 'HABIDO')));
-        $active    = str_contains($estado, 'ACTIVO') && str_contains($condicion, 'HABIDO');
+        $active = str_contains($estado, 'ACTIVO') && str_contains($condicion, 'HABIDO');
 
         return new DocumentInfo(
             id: (string) ($data['numero_documento'] ?? $ruc),
@@ -129,10 +128,10 @@ final class DecolectaClient
             $response = $this->httpClient->request('GET', self::BASE_URL . $path, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . ($this->decolectaToken ?? ''),
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
                 ],
-                'query'   => $query,
+                'query' => $query,
                 'timeout' => 10,
             ]);
 
@@ -152,7 +151,8 @@ final class DecolectaClient
 
             if ($status < 200 || $status >= 300) {
                 $this->logger->warning('DecolectaClient: respuesta inesperada', [
-                    'path' => $path, 'status' => $status,
+                    'path' => $path,
+                    'status' => $status,
                 ]);
                 throw LookupException::notFound($docType, $id);
             }
@@ -165,7 +165,8 @@ final class DecolectaClient
             throw $e;
         } catch (\Throwable $e) {
             $this->logger->error('DecolectaClient: error de red', [
-                'path' => $path, 'error' => $e->getMessage(),
+                'path' => $path,
+                'error' => $e->getMessage(),
             ]);
             throw LookupException::networkError($docType, $id, $e);
         }

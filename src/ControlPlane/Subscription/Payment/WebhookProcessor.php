@@ -38,8 +38,7 @@ final readonly class WebhookProcessor
         private readonly MessageBusInterface $messageBus,
         private readonly LoggerInterface $logger,
         private readonly SecretCipher $secretCipher,
-    ) {
-    }
+    ) {}
 
     public function process(PaymentEvent $event): void
     {
@@ -273,7 +272,7 @@ final readonly class WebhookProcessor
         $conn->executeStatement(
             'UPDATE tenant_provisions SET admin_password = NULL WHERE id = ?',
             [(int) $provision['id']],
-            [ParameterType::INTEGER]
+            [ParameterType::INTEGER],
         );
     }
 

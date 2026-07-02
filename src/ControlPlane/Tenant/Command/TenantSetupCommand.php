@@ -14,10 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:setup',
-    description: 'Run initial setup (admin/company/branch) for a tenant.',
-)]
+#[AsCommand(name: 'app:tenant:setup', description: 'Run initial setup (admin/company/branch) for a tenant.')]
 class TenantSetupCommand extends PerTenantCommand
 {
     public function __construct(
@@ -60,51 +57,64 @@ class TenantSetupCommand extends PerTenantCommand
 
     private function buildSetupInput(SymfonyStyle $io, InputInterface $input): InitialTenantSetupRequest
     {
-        $adminUsername = (string) ($input->getOption('admin-user') ?: ($input->isInteractive()
-            ? $io->ask('Admin username', 'admin')
-            : 'admin'));
+        $adminUsername = (string) (
+            $input->getOption('admin-user') ?: ($input->isInteractive() ? $io->ask('Admin username', 'admin') : 'admin')
+        );
 
-        $adminPassword = (string) ($input->getOption('admin-pass') ?: ($input->isInteractive()
-            ? $io->askHidden('Admin password (hidden)', static function ($value): string {
-                if (trim((string) $value) === '') {
-                    return 'Admin.3000';
-                }
+        $adminPassword = (string) (
+            $input->getOption('admin-pass')
+            ?: (
+                $input->isInteractive()
+                    ? $io->askHidden('Admin password (hidden)', static function ($value): string {
+                        if (trim((string) $value) === '') {
+                            return 'Admin.3000';
+                        }
 
-                return (string) $value;
-            })
-            : 'Admin.3000'));
+                        return (string) $value;
+                    })
+                    : 'Admin.3000'
+            )
+        );
 
-        $companyRuc = (string) ($input->getOption('company-ruc') ?: ($input->isInteractive()
-            ? $io->ask('Company RUC (11 digits)', '20123456789')
-            : '20123456789'));
+        $companyRuc = (string) (
+            $input->getOption('company-ruc')
+            ?: ($input->isInteractive() ? $io->ask('Company RUC (11 digits)', '20123456789') : '20123456789')
+        );
 
-        $companyBusinessName = (string) ($input->getOption('company-name') ?: ($input->isInteractive()
-            ? $io->ask('Company business name', 'Empresa Demo')
-            : 'Empresa Demo'));
+        $companyBusinessName = (string) (
+            $input->getOption('company-name')
+            ?: ($input->isInteractive() ? $io->ask('Company business name', 'Empresa Demo') : 'Empresa Demo')
+        );
 
-        $companyTradeName = (string) ($input->getOption('company-trade') ?: ($input->isInteractive()
-            ? $io->ask('Company trade name', 'Demo')
-            : 'Demo'));
+        $companyTradeName = (string) (
+            $input->getOption('company-trade')
+            ?: ($input->isInteractive() ? $io->ask('Company trade name', 'Demo') : 'Demo')
+        );
 
-        $companyFiscalAddress = (string) ($input->getOption('company-address') ?: ($input->isInteractive()
-            ? $io->ask('Company fiscal address', 'Av. Principal 123')
-            : 'Av. Principal 123'));
+        $companyFiscalAddress = (string) (
+            $input->getOption('company-address')
+            ?: ($input->isInteractive() ? $io->ask('Company fiscal address', 'Av. Principal 123') : 'Av. Principal 123')
+        );
 
-        $companyPhone = (string) ($input->getOption('company-phone') ?: ($input->isInteractive()
-            ? $io->ask('Company phone', '999999999')
-            : '999999999'));
+        $companyPhone = (string) (
+            $input->getOption('company-phone')
+            ?: ($input->isInteractive() ? $io->ask('Company phone', '999999999') : '999999999')
+        );
 
-        $branchName = (string) ($input->getOption('branch-name') ?: ($input->isInteractive()
-            ? $io->ask('Branch name', 'Principal')
-            : 'Principal'));
+        $branchName = (string) (
+            $input->getOption('branch-name')
+            ?: ($input->isInteractive() ? $io->ask('Branch name', 'Principal') : 'Principal')
+        );
 
-        $branchAddress = (string) ($input->getOption('branch-address') ?: ($input->isInteractive()
-            ? $io->ask('Branch address', 'Av. Principal 123')
-            : 'Av. Principal 123'));
+        $branchAddress = (string) (
+            $input->getOption('branch-address')
+            ?: ($input->isInteractive() ? $io->ask('Branch address', 'Av. Principal 123') : 'Av. Principal 123')
+        );
 
-        $branchPhone = (string) ($input->getOption('branch-phone') ?: ($input->isInteractive()
-            ? $io->ask('Branch phone', '999999999')
-            : '999999999'));
+        $branchPhone = (string) (
+            $input->getOption('branch-phone')
+            ?: ($input->isInteractive() ? $io->ask('Branch phone', '999999999') : '999999999')
+        );
 
         return new InitialTenantSetupRequest(
             $adminUsername,

@@ -16,6 +16,5 @@ final class InvoiceLineAmounts
         public string $chargesAmount,
         public string $taxAmount,
         public string $totalAmount,
-    ) {
-    }
+    ) {}
 }

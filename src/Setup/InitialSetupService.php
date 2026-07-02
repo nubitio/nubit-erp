@@ -4,49 +4,49 @@ declare(strict_types=1);
 
 namespace App\Setup;
 
-use Throwable;
-use RuntimeException;
-use DateTimeImmutable;
-use App\Settings\Service\TenantSettingsService;
-use App\Settings\Service\SunatStateService;
-use App\Setup\Dto\InitialSetupInput;
-use App\Setup\Dto\SetupStatusDto;
-use App\Organization\Entity\Branch;
 use App\CashRegister\Entity\CashMovementCategory;
+use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Entity\Category;
-use App\Organization\Entity\Company;
-use App\Contacts\Entity\Customer;
-use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\PaymentMethod;
-use App\Identity\Entity\Role;
+use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Identity\Entity\User;
 use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Entity\VoucherType;
-use App\Inventory\Entity\Warehouse;
-use App\Catalog\Entity\SunatCatalog;
-use App\CashRegister\Enum\CashMovementType;
-use App\Organization\Repository\BranchRepository;
-use App\CashRegister\Repository\CashMovementCategoryRepository;
 use App\Catalog\Repository\CategoryRepository;
-use App\Organization\Repository\CompanyRepository;
-use App\Contacts\Repository\CustomerRepository;
-use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
-use App\Identity\Repository\RoleRepository;
+use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Identity\Repository\UserRepository;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
-use App\Catalog\Repository\SunatCatalogRepository;
-use App\Settings\Service\MenuSeedService;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
+use App\Identity\Entity\Role;
+use App\Identity\Entity\User;
+use App\Identity\Repository\RoleRepository;
+use App\Identity\Repository\UserRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Entity\Warehouse;
+use App\Inventory\Repository\LogisticOperationRepository;
+use App\Organization\Entity\Branch;
+use App\Organization\Entity\Company;
+use App\Organization\Repository\BranchRepository;
+use App\Organization\Repository\CompanyRepository;
 use App\Reporting\Service\TimeDimensionSeeder;
+use App\Settings\Service\MenuSeedService;
+use App\Settings\Service\SunatStateService;
+use App\Settings\Service\TenantSettingsService;
 use App\Settings\Service\UbigeoImportService;
+use App\Setup\Dto\InitialSetupInput;
+use App\Setup\Dto\SetupStatusDto;
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Throwable;
 
 readonly class InitialSetupService
 {
@@ -72,8 +72,7 @@ readonly class InitialSetupService
         private UbigeoImportService $ubigeoImportService,
         private TimeDimensionSeeder $timeDimensionSeeder,
         private MenuSeedService $menuSeedService,
-    ) {
-    }
+    ) {}
 
     public function status(): SetupStatusDto
     {
@@ -163,7 +162,7 @@ readonly class InitialSetupService
             $this->connection->executeStatement(
                 'INSERT INTO rol (rol_id, descripcion)
                 VALUES (?, ?) ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion)',
-                [$id, $name]
+                [$id, $name],
             );
         }
 
@@ -214,7 +213,7 @@ readonly class InitialSetupService
             $this->connection->executeStatement(
                 'INSERT INTO menu_rol (menu_id, role_id)
                 VALUES (?, ?) ON DUPLICATE KEY UPDATE menu_id = VALUES(menu_id), role_id = VALUES(role_id)',
-                [$menuId, $roleId]
+                [$menuId, $roleId],
             );
         }
     }
@@ -228,14 +227,14 @@ readonly class InitialSetupService
 
         // Logistic operations (tipo_id: 1 entrada, 2 salida)
         $operations = [
-            ['Venta', 2],
-            ['Devolución de venta', 1],
-            ['Compra', 1],
-            ['Devolución de compra', 2],
+            ['Venta',                        2],
+            ['Devolución de venta',          1],
+            ['Compra',                       1],
+            ['Devolución de compra',         2],
             ['Ajuste de inventario entrada', 1],
-            ['Ajuste de inventario salida', 2],
-            ['Transferencia entrada', 1],
-            ['Transferencia salida', 2],
+            ['Ajuste de inventario salida',  2],
+            ['Transferencia entrada',        1],
+            ['Transferencia salida',         2],
         ];
         foreach ($operations as [$name, $type]) {
             $this->getOrCreateLogisticOperation($name, $type);
@@ -259,16 +258,16 @@ readonly class InitialSetupService
 
         // Cash movement categories
         $cashMovementCategories = [
-            [CashMovementCategory::CASH_SALE, 'Venta en efectivo', CashMovementType::INCOME],
-            [CashMovementCategory::CREDIT_PAYMENT, 'Cobro de crédito', CashMovementType::INCOME],
-            [CashMovementCategory::CASH_REPLENISHMENT, 'Reposición de caja', CashMovementType::INCOME],
-            [CashMovementCategory::OTHER_INCOME, 'Otros ingresos', CashMovementType::INCOME],
-            [CashMovementCategory::OVERAGE_ADJUSTMENT, 'Ajuste por sobrante', CashMovementType::INCOME],
-            [CashMovementCategory::PETTY_CASH_EXPENSE, 'Gasto de caja chica', CashMovementType::EXPENSE],
-            [CashMovementCategory::CUSTOMER_REFUND, 'Devolución al cliente', CashMovementType::EXPENSE],
-            [CashMovementCategory::MANAGER_WITHDRAWAL, 'Retiro de efectivo', CashMovementType::EXPENSE],
-            [CashMovementCategory::BANK_DEPOSIT, 'Depósito bancario', CashMovementType::EXPENSE],
-            [CashMovementCategory::SHORTAGE_ADJUSTMENT, 'Ajuste por faltante', CashMovementType::EXPENSE],
+            [CashMovementCategory::CASH_SALE,           'Venta en efectivo',     CashMovementType::INCOME],
+            [CashMovementCategory::CREDIT_PAYMENT,      'Cobro de crédito',      CashMovementType::INCOME],
+            [CashMovementCategory::CASH_REPLENISHMENT,  'Reposición de caja',    CashMovementType::INCOME],
+            [CashMovementCategory::OTHER_INCOME,        'Otros ingresos',        CashMovementType::INCOME],
+            [CashMovementCategory::OVERAGE_ADJUSTMENT,  'Ajuste por sobrante',   CashMovementType::INCOME],
+            [CashMovementCategory::PETTY_CASH_EXPENSE,  'Gasto de caja chica',   CashMovementType::EXPENSE],
+            [CashMovementCategory::CUSTOMER_REFUND,     'Devolución al cliente', CashMovementType::EXPENSE],
+            [CashMovementCategory::MANAGER_WITHDRAWAL,  'Retiro de efectivo',    CashMovementType::EXPENSE],
+            [CashMovementCategory::BANK_DEPOSIT,        'Depósito bancario',     CashMovementType::EXPENSE],
+            [CashMovementCategory::SHORTAGE_ADJUSTMENT, 'Ajuste por faltante',   CashMovementType::EXPENSE],
         ];
         foreach ($cashMovementCategories as [$code, $name, $type]) {
             $this->getOrCreateCashMovementCategory($code, $name, $type);
@@ -290,10 +289,7 @@ readonly class InitialSetupService
         $operationTypes = [
             ['0101', 'Venta Interna'],
             ['0200', 'Exportación de bienes'],
-            [
-                '1001',
-                'Operación sujeta al Sistema de Pago de Obligaciones Tributarias con el Gobierno Central',
-            ],
+            ['1001', 'Operación sujeta al Sistema de Pago de Obligaciones Tributarias con el Gobierno Central'],
             ['1004', 'Operación Sujeta a Detracción- Servicios de Transporte Carga'],
         ];
         foreach ($operationTypes as [$code, $name]) {
@@ -449,12 +445,8 @@ readonly class InitialSetupService
         $this->entityManager->flush();
     }
 
-    private function getOrCreateSunatCatalog(
-        int $catalog,
-        string $code,
-        string $name,
-        ?float $percentage = null
-    ): void {
+    private function getOrCreateSunatCatalog(int $catalog, string $code, string $name, ?float $percentage = null): void
+    {
         $existing = $this->sunatCatalogRepository->findOneBy([
             'catalog' => $catalog,
             'code' => $code,
@@ -463,7 +455,7 @@ readonly class InitialSetupService
             return;
         }
 
-        $entry = (new SunatCatalog())
+        $entry = new SunatCatalog()
             ->setCatalog($catalog)
             ->setCode($code)
             ->setDescription($name)
@@ -479,7 +471,7 @@ readonly class InitialSetupService
         string $name,
         int $type,
         float $ratio,
-        bool $reference
+        bool $reference,
     ): void {
         $existing = $this->unitOfMeasureRepository->findOneBy(['code' => $code]);
         if ($existing instanceof UnitOfMeasure) {
@@ -533,12 +525,7 @@ readonly class InitialSetupService
         }
 
         // Incluye cabecera, por eso skipHeader=true.
-        $this->ubigeoImportService->import(
-            filePath: $file,
-            delimiter: ',',
-            skipHeader: true,
-            batchSize: 500,
-        );
+        $this->ubigeoImportService->import(filePath: $file, delimiter: ',', skipHeader: true, batchSize: 500);
     }
 
     private function seedTimeDimension(): void

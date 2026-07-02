@@ -28,8 +28,7 @@ final readonly class ProvisionTenantHandler
         private string $tenantDbPass,
         #[Autowire(env: 'DATABASE_URL')]
         private string $databaseUrl,
-    ) {
-    }
+    ) {}
 
     public function __invoke(ProvisionTenantMessage $message): void
     {
@@ -41,7 +40,7 @@ final readonly class ProvisionTenantHandler
             ]);
             $this->markProvisionFailed(
                 $message->provisionId,
-                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.',
             );
 
             return;
@@ -71,7 +70,7 @@ final readonly class ProvisionTenantHandler
 
             $this->markProvisionFailed(
                 $message->provisionId,
-                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.',
             );
 
             return;
@@ -85,7 +84,7 @@ final readonly class ProvisionTenantHandler
             ]);
             $this->markProvisionFailed(
                 $message->provisionId,
-                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.',
             );
 
             return;
@@ -94,7 +93,7 @@ final readonly class ProvisionTenantHandler
         $this->cp()->executeStatement(
             'UPDATE tenant_provisions SET tenant_id = ?, admin_password = NULL WHERE id = ?',
             [$tenantId, $message->provisionId],
-            [ParameterType::INTEGER, ParameterType::INTEGER]
+            [ParameterType::INTEGER, ParameterType::INTEGER],
         );
 
         $this->subscriptionManager->linkPendingProvisionSubscriptions($message->provisionId, $tenantId);
@@ -104,7 +103,7 @@ final readonly class ProvisionTenantHandler
              VALUES (?, ?, ?, NOW())
              ON DUPLICATE KEY UPDATE role = VALUES(role)',
             [$message->accountId, $tenantId, 'owner'],
-            [ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::STRING]
+            [ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::STRING],
         );
     }
 
@@ -115,7 +114,7 @@ final readonly class ProvisionTenantHandler
              SET status = ?, error_message = ?, admin_password = NULL, completed_at = NOW()
              WHERE id = ?',
             ['failed', mb_substr($error, 0, 65535), $provisionId],
-            [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
+            [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER],
         );
     }
 
@@ -149,10 +148,6 @@ final readonly class ProvisionTenantHandler
 
     private function redactSecrets(string $output): string
     {
-        return (string) preg_replace(
-            '/(--(?:admin-password|password)=)(\S+)/i',
-            '$1[REDACTED]',
-            $output,
-        );
+        return (string) preg_replace('/(--(?:admin-password|password)=)(\S+)/i', '$1[REDACTED]', $output);
     }
 }

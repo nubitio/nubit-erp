@@ -34,8 +34,7 @@ class AuthSelectBranchController extends AbstractController
         private readonly ResponseModeResolver $responseModeResolver,
         private readonly JWTAuthenticator $authenticator,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {

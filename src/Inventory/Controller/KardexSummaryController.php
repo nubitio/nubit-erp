@@ -18,8 +18,7 @@ final class KardexSummaryController extends AbstractController
 {
     public function __construct(
         private readonly KardexSummaryService $summaryService,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

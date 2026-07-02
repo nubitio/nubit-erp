@@ -17,6 +17,5 @@ final readonly class StockMovementRecorded
         public string $sourceType,
         public string $sourceId,
         public \DateTimeImmutable $happenedAt,
-    ) {
-    }
+    ) {}
 }

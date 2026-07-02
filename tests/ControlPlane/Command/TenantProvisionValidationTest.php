@@ -35,9 +35,13 @@ final class TenantProvisionValidationTest extends TestCase
 
     public function testProvisionCommandSqlMatchesControlPlaneSchema(): void
     {
-        $source = (string) file_get_contents(__DIR__ . '/../../../src/ControlPlane/Tenant/Command/TenantProvisionCommand.php');
+        $source = (string) file_get_contents(__DIR__
+        . '/../../../src/ControlPlane/Tenant/Command/TenantProvisionCommand.php');
 
-        self::assertStringContainsString('INSERT INTO tenants (name, connection, status, created_at, updated_at)', $source);
+        self::assertStringContainsString(
+            'INSERT INTO tenants (name, connection, status, created_at, updated_at)',
+            $source,
+        );
         self::assertStringContainsString('[$tenant, $tenant, \'active\']', $source);
         self::assertStringContainsString('INSERT INTO tenant_domains (tenant_id, domain, is_primary)', $source);
         self::assertStringContainsString("status = 'running'", $source);
@@ -53,7 +57,8 @@ final class TenantProvisionValidationTest extends TestCase
     {
         $statements = [];
         $controlPlane = $this->createMock(Connection::class);
-        $controlPlane->expects(self::exactly(2))
+        $controlPlane
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params = []) use (&$statements): int {
                 $statements[] = [$sql, $params];
@@ -71,9 +76,15 @@ final class TenantProvisionValidationTest extends TestCase
 
         self::assertSame(Command::FAILURE, $exitCode, $tester->getDisplay());
         self::assertCount(2, $statements);
-        self::assertSame("UPDATE tenant_provisions SET status = 'running', started_at = NOW() WHERE id = ?", $statements[0][0]);
+        self::assertSame(
+            "UPDATE tenant_provisions SET status = 'running', started_at = NOW() WHERE id = ?",
+            $statements[0][0],
+        );
         self::assertSame([42], $statements[0][1]);
-        self::assertSame("UPDATE tenant_provisions SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?", $statements[1][0]);
+        self::assertSame(
+            "UPDATE tenant_provisions SET status = 'failed', error_message = ?, completed_at = NOW() WHERE id = ?",
+            $statements[1][0],
+        );
         self::assertNotSame('', $statements[1][1][0]);
         self::assertSame(42, $statements[1][1][1]);
     }
@@ -82,11 +93,13 @@ final class TenantProvisionValidationTest extends TestCase
     {
         $statements = [];
         $controlPlane = $this->createMock(Connection::class);
-        $controlPlane->expects(self::once())
+        $controlPlane
+            ->expects(self::once())
             ->method('fetchAssociative')
             ->with('SELECT id, tenant_id FROM tenant_domains WHERE domain = ?', ['acme.example.test'])
             ->willReturn(false);
-        $controlPlane->expects(self::exactly(2))
+        $controlPlane
+            ->expects(self::exactly(2))
             ->method('executeStatement')
             ->willReturnCallback(static function (string $sql, array $params = []) use (&$statements): int {
                 $statements[] = [$sql, $params];
@@ -98,7 +111,10 @@ final class TenantProvisionValidationTest extends TestCase
 
         self::assertSame('UPDATE tenant_domains SET is_primary = 0 WHERE tenant_id = ?', $statements[0][0]);
         self::assertSame([7], $statements[0][1]);
-        self::assertSame('INSERT INTO tenant_domains (tenant_id, domain, is_primary) VALUES (?, ?, 1)', $statements[1][0]);
+        self::assertSame(
+            'INSERT INTO tenant_domains (tenant_id, domain, is_primary) VALUES (?, ?, 1)',
+            $statements[1][0],
+        );
         self::assertSame([7, 'acme.example.test'], $statements[1][1]);
     }
 
@@ -128,7 +144,8 @@ final class TenantProvisionValidationTest extends TestCase
     public function testDomainUniquenessFailureDoesNotCorruptCurrentPrimaryDomain(): void
     {
         $controlPlane = $this->createMock(Connection::class);
-        $controlPlane->expects(self::once())
+        $controlPlane
+            ->expects(self::once())
             ->method('fetchAssociative')
             ->with('SELECT id, tenant_id FROM tenant_domains WHERE domain = ?', ['used.example.test'])
             ->willReturn(['id' => 15, 'tenant_id' => 99]);
@@ -179,10 +196,13 @@ final class TenantProvisionValidationTest extends TestCase
         yield 'unicode' => ['ácme'];
     }
 
-    private function createCommand(Connection $controlPlane, string $provisioningDatabaseUrl = 'unsupported-driver://localhost/provisioning'): TenantProvisionCommand
-    {
+    private function createCommand(
+        Connection $controlPlane,
+        string $provisioningDatabaseUrl = 'unsupported-driver://localhost/provisioning',
+    ): TenantProvisionCommand {
         $connectionRegistry = $this->createMock(ConnectionRegistry::class);
-        $connectionRegistry->expects(self::once())
+        $connectionRegistry
+            ->expects(self::once())
             ->method('getConnection')
             ->with('control_plane')
             ->willReturn($controlPlane);

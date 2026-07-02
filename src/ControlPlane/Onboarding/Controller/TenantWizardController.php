@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Onboarding\Controller;
 
-use App\ControlPlane\Subscription\Payment\BillingCycle;
 use App\ControlPlane\Onboarding\Service\AccountService;
 use App\ControlPlane\Onboarding\Service\OnboardingService;
 use App\ControlPlane\Onboarding\Service\SubdomainValidator;
+use App\ControlPlane\Subscription\Payment\BillingCycle;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -24,8 +24,7 @@ final class TenantWizardController extends AbstractController
         private readonly SubdomainValidator $subdomainValidator,
         private readonly OnboardingService $onboardingService,
         private readonly RateLimiterFactoryInterface $onboardingTenantCreationLimiter,
-    ) {
-    }
+    ) {}
 
     #[Route('/register/new-tenant', name: 'onboarding_wizard', methods: ['GET'])]
     public function wizard(Request $request): Response
@@ -111,12 +110,20 @@ final class TenantWizardController extends AbstractController
                 gateway: $gateway,
                 billingCycle: $billingCycle,
                 adminPassword: $adminPassword,
-                returnUrl: $this->generateUrl('onboarding_payment_return', [
-                    'token' => 'PLACEHOLDER',
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
-                cancelUrl: $this->generateUrl('onboarding_payment_cancel', [
-                    'token' => 'PLACEHOLDER',
-                ], UrlGeneratorInterface::ABSOLUTE_URL),
+                returnUrl: $this->generateUrl(
+                    'onboarding_payment_return',
+                    [
+                        'token' => 'PLACEHOLDER',
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
+                cancelUrl: $this->generateUrl(
+                    'onboarding_payment_cancel',
+                    [
+                        'token' => 'PLACEHOLDER',
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL,
+                ),
             );
 
             // Store token for return

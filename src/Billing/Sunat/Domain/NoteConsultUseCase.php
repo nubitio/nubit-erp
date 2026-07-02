@@ -11,8 +11,7 @@ readonly class NoteConsultUseCase
     public function __construct(
         private NoteCreateUseCase $noteCreateUseCase,
         private NoteRepositoryInterface $noteRepository,
-    ) {
-    }
+    ) {}
 
     public function __invoke(string $taxDocumentId): StatusCdrResult
     {

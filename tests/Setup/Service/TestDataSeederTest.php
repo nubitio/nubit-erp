@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace App\Tests\Setup\Service;
 
 use App\Catalog\Entity\Category;
-use App\Contacts\Entity\Customer;
-use App\Inventory\Entity\LogisticOperation;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
-use App\Contacts\Entity\Supplier;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Inventory\Entity\Warehouse;
 use App\Catalog\Repository\CategoryRepository;
-use App\Contacts\Repository\CustomerRepository;
-use App\Inventory\Repository\LogisticOperationRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\ProductRepository;
-use App\Contacts\Repository\SupplierRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Entity\Supplier;
+use App\Contacts\Repository\CustomerRepository;
+use App\Contacts\Repository\SupplierRepository;
+use App\Inventory\Entity\LogisticOperation;
+use App\Inventory\Entity\Warehouse;
+use App\Inventory\Repository\LogisticOperationRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
@@ -62,10 +62,7 @@ final class TestDataSeederTest extends TestCase
         $categoryRepository = $this->createStub(CategoryRepository::class);
         $categoryRepository->method('findOneBy')->willReturn(null);
 
-        $seeder = $this->newSeeder(
-            entityManager: $entityManager,
-            categoryRepository: $categoryRepository
-        );
+        $seeder = $this->newSeeder(entityManager: $entityManager, categoryRepository: $categoryRepository);
 
         $created = $this->invokePrivate($seeder, 'seedCategories');
         self::assertSame(34, $created);
@@ -80,10 +77,7 @@ final class TestDataSeederTest extends TestCase
         $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
         $unitRepository->method('findOneBy')->willReturn(null);
 
-        $seeder = $this->newSeeder(
-            entityManager: $entityManager,
-            unitOfMeasureRepository: $unitRepository
-        );
+        $seeder = $this->newSeeder(entityManager: $entityManager, unitOfMeasureRepository: $unitRepository);
 
         $created = $this->invokePrivate($seeder, 'seedUnitsOfMeasure');
         self::assertSame(9, $created);
@@ -104,7 +98,7 @@ final class TestDataSeederTest extends TestCase
         $seeder = $this->newSeeder(
             entityManager: $entityManager,
             supplierRepository: $supplierRepository,
-            customerRepository: $customerRepository
+            customerRepository: $customerRepository,
         );
 
         $suppliers = $this->invokePrivate($seeder, 'seedSuppliers', [3, 2]);
@@ -121,9 +115,13 @@ final class TestDataSeederTest extends TestCase
         $entityManager->expects(self::exactly(3))->method('flush');
         $entityManager->expects(self::exactly(3))->method('clear');
 
-        $category = (new Category())->setName('General');
-        $unit = (new UnitOfMeasure())->setName('Unidad')->setCode('NIU')->setType(1)->setRatio('1.00');
-        $warehouse = (new Warehouse())->setName('Main');
+        $category = new Category()->setName('General');
+        $unit = new UnitOfMeasure()
+            ->setName('Unidad')
+            ->setCode('NIU')
+            ->setType(1)
+            ->setRatio('1.00');
+        $warehouse = new Warehouse()->setName('Main');
         $this->setEntityId($category, 'id', 'cat-1');
         $this->setEntityId($unit, 'id', 1);
         $this->setEntityId($warehouse, 'id', 'wh-1');
@@ -158,18 +156,30 @@ final class TestDataSeederTest extends TestCase
         $entityManager->expects(self::exactly(2))->method('flush');
         $entityManager->expects(self::exactly(2))->method('clear');
 
-        $customer = (new Customer())->setRuc('20100000001')->setBusinessName('Cliente');
-        $supplier = (new Supplier())->setRuc('20400000001')->setBusinessName('Proveedor');
-        $paymentMethod = (new PaymentMethod())->setName('Efectivo');
-        $product = (new Product())
+        $customer = new Customer()
+            ->setRuc('20100000001')
+            ->setBusinessName('Cliente');
+        $supplier = new Supplier()
+            ->setRuc('20400000001')
+            ->setBusinessName('Proveedor');
+        $paymentMethod = new PaymentMethod()->setName('Efectivo');
+        $product = new Product()
             ->setCode('P-1')
             ->setType(1)
             ->setName('Producto')
-            ->setCategory((new Category())->setName('General'))
-            ->setUnitOfMeasure((new UnitOfMeasure())->setName('Unidad')->setCode('NIU')->setType(1)->setRatio('1.00'))
+            ->setCategory(new Category()->setName('General'))
+            ->setUnitOfMeasure(
+                new UnitOfMeasure()
+                    ->setName('Unidad')
+                    ->setCode('NIU')
+                    ->setType(1)
+                    ->setRatio('1.00'),
+            )
             ->setSalePrice('10.00');
-        $warehouse = (new Warehouse())->setName('Main');
-        $operation = (new LogisticOperation())->setName('Venta')->setType(2);
+        $warehouse = new Warehouse()->setName('Main');
+        $operation = new LogisticOperation()
+            ->setName('Venta')
+            ->setType(2);
 
         $this->setEntityId($customer, 'id', 1);
         $this->setEntityId($supplier, 'id', 'sup-1');
@@ -202,11 +212,16 @@ final class TestDataSeederTest extends TestCase
             productRepository: $productRepository,
         );
 
-        $created = $this->invokePrivate(
-            $seeder,
-            'seedSales',
-            [1, [$customer], [$product], [$supplier], $warehouse, [$paymentMethod], $operation, 1]
-        );
+        $created = $this->invokePrivate($seeder, 'seedSales', [
+            1,
+            [$customer],
+            [$product],
+            [$supplier],
+            $warehouse,
+            [$paymentMethod],
+            $operation,
+            1,
+        ]);
         self::assertSame(1, $created);
     }
 

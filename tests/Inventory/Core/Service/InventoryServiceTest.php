@@ -29,11 +29,8 @@ final class InventoryServiceTest extends TestCase
         return $product;
     }
 
-    private function makeDraft(
-        string $productId = 'prod-1',
-        string $qty = '-2',
-        int $unitId = 0,
-    ): MovementDraft {
+    private function makeDraft(string $productId = 'prod-1', string $qty = '-2', int $unitId = 0): MovementDraft
+    {
         return new MovementDraft(
             warehouseId: 'wh-1',
             productId: $productId,
@@ -118,9 +115,7 @@ final class InventoryServiceTest extends TestCase
         $conversion->method('toBase')->willReturn('5.000000');
 
         $policy = $this->createMock(StockValidationPolicyInterface::class);
-        $policy->expects(self::once())
-            ->method('validateSale')
-            ->willReturn($expected);
+        $policy->expects(self::once())->method('validateSale')->willReturn($expected);
 
         $service = $this->makeService($conn, $policy, $conversion);
         $result = $service->validateForSale($product, 'wh-1', '5', 1);
@@ -169,9 +164,7 @@ final class InventoryServiceTest extends TestCase
         $conn->method('fetchOne')->willReturn(false);
 
         $unitConversion = $this->createMock(UnitConversionServiceInterface::class);
-        $unitConversion->expects(self::once())->method('toBase')
-            ->with('prod-1', 5, '2')
-            ->willReturn('6.000000');
+        $unitConversion->expects(self::once())->method('toBase')->with('prod-1', 5, '2')->willReturn('6.000000');
 
         $service = $this->makeService($conn, unitConversion: $unitConversion);
         $draft = $this->makeDraft(qty: '-2', unitId: 5);
@@ -199,9 +192,7 @@ final class InventoryServiceTest extends TestCase
         $conn->method('fetchOne')->willReturn(false);
 
         $enricher = $this->createMock(StockMovementEnricherInterface::class);
-        $enricher->expects(self::once())
-            ->method('enrichSaleMovements')
-            ->willReturnArgument(1); // pass-through
+        $enricher->expects(self::once())->method('enrichSaleMovements')->willReturnArgument(1); // pass-through
 
         $service = $this->makeService($conn, enrichers: [$enricher]);
         $service->recordMovement($this->makeDraft());
@@ -212,7 +203,9 @@ final class InventoryServiceTest extends TestCase
     public function testReserveExecutesUpsert(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())->method('executeStatement')
+        $conn
+            ->expects(self::once())
+            ->method('executeStatement')
             ->with(self::stringContains('qty_reserved'), self::arrayHasKey('qty'));
 
         $service = $this->makeService($conn);
@@ -222,7 +215,9 @@ final class InventoryServiceTest extends TestCase
     public function testReleaseExecutesUpdate(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())->method('executeStatement')
+        $conn
+            ->expects(self::once())
+            ->method('executeStatement')
             ->with(self::stringContains('GREATEST'), self::arrayHasKey('qty'));
 
         $service = $this->makeService($conn);

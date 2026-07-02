@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -31,12 +31,7 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
     {
         parent::configure();
 
-        $this->addOption(
-            'dry-run',
-            null,
-            InputOption::VALUE_NONE,
-            'Only report rows that would be updated.'
-        );
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only report rows that would be updated.');
     }
 
     #[Override]
@@ -45,9 +40,7 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
 
-        $count = (int) $this->connection->fetchOne(
-            "SELECT COUNT(*) FROM menu WHERE route = 'inbound'"
-        );
+        $count = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM menu WHERE route = 'inbound'");
 
         if ($dryRun) {
             $io->note(sprintf('Rows to update: %d', $count));
@@ -61,14 +54,12 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
             return Command::SUCCESS;
         }
 
-        $updated = $this->connection->executeStatement(
-            <<<'SQL'
-UPDATE menu
-SET route = 'purchases',
-    key_name = CASE WHEN key_name = 'Ingresos' THEN 'Compras' ELSE key_name END
-WHERE route = 'inbound'
-SQL
-        );
+        $updated = $this->connection->executeStatement(<<<'SQL'
+            UPDATE menu
+            SET route = 'purchases',
+                key_name = CASE WHEN key_name = 'Ingresos' THEN 'Compras' ELSE key_name END
+            WHERE route = 'inbound'
+            SQL);
 
         $io->success(sprintf('Menu migration completed (updated=%d).', $updated));
 

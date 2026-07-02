@@ -11,8 +11,7 @@ final readonly class TenantProvisioningService
 {
     public function __construct(
         private ProvisionCommandRunnerInterface $commandRunner,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{successful:bool,exit_code:int,output:string}

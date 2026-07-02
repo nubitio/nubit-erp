@@ -13,10 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:health',
-    description: 'Check the health of tenant databases.',
-)]
+#[AsCommand(name: 'app:tenant:health', description: 'Check the health of tenant databases.')]
 class TenantHealthCheckCommand extends Command
 {
     public function __construct(
@@ -28,11 +25,7 @@ class TenantHealthCheckCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument(
-            'tenant',
-            InputArgument::OPTIONAL,
-            'Specific tenant to check (checks all if omitted)',
-        );
+        $this->addArgument('tenant', InputArgument::OPTIONAL, 'Specific tenant to check (checks all if omitted)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

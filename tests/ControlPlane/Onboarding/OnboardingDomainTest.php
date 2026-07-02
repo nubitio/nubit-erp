@@ -39,9 +39,7 @@ final class OnboardingDomainTest extends TestCase
         $expected = ['successful' => true, 'exit_code' => 0, 'output' => 'Done'];
 
         $runner = $this->createMock(ProvisionCommandRunnerInterface::class);
-        $runner->expects(self::once())
-            ->method('run')
-            ->willReturn($expected);
+        $runner->expects(self::once())->method('run')->willReturn($expected);
 
         $service = new TenantProvisioningService($runner);
         $result = $service->run(

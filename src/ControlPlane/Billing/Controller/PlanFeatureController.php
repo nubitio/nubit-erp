@@ -38,8 +38,7 @@ final class PlanFeatureController extends AbstractController
         private readonly PlanFeatureManager $planFeatureManager,
         private readonly PlanFeatureRepositoryInterface $planFeatureRepository,
         private readonly AuditLogger $auditLogger,
-    ) {
-    }
+    ) {}
 
     // -------------------------------------------------------------------------
     // Matrix view
@@ -55,16 +54,18 @@ final class PlanFeatureController extends AbstractController
         foreach (PlanFeatureManager::FEATURE_KEYS as $featureKey) {
             $matrix[$featureKey] = [];
             foreach ($plans as $plan) {
-                $matrix[$featureKey][$plan['name']] = $this->planFeatureRepository
-                    ->findOneByPlanAndKey($plan['name'], $featureKey);
+                $matrix[$featureKey][$plan['name']] = $this->planFeatureRepository->findOneByPlanAndKey(
+                    $plan['name'],
+                    $featureKey,
+                );
             }
         }
 
         return $this->render('admin/plan-features/index.html.twig', [
-            'plans'               => $plans,
-            'feature_keys'        => PlanFeatureManager::FEATURE_KEYS,
+            'plans' => $plans,
+            'feature_keys' => PlanFeatureManager::FEATURE_KEYS,
             'config_feature_keys' => PlanFeatureManager::CONFIG_FEATURE_KEYS,
-            'matrix'              => $matrix,
+            'matrix' => $matrix,
         ]);
     }
 
@@ -92,7 +93,7 @@ final class PlanFeatureController extends AbstractController
             return $this->redirectToRoute('admin_plan_features_index');
         }
 
-        $isEnabled  = (bool) $request->request->get('is_enabled', false);
+        $isEnabled = (bool) $request->request->get('is_enabled', false);
         $configJson = trim((string) $request->request->get('config_json', ''));
 
         try {
@@ -101,17 +102,13 @@ final class PlanFeatureController extends AbstractController
             $this->planFeatureManager->setFeature($planName, $featureKey, $isEnabled, $config);
 
             $this->auditLogger->log('plan.feature.update', [
-                'plan_name'   => $planName,
+                'plan_name' => $planName,
                 'feature_key' => $featureKey,
-                'is_enabled'  => $isEnabled,
-                'config'      => $config,
+                'is_enabled' => $isEnabled,
+                'config' => $config,
             ]);
 
-            $this->addFlash('success', sprintf(
-                'Feature "%s" updated for plan "%s".',
-                $featureKey,
-                $planName,
-            ));
+            $this->addFlash('success', sprintf('Feature "%s" updated for plan "%s".', $featureKey, $planName));
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
         } catch (\JsonException $e) {

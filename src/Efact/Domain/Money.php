@@ -12,9 +12,7 @@ final class Money
     public const int SCALE = 2;
     private const int RATE_SCALE = 6;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     public static function of(mixed $value): BigDecimal
     {

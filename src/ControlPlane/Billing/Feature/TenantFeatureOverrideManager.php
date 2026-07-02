@@ -42,7 +42,7 @@ final class TenantFeatureOverrideManager
         ?\DateTimeImmutable $expiresAt,
         ?string $reason,
     ): void {
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
         $configJson = $config !== null ? json_encode($config, JSON_THROW_ON_ERROR) : null;
         $expiresAtStr = $expiresAt?->format('Y-m-d H:i:s');
 
@@ -52,26 +52,26 @@ final class TenantFeatureOverrideManager
             $this->cp->update(
                 'tenant_feature_overrides',
                 [
-                    'is_enabled'  => $isEnabled ? 1 : 0,
+                    'is_enabled' => $isEnabled ? 1 : 0,
                     'config_json' => $configJson,
-                    'expires_at'  => $expiresAtStr,
-                    'reason'      => $reason,
-                    'cleaned_at'  => null,
-                    'updated_at'  => $now,
+                    'expires_at' => $expiresAtStr,
+                    'reason' => $reason,
+                    'cleaned_at' => null,
+                    'updated_at' => $now,
                 ],
                 ['id' => $existing->id],
             );
         } else {
             $this->cp->insert('tenant_feature_overrides', [
-                'tenant_id'   => $tenantId,
+                'tenant_id' => $tenantId,
                 'feature_key' => $featureKey,
-                'is_enabled'  => $isEnabled ? 1 : 0,
+                'is_enabled' => $isEnabled ? 1 : 0,
                 'config_json' => $configJson,
-                'expires_at'  => $expiresAtStr,
-                'reason'      => $reason,
-                'cleaned_at'  => null,
-                'created_at'  => $now,
-                'updated_at'  => $now,
+                'expires_at' => $expiresAtStr,
+                'reason' => $reason,
+                'cleaned_at' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]);
         }
 
@@ -86,7 +86,7 @@ final class TenantFeatureOverrideManager
     public function removeOverride(int $tenantId, string $featureKey): void
     {
         $this->cp->delete('tenant_feature_overrides', [
-            'tenant_id'   => $tenantId,
+            'tenant_id' => $tenantId,
             'feature_key' => $featureKey,
         ]);
 

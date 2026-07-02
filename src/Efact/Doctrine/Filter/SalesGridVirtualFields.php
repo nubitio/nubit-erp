@@ -81,12 +81,7 @@ final class SalesGridVirtualFields implements GridVirtualFieldInterface
         if (!in_array('td', $aliases, true)) {
             // TaxDocument has a ManyToOne to SaleRecord via td.saleRecord.
             // Join TaxDocument entities where td.saleRecord = o AND td.reasonCode IS NULL.
-            $queryBuilder->leftJoin(
-                TaxDocument::class,
-                'td',
-                'WITH',
-                'td.saleRecord = o AND td.reasonCode IS NULL'
-            );
+            $queryBuilder->leftJoin(TaxDocument::class, 'td', 'WITH', 'td.saleRecord = o AND td.reasonCode IS NULL');
         }
 
         return "CONCAT(td.series, '-', td.number)";

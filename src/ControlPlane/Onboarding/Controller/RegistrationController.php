@@ -18,8 +18,7 @@ final class RegistrationController extends AbstractController
         private readonly AccountService $accountService,
         private readonly RateLimiterFactoryInterface $onboardingRegistrationLimiter,
         private readonly RateLimiterFactoryInterface $onboardingVerificationLimiter,
-    ) {
-    }
+    ) {}
 
     #[Route('/register', name: 'onboarding_register', methods: ['GET'])]
     public function registerForm(Request $request): Response
@@ -75,7 +74,7 @@ final class RegistrationController extends AbstractController
         }
 
         $sessionEmail = (string) $request->getSession()->get('onboarding_pending_email', '');
-        $email = (string) ($request->query->get('email', $sessionEmail));
+        $email = (string) $request->query->get('email', $sessionEmail);
 
         return $this->render('onboarding/verify.html.twig', [
             'email' => $email,

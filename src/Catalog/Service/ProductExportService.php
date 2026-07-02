@@ -30,15 +30,15 @@ final readonly class ProductExportService
 {
     /** Enum → Spanish label maps (inverse of ProductImportProcessorService) */
     private const array PRODUCT_KIND_LABELS = [
-        'GOOD'    => 'Bien',
+        'GOOD' => 'Bien',
         'SERVICE' => 'Servicio',
         'DIGITAL' => 'Digital',
     ];
 
     private const array INVENTORY_BEHAVIOR_LABELS = [
-        'TRACKED'     => 'Inventario controlado',
+        'TRACKED' => 'Inventario controlado',
         'NOT_TRACKED' => 'Sin control de inventario',
-        'COMPOSITE'   => 'Compuesto',
+        'COMPOSITE' => 'Compuesto',
     ];
 
     private const array PRODUCT_KIND_OPTIONS = ['Bien', 'Servicio', 'Digital'];
@@ -49,32 +49,29 @@ final readonly class ProductExportService
     ];
 
     private const array HEADERS = [
-        'A' => ['Código',                       false],
-        'B' => ['Nombre',                        true],
-        'C' => ['Categoría',                     true],
-        'D' => ['Unidad de medida',              true],
-        'E' => ['Precio de venta',               true],
-        'F' => ['Precio de compra',              false],
-        'G' => ['SKU',                           false],
-        'H' => ['Código de barras',              false],
-        'I' => ['Tipo de producto',              false],
-        'J' => ['Comportamiento de inventario',  false],
-        'K' => ['Stock mínimo',                  false],
+        'A' => ['Código', false],
+        'B' => ['Nombre', true],
+        'C' => ['Categoría', true],
+        'D' => ['Unidad de medida', true],
+        'E' => ['Precio de venta', true],
+        'F' => ['Precio de compra', false],
+        'G' => ['SKU', false],
+        'H' => ['Código de barras', false],
+        'I' => ['Tipo de producto', false],
+        'J' => ['Comportamiento de inventario', false],
+        'K' => ['Stock mínimo', false],
     ];
 
     public function __construct(
         private ProductRepository $productRepository,
         private CategoryRepository $categoryRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
-    ) {
-    }
+    ) {}
 
     public function build(): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()
-            ->setTitle('Exportación de productos')
-            ->setCreator('eFact');
+        $spreadsheet->getProperties()->setTitle('Exportación de productos')->setCreator('eFact');
 
         $mainSheet = $spreadsheet->getActiveSheet();
         $mainSheet->setTitle('Productos');
@@ -84,7 +81,7 @@ final readonly class ProductExportService
         $refsSheet->setSheetState(Worksheet::SHEETSTATE_HIDDEN);
 
         $categories = $this->categoryRepository->findBy([], ['name' => 'ASC']);
-        $units       = $this->unitOfMeasureRepository->findBy([], ['name' => 'ASC']);
+        $units = $this->unitOfMeasureRepository->findBy([], ['name' => 'ASC']);
 
         $this->buildRefsSheet($refsSheet, count($categories), count($units));
         $this->populateRefsData($refsSheet, $categories, $units);
@@ -129,7 +126,12 @@ final readonly class ProductExportService
     private function buildRefsSheet(Worksheet $sheet, int $catCount, int $unitCount): void
     {
         // Headers in row 1 (informational, hidden sheet)
-        foreach (['A' => 'Categorías', 'B' => 'Unidades', 'C' => 'Tipo producto', 'D' => 'Comportamiento'] as $col => $label) {
+        foreach ([
+            'A' => 'Categorías',
+            'B' => 'Unidades',
+            'C' => 'Tipo producto',
+            'D' => 'Comportamiento',
+        ] as $col => $label) {
             $sheet->setCellValue($col . '1', $label);
         }
     }
@@ -142,18 +144,37 @@ final readonly class ProductExportService
             $mainSheet->setCellValue($cell, $text);
 
             $bgColor = $required ? 'C0392B' : '7F8C8D';
-            $mainSheet->getStyle($cell)->applyFromArray([
-                'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 11],
-                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF' . $bgColor]],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
-                'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']]],
-            ]);
+            $mainSheet
+                ->getStyle($cell)
+                ->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 11],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF' . $bgColor]],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'wrapText' => true,
+                    ],
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCCCCCC']],
+                    ],
+                ]);
         }
 
         $mainSheet->getRowDimension(1)->setRowHeight(36);
 
-        $widths = ['A' => 16, 'B' => 36, 'C' => 24, 'D' => 22, 'E' => 16,
-                   'F' => 16, 'G' => 16, 'H' => 20, 'I' => 18, 'J' => 30, 'K' => 14];
+        $widths = [
+            'A' => 16,
+            'B' => 36,
+            'C' => 24,
+            'D' => 22,
+            'E' => 16,
+            'F' => 16,
+            'G' => 16,
+            'H' => 20,
+            'I' => 18,
+            'J' => 30,
+            'K' => 14,
+        ];
         foreach ($widths as $col => $width) {
             $mainSheet->getColumnDimension($col)->setWidth($width);
         }
@@ -162,7 +183,7 @@ final readonly class ProductExportService
     private function addValidations(Worksheet $sheet, int $catCount, int $unitCount): void
     {
         $first = 2;
-        $last  = 100001; // generous upper bound for exports
+        $last = 100001; // generous upper bound for exports
 
         if ($catCount > 0) {
             $this->addListValidation($sheet, "C{$first}:C{$last}", "_refs!\$A\$2:\$A\$" . ($catCount + 1));
@@ -170,8 +191,16 @@ final readonly class ProductExportService
         if ($unitCount > 0) {
             $this->addListValidation($sheet, "D{$first}:D{$last}", "_refs!\$B\$2:\$B\$" . ($unitCount + 1));
         }
-        $this->addListValidation($sheet, "I{$first}:I{$last}", '_refs!$C$2:$C$' . (count(self::PRODUCT_KIND_OPTIONS) + 1));
-        $this->addListValidation($sheet, "J{$first}:J{$last}", '_refs!$D$2:$D$' . (count(self::INVENTORY_BEHAVIOR_OPTIONS) + 1));
+        $this->addListValidation(
+            $sheet,
+            "I{$first}:I{$last}",
+            '_refs!$C$2:$C$' . (count(self::PRODUCT_KIND_OPTIONS) + 1),
+        );
+        $this->addListValidation(
+            $sheet,
+            "J{$first}:J{$last}",
+            '_refs!$D$2:$D$' . (count(self::INVENTORY_BEHAVIOR_OPTIONS) + 1),
+        );
     }
 
     private function populateProducts(Worksheet $sheet): void
@@ -181,30 +210,40 @@ final readonly class ProductExportService
 
         $row = 2;
         foreach ($products as $product) {
-            $sheet->fromArray([
-                $product->getCode() ?? '',
-                $product->getName(),
-                $product->getCategory()->getName(),
-                $product->getUnitOfMeasure()->getName(),
-                $product->getSalePrice(),
-                $product->getPurchasePrice() ?? '',
-                $product->getSku() ?? '',
-                $product->getBarcode() ?? '',
-                self::PRODUCT_KIND_LABELS[$product->getProductKind()] ?? $product->getProductKind(),
-                self::INVENTORY_BEHAVIOR_LABELS[$product->getInventoryBehavior()] ?? $product->getInventoryBehavior(),
-                $product->getMinStock() ?? '',
-            ], null, 'A' . $row);
+            $sheet->fromArray(
+                [
+                    $product->getCode() ?? '',
+                    $product->getName(),
+                    $product->getCategory()->getName(),
+                    $product->getUnitOfMeasure()->getName(),
+                    $product->getSalePrice(),
+                    $product->getPurchasePrice() ?? '',
+                    $product->getSku() ?? '',
+                    $product->getBarcode() ?? '',
+                    self::PRODUCT_KIND_LABELS[$product->getProductKind()] ?? $product->getProductKind(),
+                    self::INVENTORY_BEHAVIOR_LABELS[$product->getInventoryBehavior()] ?? $product->getInventoryBehavior(),
+                    $product->getMinStock() ?? '',
+                ],
+                null,
+                'A' . $row,
+            );
 
             // Stripe every other row for readability
-            if ($row % 2 === 0) {
-                $sheet->getStyle("A{$row}:K{$row}")->applyFromArray([
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF8FAFC']],
-                ]);
+            if (($row % 2) === 0) {
+                $sheet
+                    ->getStyle("A{$row}:K{$row}")
+                    ->applyFromArray([
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF8FAFC']],
+                    ]);
             }
 
-            $sheet->getStyle("A{$row}:K{$row}")->applyFromArray([
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['argb' => 'FFE2E8F0']]],
-            ]);
+            $sheet
+                ->getStyle("A{$row}:K{$row}")
+                ->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_HAIR, 'color' => ['argb' => 'FFE2E8F0']],
+                    ],
+                ]);
 
             $row++;
         }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Billing\Sunat\Domain;
 
 use App\Billing\Repository\TaxDocumentRepository;
-use DateTime;
-use Exception;
 use App\Billing\Sunat\Model\Response\SummaryResponse;
 use App\Efact\Domain\Money;
+use DateTime;
+use Exception;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -19,8 +19,7 @@ readonly class SummaryCreateUseCase
         private SummaryRepositoryInterface $summaryRepository,
         private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $invoiceUtils,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -47,7 +46,7 @@ readonly class SummaryCreateUseCase
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
 
         $summary = new Summary()
-            ->setCorrelativo((string)($lastCorrelative + 1))
+            ->setCorrelativo((string) ($lastCorrelative + 1))
             ->setFecGeneracion(new DateTime(strval($voucher->voucher_date)))
             ->setFecResumen(new DateTime(strval($voucher->voucher_date)))
             ->setCompany($this->invoiceUtils->getCompany())

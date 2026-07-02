@@ -16,8 +16,7 @@ final readonly class ConsoleContextListener
 {
     public function __construct(
         private TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
     public function __invoke(ConsoleCommandEvent|ConsoleTerminateEvent $event): void
     {

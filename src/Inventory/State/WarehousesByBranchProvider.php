@@ -16,13 +16,12 @@ readonly class WarehousesByBranchProvider implements ProviderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $branchId = $uriVariables['id'];
 

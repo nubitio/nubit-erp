@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Settings\State;
 
-use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Settings\Dto\RoleMenuDto;
 use App\Settings\Dto\RoleMenuItemDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 
 /**
  * @implements ProviderInterface<object>
@@ -19,20 +19,18 @@ readonly class RoleMenuProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
      * @throws Exception
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $roleId = $uriVariables['role_id'];
 
-        $result = $this->connection->fetchAllAssociative(
-            'SELECT
+        $result = $this->connection->fetchAllAssociative('SELECT
                 m.id as menu_id,
                 m.key_name AS descripcion,
                 m.parent_id,
@@ -42,9 +40,7 @@ readonly class RoleMenuProvider implements ProviderInterface
                 LEFT JOIN menu_rol mr ON m.id = mr.menu_id AND mr.role_id = ?
             ORDER BY
                 m.id,
-                m.order_index',
-            [$roleId]
-        );
+                m.order_index', [$roleId]);
 
         $data = [];
         $i = 0;
@@ -57,17 +53,13 @@ readonly class RoleMenuProvider implements ProviderInterface
                         $submenu[$j] = new RoleMenuItemDto(
                             id: intval($option['menu_id']),
                             text: $option['descripcion'],
-                            selected: (bool)$option['checked']
+                            selected: (bool) $option['checked'],
                         );
                         ++$j;
                     }
                 }
 
-                $data[$i] = new RoleMenuDto(
-                    id: intval($menu['menu_id']),
-                    text: $menu['descripcion'],
-                    items: $submenu
-                );
+                $data[$i] = new RoleMenuDto(id: intval($menu['menu_id']), text: $menu['descripcion'], items: $submenu);
                 ++$i;
             }
         }

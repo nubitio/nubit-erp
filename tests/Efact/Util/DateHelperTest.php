@@ -50,27 +50,27 @@ final class DateHelperTest extends TestCase
     public function testDiffInDays(): void
     {
         $from = new \DateTimeImmutable('2024-01-01');
-        $to   = new \DateTimeImmutable('2024-01-11');
+        $to = new \DateTimeImmutable('2024-01-11');
         self::assertSame(10, DateHelper::diffInDays($from, $to));
     }
 
     public function testDiffInHours(): void
     {
         $from = new \DateTimeImmutable('2024-01-01 00:00:00');
-        $to   = new \DateTimeImmutable('2024-01-01 03:00:00');
+        $to = new \DateTimeImmutable('2024-01-01 03:00:00');
         self::assertSame(3, DateHelper::diffInHours($from, $to));
     }
 
     public function testAddDaysReturnsNewDate(): void
     {
-        $dt     = new \DateTimeImmutable('2024-01-10');
+        $dt = new \DateTimeImmutable('2024-01-10');
         $result = DateHelper::addDays($dt, 5);
         self::assertSame('2024-01-15', $result->format('Y-m-d'));
     }
 
     public function testAddHoursReturnsNewDate(): void
     {
-        $dt     = new \DateTimeImmutable('2024-01-10 10:00:00');
+        $dt = new \DateTimeImmutable('2024-01-10 10:00:00');
         $result = DateHelper::addHours($dt, 3);
         self::assertSame('2024-01-10 13:00:00', $result->format('Y-m-d H:i:s'));
     }
@@ -90,14 +90,14 @@ final class DateHelperTest extends TestCase
 
     public function testStartOfMonth(): void
     {
-        $dt    = new \DateTimeImmutable('2024-03-15 14:30:00');
+        $dt = new \DateTimeImmutable('2024-03-15 14:30:00');
         $start = DateHelper::startOfMonth($dt);
         self::assertSame('2024-03-01 00:00:00', $start->format('Y-m-d H:i:s'));
     }
 
     public function testEndOfMonth(): void
     {
-        $dt  = new \DateTimeImmutable('2024-03-15');
+        $dt = new \DateTimeImmutable('2024-03-15');
         $end = DateHelper::endOfMonth($dt);
         self::assertSame('2024-03-31', $end->format('Y-m-d'));
     }

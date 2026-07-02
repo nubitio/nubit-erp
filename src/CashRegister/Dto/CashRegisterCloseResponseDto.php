@@ -15,6 +15,5 @@ final readonly class CashRegisterCloseResponseDto
         public string $message,
         #[Groups(['cash_register_close:read'])]
         public mixed $data = null,
-    ) {
-    }
+    ) {}
 }

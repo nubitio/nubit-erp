@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\CashRegister\State;
 
-use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
@@ -15,6 +14,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -25,8 +25,7 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private EntityManagerInterface $entityManager,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -34,20 +33,16 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
      * @return CashMovement[]
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative(
-            'SELECT id FROM cash_sessions WHERE id = ?',
-            [$cashSessionId]
-        );
+        $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE id = ?', [$cashSessionId]);
 
         if ($session === false) {
-            $session = $this->connection->fetchAssociative(
-                'SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-                [$cashSessionId]
-            );
+            $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ?', [
+                $cashSessionId,
+            ]);
         }
 
         if ($session === false) {
@@ -56,13 +51,10 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
 
         $sessionId = (int) $session['id'];
 
-        $rows = $this->connection->fetchAllAssociative(
-            'SELECT id, cash_session_id, category_id, amount, description, created_at, movement_type
+        $rows = $this->connection->fetchAllAssociative('SELECT id, cash_session_id, category_id, amount, description, created_at, movement_type
              FROM cash_movements
              WHERE cash_session_id = ?
-             ORDER BY created_at ASC',
-            [$sessionId]
-        );
+             ORDER BY created_at ASC', [$sessionId]);
 
         $idProp = new \ReflectionProperty(CashMovement::class, 'id');
         $cashSessionEntity = $this->entityManager->find(CashSession::class, $sessionId);

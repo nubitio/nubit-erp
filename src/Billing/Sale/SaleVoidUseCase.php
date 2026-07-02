@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Billing\Sale;
 
-use App\Efact\Audit\AuditLogger;
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Http\ApiResponse;
+use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
 use App\Billing\Service\SaleV2Loader;
 use App\Billing\Shared\ErrorMessages;
-use App\Sales\Entity\SaleRecord;
-use App\Billing\Repository\TaxDocumentRepository;
+use App\Efact\Audit\AuditLogger;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
+use App\Sales\Entity\SaleRecord;
 use App\Sales\State\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Http\ApiResponse;
 
 readonly class SaleVoidUseCase
 {
@@ -36,8 +36,7 @@ readonly class SaleVoidUseCase
         private SalesWriteGateway $salesWriteGateway,
         private SaleV2Loader $saleV2Loader,
         private StockVoidReverserInterface $stockVoidReverser,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ORMException
@@ -47,12 +46,8 @@ readonly class SaleVoidUseCase
      * @throws MathException
      * @throws Exception
      */
-    public function __invoke(
-        string $saleId,
-        string $reason,
-        int $userId,
-        bool $restoreStock = false,
-    ): ApiResponse {
+    public function __invoke(string $saleId, string $reason, int $userId, bool $restoreStock = false): ApiResponse
+    {
         // Load sale from V2 tables (v2_authoritative mode; no ORM movimiento fallback).
         $sale = $this->saleV2Loader->loadAsSale($saleId);
         if (!$sale instanceof SaleRecord) {
@@ -68,7 +63,9 @@ readonly class SaleVoidUseCase
         $saleDateLima = $rawFecha !== null
             ? \DateTimeImmutable::createFromInterface($rawFecha)->setTimezone($lima)->format('Y-m-d')
             : null;
-        $limitDateLima = (new \DateTimeImmutable('now', $lima))->modify('-7 days')->format('Y-m-d');
+        $limitDateLima = new \DateTimeImmutable('now', $lima)
+            ->modify('-7 days')
+            ->format('Y-m-d');
         if ($saleDateLima < $limitDateLima) {
             throw SaleException::tooOld();
         }
@@ -79,8 +76,7 @@ readonly class SaleVoidUseCase
 
         // Resolve document type without loading the full voucher DTO,
         // so this works in v2_authoritative mode where no movimiento row exists.
-        $documentType = $this->taxDocumentRepository->findDocumentTypeBySaleId($saleId)
-            ?? DocType::NOTA_VENTA->value;
+        $documentType = $this->taxDocumentRepository->findDocumentTypeBySaleId($saleId) ?? DocType::NOTA_VENTA->value;
 
         if ($documentType === DocType::NOTA_VENTA->value) {
             $sale->setGlosa($reason);
@@ -124,10 +120,7 @@ readonly class SaleVoidUseCase
 
             // Find the accepted document that was just voided (latest accepted wins;
             // may be a replacement if the original was rejected).
-            $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType(
-                $saleId,
-                $documentType,
-            );
+            $taxDocument = $this->taxDocumentRepository->findLatestAcceptedBySaleAndType($saleId, $documentType);
             if ($taxDocument === null) {
                 throw new ServiceException(ErrorMessages::TAX_DOCUMENT_NOT_FOUND);
             }
@@ -153,7 +146,7 @@ readonly class SaleVoidUseCase
 
             $message = $sunatResponse->success
                 ? ErrorMessages::VOID_SUCCESSFUL
-                : ($sunatResponse->message ?? ErrorMessages::VOID_ERROR);
+                : $sunatResponse->message ?? ErrorMessages::VOID_ERROR;
 
             $this->auditLogger->log('sale.void.result', [
                 'sale_id' => $saleId,

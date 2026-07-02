@@ -24,10 +24,10 @@ final class SettingsStateTest extends TestCase
     private static function menuRows(): array
     {
         return [
-            ['menu_id' => 1, 'descripcion' => 'Ventas',       'parent_id' => 0,  'checked' => 1],
-            ['menu_id' => 2, 'descripcion' => 'Facturación',  'parent_id' => 1,  'checked' => 0],
-            ['menu_id' => 3, 'descripcion' => 'Reportes',     'parent_id' => 1,  'checked' => 1],
-            ['menu_id' => 4, 'descripcion' => 'Inventario',   'parent_id' => 0,  'checked' => 0],
+            ['menu_id' => 1, 'descripcion' => 'Ventas', 'parent_id' => 0, 'checked' => 1],
+            ['menu_id' => 2, 'descripcion' => 'Facturación', 'parent_id' => 1, 'checked' => 0],
+            ['menu_id' => 3, 'descripcion' => 'Reportes', 'parent_id' => 1, 'checked' => 1],
+            ['menu_id' => 4, 'descripcion' => 'Inventario', 'parent_id' => 0, 'checked' => 0],
         ];
     }
 
@@ -65,7 +65,7 @@ final class SettingsStateTest extends TestCase
         $reportes = $ventas->items[1];
 
         self::assertFalse($facturacion->selected); // checked=0
-        self::assertTrue($reportes->selected);     // checked=1
+        self::assertTrue($reportes->selected); // checked=1
     }
 
     public function testRoleMenuProviderRootWithNoChildrenHasEmptyItems(): void
@@ -88,10 +88,10 @@ final class SettingsStateTest extends TestCase
     private static function rawMenuRows(): array
     {
         return [
-            ['id' => 1, 'key_name' => 'app.sales',        'parent_id' => 0, 'icon' => 'fa-cart',   'route' => ''],
-            ['id' => 2, 'key_name' => 'app.sales.list',   'parent_id' => 1, 'icon' => '',           'route' => '/ventas'],
-            ['id' => 3, 'key_name' => 'app.sales.create', 'parent_id' => 1, 'icon' => '',           'route' => '/ventas/nueva'],
-            ['id' => 4, 'key_name' => 'app.dashboard',    'parent_id' => 0, 'icon' => 'fa-home',    'route' => '/dashboard'],
+            ['id' => 1, 'key_name' => 'app.sales', 'parent_id' => 0, 'icon' => 'fa-cart', 'route' => ''],
+            ['id' => 2, 'key_name' => 'app.sales.list', 'parent_id' => 1, 'icon' => '', 'route' => '/ventas'],
+            ['id' => 3, 'key_name' => 'app.sales.create', 'parent_id' => 1, 'icon' => '', 'route' => '/ventas/nueva'],
+            ['id' => 4, 'key_name' => 'app.dashboard', 'parent_id' => 0, 'icon' => 'fa-home', 'route' => '/dashboard'],
         ];
     }
 
@@ -139,7 +139,8 @@ final class SettingsStateTest extends TestCase
     public function testMenuProviderRoleIdZeroFetchesAllMenus(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('fetchAllAssociative')
             ->with(self::stringContains('FROM menu m'))
             ->willReturn([]);
@@ -153,12 +154,10 @@ final class SettingsStateTest extends TestCase
     public function testMenuProviderNonZeroRoleIdJoinsMenuRol(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())
+        $conn
+            ->expects(self::once())
             ->method('fetchAllAssociative')
-            ->with(
-                self::stringContains('menu_rol'),
-                [7],
-            )
+            ->with(self::stringContains('menu_rol'), [7])
             ->willReturn([]);
 
         $provider = new MenuProvider($conn);
@@ -193,8 +192,7 @@ final class SettingsStateTest extends TestCase
     {
         $conn = $this->createMock(Connection::class);
         $conn->expects(self::once())->method('beginTransaction');
-        $conn->method('executeStatement')
-            ->willThrowException(new DbalException('fail'));
+        $conn->method('executeStatement')->willThrowException(new DbalException('fail'));
         $conn->expects(self::never())->method('commit');
         $conn->expects(self::once())->method('rollBack');
 
@@ -214,10 +212,7 @@ final class SettingsStateTest extends TestCase
         $conn->expects(self::once())->method('commit');
 
         $processor = new RoleMenuProcessor($conn);
-        $response = $processor->process(
-            $this->makeRoleMenuResource(5, []),
-            new Post()
-        );
+        $response = $processor->process($this->makeRoleMenuResource(5, []), new Post());
 
         self::assertTrue($response->success);
     }

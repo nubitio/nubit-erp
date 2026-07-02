@@ -14,8 +14,7 @@ final readonly class TenantSettingsProvider implements ProviderInterface
 {
     public function __construct(
         private TenantSettingsRepository $repository,
-    ) {
-    }
+    ) {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TenantSettings
     {

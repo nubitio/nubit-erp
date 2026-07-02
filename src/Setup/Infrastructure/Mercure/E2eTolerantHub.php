@@ -14,8 +14,7 @@ final class E2eTolerantHub implements HubInterface
     public function __construct(
         private readonly HubInterface $inner,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function getPublicUrl(): string
     {

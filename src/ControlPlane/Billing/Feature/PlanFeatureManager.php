@@ -52,8 +52,7 @@ final class PlanFeatureManager
     public function __construct(
         private readonly PlanFeatureRepositoryInterface $repository,
         private readonly TagAwareCacheInterface $featureCache,
-    ) {
-    }
+    ) {}
 
     /**
      * Creates or updates the plan_features row for (planName, featureKey).
@@ -62,12 +61,8 @@ final class PlanFeatureManager
      *
      * @throws \InvalidArgumentException if the feature key is not in the catalogue.
      */
-    public function setFeature(
-        string $planName,
-        string $featureKey,
-        bool $isEnabled,
-        ?array $config,
-    ): void {
+    public function setFeature(string $planName, string $featureKey, bool $isEnabled, ?array $config): void
+    {
         $this->assertFeatureKey($featureKey);
 
         $this->repository->upsert($planName, $featureKey, $isEnabled, $config);
@@ -96,9 +91,11 @@ final class PlanFeatureManager
     private function assertFeatureKey(string $featureKey): void
     {
         if (!in_array($featureKey, self::FEATURE_KEYS, true)) {
-            throw new \InvalidArgumentException(
-                sprintf('Unknown feature key "%s". Allowed keys: %s.', $featureKey, implode(', ', self::FEATURE_KEYS)),
-            );
+            throw new \InvalidArgumentException(sprintf(
+                'Unknown feature key "%s". Allowed keys: %s.',
+                $featureKey,
+                implode(', ', self::FEATURE_KEYS),
+            ));
         }
     }
 }

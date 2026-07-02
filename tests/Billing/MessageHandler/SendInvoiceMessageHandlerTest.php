@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\MessageHandler;
 
-use App\Billing\Sunat\Domain\BillSendUseCase;
 use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\MessageHandler\SendInvoiceMessageHandler;
+use App\Billing\Sunat\Domain\BillSendUseCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -35,10 +35,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 
     private function makeHandler(): SendInvoiceMessageHandler
     {
-        return new SendInvoiceMessageHandler(
-            billSendUseCase: $this->billSendUseCase,
-            billingLogger: $this->logger,
-        );
+        return new SendInvoiceMessageHandler(billSendUseCase: $this->billSendUseCase, billingLogger: $this->logger);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -62,26 +59,18 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 
         $this->makeHandler()->__invoke($message);
 
-        $this->assertArrayHasKey(
-            'send_invoice.start',
-            $loggedContexts,
-            'send_invoice.start must be logged'
-        );
-        $this->assertArrayHasKey(
-            'send_invoice.done',
-            $loggedContexts,
-            'send_invoice.done must be logged'
-        );
+        $this->assertArrayHasKey('send_invoice.start', $loggedContexts, 'send_invoice.start must be logged');
+        $this->assertArrayHasKey('send_invoice.done', $loggedContexts, 'send_invoice.done must be logged');
 
         $this->assertSame(
             'tenant-acme',
             $loggedContexts['send_invoice.start']['tenant_id'],
-            'send_invoice.start must carry tenant_id from the message'
+            'send_invoice.start must carry tenant_id from the message',
         );
         $this->assertSame(
             'tenant-acme',
             $loggedContexts['send_invoice.done']['tenant_id'],
-            'send_invoice.done must carry tenant_id from the message'
+            'send_invoice.done must carry tenant_id from the message',
         );
     }
 
@@ -93,8 +82,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
     {
         $message = new SendInvoiceMessage('doc-002', 'tenant-beta');
 
-        $this->billSendUseCase->method('__invoke')
-            ->willThrowException(new \RuntimeException('SUNAT unreachable'));
+        $this->billSendUseCase->method('__invoke')->willThrowException(new \RuntimeException('SUNAT unreachable'));
 
         $capturedErrorContext = null;
         $this->logger
@@ -113,7 +101,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
         $this->assertSame(
             'tenant-beta',
             $capturedErrorContext['tenant_id'],
-            'send_invoice.failed must carry tenant_id from the message'
+            'send_invoice.failed must carry tenant_id from the message',
         );
     }
 
@@ -163,12 +151,12 @@ final class SendInvoiceMessageHandlerTest extends TestCase
         $this->assertSame(
             'unknown',
             $loggedContexts['send_invoice.start']['tenant_id'],
-            'tenant_id must be "unknown" when message carries empty string'
+            'tenant_id must be "unknown" when message carries empty string',
         );
         $this->assertSame(
             'unknown',
             $loggedContexts['send_invoice.done']['tenant_id'],
-            'tenant_id must be "unknown" in done entry too'
+            'tenant_id must be "unknown" in done entry too',
         );
     }
 
@@ -180,8 +168,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
     {
         $message = new SendInvoiceMessage('doc-no-tenant-err', '');
 
-        $this->billSendUseCase->method('__invoke')
-            ->willThrowException(new \RuntimeException('failure'));
+        $this->billSendUseCase->method('__invoke')->willThrowException(new \RuntimeException('failure'));
 
         $capturedErrorContext = null;
         $this->logger
@@ -200,7 +187,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
         $this->assertSame(
             'unknown',
             $capturedErrorContext['tenant_id'],
-            'tenant_id must be "unknown" in error log when message carries empty string'
+            'tenant_id must be "unknown" in error log when message carries empty string',
         );
     }
 
@@ -223,10 +210,6 @@ final class SendInvoiceMessageHandlerTest extends TestCase
             $caught = $e;
         }
 
-        $this->assertSame(
-            $original,
-            $caught,
-            'The exact original exception instance must be re-thrown by the handler'
-        );
+        $this->assertSame($original, $caught, 'The exact original exception instance must be re-thrown by the handler');
     }
 }

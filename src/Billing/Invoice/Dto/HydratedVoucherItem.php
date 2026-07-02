@@ -19,6 +19,5 @@ readonly class HydratedVoucherItem
         public float $unitPrice,
         public float $discountAmount = 0.0,
         public ?float $discountPercent = null,
-    ) {
-    }
+    ) {}
 }

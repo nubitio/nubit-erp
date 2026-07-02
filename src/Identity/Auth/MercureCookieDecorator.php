@@ -26,15 +26,10 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
         private MercureSubscriberTokenService $mercureTokenService,
         private CookieFactory $cookieFactory,
         private TenantContext $tenantContext,
-    ) {
-    }
+    ) {}
 
-    public function decorate(
-        JsonResponse $response,
-        UserInterface $user,
-        TokenPair $tokenPair,
-        Request $request,
-    ): void {
+    public function decorate(JsonResponse $response, UserInterface $user, TokenPair $tokenPair, Request $request): void
+    {
         $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
         $tenantOrigin = '' !== $tenantDomain ? 'https://' . $tenantDomain : '';
 

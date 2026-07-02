@@ -35,13 +35,18 @@ final class AuditLogRepositoryTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
-        $connection->expects($this->once())
+        $connection
+            ->expects($this->once())
             ->method('fetchAllAssociative')
             ->with(
-                $this->callback(fn (string $sql) => str_contains($sql, 'a.channel')
-                    && str_contains($sql, 'LIMIT ?')
-                    && str_contains($sql, 'OFFSET ?')),
-                $this->callback(fn (array $params) => $params === [50, 0]),
+                $this->callback(
+                    fn(string $sql) => (
+                        str_contains($sql, 'a.channel')
+                        && str_contains($sql, 'LIMIT ?')
+                        && str_contains($sql, 'OFFSET ?')
+                    ),
+                ),
+                $this->callback(fn(array $params) => $params === [50, 0]),
             )
             ->willReturn([['id' => 1, 'action' => 'test', 'channel' => 'http']]);
 
@@ -57,11 +62,12 @@ final class AuditLogRepositoryTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(100);
-        $connection->expects($this->once())
+        $connection
+            ->expects($this->once())
             ->method('fetchAllAssociative')
             ->with(
                 $this->anything(),
-                $this->callback(fn (array $params) => $params === [25, 50]),
+                $this->callback(fn(array $params) => $params === [25, 50]),
             )
             ->willReturn([]);
 
@@ -74,7 +80,8 @@ final class AuditLogRepositoryTest extends TestCase
     {
         $cache = $this->createMock(CacheInterface::class);
         $callCount = 0;
-        $cache->method('get')
+        $cache
+            ->method('get')
             ->with('audit_control_plane_ready', $this->anything())
             ->willReturnCallback(function (string $key, callable $callback) use (&$callCount): bool {
                 $callCount++;
@@ -109,9 +116,7 @@ final class AuditLogRepositoryTest extends TestCase
     private function createRepository(bool $controlPlaneReady, ?Connection $connection = null): AuditLogRepository
     {
         $cache = $this->createMock(CacheInterface::class);
-        $cache->method('get')
-            ->with('audit_control_plane_ready', $this->anything())
-            ->willReturn($controlPlaneReady);
+        $cache->method('get')->with('audit_control_plane_ready', $this->anything())->willReturn($controlPlaneReady);
 
         if ($connection === null) {
             $connection = $this->createStub(Connection::class);

@@ -14,8 +14,7 @@ final class ReplaceRejectedSaleDocument extends AbstractController
 {
     public function __construct(
         private readonly RejectedDocumentReplacerInterface $rejectedDocumentReplacer,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {

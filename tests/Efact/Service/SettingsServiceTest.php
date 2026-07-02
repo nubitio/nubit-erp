@@ -7,8 +7,8 @@ namespace App\Tests\Efact\Service;
 use App\Efact\Service\SettingsService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
 final class SettingsServiceTest extends TestCase
@@ -18,7 +18,7 @@ final class SettingsServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->db      = $this->createMock(Connection::class);
+        $this->db = $this->createMock(Connection::class);
         $this->service = new SettingsService($this->db);
     }
 
@@ -56,13 +56,12 @@ final class SettingsServiceTest extends TestCase
 
     public function testSetExecutesUpsertStatement(): void
     {
-        $this->db
-            ->expects(self::once())
-            ->method('executeStatement')
-            ->with(
-                self::stringContains('INSERT INTO config'),
-                ['rate_limit', 'string', '100', '100']
-            );
+        $this->db->expects(self::once())->method('executeStatement')->with(self::stringContains('INSERT INTO config'), [
+            'rate_limit',
+            'string',
+            '100',
+            '100',
+        ]);
 
         $this->service->set('rate_limit', 'string', '100');
     }

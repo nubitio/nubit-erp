@@ -343,7 +343,7 @@ final class InvoiceCalculatorTest extends TestCase
         string $tax,
         string $charges,
         ?string $expectedTotal,
-        array $expected
+        array $expected,
     ): void {
         $calculator = new InvoiceCalculator($lines, $discount, $tax, $charges, $expectedTotal);
         $amounts = $calculator->calculate();

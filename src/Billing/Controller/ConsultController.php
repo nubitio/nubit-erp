@@ -17,8 +17,7 @@ class ConsultController extends AbstractController
 {
     public function __construct(
         private readonly CachedDocumentLookupService $lookupService,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sales\Dto;
 
-use Stringable;
 use Override;
+use Stringable;
 
 class SaleItemDto implements Stringable
 {
@@ -14,15 +14,14 @@ class SaleItemDto implements Stringable
         private string $name = '',
         private readonly float|string|null $price = '',
         private readonly float|string|null $total = null,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function __toString(): string
     {
         $line_width = $this->lineWidth;
-        $rightCols = (int) round(20 / 100 * $line_width);
-        $centerCols = (int) round(20 / 100 * $line_width);
+        $rightCols = (int) round((20 / 100) * $line_width);
+        $centerCols = (int) round((20 / 100) * $line_width);
         $leftCols = $line_width - $rightCols - $centerCols;
 
         $this->name = strlen($this->name) > $leftCols ? substr($this->name, 0, $leftCols) : $this->name;
@@ -33,9 +32,9 @@ class SaleItemDto implements Stringable
                 return '';
             }
             if (is_numeric($value)) {
-                return number_format((float)$value, 2, '.', '');
+                return number_format((float) $value, 2, '.', '');
             }
-            return (string)$value;
+            return (string) $value;
         };
 
         $price = $formatMoney($this->price);

@@ -47,7 +47,7 @@ final class ArrayHelper
         $current = &$array;
 
         foreach ($keys as $i => $segment) {
-            if ($i === count($keys) - 1) {
+            if ($i === (count($keys) - 1)) {
                 $current[$segment] = $value;
             } else {
                 if (!isset($current[$segment]) || !is_array($current[$segment])) {

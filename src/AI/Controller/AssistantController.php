@@ -32,8 +32,7 @@ class AssistantController extends AbstractController
         private readonly SessionContextBuilder $sessionContextBuilder,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
-    ) {
-    }
+    ) {}
 
     public function __invoke(AssistantRequest $data): AssistantResponse
     {
@@ -48,7 +47,7 @@ class AssistantController extends AbstractController
 
         $userMessages = [];
         foreach ($data->messages as $i => $message) {
-            $isLast = ($i === $lastUserIndex);
+            $isLast = $i === $lastUserIndex;
             $userMessages[] = $this->convertMessage(
                 $message,
                 $isLast ? $imageAttachments : [],
@@ -60,20 +59,15 @@ class AssistantController extends AbstractController
 
         // Prepend a dynamic system message so SystemPromptInputProcessor skips its static file.
         // The full prompt = context block (live session data) + static assistant.md content.
-        $messageBag = $messageBag->withSystemMessage(
-            Message::forSystem($this->buildDynamicSystemPrompt($data))
-        );
+        $messageBag = $messageBag->withSystemMessage(Message::forSystem($this->buildDynamicSystemPrompt($data)));
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
             'attachments_count' => \count($data->attachments),
             'message_preview' => array_slice(
-                array_map(
-                    static fn (AssistantMessageInput $m): string => $m->content,
-                    $data->messages
-                ),
+                array_map(static fn(AssistantMessageInput $m): string => $m->content, $data->messages),
                 0,
-                3
+                3,
             ),
             'user' => $this->getUser()?->getUserIdentifier(),
         ]);
@@ -88,7 +82,7 @@ class AssistantController extends AbstractController
             throw ServiceException::create(
                 'No se pudo generar la respuesta del asistente.',
                 Response::HTTP_BAD_REQUEST,
-                $throwable
+                $throwable,
             );
         }
 
@@ -201,20 +195,24 @@ class AssistantController extends AbstractController
 
         $screenBlock = '';
         if ($data->screenContext !== null) {
-            $screenBlock = "\n## Pantalla activa del usuario\n"
-                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown') . "\n"
-                . ($data->screenContext->entityType !== null
-                    ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
-                    : '')
-                . ($data->screenContext->entityId !== null
-                    ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
-                    : '');
+            $screenBlock =
+                "\n## Pantalla activa del usuario\n"
+                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown')
+                . "\n"
+                . (
+                    $data->screenContext->entityType !== null
+                        ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
+                        : ''
+                )
+                . (
+                    $data->screenContext->entityId !== null
+                        ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
+                        : ''
+                );
         }
 
         $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
-        $staticPrompt = is_file($staticPromptPath)
-            ? (string) file_get_contents($staticPromptPath)
-            : '';
+        $staticPrompt = is_file($staticPromptPath) ? (string) file_get_contents($staticPromptPath) : '';
 
         return $contextBlock . $screenBlock . "\n\n---\n\n" . $staticPrompt;
     }

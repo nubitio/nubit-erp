@@ -12,6 +12,5 @@ class PricesDto
          * @var PriceItemDto[]
          */
         public array $prices,
-    ) {
-    }
+    ) {}
 }

@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Adapter;
 
-use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 use App\Billing\Sunat\Domain\LycetCompanyServiceInterface;
+use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 
 final readonly class LycetElectronicBillingCompanyAdapter implements ElectronicBillingCompanyPortInterface
 {
     public function __construct(
         private LycetCompanyServiceInterface $lycetCompanyService,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, string> $urls

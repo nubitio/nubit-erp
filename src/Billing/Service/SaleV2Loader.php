@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Billing\Service;
 
-use App\Settings\Service\TenantSettingsService;
 use App\Contacts\Entity\Customer;
-use App\Sales\Entity\SaleRecord;
-use App\Sales\Entity\SaleItemRecord;
 use App\Inventory\Entity\Warehouse;
+use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SaleRecord;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -25,8 +25,7 @@ readonly class SaleV2Loader
         private Connection $connection,
         private EntityManagerInterface $entityManager,
         private TenantSettingsService $tenantSettings,
-    ) {
-    }
+    ) {}
 
     /**
      * Load a Sale entity from the `sales` table, or null if not found.
@@ -38,47 +37,47 @@ readonly class SaleV2Loader
     {
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
-SELECT
-    s.id,
-    s.legacy_movimiento_id,
-    s.customer_id,
-    s.warehouse_id,
-    s.branch_id,
-    s.seller_user_id,
-    s.status,
-    s.currency,
-    s.exchange_rate,
-    s.subtotal,
-    s.tax_total,
-    s.discount_total,
-    s.grand_total,
-    s.issued_at,
-    s.created_at,
-    s.series,
-    s.number,
-    (
-        SELECT pm.id
-        FROM sale_payments sp
-        JOIN payment_method pm ON pm.id = sp.payment_method_id
-        WHERE sp.sale_id = s.id
-        ORDER BY sp.created_at ASC
-        LIMIT 1
-    ) AS payment_method_id,
-    (
-        SELECT pm.name
-        FROM sale_payments sp
-        JOIN payment_method pm ON pm.id = sp.payment_method_id
-        WHERE sp.sale_id = s.id
-        ORDER BY sp.created_at ASC
-        LIMIT 1
-    ) AS payment_method_name
-FROM sales s
-WHERE s.id = :id
-   OR s.legacy_movimiento_id = :id
-ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
-LIMIT 1
-SQL,
-            ['id' => $saleId]
+                SELECT
+                    s.id,
+                    s.legacy_movimiento_id,
+                    s.customer_id,
+                    s.warehouse_id,
+                    s.branch_id,
+                    s.seller_user_id,
+                    s.status,
+                    s.currency,
+                    s.exchange_rate,
+                    s.subtotal,
+                    s.tax_total,
+                    s.discount_total,
+                    s.grand_total,
+                    s.issued_at,
+                    s.created_at,
+                    s.series,
+                    s.number,
+                    (
+                        SELECT pm.id
+                        FROM sale_payments sp
+                        JOIN payment_method pm ON pm.id = sp.payment_method_id
+                        WHERE sp.sale_id = s.id
+                        ORDER BY sp.created_at ASC
+                        LIMIT 1
+                    ) AS payment_method_id,
+                    (
+                        SELECT pm.name
+                        FROM sale_payments sp
+                        JOIN payment_method pm ON pm.id = sp.payment_method_id
+                        WHERE sp.sale_id = s.id
+                        ORDER BY sp.created_at ASC
+                        LIMIT 1
+                    ) AS payment_method_name
+                FROM sales s
+                WHERE s.id = :id
+                   OR s.legacy_movimiento_id = :id
+                ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
+                LIMIT 1
+                SQL,
+            ['id' => $saleId],
         );
 
         if ($row === false) {
@@ -137,7 +136,7 @@ SQL,
         if (!empty($row['payment_method_id'])) {
             $paymentMethod = $this->entityManager->getReference(
                 \App\Catalog\Entity\PaymentMethod::class,
-                (int) $row['payment_method_id']
+                (int) $row['payment_method_id'],
             );
             if ($paymentMethod instanceof \App\Catalog\Entity\PaymentMethod) {
                 $paymentMethod->setName((string) $row['payment_method_name']);
@@ -146,10 +145,9 @@ SQL,
         }
 
         // Load line items from sale_items table
-        $itemRows = $this->connection->fetchAllAssociative(
-            'SELECT * FROM sale_items WHERE sale_id = :sale_id ORDER BY line_no',
-            ['sale_id' => $row['id']]
-        );
+        $itemRows = $this->connection->fetchAllAssociative('SELECT * FROM sale_items WHERE sale_id = :sale_id ORDER BY line_no', [
+            'sale_id' => $row['id'],
+        ]);
 
         foreach ($itemRows as $itemRow) {
             $saleItem = $this->buildSaleItem($itemRow);
@@ -182,11 +180,7 @@ SQL,
         $item->setUnitPrice((string) ($row['unit_price'] ?? '0'));
         $item->setNetAmount((string) ($row['net_amount'] ?? '0'));
         $item->setDiscountAmount((string) ($row['discount_amount'] ?? '0'));
-        $item->setDiscountPercent(
-            isset($row['descuento_porcentaje'])
-                ? (string) $row['descuento_porcentaje']
-                : null
-        );
+        $item->setDiscountPercent(isset($row['descuento_porcentaje']) ? (string) $row['descuento_porcentaje'] : null);
         $item->setGrossAmount((string) ($row['gross_amount'] ?? $row['net_amount'] ?? '0'));
         $item->setTaxAmount((string) ($row['tax_amount'] ?? '0'));
         $item->setLineNo((int) ($row['line_no'] ?? 0));

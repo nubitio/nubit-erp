@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Settings\Service;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\ArrayParameterType;
 
 class MenuSeedService
 {
@@ -132,9 +132,9 @@ class MenuSeedService
         ],
     ];
 
-    public function __construct(private readonly Connection $connection)
-    {
-    }
+    public function __construct(
+        private readonly Connection $connection,
+    ) {}
 
     /**
      * Seed menus idempotently.
@@ -153,10 +153,8 @@ class MenuSeedService
         }
 
         // Grant all roles access to all menus (role-level filtering handled elsewhere).
-        $this->connection->executeStatement(
-            'INSERT INTO menu_rol (menu_id, role_id)
-             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r'
-        );
+        $this->connection->executeStatement('INSERT INTO menu_rol (menu_id, role_id)
+             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r');
     }
 
     /**
@@ -206,8 +204,7 @@ class MenuSeedService
      */
     private function upsertMenu(array $menu): void
     {
-        $this->connection->executeStatement(
-            'INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
+        $this->connection->executeStatement('INSERT INTO menu (id, order_index, key_name, type, route, icon, parent_id)
             VALUES (:id, :order_index, :key_name, :type, :route, :icon, :parent_id)
             ON DUPLICATE KEY UPDATE
                 order_index = VALUES(order_index),
@@ -215,8 +212,6 @@ class MenuSeedService
                 type = VALUES(type),
                 route = VALUES(route),
                 icon = VALUES(icon),
-                parent_id = VALUES(parent_id)',
-            $menu
-        );
+                parent_id = VALUES(parent_id)', $menu);
     }
 }

@@ -33,8 +33,8 @@ use Psr\Log\LoggerInterface;
  */
 final class CachedDocumentLookupService
 {
-    private const int TTL_RUC_SECONDS = 7 * 24 * 60 * 60;   // 7 days
-    private const int TTL_DNI_SECONDS = 30 * 24 * 60 * 60;  // 30 days
+    private const int TTL_RUC_SECONDS = 7 * 24 * 60 * 60; // 7 days
+    private const int TTL_DNI_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
     public function __construct(
         private readonly SunatRucScraper $rucScraper,
@@ -42,8 +42,7 @@ final class CachedDocumentLookupService
         private readonly DecolectaClient $decolecta,
         private readonly CacheItemPoolInterface $cache,
         private readonly LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws LookupException
@@ -95,7 +94,8 @@ final class CachedDocumentLookupService
             return $this->rucScraper->lookup($ruc);
         } catch (LookupException $primary) {
             $this->logger->warning('CachedDocumentLookupService: SUNAT RUC scraping failed, trying Decolecta', [
-                'ruc' => $ruc, 'error' => $primary->getMessage(),
+                'ruc' => $ruc,
+                'error' => $primary->getMessage(),
             ]);
         }
 
@@ -115,7 +115,8 @@ final class CachedDocumentLookupService
             return $this->dniScraper->lookup($dni);
         } catch (LookupException $primary) {
             $this->logger->info('CachedDocumentLookupService: SUNAT DNI lookup failed, trying Decolecta', [
-                'dni' => $dni, 'error' => $primary->getMessage(),
+                'dni' => $dni,
+                'error' => $primary->getMessage(),
             ]);
         }
 
@@ -150,7 +151,8 @@ final class CachedDocumentLookupService
             }
         } catch (\Throwable $e) {
             $this->logger->warning('DocumentLookup cache read error', [
-                'key' => $key, 'error' => $e->getMessage(),
+                'key' => $key,
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -167,7 +169,8 @@ final class CachedDocumentLookupService
             $this->logger->debug('DocumentLookup cache SET', ['key' => $key, 'ttl' => $ttl]);
         } catch (\Throwable $e) {
             $this->logger->warning('DocumentLookup cache write error', [
-                'key' => $key, 'error' => $e->getMessage(),
+                'key' => $key,
+                'error' => $e->getMessage(),
             ]);
         }
     }

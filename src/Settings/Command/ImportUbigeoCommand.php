@@ -2,8 +2,8 @@
 
 namespace App\Settings\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use App\Settings\Service\UbigeoImportService;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
+use App\AI\Context\BranchContextInterface;
 use DateTimeImmutable;
 use DateTimeInterface;
-use App\AI\Context\BranchContextInterface;
 use Doctrine\DBAL\Connection;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
     name: 'customer_intelligence',
     description: 'Returns a purchase profile for a customer identified by RUC (11 digits), '
-        . 'DNI (8 digits), or numeric customer ID. '
-        . 'Includes total purchases, spending, top products, and purchase frequency.',
+    . 'DNI (8 digits), or numeric customer ID. '
+    . 'Includes total purchases, spending, top products, and purchase frequency.',
     method: 'customerIntelligence',
 )]
 final readonly class CustomerIntelligenceTool
@@ -22,8 +22,7 @@ final readonly class CustomerIntelligenceTool
     public function __construct(
         private Connection $connection,
         private BranchContextInterface $branchContextService,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns a purchase profile for a customer.
@@ -122,7 +121,7 @@ final readonly class CustomerIntelligenceTool
         /** @var list<array{product_name: string|null, qty: string, times_purchased: string}> $topProductRows */
         $topProductRows = $this->connection->fetchAllAssociative($topProductsSql, $params);
 
-        $topProducts = array_map(static fn (array $row): array => [
+        $topProducts = array_map(static fn(array $row): array => [
             'product_name' => $row['product_name'] !== null ? (string) $row['product_name'] : '(sin nombre)',
             'qty' => round((float) $row['qty'], 3),
             'times_purchased' => (int) $row['times_purchased'],
@@ -166,24 +165,21 @@ final readonly class CustomerIntelligenceTool
         if ($len === 11) {
             // RUC
             /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative(
-                'SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1',
-                ['ruc' => $identifier],
-            );
+            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1', [
+                'ruc' => $identifier,
+            ]);
         } elseif ($len === 8) {
             // DNI
             /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative(
-                'SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1',
-                ['ruc' => $identifier],
-            );
+            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1', [
+                'ruc' => $identifier,
+            ]);
         } else {
             // Numeric ID
             /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative(
-                'SELECT id, ruc, razon_social FROM cliente WHERE id = :id LIMIT 1',
-                ['id' => (int) $identifier],
-            );
+            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE id = :id LIMIT 1', [
+                'id' => (int) $identifier,
+            ]);
         }
 
         return $row !== false ? $row : null;

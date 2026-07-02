@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Identity\Entity;
 
 use App\Identity\Entity\Role;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Role::class)]
 final class RoleTest extends TestCase

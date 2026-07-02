@@ -14,8 +14,7 @@ final class ProductExportController extends AbstractController
 {
     public function __construct(
         private readonly ProductExportService $exportService,
-    ) {
-    }
+    ) {}
 
     /**
      * GET /api/products/export
@@ -26,7 +25,7 @@ final class ProductExportController extends AbstractController
     public function export(): StreamedResponse
     {
         $spreadsheet = $this->exportService->build();
-        $filename    = 'productos-' . date('Y-m-d') . '.xlsx';
+        $filename = 'productos-' . date('Y-m-d') . '.xlsx';
 
         $response = new StreamedResponse(function () use ($spreadsheet): void {
             $this->exportService->stream($spreadsheet);

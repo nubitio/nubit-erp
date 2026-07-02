@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Efact\Audit;
 
-use App\Efact\Audit\AuditLogMessage;
 use App\Efact\Audit\AuditLogger;
+use App\Efact\Audit\AuditLogMessage;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 
 #[AllowMockObjectsWithoutExpectations]
 final class AuditLoggerTest extends TestCase
@@ -29,11 +29,11 @@ final class AuditLoggerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->context       = $this->createMock(TenantContext::class);
-        $this->security      = $this->createMock(Security::class);
+        $this->context = $this->createMock(TenantContext::class);
+        $this->security = $this->createMock(Security::class);
         $this->tenantManager = $this->createMock(TenantRegistryInterface::class);
-        $this->logger        = $this->createStub(LoggerInterface::class);
-        $this->bus           = $this->createMock(MessageBusInterface::class);
+        $this->logger = $this->createStub(LoggerInterface::class);
+        $this->bus = $this->createMock(MessageBusInterface::class);
 
         $this->auditLogger = new AuditLogger(
             $this->context,
@@ -79,10 +79,12 @@ final class AuditLoggerTest extends TestCase
         $this->context->method('getActorIdentifier')->willReturn(null);
 
         $dispatched = null;
-        $this->bus->method('dispatch')->willReturnCallback(function ($msg) use (&$dispatched) {
-            $dispatched = $msg;
-            return new Envelope($msg);
-        });
+        $this->bus
+            ->method('dispatch')
+            ->willReturnCallback(function ($msg) use (&$dispatched) {
+                $dispatched = $msg;
+                return new Envelope($msg);
+            });
 
         $this->auditLogger->log('sale.void', actor: 'cashier@store.com');
 
@@ -101,10 +103,12 @@ final class AuditLoggerTest extends TestCase
         $this->security->method('getUser')->willReturn($user);
 
         $dispatched = null;
-        $this->bus->method('dispatch')->willReturnCallback(function ($msg) use (&$dispatched) {
-            $dispatched = $msg;
-            return new Envelope($msg);
-        });
+        $this->bus
+            ->method('dispatch')
+            ->willReturnCallback(function ($msg) use (&$dispatched) {
+                $dispatched = $msg;
+                return new Envelope($msg);
+            });
 
         $this->auditLogger->log('product.updated');
 
@@ -121,10 +125,12 @@ final class AuditLoggerTest extends TestCase
         $this->security->method('getUser')->willReturn(null);
 
         $dispatched = null;
-        $this->bus->method('dispatch')->willReturnCallback(function ($msg) use (&$dispatched) {
-            $dispatched = $msg;
-            return new Envelope($msg);
-        });
+        $this->bus
+            ->method('dispatch')
+            ->willReturnCallback(function ($msg) use (&$dispatched) {
+                $dispatched = $msg;
+                return new Envelope($msg);
+            });
 
         $this->auditLogger->log('cron.run');
 
@@ -139,10 +145,12 @@ final class AuditLoggerTest extends TestCase
         $this->context->method('getActorIdentifier')->willReturn('cli');
 
         $dispatched = null;
-        $this->bus->method('dispatch')->willReturnCallback(function ($msg) use (&$dispatched) {
-            $dispatched = $msg;
-            return new Envelope($msg);
-        });
+        $this->bus
+            ->method('dispatch')
+            ->willReturnCallback(function ($msg) use (&$dispatched) {
+                $dispatched = $msg;
+                return new Envelope($msg);
+            });
 
         $this->auditLogger->log('db.migrated', tenantId: 99);
 

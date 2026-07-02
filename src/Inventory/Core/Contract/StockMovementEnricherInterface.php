@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Contract;
 
-use App\Sales\Entity\SaleRecord;
 use App\Inventory\Core\Dto\MovementDraft;
+use App\Sales\Entity\SaleRecord;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**

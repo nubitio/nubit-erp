@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Adapter;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Adapter\SaleInvoicingAdapter;
-use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\Controller\PrintESCPOSController;
+use App\Billing\Message\SendInvoiceMessage;
 use App\Billing\Sale\SaleVoidUseCase;
-use App\Billing\Service\SaleV2Loader;
-use App\Sales\State\DetractionCalculatorInterface;
 use App\Billing\Service\InvoiceCreationServiceInterface;
 use App\Billing\Service\ReplaceRejectedDocumentService;
+use App\Billing\Service\SaleV2Loader;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\State\DetractionCalculatorInterface;
+use Nubit\Platform\Http\ApiResponse;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
@@ -45,7 +45,8 @@ final class SaleInvoicingAdapterTest extends TestCase
         $capturedMessage = null;
         $capturedStamps = null;
         $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->expects(self::once())
+        $messageBus
+            ->expects(self::once())
             ->method('dispatch')
             ->with(
                 self::callback(function (mixed $message) use (&$capturedMessage): bool {
@@ -61,8 +62,9 @@ final class SaleInvoicingAdapterTest extends TestCase
             )
             ->willReturn(new Envelope(new SendInvoiceMessage('tax-1', '123')));
 
-        $result = $this->adapter($invoiceCreation, $messageBus, tenantId: 123)
-            ->createAndDispatchInvoiceForSaleId('sale-1');
+        $result = $this->adapter($invoiceCreation, $messageBus, tenantId: 123)->createAndDispatchInvoiceForSaleId(
+            'sale-1',
+        );
 
         self::assertSame(['success' => true, 'invoiceId' => 'tax-1'], $result);
         self::assertInstanceOf(SendInvoiceMessage::class, $capturedMessage);
@@ -77,13 +79,13 @@ final class SaleInvoicingAdapterTest extends TestCase
         $invoiceCreation = $this->createStub(InvoiceCreationServiceInterface::class);
         $messageBus = $this->createStub(MessageBusInterface::class);
         $voidUseCase = $this->createMock(SaleVoidUseCase::class);
-        $voidUseCase->expects(self::once())
+        $voidUseCase
+            ->expects(self::once())
             ->method('__invoke')
             ->with('sale-1', 'reason', 10)
             ->willReturn(new ApiResponse(true, 'ok'));
 
-        $this->adapter($invoiceCreation, $messageBus, voidUseCase: $voidUseCase)
-            ->voidSale('sale-1', 'reason', 10);
+        $this->adapter($invoiceCreation, $messageBus, voidUseCase: $voidUseCase)->voidSale('sale-1', 'reason', 10);
     }
 
     private function adapter(

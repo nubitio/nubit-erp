@@ -16,6 +16,5 @@ final readonly class ProvisionTenantMessage
         public string $subdomain,
         public string $domain,
         public string $adminPasswordSecret,
-    ) {
-    }
+    ) {}
 }

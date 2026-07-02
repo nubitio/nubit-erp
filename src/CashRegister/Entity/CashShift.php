@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\CashRegister\Entity;
 
-use App\Identity\Entity\User;
-use App\Organization\Entity\Branch;
-use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -15,16 +12,19 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use App\CashRegister\Enum\CashShiftStatus;
-use App\CashRegister\Repository\CashShiftRepository;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\Enum\CashShiftStatus;
+use App\CashRegister\Repository\CashShiftRepository;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use App\CashRegister\State\CashSessionMovementsProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
+use App\Identity\Entity\User;
+use App\Organization\Entity\Branch;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
@@ -38,10 +38,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(
             uriTemplate: '/cash-shifts/{id}/movements',
             uriVariables: [
-                'id' => new Link(
-                    fromProperty: 'id',
-                    fromClass: CashShift::class,
-                ),
+                'id' => new Link(fromProperty: 'id', fromClass: CashShift::class),
             ],
             paginationEnabled: false,
             normalizationContext: ['groups' => ['cash_movement:read']],

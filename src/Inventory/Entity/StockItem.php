@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Inventory\Entity;
 
-use App\Catalog\Entity\Product;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use App\Catalog\Entity\Product;
 use App\Inventory\Repository\StockItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: StockItemRepository::class)]

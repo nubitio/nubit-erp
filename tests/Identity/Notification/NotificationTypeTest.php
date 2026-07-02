@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Identity\Notification;
 
 use App\Identity\Notification\NotificationType;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
 #[CoversClass(NotificationType::class)]
 final class NotificationTypeTest extends TestCase

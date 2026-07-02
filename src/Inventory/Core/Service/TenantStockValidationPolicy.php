@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
-use App\Settings\Service\TenantSettingsService;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockPolicy;
+use App\Settings\Service\TenantSettingsService;
 
 /**
  * Resolves the per-tenant stock validation policy from the generic config store
@@ -25,8 +25,7 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
 {
     public function __construct(
         private TenantSettingsService $tenantSettings,
-    ) {
-    }
+    ) {}
 
     public function validateSale(
         Product $product,
@@ -38,7 +37,7 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
             return StockValidationResult::allowed();
         }
 
-        $remaining = ((float) $onHandQtyBase) - ((float) $requestedQtyBase);
+        $remaining = (float) $onHandQtyBase - (float) $requestedQtyBase;
         if ($remaining >= -0.0000005) {
             return StockValidationResult::allowed();
         }
@@ -46,8 +45,8 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
         $policy = $this->resolvePolicy();
 
         return match ($policy) {
-            StockPolicy::STRICT         => StockValidationResult::blocked('Insufficient stock for STRICT policy'),
-            StockPolicy::WARNING_ONLY   => StockValidationResult::warning('Stock would go negative under WARNING_ONLY'),
+            StockPolicy::STRICT => StockValidationResult::blocked('Insufficient stock for STRICT policy'),
+            StockPolicy::WARNING_ONLY => StockValidationResult::warning('Stock would go negative under WARNING_ONLY'),
             StockPolicy::ALLOW_NEGATIVE => StockValidationResult::allowed(),
         };
     }

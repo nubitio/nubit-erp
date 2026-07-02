@@ -6,8 +6,8 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Catalog\Enum\ExchangeRateSource;
 use App\Catalog\Repository\ExchangeRateRepository;
 use App\Catalog\State\ExchangeRateProvider;
@@ -26,10 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'uq_currency', columns: ['currency'])]
 #[ApiResource(
     operations: [
-        new Get(
-            uriTemplate: '/exchange-rate/{currency}',
-            provider: ExchangeRateProvider::class,
-        ),
+        new Get(uriTemplate: '/exchange-rate/{currency}', provider: ExchangeRateProvider::class),
         new Put(
             uriTemplate: '/exchange-rate/{currency}',
             provider: ExchangeRateProvider::class,
@@ -66,9 +63,9 @@ class ExchangeRate
 
     public function __construct(string $currency, string $rate, ExchangeRateSource $source)
     {
-        $this->currency  = strtoupper($currency);
-        $this->rate      = $rate;
-        $this->source    = $source;
+        $this->currency = strtoupper($currency);
+        $this->rate = $rate;
+        $this->source = $source;
         $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
@@ -99,8 +96,8 @@ class ExchangeRate
 
     public function update(string $rate, ExchangeRateSource $source): void
     {
-        $this->rate      = $rate;
-        $this->source    = $source;
+        $this->rate = $rate;
+        $this->source = $source;
         $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 }

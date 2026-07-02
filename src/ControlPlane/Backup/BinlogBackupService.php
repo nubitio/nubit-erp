@@ -6,8 +6,8 @@ namespace App\ControlPlane\Backup;
 
 use App\Efact\Config\EfactConstants;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
@@ -25,8 +25,7 @@ final readonly class BinlogBackupService
         private LoggerInterface $logger,
         #[Autowire(env: 'BACKUP_DATABASE_URL')]
         private string $backupDatabaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{backed_up: int, skipped: bool, message: string}
@@ -38,7 +37,7 @@ final readonly class BinlogBackupService
         $dbConn = $this->getBackupConnection();
 
         $logBin = $dbConn->fetchAssociative("SHOW VARIABLES LIKE 'log_bin'");
-        if ($logBin === false || strtolower((string)($logBin['Value'] ?? '')) !== 'on') {
+        if ($logBin === false || strtolower((string) ($logBin['Value'] ?? '')) !== 'on') {
             return ['backed_up' => 0, 'skipped' => true, 'message' => 'Binary logging is not enabled'];
         }
 
@@ -52,7 +51,7 @@ final readonly class BinlogBackupService
         if (
             $lastBackup !== []
             && $lastBackup['binlog_file'] === $masterStatus['file']
-            && (int)$lastBackup['binlog_position'] === (int)$masterStatus['position']
+            && (int) $lastBackup['binlog_position'] === (int) $masterStatus['position']
         ) {
             return ['backed_up' => 0, 'skipped' => true, 'message' => 'No new binlog data since last backup'];
         }
@@ -65,9 +64,9 @@ final readonly class BinlogBackupService
         $currentFile = $masterStatus['file'];
 
         $filesToBackup = [];
-        $pastStart = ($startFile === null);
+        $pastStart = $startFile === null;
         foreach ($binaryLogs as $log) {
-            $logName = (string)$log['Log_name'];
+            $logName = (string) $log['Log_name'];
             if (!$pastStart) {
                 if ($logName === $startFile) {
                     $pastStart = true;
@@ -108,7 +107,7 @@ final readonly class BinlogBackupService
                 $this->compressFile($localFile, $gzFile);
                 @unlink($localFile);
 
-                $sizeBytes = (int)filesize($gzFile);
+                $sizeBytes = (int) filesize($gzFile);
                 $s3Filename = $binlogFile . '.gz';
                 $s3Key = sprintf('%s/%s/%s', EfactConstants::BINLOG_DIR, $dateDir, $s3Filename);
 
@@ -127,23 +126,31 @@ final readonly class BinlogBackupService
 
                 @unlink($gzFile);
 
-                $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-                $conn->update('binlog_backups', [
-                    'binlog_position' => (int)$masterStatus['position'],
-                    'filename' => $s3Filename,
-                    'storage_path' => $s3Key,
-                    'size_bytes' => $sizeBytes,
-                    'status' => 'completed',
-                    'completed_at' => $now,
-                ], ['id' => $backupId]);
+                $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
+                $conn->update(
+                    'binlog_backups',
+                    [
+                        'binlog_position' => (int) $masterStatus['position'],
+                        'filename' => $s3Filename,
+                        'storage_path' => $s3Key,
+                        'size_bytes' => $sizeBytes,
+                        'status' => 'completed',
+                        'completed_at' => $now,
+                    ],
+                    ['id' => $backupId],
+                );
 
                 $backedUp++;
             } catch (\Throwable $e) {
-                $conn->update('binlog_backups', [
-                    'status' => 'failed',
-                    'error_message' => mb_substr($e->getMessage(), 0, 2000),
-                    'completed_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-                ], ['id' => $backupId]);
+                $conn->update(
+                    'binlog_backups',
+                    [
+                        'status' => 'failed',
+                        'error_message' => mb_substr($e->getMessage(), 0, 2000),
+                        'completed_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
+                    ],
+                    ['id' => $backupId],
+                );
 
                 $this->logger->error('Binlog backup failed for {file}: {error}', [
                     'file' => $binlogFile,
@@ -165,18 +172,17 @@ final readonly class BinlogBackupService
      */
     public function getLastBackedUpPosition(): array
     {
-        $row = $this->getControlPlaneConnection()->fetchAssociative(
-            'SELECT binlog_file, binlog_position FROM binlog_backups WHERE status = ? ORDER BY id DESC LIMIT 1',
-            ['completed'],
-        );
+        $row = $this->getControlPlaneConnection()->fetchAssociative('SELECT binlog_file, binlog_position FROM binlog_backups WHERE status = ? ORDER BY id DESC LIMIT 1', [
+            'completed',
+        ]);
 
         if ($row === false) {
             return [];
         }
 
         return [
-            'binlog_file' => (string)$row['binlog_file'],
-            'binlog_position' => (int)$row['binlog_position'],
+            'binlog_file' => (string) $row['binlog_file'],
+            'binlog_position' => (int) $row['binlog_position'],
         ];
     }
 
@@ -193,8 +199,8 @@ final readonly class BinlogBackupService
         }
 
         return [
-            'file' => (string)$row['File'],
-            'position' => (int)$row['Position'],
+            'file' => (string) $row['File'],
+            'position' => (int) $row['Position'],
         ];
     }
 
@@ -228,7 +234,7 @@ final readonly class BinlogBackupService
             throw new RuntimeException(sprintf('Binlog backup #%d not found.', $id));
         }
 
-        $storagePath = (string)$backup['storage_path'];
+        $storagePath = (string) $backup['storage_path'];
         if ($storagePath !== '') {
             try {
                 $this->defaultFilesystem->delete($storagePath);
@@ -260,14 +266,11 @@ final readonly class BinlogBackupService
             ];
         }
 
-        $row = $conn->fetchAssociative(
-            'SELECT MAX(completed_at) AS last_backup_at,
+        $row = $conn->fetchAssociative('SELECT MAX(completed_at) AS last_backup_at,
                     COUNT(*) AS total_count,
                     COALESCE(SUM(size_bytes), 0) AS total_size_bytes
              FROM binlog_backups
-             WHERE status = ?',
-            ['completed'],
-        );
+             WHERE status = ?', ['completed']);
 
         if ($row === false) {
             return [
@@ -279,8 +282,8 @@ final readonly class BinlogBackupService
 
         return [
             'last_backup_at' => $row['last_backup_at'],
-            'total_count' => (int)$row['total_count'],
-            'total_size_bytes' => (int)$row['total_size_bytes'],
+            'total_count' => (int) $row['total_count'],
+            'total_size_bytes' => (int) $row['total_size_bytes'],
         ];
     }
 
@@ -293,10 +296,10 @@ final readonly class BinlogBackupService
             'storage_path' => '',
             'size_bytes' => 0,
             'status' => 'pending',
-            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
 
-        return (int)$conn->lastInsertId();
+        return (int) $conn->lastInsertId();
     }
 
     /**
@@ -304,10 +307,10 @@ final readonly class BinlogBackupService
      */
     private function copyBinlogFromServer(array $params, string $resultDir, string $binlogFile): void
     {
-        $host = (string)($params['host'] ?? 'localhost');
-        $port = (string)($params['port'] ?? '3306');
-        $user = (string)($params['user'] ?? 'root');
-        $password = (string)($params['password'] ?? '');
+        $host = (string) ($params['host'] ?? 'localhost');
+        $port = (string) ($params['port'] ?? '3306');
+        $user = (string) ($params['user'] ?? 'root');
+        $password = (string) ($params['password'] ?? '');
 
         $cmd = [
             'mariadb-binlog',
@@ -434,7 +437,7 @@ final readonly class BinlogBackupService
         $params = [
             'driver' => 'pdo_mysql',
             'host' => $parts['host'] ?? null,
-            'port' => isset($parts['port']) ? (int)$parts['port'] : 3306,
+            'port' => isset($parts['port']) ? (int) $parts['port'] : 3306,
             'user' => isset($parts['user']) ? urldecode($parts['user']) : null,
             'password' => isset($parts['pass']) ? urldecode($parts['pass']) : null,
         ];
@@ -444,13 +447,13 @@ final readonly class BinlogBackupService
         }
 
         if (isset($query['serverVersion']) && $query['serverVersion'] !== '') {
-            $params['serverVersion'] = (string)$query['serverVersion'];
+            $params['serverVersion'] = (string) $query['serverVersion'];
         }
         if (isset($query['charset']) && $query['charset'] !== '') {
-            $params['charset'] = (string)$query['charset'];
+            $params['charset'] = (string) $query['charset'];
         }
         if (isset($query['unix_socket']) && $query['unix_socket'] !== '') {
-            $params['unix_socket'] = (string)$query['unix_socket'];
+            $params['unix_socket'] = (string) $query['unix_socket'];
         }
 
         if (empty($params['host']) && empty($params['unix_socket'])) {

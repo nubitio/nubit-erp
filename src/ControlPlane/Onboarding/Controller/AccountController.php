@@ -16,8 +16,7 @@ final class AccountController extends AbstractController
 {
     public function __construct(
         private readonly AccountService $accountService,
-    ) {
-    }
+    ) {}
 
     #[Route('/account/login', name: 'onboarding_account_login', methods: ['GET'])]
     public function loginForm(Request $request): Response
@@ -103,7 +102,7 @@ final class AccountController extends AbstractController
     #[Route(
         '/account/dashboard/provisions/{provisionId}/dismiss',
         name: 'onboarding_account_dashboard_provision_dismiss',
-        methods: ['POST']
+        methods: ['POST'],
     )]
     public function dismissProvision(Request $request, int $provisionId): JsonResponse
     {

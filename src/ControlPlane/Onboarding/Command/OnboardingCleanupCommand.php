@@ -15,10 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:onboarding:cleanup',
-    description: 'Clean up unverified accounts and stale provisioning records',
-)]
+#[AsCommand(name: 'app:onboarding:cleanup', description: 'Clean up unverified accounts and stale provisioning records')]
 final class OnboardingCleanupCommand extends Command
 {
     public function __construct(
@@ -30,15 +27,13 @@ final class OnboardingCleanupCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addOption(
-                'hours',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Delete unverified accounts older than N hours',
-                '24',
-            )
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show what would be deleted');
+        $this->addOption(
+            'hours',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Delete unverified accounts older than N hours',
+            '24',
+        )->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show what would be deleted');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -48,7 +43,7 @@ final class OnboardingCleanupCommand extends Command
         $dryRun = (bool) $input->getOption('dry-run');
         $conn = $this->cp();
 
-        $cutoff = (new \DateTimeImmutable(sprintf('-%d hours', $hours)))->format('Y-m-d H:i:s');
+        $cutoff = new \DateTimeImmutable(sprintf('-%d hours', $hours))->format('Y-m-d H:i:s');
 
         // Count unverified accounts to clean
         $unverifiedCount = (int) $conn->fetchOne(

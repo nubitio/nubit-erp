@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Entity;
 
-use App\Sales\Entity\SaleRecord;
-use App\Contacts\Entity\Customer;
-use App\Organization\Entity\Branch;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -19,16 +16,19 @@ use App\Billing\Controller\Api\ConsultInvoice;
 use App\Billing\Controller\Api\SendInvoiceEmail;
 use App\Billing\Controller\Api\SendTaxDocument;
 use App\Billing\Controller\Api\ValidateInvoice;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Billing\Receipt\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Billing\State\TaxDocumentProvider;
+use App\Contacts\Entity\Customer;
+use App\Organization\Entity\Branch;
+use App\Sales\Entity\SaleRecord;
 use DateTimeInterface;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -46,18 +46,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['invoice:read']],
         ),
         new Post(processor: TaxDocumentProcessor::class),
-        new Get(
-            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
-            provider: TaxDocumentProvider::class,
-        ),
-        new Patch(
-            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
-            processor: TaxDocumentProcessor::class,
-        ),
-        new Delete(
-            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
-            processor: TaxDocumentProcessor::class,
-        ),
+        new Get(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
+            'id',
+        ])], provider: TaxDocumentProvider::class),
+        new Patch(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
+            'id',
+        ])], processor: TaxDocumentProcessor::class),
+        new Delete(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
+            'id',
+        ])], processor: TaxDocumentProcessor::class),
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
             uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
@@ -244,7 +241,7 @@ class TaxDocument
         targetEntity: TaxDocumentLine::class,
         mappedBy: 'taxDocument',
         cascade: ['persist', 'remove'],
-        orphanRemoval: true
+        orphanRemoval: true,
     )]
     #[Groups(['creditnote:write'])]
     private Collection $lines;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Exception\ServiceException;
 
 /**
  * Resolves and validates the canonical cash session for Sales V2 writes.
@@ -15,8 +15,7 @@ final readonly class CashSessionResolver implements CashSessionResolverInterface
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws ServiceException
@@ -28,7 +27,7 @@ final readonly class CashSessionResolver implements CashSessionResolverInterface
         if ($branchId === null) {
             throw new ServiceException(sprintf(
                 'No se pudo resolver cash_session_id para la venta %s: sucursal no definida.',
-                $saleId
+                $saleId,
             ));
         }
 
@@ -50,10 +49,7 @@ final readonly class CashSessionResolver implements CashSessionResolverInterface
         }
 
         if ($candidate === false) {
-            throw new ServiceException(sprintf(
-                'No se pudo resolver cash_session_id para la venta %s.',
-                $saleId
-            ));
+            throw new ServiceException(sprintf('No se pudo resolver cash_session_id para la venta %s.', $saleId));
         }
 
         $this->validateCandidate($candidate, $branchId, $cashRegisterId, $issuedAt, $saleId);
@@ -74,7 +70,7 @@ final readonly class CashSessionResolver implements CashSessionResolverInterface
         if ($branchId === null) {
             throw new ServiceException(sprintf(
                 'No se pudo resolver cash_session_id para la venta %s: sucursal no definida.',
-                $saleId
+                $saleId,
             ));
         }
 
@@ -111,22 +107,22 @@ final readonly class CashSessionResolver implements CashSessionResolverInterface
     {
         return $this->connection->fetchAssociative(
             <<<'SQL'
-SELECT id, cash_register_id, branch_id, opened_at, closed_at
-FROM cash_sessions
-WHERE cash_register_id = :cash_register_id
-  AND branch_id = :branch_id
-  AND opened_at <= :issued_at
-  AND (closed_at IS NULL OR closed_at >= :issued_at)
-ORDER BY
-    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-    opened_at DESC
-LIMIT 1
-SQL,
+                SELECT id, cash_register_id, branch_id, opened_at, closed_at
+                FROM cash_sessions
+                WHERE cash_register_id = :cash_register_id
+                  AND branch_id = :branch_id
+                  AND opened_at <= :issued_at
+                  AND (closed_at IS NULL OR closed_at >= :issued_at)
+                ORDER BY
+                    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
+                    opened_at DESC
+                LIMIT 1
+                SQL,
             [
                 'cash_register_id' => $cashRegisterId,
                 'branch_id' => $branchId,
                 'issued_at' => $issuedAt,
-            ]
+            ],
         );
     }
 
@@ -137,20 +133,20 @@ SQL,
     {
         return $this->connection->fetchAssociative(
             <<<'SQL'
-SELECT id, cash_register_id, branch_id, opened_at, closed_at
-FROM cash_sessions
-WHERE branch_id = :branch_id
-  AND opened_at <= :issued_at
-  AND (closed_at IS NULL OR closed_at >= :issued_at)
-ORDER BY
-    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-    opened_at DESC
-LIMIT 1
-SQL,
+                SELECT id, cash_register_id, branch_id, opened_at, closed_at
+                FROM cash_sessions
+                WHERE branch_id = :branch_id
+                  AND opened_at <= :issued_at
+                  AND (closed_at IS NULL OR closed_at >= :issued_at)
+                ORDER BY
+                    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
+                    opened_at DESC
+                LIMIT 1
+                SQL,
             [
                 'branch_id' => $branchId,
                 'issued_at' => $issuedAt,
-            ]
+            ],
         );
     }
 
@@ -161,16 +157,16 @@ SQL,
     {
         return $this->connection->fetchAssociative(
             <<<'SQL'
-SELECT id, cash_register_id, branch_id, opened_at, closed_at
-FROM cash_sessions
-WHERE branch_id = :branch_id
-  AND status = 'OPEN'
-ORDER BY opened_at DESC
-LIMIT 1
-SQL,
+                SELECT id, cash_register_id, branch_id, opened_at, closed_at
+                FROM cash_sessions
+                WHERE branch_id = :branch_id
+                  AND status = 'OPEN'
+                ORDER BY opened_at DESC
+                LIMIT 1
+                SQL,
             [
                 'branch_id' => $branchId,
-            ]
+            ],
         );
     }
 
@@ -181,10 +177,9 @@ SQL,
      */
     public function resolveRegisterIdForSession(int $sessionId): ?int
     {
-        $row = $this->connection->fetchAssociative(
-            'SELECT cash_register_id FROM cash_sessions WHERE id = :id',
-            ['id' => $sessionId]
-        );
+        $row = $this->connection->fetchAssociative('SELECT cash_register_id FROM cash_sessions WHERE id = :id', [
+            'id' => $sessionId,
+        ]);
 
         if ($row === false || empty($row['cash_register_id'])) {
             return null;
@@ -202,7 +197,7 @@ SQL,
         string $expectedBranchId,
         ?int $expectedCashRegisterId,
         \DateTimeImmutable $issuedAt,
-        string $saleId
+        string $saleId,
     ): void {
         $candidateId = (int) ($candidate['id'] ?? 0);
         $candidateBranchId = (string) ($candidate['branch_id'] ?? '');
@@ -211,17 +206,14 @@ SQL,
         $closedAtRaw = $candidate['closed_at'] ?? null;
 
         if ($candidateId <= 0) {
-            throw new ServiceException(sprintf(
-                'Cash session inválida al procesar venta %s.',
-                $saleId
-            ));
+            throw new ServiceException(sprintf('Cash session inválida al procesar venta %s.', $saleId));
         }
 
         if ($candidateBranchId !== $expectedBranchId) {
             throw new ServiceException(sprintf(
                 'La sesión de caja %d no pertenece a la sucursal de la venta %s.',
                 $candidateId,
-                $saleId
+                $saleId,
             ));
         }
 
@@ -229,7 +221,7 @@ SQL,
             throw new ServiceException(sprintf(
                 'La sesión de caja %d no pertenece a la caja esperada para la venta %s.',
                 $candidateId,
-                $saleId
+                $saleId,
             ));
         }
 
@@ -239,7 +231,7 @@ SQL,
                 throw new ServiceException(sprintf(
                     'La sesión de caja %d abre después de la fecha/hora de la venta %s.',
                     $candidateId,
-                    $saleId
+                    $saleId,
                 ));
             }
         }
@@ -250,7 +242,7 @@ SQL,
                 throw new ServiceException(sprintf(
                     'La sesión de caja %d ya estaba cerrada para la fecha/hora de la venta %s.',
                     $candidateId,
-                    $saleId
+                    $saleId,
                 ));
             }
         }

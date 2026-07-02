@@ -122,10 +122,7 @@ final class TaxDocumentProviderTest extends TestCase
         self::assertIsArray($capturedContext);
         self::assertArrayHasKey('sort', $capturedContext['filters']);
         self::assertArrayHasKey('filter', $capturedContext['filters']);
-        self::assertSame(
-            [['documentType', 'in', ['01', '03']]],
-            $capturedContext['filters']['filter']
-        );
+        self::assertSame([['documentType', 'in', ['01', '03']]], $capturedContext['filters']['filter']);
     }
 
     // -------------------------------------------------------------------------
@@ -154,10 +151,7 @@ final class TaxDocumentProviderTest extends TestCase
 
         self::assertIsArray($capturedContext);
         self::assertArrayHasKey('filter', $capturedContext['filters']);
-        self::assertSame(
-            [['documentType', 'in', ['07', '08']]],
-            $capturedContext['filters']['filter']
-        );
+        self::assertSame([['documentType', 'in', ['07', '08']]], $capturedContext['filters']['filter']);
     }
 
     // -------------------------------------------------------------------------
@@ -212,11 +206,7 @@ final class TaxDocumentProviderTest extends TestCase
             });
 
         $provider = $this->buildProvider($collectionProvider, $itemProvider);
-        $provider->provide(
-            new GetCollection(),
-            [],
-            ['filters' => ['type' => 'invoice', 'filter' => $existingFilter]]
-        );
+        $provider->provide(new GetCollection(), [], ['filters' => ['type' => 'invoice', 'filter' => $existingFilter]]);
 
         self::assertIsArray($capturedContext);
         self::assertArrayHasKey('filter', $capturedContext['filters']);

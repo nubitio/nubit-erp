@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Reporting\Command;
 
 use App\ControlPlane\Tenant\Service\TenantNotificationService;
-use Override;
 use DateTimeImmutable;
 use DateTimeZone;
-use Exception;
-use RuntimeException;
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
+use Exception;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
+use Override;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,8 +24,8 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 #[AsCommand(name: 'notify:daily-summary', description: 'Send daily summary to all customers', help: <<<'TXT'
-Send daily summary to all customers
-TXT)]
+    Send daily summary to all customers
+    TXT)]
 class SendDailySummaryCommand extends PerTenantCommand
 {
     public function __construct(
@@ -47,20 +47,15 @@ class SendDailySummaryCommand extends PerTenantCommand
 
         try {
             // Get company Name
-            $companyName = $this->connection->fetchOne(
-                'SELECT nombre_comercial FROM empresa LIMIT 1'
-            );
+            $companyName = $this->connection->fetchOne('SELECT nombre_comercial FROM empresa LIMIT 1');
 
             // Keep day boundaries aligned with operational reporting timezone.
-            $today = (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format('Y-m-d');
+            $today = new DateTimeImmutable('now', new DateTimeZone('America/Lima'))->format('Y-m-d');
 
             // Get sales count for today from Sales V2.
-            $salesCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*)
+            $salesCount = (int) $this->connection->fetchOne('SELECT COUNT(*)
                  FROM sales s
-                 WHERE s.issued_date = ?",
-                [$today]
-            );
+                 WHERE s.issued_date = ?', [$today]);
 
             // For simplicity, we'll use default values for customer metrics
             // since we don't know the exact schema
@@ -68,36 +63,32 @@ class SendDailySummaryCommand extends PerTenantCommand
             $recurringCustomersCount = 0;
 
             // Get invoices sent to SUNAT count for today
-            $invoicesSentCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*) FROM tax_document
+            $invoicesSentCount = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND issue_date = ?",
-                [$today]
-            );
-            $invoicesAcceptedCount = (int)$this->connection->fetchOne(
+                   AND issue_date = ?", [$today]);
+            $invoicesAcceptedCount = (int) $this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
                    AND issue_date = ?
                    AND sunat_status = '0'",
-                [$today]
+                [$today],
             );
-            $invoicesRejectedCount = (int)$this->connection->fetchOne(
+            $invoicesRejectedCount = (int) $this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
                    AND issue_date = ?
                    AND sunat_status REGEXP '^[0-9]+$'
                    AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999",
-                [$today]
+                [$today],
             );
-            $invoicesPendingCount = (int)$this->connection->fetchOne(
+            $invoicesPendingCount = (int) $this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
                    AND issue_date = ?
                    AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')",
-                [$today]
+                [$today],
             );
-            $invoicesTechnicalErrorCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*) FROM tax_document
+            $invoicesTechnicalErrorCount = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
                    AND issue_date = ?
                    AND sunat_status IS NOT NULL
@@ -107,11 +98,8 @@ class SendDailySummaryCommand extends PerTenantCommand
                    AND NOT (
                        sunat_status REGEXP '^[0-9]+$'
                        AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
-                   )",
-                [$today]
-            );
-            $cancellationsCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*) FROM tax_document t
+                   )", [$today]);
+            $cancellationsCount = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM tax_document t
                  INNER JOIN sales s ON (
                      (s.legacy_movimiento_id IS NOT NULL AND s.legacy_movimiento_id = t.movimiento_id)
                      OR
@@ -119,17 +107,15 @@ class SendDailySummaryCommand extends PerTenantCommand
                  )
                  WHERE t.document_type IN ('01', '03')
                    AND s.status = 'VOIDED'
-                   AND t.issue_date = ?",
-                [$today]
-            );
+                   AND t.issue_date = ?", [$today]);
             $invoicesErrorCount = $invoicesRejectedCount + $invoicesTechnicalErrorCount;
 
-            $tenantName = (string)($this->currentTenantName ?? '');
+            $tenantName = (string) ($this->currentTenantName ?? '');
             $subject = sprintf('[SUNAT Daily Summary] %s - %s', $companyName, $today);
             $message = implode("\n", [
                 sprintf('Resumen SUNAT diario (%s)', $today),
                 'Tenant: ' . ($tenantName !== '' ? $tenantName : 'default'),
-                'Empresa: ' . (string)$companyName,
+                'Empresa: ' . (string) $companyName,
                 'Comprobantes emitidos: ' . $invoicesSentCount,
                 'Aceptados: ' . $invoicesAcceptedCount,
                 'Rechazados: ' . $invoicesRejectedCount,
@@ -140,7 +126,7 @@ class SendDailySummaryCommand extends PerTenantCommand
             $payload = [
                 'date' => $today,
                 'tenant_name' => $tenantName !== '' ? $tenantName : 'default',
-                'company_name' => (string)$companyName,
+                'company_name' => (string) $companyName,
                 'sales_count' => $salesCount,
                 'new_customers_count' => $newCustomersCount,
                 'recurring_customers_count' => $recurringCustomersCount,
@@ -174,7 +160,7 @@ class SendDailySummaryCommand extends PerTenantCommand
                     $invoicesSentCount,
                     $cancellationsCount,
                     $invoicesErrorCount,
-                    $io
+                    $io,
                 );
             }
 
@@ -202,7 +188,7 @@ class SendDailySummaryCommand extends PerTenantCommand
         int $invoicesSentCount,
         int $cancellationsCount,
         int $invoicesErrorCount,
-        SymfonyStyle $io
+        SymfonyStyle $io,
     ): void {
         $accessKey = $_ENV['BIRD_ACCESS_KEY'] ?? null;
         $phoneNumber = $_ENV['BIRD_PHONE_NUMBER'] ?? null;
@@ -250,32 +236,32 @@ class SendDailySummaryCommand extends PerTenantCommand
                     [
                         'type' => 'string',
                         'key' => '3',
-                        'value' => (string)$salesCount,
+                        'value' => (string) $salesCount,
                     ],
                     [
                         'type' => 'string',
                         'key' => '4',
-                        'value' => (string)$newCustomersCount,
+                        'value' => (string) $newCustomersCount,
                     ],
                     [
                         'type' => 'string',
                         'key' => '5',
-                        'value' => (string)$recurringCustomersCount,
+                        'value' => (string) $recurringCustomersCount,
                     ],
                     [
                         'type' => 'string',
                         'key' => '6',
-                        'value' => (string)$invoicesSentCount,
+                        'value' => (string) $invoicesSentCount,
                     ],
                     [
                         'type' => 'string',
                         'key' => '7',
-                        'value' => (string)$cancellationsCount,
+                        'value' => (string) $cancellationsCount,
                     ],
                     [
                         'type' => 'string',
                         'key' => '8',
-                        'value' => (string)$invoicesErrorCount,
+                        'value' => (string) $invoicesErrorCount,
                     ],
                 ],
             ],
@@ -308,10 +294,7 @@ class SendDailySummaryCommand extends PerTenantCommand
                 ]);
             }
         } catch (
-            ClientExceptionInterface |
-            RedirectionExceptionInterface |
-            ServerExceptionInterface |
-            TransportExceptionInterface $e
+            ClientExceptionInterface|RedirectionExceptionInterface|ServerExceptionInterface|TransportExceptionInterface $e
         ) {
             $this->logger->error('Error sending request to Bird API', [
                 'exception' => $e,

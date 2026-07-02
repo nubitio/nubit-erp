@@ -10,8 +10,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'notify:sms', description: 'Send sms', help: <<<'TXT'
-Send a sms to a user
-TXT)]
+    Send a sms to a user
+    TXT)]
 class SendSmsCommand
 {
     public function __invoke(SymfonyStyle $io): int

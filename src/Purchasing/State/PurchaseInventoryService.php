@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace App\Purchasing\State;
 
 use App\Catalog\Entity\Product;
-use App\Purchasing\Entity\Purchase;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
+use App\Purchasing\Entity\Purchase;
 
 final readonly class PurchaseInventoryService
 {
     public function __construct(
         private InventoryService $inventoryService,
-    ) {
-    }
+    ) {}
 
     public function recordPurchaseReceipt(Purchase $purchase): void
     {

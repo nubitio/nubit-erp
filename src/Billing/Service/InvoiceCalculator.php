@@ -20,8 +20,7 @@ readonly class InvoiceCalculator
         private string $taxPercentage,
         private string $chargesPercentage,
         private ?string $expectedTotal = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @return InvoiceAmounts
@@ -53,9 +52,9 @@ readonly class InvoiceCalculator
 
             // Step 1: apply per-line item discount first (before global discount).
             $itemDiscountRate = Money::rate($line->discountPercent);
-            $baseAmount6raw   = $unitValue->multipliedBy($qty);
-            $itemDiscount6    = $baseAmount6raw->multipliedBy($itemDiscountRate);
-            $baseAmount6      = $baseAmount6raw->minus($itemDiscount6);
+            $baseAmount6raw = $unitValue->multipliedBy($qty);
+            $itemDiscount6 = $baseAmount6raw->multipliedBy($itemDiscountRate);
+            $baseAmount6 = $baseAmount6raw->minus($itemDiscount6);
 
             // Step 2: apply global document-level discount on the item-discounted net.
             $baseAmount = Money::money($baseAmount6);
@@ -67,10 +66,10 @@ readonly class InvoiceCalculator
             // cascade rounding errors on non-trivial tax rates such as 10.5%.
             // taxAmount is then the residual so that
             //   taxableAmount + chargesAmount + taxAmount = lineTotal exactly.
-            $discount6     = $baseAmount6->multipliedBy($discountRate);
-            $taxable6      = $baseAmount6->minus($discount6);
-            $lineTotal     = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
-            $taxAmount     = Money::money($lineTotal->minus($chargesAmount)->minus($taxableAmount));
+            $discount6 = $baseAmount6->multipliedBy($discountRate);
+            $taxable6 = $baseAmount6->minus($discount6);
+            $lineTotal = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
+            $taxAmount = Money::money($lineTotal->minus($chargesAmount)->minus($taxableAmount));
 
             $lines[] = new InvoiceLineAmounts(
                 Money::toString($qty, 6),
@@ -119,15 +118,15 @@ readonly class InvoiceCalculator
         $divisor = BigDecimal::one()->plus($taxRate);
         $grossTotal = Money::money($this->expectedTotal ?? 0);
 
-        $subtotal6      = Money::div($grossTotal, $divisor, 6);
-        $subtotal       = Money::money($subtotal6);
+        $subtotal6 = Money::div($grossTotal, $divisor, 6);
+        $subtotal = Money::money($subtotal6);
         $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
-        $taxableAmount  = Money::money($subtotal->minus($discountAmount));
-        $chargesAmount  = Money::money($taxableAmount->multipliedBy($chargesRate));
+        $taxableAmount = Money::money($subtotal->minus($discountAmount));
+        $chargesAmount = Money::money($taxableAmount->multipliedBy($chargesRate));
 
         // Same deferred-rounding fix as in calculate(): round total once at 6dp, derive taxAmount.
-        $taxable6  = $subtotal6->minus($subtotal6->multipliedBy($discountRate));
-        $total     = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
+        $taxable6 = $subtotal6->minus($subtotal6->multipliedBy($discountRate));
+        $total = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
         $taxAmount = Money::money($total->minus($chargesAmount)->minus($taxableAmount));
 
         return new InvoiceAmounts()

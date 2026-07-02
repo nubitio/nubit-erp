@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings;
 
+use App\Identity\Entity\Role;
 use App\Settings\Entity\Menu;
 use App\Settings\Entity\MenuRol;
 use App\Settings\Entity\Ubigeo;
-use App\Identity\Entity\Role;
 use PHPUnit\Framework\TestCase;
 
 final class SettingsEntitiesTest extends TestCase

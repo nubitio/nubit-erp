@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller\Api;
 
-use Nubit\Platform\Exception\ServiceException;
-use Nubit\Platform\Http\ApiResponse;
 use App\Billing\Invoice\Domain\InvoiceConsultUseCase;
-use App\Billing\Service\CreditNoteService;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Service\CreditNoteService;
 use Exception;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,8 +21,7 @@ class ConsultInvoice extends AbstractController
         private readonly InvoiceConsultUseCase $invoiceConsultUseCase,
         private readonly CreditNoteService $creditNoteService,
         private readonly TaxDocumentRepository $taxDocumentRepository,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request): Response
     {
@@ -42,20 +41,11 @@ class ConsultInvoice extends AbstractController
             }
 
             if ($result->isSuccess()) {
-                return
-                    new ApiResponse(
-                        true,
-                        $result->getCdrResponse()?->getDescription() ?: ''
-                    );
+                return new ApiResponse(true, $result->getCdrResponse()?->getDescription() ?: '');
             }
 
-            return
-                new ApiResponse(
-                    false,
-                    $result->getError()?->getMessage() ?: '',
-                    $result
-                );
-        } catch (Exception | FilesystemException $e) {
+            return new ApiResponse(false, $result->getError()?->getMessage() ?: '', $result);
+        } catch (Exception|FilesystemException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }
     }

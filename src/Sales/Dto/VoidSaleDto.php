@@ -10,6 +10,5 @@ class VoidSaleDto
         public string $saleId,
         public string $reason,
         public bool $restoreStock = false,
-    ) {
-    }
+    ) {}
 }

@@ -13,12 +13,7 @@ final class MenuDtoTest extends TestCase
 {
     public function testConstructorSetsAllProperties(): void
     {
-        $dto = new MenuDto(
-            text: 'Dashboard',
-            icon: 'home',
-            path: '/dashboard',
-            items: [],
-        );
+        $dto = new MenuDto(text: 'Dashboard', icon: 'home', path: '/dashboard', items: []);
 
         self::assertSame('Dashboard', $dto->text);
         self::assertSame('home', $dto->icon);
@@ -28,11 +23,7 @@ final class MenuDtoTest extends TestCase
 
     public function testItemsDefaultsToEmptyArray(): void
     {
-        $dto = new MenuDto(
-            text: 'Reports',
-            icon: 'chart',
-            path: '/reports',
-        );
+        $dto = new MenuDto(text: 'Reports', icon: 'chart', path: '/reports');
 
         self::assertSame([], $dto->items);
     }
@@ -42,12 +33,7 @@ final class MenuDtoTest extends TestCase
         $sub1 = new SubMenuDto(text: 'Sales', path: '/reports/sales');
         $sub2 = new SubMenuDto(text: 'Purchases', path: '/reports/purchases');
 
-        $dto = new MenuDto(
-            text: 'Reports',
-            icon: 'chart',
-            path: '/reports',
-            items: [$sub1, $sub2],
-        );
+        $dto = new MenuDto(text: 'Reports', icon: 'chart', path: '/reports', items: [$sub1, $sub2]);
 
         self::assertCount(2, $dto->items);
         self::assertSame($sub1, $dto->items[0]);

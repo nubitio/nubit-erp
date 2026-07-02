@@ -43,10 +43,8 @@ final class CashRegisterDashboardProviderTest extends TestCase
     }
 
     /** @param array<int,array<string,mixed>> $rows */
-    private function makeProvider(
-        ?string $branchId = 'branch-1',
-        array $rows = [],
-    ): CashRegisterDashboardProvider {
+    private function makeProvider(?string $branchId = 'branch-1', array $rows = []): CashRegisterDashboardProvider
+    {
         $branchCtx = $this->createStub(BranchContextServiceInterface::class);
         $branchCtx->method('getCurrentBranchId')->willReturn($branchId);
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\State;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\CashSessionResolver;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\TestCase;
 
 final class CashSessionResolverTest extends TestCase
@@ -41,16 +41,13 @@ final class CashSessionResolverTest extends TestCase
         $connection
             ->expects($this->exactly(2))
             ->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                false,
-                [
-                    'id' => 202,
-                    'cash_register_id' => 3,
-                    'branch_id' => 'branch-2',
-                    'opened_at' => '2026-02-28 09:00:00',
-                    'closed_at' => null,
-                ]
-            );
+            ->willReturnOnConsecutiveCalls(false, [
+                'id' => 202,
+                'cash_register_id' => 3,
+                'branch_id' => 'branch-2',
+                'opened_at' => '2026-02-28 09:00:00',
+                'closed_at' => null,
+            ]);
 
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-2', cashRegisterId: 3, issuedAt: '2026-02-28 11:00:00');
@@ -92,10 +89,7 @@ final class CashSessionResolverTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         // legacyCashShiftId is provided but returns false; all fallbacks also return false
-        $connection
-            ->expects($this->exactly(3))
-            ->method('fetchAssociative')
-            ->willReturn(false);
+        $connection->expects($this->exactly(3))->method('fetchAssociative')->willReturn(false);
 
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-1', cashRegisterId: 5, issuedAt: '2026-02-28 10:00:00');
@@ -115,10 +109,7 @@ final class CashSessionResolverTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         // No legacy shift (null), so 3 queries: register+issuedAt, branch+issuedAt, latest
-        $connection
-            ->expects($this->exactly(3))
-            ->method('fetchAssociative')
-            ->willReturn(false);
+        $connection->expects($this->exactly(3))->method('fetchAssociative')->willReturn(false);
 
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-1', cashRegisterId: 5, issuedAt: '2026-02-28 10:00:00');

@@ -20,11 +20,14 @@ final readonly class ExchangeRatePutProcessor implements ProcessorInterface
         private ExchangeRateRepository $repository,
         private ExchangeRateSyncService $syncService,
         private EntityManagerInterface $em,
-    ) {
-    }
+    ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ExchangeRate
-    {
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = [],
+    ): ExchangeRate {
         /** @var ExchangeRate $data */
 
         // POST /exchange-rate/{currency}/sync → pull from BCRP

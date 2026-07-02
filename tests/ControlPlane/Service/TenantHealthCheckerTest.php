@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Service;
 
-use App\Efact\Doctrine\DBAL\TenantConnection;
 use App\ControlPlane\Tenant\Service\TenantHealthChecker;
 use App\ControlPlane\Tenant\Service\TenantManager;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -32,7 +32,7 @@ final class TenantHealthCheckerTest extends TestCase
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
             $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $result = $checker->check('acme');
@@ -51,7 +51,7 @@ final class TenantHealthCheckerTest extends TestCase
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
             $this->tenantManagerWithConfig("[]\n"),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $result = $checker->check('missing');
@@ -74,7 +74,7 @@ final class TenantHealthCheckerTest extends TestCase
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
             $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
-            $logger
+            $logger,
         );
 
         $result = $checker->check('acme');
@@ -95,7 +95,7 @@ final class TenantHealthCheckerTest extends TestCase
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
             $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $result = $checker->check('acme');
@@ -116,7 +116,7 @@ final class TenantHealthCheckerTest extends TestCase
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
             $this->tenantManagerWithConfig("[invalid-yaml\n"),
-            $logger
+            $logger,
         );
 
         $result = $checker->check('acme');
@@ -145,13 +145,13 @@ final class TenantHealthCheckerTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
     }
 
     private function inMemoryCache(): CacheInterface
     {
-        return new class () implements CacheInterface {
+        return new class() implements CacheInterface {
             /** @var array<string, mixed> */
             private array $store = [];
 
@@ -161,7 +161,7 @@ final class TenantHealthCheckerTest extends TestCase
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
-                    $item = new class () implements ItemInterface {
+                    $item = new class() implements ItemInterface {
                         public function getKey(): string
                         {
                             return 'cache-item';

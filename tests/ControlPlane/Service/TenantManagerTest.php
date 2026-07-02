@@ -8,8 +8,8 @@ use App\ControlPlane\Tenant\Service\TenantManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -30,7 +30,7 @@ final class TenantManagerTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
     }
 
@@ -45,7 +45,7 @@ final class TenantManagerTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         self::assertCount(1, $manager->getTenants());
@@ -85,7 +85,7 @@ final class TenantManagerTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -104,7 +104,7 @@ final class TenantManagerTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         self::assertNull($manager->getTenantByName('   '));
@@ -114,9 +114,11 @@ final class TenantManagerTest extends TestCase
     public function testGetDeletedTenantsReturnsRowsInDatabaseMode(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAllAssociative')->willReturn([
-            ['id' => 7, 'name' => 'deleted-one'],
-        ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                ['id' => 7, 'name' => 'deleted-one'],
+            ]);
 
         $manager = $this->dbManager($connection);
         $rows = $manager->getDeletedTenants();
@@ -138,10 +140,12 @@ final class TenantManagerTest extends TestCase
     {
         $connection = $this->dbConnection(true);
         $connection->method('fetchOne')->willReturn(false);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('update')
             ->with('tenant_domains', ['is_primary' => 0], ['tenant_id' => 3]);
-        $connection->expects(self::once())
+        $connection
+            ->expects(self::once())
             ->method('insert')
             ->with('tenant_domains', [
                 'tenant_id' => 3,
@@ -156,13 +160,13 @@ final class TenantManagerTest extends TestCase
     public function testDeleteAndSetPrimaryDomainCallsExpectedQueries(): void
     {
         $connection = $this->dbConnection(true);
-        $connection->method('fetchAssociative')->willReturn([
-            'domain' => 'tenant.example.test',
-        ]);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'domain' => 'tenant.example.test',
+            ]);
         $connection->expects(self::once())->method('delete')->with('tenant_domains', ['id' => 15]);
-        $connection->expects(self::exactly(2))
-            ->method('update')
-            ->willReturnOnConsecutiveCalls(1, 1);
+        $connection->expects(self::exactly(2))->method('update')->willReturnOnConsecutiveCalls(1, 1);
 
         $manager = $this->dbManager($connection);
         $manager->deleteTenantDomain(15);
@@ -247,9 +251,7 @@ final class TenantManagerTest extends TestCase
             0, // backup frequency affected
             1, // backup retention affected
         );
-        $connection->method('fetchOne')->willReturnOnConsecutiveCalls(
-            2, // backup frequency exists
-        );
+        $connection->method('fetchOne')->willReturnOnConsecutiveCalls(2); // backup frequency exists
 
         $manager = $this->dbManager($connection);
 
@@ -270,7 +272,7 @@ final class TenantManagerTest extends TestCase
         $connection = $this->dbConnection(true);
         $connection->method('fetchOne')->willReturnOnConsecutiveCalls(
             false, // plan exists?
-            false  // tenant exists?
+            false, // tenant exists?
         );
         $connection->method('update')->willReturn(0);
 
@@ -316,7 +318,7 @@ final class TenantManagerTest extends TestCase
             $this->dbRegistry($this->dbConnection(false)),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
 
         $tenants = $manager->getTenants();
@@ -332,7 +334,7 @@ final class TenantManagerTest extends TestCase
             $this->dbRegistry($connection),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
     }
 
@@ -370,7 +372,7 @@ final class TenantManagerTest extends TestCase
 
     private function inMemoryCache(): CacheInterface
     {
-        return new class () implements CacheInterface {
+        return new class() implements CacheInterface {
             /** @var array<string, mixed> */
             private array $store = [];
 
@@ -380,7 +382,7 @@ final class TenantManagerTest extends TestCase
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
-                    $item = new class () implements ItemInterface {
+                    $item = new class() implements ItemInterface {
                         public function getKey(): string
                         {
                             return 'cache-item';

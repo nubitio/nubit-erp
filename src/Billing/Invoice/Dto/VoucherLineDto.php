@@ -24,8 +24,7 @@ final class VoucherLineDto
         public ?string $taxPercentage = null,
         public ?string $taxType = null,
         public ?string $total = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $row

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Inventory\State;
 
-use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Inventory\Dto\PriceListApplyDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 
 /**
  * Provider for GET /api/price-lists/{id}/apply.
@@ -28,15 +28,14 @@ readonly class PriceListApplyProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
      * @throws Exception
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $id = $uriVariables['id'];
 
@@ -60,11 +59,8 @@ readonly class PriceListApplyProvider implements ProviderInterface
         $data = $this->connection->fetchAllAssociative($sql, ['id' => $id]);
 
         return array_map(
-            fn (array $row): PriceListApplyDto => new PriceListApplyDto(
-                id: $row['id'],
-                price: $row['price'],
-            ),
-            $data
+            fn(array $row): PriceListApplyDto => new PriceListApplyDto(id: $row['id'], price: $row['price']),
+            $data,
         );
     }
 }

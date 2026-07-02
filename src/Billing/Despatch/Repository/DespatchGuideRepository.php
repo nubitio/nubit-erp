@@ -27,12 +27,11 @@ class DespatchGuideRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
 
         return (int) $em->wrapInTransaction(function () use ($em, $series): int {
-            $max = $em->getConnection()->fetchOne(
-                'SELECT MAX(CAST(number AS UNSIGNED)) FROM despatch_guide WHERE series = ? FOR UPDATE',
-                [$series],
-            );
+            $max = $em->getConnection()->fetchOne('SELECT MAX(CAST(number AS UNSIGNED)) FROM despatch_guide WHERE series = ? FOR UPDATE', [
+                $series,
+            ]);
 
-            return ((int) $max) + 1;
+            return (int) $max + 1;
         });
     }
 }

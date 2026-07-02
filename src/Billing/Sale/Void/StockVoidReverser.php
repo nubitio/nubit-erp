@@ -27,8 +27,7 @@ final readonly class StockVoidReverser implements StockVoidReverserInterface
         private InventoryService $inventoryService,
         private Connection $connection,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Reverse all stock movements for the given sale.
@@ -41,12 +40,12 @@ final readonly class StockVoidReverser implements StockVoidReverserInterface
 
         $movements = $this->connection->fetchAllAssociative(
             <<<'SQL'
-            SELECT id, warehouse_id, product_id, qty_delta_base, unit_id
-            FROM stock_movements
-            WHERE source_type IN ('SALE', 'LEGACY_MOVIMIENTO_ITEM')
-              AND source_id LIKE :prefix
-              AND movement_type IN ('SALE_OUT', 'MANUAL_OUT')
-            SQL,
+                SELECT id, warehouse_id, product_id, qty_delta_base, unit_id
+                FROM stock_movements
+                WHERE source_type IN ('SALE', 'LEGACY_MOVIMIENTO_ITEM')
+                  AND source_id LIKE :prefix
+                  AND movement_type IN ('SALE_OUT', 'MANUAL_OUT')
+                SQL,
             ['prefix' => $saleId . '%'],
         );
 
@@ -59,38 +58,36 @@ final readonly class StockVoidReverser implements StockVoidReverserInterface
         foreach ($movements as $row) {
             // Invert the delta: if the original was -5, the reversal is +5
             $originalDelta = (string) $row['qty_delta_base'];
-            $reversalDelta = str_starts_with($originalDelta, '-')
-                ? ltrim($originalDelta, '-')           // negative → positive
-                : '-' . $originalDelta;               // positive → negative (safety)
+            $reversalDelta = str_starts_with($originalDelta, '-') ? ltrim($originalDelta, '-') : '-' . $originalDelta; // negative → positive // positive → negative (safety)
 
             $absQty = ltrim(ltrim($reversalDelta, '+'), '-');
 
             try {
                 $this->inventoryService->recordMovement(new MovementDraft(
-                    warehouseId:  $row['warehouse_id'],
-                    productId:    $row['product_id'],
+                    warehouseId: $row['warehouse_id'],
+                    productId: $row['product_id'],
                     movementType: StockMovementType::VOID_REVERSAL,
                     qtyDeltaBase: $reversalDelta,
-                    unitId:       (int) ($row['unit_id'] ?? 0),
-                    qtyOriginal:  $absQty,
-                    sourceType:   'VOID',
-                    sourceId:     'VOID:' . $row['id'],
-                    note:         'Reversa por anulación de venta ' . $saleId,
+                    unitId: (int) ($row['unit_id'] ?? 0),
+                    qtyOriginal: $absQty,
+                    sourceType: 'VOID',
+                    sourceId: 'VOID:' . $row['id'],
+                    note: 'Reversa por anulación de venta ' . $saleId,
                 ));
             } catch (\Throwable $e) {
                 // Log but don't abort — partial reversals are better than none.
                 // The reconciliation service will detect any remaining drift.
                 $this->logger->error('StockVoidReverser: failed to reverse movement', [
                     'movement_id' => $row['id'],
-                    'sale_id'     => $saleId,
-                    'error'       => $e->getMessage(),
+                    'sale_id' => $saleId,
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         $this->logger->info('StockVoidReverser: reversed movements for sale', [
             'sale_id' => $saleId,
-            'count'   => count($movements),
+            'count' => count($movements),
         ]);
     }
 }

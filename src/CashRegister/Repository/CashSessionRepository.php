@@ -23,7 +23,8 @@ class CashSessionRepository extends ServiceEntityRepository
      */
     public function findByLegacyCashShiftId(int $legacyCashShiftId): ?CashSession
     {
-        return $this->createQueryBuilder('cs')
+        return $this
+            ->createQueryBuilder('cs')
             ->andWhere('cs.legacyCashShiftId = :id')
             ->setParameter('id', $legacyCashShiftId)
             ->setMaxResults(1)

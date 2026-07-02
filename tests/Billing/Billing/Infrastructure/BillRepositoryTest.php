@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Billing\Billing\Infrastructure;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Billing\Sunat\Infrastructure\BillRepository;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
 use Greenter\Model\Response\BillResult;
@@ -12,6 +11,7 @@ use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -49,17 +49,19 @@ final class BillRepositoryTest extends TestCase
         $documentResponse->name = 'F001-00000001';
         $documentResponse->xml = '<xml/>';
         $documentResponse->hash = 'abc123';
-        $documentResponse->sunatResponse = (new BillResult())->setSuccess(true);
+        $documentResponse->sunatResponse = new BillResult()->setSuccess(true);
 
-        $this->serializer->method('serialize')
-            ->willReturn('{"json":"body"}');
+        $this->serializer->method('serialize')->willReturn('{"json":"body"}');
 
-        $this->serializer->method('deserialize')
+        $this->serializer
+            ->method('deserialize')
             ->with(self::anything(), DocumentResponse::class, 'json')
             ->willReturn($documentResponse);
 
         $httpClient = new MockHttpClient(
-            new MockResponse('{"name":"F001-00000001","xml":"<xml/>","hash":"abc123","sunatResponse":{"success":true}}')
+            new MockResponse(
+                '{"name":"F001-00000001","xml":"<xml/>","hash":"abc123","sunatResponse":{"success":true}}',
+            ),
         );
 
         $repo = new BillRepository(
@@ -85,15 +87,14 @@ final class BillRepositoryTest extends TestCase
         $documentResponse->name = 'F001-00000001';
         $documentResponse->xml = '<xml/>';
         $documentResponse->hash = 'hash';
-        $documentResponse->sunatResponse = (new BillResult())->setSuccess(true);
+        $documentResponse->sunatResponse = new BillResult()->setSuccess(true);
 
         $this->serializer->method('serialize')->willReturn('{}');
         $this->serializer->method('deserialize')->willReturn($documentResponse);
 
         /** @var LoggerInterface&MockObject $logger */
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::exactly(3))
-            ->method('info');
+        $logger->expects(self::exactly(3))->method('info');
 
         $httpClient = new MockHttpClient(new MockResponse('{}'));
 
@@ -143,7 +144,9 @@ final class BillRepositoryTest extends TestCase
         $this->serializer->method('serialize')->willReturn('{}');
 
         $capturedRequest = null;
-        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedRequest): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (
+            &$capturedRequest,
+        ): MockResponse {
             $capturedRequest = ['method' => $method, 'url' => $url, 'options' => $options];
 
             return new MockResponse('xml-content');
@@ -173,7 +176,7 @@ final class BillRepositoryTest extends TestCase
 
     public function testGetPdfReturnsContentForContadoPayment(): void
     {
-        $invoice = (new Invoice())->setFormaPago(new FormaPagoContado());
+        $invoice = new Invoice()->setFormaPago(new FormaPagoContado());
         $invoice->setObservacion('');
 
         $this->serializer->method('serialize')->willReturn('{}');
@@ -205,7 +208,9 @@ final class BillRepositoryTest extends TestCase
         $this->serializer->method('serialize')->willReturn('{}');
 
         $capturedBody = null;
-        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedBody): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (
+            &$capturedBody,
+        ): MockResponse {
             $capturedBody = $options['body'] ?? null;
 
             return new MockResponse('%PDF-credito');
@@ -228,13 +233,15 @@ final class BillRepositoryTest extends TestCase
 
     public function testGetPdfSendsPostRequestToCorrectUrl(): void
     {
-        $invoice = (new Invoice())->setFormaPago(new FormaPagoContado());
+        $invoice = new Invoice()->setFormaPago(new FormaPagoContado());
         $invoice->setObservacion('');
 
         $this->serializer->method('serialize')->willReturn('{}');
 
         $capturedRequest = null;
-        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedRequest): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (
+            &$capturedRequest,
+        ): MockResponse {
             $capturedRequest = ['method' => $method, 'url' => $url];
 
             return new MockResponse('pdf-bytes');
@@ -272,9 +279,10 @@ final class BillRepositoryTest extends TestCase
         $invoice->setCorrelativo('00000001');
         $invoice->setCompany($company);
 
-        $statusResult = (new StatusCdrResult())->setCode('0');
+        $statusResult = new StatusCdrResult()->setCode('0');
 
-        $this->serializer->method('deserialize')
+        $this->serializer
+            ->method('deserialize')
             ->with(self::anything(), StatusCdrResult::class, 'json')
             ->willReturn($statusResult);
 
@@ -310,7 +318,9 @@ final class BillRepositoryTest extends TestCase
         $this->serializer->method('deserialize')->willReturn($statusResult);
 
         $capturedRequest = null;
-        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedRequest): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (
+            &$capturedRequest,
+        ): MockResponse {
             $capturedRequest = ['method' => $method, 'url' => $url];
 
             return new MockResponse('{}');

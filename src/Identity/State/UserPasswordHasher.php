@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Identity\State;
 
-use Override;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
 use App\Identity\Entity\User;
+use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * @implements ProcessorInterface<mixed, mixed>
@@ -27,8 +27,7 @@ final readonly class UserPasswordHasher implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $processor,
         private UserPasswordHasherInterface $passwordHasher,
-    ) {
-    }
+    ) {}
 
     /**
      * @param User $data

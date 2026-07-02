@@ -46,8 +46,8 @@ final class StockVoidReverserTest extends TestCase
     protected function setUp(): void
     {
         $this->conn = DriverManager::getConnection([
-            'driver'  => 'pdo_sqlite',
-            'memory'  => true,
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
         ]);
 
         $this->createSchema();
@@ -64,11 +64,7 @@ final class StockVoidReverserTest extends TestCase
             $this->dispatcher,
         );
 
-        $this->reverser = new StockVoidReverser(
-            $this->inventoryService,
-            $this->conn,
-            new NullLogger(),
-        );
+        $this->reverser = new StockVoidReverser($this->inventoryService, $this->conn, new NullLogger());
     }
 
     protected function tearDown(): void
@@ -93,15 +89,11 @@ final class StockVoidReverserTest extends TestCase
         self::assertEqualsWithDelta(15.0, (float) $this->getOnHand('wh-1', 'prod-a'), 0.000001);
 
         // VOID_REVERSAL movement written
-        $type = $this->conn->fetchOne(
-            "SELECT movement_type FROM stock_movements WHERE source_type = 'VOID'",
-        );
+        $type = $this->conn->fetchOne("SELECT movement_type FROM stock_movements WHERE source_type = 'VOID'");
         self::assertSame(StockMovementType::VOID_REVERSAL->value, $type);
 
         // Delta is positive (inverted from -5)
-        $delta = $this->conn->fetchOne(
-            "SELECT qty_delta_base FROM stock_movements WHERE source_type = 'VOID'",
-        );
+        $delta = $this->conn->fetchOne("SELECT qty_delta_base FROM stock_movements WHERE source_type = 'VOID'");
         self::assertEqualsWithDelta(5.0, (float) $delta, 0.000001);
     }
 
@@ -156,7 +148,7 @@ final class StockVoidReverserTest extends TestCase
     {
         $this->reverser->reverse($this->makeSale('sale-no-movements'));
 
-        $count = $this->conn->fetchOne("SELECT COUNT(*) FROM stock_movements");
+        $count = $this->conn->fetchOne('SELECT COUNT(*) FROM stock_movements');
         self::assertSame(0, (int) $count);
     }
 
@@ -181,9 +173,7 @@ final class StockVoidReverserTest extends TestCase
 
         $this->reverser->reverse($this->makeSale('sale-6'));
 
-        $sourceId = $this->conn->fetchOne(
-            "SELECT source_id FROM stock_movements WHERE source_type = 'VOID'",
-        );
+        $sourceId = $this->conn->fetchOne("SELECT source_id FROM stock_movements WHERE source_type = 'VOID'");
         self::assertSame('VOID:' . $movId, $sourceId);
     }
 
@@ -192,7 +182,7 @@ final class StockVoidReverserTest extends TestCase
     private function makeSale(string $id): SaleRecord
     {
         $sale = new SaleRecord();
-        $ref  = new \ReflectionProperty(SaleRecord::class, 'id');
+        $ref = new \ReflectionProperty(SaleRecord::class, 'id');
         $ref->setValue($sale, $id);
 
         return $sale;
@@ -209,22 +199,22 @@ final class StockVoidReverserTest extends TestCase
         $id = \Symfony\Component\Uid\Uuid::v7()->toRfc4122();
 
         $this->conn->insert('stock_movements', [
-            'id'               => $id,
-            'warehouse_id'     => $warehouseId,
-            'product_id'       => $productId,
-            'occurred_at'      => date('Y-m-d H:i:s'),
-            'movement_type'    => $movementType,
-            'quantity_delta'   => $qtyDelta,
-            'qty_delta_base'   => $qtyDelta,
-            'qty_original'     => ltrim(ltrim($qtyDelta, '+'), '-'),
-            'unit_id'          => 1,
-            'source_type'      => $sourceType,
-            'source_id'        => $saleId . ':item-1',
-            'idempotency_key'  => md5($id),
-            'sync_status'      => 'SYNCED',
-            'version_no'       => 1,
+            'id' => $id,
+            'warehouse_id' => $warehouseId,
+            'product_id' => $productId,
+            'occurred_at' => date('Y-m-d H:i:s'),
+            'movement_type' => $movementType,
+            'quantity_delta' => $qtyDelta,
+            'qty_delta_base' => $qtyDelta,
+            'qty_original' => ltrim(ltrim($qtyDelta, '+'), '-'),
+            'unit_id' => 1,
+            'source_type' => $sourceType,
+            'source_id' => $saleId . ':item-1',
+            'idempotency_key' => md5($id),
+            'sync_status' => 'SYNCED',
+            'version_no' => 1,
             'last_modified_at' => date('Y-m-d H:i:s'),
-            'created_at'       => date('Y-m-d H:i:s'),
+            'created_at' => date('Y-m-d H:i:s'),
         ]);
 
         return $id;
@@ -234,32 +224,37 @@ final class StockVoidReverserTest extends TestCase
     {
         $this->conn->insert('stock_items', [
             'warehouse_id' => $warehouseId,
-            'product_id'   => $productId,
-            'qty_on_hand'  => $qty,
+            'product_id' => $productId,
+            'qty_on_hand' => $qty,
             'qty_reserved' => '0.000000',
-            'updated_at'   => date('Y-m-d H:i:s'),
-            'version'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
+            'version' => 0,
         ]);
 
         $this->conn->insert('product_units', [
-            'product_id'         => $productId,
-            'unit_id'            => 1,
+            'product_id' => $productId,
+            'unit_id' => 1,
             'conversion_to_base' => '1.000000',
         ]);
     }
 
     private function setOnHand(string $warehouseId, string $productId, string $qty): void
     {
-        $exists = (int) $this->conn->fetchOne(
-            'SELECT COUNT(*) FROM stock_items WHERE warehouse_id = ? AND product_id = ?',
-            [$warehouseId, $productId],
-        );
+        $exists =
+            (int) $this->conn->fetchOne('SELECT COUNT(*) FROM stock_items WHERE warehouse_id = ? AND product_id = ?', [
+                $warehouseId,
+                $productId,
+            ]);
 
         if ($exists) {
-            $this->conn->update('stock_items', ['qty_on_hand' => $qty], [
-                'warehouse_id' => $warehouseId,
-                'product_id'   => $productId,
-            ]);
+            $this->conn->update(
+                'stock_items',
+                ['qty_on_hand' => $qty],
+                [
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                ],
+            );
         } else {
             $this->seedStock($warehouseId, $productId, $qty);
         }
@@ -267,10 +262,12 @@ final class StockVoidReverserTest extends TestCase
 
     private function getOnHand(string $warehouseId, string $productId): string
     {
-        return (string) ($this->conn->fetchOne(
-            'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = ? AND product_id = ?',
-            [$warehouseId, $productId],
-        ) ?: '0');
+        return (string) (
+            $this->conn->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = ? AND product_id = ?', [
+                $warehouseId,
+                $productId,
+            ]) ?: '0'
+        );
     }
 
     // ─── Schema ───────────────────────────────────────────────────────────────
@@ -278,58 +275,58 @@ final class StockVoidReverserTest extends TestCase
     private function createSchema(): void
     {
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_movements (
-                id               VARCHAR(36)   NOT NULL,
-                warehouse_id     VARCHAR(36)   NOT NULL,
-                product_id       VARCHAR(36)   NOT NULL,
-                occurred_at      DATETIME      NOT NULL,
-                movement_type    VARCHAR(32)   NOT NULL,
-                quantity_delta   DECIMAL(18,6) NOT NULL,
-                qty_delta_base   DECIMAL(18,6) NOT NULL,
-                qty_original     DECIMAL(18,6) NOT NULL,
-                unit_id          INTEGER       DEFAULT NULL,
-                source_type      VARCHAR(64)   NOT NULL,
-                source_id        VARCHAR(255)  NOT NULL,
-                note             TEXT          DEFAULT NULL,
-                idempotency_key  VARCHAR(64)   NOT NULL UNIQUE,
-                sync_status      VARCHAR(20)   NOT NULL DEFAULT 'SYNCED',
-                synced_at        DATETIME      DEFAULT NULL,
-                version_no       INTEGER       NOT NULL DEFAULT 1,
-                last_modified_at DATETIME      NOT NULL,
-                created_at       DATETIME      NOT NULL,
-                PRIMARY KEY (id)
-            )
-        SQL);
+                CREATE TABLE stock_movements (
+                    id               VARCHAR(36)   NOT NULL,
+                    warehouse_id     VARCHAR(36)   NOT NULL,
+                    product_id       VARCHAR(36)   NOT NULL,
+                    occurred_at      DATETIME      NOT NULL,
+                    movement_type    VARCHAR(32)   NOT NULL,
+                    quantity_delta   DECIMAL(18,6) NOT NULL,
+                    qty_delta_base   DECIMAL(18,6) NOT NULL,
+                    qty_original     DECIMAL(18,6) NOT NULL,
+                    unit_id          INTEGER       DEFAULT NULL,
+                    source_type      VARCHAR(64)   NOT NULL,
+                    source_id        VARCHAR(255)  NOT NULL,
+                    note             TEXT          DEFAULT NULL,
+                    idempotency_key  VARCHAR(64)   NOT NULL UNIQUE,
+                    sync_status      VARCHAR(20)   NOT NULL DEFAULT 'SYNCED',
+                    synced_at        DATETIME      DEFAULT NULL,
+                    version_no       INTEGER       NOT NULL DEFAULT 1,
+                    last_modified_at DATETIME      NOT NULL,
+                    created_at       DATETIME      NOT NULL,
+                    PRIMARY KEY (id)
+                )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_items (
-                warehouse_id VARCHAR(36)   NOT NULL,
-                product_id   VARCHAR(36)   NOT NULL,
-                qty_on_hand  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                last_movement_id VARCHAR(36) DEFAULT NULL,
-                version      INTEGER       NOT NULL DEFAULT 0,
-                PRIMARY KEY (warehouse_id, product_id)
-            )
-        SQL);
+                CREATE TABLE stock_items (
+                    warehouse_id VARCHAR(36)   NOT NULL,
+                    product_id   VARCHAR(36)   NOT NULL,
+                    qty_on_hand  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    qty_reserved DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    updated_at   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_movement_id VARCHAR(36) DEFAULT NULL,
+                    version      INTEGER       NOT NULL DEFAULT 0,
+                    PRIMARY KEY (warehouse_id, product_id)
+                )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE stock_balances (
-                warehouse_id VARCHAR(36)   NOT NULL,
-                product_id   VARCHAR(36)   NOT NULL,
-                on_hand_qty  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
-                PRIMARY KEY (warehouse_id, product_id)
-            )
-        SQL);
+                CREATE TABLE stock_balances (
+                    warehouse_id VARCHAR(36)   NOT NULL,
+                    product_id   VARCHAR(36)   NOT NULL,
+                    on_hand_qty  DECIMAL(18,6) NOT NULL DEFAULT '0.000000',
+                    PRIMARY KEY (warehouse_id, product_id)
+                )
+            SQL);
 
         $this->conn->executeStatement(<<<'SQL'
-            CREATE TABLE product_units (
-                product_id          VARCHAR(36)   NOT NULL,
-                unit_id             INTEGER       NOT NULL,
-                conversion_to_base  DECIMAL(18,6) NOT NULL,
-                PRIMARY KEY (product_id, unit_id)
-            )
-        SQL);
+                CREATE TABLE product_units (
+                    product_id          VARCHAR(36)   NOT NULL,
+                    unit_id             INTEGER       NOT NULL,
+                    conversion_to_base  DECIMAL(18,6) NOT NULL,
+                    PRIMARY KEY (product_id, unit_id)
+                )
+            SQL);
     }
 }

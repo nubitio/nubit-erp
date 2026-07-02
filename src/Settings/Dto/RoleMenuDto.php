@@ -13,6 +13,5 @@ class RoleMenuDto
          * @var RoleMenuItemDto[]
          */
         public array $items,
-    ) {
-    }
+    ) {}
 }

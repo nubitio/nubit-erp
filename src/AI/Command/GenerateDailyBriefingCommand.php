@@ -36,16 +36,14 @@ final class GenerateDailyBriefingCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp(
-            <<<'HELP'
+        $this->setHelp(<<<'HELP'
             Generates an AI-narrated morning briefing for every active tenant (or one
             when --tenant is given). The result is cached in Redis for 20 hours under
             the key <info>briefing.{tenantName}.{Y-m-d}</info>.
 
             This command is wired to the Symfony Scheduler and runs automatically
             every day at 07:30 America/Lima.
-            HELP
-        );
+            HELP);
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -57,7 +55,10 @@ final class GenerateDailyBriefingCommand extends PerTenantCommand
             $briefing = $this->briefingService->generate($tenantName);
 
             if ($briefing === DailyBriefingService::DEFAULT_MESSAGE) {
-                $io->warning(sprintf('[WARN] No sufficient data for tenant "%s" — default message stored.', $tenantName));
+                $io->warning(sprintf(
+                    '[WARN] No sufficient data for tenant "%s" — default message stored.',
+                    $tenantName,
+                ));
             } else {
                 $io->success(sprintf('[OK] Briefing generated for tenant %s', $tenantName));
                 $io->text($briefing);
@@ -66,7 +67,7 @@ final class GenerateDailyBriefingCommand extends PerTenantCommand
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->logger->error('GenerateDailyBriefingCommand: failed for tenant', [
-                'tenant'    => $tenantName,
+                'tenant' => $tenantName,
                 'exception' => $e->getMessage(),
             ]);
             $io->error(sprintf('[ERROR] Failed for %s: %s', $tenantName, $e->getMessage()));

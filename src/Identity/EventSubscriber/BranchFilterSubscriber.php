@@ -18,8 +18,7 @@ class BranchFilterSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly BranchContextService $branchContextService,
-    ) {
-    }
+    ) {}
 
     public static function getSubscribedEvents(): array
     {

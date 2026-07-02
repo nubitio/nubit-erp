@@ -16,13 +16,10 @@ final class PriceListProcessorTest extends TestCase
 {
     private function makeDto(): PricesDto
     {
-        return new PricesDto(
-            priceListId: 3,
-            prices: [
-                new PriceItemDto('prod-1', '29.9000'),
-                new PriceItemDto('prod-2', '49.9000'),
-            ]
-        );
+        return new PricesDto(priceListId: 3, prices: [
+            new PriceItemDto('prod-1', '29.9000'),
+            new PriceItemDto('prod-2', '49.9000'),
+        ]);
     }
 
     public function testProcessInsertsAllPricesAndCommits(): void
@@ -44,8 +41,7 @@ final class PriceListProcessorTest extends TestCase
     {
         $conn = $this->createMock(Connection::class);
         $conn->expects(self::once())->method('beginTransaction');
-        $conn->method('executeStatement')
-            ->willThrowException(new DbalException('DB error'));
+        $conn->method('executeStatement')->willThrowException(new DbalException('DB error'));
         $conn->expects(self::never())->method('commit');
         $conn->expects(self::once())->method('rollBack');
 

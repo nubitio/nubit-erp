@@ -22,7 +22,7 @@ final class SunatStatusToolTest extends TestCase
         string $series,
         string $number,
         string $documentType,
-        string $issueDate = '2026-03-10'
+        string $issueDate = '2026-03-10',
     ): TaxDocument {
         $doc = $this->createStub(TaxDocument::class);
         $doc->method('getSeries')->willReturn($series);

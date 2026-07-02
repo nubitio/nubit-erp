@@ -6,21 +6,17 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use Nubit\AdminBundle\Media\Entity\Media;
 use App\Organization\Repository\CompanyRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\AdminBundle\Media\Entity\Media;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\Table(name: 'empresa')]
-#[ApiResource(
-    normalizationContext: ['groups' => ['company:read']],
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(normalizationContext: ['groups' => ['company:read']], filters: [DataGridFilter::class], mercure: true)]
 class Company
 {
     #[Groups([

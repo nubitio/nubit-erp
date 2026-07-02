@@ -8,8 +8,7 @@ final readonly class KnowledgeRetriever
 {
     public function __construct(
         private KnowledgeIndexInterface $index,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, array{text: string, score: float}>
@@ -34,15 +33,11 @@ final readonly class KnowledgeRetriever
 
             $scored[] = [
                 'score' => $score,
-                'text' => sprintf(
-                    "%s\n\nFuente: %s",
-                    $chunk['title'] . "\n" . $chunk['content'],
-                    $chunk['source']
-                ),
+                'text' => sprintf("%s\n\nFuente: %s", $chunk['title'] . "\n" . $chunk['content'], $chunk['source']),
             ];
         }
 
-        usort($scored, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
+        usort($scored, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
 
         return array_slice($scored, 0, $limit);
     }
@@ -64,8 +59,8 @@ final readonly class KnowledgeRetriever
             }
         }
 
-        $normA = sqrt(array_sum(array_map(static fn ($v): float => $v ** 2, $a))) ?: 1;
-        $normB = sqrt(array_sum(array_map(static fn ($v): float => $v ** 2, $b))) ?: 1;
+        $normA = sqrt(array_sum(array_map(static fn($v): float => $v ** 2, $a))) ?: 1;
+        $normB = sqrt(array_sum(array_map(static fn($v): float => $v ** 2, $b))) ?: 1;
 
         return $dot / ($normA * $normB);
     }
@@ -84,7 +79,7 @@ final readonly class KnowledgeRetriever
             $vector[$token] = $tf * ($idf[$token] ?? 0.0);
         }
 
-        $norm = sqrt(array_sum(array_map(static fn (float $v): float => $v ** 2, $vector))) ?: 1;
+        $norm = sqrt(array_sum(array_map(static fn(float $v): float => $v ** 2, $vector))) ?: 1;
         foreach ($vector as $token => $weight) {
             $vector[$token] = $weight / $norm;
         }

@@ -31,7 +31,7 @@ final class BillingDomainTest extends TestCase
 
     public function testPublicUrlEncodesTypeAndId(): void
     {
-        $url     = ReceiptPayload::publicUrl('boleta', 'sale-1');
+        $url = ReceiptPayload::publicUrl('boleta', 'sale-1');
         $encoded = str_replace('/receipt/', '', $url);
         $decoded = json_decode(base64_decode($encoded), true);
 
@@ -70,7 +70,7 @@ final class BillingDomainTest extends TestCase
     public function testTaxDocumentEventEventTypeRoundTrip(): void
     {
         $event = new TaxDocumentEvent();
-        $doc   = new TaxDocument();
+        $doc = new TaxDocument();
 
         $event->setEventType('SENT');
         $event->setTaxDocument($doc);
@@ -81,14 +81,14 @@ final class BillingDomainTest extends TestCase
 
     public function testTaxDocumentEventStatusRoundTrip(): void
     {
-        $event = (new TaxDocumentEvent())->setStatus('ACCEPTED');
+        $event = new TaxDocumentEvent()->setStatus('ACCEPTED');
 
         self::assertSame('ACCEPTED', $event->getStatus());
     }
 
     public function testTaxDocumentEventMessageRoundTrip(): void
     {
-        $event = (new TaxDocumentEvent())->setMessage('CDR received');
+        $event = new TaxDocumentEvent()->setMessage('CDR received');
 
         self::assertSame('CDR received', $event->getMessage());
     }

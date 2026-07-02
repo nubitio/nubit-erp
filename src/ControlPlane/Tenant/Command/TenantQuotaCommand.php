@@ -13,10 +13,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:tenant:quota',
-    description: 'Display quota usage for tenants.',
-)]
+#[AsCommand(name: 'app:tenant:quota', description: 'Display quota usage for tenants.')]
 class TenantQuotaCommand extends Command
 {
     public function __construct(
@@ -66,18 +63,14 @@ class TenantQuotaCommand extends Command
                 continue;
             }
             $limitStr = $data['limit'] === -1 ? 'unlimited' : (string) $data['limit'];
-            $pct = $data['limit'] > 0
-                ? sprintf('%.0f%%', ($data['current'] / $data['limit']) * 100)
-                : '-';
+            $pct = $data['limit'] > 0 ? sprintf('%.0f%%', ($data['current'] / $data['limit']) * 100) : '-';
             $rows[] = [$resource, $data['current'], $limitStr, $pct];
         }
 
         if (isset($summary['storage_bytes'])) {
             $storage = $summary['storage_bytes'];
             $limitStr = $storage['limit'] === -1 ? 'unlimited' : $this->formatBytes($storage['limit']);
-            $pct = $storage['limit'] > 0
-                ? sprintf('%.0f%%', ($storage['current'] / $storage['limit']) * 100)
-                : '-';
+            $pct = $storage['limit'] > 0 ? sprintf('%.0f%%', ($storage['current'] / $storage['limit']) * 100) : '-';
             $rows[] = ['storage_bytes', $this->formatBytes($storage['current']), $limitStr, $pct];
         }
 

@@ -13,10 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 // Cron (run via system cron if symfony/scheduler is not available):
 //   0 9 * * 1-6  /app/bin/console app:exchange-rate:sync --env=prod
-#[AsCommand(
-    name: 'app:exchange-rate:sync',
-    description: 'Sync USD/PEN exchange rate from BCRP API.',
-)]
+#[AsCommand(name: 'app:exchange-rate:sync', description: 'Sync USD/PEN exchange rate from BCRP API.')]
 class ExchangeRateSyncCommand extends Command
 {
     public function __construct(

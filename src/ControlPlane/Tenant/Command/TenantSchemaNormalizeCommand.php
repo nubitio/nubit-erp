@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -243,19 +243,22 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
             return [];
         }
 
-        $meta = $this->connection->fetchAssociative(<<<'SQL'
-            SELECT
-              data_type,
-              column_type,
-              is_nullable,
-              column_default,
-              extra,
-              collation_name
-            FROM information_schema.columns
-            WHERE table_schema = DATABASE()
-              AND table_name = :table
-              AND column_name = :column
-            SQL, ['table' => $table, 'column' => $column]);
+        $meta = $this->connection->fetchAssociative(
+            <<<'SQL'
+                SELECT
+                  data_type,
+                  column_type,
+                  is_nullable,
+                  column_default,
+                  extra,
+                  collation_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table
+                  AND column_name = :column
+                SQL,
+            ['table' => $table, 'column' => $column],
+        );
 
         if (!is_array($meta)) {
             return [];
@@ -272,7 +275,8 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
         $currentCollation = strtolower((string) ($meta['collation_name'] ?? ''));
 
         $defaultChanged = $this->isDefaultChanged($currentDefault, $targetDefault);
-        $same = $currentType === $targetType
+        $same =
+            $currentType === $targetType
             && $currentNullable === $targetNullable
             && $currentCollation === $targetCollation
             && !$defaultChanged;
@@ -285,13 +289,7 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
         if (!$targetNullable) {
             $fillExpr = $rule['fill_if_null'] ?? null;
             if ($fillExpr !== null) {
-                $sql[] = sprintf(
-                    'UPDATE %s SET %s = %s WHERE %s IS NULL',
-                    $table,
-                    $column,
-                    $fillExpr,
-                    $column,
-                );
+                $sql[] = sprintf('UPDATE %s SET %s = %s WHERE %s IS NULL', $table, $column, $fillExpr, $column);
             }
         }
 
@@ -390,10 +388,7 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
         $targets = [];
         foreach ($idRules as $rule) {
             $key = strtolower($rule['table'] . '.' . $rule['column']);
-            if (
-                !$this->tableExists($rule['table'])
-                || !$this->columnExists($rule['table'], $rule['column'])
-            ) {
+            if (!$this->tableExists($rule['table']) || !$this->columnExists($rule['table'], $rule['column'])) {
                 continue;
             }
 
@@ -496,18 +491,15 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
             ORDER BY kcu.table_name, rc.constraint_name
             SQL);
 
-        return array_map(
-            static fn (array $row): array => [
-                'constraint_name' => (string) ($row['constraint_name'] ?? ''),
-                'table_name' => (string) ($row['table_name'] ?? ''),
-                'column_name' => (string) ($row['column_name'] ?? ''),
-                'referenced_table_name' => (string) ($row['referenced_table_name'] ?? ''),
-                'referenced_column_name' => (string) ($row['referenced_column_name'] ?? ''),
-                'update_rule' => (string) ($row['update_rule'] ?? 'RESTRICT'),
-                'delete_rule' => (string) ($row['delete_rule'] ?? 'RESTRICT'),
-            ],
-            $rows,
-        );
+        return array_map(static fn(array $row): array => [
+            'constraint_name' => (string) ($row['constraint_name'] ?? ''),
+            'table_name' => (string) ($row['table_name'] ?? ''),
+            'column_name' => (string) ($row['column_name'] ?? ''),
+            'referenced_table_name' => (string) ($row['referenced_table_name'] ?? ''),
+            'referenced_column_name' => (string) ($row['referenced_column_name'] ?? ''),
+            'update_rule' => (string) ($row['update_rule'] ?? 'RESTRICT'),
+            'delete_rule' => (string) ($row['delete_rule'] ?? 'RESTRICT'),
+        ], $rows);
     }
 
     private function buildTypeOnlyAlter(
@@ -520,13 +512,16 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
             return null;
         }
 
-        $meta = $this->connection->fetchAssociative(<<<'SQL'
-            SELECT column_type, is_nullable, collation_name
-            FROM information_schema.columns
-            WHERE table_schema = DATABASE()
-              AND table_name = :table
-              AND column_name = :column
-            SQL, ['table' => $table, 'column' => $column]);
+        $meta = $this->connection->fetchAssociative(
+            <<<'SQL'
+                SELECT column_type, is_nullable, collation_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table
+                  AND column_name = :column
+                SQL,
+            ['table' => $table, 'column' => $column],
+        );
 
         if (!is_array($meta)) {
             return null;
@@ -617,18 +612,17 @@ final class TenantSchemaNormalizeCommand extends PerTenantCommand
 
     private function tableExists(string $table): bool
     {
-        return (int) $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table',
-            ['table' => $table],
-        ) > 0;
+        return (int) $this->connection->fetchOne('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table', [
+            'table' => $table,
+        ]) > 0;
     }
 
     private function columnExists(string $table, string $column): bool
     {
-        return (int) $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM information_schema.columns '
-            . 'WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column',
-            ['table' => $table, 'column' => $column],
-        ) > 0;
+        return (int) $this->connection->fetchOne('SELECT COUNT(*) FROM information_schema.columns '
+        . 'WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column', [
+            'table' => $table,
+            'column' => $column,
+        ]) > 0;
     }
 }

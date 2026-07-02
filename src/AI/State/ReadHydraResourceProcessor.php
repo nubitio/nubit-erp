@@ -24,14 +24,17 @@ readonly class ReadHydraResourceProcessor implements ProcessorInterface
         private HttpClientInterface $httpClient,
         #[Autowire('%app.api_base_url%')]
         private string $apiBaseUrl,
-    ) {
-    }
+    ) {}
 
     /**
      * @param ReadHydraResource $data
      */
-    public function process(mixed $data, Operation $_operation, array $_uriVariables = [], array $_context = []): CallToolResult
-    {
+    public function process(
+        mixed $data,
+        Operation $_operation,
+        array $_uriVariables = [],
+        array $_context = [],
+    ): CallToolResult {
         $uri = $data->uri;
 
         // If the URI is a relative path, prepend the base URL

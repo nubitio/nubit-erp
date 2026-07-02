@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Controller;
 
-use App\Identity\Controller\AuthSelectBranchController;
 use App\Identity\Auth\SelectedBranchContext;
-use Nubit\AdminBundle\Auth\JWTAuthenticator;
-use Nubit\AdminBundle\Auth\ResponseModeResolver;
-use Nubit\AdminBundle\Auth\TokenGenerator;
-use App\Identity\Entity\User;
-use Nubit\AdminBundle\Auth\JWTManager;
-use App\Organization\Entity\Branch;
+use App\Identity\Controller\AuthSelectBranchController;
 use App\Identity\Entity\Role;
+use App\Identity\Entity\User;
+use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\AdminBundle\Auth\JWTAuthenticator;
+use Nubit\AdminBundle\Auth\JWTManager;
+use Nubit\AdminBundle\Auth\ResponseModeResolver;
+use Nubit\AdminBundle\Auth\TokenGenerator;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -30,7 +30,7 @@ final class AuthSelectBranchControllerTest extends TestCase
     {
         $security = $this->createStub(Security::class);
         $security->method('getUser')->willReturn(null);
-        $tokenGenerator = (new \ReflectionClass(TokenGenerator::class))->newInstanceWithoutConstructor();
+        $tokenGenerator = new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor();
         $clientDetector = new SelectedBranchContext();
         $cookieFactory = new ResponseModeResolver();
 
@@ -40,7 +40,7 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
-            (new \ReflectionClass(JWTAuthenticator::class))->newInstanceWithoutConstructor(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -53,8 +53,14 @@ final class AuthSelectBranchControllerTest extends TestCase
     public function testReturnsBadRequestWhenBranchIdIsMissing(): void
     {
         $security = $this->createStub(Security::class);
-        $security->method('getUser')->willReturn((new User())->setUsername('tester')->setPassword('hash'));
-        $tokenGenerator = (new \ReflectionClass(TokenGenerator::class))->newInstanceWithoutConstructor();
+        $security
+            ->method('getUser')
+            ->willReturn(
+                new User()
+                    ->setUsername('tester')
+                    ->setPassword('hash'),
+            );
+        $tokenGenerator = new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor();
         $clientDetector = new SelectedBranchContext();
         $cookieFactory = new ResponseModeResolver();
 
@@ -64,7 +70,7 @@ final class AuthSelectBranchControllerTest extends TestCase
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
-            (new \ReflectionClass(JWTAuthenticator::class))->newInstanceWithoutConstructor(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -73,5 +79,4 @@ final class AuthSelectBranchControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
-
 }

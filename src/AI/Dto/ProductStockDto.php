@@ -15,6 +15,5 @@ final readonly class ProductStockDto
         public string $name,
         public float $totalStock,
         public array $warehouses,
-    ) {
-    }
+    ) {}
 }

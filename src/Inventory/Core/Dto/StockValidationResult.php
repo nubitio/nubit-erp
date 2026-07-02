@@ -10,8 +10,7 @@ final readonly class StockValidationResult
         public bool $allowed,
         public ?string $warning = null,
         public ?string $reason = null,
-    ) {
-    }
+    ) {}
 
     public static function allowed(): self
     {

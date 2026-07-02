@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Efact\EventListener;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
 use App\Efact\EventListener\ConsoleContextListener;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -36,7 +36,9 @@ final class ConsoleContextListenerTest extends TestCase
         $ctx = new TenantContext();
         $listener = new ConsoleContextListener($ctx);
 
-        $command = new #[AsCronTask('* * * * *')] class ('app:scheduled:task') extends Command {};
+        $command = new
+            #[AsCronTask('* * * * *')]
+            class('app:scheduled:task') extends Command {};
         $event = new ConsoleCommandEvent($command, new ArrayInput([]), new NullOutput());
 
         $listener($event);

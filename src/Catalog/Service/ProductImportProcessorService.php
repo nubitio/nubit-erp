@@ -44,15 +44,15 @@ final readonly class ProductImportProcessorService
 {
     /** Spanish → enum value maps */
     private const array PRODUCT_KIND_MAP = [
-        'bien'     => 'GOOD',
+        'bien' => 'GOOD',
         'servicio' => 'SERVICE',
-        'digital'  => 'DIGITAL',
+        'digital' => 'DIGITAL',
     ];
 
     private const array INVENTORY_BEHAVIOR_MAP = [
-        'inventario controlado'       => 'TRACKED',
-        'sin control de inventario'   => 'NOT_TRACKED',
-        'compuesto'                   => 'COMPOSITE',
+        'inventario controlado' => 'TRACKED',
+        'sin control de inventario' => 'NOT_TRACKED',
+        'compuesto' => 'COMPOSITE',
     ];
 
     public function __construct(
@@ -61,8 +61,7 @@ final readonly class ProductImportProcessorService
         private CategoryRepository $categoryRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     /**
      * Process the file and return a result DTO.
@@ -74,9 +73,9 @@ final readonly class ProductImportProcessorService
         $result = new ProductImportResult();
 
         $spreadsheet = IOFactory::load($filePath);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $highestRow  = $sheet->getHighestDataRow();
-        $dataRows    = $highestRow - 1; // exclude header row 1
+        $sheet = $spreadsheet->getActiveSheet();
+        $highestRow = $sheet->getHighestDataRow();
+        $dataRows = $highestRow - 1; // exclude header row 1
 
         if ($dataRows <= 0) {
             return $result;
@@ -84,15 +83,15 @@ final readonly class ProductImportProcessorService
 
         // Pre-load lookup maps (name → entity) for fast resolution.
         $categoryMap = $this->buildNameMap($this->categoryRepository->findAll());
-        $unitMap     = $this->buildNameMap($this->unitOfMeasureRepository->findAll());
+        $unitMap = $this->buildNameMap($this->unitOfMeasureRepository->findAll());
 
         /** @var array<string, int> $seenNames  lowercase name → first row number */
         $seenNames = [];
         /** @var array<string, int> $seenCodes  code → first row number */
         $seenCodes = [];
 
-        $batchSize  = 50;
-        $processed  = 0;
+        $batchSize = 50;
+        $processed = 0;
 
         for ($row = 2; $row <= $highestRow; $row++) {
             $values = $this->readRow($sheet, $row);
@@ -107,7 +106,7 @@ final readonly class ProductImportProcessorService
                 $this->processRow($row, $values, $categoryMap, $unitMap, $result, $seenNames, $seenCodes);
             } catch (\Throwable $e) {
                 $this->logger->warning('product_import.row_failed', [
-                    'row'       => $row,
+                    'row' => $row,
                     'exception' => $e->getMessage(),
                 ]);
                 $result->addError($row, $e->getMessage());
@@ -116,7 +115,7 @@ final readonly class ProductImportProcessorService
             $onProgress(++$processed, $dataRows);
 
             // Flush every N rows to avoid memory exhaustion on large imports.
-            if ($processed % $batchSize === 0) {
+            if (($processed % $batchSize) === 0) {
                 $this->em->flush();
             }
         }
@@ -135,17 +134,17 @@ final readonly class ProductImportProcessorService
     private function readRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row): array
     {
         return [
-            $this->cellStr($sheet, 'A', $row),   // code
-            $this->cellStr($sheet, 'B', $row),   // name
-            $this->cellStr($sheet, 'C', $row),   // category
-            $this->cellStr($sheet, 'D', $row),   // unit of measure
-            $this->cellStr($sheet, 'E', $row),   // salePrice
-            $this->cellStr($sheet, 'F', $row),   // purchasePrice
-            $this->cellStr($sheet, 'G', $row),   // sku
-            $this->cellStr($sheet, 'H', $row),   // barcode
-            $this->cellStr($sheet, 'I', $row),   // productKind
-            $this->cellStr($sheet, 'J', $row),   // inventoryBehavior
-            $this->cellStr($sheet, 'K', $row),   // minStock
+            $this->cellStr($sheet, 'A', $row), // code
+            $this->cellStr($sheet, 'B', $row), // name
+            $this->cellStr($sheet, 'C', $row), // category
+            $this->cellStr($sheet, 'D', $row), // unit of measure
+            $this->cellStr($sheet, 'E', $row), // salePrice
+            $this->cellStr($sheet, 'F', $row), // purchasePrice
+            $this->cellStr($sheet, 'G', $row), // sku
+            $this->cellStr($sheet, 'H', $row), // barcode
+            $this->cellStr($sheet, 'I', $row), // productKind
+            $this->cellStr($sheet, 'J', $row), // inventoryBehavior
+            $this->cellStr($sheet, 'K', $row), // minStock
         ];
     }
 
@@ -157,7 +156,7 @@ final readonly class ProductImportProcessorService
     /** @param list<string> $values */
     private function isEmptyRow(array $values): bool
     {
-        return array_filter($values, fn (string $v) => $v !== '') === [];
+        return array_filter($values, fn(string $v) => $v !== '') === [];
     }
 
     /**
@@ -176,9 +175,19 @@ final readonly class ProductImportProcessorService
         array &$seenNames,
         array &$seenCodes,
     ): void {
-        [$code, $name, $categoryName, $unitName, $salePrice,
-            $purchasePrice, $sku, $barcode, $productKindRaw,
-            $inventoryBehaviorRaw, $minStock] = $values;
+        [
+            $code,
+            $name,
+            $categoryName,
+            $unitName,
+            $salePrice,
+            $purchasePrice,
+            $sku,
+            $barcode,
+            $productKindRaw,
+            $inventoryBehaviorRaw,
+            $minStock,
+        ] = $values;
 
         // ---- Validate required fields ----
         $errors = [];
@@ -212,7 +221,10 @@ final readonly class ProductImportProcessorService
         $seenNames[$nameLower] = $row;
 
         if ($code !== '' && isset($seenCodes[$code])) {
-            $result->addError($row, "Código '{$code}' duplicado en este archivo (ya aparece en fila {$seenCodes[$code]})");
+            $result->addError(
+                $row,
+                "Código '{$code}' duplicado en este archivo (ya aparece en fila {$seenCodes[$code]})",
+            );
 
             return;
         }
@@ -237,7 +249,7 @@ final readonly class ProductImportProcessorService
 
         // ---- Resolve enums (with graceful fallback) ----
         $productKindValue = $productKindRaw !== ''
-            ? (self::PRODUCT_KIND_MAP[mb_strtolower($productKindRaw)] ?? null)
+            ? self::PRODUCT_KIND_MAP[mb_strtolower($productKindRaw)] ?? null
             : null;
         if ($productKindValue === null && $productKindRaw !== '') {
             $result->addError($row, "Tipo de producto '{$productKindRaw}' no reconocido");
@@ -247,7 +259,7 @@ final readonly class ProductImportProcessorService
         $productKind = ProductKind::from($productKindValue ?? 'GOOD');
 
         $inventoryBehaviorValue = $inventoryBehaviorRaw !== ''
-            ? (self::INVENTORY_BEHAVIOR_MAP[mb_strtolower($inventoryBehaviorRaw)] ?? null)
+            ? self::INVENTORY_BEHAVIOR_MAP[mb_strtolower($inventoryBehaviorRaw)] ?? null
             : null;
         if ($inventoryBehaviorValue === null && $inventoryBehaviorRaw !== '') {
             $result->addError($row, "Comportamiento de inventario '{$inventoryBehaviorRaw}' no reconocido");
@@ -258,7 +270,7 @@ final readonly class ProductImportProcessorService
 
         // ---- Upsert logic ----
         // Priority: code match → name match → create new.
-        $isNew   = false;
+        $isNew = false;
         $product = null;
 
         if ($code !== '') {
@@ -274,7 +286,7 @@ final readonly class ProductImportProcessorService
         if ($product === null) {
             // 3️⃣ No match — create new product
             $product = new Product();
-            $isNew   = true;
+            $isNew = true;
         }
 
         if ($code !== '') {

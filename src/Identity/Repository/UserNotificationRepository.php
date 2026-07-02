@@ -37,18 +37,17 @@ class UserNotificationRepository extends ServiceEntityRepository
      *
      * @throws DbalException
      */
-    public function existsUnreadForUserAndType(
-        int $userId,
-        string $type,
-        DateTimeImmutable $since,
-    ): bool {
-        $count = (int) $this->getEntityManager()
+    public function existsUnreadForUserAndType(int $userId, string $type, DateTimeImmutable $since): bool
+    {
+        $count = (int) $this
+            ->getEntityManager()
             ->getConnection()
-            ->fetchOne(
-                'SELECT COUNT(*) FROM user_notification
-                  WHERE user_id = ? AND type = ? AND read_at IS NULL AND created_at >= ?',
-                [$userId, $type, $since->format('Y-m-d H:i:s')],
-            );
+            ->fetchOne('SELECT COUNT(*) FROM user_notification
+                  WHERE user_id = ? AND type = ? AND read_at IS NULL AND created_at >= ?', [
+                $userId,
+                $type,
+                $since->format('Y-m-d H:i:s'),
+            ]);
 
         return $count > 0;
     }

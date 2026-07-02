@@ -24,14 +24,13 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
      */
     public function __construct(
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire(
-            service: 'api_platform.doctrine.orm.state.persist_processor'
+            service: 'api_platform.doctrine.orm.state.persist_processor',
         )]
         private ProcessorInterface $persistProcessor,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private DespatchGuideRepository $guideRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @param DespatchGuide $data

@@ -120,7 +120,7 @@ class VoucherSearchController extends AbstractController
             'currency_symbol' => $currencySymbol,
             'pdf_url' => ReceiptPayload::publicUrl(
                 strval($document['document_type']),
-                strval($document['tax_document_id'])
+                strval($document['tax_document_id']),
             ),
         ]);
 

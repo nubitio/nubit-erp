@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Security;
 
-use Nubit\AdminBundle\Auth\JWTManager;
 use LogicException;
+use Nubit\AdminBundle\Auth\JWTManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Yaml\Yaml;
@@ -86,7 +86,6 @@ final class AccessControlTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-
 
     // -------------------------------------------------------------------------
     // Helpers

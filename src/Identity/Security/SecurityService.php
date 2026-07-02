@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Identity\Security;
 
-use Override;
+use App\Identity\Dto\AuthUserDto;
+use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\AdminBundle\Auth\JWTManagerInterface;
-use App\Identity\Dto\AuthUserDto;
-use App\Identity\Entity\User;
+use Override;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
 final readonly class SecurityService implements Security
@@ -18,8 +18,7 @@ final readonly class SecurityService implements Security
     public function __construct(
         private SecurityComponent $security,
         private JWTManagerInterface $jwtManager,
-    ) {
-    }
+    ) {}
 
     #[Override]
     public function isAuthenticated(): bool

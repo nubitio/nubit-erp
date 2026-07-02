@@ -35,7 +35,10 @@ final class ToolCoherenceTest extends TestCase
         $promptTools = $this->extractPromptToolNames();
 
         self::assertNotEmpty($registeredTools, 'Expected at least one #[AsTool] in src/AI/Tool/');
-        self::assertNotEmpty($promptTools, 'Expected at least one tool in the "Allowed tools" section of prompts/assistant.md');
+        self::assertNotEmpty(
+            $promptTools,
+            'Expected at least one tool in the "Allowed tools" section of prompts/assistant.md',
+        );
 
         foreach ($promptTools as $toolName) {
             self::assertContains(
@@ -45,8 +48,8 @@ final class ToolCoherenceTest extends TestCase
                     'Tool "%s" is listed in prompts/assistant.md but has no #[AsTool] implementation in src/AI/Tool/. '
                     . 'Registered tools: [%s]',
                     $toolName,
-                    implode(', ', $registeredTools)
-                )
+                    implode(', ', $registeredTools),
+                ),
             );
         }
     }
@@ -65,8 +68,8 @@ final class ToolCoherenceTest extends TestCase
                     . 'section of prompts/assistant.md. '
                     . 'Prompt tools: [%s]',
                     $toolName,
-                    implode(', ', $promptTools)
-                )
+                    implode(', ', $promptTools),
+                ),
             );
         }
     }
@@ -83,9 +86,10 @@ final class ToolCoherenceTest extends TestCase
         $toolDir = $this->projectDir . '/src/AI/Tool';
         self::assertDirectoryExists($toolDir, 'src/AI/Tool directory must exist');
 
-        $phpFiles = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($toolDir, \RecursiveDirectoryIterator::SKIP_DOTS)
-        );
+        $phpFiles = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $toolDir,
+            \RecursiveDirectoryIterator::SKIP_DOTS,
+        ));
 
         $toolNames = [];
 
@@ -105,6 +109,7 @@ final class ToolCoherenceTest extends TestCase
                 foreach ($matches[1] as $name) {
                     $toolNames[] = $name;
                 }
+
                 // A file may mix explicit name: and positional, so also check positional below.
             }
 

@@ -11,11 +11,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Catalog\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -49,30 +49,24 @@ class Category
         'category:write',
     ])]
     #[Assert\NotBlank]
-    #[ApiProperty(
-        description: 'category.name.label',
-        openapiContext: [
-            'x-crud' => [
-                'filterable' => true,
-                'sortable'   => true,
-                'order'      => 0,
-            ],
+    #[ApiProperty(description: 'category.name.label', openapiContext: [
+        'x-crud' => [
+            'filterable' => true,
+            'sortable' => true,
+            'order' => 0,
         ],
-    )]
+    ])]
     #[ORM\Column(name: 'descripcion')]
     private string $name;
 
     #[Groups(['category:read', 'category:write'])]
-    #[ApiProperty(
-        description: 'category.parent.label',
-        openapiContext: [
-            'x-crud' => [
-                'filterable' => true,
-                'sortable'   => false,
-                'order'      => 1,
-            ],
+    #[ApiProperty(description: 'category.parent.label', openapiContext: [
+        'x-crud' => [
+            'filterable' => true,
+            'sortable' => false,
+            'order' => 1,
         ],
-    )]
+    ])]
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
     private ?self $parent = null;

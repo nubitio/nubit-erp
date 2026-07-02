@@ -6,22 +6,18 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: BranchRepository::class)]
 #[ORM\Table(name: 'local')]
-#[ApiResource(
-    normalizationContext: ['groups' => ['branch:read']],
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+#[ApiResource(normalizationContext: ['groups' => ['branch:read']], filters: [DataGridFilter::class], mercure: true)]
 class Branch
 {
     #[Groups([

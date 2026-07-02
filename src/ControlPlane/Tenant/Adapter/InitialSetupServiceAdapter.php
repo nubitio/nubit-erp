@@ -13,8 +13,7 @@ final readonly class InitialSetupServiceAdapter implements InitialTenantSetupPor
 {
     public function __construct(
         private InitialSetupService $initialSetupService,
-    ) {
-    }
+    ) {}
 
     public function configure(InitialTenantSetupRequest $request): void
     {

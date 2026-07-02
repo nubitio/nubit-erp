@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\AI\Briefing;
 
 use App\AI\Briefing\DailyBriefingService;
-use Nubit\Platform\Cache\CacheManager;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Cache\CacheManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -31,8 +31,8 @@ final class DailyBriefingServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->agent        = $this->createMock(AgentInterface::class);
-        $this->connection   = $this->createMock(Connection::class);
+        $this->agent = $this->createMock(AgentInterface::class);
+        $this->connection = $this->createMock(Connection::class);
         $this->cacheManager = $this->createMock(CacheManager::class);
 
         $this->service = new DailyBriefingService(
@@ -73,18 +73,18 @@ final class DailyBriefingServiceTest extends TestCase
     public function testPromptContainsKeyDataPoints(): void
     {
         $data = [
-            'sales_total'      => 1234.56,
-            'sales_count'      => 42,
-            'top_products'     => [
+            'sales_total' => 1234.56,
+            'sales_count' => 42,
+            'top_products' => [
                 ['product' => 'Café Especial', 'total' => 500.00],
-                ['product' => 'Pan Integral',  'total' => 300.00],
-                ['product' => 'Jugo Natural',  'total' => 200.00],
+                ['product' => 'Pan Integral', 'total' => 300.00],
+                ['product' => 'Jugo Natural', 'total' => 200.00],
             ],
-            'low_stock_count'  => 5,
+            'low_stock_count' => 5,
             'sunat_rejections' => 3,
-            'is_holiday'       => false,
-            'holiday_name'     => null,
-            'is_payday_week'   => false,
+            'is_holiday' => false,
+            'holiday_name' => null,
+            'is_payday_week' => false,
         ];
 
         $prompt = $this->service->buildPrompt($data, 'acme', '2026-03-10');
@@ -102,14 +102,14 @@ final class DailyBriefingServiceTest extends TestCase
     public function testPromptIncludesHolidayContext(): void
     {
         $data = [
-            'sales_total'      => 100.0,
-            'sales_count'      => 5,
-            'top_products'     => [],
-            'low_stock_count'  => 0,
+            'sales_total' => 100.0,
+            'sales_count' => 5,
+            'top_products' => [],
+            'low_stock_count' => 0,
             'sunat_rejections' => 0,
-            'is_holiday'       => true,
-            'holiday_name'     => 'Día de la Independencia',
-            'is_payday_week'   => false,
+            'is_holiday' => true,
+            'holiday_name' => 'Día de la Independencia',
+            'is_payday_week' => false,
         ];
 
         $prompt = $this->service->buildPrompt($data, 'acme', '2026-07-28');
@@ -122,14 +122,14 @@ final class DailyBriefingServiceTest extends TestCase
     public function testPromptIncludesPaydayWeekContext(): void
     {
         $data = [
-            'sales_total'      => 100.0,
-            'sales_count'      => 5,
-            'top_products'     => [],
-            'low_stock_count'  => 0,
+            'sales_total' => 100.0,
+            'sales_count' => 5,
+            'top_products' => [],
+            'low_stock_count' => 0,
             'sunat_rejections' => 0,
-            'is_holiday'       => false,
-            'holiday_name'     => null,
-            'is_payday_week'   => true,
+            'is_holiday' => false,
+            'holiday_name' => null,
+            'is_payday_week' => true,
         ];
 
         $prompt = $this->service->buildPrompt($data, 'acme', '2026-03-31');
@@ -145,22 +145,20 @@ final class DailyBriefingServiceTest extends TestCase
     public function testBriefingIsCachedAfterAiCall(): void
     {
         $cannedBriefing = "• Ventas de ayer: S/ 1234.56\n• Top producto: Café Especial";
-        $tenantName     = 'acme';
+        $tenantName = 'acme';
 
         // Cache miss on first call
         $this->cacheManager->method('get')->willReturn(null);
 
         // DB returns non-empty data so AI is called
-        $this->connection
-            ->method('fetchOne')
-            ->willReturnOnConsecutiveCalls(
-                '1234.56', // sales total
-                '10',      // sales count
-                '0',       // low stock count
-                '0',       // sunat rejections
-                false,     // is_holiday (time_dimension fetchOne → false)
-                false,     // holiday_name
-            );
+        $this->connection->method('fetchOne')->willReturnOnConsecutiveCalls(
+            '1234.56', // sales total
+            '10', // sales count
+            '0', // low stock count
+            '0', // sunat rejections
+            false, // is_holiday (time_dimension fetchOne → false)
+            false, // holiday_name
+        );
 
         $this->connection
             ->method('fetchAllAssociative')
@@ -182,11 +180,7 @@ final class DailyBriefingServiceTest extends TestCase
         $this->cacheManager
             ->expects(self::once())
             ->method('set')
-            ->with(
-                self::matchesRegularExpression('/^briefing\.acme\.\d{4}-\d{2}-\d{2}$/'),
-                $cannedBriefing,
-                72_000,
-            );
+            ->with(self::matchesRegularExpression('/^briefing\.acme\.\d{4}-\d{2}-\d{2}$/'), $cannedBriefing, 72_000);
 
         $result = $this->service->generate($tenantName);
 
@@ -217,9 +211,11 @@ final class DailyBriefingServiceTest extends TestCase
 
         // Non-empty data
         $this->connection->method('fetchOne')->willReturn('500.00');
-        $this->connection->method('fetchAllAssociative')->willReturn([
-            ['product' => 'Producto A', 'total' => '500.00'],
-        ]);
+        $this->connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                ['product' => 'Producto A', 'total' => '500.00'],
+            ]);
 
         // AI throws
         $this->agent->method('call')->willThrowException(new \RuntimeException('OpenAI unavailable'));

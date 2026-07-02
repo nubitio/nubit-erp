@@ -35,8 +35,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         private readonly PlanFeatureRepositoryInterface $planFeatureRepository,
         private readonly TenantFeatureOverrideRepositoryInterface $overrideRepository,
         private readonly TagAwareCacheInterface $featureCache,
-    ) {
-    }
+    ) {}
 
     // -------------------------------------------------------------------------
     // FeatureCheckerInterface
@@ -53,15 +52,12 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         $tag = sprintf('tenant_features_%d', $tenantId);
 
         /** @var array{enabled: bool, config: array<string, mixed>} $resolved */
-        $resolved = $this->featureCache->get(
-            $cacheKey,
-            function (ItemInterface $item) use ($featureKey, $tag): array {
-                $item->tag([$tag]);
-                $item->expiresAfter(self::CACHE_TTL);
+        $resolved = $this->featureCache->get($cacheKey, function (ItemInterface $item) use ($featureKey, $tag): array {
+            $item->tag([$tag]);
+            $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->resolveFeature($featureKey, $item);
-            },
-        );
+            return $this->resolveFeature($featureKey, $item);
+        });
 
         return $resolved['enabled'];
     }
@@ -80,15 +76,12 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         $tag = sprintf('tenant_features_%d', $tenantId);
 
         /** @var array{enabled: bool, config: array<string, mixed>} $resolved */
-        $resolved = $this->featureCache->get(
-            $cacheKey,
-            function (ItemInterface $item) use ($featureKey, $tag): array {
-                $item->tag([$tag]);
-                $item->expiresAfter(self::CACHE_TTL);
+        $resolved = $this->featureCache->get($cacheKey, function (ItemInterface $item) use ($featureKey, $tag): array {
+            $item->tag([$tag]);
+            $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->resolveFeature($featureKey, $item);
-            },
-        );
+            return $this->resolveFeature($featureKey, $item);
+        });
 
         if (!$resolved['enabled']) {
             return [];
@@ -118,15 +111,15 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         $tag = sprintf('tenant_features_%d', $tenantId);
 
         /** @var array<string, array{enabled: bool, config: array<string, mixed>}> $entitlements */
-        $entitlements = $this->featureCache->get(
-            $cacheKey,
-            function (ItemInterface $item) use ($tenantId, $tag): array {
-                $item->tag([$tag]);
-                $item->expiresAfter(self::CACHE_TTL);
+        $entitlements = $this->featureCache->get($cacheKey, function (ItemInterface $item) use (
+            $tenantId,
+            $tag,
+        ): array {
+            $item->tag([$tag]);
+            $item->expiresAfter(self::CACHE_TTL);
 
-                return $this->buildEntitlements($tenantId, $item);
-            },
-        );
+            return $this->buildEntitlements($tenantId, $item);
+        });
 
         return $entitlements;
     }
@@ -164,9 +157,10 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
                 // No plan tag: this value is override-sourced, not plan-sourced.
                 return [
                     'enabled' => $override->isEnabled(),
-                    'config'  => $override->getConfigJson() ?? [],
+                    'config' => $override->getConfigJson() ?? [],
                 ];
             }
+
             // Expired override → fall through to plan lookup.
         }
 
@@ -199,7 +193,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
 
         return [
             'enabled' => $planFeature->isEnabled(),
-            'config'  => $planFeature->getConfigJson() ?? [],
+            'config' => $planFeature->getConfigJson() ?? [],
         ];
     }
 
@@ -237,7 +231,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
             foreach ($this->planFeatureRepository->findByPlan($planName) as $planFeature) {
                 $entitlements[$planFeature->featureKey] = [
                     'enabled' => $planFeature->isEnabled(),
-                    'config'  => $planFeature->getConfigJson() ?? [],
+                    'config' => $planFeature->getConfigJson() ?? [],
                 ];
             }
         }
@@ -246,7 +240,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
         foreach ($this->overrideRepository->findActiveByTenant($tenantId) as $override) {
             $entitlements[$override->featureKey] = [
                 'enabled' => $override->isEnabled(),
-                'config'  => $override->getConfigJson() ?? [],
+                'config' => $override->getConfigJson() ?? [],
             ];
         }
 

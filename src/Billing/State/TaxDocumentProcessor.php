@@ -7,20 +7,20 @@ namespace App\Billing\State;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Nubit\Platform\Exception\ServiceException;
-use App\Identity\Auth\BranchContextService;
-use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
-use App\Organization\Repository\BranchRepository;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceLineInput;
 use App\Billing\Shared\Enum\CreditNoteReason;
+use App\Identity\Auth\BranchContextService;
+use App\Organization\Repository\BranchRepository;
 use App\Sales\State\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Exception\ServiceException;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -44,8 +44,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private SalesWriteGateway $salesWriteGateway,
         private EntityManagerInterface $entityManager,
         private CreditNoteStockReverserInterface $creditNoteStockReverser,
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritdoc
@@ -88,15 +87,19 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             }
             $branchId = $this->branchContextService->getCurrentBranchId();
             $affectedSeries = substr($data->getAffectedDocument(), 0, 4);
-            $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch($branchId, '07', $affectedSeries);
+            $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch(
+                $branchId,
+                '07',
+                $affectedSeries,
+            );
             $number = $this->taxDocumentRepository->getNextSequenceNumber($branchId, '07');
             if ($seriesResult === null || $seriesResult->associatedSeries != $affectedSeries) {
                 throw new ServiceException(
-                    'La serie de la nota de crédito no coincide con la serie del documento afectado.'
+                    'La serie de la nota de crédito no coincide con la serie del documento afectado.',
                 );
             }
             $data->setSeries($seriesResult->series);
-            $data->setNumber((string)$number);
+            $data->setNumber((string) $number);
             $this->prepareCreditNoteLines($data);
 
             // Propagate sale reference from related document to new credit note
@@ -172,8 +175,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
 
         $selected = [];
         foreach ($requestedLines as $req) {
-            $lineNumber = (int)$req['lineNumber'];
-            $requestedQty = (float)$req['quantity'];
+            $lineNumber = (int) $req['lineNumber'];
+            $requestedQty = (float) $req['quantity'];
             if ($requestedQty <= 0) {
                 continue;
             }
@@ -181,7 +184,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             if (!$original instanceof TaxDocumentLine) {
                 throw new ServiceException('El ítem seleccionado no existe en el comprobante afectado.');
             }
-            $originalQty = (float)$original->getQuantity();
+            $originalQty = (float) $original->getQuantity();
             if ($requestedQty > $originalQty) {
                 throw new ServiceException('La cantidad a devolver no puede exceder la cantidad del comprobante.');
             }
@@ -202,11 +205,11 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         $chargesPercent = '0';
 
         $lineInputs = array_map(
-            static fn (array $item): InvoiceLineInput => new InvoiceLineInput(
-                quantity: (string)$item['quantity'],
-                unitPrice: (string)$item['original']->getUnitPrice()
+            static fn(array $item): InvoiceLineInput => new InvoiceLineInput(
+                quantity: (string) $item['quantity'],
+                unitPrice: (string) $item['original']->getUnitPrice(),
             ),
-            $selected
+            $selected,
         );
 
         $calculator = new InvoiceCalculator($lineInputs, $discountPercent, $taxPercent, $chargesPercent);

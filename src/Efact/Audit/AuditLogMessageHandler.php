@@ -17,8 +17,7 @@ final readonly class AuditLogMessageHandler
         private ConnectionRegistry $connectionRegistry,
         private CacheInterface $cache,
         private LoggerInterface $logger,
-    ) {
-    }
+    ) {}
 
     public function __invoke(AuditLogMessage $message): void
     {
@@ -38,7 +37,7 @@ final readonly class AuditLogMessageHandler
                 'request_id' => $message->requestId,
                 'channel' => $message->channel,
                 'metadata' => $message->metadata,
-                'created_at' => (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s'),
+                'created_at' => new \DateTimeImmutable('now')->format('Y-m-d H:i:s'),
             ]);
         } catch (\Throwable $e) {
             $this->logger->error('Failed to persist audit log', [
@@ -53,7 +52,8 @@ final readonly class AuditLogMessageHandler
         return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
             $item->expiresAfter(600);
 
-            return $this->connectionRegistry->getConnection('control_plane')
+            return $this->connectionRegistry
+                ->getConnection('control_plane')
                 ->createSchemaManager()
                 ->tablesExist(['audit_logs']);
         });

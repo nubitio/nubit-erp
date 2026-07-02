@@ -59,6 +59,5 @@ readonly class HydratedVoucher
         public ?int $voucherStatus,
         /** @var HydratedVoucherItem[] */
         public array $voucherItems,
-    ) {
-    }
+    ) {}
 }

@@ -81,15 +81,15 @@ final class InventoryBehaviorTest extends TestCase
     public static function productTypeProvider(): array
     {
         return [
-            'COMPOSITE uppercase'  => ['COMPOSITE', InventoryBehavior::COMPOSITE],
-            'composite lowercase'  => ['composite', InventoryBehavior::COMPOSITE],
-            'SERVICE uppercase'    => ['SERVICE', InventoryBehavior::NOT_TRACKED],
-            'service lowercase'    => ['service', InventoryBehavior::NOT_TRACKED],
-            'DIGITAL uppercase'    => ['DIGITAL', InventoryBehavior::NOT_TRACKED],
-            'digital lowercase'    => ['digital', InventoryBehavior::NOT_TRACKED],
-            'GOOD → TRACKED'       => ['GOOD', InventoryBehavior::TRACKED],
-            'PRODUCT → TRACKED'    => ['PRODUCT', InventoryBehavior::TRACKED],
-            'unknown → TRACKED'    => ['UNKNOWN_TYPE', InventoryBehavior::TRACKED],
+            'COMPOSITE uppercase' => ['COMPOSITE', InventoryBehavior::COMPOSITE],
+            'composite lowercase' => ['composite', InventoryBehavior::COMPOSITE],
+            'SERVICE uppercase' => ['SERVICE', InventoryBehavior::NOT_TRACKED],
+            'service lowercase' => ['service', InventoryBehavior::NOT_TRACKED],
+            'DIGITAL uppercase' => ['DIGITAL', InventoryBehavior::NOT_TRACKED],
+            'digital lowercase' => ['digital', InventoryBehavior::NOT_TRACKED],
+            'GOOD → TRACKED' => ['GOOD', InventoryBehavior::TRACKED],
+            'PRODUCT → TRACKED' => ['PRODUCT', InventoryBehavior::TRACKED],
+            'unknown → TRACKED' => ['UNKNOWN_TYPE', InventoryBehavior::TRACKED],
             'empty string → TRACKED' => ['', InventoryBehavior::TRACKED],
         ];
     }
@@ -100,7 +100,7 @@ final class InventoryBehaviorTest extends TestCase
     {
         $nonTracking = array_filter(
             InventoryBehavior::cases(),
-            static fn (InventoryBehavior $b) => !$b->tracksInventory(),
+            static fn(InventoryBehavior $b) => !$b->tracksInventory(),
         );
 
         self::assertCount(1, $nonTracking);
@@ -111,10 +111,7 @@ final class InventoryBehaviorTest extends TestCase
 
     public function testOnlyTrackedGeneratesOwnMovements(): void
     {
-        $generating = array_filter(
-            InventoryBehavior::cases(),
-            static fn (InventoryBehavior $b) => $b->generatesOwnMovements(),
-        );
+        $generating = array_filter(InventoryBehavior::cases(), static fn(InventoryBehavior $b) => $b->generatesOwnMovements());
 
         self::assertCount(1, $generating);
         self::assertSame(InventoryBehavior::TRACKED, array_values($generating)[0]);

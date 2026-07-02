@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use Nubit\Platform\Exception\ServiceException;
 use App\AI\Dto\ProductSearchResultDto;
 use App\AI\Dto\ProductStockDto;
 use App\AI\Dto\ProductWarehouseStockDto;
@@ -12,6 +11,7 @@ use App\Catalog\Entity\Product;
 use App\Catalog\Repository\ProductRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\Service\ProductStockService;
+use Nubit\Platform\Exception\ServiceException;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -30,8 +30,7 @@ final readonly class ProductTools
         private ProductRepository $productRepository,
         private WarehouseRepository $warehouseRepository,
         private ProductStockService $productStockService,
-    ) {
-    }
+    ) {}
 
     /**
      * @return ProductSearchResultDto[]

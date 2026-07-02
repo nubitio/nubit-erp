@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Efact\EventListener;
 
-use Nubit\Platform\Tenant\Context\TenantContext;
-use App\Efact\EventListener\TenantListener;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Service\TenantManager;
-use PHPUnit\Framework\MockObject\MockObject;
+use App\Efact\EventListener\TenantListener;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
@@ -107,13 +107,9 @@ final class TenantListenerTest extends TestCase
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme'];
 
         $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')
-            ->with('acme')
-            ->willReturn($tenantData);
+        $this->tenantManager->method('getTenantByName')->with('acme')->willReturn($tenantData);
 
-        $this->switcher->expects($this->once())
-            ->method('switchConnection')
-            ->with('acme');
+        $this->switcher->expects($this->once())->method('switchConnection')->with('acme');
 
         ($this->listener)($this->createEvent('acme.example.com'));
 
@@ -125,15 +121,11 @@ final class TenantListenerTest extends TestCase
     {
         $tenantData = ['id' => 2, 'name' => 'corp', 'connection' => 'corp'];
 
-        $this->tenantManager->method('getTenantByDomain')
-            ->with('custom.corp.com')
-            ->willReturn($tenantData);
+        $this->tenantManager->method('getTenantByDomain')->with('custom.corp.com')->willReturn($tenantData);
 
         $this->tenantManager->expects($this->never())->method('getTenantByName');
 
-        $this->switcher->expects($this->once())
-            ->method('switchConnection')
-            ->with('corp');
+        $this->switcher->expects($this->once())->method('switchConnection')->with('corp');
 
         ($this->listener)($this->createEvent('custom.corp.com'));
 
@@ -177,8 +169,7 @@ final class TenantListenerTest extends TestCase
     public function testErrorDoesNotLeakTenantName(): void
     {
         $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')
-            ->willThrowException(new \RuntimeException('Tenant not found'));
+        $this->tenantManager->method('getTenantByName')->willThrowException(new \RuntimeException('Tenant not found'));
 
         $event = $this->createEvent('secret-tenant.example.com');
         ($this->listener)($event);

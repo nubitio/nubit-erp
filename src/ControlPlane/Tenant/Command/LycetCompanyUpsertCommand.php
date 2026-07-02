@@ -37,7 +37,12 @@ class LycetCompanyUpsertCommand extends Command
     {
         $this
             ->addArgument('ruc', InputArgument::REQUIRED, 'RUC de la empresa (11 dígitos)')
-            ->addOption('sol-user', null, InputOption::VALUE_REQUIRED, 'Usuario SOL (RUC + usuario, ej: 20000000001MODDATOS)')
+            ->addOption(
+                'sol-user',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Usuario SOL (RUC + usuario, ej: 20000000001MODDATOS)',
+            )
             ->addOption('sol-pass', null, InputOption::VALUE_REQUIRED, 'Contraseña SOL')
             ->addOption('cert-file', null, InputOption::VALUE_REQUIRED, 'Ruta al archivo .pem del certificado digital')
             ->addOption('logo-file', null, InputOption::VALUE_OPTIONAL, 'Ruta al archivo de logo (PNG/JPEG) — opcional')
@@ -54,9 +59,9 @@ class LycetCompanyUpsertCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $ruc      = (string) $input->getArgument('ruc');
-        $solUser  = (string) ($input->getOption('sol-user') ?? '');
-        $solPass  = (string) ($input->getOption('sol-pass') ?? '');
+        $ruc = (string) $input->getArgument('ruc');
+        $solUser = (string) ($input->getOption('sol-user') ?? '');
+        $solPass = (string) ($input->getOption('sol-pass') ?? '');
         $certFile = (string) ($input->getOption('cert-file') ?? '');
 
         if ($solUser === '' || $solPass === '' || $certFile === '') {
@@ -74,19 +79,35 @@ class LycetCompanyUpsertCommand extends Command
         $certPem = (string) file_get_contents($certFile);
 
         $urls = [];
-        foreach (['fe-url' => 'FE_URL', 're-url' => 'RE_URL', 'guia-url' => 'GUIA_URL', 'auth-url' => 'AUTH_URL', 'api-url' => 'API_URL'] as $opt => $key) {
+        foreach ([
+            'fe-url' => 'FE_URL',
+            're-url' => 'RE_URL',
+            'guia-url' => 'GUIA_URL',
+            'auth-url' => 'AUTH_URL',
+            'api-url' => 'API_URL',
+        ] as $opt => $key) {
             $val = $input->getOption($opt);
             if ($val !== null && $val !== '') {
                 $urls[$key] = (string) $val;
             }
         }
 
-        $clientId     = $input->getOption('client-id') !== null ? (string) $input->getOption('client-id') : null;
-        $clientSecret = $input->getOption('client-secret') !== null ? (string) $input->getOption('client-secret') : null;
+        $clientId = $input->getOption('client-id') !== null ? (string) $input->getOption('client-id') : null;
+        $clientSecret = $input->getOption('client-secret') !== null
+            ? (string) $input->getOption('client-secret')
+            : null;
 
         try {
             $io->text(sprintf('Registrando empresa RUC %s en lycet...', $ruc));
-            $this->electronicBillingCompany->upsertCompany($ruc, $solUser, $solPass, $certPem, $urls, $clientId, $clientSecret);
+            $this->electronicBillingCompany->upsertCompany(
+                $ruc,
+                $solUser,
+                $solPass,
+                $certPem,
+                $urls,
+                $clientId,
+                $clientSecret,
+            );
             $io->success(sprintf('Empresa %s registrada/actualizada en lycet.', $ruc));
 
             $logoFile = $input->getOption('logo-file');
@@ -95,7 +116,10 @@ class LycetCompanyUpsertCommand extends Command
                     $io->warning(sprintf('Archivo de logo no encontrado: %s — se omite.', $logoFile));
                 } else {
                     $io->text('Subiendo logo...');
-                    $this->electronicBillingCompany->uploadCompanyLogo($ruc, (string) file_get_contents((string) $logoFile));
+                    $this->electronicBillingCompany->uploadCompanyLogo(
+                        $ruc,
+                        (string) file_get_contents((string) $logoFile),
+                    );
                     $io->success('Logo subido.');
                 }
             }

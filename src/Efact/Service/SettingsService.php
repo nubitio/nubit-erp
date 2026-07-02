@@ -13,13 +13,12 @@ readonly class SettingsService
 
     public function __construct(
         private Connection $db,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
      */
-    public function get(string $key, ?string $default = null): bool | float | int | string | null
+    public function get(string $key, ?string $default = null): bool|float|int|string|null
     {
         /** @var bool|float|int|string|null $value */
         $value = $this->db->fetchOne('SELECT value FROM ' . self::TABLE_NAME . ' WHERE name = ?', [$key]);
@@ -36,9 +35,8 @@ readonly class SettingsService
      */
     public function set(string $key, string $type, mixed $value): void
     {
-        $this->db->executeStatement(
-            'INSERT INTO ' . self::TABLE_NAME . ' (name, type, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = ?',
-            [$key, $type, $value, $value]
-        );
+        $this->db->executeStatement('INSERT INTO '
+        . self::TABLE_NAME
+        . ' (name, type, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = ?', [$key, $type, $value, $value]);
     }
 }

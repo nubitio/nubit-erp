@@ -78,7 +78,7 @@ class TenantBackupPruneCommand extends Command
         foreach ($tenants as $tenant) {
             $tenantId = (int) $tenant['id'];
             $retentionDays = (int) $tenant['backup_retention_days'];
-            $cutoff = (new \DateTimeImmutable(sprintf('-%d days', $retentionDays)))->format('Y-m-d H:i:s');
+            $cutoff = new \DateTimeImmutable(sprintf('-%d days', $retentionDays))->format('Y-m-d H:i:s');
 
             $expired = $conn->fetchAllAssociative(
                 'SELECT id, filename, storage_type FROM tenant_backups WHERE tenant_id = ? AND created_at < ? AND status = ?',
@@ -87,12 +87,7 @@ class TenantBackupPruneCommand extends Command
             );
 
             foreach ($expired as $backup) {
-                $io->writeln(sprintf(
-                    '  [%s] %s (%s)',
-                    $tenant['name'],
-                    $backup['filename'],
-                    $backup['storage_type'],
-                ));
+                $io->writeln(sprintf('  [%s] %s (%s)', $tenant['name'], $backup['filename'], $backup['storage_type']));
 
                 if (!$dryRun) {
                     try {
@@ -117,12 +112,11 @@ class TenantBackupPruneCommand extends Command
     {
         $io->section('Pruning stale (failed/pending) backups older than 7 days');
 
-        $cutoff = (new \DateTimeImmutable('-7 days'))->format('Y-m-d H:i:s');
+        $cutoff = new \DateTimeImmutable('-7 days')->format('Y-m-d H:i:s');
 
-        $stale = $conn->fetchAllAssociative(
-            "SELECT id, filename FROM tenant_backups WHERE status IN ('failed', 'pending') AND created_at < ?",
-            [$cutoff],
-        );
+        $stale = $conn->fetchAllAssociative("SELECT id, filename FROM tenant_backups WHERE status IN ('failed', 'pending') AND created_at < ?", [
+            $cutoff,
+        ]);
 
         $pruned = 0;
 
@@ -151,16 +145,15 @@ class TenantBackupPruneCommand extends Command
     {
         $io->section('Pruning expired binlog backups');
 
-        $retentionDays = (int) ($conn->fetchOne(
-            "SELECT value FROM control_plane_settings WHERE key = 'binlog_retention_days'",
-        ) ?: 7);
-
-        $cutoff = (new \DateTimeImmutable(sprintf('-%d days', $retentionDays)))->format('Y-m-d H:i:s');
-
-        $expired = $conn->fetchAllAssociative(
-            'SELECT id, filename FROM binlog_backups WHERE created_at < ?',
-            [$cutoff],
+        $retentionDays = (int) (
+            $conn->fetchOne("SELECT value FROM control_plane_settings WHERE key = 'binlog_retention_days'") ?: 7
         );
+
+        $cutoff = new \DateTimeImmutable(sprintf('-%d days', $retentionDays))->format('Y-m-d H:i:s');
+
+        $expired = $conn->fetchAllAssociative('SELECT id, filename FROM binlog_backups WHERE created_at < ?', [
+            $cutoff,
+        ]);
 
         $pruned = 0;
 

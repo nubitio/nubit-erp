@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Service;
 
-use App\Efact\Doctrine\DBAL\TenantConnection;
 use App\ControlPlane\Tenant\Service\TenantManager;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
+use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -25,16 +25,19 @@ final class TenantUsageServiceTest extends TestCase
     {
         $tenantConnection = $this->createMock(TenantConnection::class);
         $tenantConnection->expects(self::once())->method('switchTenantParams');
-        $tenantConnection->method('quoteSingleIdentifier')->willReturnCallback(
-            static fn (string $table): string => sprintf('`%s`', $table)
-        );
+        $tenantConnection
+            ->method('quoteSingleIdentifier')
+            ->willReturnCallback(static fn(string $table): string => sprintf('`%s`', $table));
 
         $schema = $this->createStub(AbstractSchemaManager::class);
-        $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local', 'cash_sessions']);
+        $schema
+            ->method('listTableNames')
+            ->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local', 'cash_sessions']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 
-        $tenantConnection->method('fetchOne')->willReturnCallback(
-            static function (string $sql): int|string {
+        $tenantConnection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql): int|string {
                 return match (true) {
                     str_contains($sql, '`usuario`') => 11,
                     str_contains($sql, '`cliente`') => 22,
@@ -45,10 +48,12 @@ final class TenantUsageServiceTest extends TestCase
                     str_contains($sql, 'information_schema.tables') => '4096',
                     default => 0,
                 };
-            }
-        );
+            });
 
-        $service = $this->newService($this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"), $tenantConnection);
+        $service = $this->newService(
+            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $tenantConnection,
+        );
 
         self::assertSame(
             [
@@ -60,7 +65,7 @@ final class TenantUsageServiceTest extends TestCase
                 'cash_shifts' => 3,
                 'storage_bytes' => 4096,
             ],
-            $service->collectMetrics('acme')
+            $service->collectMetrics('acme'),
         );
     }
 
@@ -83,7 +88,7 @@ final class TenantUsageServiceTest extends TestCase
             $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $tenantConnection,
             null,
-            $logger
+            $logger,
         );
 
         self::assertSame(
@@ -96,7 +101,7 @@ final class TenantUsageServiceTest extends TestCase
                 'cash_shifts' => 0,
                 'storage_bytes' => -1,
             ],
-            $service->collectMetrics('acme')
+            $service->collectMetrics('acme'),
         );
     }
 
@@ -112,7 +117,7 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("[]\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $missingTenantService->storeMetrics('missing', ['users' => 1]);
 
@@ -120,7 +125,7 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("- { id: 0, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
         $idZeroService->storeMetrics('acme', ['users' => 1]);
     }
@@ -137,7 +142,7 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $service->storeMetrics('acme', ['users' => 12, 'storage_bytes' => 2048]);
@@ -146,17 +151,15 @@ final class TenantUsageServiceTest extends TestCase
     public function testGetLatestMetricsAndRecentHistoryReadFromControlPlane(): void
     {
         $controlPlane = $this->createMock(Connection::class);
-        $controlPlane->expects(self::exactly(2))
+        $controlPlane
+            ->expects(self::exactly(2))
             ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls(
-                [
-                    ['metric_name' => 'users', 'metric_value' => 12],
-                    ['metric_name' => 'customers', 'metric_value' => 5],
-                ],
-                [
-                    ['metric_name' => 'users', 'collected_at' => '2026-02-28 12:00:00', 'metric_value' => 12],
-                ]
-            );
+            ->willReturnOnConsecutiveCalls([
+                ['metric_name' => 'users', 'metric_value' => 12],
+                ['metric_name' => 'customers', 'metric_value' => 5],
+            ], [
+                ['metric_name' => 'users', 'collected_at' => '2026-02-28 12:00:00', 'metric_value' => 12],
+            ]);
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('control_plane')->willReturn($controlPlane);
@@ -165,31 +168,29 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         self::assertSame(['users' => 12, 'customers' => 5], $service->getLatestMetrics('acme'));
         self::assertSame(
             [['metric_name' => 'users', 'collected_at' => '2026-02-28 12:00:00', 'metric_value' => 12]],
-            $service->getRecentHistory('acme', 0, 7000)
+            $service->getRecentHistory('acme', 0, 7000),
         );
     }
 
     public function testGetUsageDeltasCalculatesDifferencesPerMetric(): void
     {
         $controlPlane = $this->createMock(Connection::class);
-        $controlPlane->expects(self::exactly(2))
+        $controlPlane
+            ->expects(self::exactly(2))
             ->method('fetchAllAssociative')
-            ->willReturnOnConsecutiveCalls(
-                [
-                    ['metric_name' => 'users', 'metric_value' => 10],
-                    ['metric_name' => 'customers', 'metric_value' => 4],
-                ],
-                [
-                    ['metric_name' => 'users', 'metric_value' => 14],
-                    ['metric_name' => 'customers', 'metric_value' => 4],
-                ]
-            );
+            ->willReturnOnConsecutiveCalls([
+                ['metric_name' => 'users', 'metric_value' => 10],
+                ['metric_name' => 'customers', 'metric_value' => 4],
+            ], [
+                ['metric_name' => 'users', 'metric_value' => 14],
+                ['metric_name' => 'customers', 'metric_value' => 4],
+            ]);
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('control_plane')->willReturn($controlPlane);
@@ -198,7 +199,7 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         self::assertSame(
@@ -206,7 +207,7 @@ final class TenantUsageServiceTest extends TestCase
                 'users' => ['previous' => 10, 'current' => 14, 'delta' => 4],
                 'customers' => ['previous' => 4, 'current' => 4, 'delta' => 0],
             ],
-            $service->getUsageDeltas('acme')
+            $service->getUsageDeltas('acme'),
         );
     }
 
@@ -217,7 +218,7 @@ final class TenantUsageServiceTest extends TestCase
             $registry,
             $this->tenantManagerWithConfig("[]\n"),
             new TenantResourceCatalog(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -235,17 +236,20 @@ final class TenantUsageServiceTest extends TestCase
         $controlPlaneConnection ??= $this->createMock(Connection::class);
 
         $registry = $this->createMock(ConnectionRegistry::class);
-        $registry->method('getConnection')->willReturnCallback(
-            static function (string $name) use ($tenantConnection, $controlPlaneConnection): Connection {
+        $registry
+            ->method('getConnection')
+            ->willReturnCallback(static function (string $name) use (
+                $tenantConnection,
+                $controlPlaneConnection,
+            ): Connection {
                 return $name === 'tenant' ? $tenantConnection : $controlPlaneConnection;
-            }
-        );
+            });
 
         return new TenantUsageService(
             $registry,
             $tenantManager,
             new TenantResourceCatalog(),
-            $logger ?? $this->createMock(LoggerInterface::class)
+            $logger ?? $this->createMock(LoggerInterface::class),
         );
     }
 
@@ -260,13 +264,13 @@ final class TenantUsageServiceTest extends TestCase
             $this->createMock(ConnectionRegistry::class),
             $this->createMock(LoggerInterface::class),
             $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class)
+            $this->createMock(TagAwareCacheInterface::class),
         );
     }
 
     private function inMemoryCache(): CacheInterface
     {
-        return new class () implements CacheInterface {
+        return new class() implements CacheInterface {
             /** @var array<string, mixed> */
             private array $store = [];
 
@@ -276,7 +280,7 @@ final class TenantUsageServiceTest extends TestCase
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
-                    $item = new class () implements ItemInterface {
+                    $item = new class() implements ItemInterface {
                         public function getKey(): string
                         {
                             return 'cache-item';

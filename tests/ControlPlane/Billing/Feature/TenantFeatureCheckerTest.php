@@ -12,8 +12,8 @@ use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface
 use App\ControlPlane\Tenant\Service\TenantManager;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -41,11 +41,11 @@ final class TenantFeatureCheckerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tenantContext         = $this->createMock(TenantContext::class);
-        $this->tenantManager         = $this->createMock(TenantManager::class);
+        $this->tenantContext = $this->createMock(TenantContext::class);
+        $this->tenantManager = $this->createMock(TenantManager::class);
         $this->planFeatureRepository = $this->createMock(PlanFeatureRepositoryInterface::class);
-        $this->overrideRepository    = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
-        $this->featureCache          = $this->createMock(TagAwareCacheInterface::class);
+        $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
+        $this->featureCache = $this->createMock(TagAwareCacheInterface::class);
 
         // By default the cache is transparent (executes the callback immediately).
         $this->featureCache
@@ -274,14 +274,20 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->tenantContext->method('getTenantId')->willReturn(1);
         $this->tenantContext->method('getTenantName')->willReturn('acme');
         $this->tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
-        $this->planFeatureRepository->method('findByPlan')->with('basic')->willReturn([
-            $this->makePlanFeature('basic', 'excel_export', true),
-            $this->makePlanFeature('basic', 'api_access', false),
-        ]);
+        $this->planFeatureRepository
+            ->method('findByPlan')
+            ->with('basic')
+            ->willReturn([
+                $this->makePlanFeature('basic', 'excel_export', true),
+                $this->makePlanFeature('basic', 'api_access', false),
+            ]);
         // Active override enables api_access (overrides plan).
-        $this->overrideRepository->method('findActiveByTenant')->with(1)->willReturn([
-            $this->makeOverride(1, 'api_access', true, active: true),
-        ]);
+        $this->overrideRepository
+            ->method('findActiveByTenant')
+            ->with(1)
+            ->willReturn([
+                $this->makeOverride(1, 'api_access', true, active: true),
+            ]);
 
         $entitlements = $this->makeChecker()->getEntitlements();
 
@@ -337,9 +343,7 @@ final class TenantFeatureCheckerTest extends TestCase
         bool $active,
         ?array $config = null,
     ): TenantFeatureOverride {
-        $expiresAt = $active
-            ? null                              // no expiry → always active
-            : new \DateTimeImmutable('-1 day'); // past → expired
+        $expiresAt = $active ? null : new \DateTimeImmutable('-1 day'); // no expiry → always active // past → expired
 
         return new TenantFeatureOverride(
             id: 1,

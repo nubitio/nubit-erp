@@ -13,6 +13,5 @@ final readonly class PaymentEvent
         public string $gatewaySubscriptionId,
         /** @var array<string, mixed> */
         public array $payload,
-    ) {
-    }
+    ) {}
 }

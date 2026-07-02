@@ -25,7 +25,8 @@ class StockLotRepository extends ServiceEntityRepository
      */
     public function findForFifo(string $productId, string $warehouseId): array
     {
-        return $this->createQueryBuilder('sl')
+        return $this
+            ->createQueryBuilder('sl')
             ->where('IDENTITY(sl.product) = :productId')
             ->andWhere('IDENTITY(sl.warehouse) = :warehouseId')
             ->andWhere('sl.qtyOnHand > 0')
@@ -44,7 +45,8 @@ class StockLotRepository extends ServiceEntityRepository
      */
     public function findForFefo(string $productId, string $warehouseId): array
     {
-        return $this->createQueryBuilder('sl')
+        return $this
+            ->createQueryBuilder('sl')
             ->where('IDENTITY(sl.product) = :productId')
             ->andWhere('IDENTITY(sl.warehouse) = :warehouseId')
             ->andWhere('sl.qtyOnHand > 0')
@@ -59,7 +61,8 @@ class StockLotRepository extends ServiceEntityRepository
 
     public function findByLotNumber(string $productId, string $warehouseId, string $lotNumber): ?StockLot
     {
-        return $this->createQueryBuilder('sl')
+        return $this
+            ->createQueryBuilder('sl')
             ->where('IDENTITY(sl.product) = :productId')
             ->andWhere('IDENTITY(sl.warehouse) = :warehouseId')
             ->andWhere('sl.lotNumber = :lotNumber')

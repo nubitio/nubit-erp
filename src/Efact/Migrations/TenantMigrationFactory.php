@@ -17,8 +17,7 @@ final readonly class TenantMigrationFactory
     public function __construct(
         #[Autowire(param: 'kernel.project_dir')]
         private string $projectDir,
-    ) {
-    }
+    ) {}
 
     public function createDependencyFactory(
         ConnectionRegistry $registry,
@@ -26,10 +25,7 @@ final readonly class TenantMigrationFactory
     ): DependencyFactory {
         $configuration = new Configuration();
         $configuration->setConnectionName('tenant');
-        $configuration->addMigrationsDirectory(
-            'DoctrineMigrations',
-            $this->projectDir . '/migrations',
-        );
+        $configuration->addMigrationsDirectory('DoctrineMigrations', $this->projectDir . '/migrations');
 
         $configurationLoader = new ExistingConfiguration($configuration);
         $connectionLoader = ConnectionRegistryConnection::withSimpleDefault($registry, 'tenant');

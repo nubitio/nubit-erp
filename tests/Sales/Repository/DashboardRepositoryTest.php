@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Repository;
 
-use Nubit\Platform\Cache\CacheManager;
-use App\Settings\Service\SunatStateService;
 use App\Sales\Repository\DashboardRepository;
+use App\Settings\Service\SunatStateService;
 use Doctrine\DBAL\Connection;
+use Nubit\Platform\Cache\CacheManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -38,16 +38,12 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->connection = $this->createMock(Connection::class);
         $this->sunatState = $this->createMock(SunatStateService::class);
-        $this->cache      = $this->createMock(CacheManager::class);
+        $this->cache = $this->createMock(CacheManager::class);
 
         // By default: no receipt filter requirement
         $this->sunatState->method('isReceiptRequired')->willReturn(false);
 
-        $this->repository = new DashboardRepository(
-            $this->connection,
-            $this->sunatState,
-            $this->cache,
-        );
+        $this->repository = new DashboardRepository($this->connection, $this->sunatState, $this->cache);
     }
 
     // =========================================================================
@@ -106,13 +102,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
         $this->stubConnectionAllZero();
 
-        $this->cache->expects(self::once())
-            ->method('set')
-            ->with(
-                'dashboard_overview_branch-1',
-                self::isArray(),
-                120
-            );
+        $this->cache->expects(self::once())->method('set')->with('dashboard_overview_branch-1', self::isArray(), 120);
 
         $result = $this->repository->getOverview('branch-1');
 
@@ -142,13 +132,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
         $this->stubConnectionAllZero();
 
-        $this->cache->expects(self::once())
-            ->method('set')
-            ->with(
-                'dashboard_lite_branch-2',
-                self::isArray(),
-                60
-            );
+        $this->cache->expects(self::once())->method('set')->with('dashboard_lite_branch-2', self::isArray(), 60);
 
         $result = $this->repository->getLiteOverview('branch-2');
 
@@ -163,7 +147,8 @@ final class DashboardRepositoryTest extends TestCase
     /** @test (5) invalidate() — calls cache->forget() for both keys */
     public function testInvalidateCallsForgetForBothKeys(): void
     {
-        $this->cache->expects(self::exactly(2))
+        $this->cache
+            ->expects(self::exactly(2))
             ->method('forget')
             ->willReturnCallback(function (string $key): void {
                 static $calls = [];
@@ -185,10 +170,21 @@ final class DashboardRepositoryTest extends TestCase
 
         $result = $this->repository->getOverview('branch-1');
 
-        foreach (['summary', 'salesByDay', 'salesByMonth', 'paymentMethods',
-                  'paymentMethodTrend', 'topProducts', 'purchasesSummary',
-                  'purchasesByDay', 'topPurchasedProducts', 'topCustomers',
-                  'voucherTypes', 'lowStockProducts', 'meta'] as $key) {
+        foreach ([
+            'summary',
+            'salesByDay',
+            'salesByMonth',
+            'paymentMethods',
+            'paymentMethodTrend',
+            'topProducts',
+            'purchasesSummary',
+            'purchasesByDay',
+            'topPurchasedProducts',
+            'topCustomers',
+            'voucherTypes',
+            'lowStockProducts',
+            'meta',
+        ] as $key) {
             self::assertArrayHasKey($key, $result, "Missing key: {$key}");
         }
     }
@@ -200,7 +196,8 @@ final class DashboardRepositoryTest extends TestCase
         $callCount = 0;
 
         // Let the first fetchAssociative call throw to simulate 'summary' failure
-        $this->connection->method('fetchAssociative')
+        $this->connection
+            ->method('fetchAssociative')
             ->willReturnCallback(function () use (&$callCount) {
                 $callCount++;
                 if ($callCount === 1) {
@@ -226,8 +223,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
 
         // Make all fetchAllAssociative calls throw
-        $this->connection->method('fetchAllAssociative')
-            ->willThrowException(new RuntimeException('segment failure'));
+        $this->connection->method('fetchAllAssociative')->willThrowException(new RuntimeException('segment failure'));
         $this->connection->method('fetchAssociative')->willReturn([]);
 
         $result = $this->repository->getOverview('branch-1');
@@ -251,7 +247,8 @@ final class DashboardRepositoryTest extends TestCase
         $sunatState->method('isReceiptRequired')->willReturn(true);
 
         $capturedSqls = [];
-        $this->connection->method('fetchAllAssociative')
+        $this->connection
+            ->method('fetchAllAssociative')
             ->willReturnCallback(function (string $sql) use (&$capturedSqls): array {
                 $capturedSqls[] = $sql;
                 return [];
@@ -262,10 +259,7 @@ final class DashboardRepositoryTest extends TestCase
         $repo->getLiteOverview('branch-1');
 
         // At least one SQL should contain the EXISTS subquery
-        $found = array_filter(
-            $capturedSqls,
-            static fn (string $sql): bool => str_contains($sql, 'EXISTS')
-        );
+        $found = array_filter($capturedSqls, static fn(string $sql): bool => str_contains($sql, 'EXISTS'));
         self::assertNotEmpty($found, 'Expected EXISTS subquery in at least one SQL query');
     }
 
@@ -275,7 +269,8 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
 
         $capturedSqls = [];
-        $this->connection->method('fetchAllAssociative')
+        $this->connection
+            ->method('fetchAllAssociative')
             ->willReturnCallback(function (string $sql) use (&$capturedSqls): array {
                 $capturedSqls[] = $sql;
                 return [];
@@ -284,10 +279,7 @@ final class DashboardRepositoryTest extends TestCase
 
         $this->repository->getLiteOverview('branch-1');
 
-        $found = array_filter(
-            $capturedSqls,
-            static fn (string $sql): bool => str_contains($sql, 'EXISTS')
-        );
+        $found = array_filter($capturedSqls, static fn(string $sql): bool => str_contains($sql, 'EXISTS'));
         self::assertEmpty($found, 'Expected no EXISTS subquery when RECEIPT_REQUIRED is falsy');
     }
 
@@ -301,18 +293,17 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
 
         // Return realistic data for summaryLite
-        $this->connection->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                // summaryLite call
-                [
-                    'sales_today'     => '150.00',
-                    'sales_yesterday' => '100.00',
-                    'sales_week'      => '700.00',
-                    'invoices_today'  => '5',
-                ],
-                // refundsLite call
-                ['refunds_today' => '10.00'],
-            );
+        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            // summaryLite call
+            [
+                'sales_today' => '150.00',
+                'sales_yesterday' => '100.00',
+                'sales_week' => '700.00',
+                'invoices_today' => '5',
+            ],
+            // refundsLite call
+            ['refunds_today' => '10.00'],
+        );
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
         $result = $this->repository->getLiteOverview('branch-1');
@@ -334,15 +325,15 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->stubCacheMiss();
 
-        $this->connection->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                ['sales_today' => '200.00', 'sales_yesterday' => '100.00',
-                 'sales_week' => '600.00', 'invoices_today' => '0'],
-                ['refunds_today' => '0.00'],
-            );
+        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls([
+            'sales_today' => '200.00',
+            'sales_yesterday' => '100.00',
+            'sales_week' => '600.00',
+            'invoices_today' => '0',
+        ], ['refunds_today' => '0.00']);
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
-        $result  = $this->repository->getLiteOverview('branch-1');
+        $result = $this->repository->getLiteOverview('branch-1');
         $summary = $result['summary'];
 
         self::assertSame(0.0, $summary['avgTicketToday']);
@@ -353,15 +344,15 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->stubCacheMiss();
 
-        $this->connection->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                ['sales_today' => '100.00', 'sales_yesterday' => '0.00',
-                 'sales_week' => '500.00', 'invoices_today' => '3'],
-                ['refunds_today' => '0.00'],
-            );
+        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls([
+            'sales_today' => '100.00',
+            'sales_yesterday' => '0.00',
+            'sales_week' => '500.00',
+            'invoices_today' => '3',
+        ], ['refunds_today' => '0.00']);
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
-        $result  = $this->repository->getLiteOverview('branch-1');
+        $result = $this->repository->getLiteOverview('branch-1');
         $summary = $result['summary'];
 
         self::assertNull($summary['dailyGrowth']);
@@ -412,35 +403,34 @@ final class DashboardRepositoryTest extends TestCase
         $this->stubCacheMiss();
 
         // summaryLite returns with invoicesThisMonth=10, salesThisMonth=500
-        $this->connection->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                // summary query
-                [
-                    'sales_today'            => '50.00',
-                    'sales_yesterday'        => '40.00',
-                    'sales_week'             => '300.00',
-                    'sales_month'            => '500.00',
-                    'sales_previous_month'   => '400.00',
-                    'invoices_today'         => '2',
-                    'invoices_month'         => '10',
-                ],
-                // customers query
-                ['customers_month' => '5', 'customers_week' => '3'],
-                // purchaseSummary
-                [
-                    'purchases_today'          => '0',
-                    'purchases_week'           => '0',
-                    'purchases_month'          => '0',
-                    'purchases_previous_month' => '0',
-                    'receipts_today'           => '0',
-                    'receipts_month'           => '0',
-                ],
-                // refunds
-                ['refunds_today' => '0', 'refunds_month' => '0'],
-            );
+        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            // summary query
+            [
+                'sales_today' => '50.00',
+                'sales_yesterday' => '40.00',
+                'sales_week' => '300.00',
+                'sales_month' => '500.00',
+                'sales_previous_month' => '400.00',
+                'invoices_today' => '2',
+                'invoices_month' => '10',
+            ],
+            // customers query
+            ['customers_month' => '5', 'customers_week' => '3'],
+            // purchaseSummary
+            [
+                'purchases_today' => '0',
+                'purchases_week' => '0',
+                'purchases_month' => '0',
+                'purchases_previous_month' => '0',
+                'receipts_today' => '0',
+                'receipts_month' => '0',
+            ],
+            // refunds
+            ['refunds_today' => '0', 'refunds_month' => '0'],
+        );
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
-        $result  = $this->repository->getOverview('branch-1');
+        $result = $this->repository->getOverview('branch-1');
         $summary = $result['summary'];
 
         self::assertSame(50.0, $summary['avgTicket']); // 500/10
@@ -452,23 +442,27 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->stubCacheMiss();
 
-        $this->connection->method('fetchAssociative')
-            ->willReturnOnConsecutiveCalls(
-                [
-                    'sales_today'            => '50.00',
-                    'sales_yesterday'        => '40.00',
-                    'sales_week'             => '300.00',
-                    'sales_month'            => '500.00',
-                    'sales_previous_month'   => '0.00', // zero
-                    'invoices_today'         => '0',
-                    'invoices_month'         => '0',
-                ],
-                ['customers_month' => '0', 'customers_week' => '0'],
-                ['purchases_today' => '0', 'purchases_week' => '0',
-                 'purchases_month' => '0', 'purchases_previous_month' => '0',
-                 'receipts_today' => '0', 'receipts_month' => '0'],
-                ['refunds_today' => '0', 'refunds_month' => '0'],
-            );
+        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            [
+                'sales_today' => '50.00',
+                'sales_yesterday' => '40.00',
+                'sales_week' => '300.00',
+                'sales_month' => '500.00',
+                'sales_previous_month' => '0.00', // zero
+                'invoices_today' => '0',
+                'invoices_month' => '0',
+            ],
+            ['customers_month' => '0', 'customers_week' => '0'],
+            [
+                'purchases_today' => '0',
+                'purchases_week' => '0',
+                'purchases_month' => '0',
+                'purchases_previous_month' => '0',
+                'receipts_today' => '0',
+                'receipts_month' => '0',
+            ],
+            ['refunds_today' => '0', 'refunds_month' => '0'],
+        );
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
         $result = $this->repository->getOverview('branch-1');
@@ -480,7 +474,8 @@ final class DashboardRepositoryTest extends TestCase
     {
         $this->stubCacheMiss();
 
-        $this->connection->method('fetchAllAssociative')
+        $this->connection
+            ->method('fetchAllAssociative')
             ->willThrowException(new RuntimeException('lite query failure'));
         $this->connection->method('fetchAssociative')->willReturn([]);
 

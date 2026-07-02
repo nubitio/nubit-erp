@@ -28,7 +28,7 @@ final class ConfigTypeTest extends TestCase
 
     public function testAllValuesAreUnique(): void
     {
-        $values = array_map(static fn (ConfigType $t): string => $t->value, ConfigType::cases());
+        $values = array_map(static fn(ConfigType $t): string => $t->value, ConfigType::cases());
 
         self::assertSame(array_unique($values), $values);
     }

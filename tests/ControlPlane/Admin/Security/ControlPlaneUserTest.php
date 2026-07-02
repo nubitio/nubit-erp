@@ -12,12 +12,7 @@ final class ControlPlaneUserTest extends TestCase
     /** @param list<string> $roles */
     private function makeUser(array $roles = ['ROLE_ADMIN']): ControlPlaneUser
     {
-        return new ControlPlaneUser(
-            id: 1,
-            username: 'superadmin',
-            password: '$argon2id$...',
-            roles: $roles,
-        );
+        return new ControlPlaneUser(id: 1, username: 'superadmin', password: '$argon2id$...', roles: $roles);
     }
 
     public function testGetUserIdentifierReturnsUsername(): void

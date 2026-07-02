@@ -15,8 +15,7 @@ readonly class NoteSendUseCase
         private NoteCreateUseCase $noteCreateUseCase,
         private NoteRepositoryInterface $noteRepository,
         private LoggerInterface $billingLogger,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws MathException

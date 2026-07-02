@@ -10,8 +10,7 @@ final readonly class RetencionPercepcionQuery
 {
     public function __construct(
         private Connection $connection,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function forPeriod(string $period = ''): array
@@ -20,8 +19,7 @@ final readonly class RetencionPercepcionQuery
             $period = date('Ym');
         }
 
-        $items = $this->connection->fetchAllAssociative(
-            "SELECT
+        $items = $this->connection->fetchAllAssociative("SELECT
                 type,
                 direction,
                 counterparty_name,
@@ -31,9 +29,7 @@ final readonly class RetencionPercepcionQuery
                 amount
              FROM retention_percepcion
              WHERE DATE_FORMAT(period_date,'%Y%m') = :period
-             ORDER BY period_date DESC",
-            ['period' => $period],
-        );
+             ORDER BY period_date DESC", ['period' => $period]);
 
         foreach ($items as &$item) {
             $item['rate'] = (float) ($item['rate'] ?? 0);
