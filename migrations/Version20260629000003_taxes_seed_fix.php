@@ -37,7 +37,11 @@ final class Version20260629000003_taxes_seed_fix extends AbstractMigration
         foreach ($purchases as $p) {
             $this->addSql(
                 "INSERT INTO goods_receipts (id, branch_id, warehouse_id, supplier_id, buyer_user_id, status, currency, subtotal, tax_total, grand_total, issued_at, supplier_doc_type, supplier_doc_series, supplier_doc_number, created_at, updated_at)
-                 VALUES (:id, :branch, :warehouse, :supplier, 1, 'POSTED', 'PEN', :sub, :tax, :total, :date, '01', :series, :num, :now, :now)",
+                 SELECT :id, :branch, :warehouse, :supplier, 1, 'POSTED', 'PEN', :sub, :tax, :total, :date, '01', :series, :num, :now, :now
+                 WHERE EXISTS (SELECT 1 FROM local WHERE local_id = :branch)
+                   AND EXISTS (SELECT 1 FROM almacen WHERE almacen_id = :warehouse)
+                   AND EXISTS (SELECT 1 FROM proveedor WHERE proveedor_id = :supplier)
+                   AND EXISTS (SELECT 1 FROM usuario WHERE usuario_id = 1)",
                 [
                     'id' => $p['id'],
                     'branch' => self::BRANCH,
