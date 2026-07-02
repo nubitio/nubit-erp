@@ -40,11 +40,7 @@ final class E2eStubBillRepositoryTest extends TestCase
         $expected->hash = 'hash';
         $expected->sunatResponse = new BillResult()->setSuccess(true);
 
-        $this->inner
-            ->expects(self::once())
-            ->method('sendBill')
-            ->with($invoice)
-            ->willReturn($expected);
+        $this->inner->expects(self::once())->method('sendBill')->with($invoice)->willReturn($expected);
 
         $repository = new E2eStubBillRepository($this->inner);
 
@@ -55,7 +51,9 @@ final class E2eStubBillRepositoryTest extends TestCase
     {
         $_SERVER['E2E_SEED_ENABLED'] = '1';
 
-        $invoice = (new Invoice())->setSerie('B001')->setCorrelativo('42');
+        $invoice = new Invoice()
+            ->setSerie('B001')
+            ->setCorrelativo('42');
 
         $this->inner->expects(self::never())->method('sendBill');
 
