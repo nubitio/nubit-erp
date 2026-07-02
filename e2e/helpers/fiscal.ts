@@ -69,9 +69,13 @@ export async function sendTaxDocument(
     headers: auth.headers,
     data: {},
   });
-  expect(response.ok(), 'envío SUNAT debe responder 2xx con stub E2E').toBeTruthy();
+  const responseText = await response.text();
+  expect(
+    response.ok(),
+    `envío SUNAT debe responder 2xx con stub E2E: ${response.status()} ${responseText}`,
+  ).toBeTruthy();
 
-  const body = (await response.json()) as { success?: boolean; message?: string };
+  const body = JSON.parse(responseText) as { success?: boolean; message?: string };
   expect(body.success, `SUNAT send debe ser exitoso: ${body.message ?? ''}`).toBeTruthy();
 
   return body;
