@@ -114,9 +114,9 @@ final readonly class E2eStubBillRepository implements BillRepositoryInterface
             return (string) $_SERVER['E2E_SEED_ENABLED'] === '1';
         }
 
-        $flag = getenv('E2E_SEED_ENABLED') ?: '';
+        $flag = getenv('E2E_SEED_ENABLED');
 
-        return (string) $flag === '1';
+        return $flag === '1';
     }
 
     private function resolveDocumentName(Invoice $invoice): string

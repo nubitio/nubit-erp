@@ -99,7 +99,18 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
-        $this->upsertSupplier();
+        $supplier = $this->supplierRepository->findOneBy(['ruc' => self::E2E_SUPPLIER_RUC]);
+        if (!$supplier instanceof Supplier) {
+            $supplier = new Supplier();
+            $supplier
+                ->setRuc(self::E2E_SUPPLIER_RUC)
+                ->setBusinessName(self::E2E_SUPPLIER_NAME)
+                ->setFiscalAddress('CI Supplier Address')
+                ->setPhone('+51900000002');
+
+            $this->entityManager->persist($supplier);
+            $this->entityManager->flush();
+        }
         $product = $this->upsertProduct($warehouse, self::E2E_PRODUCT_CODE, self::E2E_PRODUCT_NAME);
         $this->upsertProduct($warehouse, self::E2E_PRODUCT_2_CODE, self::E2E_PRODUCT_2_NAME);
 
@@ -315,26 +326,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->flush();
 
         return $customer;
-    }
-
-    private function upsertSupplier(): Supplier
-    {
-        $supplier = $this->supplierRepository->findOneBy(['ruc' => self::E2E_SUPPLIER_RUC]);
-        if ($supplier instanceof Supplier) {
-            return $supplier;
-        }
-
-        $supplier = new Supplier();
-        $supplier
-            ->setRuc(self::E2E_SUPPLIER_RUC)
-            ->setBusinessName(self::E2E_SUPPLIER_NAME)
-            ->setFiscalAddress('CI Supplier Address')
-            ->setPhone('+51900000002');
-
-        $this->entityManager->persist($supplier);
-        $this->entityManager->flush();
-
-        return $supplier;
     }
 
     private function upsertProduct(Warehouse $warehouse, string $code, string $name): Product

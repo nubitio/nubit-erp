@@ -48,7 +48,7 @@ final class E2eStubBillRepositoryTest extends TestCase
 
         $repository = new E2eStubBillRepository($this->inner);
 
-        self::assertSame($expected, $repository->sendBill($invoice));
+        static::assertSame($expected, $repository->sendBill($invoice));
     }
 
     public function testReturnsAcceptedSunatResponseWhenStubEnabled(): void
@@ -62,10 +62,10 @@ final class E2eStubBillRepositoryTest extends TestCase
         $repository = new E2eStubBillRepository($this->inner);
         $response = $repository->sendBill($invoice);
 
-        self::assertSame('B001-42', $response->name);
-        self::assertTrue($response->sunatResponse->isSuccess());
-        self::assertSame('0', $response->sunatResponse->getCdrResponse()?->getCode());
-        self::assertNotSame('', $response->sunatResponse->getCdrZip());
+        static::assertSame('B001-42', $response->name);
+        static::assertTrue($response->sunatResponse->isSuccess());
+        static::assertSame('0', $response->sunatResponse->getCdrResponse()?->getCode());
+        static::assertNotSame('', $response->sunatResponse->getCdrZip());
     }
 
     public function testReturnsStubPdfWhenStubEnabled(): void
@@ -77,6 +77,6 @@ final class E2eStubBillRepositoryTest extends TestCase
         $repository = new E2eStubBillRepository($this->inner);
         $pdf = $repository->getPdf(new Invoice());
 
-        self::assertStringStartsWith('%PDF', $pdf);
+        static::assertStringStartsWith('%PDF', $pdf);
     }
 }
