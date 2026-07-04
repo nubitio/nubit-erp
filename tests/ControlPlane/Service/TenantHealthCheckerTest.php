@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\ControlPlane\Service;
 
 use App\ControlPlane\Tenant\Service\TenantHealthChecker;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
+use App\Tests\ControlPlane\Support\TenantServiceFactory;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -31,7 +32,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
-            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -50,7 +51,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
-            $this->tenantManagerWithConfig("[]\n"),
+            $this->tenantServiceWithConfig("[]\n"),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -73,7 +74,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
-            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $logger,
         );
 
@@ -94,7 +95,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
-            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $this->createMock(LoggerInterface::class),
         );
 
@@ -115,7 +116,7 @@ final class TenantHealthCheckerTest extends TestCase
 
         $checker = new TenantHealthChecker(
             $this->tenantRegistry($tenantConnection),
-            $this->tenantManagerWithConfig("[invalid-yaml\n"),
+            $this->tenantServiceWithConfig("[invalid-yaml\n"),
             $logger,
         );
 
@@ -134,19 +135,12 @@ final class TenantHealthCheckerTest extends TestCase
         return $registry;
     }
 
-    private function tenantManagerWithConfig(string $yamlContent): TenantManager
+    private function tenantServiceWithConfig(string $yamlContent): TenantService
     {
         $path = sys_get_temp_dir() . '/efact-tenant-health-' . bin2hex(random_bytes(4)) . '.yaml';
         file_put_contents($path, $yamlContent);
 
-        return new TenantManager(
-            $path,
-            'yaml',
-            $this->createMock(ConnectionRegistry::class),
-            $this->createMock(LoggerInterface::class),
-            $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class),
-        );
+        return TenantServiceFactory::yaml($path);
     }
 
     private function inMemoryCache(): CacheInterface

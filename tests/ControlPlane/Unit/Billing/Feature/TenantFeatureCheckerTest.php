@@ -9,7 +9,7 @@ use App\ControlPlane\Billing\Entity\TenantFeatureOverride;
 use App\ControlPlane\Billing\Feature\TenantFeatureChecker;
 use App\ControlPlane\Billing\Repository\PlanFeatureRepositoryInterface;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -34,7 +34,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 final class TenantFeatureCheckerTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;
-    private TenantManager&MockObject $tenantManager;
+    private TenantService&MockObject $tenantService;
     private PlanFeatureRepositoryInterface&MockObject $planFeatureRepository;
     private TenantFeatureOverrideRepositoryInterface&MockObject $overrideRepository;
     private TagAwareCacheInterface&MockObject $featureCache;
@@ -42,7 +42,7 @@ final class TenantFeatureCheckerTest extends TestCase
     protected function setUp(): void
     {
         $this->tenantContext = $this->createMock(TenantContext::class);
-        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->tenantService = $this->createMock(TenantService::class);
         $this->planFeatureRepository = $this->createMock(PlanFeatureRepositoryInterface::class);
         $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
         $this->featureCache = $this->createMock(TagAwareCacheInterface::class);
@@ -66,7 +66,7 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->tenantContext->method('getTenantId')->willReturn(1);
         $this->tenantContext->method('getTenantName')->willReturn('acme');
         $this->overrideRepository->method('findByTenantAndKey')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
+        $this->tenantService->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
         $this->planFeatureRepository
             ->method('findOneByPlanAndKey')
             ->with('basic', 'excel_export')
@@ -84,7 +84,7 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->tenantContext->method('getTenantId')->willReturn(1);
         $this->tenantContext->method('getTenantName')->willReturn('acme');
         $this->overrideRepository->method('findByTenantAndKey')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
+        $this->tenantService->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
         $this->planFeatureRepository
             ->method('findOneByPlanAndKey')
             ->with('basic', 'api_access')
@@ -125,7 +125,7 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->overrideRepository
             ->method('findByTenantAndKey')
             ->willReturn($this->makeOverride(1, 'excel_export', false, active: false));
-        $this->tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
+        $this->tenantService->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
         // Plan says enabled → should win because override is expired.
         $this->planFeatureRepository
             ->method('findOneByPlanAndKey')
@@ -156,7 +156,7 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->tenantContext->method('getTenantName')->willReturn('unknown-tenant');
         $this->overrideRepository->method('findByTenantAndKey')->willReturn(null);
         // TenantManager returns null → no control-plane record → fail closed.
-        $this->tenantManager->method('getTenantByName')->with('unknown-tenant')->willReturn(null);
+        $this->tenantService->method('getTenantByName')->with('unknown-tenant')->willReturn(null);
 
         self::assertFalse($this->makeChecker()->hasFeature('excel_export'));
     }
@@ -170,7 +170,7 @@ final class TenantFeatureCheckerTest extends TestCase
         $this->tenantContext->method('getTenantId')->willReturn(1);
         $this->tenantContext->method('getTenantName')->willReturn('acme');
         $this->overrideRepository->method('findByTenantAndKey')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
+        $this->tenantService->method('getTenantByName')->willReturn(['id' => 1, 'name' => 'acme', 'plan' => 'basic']);
         $this->planFeatureRepository
             ->method('findOneByPlanAndKey')
             ->with('basic', 'retention_days')
@@ -201,7 +201,7 @@ final class TenantFeatureCheckerTest extends TestCase
     {
         return new TenantFeatureChecker(
             $this->tenantContext,
-            $this->tenantManager,
+            $this->tenantService,
             $this->planFeatureRepository,
             $this->overrideRepository,
             $this->featureCache,

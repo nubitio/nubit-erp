@@ -202,6 +202,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: './assets/app.tsx',
+        'control-plane': './assets/control-plane.tsx',
       },
       output: {
         manualChunks(id) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Command;
 
 use App\ControlPlane\Tenant\Service\TenantHealthChecker;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +18,7 @@ class TenantHealthCheckCommand extends Command
 {
     public function __construct(
         private readonly TenantHealthChecker $healthChecker,
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
     ) {
         parent::__construct();
     }
@@ -39,7 +39,7 @@ class TenantHealthCheckCommand extends Command
             $this->renderResult($io, $result);
             $hasFailures = !$result['healthy'];
         } else {
-            $tenants = $this->tenantManager->getTenants();
+            $tenants = $this->tenantService->getTenants();
 
             if ($tenants === []) {
                 $io->warning('No tenants found');

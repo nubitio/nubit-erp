@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Tenant;
 
-use App\ControlPlane\Tenant\Controller\TenantController;
+use App\ControlPlane\Operator\Api\TenantApiController;
 use App\ControlPlane\Tenant\Service\TenantBackupService;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -17,27 +17,27 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class TenantBackupDownloadAuthorizationTest extends TestCase
 {
-    public function testDownloadActionRequiresSuperAdminDespiteAdminControllerDefault(): void
+    public function testDownloadActionRequiresViewerRole(): void
     {
-        $method = new \ReflectionMethod(TenantController::class, 'downloadBackup');
+        $method = new \ReflectionMethod(TenantApiController::class, 'downloadBackup');
         $roles = array_map(
             static fn(\ReflectionAttribute $attribute): string => (string) $attribute->getArguments()[0],
             $method->getAttributes(IsGranted::class),
         );
 
-        self::assertContains('ROLE_SUPER_ADMIN', $roles);
+        self::assertContains('ROLE_CP_VIEWER', $roles);
     }
 
     public function testDownloadActionChecksTenantOwnershipBeforeDownloadingOrOpeningBackup(): void
     {
         $source = (string) file_get_contents(__DIR__
-        . '/../../../src/ControlPlane/Tenant/Controller/TenantController.php');
+            . '/../../../src/ControlPlane/Operator/Api/TenantApiController.php');
         $methodStart = strpos($source, 'public function downloadBackup');
         self::assertIsInt($methodStart);
 
-        $tenantLookup = strpos($source, '$this->tenantManager->getTenant($id)', $methodStart);
+        $tenantLookup = strpos($source, '$this->tenantService->getTenant($id)', $methodStart);
         $ownershipCheck = strpos($source, '$this->backupService->findBackupForTenant($backupId, $id)', $methodStart);
-        $notFoundGuard = strpos($source, 'throw $this->createNotFoundException(\'Backup not found.\')', $methodStart);
+        $notFoundGuard = strpos($source, 'throw $this->createNotFoundException(\'Backup not found\')', $methodStart);
         $download = strpos($source, '$this->backupService->downloadBackup($backupId)', $methodStart);
         $fileOpen = strpos($source, 'fopen($localPath, \'r\')', $methodStart);
 
@@ -108,7 +108,7 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
         $registry->method('getConnection')->with('control_plane')->willReturn($connection);
 
         return new TenantBackupService(
-            $this->createStub(TenantManager::class),
+            $this->createStub(TenantService::class),
             $registry,
             $filesystem,
             new NullLogger(),

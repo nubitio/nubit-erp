@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;
@@ -12,7 +13,7 @@ final readonly class TenantHealthChecker
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
-        private TenantManager $tenantManager,
+        private TenantService $tenantService,
         private LoggerInterface $logger,
     ) {}
 
@@ -45,7 +46,7 @@ final readonly class TenantHealthChecker
     private function checkControlPlaneEntry(string $tenantName): array
     {
         try {
-            $tenant = $this->tenantManager->getTenantByName($tenantName);
+            $tenant = $this->tenantService->getTenantByName($tenantName);
             if ($tenant === null) {
                 return ['ok' => false, 'message' => 'Tenant not found in control plane'];
             }
@@ -69,7 +70,7 @@ final readonly class TenantHealthChecker
         try {
             /** @var TenantConnection $connection */
             $connection = $this->connectionRegistry->getConnection('tenant');
-            $tenant = $this->tenantManager->getTenantByName($tenantName);
+            $tenant = $this->tenantService->getTenantByName($tenantName);
             if ($tenant === null) {
                 return ['ok' => false, 'message' => 'Tenant not found'];
             }

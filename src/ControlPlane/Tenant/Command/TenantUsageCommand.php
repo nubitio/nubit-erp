@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,7 +19,7 @@ class TenantUsageCommand extends Command
 {
     public function __construct(
         private readonly TenantUsageService $usageService,
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
     ) {
         parent::__construct();
     }
@@ -43,7 +43,7 @@ class TenantUsageCommand extends Command
         if ($tenantName !== null) {
             $this->processOneTenant($io, (string) $tenantName, $store);
         } else {
-            $tenants = $this->tenantManager->getTenants();
+            $tenants = $this->tenantService->getTenants();
 
             if ($tenants === []) {
                 $io->warning('No tenants found');

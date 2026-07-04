@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -13,7 +14,7 @@ final readonly class TenantUsageService
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
-        private TenantManager $tenantManager,
+        private TenantService $tenantService,
         private TenantResourceCatalog $resourceCatalog,
         private LoggerInterface $logger,
     ) {}
@@ -23,7 +24,7 @@ final readonly class TenantUsageService
      */
     public function collectMetrics(string $tenantName): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
@@ -80,7 +81,7 @@ final readonly class TenantUsageService
      */
     public function storeMetrics(string $tenantName, array $metrics): void
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             return;
         }
@@ -113,7 +114,7 @@ final readonly class TenantUsageService
      */
     public function getLatestMetrics(string $tenantName): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
@@ -150,7 +151,7 @@ final readonly class TenantUsageService
      */
     public function getRecentHistory(string $tenantName, int $hours = 24, int $limit = 500): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }
@@ -181,7 +182,7 @@ final readonly class TenantUsageService
      */
     public function getUsageDeltas(string $tenantName, int $hours = 24): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }

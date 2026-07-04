@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Command;
 
 use App\ControlPlane\Billing\Service\TenantQuotaService;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use App\Efact\Audit\AuditLogger;
 use Psr\Log\LoggerInterface;
@@ -21,7 +21,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
 final class TenantUsageCollectCommand extends Command
 {
     public function __construct(
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
         private readonly TenantUsageService $usageService,
         private readonly TenantQuotaService $tenantQuotaService,
         private readonly AuditLogger $auditLogger,
@@ -33,7 +33,7 @@ final class TenantUsageCollectCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $tenants = $this->tenantManager->getTenants();
+        $tenants = $this->tenantService->getTenants();
 
         if ($tenants === []) {
             $io->warning('No tenants found.');

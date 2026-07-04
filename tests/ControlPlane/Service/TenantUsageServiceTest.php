@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Service;
 
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
+use App\Tests\ControlPlane\Support\TenantServiceFactory;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
@@ -51,7 +52,7 @@ final class TenantUsageServiceTest extends TestCase
             });
 
         $service = $this->newService(
-            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $tenantConnection,
         );
 
@@ -85,7 +86,7 @@ final class TenantUsageServiceTest extends TestCase
         $logger->expects(self::exactly(2))->method('warning');
 
         $service = $this->newService(
-            $this->tenantManagerWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 1, name: acme, connection: acme_db }\n"),
             $tenantConnection,
             null,
             $logger,
@@ -115,7 +116,7 @@ final class TenantUsageServiceTest extends TestCase
 
         $missingTenantService = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("[]\n"),
+            $this->tenantServiceWithConfig("[]\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -123,7 +124,7 @@ final class TenantUsageServiceTest extends TestCase
 
         $idZeroService = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("- { id: 0, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 0, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -140,7 +141,7 @@ final class TenantUsageServiceTest extends TestCase
 
         $service = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -166,7 +167,7 @@ final class TenantUsageServiceTest extends TestCase
 
         $service = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -197,7 +198,7 @@ final class TenantUsageServiceTest extends TestCase
 
         $service = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
+            $this->tenantServiceWithConfig("- { id: 9, name: acme, connection: acme_db }\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -216,7 +217,7 @@ final class TenantUsageServiceTest extends TestCase
         $registry = $this->createMock(ConnectionRegistry::class);
         $service = new TenantUsageService(
             $registry,
-            $this->tenantManagerWithConfig("[]\n"),
+            $this->tenantServiceWithConfig("[]\n"),
             new TenantResourceCatalog(),
             $this->createMock(LoggerInterface::class),
         );
@@ -228,7 +229,7 @@ final class TenantUsageServiceTest extends TestCase
     }
 
     private function newService(
-        TenantManager $tenantManager,
+        TenantService $tenantService,
         TenantConnection $tenantConnection,
         ?Connection $controlPlaneConnection = null,
         ?LoggerInterface $logger = null,
@@ -247,25 +248,18 @@ final class TenantUsageServiceTest extends TestCase
 
         return new TenantUsageService(
             $registry,
-            $tenantManager,
+            $tenantService,
             new TenantResourceCatalog(),
             $logger ?? $this->createMock(LoggerInterface::class),
         );
     }
 
-    private function tenantManagerWithConfig(string $yamlContent): TenantManager
+    private function tenantServiceWithConfig(string $yamlContent): TenantService
     {
         $path = sys_get_temp_dir() . '/efact-tenant-usage-' . bin2hex(random_bytes(4)) . '.yaml';
         file_put_contents($path, $yamlContent);
 
-        return new TenantManager(
-            $path,
-            'yaml',
-            $this->createMock(ConnectionRegistry::class),
-            $this->createMock(LoggerInterface::class),
-            $this->inMemoryCache(),
-            $this->createMock(TagAwareCacheInterface::class),
-        );
+        return TenantServiceFactory::yaml($path);
     }
 
     private function inMemoryCache(): CacheInterface

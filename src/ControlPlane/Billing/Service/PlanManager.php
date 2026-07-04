@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Billing\Service;
 
 use App\ControlPlane\Billing\Feature\PlanFeatureManager;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;

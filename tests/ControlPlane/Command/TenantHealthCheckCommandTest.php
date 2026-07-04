@@ -6,7 +6,7 @@ namespace App\Tests\ControlPlane\Command;
 
 use App\ControlPlane\Tenant\Command\TenantHealthCheckCommand;
 use App\ControlPlane\Tenant\Service\TenantHealthChecker;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -22,8 +22,8 @@ final class TenantHealthCheckCommandTest extends TestCase
 {
     public function testChecksSpecificTenantAndReturnsSuccessWhenHealthy(): void
     {
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService
             ->method('getTenantByName')
             ->with('acme')
             ->willReturn([
@@ -32,7 +32,7 @@ final class TenantHealthCheckCommandTest extends TestCase
                 'connection' => 'acme_db',
             ]);
 
-        $command = $this->newCommand($tenantManager, $this->healthyTenantConnection());
+        $command = $this->newCommand($tenantService, $this->healthyTenantConnection());
 
         $tester = new CommandTester($command);
         $exitCode = $tester->execute(['tenant' => 'acme']);
@@ -43,10 +43,10 @@ final class TenantHealthCheckCommandTest extends TestCase
 
     public function testReturnsSuccessWhenNoTenantsExist(): void
     {
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager->method('getTenants')->willReturn([]);
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService->method('getTenants')->willReturn([]);
 
-        $command = $this->newCommand($tenantManager, $this->healthyTenantConnection());
+        $command = $this->newCommand($tenantService, $this->healthyTenantConnection());
 
         $tester = new CommandTester($command);
         $exitCode = $tester->execute([]);
@@ -57,21 +57,21 @@ final class TenantHealthCheckCommandTest extends TestCase
 
     public function testReturnsFailureWhenAtLeastOneTenantIsUnhealthy(): void
     {
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService
             ->method('getTenants')
             ->willReturn([
                 ['id' => 1, 'name' => 'acme'],
                 ['id' => 2, 'name' => 'globex'],
             ]);
-        $tenantManager
+        $tenantService
             ->method('getTenantByName')
             ->willReturnMap([
                 ['acme', ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db']],
                 ['globex', null],
             ]);
 
-        $command = $this->newCommand($tenantManager, $this->healthyTenantConnection());
+        $command = $this->newCommand($tenantService, $this->healthyTenantConnection());
 
         $tester = new CommandTester($command);
         $exitCode = $tester->execute([]);
@@ -81,15 +81,15 @@ final class TenantHealthCheckCommandTest extends TestCase
     }
 
     private function newCommand(
-        TenantManager $tenantManager,
+        TenantService $tenantService,
         TenantConnection $tenantConnection,
     ): TenantHealthCheckCommand {
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('tenant')->willReturn($tenantConnection);
 
-        $checker = new TenantHealthChecker($registry, $tenantManager, $this->createMock(LoggerInterface::class));
+        $checker = new TenantHealthChecker($registry, $tenantService, $this->createMock(LoggerInterface::class));
 
-        return new TenantHealthCheckCommand($checker, $tenantManager);
+        return new TenantHealthCheckCommand($checker, $tenantService);
     }
 
     private function healthyTenantConnection(): TenantConnection

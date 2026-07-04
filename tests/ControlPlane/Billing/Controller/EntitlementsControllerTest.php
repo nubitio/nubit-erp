@@ -9,7 +9,7 @@ use App\ControlPlane\Billing\DTO\EntitlementsResponse;
 use App\ControlPlane\Billing\Entity\TenantFeatureOverride;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Billing\Service\TenantUsageSummaryInterface;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -30,7 +30,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 final class EntitlementsControllerTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;
-    private TenantManager&MockObject $tenantManager;
+    private TenantService&MockObject $tenantService;
     private TenantUsageSummaryInterface&MockObject $quotaService;
     private FeatureCheckerInterface&MockObject $featureChecker;
     private TenantFeatureOverrideRepositoryInterface&MockObject $overrideRepository;
@@ -38,7 +38,7 @@ final class EntitlementsControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->tenantContext = $this->createMock(TenantContext::class);
-        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->tenantService = $this->createMock(TenantService::class);
         $this->quotaService = $this->createMock(TenantUsageSummaryInterface::class);
         $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
         $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
@@ -113,7 +113,7 @@ final class EntitlementsControllerTest extends TestCase
     public function testReturns404WhenTenantNotFound(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager->method('getTenantByName')->with('acme')->willReturn(null);
+        $this->tenantService->method('getTenantByName')->with('acme')->willReturn(null);
 
         $controller = $this->buildController();
         $response = $controller->__invoke(new Request());
@@ -124,7 +124,7 @@ final class EntitlementsControllerTest extends TestCase
     public function testReturns200WithPlanLimitsAndFeatures(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager
+        $this->tenantService
             ->method('getTenantByName')
             ->willReturn([
                 'id' => 1,
@@ -178,7 +178,7 @@ final class EntitlementsControllerTest extends TestCase
     public function testDebugModeRequiresBothHeaderAndAdminRole(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager
+        $this->tenantService
             ->method('getTenantByName')
             ->willReturn([
                 'id' => 1,
@@ -210,7 +210,7 @@ final class EntitlementsControllerTest extends TestCase
     public function testDebugModeShowsSourceWhenHeaderAndAdminPresent(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager
+        $this->tenantService
             ->method('getTenantByName')
             ->willReturn([
                 'id' => 42,
@@ -270,7 +270,7 @@ final class EntitlementsControllerTest extends TestCase
 
         $controller = new EntitlementsController(
             $this->tenantContext,
-            $this->tenantManager,
+            $this->tenantService,
             $this->quotaService,
             $this->featureChecker,
             $this->overrideRepository,

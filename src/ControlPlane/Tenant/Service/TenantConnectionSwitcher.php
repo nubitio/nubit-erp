@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Driver\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -14,7 +15,7 @@ readonly class TenantConnectionSwitcher implements TenantConnectionSwitcherInter
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
-        private TenantManager $tenantManager,
+        private TenantService $tenantService,
     ) {}
 
     /**
@@ -26,7 +27,7 @@ readonly class TenantConnectionSwitcher implements TenantConnectionSwitcherInter
     {
         /** @var TenantConnection $connection */
         $connection = $this->connectionRegistry->getConnection();
-        $tenantData = $this->tenantManager->getTenantByName($tenant);
+        $tenantData = $this->tenantService->getTenantByName($tenant);
         if ($tenantData === null) {
             throw new ServiceException('Tenant not found');
         }

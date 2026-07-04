@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Tenant\Command;
 
 use App\ControlPlane\Billing\Service\TenantQuotaService;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +18,7 @@ class TenantQuotaCommand extends Command
 {
     public function __construct(
         private readonly TenantQuotaService $quotaService,
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
     ) {
         parent::__construct();
     }
@@ -52,7 +52,7 @@ class TenantQuotaCommand extends Command
             return;
         }
 
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         $plan = (string) ($tenant['plan'] ?? 'free');
 
         $io->section(sprintf('Tenant: %s (plan: %s)', $tenantName, $plan));
@@ -79,7 +79,7 @@ class TenantQuotaCommand extends Command
 
     private function showAllTenantsQuota(SymfonyStyle $io): void
     {
-        $tenants = $this->tenantManager->getTenants();
+        $tenants = $this->tenantService->getTenants();
 
         if ($tenants === []) {
             $io->warning('No tenants found.');

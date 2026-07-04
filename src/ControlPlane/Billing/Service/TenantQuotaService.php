@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Service;
 
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -22,7 +22,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
 
     public function __construct(
         private TenantContext $tenantContext,
-        private TenantManager $tenantManager,
+        private TenantService $tenantService,
         private PlanManager $planManager,
         private TenantResourceCatalog $resourceCatalog,
         private ConnectionRegistry $connectionRegistry,
@@ -52,7 +52,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             return new QuotaCheckResult(true, $resource, 0, -1);
         }
 
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             // A resolved tenant context without a control-plane record must fail closed.
             return new QuotaCheckResult(false, $resource, 0, 0);
@@ -106,7 +106,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
      */
     public function getUsageSummary(string $tenantName): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
         }

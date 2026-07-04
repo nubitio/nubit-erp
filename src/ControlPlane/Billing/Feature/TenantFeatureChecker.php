@@ -6,7 +6,7 @@ namespace App\ControlPlane\Billing\Feature;
 
 use App\ControlPlane\Billing\Repository\PlanFeatureRepositoryInterface;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Feature\Exception\FeatureNotAvailableException;
 use Nubit\Platform\Tenant\Context\TenantContext;
@@ -31,7 +31,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
 
     public function __construct(
         private readonly TenantContext $tenantContext,
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
         private readonly PlanFeatureRepositoryInterface $planFeatureRepository,
         private readonly TenantFeatureOverrideRepositoryInterface $overrideRepository,
         private readonly TagAwareCacheInterface $featureCache,
@@ -170,7 +170,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
             return ['enabled' => false, 'config' => []];
         }
 
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             // Tenant context set but no control-plane record → fail closed.
             return ['enabled' => false, 'config' => []];
@@ -213,7 +213,7 @@ final class TenantFeatureChecker implements FeatureCheckerInterface
             return [];
         }
 
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             return [];
         }

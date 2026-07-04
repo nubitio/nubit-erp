@@ -51,7 +51,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
                 $certificate->tenantName,
                 $certificate->expiresAt->format('Y-m-d'),
             );
-            $actionUrl = '/admin/tenants/' . $certificate->tenantId . '/certificates';
+            $actionUrl = '/admin/tenants/' . $certificate->tenantId . '?tab=certificates';
 
             try {
                 $this->tenantConnectionSwitcher->switchConnection($certificate->tenantName);

@@ -8,7 +8,7 @@ use App\ControlPlane\Tenant\Command\TenantSetupCommand;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -106,17 +106,17 @@ final class TenantSetupCommandTest extends TestCase
 
     private function newCommand(InitialTenantSetupPortInterface $initialSetupService): TenantSetupCommand
     {
-        $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager
+        $tenantRegistry = $this->createStub(TenantRegistryInterface::class);
+        $tenantRegistry
             ->method('getTenants')
             ->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
-        $tenantManager
+        $tenantRegistry
             ->method('getTenantByName')
             ->willReturn(['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']);
 
         $command = new TenantSetupCommand($initialSetupService);
         $command->initDependencies(
-            $tenantManager,
+            $tenantRegistry,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
             $this->createMock(LoggerInterface::class),

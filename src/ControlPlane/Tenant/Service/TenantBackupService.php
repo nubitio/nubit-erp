@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Service;
 
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -20,7 +21,7 @@ use Symfony\Component\Process\Process;
 final readonly class TenantBackupService implements TenantBackupRunnerInterface
 {
     public function __construct(
-        private TenantManager $tenantManager,
+        private TenantService $tenantService,
         private ConnectionRegistry $connectionRegistry,
         private FilesystemOperator $defaultFilesystem,
         private LoggerInterface $logger,
@@ -34,7 +35,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
      */
     public function backup(string $tenantName, bool $uploadToS3 = true, string $backupType = 'full'): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             throw new RuntimeException(sprintf('Tenant "%s" not found.', $tenantName));
         }
@@ -130,7 +131,7 @@ final readonly class TenantBackupService implements TenantBackupRunnerInterface
      */
     public function listBackups(string $tenantName, int $limit = 20): array
     {
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             return [];
         }

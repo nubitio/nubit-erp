@@ -7,7 +7,7 @@ namespace App\Tests\ControlPlane\Service;
 use App\ControlPlane\Billing\Service\PlanManager;
 use App\ControlPlane\Billing\Service\QuotaCheckResult;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -29,7 +29,7 @@ final class TenantQuotaServiceTest extends TestCase
     {
         $service = $this->newService(
             tenantContext: new TenantContext(),
-            tenantManager: $this->createMock(TenantManager::class),
+            tenantService: $this->createMock(TenantService::class),
             planManager: $this->planManagerWithPlans([]),
             registry: $this->createMock(ConnectionRegistry::class),
         );
@@ -46,12 +46,12 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantContext = new TenantContext();
         $tenantContext->setTenant(10, 'acme', 'acme.example.com', 'req-1');
 
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager->method('getTenantByName')->with('acme')->willReturn(null);
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService->method('getTenantByName')->with('acme')->willReturn(null);
 
         $service = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $this->planManagerWithPlans([]),
             registry: $this->createMock(ConnectionRegistry::class),
         );
@@ -69,8 +69,8 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantContext->setTenant(1, 'acme', null, null);
 
         $tenant = ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db', 'plan' => 'free'];
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager->method('getTenantByName')->with('acme')->willReturn($tenant);
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService->method('getTenantByName')->with('acme')->willReturn($tenant);
 
         $tenantConnectionUnlimited = $this->createStub(TenantConnection::class);
         $tenantConnectionUnlimited->method('switchTenantParams');
@@ -84,7 +84,7 @@ final class TenantQuotaServiceTest extends TestCase
 
         $serviceUnlimited = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $this->planManagerWithPlans([
                 ['id' => 1, 'name' => 'free', 'limits' => ['users' => -1], 'is_default' => true],
             ]),
@@ -105,7 +105,7 @@ final class TenantQuotaServiceTest extends TestCase
 
         $serviceMissingTable = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $this->planManagerWithPlans([
                 ['id' => 1, 'name' => 'free', 'limits' => ['users' => 10], 'is_default' => true],
             ]),
@@ -123,8 +123,8 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantContext->setTenant(1, 'acme', null, null);
 
         $tenant = ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db', 'plan' => 'pro'];
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager->method('getTenantByName')->with('acme')->willReturn($tenant);
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService->method('getTenantByName')->with('acme')->willReturn($tenant);
 
         $tenantConnection = $this->createStub(TenantConnection::class);
         $tenantConnection->method('switchTenantParams');
@@ -144,7 +144,7 @@ final class TenantQuotaServiceTest extends TestCase
 
         $service = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $planManager,
             registry: $registry,
         );
@@ -160,7 +160,7 @@ final class TenantQuotaServiceTest extends TestCase
 
         $service2 = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $planManager,
             registry: $registry,
         );
@@ -173,8 +173,8 @@ final class TenantQuotaServiceTest extends TestCase
     public function testGetUsageSummaryAndReleaseLocks(): void
     {
         $tenant = ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db', 'plan' => 'pro'];
-        $tenantManager = $this->createMock(TenantManager::class);
-        $tenantManager
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService
             ->method('getTenantByName')
             ->willReturnMap([
                 ['acme', $tenant],
@@ -213,7 +213,7 @@ final class TenantQuotaServiceTest extends TestCase
 
         $service = $this->newService(
             tenantContext: $tenantContext,
-            tenantManager: $tenantManager,
+            tenantService: $tenantService,
             planManager: $this->planManagerWithPlans([
                 [
                     'id' => 1,
@@ -247,13 +247,13 @@ final class TenantQuotaServiceTest extends TestCase
 
     private function newService(
         TenantContext $tenantContext,
-        TenantManager $tenantManager,
+        TenantService $tenantService,
         PlanManager $planManager,
         ConnectionRegistry $registry,
     ): TenantQuotaService {
         return new TenantQuotaService(
             $tenantContext,
-            $tenantManager,
+            $tenantService,
             $planManager,
             new TenantResourceCatalog(),
             $registry,

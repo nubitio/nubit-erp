@@ -8,7 +8,7 @@ use App\ControlPlane\Billing\Controller\EntitlementsController;
 use App\ControlPlane\Billing\DTO\EntitlementsResponse;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Billing\Service\TenantUsageSummaryInterface;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -33,7 +33,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 final class EntitlementsEndpointTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;
-    private TenantManager&MockObject $tenantManager;
+    private TenantService&MockObject $tenantService;
     private TenantUsageSummaryInterface&MockObject $quotaService;
     private FeatureCheckerInterface&MockObject $featureChecker;
     private TenantFeatureOverrideRepositoryInterface&MockObject $overrideRepository;
@@ -41,7 +41,7 @@ final class EntitlementsEndpointTest extends TestCase
     protected function setUp(): void
     {
         $this->tenantContext = $this->createMock(TenantContext::class);
-        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->tenantService = $this->createMock(TenantService::class);
         $this->quotaService = $this->createMock(TenantUsageSummaryInterface::class);
         $this->featureChecker = $this->createMock(FeatureCheckerInterface::class);
         $this->overrideRepository = $this->createMock(TenantFeatureOverrideRepositoryInterface::class);
@@ -54,7 +54,7 @@ final class EntitlementsEndpointTest extends TestCase
     public function testEntitlementsEndpointReturns200WithPlanLimitsAndFeatures(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager
+        $this->tenantService
             ->method('getTenantByName')
             ->with('acme')
             ->willReturn([
@@ -99,7 +99,7 @@ final class EntitlementsEndpointTest extends TestCase
     public function testEntitlementsEndpointReturnsSourceFieldForAdminWithDebugHeader(): void
     {
         $this->tenantContext->method('getTenantName')->willReturn('acme');
-        $this->tenantManager
+        $this->tenantService
             ->method('getTenantByName')
             ->with('acme')
             ->willReturn([
@@ -165,7 +165,7 @@ final class EntitlementsEndpointTest extends TestCase
     {
         $controller = new EntitlementsController(
             $this->tenantContext,
-            $this->tenantManager,
+            $this->tenantService,
             $this->quotaService,
             $this->featureChecker,
             $this->overrideRepository,

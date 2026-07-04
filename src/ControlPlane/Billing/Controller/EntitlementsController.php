@@ -7,7 +7,7 @@ namespace App\ControlPlane\Billing\Controller;
 use App\ControlPlane\Billing\DTO\EntitlementsResponse;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Billing\Service\TenantUsageSummaryInterface;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,7 +32,7 @@ final class EntitlementsController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
         private readonly TenantUsageSummaryInterface $quotaService,
         private readonly FeatureCheckerInterface $featureChecker,
         private readonly TenantFeatureOverrideRepositoryInterface $overrideRepository,
@@ -45,7 +45,7 @@ final class EntitlementsController extends AbstractController
             return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        $tenant = $this->tenantService->getTenantByName($tenantName);
         if ($tenant === null) {
             return $this->json(['error' => 'Tenant not found'], Response::HTTP_NOT_FOUND);
         }

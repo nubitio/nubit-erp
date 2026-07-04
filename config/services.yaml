@@ -108,7 +108,21 @@ services:
   # App\Core\... shims remain as backward-compat aliases until removed.
 
   Nubit\Platform\Tenant\Contract\TenantRegistryInterface:
-    class: App\ControlPlane\Tenant\Service\TenantManager
+    class: App\ControlPlane\Tenant\Application\TenantRegistry
+
+  App\ControlPlane\Tenant\Domain\Repository\TenantRepositoryInterface:
+    alias: App\ControlPlane\Tenant\Infrastructure\Persistence\DbalTenantRepository
+
+  App\ControlPlane\Tenant\Domain\Repository\TenantDomainRepositoryInterface:
+    alias: App\ControlPlane\Tenant\Infrastructure\Persistence\DbalTenantDomainRepository
+
+  App\ControlPlane\Tenant\Infrastructure\Persistence\YamlTenantStore:
+    arguments:
+      $configFilePath: '%env(TENANTS_CONFIG_PATH)%'
+
+  App\ControlPlane\Tenant\Infrastructure\Cache\TenantCacheInvalidator:
+    arguments:
+      $featureCache: '@cache.app.taggable'
 
   App\Core\Platform\Tenant\TenantRegistryInterface:
     alias: Nubit\Platform\Tenant\Contract\TenantRegistryInterface
@@ -142,12 +156,6 @@ services:
   # SPEC-005: Feature gate — bind the Platform contract to the ControlPlane implementation.
   Nubit\Platform\Feature\Contract\FeatureCheckerInterface:
     class: App\ControlPlane\Billing\Feature\TenantFeatureChecker
-    arguments:
-      $featureCache: '@cache.app.taggable'
-
-  # SPEC-005 / TASK-034a: TenantManager needs the tag-aware cache to invalidate
-  # per-tenant feature cache entries when a plan change occurs (AC-13).
-  App\ControlPlane\Tenant\Service\TenantManager:
     arguments:
       $featureCache: '@cache.app.taggable'
 
