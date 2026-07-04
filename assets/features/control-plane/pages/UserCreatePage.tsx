@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button, Card, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import { RoleCheckboxes } from '../components/admin/RoleCheckboxes';
+import { CpAlert, CpForm, CpFormActions, CpPage, CpPageHeader } from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
+import { CP_STRINGS } from '../i18n/es';
 
 export const UserCreatePage = () => {
   const navigate = useNavigate();
@@ -30,46 +33,39 @@ export const UserCreatePage = () => {
 
   if (!isSuperAdmin) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">Super-admin access required.</div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">{CP_STRINGS.superAdminRequired}</CpAlert>
+      </CpPage>
     );
   }
 
   return (
-    <div className="cp-page">
-      <header className="cp-page__header">
-        <Link to="/users" className="cp-breadcrumb">
-          ← Admin Users
-        </Link>
-        <h1>Create admin user</h1>
-      </header>
+    <CpPage>
+      <CpPageHeader
+        title={CP_STRINGS.users.createTitle}
+        breadcrumb={{ label: CP_STRINGS.users.title, to: '/users' }}
+      />
 
-      <section className="cp-card cp-card--narrow">
-        {error && <div className="cp-alert cp-alert--danger">{error}</div>}
-        <form
-          className="cp-form"
+      <div className="cp-narrow">
+      <Card>
+        {error && <CpAlert tone="danger">{error}</CpAlert>}
+        <CpForm
           onSubmit={(e) => {
             e.preventDefault();
             create.mutate();
           }}
         >
-          <label className="cp-field">
-            <span>Username</span>
-            <input
+          <FormField label={CP_STRINGS.users.username} helpText={CP_STRINGS.users.usernameHint}>
+            <TextField
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               pattern="[a-z0-9._-]{3,64}"
               required
               autoComplete="off"
             />
-            <span className="cp-muted">
-              3–64 chars: lowercase letters, digits, dots, hyphens, underscores.
-            </span>
-          </label>
-          <label className="cp-field">
-            <span>Password</span>
-            <input
+          </FormField>
+          <FormField label={CP_STRINGS.users.password}>
+            <TextField
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -77,10 +73,9 @@ export const UserCreatePage = () => {
               required
               autoComplete="new-password"
             />
-          </label>
-          <label className="cp-field">
-            <span>Confirm password</span>
-            <input
+          </FormField>
+          <FormField label={CP_STRINGS.users.confirmPassword}>
+            <TextField
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -88,21 +83,21 @@ export const UserCreatePage = () => {
               required
               autoComplete="new-password"
             />
-          </label>
-          <div className="cp-field">
-            <span>Roles</span>
+          </FormField>
+          <FormField label={CP_STRINGS.users.roles}>
             <RoleCheckboxes selected={roles} onChange={setRoles} />
-          </div>
-          <div className="cp-form__actions">
-            <button type="submit" className="cp-btn cp-btn--primary" disabled={create.isPending}>
-              Create user
-            </button>
-            <Link to="/users" className="cp-btn cp-btn--ghost">
-              Cancel
+          </FormField>
+          <CpFormActions>
+            <Button type="submit" loading={create.isPending}>
+              {CP_STRINGS.users.createSubmit}
+            </Button>
+            <Link to="/users">
+              <Button variant="ghost">{CP_STRINGS.cancel}</Button>
             </Link>
-          </div>
-        </form>
-      </section>
-    </div>
+          </CpFormActions>
+        </CpForm>
+      </Card>
+      </div>
+    </CpPage>
   );
 };

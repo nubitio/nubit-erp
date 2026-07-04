@@ -1,6 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
+import { Card } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
-import { MetricCard } from '../components/MetricCard';
+import {
+  CpAlert,
+  CpGrid,
+  CpMetricGrid,
+  CpPage,
+  CpPageHeader,
+  CpPageSkeleton,
+  CpSection,
+} from '../components/layout';
+import { CP_STRINGS } from '../i18n/es';
 
 const formatBytes = (bytes: number): string => {
   if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(2)} GB`;
@@ -15,95 +25,123 @@ export const DashboardPage = () => {
   });
 
   if (isLoading) {
-    return <div className="cp-page cp-page--loading">Cargando métricas…</div>;
+    return <CpPageSkeleton variant="dashboard" />;
   }
 
   if (error || !data) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">
-          No se pudo cargar el dashboard: {(error as Error)?.message ?? 'Error desconocido'}
-        </div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">
+          {CP_STRINGS.dashboard.loadError}: {(error as Error)?.message ?? CP_STRINGS.unknownError}
+        </CpAlert>
+      </CpPage>
     );
   }
 
   const { tenantStats, planStats, backupStats, auditSummary } = data;
 
   return (
-    <div className="cp-page">
-      <header className="cp-page__header">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Resumen operativo del SaaS multi-tenant.</p>
-        </div>
-      </header>
+    <CpPage>
+      <CpPageHeader title={CP_STRINGS.dashboard.title} subtitle={CP_STRINGS.dashboard.subtitle} />
 
-      <section className="cp-section">
-        <h2>Tenants</h2>
-        <div className="cp-metrics">
-          <MetricCard label="Total" value={tenantStats.total} />
-          <MetricCard label="Activos" value={tenantStats.active} tone="success" />
-          <MetricCard label="Suspendidos" value={tenantStats.suspended} tone="warning" />
-          <MetricCard label="Eliminados" value={tenantStats.deleted} tone="danger" />
-        </div>
-      </section>
+      <CpSection title={CP_STRINGS.dashboard.sections.tenants}>
+        <CpMetricGrid
+          items={[
+            { label: CP_STRINGS.dashboard.metrics.total, value: tenantStats.total, icon: 'buildings' },
+            {
+              label: CP_STRINGS.dashboard.metrics.active,
+              value: tenantStats.active,
+              tone: 'success',
+              icon: 'check-circle',
+            },
+            {
+              label: CP_STRINGS.dashboard.metrics.suspended,
+              value: tenantStats.suspended,
+              tone: 'warning',
+              icon: 'pause-circle',
+            },
+            {
+              label: CP_STRINGS.dashboard.metrics.deleted,
+              value: tenantStats.deleted,
+              tone: 'danger',
+              icon: 'trash',
+            },
+          ]}
+        />
+      </CpSection>
 
-      <div className="cp-grid cp-grid--2">
-        <section className="cp-section">
-          <h2>Planes</h2>
-          <div className="cp-metrics cp-metrics--compact">
-            <MetricCard label="Planes" value={planStats.total_plans} />
-            <MetricCard
-              label="Sin plan"
-              value={planStats.tenants_without_plan}
-              tone={planStats.tenants_without_plan > 0 ? 'warning' : 'default'}
-            />
-          </div>
-        </section>
+      <CpGrid>
+        <CpSection title={CP_STRINGS.dashboard.sections.plans}>
+          <CpMetricGrid
+            layout="strip"
+            density="compact"
+            items={[
+              { label: CP_STRINGS.dashboard.metrics.plans, value: planStats.total_plans, icon: 'package' },
+              {
+                label: CP_STRINGS.dashboard.metrics.withoutPlan,
+                value: planStats.tenants_without_plan,
+                tone: planStats.tenants_without_plan > 0 ? 'warning' : 'default',
+                icon: 'warning-circle',
+              },
+            ]}
+          />
+        </CpSection>
 
-        <section className="cp-section">
-          <h2>Backups</h2>
-          <div className="cp-metrics cp-metrics--compact">
-            <MetricCard label="Completados" value={backupStats.total_backups} />
-            <MetricCard
-              label="Fallidos"
-              value={backupStats.failed_count}
-              tone={backupStats.failed_count > 0 ? 'danger' : 'default'}
-            />
-          </div>
+        <CpSection title={CP_STRINGS.dashboard.sections.backups}>
+          <CpMetricGrid
+            layout="strip"
+            density="compact"
+            items={[
+              {
+                label: CP_STRINGS.dashboard.metrics.completed,
+                value: backupStats.total_backups,
+                icon: 'archive',
+              },
+              {
+                label: CP_STRINGS.dashboard.metrics.failed,
+                value: backupStats.failed_count,
+                tone: backupStats.failed_count > 0 ? 'danger' : 'default',
+                icon: 'x-circle',
+              },
+            ]}
+          />
           <div className="cp-meta">
-            <span>Tamaño total: {formatBytes(backupStats.total_size_bytes)}</span>
-            <span>Último backup: {backupStats.last_backup_at ?? 'Nunca'}</span>
+            <span>
+              {CP_STRINGS.dashboard.backupSize}: {formatBytes(backupStats.total_size_bytes)}
+            </span>
+            <span>
+              {CP_STRINGS.dashboard.lastBackup}: {backupStats.last_backup_at ?? CP_STRINGS.never}
+            </span>
           </div>
-        </section>
-      </div>
+        </CpSection>
+      </CpGrid>
 
-      <section className="cp-section">
-        <h2>Actividad de auditoría (24h)</h2>
+      <CpSection title={CP_STRINGS.dashboard.sections.audit}>
         {auditSummary.length === 0 ? (
-          <div className="cp-empty">Sin actividad en las últimas 24 horas.</div>
+          <Card title={CP_STRINGS.dashboard.auditEmpty}>{CP_STRINGS.dashboard.auditEmptyHint}</Card>
         ) : (
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>Acción</th>
-                <th className="cp-table__num">Conteo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {auditSummary.map((row) => (
-                <tr key={row.action}>
-                  <td>
-                    <code>{row.action}</code>
-                  </td>
-                  <td className="cp-table__num">{row.count}</td>
+          <div className="cp-data-table-wrap">
+            <table className="cp-data-table">
+              <thead>
+                <tr>
+                  <th>{CP_STRINGS.dashboard.auditAction}</th>
+                  <th className="cp-data-table__num">{CP_STRINGS.dashboard.auditCount}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {auditSummary.map((row) => (
+                  <tr key={row.action}>
+                    <td>
+                      <code className="cp-code">{row.action}</code>
+                    </td>
+                    <td className="cp-data-table__num">{row.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </section>
-    </div>
+      </CpSection>
+    </CpPage>
   );
 };

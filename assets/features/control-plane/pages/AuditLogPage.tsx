@@ -1,11 +1,35 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import {
+  AppDropdown,
+  Button,
+  Card,
+  DateRangePicker,
+  Drawer,
+  FormField,
+} from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
+import {
+  CpAlert,
+  CpForm,
+  CpFormActions,
+  CpPage,
+  CpPageHeader,
+  CpPageSkeleton,
+} from '../components/layout';
 import { CP_STRINGS } from '../i18n/es';
 
 const truncate = (value: string, max = 120) =>
   value.length > max ? `${value.slice(0, max)}…` : value;
+
+const formatMetadata = (metadata: string) => {
+  try {
+    return JSON.stringify(JSON.parse(metadata), null, 2);
+  } catch {
+    return metadata;
+  }
+};
 
 export const AuditLogPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +39,10 @@ export const AuditLogPage = () => {
   const dateFrom = searchParams.get('date_from') ?? '';
   const dateTo = searchParams.get('date_to') ?? '';
   const page = Math.max(1, Number(searchParams.get('page') ?? '1'));
+
+  const [draftAction, setDraftAction] = useState(action);
+  const [draftFrom, setDraftFrom] = useState(dateFrom);
+  const [draftTo, setDraftTo] = useState(dateTo);
 
   const queryParams = new URLSearchParams();
   if (action) queryParams.set('action', action);
@@ -27,16 +55,19 @@ export const AuditLogPage = () => {
     queryFn: () => controlPlaneClient.getAuditLog(queryParams),
   });
 
-  const applyFilters = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
+  const applyFilters = () => {
     const next = new URLSearchParams();
-    const nextAction = String(formData.get('action') ?? '');
-    const nextFrom = String(formData.get('date_from') ?? '');
-    const nextTo = String(formData.get('date_to') ?? '');
-    if (nextAction) next.set('action', nextAction);
-    if (nextFrom) next.set('date_from', nextFrom);
-    if (nextTo) next.set('date_to', nextTo);
+    if (draftAction) next.set('action', draftAction);
+    if (draftFrom) next.set('date_from', draftFrom);
+    if (draftTo) next.set('date_to', draftTo);
     setSearchParams(next);
+  };
+
+  const clearFilters = () => {
+    setDraftAction('');
+    setDraftFrom('');
+    setDraftTo('');
+    setSearchParams({});
   };
 
   const goToPage = (nextPage: number) => {
@@ -47,178 +78,171 @@ export const AuditLogPage = () => {
   };
 
   if (isLoading) {
-    return <div className="cp-page cp-page--loading">Cargando audit log…</div>;
+    return <CpPageSkeleton variant="table" />;
   }
 
   if (error || !data) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">
-          No se pudo cargar audit log: {(error as Error)?.message ?? 'Error desconocido'}
-        </div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">
+          {CP_STRINGS.audit.loadError}: {(error as Error)?.message ?? CP_STRINGS.unknownError}
+        </CpAlert>
+      </CpPage>
     );
   }
 
-  return (
-    <div className="cp-page">
-      <header className="cp-page__header">
-        <div>
-          <h1>Audit Log</h1>
-          <p>{data.total.toLocaleString()} total entries</p>
-        </div>
-      </header>
+  const actionOptions = [
+    { value: '', label: CP_STRINGS.audit.allActions },
+    ...data.actions.map((act) => ({ value: act, label: act })),
+  ];
 
-      <section className="cp-card cp-section">
-        <form
-          className="cp-form cp-form--grid"
+  return (
+    <CpPage fill wide>
+      <CpPageHeader
+        title={CP_STRINGS.audit.title}
+        subtitle={CP_STRINGS.audit.subtitle(data.total)}
+      />
+
+      <Card>
+        <CpForm
+          variant="filter"
           onSubmit={(e) => {
             e.preventDefault();
-            applyFilters(e.currentTarget);
+            applyFilters();
           }}
         >
-          <label className="cp-field">
-            <span>Action</span>
-            <select name="action" defaultValue={action}>
-              <option value="">All actions</option>
-              {data.actions.map((act) => (
-                <option key={act} value={act}>
-                  {act}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="cp-field">
-            <span>From</span>
-            <input type="date" name="date_from" defaultValue={dateFrom} />
-          </label>
-          <label className="cp-field">
-            <span>To</span>
-            <input type="date" name="date_to" defaultValue={dateTo} />
-          </label>
-          <div className="cp-filter-actions">
-            <button type="submit" className="cp-btn cp-btn--primary">
-              Filter
-            </button>
-            <button
-              type="button"
-              className="cp-btn cp-btn--ghost"
-              onClick={() => setSearchParams({})}
-            >
-              Clear
-            </button>
-          </div>
-        </form>
-      </section>
+          <FormField label={CP_STRINGS.audit.action}>
+            <AppDropdown
+              value={draftAction}
+              options={actionOptions}
+              onChange={setDraftAction}
+              variant="form"
+              showFieldLabel={false}
+              placeholder={CP_STRINGS.audit.allActions}
+            />
+          </FormField>
+          <FormField label={CP_STRINGS.audit.dateRange} className="cp-span-full">
+            <DateRangePicker
+              startValue={draftFrom || null}
+              endValue={draftTo || null}
+              locale="es-PE"
+              ariaLabel={CP_STRINGS.audit.dateRange}
+              onChange={(start, end) => {
+                setDraftFrom(start);
+                setDraftTo(end);
+              }}
+            />
+          </FormField>
+          <CpFormActions>
+            <Button type="submit">{CP_STRINGS.filter}</Button>
+            <Button type="button" variant="ghost" onClick={clearFilters}>
+              {CP_STRINGS.clear}
+            </Button>
+          </CpFormActions>
+        </CpForm>
+      </Card>
 
-      <section className="cp-card">
+      <Card className="cp-table-surface">
         {data.logs.length === 0 ? (
-          <div className="cp-empty">No audit log entries found.</div>
+          <p className="cp-muted">{CP_STRINGS.audit.empty}</p>
         ) : (
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Action</th>
-                <th>Actor</th>
-                <th>Channel</th>
-                <th>Tenant</th>
-                <th>Metadata</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.logs.map((log) => {
-                const meta = log.metadata ?? '';
-                return (
-                  <tr key={log.id}>
-                    <td className="cp-nowrap">{log.created_at}</td>
-                    <td>
-                      <code>{log.action}</code>
-                    </td>
-                    <td>{log.actor ?? '—'}</td>
-                    <td>{log.channel ?? '—'}</td>
-                    <td>{log.tenant_name ?? '—'}</td>
-                    <td>
-                      <span className="cp-muted">{truncate(meta)}</span>
-                      {meta.length > 2 && (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          onClick={() => setMetadataPreview(meta)}
-                        >
-                          {CP_STRINGS.view}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="cp-data-table-wrap cp-data-table-wrap--fill">
+            <table className="cp-data-table">
+              <thead>
+                <tr>
+                  <th>{CP_STRINGS.audit.date}</th>
+                  <th>{CP_STRINGS.audit.action}</th>
+                  <th>{CP_STRINGS.audit.actor}</th>
+                  <th>{CP_STRINGS.audit.channel}</th>
+                  <th>{CP_STRINGS.audit.tenant}</th>
+                  <th>{CP_STRINGS.audit.metadata}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.logs.map((log) => {
+                  const meta = log.metadata ?? '';
+                  return (
+                    <tr key={log.id}>
+                      <td className="cp-nowrap">{log.created_at}</td>
+                      <td>
+                        <code>{log.action}</code>
+                      </td>
+                      <td>{log.actor ?? '—'}</td>
+                      <td>{log.channel ?? '—'}</td>
+                      <td>{log.tenant_name ?? '—'}</td>
+                      <td>
+                        <span className="cp-muted">{truncate(meta)}</span>
+                        {meta.length > 2 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setMetadataPreview(meta)}
+                          >
+                            {CP_STRINGS.view}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {data.totalPages > 1 && (
-          <nav className="cp-pagination" aria-label="Audit log pages">
-            <button
+          <nav className="cp-pagination" aria-label={CP_STRINGS.audit.pages}>
+            <Button
               type="button"
-              className="cp-btn cp-btn--ghost"
+              variant="ghost"
+              size="sm"
               disabled={page <= 1}
               onClick={() => goToPage(page - 1)}
             >
               ←
-            </button>
+            </Button>
             {Array.from({ length: Math.min(7, data.totalPages) }, (_, i) => {
               const start = Math.max(1, Math.min(page - 3, data.totalPages - 6));
               const p = start + i;
               if (p > data.totalPages) return null;
               return (
-                <button
+                <Button
                   key={p}
                   type="button"
-                  className={`cp-btn cp-btn--ghost${p === page ? ' cp-btn--active' : ''}`}
+                  variant={p === page ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => goToPage(p)}
                 >
                   {p}
-                </button>
+                </Button>
               );
             })}
-            <button
+            <Button
               type="button"
-              className="cp-btn cp-btn--ghost"
+              variant="ghost"
+              size="sm"
               disabled={page >= data.totalPages}
               onClick={() => goToPage(page + 1)}
             >
               →
-            </button>
+            </Button>
           </nav>
         )}
-      </section>
+      </Card>
 
-      {metadataPreview !== null && (
-        <div className="cp-modal-backdrop" onClick={() => setMetadataPreview(null)}>
-          <div className="cp-modal" onClick={(e) => e.stopPropagation()}>
-            <header className="cp-modal__header">
-              <h3>Metadata</h3>
-              <button
-                type="button"
-                className="cp-btn cp-btn--ghost"
-                onClick={() => setMetadataPreview(null)}
-              >
-                {CP_STRINGS.close}
-              </button>
-            </header>
-            <pre className="cp-modal__body">
-              {(() => {
-                try {
-                  return JSON.stringify(JSON.parse(metadataPreview), null, 2);
-                } catch {
-                  return metadataPreview;
-                }
-              })()}
-            </pre>
-          </div>
-        </div>
-      )}
-    </div>
+      <Drawer
+        isOpen={metadataPreview !== null}
+        onClose={() => setMetadataPreview(null)}
+        title={CP_STRINGS.audit.metadataTitle}
+        width={720}
+        scrim="overlay"
+        closeLabel={CP_STRINGS.close}
+      >
+        <pre className="cp-drawer-pre">
+          {metadataPreview ? formatMetadata(metadataPreview) : ''}
+        </pre>
+      </Drawer>
+    </CpPage>
   );
 };

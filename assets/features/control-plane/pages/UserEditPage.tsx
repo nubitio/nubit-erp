@@ -1,9 +1,28 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Button, Card, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import { RoleCheckboxes } from '../components/admin/RoleCheckboxes';
+import {
+  CpAlert,
+  CpFormActions,
+  CpHubTabs,
+  CpPage,
+  CpPageHeader,
+  CpPageSkeleton,
+} from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
+import { useCpConfirm } from '../hooks/useCpConfirm';
+import { CP_STRINGS } from '../i18n/es';
+import { cpNotify } from '../utils/notify';
+
+type UserTab = 'general' | 'password';
+
+const USER_TABS: Array<{ id: UserTab; label: string }> = [
+  { id: 'general', label: CP_STRINGS.users.tabGeneral },
+  { id: 'password', label: CP_STRINGS.users.tabPassword },
+];
 
 export const UserEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +30,7 @@ export const UserEditPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { isSuperAdmin, user: currentUser } = useControlPlaneRoles();
+  const { ask, ConfirmHost } = useCpConfirm();
 
   const detail = useQuery({
     queryKey: ['control-plane', 'users', userId],
@@ -24,7 +44,7 @@ export const UserEditPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const activeTab = searchParams.get('tab') === 'password' ? 'password' : 'general';
+  const activeTab: UserTab = searchParams.get('tab') === 'password' ? 'password' : 'general';
   const user = detail.data?.user;
   const selectedRoles = roles ?? user?.roles ?? [];
   const activeStatus = isActive ?? user?.is_active ?? true;
@@ -40,6 +60,7 @@ export const UserEditPage = () => {
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['control-plane', 'users', userId] });
       queryClient.invalidateQueries({ queryKey: ['control-plane', 'users'] });
+      cpNotify.success(CP_STRINGS.saved);
     },
     onError: (err: Error) => setError(err.message),
   });
@@ -57,70 +78,68 @@ export const UserEditPage = () => {
 
   if (!isSuperAdmin) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">Super-admin access required.</div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">{CP_STRINGS.superAdminRequired}</CpAlert>
+      </CpPage>
     );
   }
 
   if (!Number.isFinite(userId) || userId <= 0) {
-    return <div className="cp-page cp-alert cp-alert--danger">Invalid user ID.</div>;
+    return (
+      <CpPage>
+        <CpAlert tone="danger">{CP_STRINGS.users.invalidId}</CpAlert>
+      </CpPage>
+    );
   }
 
   if (detail.isLoading) {
-    return <div className="cp-page cp-page--loading">Cargando usuario…</div>;
+    return <CpPageSkeleton variant="form" />;
   }
 
   if (detail.error || !user) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">
-          {(detail.error as Error)?.message ?? 'User not found'}
-        </div>
-        <Link to="/users" className="cp-btn cp-btn--ghost">
-          ← Back to users
+      <CpPage>
+        <CpAlert tone="danger">
+          {(detail.error as Error)?.message ?? CP_STRINGS.userNotFound}
+        </CpAlert>
+        <Link to="/users">
+          <Button variant="ghost" icon="ph-arrow-left">
+            {CP_STRINGS.users.backToUsers}
+          </Button>
         </Link>
-      </div>
+      </CpPage>
     );
   }
 
-  return (
-    <div className="cp-page">
-      <header className="cp-page__header cp-page__header--split">
-        <div>
-          <Link to="/users" className="cp-breadcrumb">
-            ← Admin Users
-          </Link>
-          <h1>{user.username}</h1>
-          <p>Edit roles, status, and password.</p>
-        </div>
-        <span className={`cp-badge ${user.is_active ? 'cp-badge--active' : ''}`}>
-          {user.is_active ? 'Active' : 'Inactive'}
-        </span>
-      </header>
+  const setTab = (tab: UserTab) => {
+    setSearchParams(tab === 'general' ? {} : { tab });
+  };
 
-      <nav className="cp-tabs" aria-label="User sections">
-        <button
-          type="button"
-          className={`cp-tabs__item${activeTab === 'general' ? ' cp-tabs__item--active' : ''}`}
-          onClick={() => setSearchParams({})}
-        >
-          General
-        </button>
-        <button
-          type="button"
-          className={`cp-tabs__item${activeTab === 'password' ? ' cp-tabs__item--active' : ''}`}
-          onClick={() => setSearchParams({ tab: 'password' })}
-        >
-          Password
-        </button>
-      </nav>
+  return (
+    <CpPage>
+      <CpPageHeader
+        title={user.username}
+        subtitle={CP_STRINGS.users.editSubtitle}
+        breadcrumb={{ label: CP_STRINGS.users.title, to: '/users' }}
+        badge={{
+          label: user.is_active ? CP_STRINGS.active : CP_STRINGS.inactive,
+          variant: user.is_active ? 'success' : 'warning',
+        }}
+      />
+
+      <CpHubTabs
+        tabs={USER_TABS}
+        active={activeTab}
+        onChange={setTab}
+        ariaLabel={CP_STRINGS.users.title}
+      />
 
       <div className="cp-tab-panel">
-        {error && <div className="cp-alert cp-alert--danger">{error}</div>}
+        {error && <CpAlert tone="danger">{error}</CpAlert>}
 
         {activeTab === 'general' && (
-          <section className="cp-card cp-card--narrow">
+          <div className="cp-narrow">
+          <Card>
             <form
               className="cp-form"
               onSubmit={(e) => {
@@ -128,15 +147,15 @@ export const UserEditPage = () => {
                 save.mutate();
               }}
             >
-              <label className="cp-field">
-                <span>Username</span>
-                <input value={user.username} readOnly disabled />
-                <span className="cp-muted">Username cannot be changed after creation.</span>
-              </label>
-              <div className="cp-field">
-                <span>Roles</span>
+              <FormField
+                label={CP_STRINGS.users.username}
+                helpText={CP_STRINGS.users.usernameReadonly}
+              >
+                <TextField value={user.username} readOnly disabled />
+              </FormField>
+              <FormField label={CP_STRINGS.users.roles}>
                 <RoleCheckboxes selected={selectedRoles} onChange={setRoles} />
-              </div>
+              </FormField>
               <label className="cp-check cp-check--block">
                 <input
                   type="checkbox"
@@ -144,48 +163,42 @@ export const UserEditPage = () => {
                   disabled={isSelf}
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
-                <span>Active</span>
+                <span>{CP_STRINGS.active}</span>
               </label>
               {isSelf && (
-                <div className="cp-alert cp-alert--warning">
-                  You cannot deactivate your own account.
-                </div>
+                <CpAlert tone="warning">{CP_STRINGS.users.cannotDeactivateSelf}</CpAlert>
               )}
-              <div className="cp-form__actions">
-                <button type="submit" className="cp-btn cp-btn--primary" disabled={save.isPending}>
-                  Save changes
-                </button>
-                <Link to="/users" className="cp-btn cp-btn--ghost">
-                  Cancel
+              <CpFormActions>
+                <Button type="submit" loading={save.isPending}>
+                  {CP_STRINGS.users.saveChanges}
+                </Button>
+                <Link to="/users">
+                  <Button variant="ghost">{CP_STRINGS.cancel}</Button>
                 </Link>
-              </div>
+              </CpFormActions>
             </form>
-          </section>
+          </Card>
+          </div>
         )}
 
         {activeTab === 'password' && (
-          <section className="cp-card cp-card--narrow">
-            <p className="cp-muted">
-              Setting a new password for <strong>{user.username}</strong> immediately invalidates
-              the current one.
-            </p>
+          <div className="cp-narrow">
+          <Card>
+            <p className="cp-muted">{CP_STRINGS.users.passwordHint(user.username)}</p>
             <form
               className="cp-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (
-                  !window.confirm(
-                    `Reset password for "${user.username}"? This invalidates the current password.`,
-                  )
-                ) {
-                  return;
-                }
-                resetPassword.mutate();
+                ask({
+                  title: CP_STRINGS.users.resetConfirmTitle,
+                  message: CP_STRINGS.users.resetConfirm(user.username),
+                  variant: 'warning',
+                  onConfirm: () => resetPassword.mutate(),
+                });
               }}
             >
-              <label className="cp-field">
-                <span>New password</span>
-                <input
+              <FormField label={CP_STRINGS.users.newPassword}>
+                <TextField
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -193,10 +206,9 @@ export const UserEditPage = () => {
                   required
                   autoComplete="new-password"
                 />
-              </label>
-              <label className="cp-field">
-                <span>Confirm new password</span>
-                <input
+              </FormField>
+              <FormField label={CP_STRINGS.users.confirmNewPassword}>
+                <TextField
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -204,18 +216,16 @@ export const UserEditPage = () => {
                   required
                   autoComplete="new-password"
                 />
-              </label>
-              <button
-                type="submit"
-                className="cp-btn cp-btn--ghost"
-                disabled={resetPassword.isPending}
-              >
-                Change password
-              </button>
+              </FormField>
+              <Button type="submit" variant="ghost" loading={resetPassword.isPending}>
+                {CP_STRINGS.users.changePassword}
+              </Button>
             </form>
-          </section>
+          </Card>
+          </div>
         )}
       </div>
-    </div>
+      <ConfirmHost />
+    </CpPage>
   );
 };

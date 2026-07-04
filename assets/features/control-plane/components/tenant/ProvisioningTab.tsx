@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { Badge, Button, Card, EmptyState, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
+import { CP_STRINGS } from '../../i18n/es';
 import type { ProvisionRecord } from '../../types';
+import { CpAlert, CpForm } from '../layout';
 
 interface ProvisioningTabProps {
   tenantId: number;
@@ -11,11 +14,13 @@ interface ProvisioningTabProps {
   onUpdated: () => void;
 }
 
-const statusClass = (status: string) => {
-  if (status === 'completed') return 'cp-badge--active';
-  if (status === 'failed') return 'cp-badge--deleted';
-  if (status === 'running') return 'cp-badge--info';
-  return 'cp-badge--suspended';
+const S = CP_STRINGS.tenantTabs.provisioning;
+
+const statusVariant = (status: string): 'success' | 'danger' | 'info' | 'secondary' => {
+  if (status === 'completed') return 'success';
+  if (status === 'failed') return 'danger';
+  if (status === 'running') return 'info';
+  return 'secondary';
 };
 
 export const ProvisioningTab = ({
@@ -43,77 +48,76 @@ export const ProvisioningTab = ({
 
   return (
     <div className="cp-stack">
-      {error && <div className="cp-alert cp-alert--danger">{error}</div>}
+      {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
-        <section className="cp-card">
-          <h3>Dispatch provisioning</h3>
-          <form
-            className="cp-form cp-form--grid"
+        <Card title={S.dispatchTitle}>
+          <CpForm
+            variant="grid"
             onSubmit={(e) => {
               e.preventDefault();
               provision.mutate();
             }}
           >
-            <label className="cp-field">
-              <span>Admin user</span>
-              <input value={adminUser} onChange={(e) => setAdminUser(e.target.value)} required />
-            </label>
-            <label className="cp-field">
-              <span>Admin password</span>
-              <input
+            <FormField label={S.adminUser}>
+              <TextField value={adminUser} onChange={(e) => setAdminUser(e.target.value)} required />
+            </FormField>
+            <FormField label={S.adminPassword}>
+              <TextField
                 type="password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 required
               />
-            </label>
-            <label className="cp-field">
-              <span>Domain</span>
-              <input value={domain} onChange={(e) => setDomain(e.target.value)} />
-            </label>
-            <button type="submit" className="cp-btn cp-btn--primary" disabled={provision.isPending}>
-              Dispatch provisioning
-            </button>
-          </form>
-        </section>
+            </FormField>
+            <FormField label={S.domain}>
+              <TextField value={domain} onChange={(e) => setDomain(e.target.value)} />
+            </FormField>
+            <Button type="submit" loading={provision.isPending}>
+              {S.dispatchSubmit}
+            </Button>
+          </CpForm>
+        </Card>
       )}
 
-      <section className="cp-card">
-        <h3>Provisioning history</h3>
+      <Card title={S.historyTitle}>
         {provisions.length === 0 ? (
-          <div className="cp-empty">No provisioning runs yet.</div>
+          <EmptyState icon="rocket-launch" title={S.empty} size="sm" />
         ) : (
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Status</th>
-                <th>Domain</th>
-                <th>Container</th>
-                <th>Created</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {provisions.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.id}</td>
-                  <td>
-                    <span className={`cp-badge ${statusClass(row.status)}`}>{row.status}</span>
-                  </td>
-                  <td>
-                    <code>{row.domain}</code>
-                  </td>
-                  <td>{row.target_container ?? '—'}</td>
-                  <td>{row.created_at}</td>
-                  <td className="cp-muted">{row.error_message ?? '—'}</td>
+          <div className="cp-data-table-wrap">
+            <table className="cp-data-table">
+              <thead>
+                <tr>
+                  <th>{CP_STRINGS.tenants.colId}</th>
+                  <th>{S.colStatus}</th>
+                  <th>{CP_STRINGS.tenants.colDomain}</th>
+                  <th>{S.colContainer}</th>
+                  <th>{S.colCreated}</th>
+                  <th>{S.colError}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {provisions.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.id}</td>
+                    <td>
+                      <Badge variant={statusVariant(row.status)} pill>
+                        {row.status}
+                      </Badge>
+                    </td>
+                    <td>
+                      <code className="cp-code">{row.domain}</code>
+                    </td>
+                    <td>{row.target_container ?? '—'}</td>
+                    <td>{row.created_at}</td>
+                    <td className="cp-muted">{row.error_message ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </section>
+      </Card>
     </div>
   );
 };

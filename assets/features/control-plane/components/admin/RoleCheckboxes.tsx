@@ -1,18 +1,21 @@
+import { Card } from '@nubitio/ui';
+import { CP_STRINGS } from '../../i18n/es';
+
 const ROLE_OPTIONS = [
   {
     value: 'ROLE_CP_VIEWER',
-    label: 'ROLE_CP_VIEWER',
-    description: 'Read-only access to audit logs and dashboards',
+    label: CP_STRINGS.roles.viewer.label,
+    description: CP_STRINGS.roles.viewer.description,
   },
   {
     value: 'ROLE_ADMIN',
-    label: 'ROLE_ADMIN',
-    description: 'Manage tenants, plans, and provisioning',
+    label: CP_STRINGS.roles.admin.label,
+    description: CP_STRINGS.roles.admin.description,
   },
   {
     value: 'ROLE_SUPER_ADMIN',
-    label: 'ROLE_SUPER_ADMIN',
-    description: 'Full access including admin user management',
+    label: CP_STRINGS.roles.superAdmin.label,
+    description: CP_STRINGS.roles.superAdmin.description,
     danger: true,
   },
 ] as const;
@@ -27,23 +30,27 @@ export const RoleCheckboxes = ({ selected, onChange }: RoleCheckboxesProps) => (
     {ROLE_OPTIONS.map((role) => {
       const checked = selected.includes(role.value);
       return (
-        <label key={role.value} className="cp-check cp-check--block">
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={(e) => {
-              if (e.target.checked) {
-                onChange([...selected, role.value]);
-              } else {
-                onChange(selected.filter((r) => r !== role.value));
-              }
-            }}
-          />
-          <span>
-            <strong className={role.danger ? 'cp-text-danger' : ''}>{role.label}</strong>
-            <span className="cp-muted"> — {role.description}</span>
-          </span>
-        </label>
+        <Card key={role.value}>
+          <label className="cp-check cp-check--block">
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onChange([...selected, role.value]);
+                } else {
+                  onChange(selected.filter((r) => r !== role.value));
+                }
+              }}
+            />
+            <span>
+              <strong className={'danger' in role && role.danger ? 'cp-text-danger' : ''}>
+                {role.label}
+              </strong>
+              <span className="cp-muted"> — {role.description}</span>
+            </span>
+          </label>
+        </Card>
       );
     })}
   </div>

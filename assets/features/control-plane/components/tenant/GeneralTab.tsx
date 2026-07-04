@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { AppDropdown, Button, Card, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
+import { CP_STRINGS } from '../../i18n/es';
 import type { PlanOption, TenantRecord } from '../../types';
+import { useCpConfirm } from '../../hooks/useCpConfirm';
+import { CpAlert, CpDescriptionList, CpForm, CpGrid } from '../layout';
 import { TenantStatusBadge } from '../TenantStatusBadge';
 
 interface GeneralTabProps {
@@ -11,7 +15,10 @@ interface GeneralTabProps {
   onUpdated: () => void;
 }
 
+const S = CP_STRINGS.tenantTabs.general;
+
 export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProps) => {
+  const { ask, ConfirmHost } = useCpConfirm();
   const [name, setName] = useState(tenant.name);
   const [connection, setConnection] = useState(tenant.connection);
   const [plan, setPlan] = useState(tenant.plan ?? 'free');
@@ -44,92 +51,104 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
     onError: (err: Error) => setError(err.message),
   });
 
-  return (
-    <div className="cp-grid cp-grid--2">
-      {error && <div className="cp-alert cp-alert--danger cp-span-full">{error}</div>}
+  const planOptions = plans.map((p) => ({
+    value: p.name,
+    label: p.is_default ? `${p.name} (${CP_STRINGS.default})` : p.name,
+  }));
 
-      <section className="cp-card">
-        <h3>Tenant details</h3>
+  return (
+    <CpGrid>
+      {error && (
+        <CpAlert tone="danger" className="cp-span-full">
+          {error}
+        </CpAlert>
+      )}
+
+      <Card title={S.detailsTitle}>
         {isAdmin ? (
-          <form
-            className="cp-form"
+          <CpForm
             onSubmit={(e) => {
               e.preventDefault();
               saveDetails.mutate();
             }}
           >
-            <label className="cp-field">
-              <span>Name</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} required />
-            </label>
-            <label className="cp-field">
-              <span>Connection</span>
-              <input value={connection} onChange={(e) => setConnection(e.target.value)} required />
-            </label>
-            <button type="submit" className="cp-btn cp-btn--primary" disabled={saveDetails.isPending}>
-              Save changes
-            </button>
-          </form>
+            <FormField label={S.name}>
+              <TextField value={name} onChange={(e) => setName(e.target.value)} required />
+            </FormField>
+            <FormField label={S.connection}>
+              <TextField value={connection} onChange={(e) => setConnection(e.target.value)} required />
+            </FormField>
+            <Button type="submit" loading={saveDetails.isPending} fullWidth>
+              {S.saveDetails}
+            </Button>
+          </CpForm>
         ) : (
-          <dl className="cp-dl">
-            <dt>Name</dt>
-            <dd>{tenant.name}</dd>
-            <dt>Connection</dt>
-            <dd>
-              <code>{tenant.connection}</code>
-            </dd>
-          </dl>
+          <CpDescriptionList
+            items={[
+              { term: S.name, value: tenant.name },
+              {
+                term: S.connection,
+                value: <code className="cp-code">{tenant.connection}</code>,
+              },
+            ]}
+          />
         )}
-      </section>
+      </Card>
 
-      <section className="cp-card">
-        <h3>Plan & status</h3>
+      <Card title={S.planTitle}>
         {isAdmin ? (
-          <form
-            className="cp-form cp-form--inline"
+          <CpForm
+            variant="inline"
             onSubmit={(e) => {
               e.preventDefault();
               savePlan.mutate();
             }}
           >
-            <select value={plan} onChange={(e) => setPlan(e.target.value)}>
-              {plans.map((p) => (
-                <option key={p.id} value={p.name}>
-                  {p.name}
-                  {p.is_default ? ' (default)' : ''}
-                </option>
-              ))}
-            </select>
-            <button type="submit" className="cp-btn cp-btn--ghost" disabled={savePlan.isPending}>
-              Change plan
-            </button>
-          </form>
+            <FormField label={S.plan}>
+              <AppDropdown
+                value={plan}
+                options={planOptions}
+                onChange={setPlan}
+                variant="form"
+                showFieldLabel={false}
+              />
+            </FormField>
+            <Button type="submit" variant="ghost" loading={savePlan.isPending}>
+              {S.changePlan}
+            </Button>
+          </CpForm>
         ) : (
-          <p className="cp-muted">Plan: {tenant.plan ?? 'free'}</p>
+          <p className="cp-muted">
+            {S.plan}: {tenant.plan ?? 'free'}
+          </p>
         )}
 
         <div className="cp-status-row">
           <TenantStatusBadge status={tenant.status} />
           {isAdmin && (
-            <button
+            <Button
               type="button"
-              className="cp-btn cp-btn--ghost"
-              disabled={toggleSuspend.isPending}
+              variant="ghost"
+              loading={toggleSuspend.isPending}
               onClick={() => {
-                if (
-                  tenant.status !== 'suspended' &&
-                  !window.confirm(`¿Suspender tenant ${tenant.name}?`)
-                ) {
+                if (tenant.status === 'suspended') {
+                  toggleSuspend.mutate();
                   return;
                 }
-                toggleSuspend.mutate();
+                ask({
+                  title: CP_STRINGS.tenantDetail.suspendConfirmTitle,
+                  message: CP_STRINGS.tenantDetail.suspendConfirm(tenant.name),
+                  variant: 'warning',
+                  onConfirm: () => toggleSuspend.mutate(),
+                });
               }}
             >
-              {tenant.status === 'suspended' ? 'Reactivar' : 'Suspender'}
-            </button>
+              {tenant.status === 'suspended' ? CP_STRINGS.tenants.unsuspend : CP_STRINGS.tenants.suspend}
+            </Button>
           )}
         </div>
-      </section>
-    </div>
+      </Card>
+      <ConfirmHost />
+    </CpGrid>
   );
 };

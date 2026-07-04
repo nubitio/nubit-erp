@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { AppDropdown, Button, Card, EmptyState, FormField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
+import { CP_STRINGS } from '../../i18n/es';
 import type { BackupRecord } from '../../types';
 import { formatBytes } from '../../utils/format';
+import { useCpConfirm } from '../../hooks/useCpConfirm';
+import { CpAlert, CpForm, CpFormActions, CpMetricGrid, CpRowActions } from '../layout';
 
 interface BackupsTabProps {
   tenantId: number;
@@ -18,25 +22,10 @@ interface BackupsTabProps {
   onUpdated: () => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 0, label: 'Disabled' },
-  { value: 6, label: 'Every 6 hours' },
-  { value: 12, label: 'Every 12 hours' },
-  { value: 24, label: 'Daily' },
-  { value: 168, label: 'Weekly' },
-  { value: 720, label: 'Monthly' },
-];
+const S = CP_STRINGS.tenantTabs.backups;
 
-const RETENTION_OPTIONS = [
-  { value: 0, label: 'Forever' },
-  { value: 7, label: '7 days' },
-  { value: 14, label: '14 days' },
-  { value: 30, label: '30 days' },
-  { value: 60, label: '60 days' },
-  { value: 90, label: '90 days' },
-  { value: 180, label: '180 days' },
-  { value: 365, label: '1 year' },
-];
+const FREQUENCY_OPTIONS = [0, 6, 12, 24, 168, 720] as const;
+const RETENTION_OPTIONS = [0, 7, 14, 30, 60, 90, 180, 365] as const;
 
 export const BackupsTab = ({
   tenantId,
@@ -47,6 +36,7 @@ export const BackupsTab = ({
   isSuperAdmin,
   onUpdated,
 }: BackupsTabProps) => {
+  const { ask, ConfirmHost } = useCpConfirm();
   const [frequency, setFrequency] = useState(tenant.backup_frequency ?? 0);
   const [retention, setRetention] = useState(tenant.backup_retention_days ?? 30);
   const [error, setError] = useState<string | null>(null);
@@ -84,157 +74,160 @@ export const BackupsTab = ({
 
   return (
     <div className="cp-stack">
-      {error && <div className="cp-alert cp-alert--danger">{error}</div>}
+      {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
-        <section className="cp-card">
-          <h3>Backup schedule</h3>
-          <form
-            className="cp-form cp-form--grid"
+        <Card title={S.scheduleTitle}>
+          <CpForm
+            variant="grid"
             onSubmit={(e) => {
               e.preventDefault();
               saveSchedule.mutate();
             }}
           >
-            <label className="cp-field">
-              <span>Frequency</span>
-              <select value={frequency} onChange={(e) => setFrequency(Number(e.target.value))}>
-                {FREQUENCY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="cp-field">
-              <span>Retention</span>
-              <select value={retention} onChange={(e) => setRetention(Number(e.target.value))}>
-                {RETENTION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" className="cp-btn cp-btn--primary" disabled={saveSchedule.isPending}>
-              Save schedule
-            </button>
-          </form>
-        </section>
+            <FormField label={S.frequency}>
+              <AppDropdown
+                value={String(frequency)}
+                options={FREQUENCY_OPTIONS.map((value) => ({
+                  value: String(value),
+                  label: S.frequencyOptions[value],
+                }))}
+                onChange={(value) => setFrequency(Number(value))}
+                variant="form"
+                showFieldLabel={false}
+              />
+            </FormField>
+            <FormField label={S.retention}>
+              <AppDropdown
+                value={String(retention)}
+                options={RETENTION_OPTIONS.map((value) => ({
+                  value: String(value),
+                  label: S.retentionOptions[value],
+                }))}
+                onChange={(value) => setRetention(Number(value))}
+                variant="form"
+                showFieldLabel={false}
+              />
+            </FormField>
+            <Button type="submit" loading={saveSchedule.isPending}>
+              {S.saveSchedule}
+            </Button>
+          </CpForm>
+        </Card>
       )}
 
       {binlogSummary.total_count !== undefined && (
-        <section className="cp-card">
-          <h3>Binary log backups</h3>
-          <div className="cp-metrics cp-metrics--compact">
-            <div className="cp-metric">
-              <span className="cp-metric__label">Last backup</span>
-              <span className="cp-metric__value cp-metric__value--sm">
-                {binlogSummary.last_backup_at ?? 'Never'}
-              </span>
-            </div>
-            <div className="cp-metric">
-              <span className="cp-metric__label">Total</span>
-              <span className="cp-metric__value cp-metric__value--sm">
-                {binlogSummary.total_count ?? 0}
-              </span>
-            </div>
-            <div className="cp-metric">
-              <span className="cp-metric__label">Size</span>
-              <span className="cp-metric__value cp-metric__value--sm">
-                {formatBytes(binlogSummary.total_size_bytes ?? 0)}
-              </span>
-            </div>
-          </div>
-        </section>
+        <Card title={S.binlogTitle}>
+          <CpMetricGrid
+            layout="strip"
+            density="compact"
+            items={[
+              {
+                label: S.lastBackup,
+                value: binlogSummary.last_backup_at ?? CP_STRINGS.never,
+              },
+              { label: S.total, value: binlogSummary.total_count ?? 0 },
+              { label: S.size, value: formatBytes(binlogSummary.total_size_bytes ?? 0) },
+            ]}
+          />
+        </Card>
       )}
 
-      <section className="cp-card">
-        <div className="cp-card__header">
-          <h3>Backups</h3>
-          {isSuperAdmin && (
-            <button
-              type="button"
-              className="cp-btn cp-btn--primary"
-              disabled={queue.isPending}
-              onClick={() => queue.mutate()}
-            >
-              Backup now
-            </button>
-          )}
-        </div>
-        {backups.length === 0 ? (
-          <div className="cp-empty">No backups yet.</div>
-        ) : (
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>File</th>
-                <th>Size</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {backups.map((backup) => (
-                <tr key={backup.id}>
-                  <td>{backup.id}</td>
-                  <td>{backup.backup_type ?? 'full'}</td>
-                  <td>
-                    <code>{backup.filename}</code>
-                  </td>
-                  <td>{formatBytes(backup.size_bytes)}</td>
-                  <td>{backup.status}</td>
-                  <td>{backup.created_at}</td>
-                  <td className="cp-table__actions">
-                    {backup.status === 'completed' && (
-                      <a
-                        href={controlPlaneClient.backupDownloadUrl(tenantId, backup.id)}
-                        className="cp-btn cp-btn--ghost"
-                      >
-                        Download
-                      </a>
-                    )}
-                    {isSuperAdmin && backup.status === 'completed' && (
-                      <button
-                        type="button"
-                        className="cp-btn cp-btn--ghost"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Restore tenant from backup #${backup.id}? This overwrites the database.`,
-                            )
-                          ) {
-                            restore.mutate(backup.id);
-                          }
-                        }}
-                      >
-                        Restore
-                      </button>
-                    )}
-                    {isSuperAdmin && (
-                      <button
-                        type="button"
-                        className="cp-btn cp-btn--ghost"
-                        onClick={() => {
-                          if (window.confirm(`Delete backup #${backup.id}?`)) {
-                            remove.mutate(backup.id);
-                          }
-                        }}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Card title={S.listTitle}>
+        {isSuperAdmin && (
+          <CpFormActions>
+            <Button loading={queue.isPending} onClick={() => queue.mutate()}>
+              {S.backupNow}
+            </Button>
+          </CpFormActions>
         )}
-      </section>
+        {backups.length === 0 ? (
+          <EmptyState icon="archive" title={S.empty} size="sm" />
+        ) : (
+          <div className="cp-data-table-wrap">
+            <table className="cp-data-table">
+              <thead>
+                <tr>
+                  <th>{CP_STRINGS.tenants.colId}</th>
+                  <th>{S.colType}</th>
+                  <th>{S.colFile}</th>
+                  <th>{S.colSize}</th>
+                  <th>{CP_STRINGS.tenants.colStatus}</th>
+                  <th>{CP_STRINGS.users.colCreated}</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {backups.map((backup) => (
+                  <tr key={backup.id}>
+                    <td>{backup.id}</td>
+                    <td>{backup.backup_type ?? 'full'}</td>
+                    <td>
+                      <code className="cp-code">{backup.filename}</code>
+                    </td>
+                    <td>{formatBytes(backup.size_bytes)}</td>
+                    <td>{backup.status}</td>
+                    <td>{backup.created_at}</td>
+                    <td className="cp-data-table__actions">
+                      <CpRowActions
+                        items={[
+                          ...(backup.status === 'completed'
+                            ? [
+                                {
+                                  label: S.download,
+                                  icon: 'download-simple',
+                                  onClick: () => {
+                                    window.location.href = controlPlaneClient.backupDownloadUrl(
+                                      tenantId,
+                                      backup.id,
+                                    );
+                                  },
+                                },
+                              ]
+                            : []),
+                          ...(isSuperAdmin && backup.status === 'completed'
+                            ? [
+                                {
+                                  label: S.restore,
+                                  icon: 'arrow-counter-clockwise',
+                                  onClick: () =>
+                                    ask({
+                                      title: S.restoreConfirmTitle,
+                                      message: S.restoreConfirm(backup.id),
+                                      variant: 'warning',
+                                      onConfirm: () => restore.mutate(backup.id),
+                                    }),
+                                },
+                              ]
+                            : []),
+                          ...(isSuperAdmin
+                            ? [
+                                {
+                                  separator: true,
+                                  label: CP_STRINGS.delete,
+                                  icon: 'trash',
+                                  danger: true,
+                                  onClick: () =>
+                                    ask({
+                                      title: S.deleteConfirmTitle,
+                                      message: S.deleteConfirm(backup.id),
+                                      variant: 'danger',
+                                      onConfirm: () => remove.mutate(backup.id),
+                                    }),
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+      <ConfirmHost />
     </div>
   );
 };

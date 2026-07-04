@@ -1,14 +1,29 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Button, Card, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
-import { cpNotify } from '../utils/notify';
+import {
+  CpAlert,
+  CpForm,
+  CpGrid,
+  CpPage,
+  CpPageHeader,
+  CpPageSkeleton,
+  CpRowActions,
+  CpSection,
+} from '../components/layout';
 import { TenantStatusBadge } from '../components/TenantStatusBadge';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
+import { useCpConfirm } from '../hooks/useCpConfirm';
+import { CP_STRINGS } from '../i18n/es';
+import { cpNotify } from '../utils/notify';
 
 export const TenantListPage = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isAdmin, isSuperAdmin } = useControlPlaneRoles();
+  const { ask, ConfirmHost } = useCpConfirm();
   const [name, setName] = useState('');
   const [connection, setConnection] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -30,7 +45,7 @@ export const TenantListPage = () => {
       setConnection('');
       setFormError(null);
       invalidate();
-      cpNotify.success('Tenant creado.');
+      cpNotify.success(CP_STRINGS.tenants.created);
     },
     onError: (err: Error) => setFormError(err.message),
   });
@@ -66,228 +81,235 @@ export const TenantListPage = () => {
   });
 
   if (isLoading) {
-    return <div className="cp-page cp-page--loading">Cargando tenants…</div>;
+    return <CpPageSkeleton variant="table" />;
   }
 
   if (error || !data) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">
-          No se pudo cargar tenants: {(error as Error)?.message ?? 'Error desconocido'}
-        </div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">
+          {CP_STRINGS.tenants.loadError}: {(error as Error)?.message ?? CP_STRINGS.unknownError}
+        </CpAlert>
+      </CpPage>
     );
   }
 
   return (
-    <div className="cp-page">
-      <header className="cp-page__header cp-page__header--split">
-        <div>
-          <h1>Tenants</h1>
-          <p>Registro de empresas y su estado operativo.</p>
-        </div>
-        <span className="cp-badge cp-badge--info">{data.tenants.length} activos</span>
-      </header>
+    <CpPage>
+      <CpPageHeader
+        title={CP_STRINGS.tenants.title}
+        subtitle={CP_STRINGS.tenants.subtitle}
+        badge={{ label: CP_STRINGS.tenants.activeCount(data.tenants.length) }}
+      />
 
-      <div className="cp-grid cp-grid--2">
-        {formError && (
-          <div className="cp-alert cp-alert--danger cp-span-full">{formError}</div>
-        )}
+      <CpGrid>
+        {formError && <CpAlert tone="danger" className="cp-span-full">{formError}</CpAlert>}
 
         {isAdmin && (
-          <section className="cp-card">
-            <h3>Add tenant</h3>
-            <form
-              className="cp-form"
+          <Card title={CP_STRINGS.tenants.addTitle}>
+            <CpForm
               onSubmit={(e) => {
                 e.preventDefault();
                 create.mutate();
               }}
             >
-              <label className="cp-field">
-                <span>Name</span>
-                <input
+              <FormField label={CP_STRINGS.tenants.addName} helpText={CP_STRINGS.tenants.addNameHint}>
+                <TextField
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. acme"
+                  placeholder={CP_STRINGS.tenants.addNamePlaceholder}
                   required
                 />
-                <span className="cp-muted">Tenant identifier used in commands and switching.</span>
-              </label>
-              <label className="cp-field">
-                <span>Connection</span>
-                <input
+              </FormField>
+              <FormField
+                label={CP_STRINGS.tenants.addConnection}
+                helpText={CP_STRINGS.tenants.addConnectionHint}
+              >
+                <TextField
                   value={connection}
                   onChange={(e) => setConnection(e.target.value)}
-                  placeholder="e.g. acme_db"
+                  placeholder={CP_STRINGS.tenants.addConnectionPlaceholder}
                   required
                 />
-                <span className="cp-muted">Database/schema name on your DB server.</span>
-              </label>
-              <button type="submit" className="cp-btn cp-btn--primary" disabled={create.isPending}>
-                Save tenant
-              </button>
-            </form>
-          </section>
+              </FormField>
+              <Button type="submit" loading={create.isPending} fullWidth>
+                {CP_STRINGS.tenants.addSubmit}
+              </Button>
+            </CpForm>
+          </Card>
         )}
 
-        <section className={`cp-card${isAdmin ? '' : ' cp-span-full'}`}>
-          <h3>Activos ({data.tenants.length})</h3>
+        <div className={isAdmin ? undefined : 'cp-span-full'}>
+        <Card title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="cp-table-surface">
           {data.tenants.length === 0 ? (
-            <div className="cp-empty">No tenants yet. Create one to get started.</div>
+            <p className="cp-muted">{CP_STRINGS.tenants.listEmpty}</p>
           ) : (
-            <table className="cp-table">
+            <div className="cp-data-table-wrap cp-data-table-wrap--fill">
+              <table className="cp-data-table">
+                <thead>
+                  <tr>
+                    <th>{CP_STRINGS.tenants.colId}</th>
+                    <th>{CP_STRINGS.tenants.colName}</th>
+                    <th>{CP_STRINGS.tenants.colPlan}</th>
+                    <th>{CP_STRINGS.tenants.colDomain}</th>
+                    <th>{CP_STRINGS.tenants.colStatus}</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.tenants.map((tenant) => (
+                    <tr key={tenant.id}>
+                      <td>{tenant.id}</td>
+                      <td>
+                        <strong>{tenant.name}</strong>
+                        <div className="cp-muted">{tenant.connection}</div>
+                      </td>
+                      <td>{tenant.plan ?? '—'}</td>
+                      <td>{tenant.primary_domain ?? '—'}</td>
+                      <td>
+                        <TenantStatusBadge status={tenant.status} />
+                      </td>
+                      <td className="cp-data-table__actions">
+                        <CpRowActions
+                          items={[
+                            {
+                              label: CP_STRINGS.tenants.manage,
+                              icon: 'gear',
+                              onClick: () => navigate(`/tenants/${tenant.id}`),
+                            },
+                            tenant.status === 'suspended'
+                              ? {
+                                  label: CP_STRINGS.tenants.unsuspend,
+                                  icon: 'play',
+                                  onClick: () => unsuspend.mutate(tenant.id),
+                                }
+                              : {
+                                  label: CP_STRINGS.tenants.suspend,
+                                  icon: 'pause',
+                                  onClick: () =>
+                                    ask({
+                                      title: CP_STRINGS.tenants.suspendConfirmTitle,
+                                      message: CP_STRINGS.tenantDetail.suspendConfirm(tenant.name),
+                                      variant: 'warning',
+                                      onConfirm: () => suspend.mutate(tenant.id),
+                                    }),
+                                },
+                            ...(isSuperAdmin
+                              ? [
+                                  {
+                                    separator: true,
+                                    label: CP_STRINGS.delete,
+                                    icon: 'trash',
+                                    danger: true,
+                                    onClick: () =>
+                                      ask({
+                                        title: CP_STRINGS.tenants.deleteConfirmTitle,
+                                        message: CP_STRINGS.tenants.deleteConfirm(tenant.name),
+                                        variant: 'danger',
+                                        onConfirm: () => remove.mutate(tenant.id),
+                                      }),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+        </div>
+      </CpGrid>
+
+      {data.deletedTenants.length > 0 && (
+        <CpSection title={CP_STRINGS.tenants.deletedTitle(data.deletedTenants.length)}>
+          <div className="cp-data-table-wrap">
+            <table className="cp-data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Plan</th>
-                  <th>Dominio</th>
-                  <th>Estado</th>
+                  <th>{CP_STRINGS.tenants.colId}</th>
+                  <th>{CP_STRINGS.tenants.colName}</th>
+                  <th>{CP_STRINGS.tenants.addConnection}</th>
+                  <th>{CP_STRINGS.tenants.colDeletedAt}</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                {data.tenants.map((tenant) => (
+                {data.deletedTenants.map((tenant) => (
                   <tr key={tenant.id}>
                     <td>{tenant.id}</td>
+                    <td>{tenant.name}</td>
                     <td>
-                      <strong>{tenant.name}</strong>
-                      <div className="cp-muted">{tenant.connection}</div>
+                      <code className="cp-code">{tenant.connection}</code>
                     </td>
-                    <td>{tenant.plan ?? '—'}</td>
-                    <td>{tenant.primary_domain ?? '—'}</td>
-                    <td>
-                      <TenantStatusBadge status={tenant.status} />
-                    </td>
-                    <td className="cp-table__actions">
-                      {tenant.status === 'suspended' ? (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          disabled={unsuspend.isPending}
-                          onClick={() => unsuspend.mutate(tenant.id)}
-                        >
-                          Reactivar
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          disabled={suspend.isPending}
-                          onClick={() => suspend.mutate(tenant.id)}
-                        >
-                          Suspender
-                        </button>
-                      )}
-                      <Link to={`/tenants/${tenant.id}`} className="cp-btn cp-btn--primary">
-                        Gestionar
-                      </Link>
-                      {isSuperAdmin && (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          disabled={remove.isPending}
-                          onClick={() => {
-                            if (window.confirm(`Delete tenant ${tenant.name}?`)) {
-                              remove.mutate(tenant.id);
-                            }
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
+                    <td className="cp-muted">{tenant.deleted_at ?? '—'}</td>
+                    <td className="cp-data-table__actions">
+                      {purgeTarget?.id === tenant.id ? (
+                          <div className="cp-inline-actions">
+                            <TextField
+                              value={purgeConfirm}
+                              onChange={(e) => setPurgeConfirm(e.target.value)}
+                              placeholder={CP_STRINGS.tenants.purgePlaceholder(tenant.name)}
+                            />
+                            <Button
+                              size="sm"
+                              loading={purge.isPending}
+                              disabled={purgeConfirm !== tenant.name}
+                              onClick={() => purge.mutate(tenant.id)}
+                            >
+                              {CP_STRINGS.tenants.purgeConfirm}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setPurgeTarget(null);
+                                setPurgeConfirm('');
+                              }}
+                            >
+                              {CP_STRINGS.cancel}
+                            </Button>
+                          </div>
+                        ) : (
+                          <CpRowActions
+                            items={[
+                              ...(isAdmin
+                                ? [
+                                    {
+                                      label: CP_STRINGS.tenants.restore,
+                                      icon: 'arrow-counter-clockwise',
+                                      onClick: () => restore.mutate(tenant.id),
+                                    },
+                                  ]
+                                : []),
+                              ...(isSuperAdmin
+                                ? [
+                                    {
+                                      label: CP_STRINGS.tenants.purge,
+                                      icon: 'fire',
+                                      danger: true,
+                                      onClick: () => {
+                                        setPurgeTarget({ id: tenant.id, name: tenant.name });
+                                        setPurgeConfirm('');
+                                      },
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </section>
-      </div>
-
-      {data.deletedTenants.length > 0 && (
-        <section className="cp-section">
-          <h2>Eliminados ({data.deletedTenants.length})</h2>
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Connection</th>
-                <th>Deleted at</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {data.deletedTenants.map((tenant) => (
-                <tr key={tenant.id}>
-                  <td>{tenant.id}</td>
-                  <td>{tenant.name}</td>
-                  <td>
-                    <code>{tenant.connection}</code>
-                  </td>
-                  <td className="cp-muted">{tenant.deleted_at ?? '—'}</td>
-                  <td className="cp-table__actions">
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        className="cp-btn cp-btn--ghost"
-                        disabled={restore.isPending}
-                        onClick={() => restore.mutate(tenant.id)}
-                      >
-                        Restore
-                      </button>
-                    )}
-                    {isSuperAdmin &&
-                      (purgeTarget?.id === tenant.id ? (
-                        <div className="cp-purge-confirm">
-                          <input
-                            className="cp-field__input"
-                            value={purgeConfirm}
-                            onChange={(e) => setPurgeConfirm(e.target.value)}
-                            placeholder={`Type '${tenant.name}'`}
-                          />
-                          <button
-                            type="button"
-                            className="cp-btn cp-btn--primary"
-                            disabled={
-                              purgeConfirm !== tenant.name || purge.isPending
-                            }
-                            onClick={() => purge.mutate(tenant.id)}
-                          >
-                            Confirm purge
-                          </button>
-                          <button
-                            type="button"
-                            className="cp-btn cp-btn--ghost"
-                            onClick={() => {
-                              setPurgeTarget(null);
-                              setPurgeConfirm('');
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          onClick={() => {
-                            setPurgeTarget({ id: tenant.id, name: tenant.name });
-                            setPurgeConfirm('');
-                          }}
-                        >
-                          Purge
-                        </button>
-                      ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+          </div>
+        </CpSection>
       )}
-    </div>
+      <ConfirmHost />
+    </CpPage>
   );
 };

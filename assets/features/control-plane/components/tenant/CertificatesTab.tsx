@@ -1,8 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  Badge,
+  Button,
+  Card,
+  Drawer,
+  EmptyState,
+  FileDropzone,
+  FormField,
+  TextAreaField,
+  TextField,
+} from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { CertificateRecord } from '../../types';
+import { CpAlert, CpDescriptionList, CpForm, CpFormActions, CpGrid, CpRowActions } from '../layout';
 
 interface CertificatesTabProps {
   tenantId: number;
@@ -13,11 +25,13 @@ interface CertificatesTabProps {
   onCertificateModalClose?: () => void;
 }
 
-const statusClass = (status: string) => {
-  if (status === 'active') return 'cp-badge--active';
-  if (status === 'expiring_soon') return 'cp-badge--suspended';
-  if (status === 'expired') return 'cp-badge--deleted';
-  return '';
+const S = CP_STRINGS.tenantTabs.certificates;
+
+const statusVariant = (status: string): 'success' | 'warning' | 'danger' | 'secondary' => {
+  if (status === 'active') return 'success';
+  if (status === 'expiring_soon') return 'warning';
+  if (status === 'expired') return 'danger';
+  return 'secondary';
 };
 
 const resolveStatus = (cert: CertificateRecord): string => {
@@ -38,10 +52,13 @@ const formatDate = (raw?: string | null): string => {
   return raw.slice(0, 10);
 };
 
-const field = (cert: CertificateRecord, camel: keyof CertificateRecord, snake: keyof CertificateRecord) =>
-  (cert[camel] ?? cert[snake]) as string | number | null | undefined;
+const field = (
+  cert: CertificateRecord,
+  camel: keyof CertificateRecord,
+  snake: keyof CertificateRecord,
+) => (cert[camel] ?? cert[snake]) as string | number | null | undefined;
 
-const CertificateDetailModal = ({
+const CertificateDetailDrawer = ({
   tenantId,
   certificateId,
   onClose,
@@ -59,80 +76,104 @@ const CertificateDetailModal = ({
   const status = cert ? resolveStatus(cert) : '';
 
   return (
-    <div className="cp-modal-backdrop" onClick={onClose}>
-      <div className="cp-modal cp-modal--wide" onClick={(e) => e.stopPropagation()}>
-        <header className="cp-modal__header">
-          <h3>{cert ? `Certificado ${cert.ruc}` : 'Detalle del certificado'}</h3>
-          <button type="button" className="cp-btn cp-btn--ghost" onClick={onClose}>
-            {CP_STRINGS.close}
-          </button>
-        </header>
-        <div className="cp-modal__body">
-          {detail.isLoading && <div className="cp-muted">{CP_STRINGS.loading}</div>}
-          {detail.error && (
-            <div className="cp-alert cp-alert--danger">{(detail.error as Error).message}</div>
-          )}
-          {cert && (
-            <>
-              <p className="cp-muted">Operational metadata only. PEM material is not exposed.</p>
-              <dl className="cp-dl">
-                <dt>Status</dt>
-                <dd>
-                  <span className={`cp-badge ${statusClass(status)}`}>{status}</span>
-                </dd>
-                <dt>Subject CN</dt>
-                <dd>{field(cert, 'subjectCn', 'subject_cn') ?? '—'}</dd>
-                <dt>Issuer CN</dt>
-                <dd>{field(cert, 'issuerCn', 'issuer_cn') ?? '—'}</dd>
-                <dt>Serial</dt>
-                <dd>
-                  <code>{field(cert, 'serialNumber', 'serial_number') ?? '—'}</code>
-                </dd>
-                <dt>Fingerprint SHA-256</dt>
-                <dd>
-                  <code>{field(cert, 'fingerprintSha256', 'fingerprint_sha256') ?? '—'}</code>
-                </dd>
-                <dt>Valid from</dt>
-                <dd>{formatDateTime(field(cert, 'validFrom', 'valid_from') as string | null)}</dd>
-                <dt>Expires at</dt>
-                <dd>{formatDateTime(field(cert, 'expiresAt', 'expires_at') as string | null)}</dd>
-                <dt>Uploaded by</dt>
-                <dd>
-                  {field(cert, 'uploadedBy', 'uploaded_by') ?? '—'} at{' '}
-                  {formatDateTime(field(cert, 'uploadedAt', 'uploaded_at') as string | null)}
-                </dd>
-                <dt>Revocation</dt>
-                <dd>
-                  {field(cert, 'revokedAt', 'revoked_at') ? (
-                    <>
-                      {field(cert, 'revokedBy', 'revoked_by') ?? '—'} at{' '}
-                      {formatDateTime(field(cert, 'revokedAt', 'revoked_at') as string | null)}
-                      <br />
+    <Drawer
+      isOpen
+      onClose={onClose}
+      title={cert ? S.detailTitle(cert.ruc) : S.detailLoading}
+      width={640}
+      scrim="overlay"
+      closeLabel={CP_STRINGS.close}
+    >
+      {detail.isLoading && <p className="cp-muted">{CP_STRINGS.loading}</p>}
+      {detail.error && (
+        <CpAlert tone="danger">{(detail.error as Error).message}</CpAlert>
+      )}
+      {cert && (
+        <>
+          <p className="cp-muted">{S.detailHint}</p>
+          <CpDescriptionList
+            items={[
+              {
+                term: S.status,
+                value: (
+                  <Badge variant={statusVariant(status)} pill>
+                    {status}
+                  </Badge>
+                ),
+              },
+              { term: S.subjectCn, value: field(cert, 'subjectCn', 'subject_cn') ?? '—' },
+              { term: S.issuerCn, value: field(cert, 'issuerCn', 'issuer_cn') ?? '—' },
+              {
+                term: S.serial,
+                value: <code className="cp-code">{field(cert, 'serialNumber', 'serial_number') ?? '—'}</code>,
+              },
+              {
+                term: S.fingerprint,
+                value: (
+                  <code className="cp-code">
+                    {field(cert, 'fingerprintSha256', 'fingerprint_sha256') ?? '—'}
+                  </code>
+                ),
+              },
+              {
+                term: S.validFrom,
+                value: formatDateTime(field(cert, 'validFrom', 'valid_from') as string | null),
+              },
+              {
+                term: S.expiresAt,
+                value: formatDateTime(field(cert, 'expiresAt', 'expires_at') as string | null),
+              },
+              {
+                term: S.uploadedBy,
+                value: (
+                  <>
+                    {field(cert, 'uploadedBy', 'uploaded_by') ?? '—'} {S.uploadedAt}{' '}
+                    {formatDateTime(field(cert, 'uploadedAt', 'uploaded_at') as string | null)}
+                  </>
+                ),
+              },
+              {
+                term: S.revocation,
+                value: field(cert, 'revokedAt', 'revoked_at') ? (
+                  <>
+                    {field(cert, 'revokedBy', 'revoked_by') ?? '—'} {S.uploadedAt}{' '}
+                    {formatDateTime(field(cert, 'revokedAt', 'revoked_at') as string | null)}
+                    <br />
+                    <span className="cp-muted">
+                      {field(cert, 'revocationReason', 'revocation_reason') ?? S.noReason}
+                    </span>
+                  </>
+                ) : (
+                  '—'
+                ),
+              },
+              {
+                term: S.supersededBy,
+                value: field(cert, 'supersededById', 'superseded_by_id') ?? '—',
+              },
+              {
+                term: S.lastAlerted,
+                value: formatDateTime(field(cert, 'lastAlertedAt', 'last_alerted_at') as string | null),
+              },
+              {
+                term: S.lycetSync,
+                value: (
+                  <>
+                    {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
+                    {field(cert, 'lycetSyncError', 'lycet_sync_error') && (
                       <span className="cp-muted">
-                        {field(cert, 'revocationReason', 'revocation_reason') ?? 'No reason recorded'}
+                        {' '}
+                        — {field(cert, 'lycetSyncError', 'lycet_sync_error')}
                       </span>
-                    </>
-                  ) : (
-                    '—'
-                  )}
-                </dd>
-                <dt>Superseded by</dt>
-                <dd>{field(cert, 'supersededById', 'superseded_by_id') ?? '—'}</dd>
-                <dt>Last alerted</dt>
-                <dd>{formatDateTime(field(cert, 'lastAlertedAt', 'last_alerted_at') as string | null)}</dd>
-                <dt>Lycet sync</dt>
-                <dd>
-                  {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
-                  {field(cert, 'lycetSyncError', 'lycet_sync_error') && (
-                    <span className="cp-muted"> — {field(cert, 'lycetSyncError', 'lycet_sync_error')}</span>
-                  )}
-                </dd>
-              </dl>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+                    )}
+                  </>
+                ),
+              },
+            ]}
+          />
+        </>
+      )}
+    </Drawer>
   );
 };
 
@@ -144,14 +185,16 @@ export const CertificatesTab = ({
   initialCertificateId = null,
   onCertificateModalClose,
 }: CertificatesTabProps) => {
-  const fileRef = useRef<HTMLInputElement>(null);
   const [ruc, setRuc] = useState('');
   const [solUser, setSolUser] = useState('');
   const [solPass, setSolPass] = useState('');
+  const [pemFile, setPemFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedCertificateId, setSelectedCertificateId] = useState<number | null>(
     initialCertificateId,
   );
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+  const [revokeReason, setRevokeReason] = useState('');
 
   useEffect(() => {
     if (initialCertificateId) {
@@ -164,11 +207,17 @@ export const CertificatesTab = ({
     onCertificateModalClose?.();
   };
 
+  const closeRevoke = () => {
+    setRevokeTarget(null);
+    setRevokeReason('');
+  };
+
   const revoke = useMutation({
     mutationFn: ({ ruc, reason }: { ruc: string; reason: string }) =>
       controlPlaneClient.revokeCertificate(tenantId, ruc, reason),
     onSuccess: () => {
       setError(null);
+      closeRevoke();
       onUpdated();
     },
     onError: (err: Error) => setError(err.message),
@@ -176,14 +225,13 @@ export const CertificatesTab = ({
 
   const upload = useMutation({
     mutationFn: () => {
-      const file = fileRef.current?.files?.[0];
-      if (!file) throw new Error('PEM certificate file is required');
+      if (!pemFile) throw new Error('PEM certificate file is required');
 
       const formData = new FormData();
       formData.append('ruc', ruc);
       formData.append('solUser', solUser);
       formData.append('solPass', solPass);
-      formData.append('certificate', file);
+      formData.append('certificate', pemFile);
 
       return controlPlaneClient.uploadCertificate(tenantId, formData);
     },
@@ -191,7 +239,7 @@ export const CertificatesTab = ({
       setRuc('');
       setSolUser('');
       setSolPass('');
-      if (fileRef.current) fileRef.current.value = '';
+      setPemFile(null);
       setError(null);
       onUpdated();
     },
@@ -199,128 +247,179 @@ export const CertificatesTab = ({
   });
 
   return (
-    <div className="cp-grid cp-grid--2">
-      {error && <div className="cp-alert cp-alert--danger cp-span-full">{error}</div>}
+    <CpGrid>
+      {error && (
+        <CpAlert tone="danger" className="cp-span-full">
+          {error}
+        </CpAlert>
+      )}
 
       {isAdmin && (
-        <section className="cp-card">
-          <h3>Upload / renew certificate</h3>
-          <form
-            className="cp-form"
+        <Card title={S.uploadTitle}>
+          <CpForm
             onSubmit={(e) => {
               e.preventDefault();
               upload.mutate();
             }}
           >
-            <label className="cp-field">
-              <span>RUC</span>
-              <input
+            <FormField label={S.ruc}>
+              <TextField
                 value={ruc}
                 onChange={(e) => setRuc(e.target.value)}
                 maxLength={11}
                 required
               />
-            </label>
-            <label className="cp-field">
-              <span>SOL user</span>
-              <input value={solUser} onChange={(e) => setSolUser(e.target.value)} required />
-            </label>
-            <label className="cp-field">
-              <span>SOL password</span>
-              <input
+            </FormField>
+            <FormField label={S.solUser}>
+              <TextField value={solUser} onChange={(e) => setSolUser(e.target.value)} required />
+            </FormField>
+            <FormField label={S.solPassword}>
+              <TextField
                 type="password"
                 value={solPass}
                 onChange={(e) => setSolPass(e.target.value)}
                 required
               />
-            </label>
-            <label className="cp-field">
-              <span>PEM certificate</span>
-              <input ref={fileRef} type="file" accept=".pem,.crt" required />
-              <span className="cp-muted">
-                The PEM is sent to lycet; only metadata is stored in Control Plane.
-              </span>
-            </label>
-            <button type="submit" className="cp-btn cp-btn--primary" disabled={upload.isPending}>
-              Upload / renew
-            </button>
-          </form>
-        </section>
+            </FormField>
+            <FormField label={S.pemFile} helpText={S.pemHint}>
+              <FileDropzone
+                accept=".pem,.crt"
+                value={pemFile ? { fileName: pemFile.name } : null}
+                labels={{
+                  prompt: S.dropzonePrompt,
+                  hint: S.dropzoneHint,
+                  replace: S.dropzoneReplace,
+                  remove: S.dropzoneRemove,
+                }}
+                onFileSelect={setPemFile}
+                onClear={() => setPemFile(null)}
+              />
+            </FormField>
+            <Button type="submit" loading={upload.isPending} fullWidth disabled={!pemFile}>
+              {S.uploadSubmit}
+            </Button>
+          </CpForm>
+        </Card>
       )}
 
-      <section className={`cp-card${isAdmin ? '' : ' cp-span-full'}`}>
-        <h3>Registered certificates</h3>
-        {certificates.length === 0 ? (
-          <div className="cp-empty">No certificates registered.</div>
-        ) : (
-          <table className="cp-table">
-            <thead>
-              <tr>
-                <th>RUC</th>
-                <th>Status</th>
-                <th>Expires</th>
-                <th>Fingerprint</th>
-                <th>Sync</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {certificates.map((cert) => {
-                const status = resolveStatus(cert);
-                const revocable = isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
-                const fingerprint = field(cert, 'fingerprintSha256', 'fingerprint_sha256');
-                return (
-                  <tr key={cert.id}>
-                    <td className="cp-table__strong">{cert.ruc}</td>
-                    <td>
-                      <span className={`cp-badge ${statusClass(status)}`}>{status}</span>
-                    </td>
-                    <td>{formatDate(field(cert, 'expiresAt', 'expires_at') as string | null)}</td>
-                    <td>
-                      <code>{fingerprint ? String(fingerprint).slice(0, 12) : '—'}</code>
-                    </td>
-                    <td className="cp-muted">
-                      {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
-                    </td>
-                    <td className="cp-table__actions">
-                      <button
-                        type="button"
-                        className="cp-btn cp-btn--ghost"
-                        onClick={() => setSelectedCertificateId(cert.id)}
-                      >
-                        {CP_STRINGS.view}
-                      </button>
-                      {revocable && (
-                        <button
-                          type="button"
-                          className="cp-btn cp-btn--ghost"
-                          disabled={revoke.isPending}
-                          onClick={() => {
-                            const reason = window.prompt(`Revocation reason for ${cert.ruc}:`);
-                            if (reason?.trim()) {
-                              revoke.mutate({ ruc: cert.ruc, reason: reason.trim() });
-                            }
-                          }}
-                        >
-                          Revoke
-                        </button>
-                      )}
-                    </td>
+      <div className={isAdmin ? undefined : 'cp-span-full'}>
+        <Card title={S.listTitle}>
+          {certificates.length === 0 ? (
+            <EmptyState icon="shield-check" title={S.empty} size="sm" />
+          ) : (
+            <div className="cp-data-table-wrap">
+              <table className="cp-data-table">
+                <thead>
+                  <tr>
+                    <th>{S.ruc}</th>
+                    <th>{S.status}</th>
+                    <th>{S.colExpires}</th>
+                    <th>{S.colFingerprint}</th>
+                    <th>{S.colSync}</th>
+                    <th />
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </section>
+                </thead>
+                <tbody>
+                  {certificates.map((cert) => {
+                    const status = resolveStatus(cert);
+                    const revocable = isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
+                    const fingerprint = field(cert, 'fingerprintSha256', 'fingerprint_sha256');
+                    return (
+                      <tr key={cert.id}>
+                        <td>
+                          <strong>{cert.ruc}</strong>
+                        </td>
+                        <td>
+                          <Badge variant={statusVariant(status)} pill>
+                            {status}
+                          </Badge>
+                        </td>
+                        <td>{formatDate(field(cert, 'expiresAt', 'expires_at') as string | null)}</td>
+                        <td>
+                          <code className="cp-code">
+                            {fingerprint ? String(fingerprint).slice(0, 12) : '—'}
+                          </code>
+                        </td>
+                        <td className="cp-muted">
+                          {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
+                        </td>
+                        <td className="cp-data-table__actions">
+                          <CpRowActions
+                            items={[
+                              {
+                                label: CP_STRINGS.view,
+                                icon: 'eye',
+                                onClick: () => setSelectedCertificateId(cert.id),
+                              },
+                              ...(revocable
+                                ? [
+                                    {
+                                      separator: true,
+                                      label: S.revoke,
+                                      icon: 'prohibit',
+                                      danger: true,
+                                      onClick: () => {
+                                        setRevokeTarget(cert.ruc);
+                                        setRevokeReason('');
+                                      },
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      </div>
 
       {selectedCertificateId !== null && (
-        <CertificateDetailModal
+        <CertificateDetailDrawer
           tenantId={tenantId}
           certificateId={selectedCertificateId}
           onClose={closeDetail}
         />
       )}
-    </div>
+
+      <Drawer
+        isOpen={revokeTarget !== null}
+        onClose={closeRevoke}
+        title={revokeTarget ? S.revokeTitle(revokeTarget) : S.revoke}
+        width={480}
+        scrim="overlay"
+        closeLabel={CP_STRINGS.close}
+      >
+        <CpForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (revokeTarget && revokeReason.trim()) {
+              revoke.mutate({ ruc: revokeTarget, reason: revokeReason.trim() });
+            }
+          }}
+        >
+          <FormField label={S.revokeReason}>
+            <TextAreaField
+              value={revokeReason}
+              onChange={(e) => setRevokeReason(e.target.value)}
+              rows={4}
+              required
+            />
+          </FormField>
+          <CpFormActions>
+            <Button type="submit" loading={revoke.isPending} disabled={!revokeReason.trim()}>
+              {S.revokeSubmit}
+            </Button>
+            <Button type="button" variant="ghost" onClick={closeRevoke}>
+              {CP_STRINGS.cancel}
+            </Button>
+          </CpFormActions>
+        </CpForm>
+      </Drawer>
+    </CpGrid>
   );
 };

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { Badge, Button, Card, TextAreaField, Toggle } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
+import { CpAlert, CpPage, CpPageHeader, CpPageSkeleton } from '../components/layout';
 import { CP_STRINGS } from '../i18n/es';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
 
@@ -43,106 +45,113 @@ export const PlanFeaturesPage = () => {
 
   if (!isAdmin) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">Admin access required.</div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">{CP_STRINGS.adminRequired}</CpAlert>
+      </CpPage>
     );
   }
 
   if (isLoading) {
-    return <div className="cp-page cp-page--loading">Cargando feature matrix…</div>;
+    return <CpPageSkeleton variant="matrix" />;
   }
 
   if (loadError || !data) {
     return (
-      <div className="cp-page">
-        <div className="cp-alert cp-alert--danger">
-          {(loadError as Error)?.message ?? 'No se pudieron cargar las funciones del plan'}
-        </div>
-      </div>
+      <CpPage>
+        <CpAlert tone="danger">
+          {(loadError as Error)?.message ?? CP_STRINGS.planFeatures.loadError}
+        </CpAlert>
+      </CpPage>
     );
   }
 
   if (data.plans.length === 0) {
     return (
-      <div className="cp-page">
-        <header className="cp-page__header">
-          <h1>Plan Feature Matrix</h1>
-        </header>
-        <div className="cp-empty">
-          No plans found. <Link to="/plans">Create a plan first</Link>.
-        </div>
-      </div>
+      <CpPage>
+        <CpPageHeader title={CP_STRINGS.planFeatures.title} />
+        <Card>
+          <p className="cp-muted">
+            {CP_STRINGS.planFeatures.empty}
+            <Link to="/plans">{CP_STRINGS.planFeatures.createPlanFirst}</Link>.
+          </p>
+        </Card>
+      </CpPage>
     );
   }
 
   return (
-    <div className="cp-page">
-      <header className="cp-page__header cp-page__header--split">
-        <div>
-          <Link to="/plans" className="cp-breadcrumb">
-            ← Plans
-          </Link>
-          <h1>Plan Feature Matrix</h1>
-          <p>Toggle features per plan. Active tenant overrides take priority.</p>
+    <CpPage>
+      <CpPageHeader
+        title={CP_STRINGS.planFeatures.title}
+        subtitle={CP_STRINGS.planFeatures.subtitle}
+        breadcrumb={{ label: CP_STRINGS.plans.title, to: '/plans' }}
+      />
+
+      {error && <CpAlert tone="danger">{error}</CpAlert>}
+
+      <Card>
+        <div className="cp-matrix-wrap">
+          <table className="cp-data-table cp-table--matrix">
+            <thead>
+              <tr>
+                <th>{CP_STRINGS.planFeatures.feature}</th>
+                {data.plans.map((plan) => (
+                  <th key={plan.id}>
+                    {plan.name}
+                    {plan.is_default && (
+                      <Badge variant="info" size="sm" pill>
+                        {CP_STRINGS.default}
+                      </Badge>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.featureKeys.map((featureKey) => {
+                const isConfig = data.configFeatureKeys.includes(featureKey);
+                return (
+                  <tr key={featureKey}>
+                    <td>
+                      <code>{featureKey}</code>
+                      {isConfig && (
+                        <Badge variant="secondary" size="sm">
+                          {CP_STRINGS.planFeatures.config}
+                        </Badge>
+                      )}
+                    </td>
+                    {data.plans.map((plan) => {
+                      const cell = data.matrix[featureKey]?.[plan.name] ?? {
+                        isEnabled: false,
+                        configJson: null,
+                      };
+                      const cellId = `${plan.name}:${featureKey}`;
+                      return (
+                        <PlanFeatureCell
+                          key={cellId}
+                          featureKey={featureKey}
+                          planName={plan.name}
+                          isEnabled={cell.isEnabled}
+                          configJson={
+                            cell.configJson ? JSON.stringify(cell.configJson, null, 2) : ''
+                          }
+                          isConfig={isConfig}
+                          saving={update.isPending}
+                          saved={savedCell === cellId}
+                          onSave={(payload) =>
+                            update.mutate({ planName: plan.name, featureKey, ...payload })
+                          }
+                        />
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </header>
-
-      {error && <div className="cp-alert cp-alert--danger">{error}</div>}
-
-      <div className="cp-matrix-wrap">
-        <table className="cp-table cp-table--matrix">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              {data.plans.map((plan) => (
-                <th key={plan.id}>
-                  {plan.name}
-                  {plan.is_default && (
-                    <span className="cp-badge cp-badge--info">Default</span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.featureKeys.map((featureKey) => {
-              const isConfig = data.configFeatureKeys.includes(featureKey);
-              return (
-                <tr key={featureKey}>
-                  <td>
-                    <code>{featureKey}</code>
-                    {isConfig && <span className="cp-badge">config</span>}
-                  </td>
-                  {data.plans.map((plan) => {
-                    const cell = data.matrix[featureKey]?.[plan.name] ?? {
-                      isEnabled: false,
-                      configJson: null,
-                    };
-                    const cellId = `${plan.name}:${featureKey}`;
-                    return (
-                      <PlanFeatureCell
-                        key={cellId}
-                        featureKey={featureKey}
-                        planName={plan.name}
-                        isEnabled={cell.isEnabled}
-                        configJson={
-                          cell.configJson ? JSON.stringify(cell.configJson, null, 2) : ''
-                        }
-                        isConfig={isConfig}
-                        saving={update.isPending}
-                        saved={savedCell === cellId}
-                        onSave={(payload) => update.mutate({ planName: plan.name, featureKey, ...payload })}
-                      />
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      </Card>
+    </CpPage>
   );
 };
 
@@ -173,27 +182,30 @@ const PlanFeatureCell = ({
 
   return (
     <td className={`cp-matrix-cell${enabled ? ' cp-matrix-cell--on' : ''}`}>
-      <label className="cp-check">
-        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-        Enabled
-      </label>
+      <Toggle
+        checked={enabled}
+        onChange={setEnabled}
+        label={CP_STRINGS.planFeatures.enabled}
+        size="sm"
+      />
       {isConfig && (
-        <textarea
-          className="cp-field__input cp-field__input--mono"
+        <TextAreaField
+          className="cp-field__input--mono"
           rows={3}
           value={config}
           onChange={(e) => setConfig(e.target.value)}
           placeholder="{}"
         />
       )}
-      <button
+      <Button
         type="button"
-        className="cp-btn cp-btn--ghost"
-        disabled={saving}
+        variant="ghost"
+        size="sm"
+        loading={saving}
         onClick={() => onSave({ isEnabled: enabled, configJson: config })}
       >
         {saved ? CP_STRINGS.saved : CP_STRINGS.save}
-      </button>
+      </Button>
     </td>
   );
 };

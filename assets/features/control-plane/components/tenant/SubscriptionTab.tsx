@@ -1,80 +1,79 @@
+import { Card, EmptyState } from '@nubitio/ui';
+import { CP_STRINGS } from '../../i18n/es';
 import type { PaymentEventRecord, SubscriptionRecord } from '../../types';
+import { CpDescriptionList, CpMetricGrid } from '../layout';
 
 interface SubscriptionTabProps {
   subscription: SubscriptionRecord | null;
   paymentEvents: PaymentEventRecord[];
 }
 
+const S = CP_STRINGS.tenantTabs.subscription;
+
 export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTabProps) => (
   <div className="cp-stack">
-    <section className="cp-card">
-      <h3>Subscription</h3>
+    <Card title={S.title}>
       {!subscription ? (
-        <div className="cp-empty">No active subscription. This tenant is on the free plan.</div>
+        <EmptyState icon="credit-card" title={S.empty} size="sm" />
       ) : (
         <>
-          <div className="cp-metrics cp-metrics--compact">
-            <div className="cp-metric">
-              <span className="cp-metric__label">Plan</span>
-              <span className="cp-metric__value cp-metric__value--sm">{subscription.plan}</span>
-            </div>
-            <div className="cp-metric">
-              <span className="cp-metric__label">Status</span>
-              <span className="cp-metric__value cp-metric__value--sm">{subscription.status}</span>
-            </div>
-            <div className="cp-metric">
-              <span className="cp-metric__label">Billing</span>
-              <span className="cp-metric__value cp-metric__value--sm">
-                {subscription.billing_cycle === 'annual' ? 'Annual' : 'Monthly'}
-              </span>
-            </div>
-            <div className="cp-metric">
-              <span className="cp-metric__label">Gateway</span>
-              <span className="cp-metric__value cp-metric__value--sm">{subscription.gateway}</span>
-            </div>
-          </div>
-          <dl className="cp-dl cp-dl--grid">
-            <dt>Subscription ID</dt>
-            <dd>
-              <code>{subscription.id}</code>
-            </dd>
-            <dt>Period end</dt>
-            <dd>{subscription.current_period_end ?? '—'}</dd>
-            <dt>Created</dt>
-            <dd>{subscription.created_at}</dd>
-          </dl>
+          <CpMetricGrid
+            layout="strip"
+            density="compact"
+            items={[
+              { label: S.plan, value: subscription.plan },
+              { label: S.status, value: subscription.status },
+              {
+                label: S.billing,
+                value: subscription.billing_cycle === 'annual' ? S.billingAnnual : S.billingMonthly,
+              },
+              { label: S.gateway, value: subscription.gateway },
+            ]}
+          />
+          <CpDescriptionList
+            className="cp-description-list--grid"
+            items={[
+              {
+                term: S.subscriptionId,
+                value: <code className="cp-code">{subscription.id}</code>,
+              },
+              { term: S.periodEnd, value: subscription.current_period_end ?? '—' },
+              { term: S.created, value: subscription.created_at },
+            ]}
+          />
         </>
       )}
-    </section>
+    </Card>
 
     {paymentEvents.length > 0 && (
-      <section className="cp-card">
-        <h3>Recent payment events</h3>
-        <table className="cp-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Gateway</th>
-              <th>Event</th>
-              <th>Processed</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paymentEvents.map((event) => (
-              <tr key={event.id}>
-                <td>{event.id}</td>
-                <td>{event.gateway}</td>
-                <td>
-                  <code>{event.event_type}</code>
-                </td>
-                <td>{event.processed_at ?? '—'}</td>
-                <td>{event.created_at}</td>
+      <Card title={S.paymentsTitle}>
+        <div className="cp-data-table-wrap">
+          <table className="cp-data-table">
+            <thead>
+              <tr>
+                <th>{CP_STRINGS.tenants.colId}</th>
+                <th>{S.gateway}</th>
+                <th>{S.colEvent}</th>
+                <th>{S.colProcessed}</th>
+                <th>{S.created}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {paymentEvents.map((event) => (
+                <tr key={event.id}>
+                  <td>{event.id}</td>
+                  <td>{event.gateway}</td>
+                  <td>
+                    <code className="cp-code">{event.event_type}</code>
+                  </td>
+                  <td>{event.processed_at ?? '—'}</td>
+                  <td>{event.created_at}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     )}
   </div>
 );
