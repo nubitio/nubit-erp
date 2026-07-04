@@ -11,12 +11,14 @@ import {
   CpAlert,
   CpForm,
   CpFormActions,
-  CpGrid,
   CpMetricGrid,
   CpPage,
   CpPageHeader,
   CpPageSkeleton,
   CpSection,
+  Col,
+  Grid,
+  Stack,
 } from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
 import { useConfirm } from '@nubitio/ui';
@@ -123,7 +125,7 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
         </div>
       </div>
 
-      <div className="cp-form cp-form--grid">
+      <Grid cols="auto" minColWidth="8rem">
         {LIMIT_KEYS.map((key) => (
           <FormField key={key} label={formatLimitLabel(key)}>
             <TextField
@@ -135,7 +137,7 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
             />
           </FormField>
         ))}
-      </div>
+      </Grid>
 
       <div className="cp-plan-card__footer">
         <Toggle
@@ -266,8 +268,9 @@ export const PlansPage = () => {
 
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
-      <CpGrid>
+      <Grid cols={12} gap={4}>
         {isAdmin && (
+          <Col spanMd={4}>
           <Card variant="panel" title={CP_STRINGS.plans.createTitle}>
             <CpForm
               onSubmit={(e) => {
@@ -293,7 +296,7 @@ export const PlansPage = () => {
                   onClick={() => setCreateLimits({ ...STARTER_LIMITS })}
                 />
               </div>
-              <div className="cp-form cp-form--grid">
+              <Grid cols="auto" minColWidth="8rem">
                 {LIMIT_KEYS.map((key) => (
                   <FormField key={key} label={formatLimitLabel(key)}>
                     <TextField
@@ -308,7 +311,7 @@ export const PlansPage = () => {
                     />
                   </FormField>
                 ))}
-              </div>
+              </Grid>
               <Toggle
                 checked={createDefault}
                 onChange={setCreateDefault}
@@ -319,16 +322,15 @@ export const PlansPage = () => {
               </Button>
             </CpForm>
           </Card>
+          </Col>
         )}
 
-        <CpSection
-          title={CP_STRINGS.plans.existingTitle}
-          className={isAdmin ? undefined : 'cp-span-full'}
-        >
+        <Col spanMd={isAdmin ? 8 : 12}>
+        <CpSection title={CP_STRINGS.plans.existingTitle}>
           {data.plans.length === 0 ? (
             <p className="cp-muted">{CP_STRINGS.plans.empty}</p>
           ) : (
-            <div className="cp-stack">
+            <Stack>
               {data.plans.map((plan) => (
                 <PlanEditor
                   key={plan.id}
@@ -340,10 +342,11 @@ export const PlansPage = () => {
                   onDelete={() => remove.mutate(plan.id)}
                 />
               ))}
-            </div>
+            </Stack>
           )}
         </CpSection>
-      </CpGrid>
+        </Col>
+      </Grid>
     </CpPage>
   );
 };

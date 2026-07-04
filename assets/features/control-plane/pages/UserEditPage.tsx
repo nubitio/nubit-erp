@@ -6,6 +6,7 @@ import { controlPlaneClient } from '../api/controlPlaneClient';
 import { RoleCheckboxes } from '../components/admin/RoleCheckboxes';
 import {
   CpAlert,
+  CpForm,
   CpFormActions,
   CpHubTabs,
   CpPage,
@@ -140,8 +141,7 @@ export const UserEditPage = () => {
         {activeTab === 'general' && (
           <div className="cp-narrow">
           <Card variant="panel">
-            <form
-              className="cp-form"
+            <CpForm
               onSubmit={(e) => {
                 e.preventDefault();
                 save.mutate();
@@ -176,7 +176,7 @@ export const UserEditPage = () => {
                   <Button variant="ghost">{CP_STRINGS.cancel}</Button>
                 </Link>
               </CpFormActions>
-            </form>
+            </CpForm>
           </Card>
           </div>
         )}
@@ -185,8 +185,7 @@ export const UserEditPage = () => {
           <div className="cp-narrow">
           <Card variant="panel">
             <p className="cp-muted">{CP_STRINGS.users.passwordHint(user.username)}</p>
-            <form
-              className="cp-form"
+            <CpForm
               onSubmit={(e) => {
                 e.preventDefault();
                 ask({
@@ -220,7 +219,7 @@ export const UserEditPage = () => {
               <Button type="submit" variant="ghost" loading={resetPassword.isPending}>
                 {CP_STRINGS.users.changePassword}
               </Button>
-            </form>
+            </CpForm>
           </Card>
           </div>
         )}

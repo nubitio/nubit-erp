@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Card, EmptyState, FormField, TextField, Toggle } from '@nubitio/ui';
+import { Button, Card, Code, EmptyState, FormField, TextField, Toggle } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { TenantDomain } from '../../types';
 import { RowActions, useConfirm } from '@nubitio/ui';
-import { CpAlert, CpForm, CpGrid } from '../layout';
+import { CpAlert, CpForm, Col, DataTable, Grid } from '../layout';
 
 interface DomainsTabProps {
   tenantId: number;
@@ -46,104 +46,100 @@ export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTab
   });
 
   return (
-    <CpGrid>
+    <Grid cols={12} gap={4}>
       {error && (
-        <CpAlert tone="danger" className="cp-span-full">
-          {error}
-        </CpAlert>
+        <Col fullWidth>
+          <CpAlert tone="danger">{error}</CpAlert>
+        </Col>
       )}
 
       {isAdmin && (
-        <Card variant="panel" title={S.addTitle}>
-          <CpForm
-            onSubmit={(e) => {
-              e.preventDefault();
-              add.mutate();
-            }}
-          >
-            <FormField label={S.domain}>
-              <TextField
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                placeholder={S.domainPlaceholder}
-                required
+        <Col spanMd={4}>
+          <Card variant="panel" title={S.addTitle}>
+            <CpForm
+              onSubmit={(e) => {
+                e.preventDefault();
+                add.mutate();
+              }}
+            >
+              <FormField label={S.domain}>
+                <TextField
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  placeholder={S.domainPlaceholder}
+                  required
+                />
+              </FormField>
+              <Toggle
+                label={S.setPrimary}
+                checked={isPrimary}
+                onChange={setIsPrimary}
               />
-            </FormField>
-            <Toggle
-              label={S.setPrimary}
-              checked={isPrimary}
-              onChange={setIsPrimary}
-            />
-            <Button type="submit" loading={add.isPending} fullWidth>
-              {S.addSubmit}
-            </Button>
-          </CpForm>
-        </Card>
+              <Button type="submit" loading={add.isPending} fullWidth>
+                {S.addSubmit}
+              </Button>
+            </CpForm>
+          </Card>
+        </Col>
       )}
 
-      <div className={isAdmin ? undefined : 'cp-span-full'}>
+      <Col spanMd={isAdmin ? 8 : 12}>
         <Card variant="panel" title={S.listTitle}>
           {domains.length === 0 ? (
             <EmptyState icon="globe" title={S.empty} size="sm" />
           ) : (
-            <div className="cp-data-table-wrap">
-              <table className="cp-data-table">
-                <thead>
-                  <tr>
-                    <th>{S.colDomain}</th>
-                    <th>{S.colPrimary}</th>
-                    {isAdmin && <th />}
-                  </tr>
-                </thead>
-                <tbody>
-                  {domains.map((row) => {
-                    const primary = Boolean(row.is_primary);
-                    return (
-                      <tr key={row.id}>
-                        <td>
-                          <code className="cp-code">{row.domain}</code>
-                        </td>
-                        <td>{primary ? CP_STRINGS.yes : CP_STRINGS.no}</td>
-                        {isAdmin && (
-                          <td className="cp-data-table__actions">
-                            <RowActions
-                              items={[
-                                ...(!primary
-                                  ? [
-                                      {
-                                        label: S.setPrimaryAction,
-                                        icon: 'star',
-                                        onClick: () => setPrimary.mutate(row.id),
-                                      },
-                                    ]
-                                  : []),
-                                {
-                                  separator: !primary,
-                                  label: CP_STRINGS.delete,
-                                  icon: 'trash',
-                                  danger: true,
-                                  onClick: () =>
-                                    ask({
-                                      title: S.deleteConfirmTitle,
-                                      message: S.deleteConfirm(row.domain),
-                                      variant: 'danger',
-                                      onConfirm: () => remove.mutate(row.id),
-                                    }),
-                                },
-                              ]}
-                            />
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              variant="flush"
+              rows={domains}
+              getRowKey={(row) => row.id}
+              columns={[
+                {
+                  id: 'domain',
+                  header: S.colDomain,
+                  render: (row) => <Code>{row.domain}</Code>,
+                },
+                {
+                  id: 'primary',
+                  header: S.colPrimary,
+                  accessor: (row) => (row.is_primary ? CP_STRINGS.yes : CP_STRINGS.no),
+                },
+              ]}
+              rowActions={
+                isAdmin
+                  ? (row) => {
+                      const primary = Boolean(row.is_primary);
+                      return [
+                        ...(!primary
+                          ? [
+                              {
+                                label: S.setPrimaryAction,
+                                icon: 'star' as const,
+                                onClick: () => setPrimary.mutate(row.id),
+                              },
+                            ]
+                          : []),
+                        {
+                          separator: !primary,
+                          label: CP_STRINGS.delete,
+                          icon: 'trash' as const,
+                          danger: true,
+                          onClick: () =>
+                            ask({
+                              title: S.deleteConfirmTitle,
+                              message: S.deleteConfirm(row.domain),
+                              variant: 'danger',
+                              onConfirm: () => remove.mutate(row.id),
+                            }),
+                        },
+                      ];
+                    }
+                  : undefined
+              }
+            />
           )}
         </Card>
-      </div>
+      </Col>
       <ConfirmHost />
-    </CpGrid>
+    </Grid>
   );
 };

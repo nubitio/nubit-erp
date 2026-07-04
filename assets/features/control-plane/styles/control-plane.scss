@@ -33,16 +33,6 @@ body {
   background: var(--surface-2, #eef1f7);
 }
 
-.cp-span-full {
-  grid-column: 1 / -1;
-}
-
-.cp-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4, 1rem);
-}
-
 .cp-meta {
   display: flex;
   flex-direction: column;
@@ -58,52 +48,6 @@ body {
   gap: var(--space-2, 0.5rem);
   flex-wrap: wrap;
   margin-top: var(--space-3, 0.75rem);
-}
-
-// Tenant tabs still using manual <table class="cp-data-table"> until migrated.
-.cp-data-table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--border-subtle, var(--border-color));
-  border-radius: var(--radius-lg, 12px);
-  background: var(--surface-1);
-}
-
-.cp-data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm, 0.875rem);
-}
-
-.cp-data-table th,
-.cp-data-table td {
-  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
-  text-align: left;
-  border-bottom: 1px solid var(--border-subtle, var(--border-color));
-}
-
-.cp-data-table th {
-  font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  background: var(--surface-2, var(--surface-1));
-}
-
-.cp-data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.cp-data-table__num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.cp-data-table__actions {
-  display: flex;
-  gap: var(--space-2, 0.5rem);
-  justify-content: flex-end;
-  flex-wrap: wrap;
 }
 
 .cp-card-header {
@@ -149,10 +93,32 @@ body {
   overflow-x: auto;
 }
 
+.cp-table--matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
 .cp-table--matrix th,
 .cp-table--matrix td {
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle, var(--border-color));
   vertical-align: top;
   min-width: 11rem;
+}
+
+.cp-table--matrix th {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  background: var(--surface-2, var(--surface-1));
+}
+
+.cp-table--matrix tr:last-child td {
+  border-bottom: none;
 }
 
 .cp-matrix-cell {
@@ -187,8 +153,7 @@ body {
   flex-wrap: wrap;
 }
 
-.cp-field__input--mono,
-.cp-data-table code {
+.cp-field__input--mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
 }

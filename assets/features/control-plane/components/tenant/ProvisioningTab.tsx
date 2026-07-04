@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Badge, Button, Card, EmptyState, FormField, TextField } from '@nubitio/ui';
+import { Badge, Button, Card, Code, EmptyState, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { ProvisionRecord } from '../../types';
-import { CpAlert, CpForm } from '../layout';
+import { CpAlert, CpForm, DataTable, Stack } from '../layout';
 
 interface ProvisioningTabProps {
   tenantId: number;
@@ -47,7 +47,7 @@ export const ProvisioningTab = ({
   });
 
   return (
-    <div className="cp-stack">
+    <Stack>
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
@@ -84,40 +84,42 @@ export const ProvisioningTab = ({
         {provisions.length === 0 ? (
           <EmptyState icon="rocket-launch" title={S.empty} size="sm" />
         ) : (
-          <div className="cp-data-table-wrap">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{CP_STRINGS.tenants.colId}</th>
-                  <th>{S.colStatus}</th>
-                  <th>{CP_STRINGS.tenants.colDomain}</th>
-                  <th>{S.colContainer}</th>
-                  <th>{S.colCreated}</th>
-                  <th>{S.colError}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {provisions.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.id}</td>
-                    <td>
-                      <Badge variant={statusVariant(row.status)} pill>
-                        {row.status}
-                      </Badge>
-                    </td>
-                    <td>
-                      <code className="cp-code">{row.domain}</code>
-                    </td>
-                    <td>{row.target_container ?? '—'}</td>
-                    <td>{row.created_at}</td>
-                    <td className="cp-muted">{row.error_message ?? '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            variant="flush"
+            rows={provisions}
+            getRowKey={(row) => row.id}
+            columns={[
+              { id: 'id', header: CP_STRINGS.tenants.colId, accessor: (row) => row.id },
+              {
+                id: 'status',
+                header: S.colStatus,
+                render: (row) => (
+                  <Badge variant={statusVariant(row.status)} pill>
+                    {row.status}
+                  </Badge>
+                ),
+              },
+              {
+                id: 'domain',
+                header: CP_STRINGS.tenants.colDomain,
+                render: (row) => <Code>{row.domain}</Code>,
+              },
+              {
+                id: 'container',
+                header: S.colContainer,
+                accessor: (row) => row.target_container ?? '—',
+              },
+              { id: 'created', header: S.colCreated, accessor: (row) => row.created_at },
+              {
+                id: 'error',
+                header: S.colError,
+                muted: true,
+                accessor: (row) => row.error_message ?? '—',
+              },
+            ]}
+          />
         )}
       </Card>
-    </div>
+    </Stack>
   );
 };

@@ -3,12 +3,12 @@ import { Card, Code, DataTable } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import {
   CpAlert,
-  CpGrid,
   CpMetricGrid,
   CpPage,
   CpPageHeader,
   CpPageSkeleton,
   CpSection,
+  Grid,
 } from '../components/layout';
 import { CP_STRINGS } from '../i18n/es';
 
@@ -70,7 +70,7 @@ export const DashboardPage = () => {
         />
       </CpSection>
 
-      <CpGrid>
+      <Grid cols={2} gap={4}>
         <CpSection title={CP_STRINGS.dashboard.sections.plans}>
           <CpMetricGrid
             layout="strip"
@@ -114,7 +114,7 @@ export const DashboardPage = () => {
             </span>
           </div>
         </CpSection>
-      </CpGrid>
+      </Grid>
 
       <CpSection title={CP_STRINGS.dashboard.sections.audit}>
         {auditSummary.length === 0 ? (

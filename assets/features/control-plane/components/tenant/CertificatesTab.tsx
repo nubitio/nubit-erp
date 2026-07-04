@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Code,
   Drawer,
   EmptyState,
   FileDropzone,
@@ -15,7 +16,7 @@ import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { CertificateRecord } from '../../types';
 import { RowActions } from '@nubitio/ui';
-import { CpAlert, CpDescriptionList, CpForm, CpFormActions, CpGrid } from '../layout';
+import { CpAlert, CpDescriptionList, CpForm, CpFormActions, Col, DataTable, Grid } from '../layout';
 
 interface CertificatesTabProps {
   tenantId: number;
@@ -106,15 +107,11 @@ const CertificateDetailDrawer = ({
               { term: S.issuerCn, value: field(cert, 'issuerCn', 'issuer_cn') ?? '—' },
               {
                 term: S.serial,
-                value: <code className="cp-code">{field(cert, 'serialNumber', 'serial_number') ?? '—'}</code>,
+                value: <Code>{field(cert, 'serialNumber', 'serial_number') ?? '—'}</Code>,
               },
               {
                 term: S.fingerprint,
-                value: (
-                  <code className="cp-code">
-                    {field(cert, 'fingerprintSha256', 'fingerprint_sha256') ?? '—'}
-                  </code>
-                ),
+                value: <Code>{field(cert, 'fingerprintSha256', 'fingerprint_sha256') ?? '—'}</Code>,
               },
               {
                 term: S.validFrom,
@@ -248,14 +245,15 @@ export const CertificatesTab = ({
   });
 
   return (
-    <CpGrid>
+    <Grid cols={12} gap={4}>
       {error && (
-        <CpAlert tone="danger" className="cp-span-full">
-          {error}
-        </CpAlert>
+        <Col fullWidth>
+          <CpAlert tone="danger">{error}</CpAlert>
+        </Col>
       )}
 
       {isAdmin && (
+        <Col spanMd={4}>
         <Card variant="panel" title={S.uploadTitle}>
           <CpForm
             onSubmit={(e) => {
@@ -301,83 +299,88 @@ export const CertificatesTab = ({
             </Button>
           </CpForm>
         </Card>
+        </Col>
       )}
 
-      <div className={isAdmin ? undefined : 'cp-span-full'}>
+      <Col spanMd={isAdmin ? 8 : 12}>
         <Card variant="panel" title={S.listTitle}>
           {certificates.length === 0 ? (
             <EmptyState icon="shield-check" title={S.empty} size="sm" />
           ) : (
-            <div className="cp-data-table-wrap">
-              <table className="cp-data-table">
-                <thead>
-                  <tr>
-                    <th>{S.ruc}</th>
-                    <th>{S.status}</th>
-                    <th>{S.colExpires}</th>
-                    <th>{S.colFingerprint}</th>
-                    <th>{S.colSync}</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {certificates.map((cert) => {
+            <DataTable
+              variant="flush"
+              rows={certificates}
+              getRowKey={(cert) => cert.id}
+              columns={[
+                {
+                  id: 'ruc',
+                  header: S.ruc,
+                  render: (cert) => <strong>{cert.ruc}</strong>,
+                },
+                {
+                  id: 'status',
+                  header: S.status,
+                  render: (cert) => {
                     const status = resolveStatus(cert);
-                    const revocable = isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
+                    return (
+                      <Badge variant={statusVariant(status)} pill>
+                        {status}
+                      </Badge>
+                    );
+                  },
+                },
+                {
+                  id: 'expires',
+                  header: S.colExpires,
+                  accessor: (cert) =>
+                    formatDate(field(cert, 'expiresAt', 'expires_at') as string | null),
+                },
+                {
+                  id: 'fingerprint',
+                  header: S.colFingerprint,
+                  render: (cert) => {
                     const fingerprint = field(cert, 'fingerprintSha256', 'fingerprint_sha256');
                     return (
-                      <tr key={cert.id}>
-                        <td>
-                          <strong>{cert.ruc}</strong>
-                        </td>
-                        <td>
-                          <Badge variant={statusVariant(status)} pill>
-                            {status}
-                          </Badge>
-                        </td>
-                        <td>{formatDate(field(cert, 'expiresAt', 'expires_at') as string | null)}</td>
-                        <td>
-                          <code className="cp-code">
-                            {fingerprint ? String(fingerprint).slice(0, 12) : '—'}
-                          </code>
-                        </td>
-                        <td className="cp-muted">
-                          {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
-                        </td>
-                        <td className="cp-data-table__actions">
-                          <RowActions
-                            items={[
-                              {
-                                label: CP_STRINGS.view,
-                                icon: 'eye',
-                                onClick: () => setSelectedCertificateId(cert.id),
-                              },
-                              ...(revocable
-                                ? [
-                                    {
-                                      separator: true,
-                                      label: S.revoke,
-                                      icon: 'prohibit',
-                                      danger: true,
-                                      onClick: () => {
-                                        setRevokeTarget(cert.ruc);
-                                        setRevokeReason('');
-                                      },
-                                    },
-                                  ]
-                                : []),
-                            ]}
-                          />
-                        </td>
-                      </tr>
+                      <Code>{fingerprint ? String(fingerprint).slice(0, 12) : '—'}</Code>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  },
+                },
+                {
+                  id: 'sync',
+                  header: S.colSync,
+                  muted: true,
+                  accessor: (cert) => field(cert, 'lycetSyncStatus', 'sync_status') ?? '—',
+                },
+              ]}
+              rowActions={(cert) => {
+                const status = resolveStatus(cert);
+                const revocable = isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
+                return [
+                  {
+                    label: CP_STRINGS.view,
+                    icon: 'eye' as const,
+                    onClick: () => setSelectedCertificateId(cert.id),
+                  },
+                  ...(revocable
+                    ? [
+                        {
+                          separator: true,
+                          label: S.revoke,
+                          icon: 'prohibit' as const,
+                          danger: true,
+                          onClick: () => {
+                            setRevokeTarget(cert.ruc);
+                            setRevokeReason('');
+                          },
+                        },
+                      ]
+                    : []),
+                ];
+              }}
+            />
           )}
         </Card>
-      </div>
+      </Col>
 
       {selectedCertificateId !== null && (
         <CertificateDetailDrawer
@@ -421,6 +424,6 @@ export const CertificatesTab = ({
           </CpFormActions>
         </CpForm>
       </Drawer>
-    </CpGrid>
+    </Grid>
   );
 };

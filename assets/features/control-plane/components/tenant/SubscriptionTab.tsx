@@ -1,7 +1,7 @@
-import { Card, EmptyState } from '@nubitio/ui';
+import { Card, Code, EmptyState } from '@nubitio/ui';
 import { CP_STRINGS } from '../../i18n/es';
 import type { PaymentEventRecord, SubscriptionRecord } from '../../types';
-import { CpDescriptionList, CpMetricGrid } from '../layout';
+import { CpDescriptionList, CpMetricGrid, DataTable, Stack } from '../layout';
 
 interface SubscriptionTabProps {
   subscription: SubscriptionRecord | null;
@@ -11,7 +11,7 @@ interface SubscriptionTabProps {
 const S = CP_STRINGS.tenantTabs.subscription;
 
 export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTabProps) => (
-  <div className="cp-stack">
+  <Stack>
     <Card variant="panel" title={S.title}>
       {!subscription ? (
         <EmptyState icon="credit-card" title={S.empty} size="sm" />
@@ -35,7 +35,7 @@ export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTab
             items={[
               {
                 term: S.subscriptionId,
-                value: <code className="cp-code">{subscription.id}</code>,
+                value: <Code>{subscription.id}</Code>,
               },
               { term: S.periodEnd, value: subscription.current_period_end ?? '—' },
               { term: S.created, value: subscription.created_at },
@@ -47,33 +47,27 @@ export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTab
 
     {paymentEvents.length > 0 && (
       <Card variant="panel" title={S.paymentsTitle}>
-        <div className="cp-data-table-wrap">
-          <table className="cp-data-table">
-            <thead>
-              <tr>
-                <th>{CP_STRINGS.tenants.colId}</th>
-                <th>{S.gateway}</th>
-                <th>{S.colEvent}</th>
-                <th>{S.colProcessed}</th>
-                <th>{S.created}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paymentEvents.map((event) => (
-                <tr key={event.id}>
-                  <td>{event.id}</td>
-                  <td>{event.gateway}</td>
-                  <td>
-                    <code className="cp-code">{event.event_type}</code>
-                  </td>
-                  <td>{event.processed_at ?? '—'}</td>
-                  <td>{event.created_at}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          variant="flush"
+          rows={paymentEvents}
+          getRowKey={(event) => event.id}
+          columns={[
+            { id: 'id', header: CP_STRINGS.tenants.colId, accessor: (event) => event.id },
+            { id: 'gateway', header: S.gateway, accessor: (event) => event.gateway },
+            {
+              id: 'event',
+              header: S.colEvent,
+              render: (event) => <Code>{event.event_type}</Code>,
+            },
+            {
+              id: 'processed',
+              header: S.colProcessed,
+              accessor: (event) => event.processed_at ?? '—',
+            },
+            { id: 'created', header: S.created, accessor: (event) => event.created_at },
+          ]}
+        />
       </Card>
     )}
-  </div>
+  </Stack>
 );

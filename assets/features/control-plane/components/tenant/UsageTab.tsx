@@ -2,7 +2,7 @@ import { Card, EmptyState } from '@nubitio/ui';
 import { CP_STRINGS } from '../../i18n/es';
 import type { QuotaUsage } from '../../types';
 import { formatBytes, formatResourceLabel } from '../../utils/format';
-import { CpAlert, CpMetricGrid } from '../layout';
+import { CpAlert, CpMetricGrid, Stack } from '../layout';
 
 interface UsageTabProps {
   quotaSummary: Record<string, QuotaUsage>;
@@ -18,7 +18,7 @@ const formatValue = (resource: string, value: number): string => {
 };
 
 export const UsageTab = ({ quotaSummary, usageLatest, quotaAlerts }: UsageTabProps) => (
-  <div className="cp-stack">
+  <Stack>
     {quotaAlerts.length > 0 && (
       <CpAlert tone="warning">
         <strong>{S.alertsTitle}:</strong>
@@ -76,5 +76,5 @@ export const UsageTab = ({ quotaSummary, usageLatest, quotaAlerts }: UsageTabPro
         </div>
       )}
     </Card>
-  </div>
+  </Stack>
 );

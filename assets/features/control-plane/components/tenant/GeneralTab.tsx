@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { AppDropdown, Button, Card, FormField, TextField } from '@nubitio/ui';
+import { AppDropdown, Button, Card, Code, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { PlanOption, TenantRecord } from '../../types';
 import { useConfirm } from '@nubitio/ui';
-import { CpAlert, CpDescriptionList, CpForm, CpGrid } from '../layout';
+import { CpAlert, CpDescriptionList, CpForm, Col, Grid } from '../layout';
 import { TenantStatusBadge } from '../TenantStatusBadge';
 
 interface GeneralTabProps {
@@ -57,11 +57,11 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
   }));
 
   return (
-    <CpGrid>
+    <Grid cols={2} gap={4}>
       {error && (
-        <CpAlert tone="danger" className="cp-span-full">
-          {error}
-        </CpAlert>
+        <Col fullWidth>
+          <CpAlert tone="danger">{error}</CpAlert>
+        </Col>
       )}
 
       <Card variant="panel" title={S.detailsTitle}>
@@ -88,7 +88,7 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
               { term: S.name, value: tenant.name },
               {
                 term: S.connection,
-                value: <code className="cp-code">{tenant.connection}</code>,
+                value: <Code>{tenant.connection}</Code>,
               },
             ]}
           />
@@ -149,6 +149,6 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
         </div>
       </Card>
       <ConfirmHost />
-    </CpGrid>
+    </Grid>
   );
 };

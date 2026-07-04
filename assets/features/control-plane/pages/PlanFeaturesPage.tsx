@@ -91,7 +91,7 @@ export const PlanFeaturesPage = () => {
 
       <Card variant="panel">
         <div className="cp-matrix-wrap">
-          <table className="cp-data-table cp-table--matrix">
+          <table className="cp-table--matrix">
             <thead>
               <tr>
                 <th>{CP_STRINGS.planFeatures.feature}</th>

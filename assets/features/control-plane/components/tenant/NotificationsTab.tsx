@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Code,
   EmptyState,
   SelectField,
   TextAreaField,
@@ -12,7 +13,7 @@ import {
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { NotificationChannelRow, TenantNotificationsPayload } from '../../types';
-import { CpAlert, CpFormActions } from '../layout';
+import { CpAlert, CpFormActions, DataTable, Stack } from '../layout';
 
 interface NotificationsTabProps {
   tenantId: number;
@@ -89,7 +90,7 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
   };
 
   return (
-    <div className="cp-stack">
+    <Stack>
       <CpAlert tone="warning">{S.hint}</CpAlert>
 
       {error && <CpAlert tone="danger">{error}</CpAlert>}
@@ -98,115 +99,119 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
       {Object.entries(eventDefinitions).map(([eventKey, def]) => (
         <Card variant="panel" key={eventKey} title={def.label}>
           <div className="cp-card-header">
-            <code className="cp-code">{eventKey}</code>
+            <Code>{eventKey}</Code>
             <Badge variant={severityVariant(def.severity)} pill>
               {def.severity}
             </Badge>
           </div>
-          <div className="cp-data-table-wrap">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{S.colChannel}</th>
-                  <th>{S.colEnabled}</th>
-                  <th>{S.colSeverity}</th>
-                  <th>{S.colRecipients}</th>
-                  <th>{S.colConfig}</th>
-                  {isAdmin && <th />}
-                </tr>
-              </thead>
-              <tbody>
-                {channels.map((channel) => {
-                  const row = matrix[eventKey][channel];
-                  return (
-                    <tr key={channel}>
-                      <td>
-                        <code className="cp-code">{channel}</code>
-                      </td>
-                      <td>
-                        <Toggle
-                          checked={row.enabled}
-                          disabled={!isAdmin}
-                          onChange={(checked) => updateRow(eventKey, channel, { enabled: checked })}
-                          aria-label={`${S.colEnabled} ${channel}`}
-                        />
-                      </td>
-                      <td>
-                        <SelectField
-                          value={row.severity}
-                          disabled={!isAdmin}
-                          onChange={(e) =>
-                            updateRow(eventKey, channel, { severity: e.target.value })
-                          }
-                        >
-                          {SEVERITIES.map((severity) => (
-                            <option key={severity} value={severity}>
-                              {severity}
-                            </option>
-                          ))}
-                        </SelectField>
-                      </td>
-                      <td>
-                        <TextAreaField
-                          rows={2}
-                          disabled={!isAdmin}
-                          value={row.recipients.join(', ')}
-                          onChange={(e) =>
-                            updateRow(eventKey, channel, {
-                              recipients: e.target.value
-                                .split(/[\n,;]+/)
-                                .map((v) => v.trim())
-                                .filter(Boolean),
-                            })
-                          }
-                        />
-                      </td>
-                      <td>
-                        <TextAreaField
-                          className="cp-field__input--mono"
-                          rows={2}
-                          disabled={!isAdmin}
-                          value={
-                            Object.keys(row.config).length > 0
-                              ? JSON.stringify(row.config, null, 2)
-                              : ''
-                          }
-                          onChange={(e) => {
-                            const raw = e.target.value.trim();
-                            if (raw === '') {
-                              updateRow(eventKey, channel, { config: {} });
-                              return;
-                            }
-                            try {
-                              updateRow(eventKey, channel, {
-                                config: JSON.parse(raw) as Record<string, unknown>,
-                              });
-                              setError(null);
-                            } catch {
-                              setError(S.invalidJson(eventKey, channel));
-                            }
-                          }}
-                        />
-                      </td>
-                      {isAdmin && (
-                        <td className="cp-data-table__actions">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            loading={test.isPending}
-                            onClick={() => test.mutate({ eventKey, channel })}
-                          >
-                            {S.test}
-                          </Button>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            variant="flush"
+            rows={channels}
+            getRowKey={(channel) => channel}
+            columns={[
+              {
+                id: 'channel',
+                header: S.colChannel,
+                render: (channel) => <Code>{channel}</Code>,
+              },
+              {
+                id: 'enabled',
+                header: S.colEnabled,
+                render: (channel) => (
+                  <Toggle
+                    checked={matrix[eventKey][channel].enabled}
+                    disabled={!isAdmin}
+                    onChange={(checked) => updateRow(eventKey, channel, { enabled: checked })}
+                    aria-label={`${S.colEnabled} ${channel}`}
+                  />
+                ),
+              },
+              {
+                id: 'severity',
+                header: S.colSeverity,
+                render: (channel) => (
+                  <SelectField
+                    value={matrix[eventKey][channel].severity}
+                    disabled={!isAdmin}
+                    onChange={(e) =>
+                      updateRow(eventKey, channel, { severity: e.target.value })
+                    }
+                  >
+                    {SEVERITIES.map((severity) => (
+                      <option key={severity} value={severity}>
+                        {severity}
+                      </option>
+                    ))}
+                  </SelectField>
+                ),
+              },
+              {
+                id: 'recipients',
+                header: S.colRecipients,
+                render: (channel) => (
+                  <TextAreaField
+                    rows={2}
+                    disabled={!isAdmin}
+                    value={matrix[eventKey][channel].recipients.join(', ')}
+                    onChange={(e) =>
+                      updateRow(eventKey, channel, {
+                        recipients: e.target.value
+                          .split(/[\n,;]+/)
+                          .map((v) => v.trim())
+                          .filter(Boolean),
+                      })
+                    }
+                  />
+                ),
+              },
+              {
+                id: 'config',
+                header: S.colConfig,
+                render: (channel) => (
+                  <TextAreaField
+                    className="cp-field__input--mono"
+                    rows={2}
+                    disabled={!isAdmin}
+                    value={
+                      Object.keys(matrix[eventKey][channel].config).length > 0
+                        ? JSON.stringify(matrix[eventKey][channel].config, null, 2)
+                        : ''
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value.trim();
+                      if (raw === '') {
+                        updateRow(eventKey, channel, { config: {} });
+                        return;
+                      }
+                      try {
+                        updateRow(eventKey, channel, {
+                          config: JSON.parse(raw) as Record<string, unknown>,
+                        });
+                        setError(null);
+                      } catch {
+                        setError(S.invalidJson(eventKey, channel));
+                      }
+                    }}
+                  />
+                ),
+              },
+            ]}
+            renderActions={
+              isAdmin
+                ? (channel) => (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      loading={test.isPending}
+                      onClick={() => test.mutate({ eventKey, channel })}
+                    >
+                      {S.test}
+                    </Button>
+                  )
+                : undefined
+            }
+          />
         </Card>
       ))}
 
@@ -217,6 +222,6 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
           </Button>
         </CpFormActions>
       )}
-    </div>
+    </Stack>
   );
 };

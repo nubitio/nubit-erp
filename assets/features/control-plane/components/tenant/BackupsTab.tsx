@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { AppDropdown, Button, Card, EmptyState, FormField } from '@nubitio/ui';
+import { AppDropdown, Button, Card, Code, EmptyState, FormField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { BackupRecord } from '../../types';
 import { formatBytes } from '../../utils/format';
 import { RowActions, useConfirm } from '@nubitio/ui';
-import { CpAlert, CpForm, CpFormActions, CpMetricGrid } from '../layout';
+import { CpAlert, CpForm, CpFormActions, CpMetricGrid, DataTable, Stack } from '../layout';
 
 interface BackupsTabProps {
   tenantId: number;
@@ -73,7 +73,7 @@ export const BackupsTab = ({
   });
 
   return (
-    <div className="cp-stack">
+    <Stack>
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
@@ -144,90 +144,82 @@ export const BackupsTab = ({
         {backups.length === 0 ? (
           <EmptyState icon="archive" title={S.empty} size="sm" />
         ) : (
-          <div className="cp-data-table-wrap">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{CP_STRINGS.tenants.colId}</th>
-                  <th>{S.colType}</th>
-                  <th>{S.colFile}</th>
-                  <th>{S.colSize}</th>
-                  <th>{CP_STRINGS.tenants.colStatus}</th>
-                  <th>{CP_STRINGS.users.colCreated}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {backups.map((backup) => (
-                  <tr key={backup.id}>
-                    <td>{backup.id}</td>
-                    <td>{backup.backup_type ?? 'full'}</td>
-                    <td>
-                      <code className="cp-code">{backup.filename}</code>
-                    </td>
-                    <td>{formatBytes(backup.size_bytes)}</td>
-                    <td>{backup.status}</td>
-                    <td>{backup.created_at}</td>
-                    <td className="cp-data-table__actions">
-                      <RowActions
-                        items={[
-                          ...(backup.status === 'completed'
-                            ? [
-                                {
-                                  label: S.download,
-                                  icon: 'download-simple',
-                                  onClick: () => {
-                                    window.location.href = controlPlaneClient.backupDownloadUrl(
-                                      tenantId,
-                                      backup.id,
-                                    );
-                                  },
-                                },
-                              ]
-                            : []),
-                          ...(isSuperAdmin && backup.status === 'completed'
-                            ? [
-                                {
-                                  label: S.restore,
-                                  icon: 'arrow-counter-clockwise',
-                                  onClick: () =>
-                                    ask({
-                                      title: S.restoreConfirmTitle,
-                                      message: S.restoreConfirm(backup.id),
-                                      variant: 'warning',
-                                      onConfirm: () => restore.mutate(backup.id),
-                                    }),
-                                },
-                              ]
-                            : []),
-                          ...(isSuperAdmin
-                            ? [
-                                {
-                                  separator: true,
-                                  label: CP_STRINGS.delete,
-                                  icon: 'trash',
-                                  danger: true,
-                                  onClick: () =>
-                                    ask({
-                                      title: S.deleteConfirmTitle,
-                                      message: S.deleteConfirm(backup.id),
-                                      variant: 'danger',
-                                      onConfirm: () => remove.mutate(backup.id),
-                                    }),
-                                },
-                              ]
-                            : []),
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            variant="flush"
+            rows={backups}
+            getRowKey={(backup) => backup.id}
+            columns={[
+              { id: 'id', header: CP_STRINGS.tenants.colId, accessor: (backup) => backup.id },
+              {
+                id: 'type',
+                header: S.colType,
+                accessor: (backup) => backup.backup_type ?? 'full',
+              },
+              {
+                id: 'file',
+                header: S.colFile,
+                render: (backup) => <Code>{backup.filename}</Code>,
+              },
+              {
+                id: 'size',
+                header: S.colSize,
+                accessor: (backup) => formatBytes(backup.size_bytes),
+              },
+              { id: 'status', header: CP_STRINGS.tenants.colStatus, accessor: (backup) => backup.status },
+              { id: 'created', header: CP_STRINGS.users.colCreated, accessor: (backup) => backup.created_at },
+            ]}
+            rowActions={(backup) => [
+              ...(backup.status === 'completed'
+                ? [
+                    {
+                      label: S.download,
+                      icon: 'download-simple' as const,
+                      onClick: () => {
+                        window.location.href = controlPlaneClient.backupDownloadUrl(
+                          tenantId,
+                          backup.id,
+                        );
+                      },
+                    },
+                  ]
+                : []),
+              ...(isSuperAdmin && backup.status === 'completed'
+                ? [
+                    {
+                      label: S.restore,
+                      icon: 'arrow-counter-clockwise' as const,
+                      onClick: () =>
+                        ask({
+                          title: S.restoreConfirmTitle,
+                          message: S.restoreConfirm(backup.id),
+                          variant: 'warning',
+                          onConfirm: () => restore.mutate(backup.id),
+                        }),
+                    },
+                  ]
+                : []),
+              ...(isSuperAdmin
+                ? [
+                    {
+                      separator: true,
+                      label: CP_STRINGS.delete,
+                      icon: 'trash' as const,
+                      danger: true,
+                      onClick: () =>
+                        ask({
+                          title: S.deleteConfirmTitle,
+                          message: S.deleteConfirm(backup.id),
+                          variant: 'danger',
+                          onConfirm: () => remove.mutate(backup.id),
+                        }),
+                    },
+                  ]
+                : []),
+            ]}
+          />
         )}
       </Card>
       <ConfirmHost />
-    </div>
+    </Stack>
   );
 };

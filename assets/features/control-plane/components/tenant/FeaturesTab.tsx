@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Code,
   EmptyState,
   FormField,
   SelectField,
@@ -15,7 +16,7 @@ import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { FeatureOverrideRecord } from '../../types';
 import { RowActions, useConfirm } from '@nubitio/ui';
-import { CpAlert, CpFormActions } from '../layout';
+import { CpAlert, CpForm, CpFormActions, DataTable, Stack } from '../layout';
 
 interface FeaturesTabProps {
   tenantId: number;
@@ -127,7 +128,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
   }
 
   return (
-    <div className="cp-stack">
+    <Stack>
       <CpAlert tone="warning">{S.hint}</CpAlert>
 
       {error && <CpAlert tone="danger">{error}</CpAlert>}
@@ -148,8 +149,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
 
       {(showForm || editingKey) && isAdmin && (
         <Card variant="panel" title={editingKey ? S.editOverride(editingKey) : S.newOverride}>
-          <form
-            className="cp-form"
+          <CpForm
             onSubmit={(e) => {
               e.preventDefault();
               if (editingKey) update.mutate(editingKey);
@@ -214,7 +214,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
                 {CP_STRINGS.cancel}
               </Button>
             </CpFormActions>
-          </form>
+          </CpForm>
         </Card>
       )}
 
@@ -222,62 +222,67 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
         {features.data.overrides.length === 0 ? (
           <EmptyState icon="toggle-right" title={S.empty} size="sm" />
         ) : (
-          <div className="cp-data-table-wrap">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{S.colFeature}</th>
-                  <th>{S.colEnabled}</th>
-                  <th>{S.colExpires}</th>
-                  <th>{S.colStatus}</th>
-                  <th>{S.colReason}</th>
-                  {isAdmin && <th />}
-                </tr>
-              </thead>
-              <tbody>
-                {features.data.overrides.map((override) => (
-                  <tr key={override.id}>
-                    <td>
-                      <code className="cp-code">{override.featureKey}</code>
-                    </td>
-                    <td>{override.isEnabled ? CP_STRINGS.yes : CP_STRINGS.no}</td>
-                    <td className="cp-muted">{override.expiresAt ?? '—'}</td>
-                    <td>{statusBadge(override)}</td>
-                    <td className="cp-muted">{override.reason ?? '—'}</td>
-                    {isAdmin && (
-                      <td className="cp-data-table__actions">
-                        <RowActions
-                          items={[
-                            {
-                              label: CP_STRINGS.edit,
-                              icon: 'pencil-simple',
-                              onClick: () => startEdit(override),
-                            },
-                            {
-                              separator: true,
-                              label: CP_STRINGS.delete,
-                              icon: 'trash',
-                              danger: true,
-                              onClick: () =>
-                                ask({
-                                  title: S.deleteConfirmTitle,
-                                  message: S.deleteConfirm(override.featureKey),
-                                  variant: 'danger',
-                                  onConfirm: () => remove.mutate(override.featureKey),
-                                }),
-                            },
-                          ]}
-                        />
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            variant="flush"
+            rows={features.data.overrides}
+            getRowKey={(override) => override.id}
+            columns={[
+              {
+                id: 'feature',
+                header: S.colFeature,
+                render: (override) => <Code>{override.featureKey}</Code>,
+              },
+              {
+                id: 'enabled',
+                header: S.colEnabled,
+                accessor: (override) => (override.isEnabled ? CP_STRINGS.yes : CP_STRINGS.no),
+              },
+              {
+                id: 'expires',
+                header: S.colExpires,
+                muted: true,
+                accessor: (override) => override.expiresAt ?? '—',
+              },
+              {
+                id: 'status',
+                header: S.colStatus,
+                render: (override) => statusBadge(override),
+              },
+              {
+                id: 'reason',
+                header: S.colReason,
+                muted: true,
+                accessor: (override) => override.reason ?? '—',
+              },
+            ]}
+            rowActions={
+              isAdmin
+                ? (override) => [
+                    {
+                      label: CP_STRINGS.edit,
+                      icon: 'pencil-simple' as const,
+                      onClick: () => startEdit(override),
+                    },
+                    {
+                      separator: true,
+                      label: CP_STRINGS.delete,
+                      icon: 'trash' as const,
+                      danger: true,
+                      onClick: () =>
+                        ask({
+                          title: S.deleteConfirmTitle,
+                          message: S.deleteConfirm(override.featureKey),
+                          variant: 'danger',
+                          onConfirm: () => remove.mutate(override.featureKey),
+                        }),
+                    },
+                  ]
+                : undefined
+            }
+          />
         )}
       </Card>
       <ConfirmHost />
-    </div>
+    </Stack>
   );
 };
