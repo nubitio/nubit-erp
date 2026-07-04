@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Efact\Command;
 
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -28,7 +28,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class MigrateStorageToTenantPrefixCommand extends Command
 {
     public function __construct(
-        private readonly TenantManager $tenantManager,
+        private readonly TenantService $tenantService,
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly FilesystemOperator $defaultFilesystem,
@@ -72,7 +72,7 @@ final class MigrateStorageToTenantPrefixCommand extends Command
             return Command::FAILURE;
         }
 
-        $tenants = $this->tenantManager->getTenants();
+        $tenants = $this->tenantService->getTenants();
         if ($tenants === []) {
             $io->warning('No tenants found');
 
