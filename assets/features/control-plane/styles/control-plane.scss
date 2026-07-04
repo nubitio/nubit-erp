@@ -1,5 +1,5 @@
 // Control Plane — domain overrides on top of @nubitio/admin + @nubitio/ui tokens.
-// Avoid duplicating shell styles; AdminShell owns layout chrome.
+// Page/layout primitives live in @nubitio/ui (Page, Grid, Col, FormLayout, Alert, …).
 
 html,
 body {
@@ -19,121 +19,35 @@ body {
   min-height: 0;
 }
 
-.cp-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5, 1.25rem);
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--page-padding, 1.5rem) var(--content-padding, 1rem);
-  box-sizing: border-box;
-}
-
-.cp-page--wide {
-  max-width: none;
-}
-
-.cp-page--fill {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.cp-page--fill > .cp-table-surface {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.cp-page--fill .cp-data-table-wrap--fill {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
-.cp-page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4, 1rem);
-  flex-wrap: wrap;
-}
-
-.cp-page-header__title {
-  margin: 0;
-  font-size: var(--font-size-xl, 1.5rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-}
-
-.cp-page-header__subtitle {
-  margin: var(--space-1, 0.25rem) 0 0;
+// Legacy aliases — prefer nb-* classes from @nubitio/ui in new code.
+.cp-muted {
   color: var(--text-secondary);
-  font-size: var(--font-size-sm, 0.875rem);
-}
-
-.cp-page-header__breadcrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2, 0.5rem);
-  margin-bottom: var(--space-2, 0.5rem);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-
-.cp-page-header__breadcrumb:hover {
-  color: var(--accent-color);
-}
-
-.cp-page-header__aside {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 0.5rem);
-  flex-wrap: wrap;
-}
-
-.cp-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 0.75rem);
-}
-
-.cp-section__title {
-  margin: 0;
   font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
 }
 
-.cp-grid {
-  display: grid;
-  gap: var(--space-4, 1rem);
-}
-
-.cp-grid--1 {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.cp-grid--2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.cp-grid--3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.cp-grid--auto {
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+.cp-code {
+  font-family: var(--font-family-mono);
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface-2, #eef1f7);
 }
 
 .cp-span-full {
   grid-column: 1 / -1;
+}
+
+.cp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.cp-inline-actions {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .cp-meta {
@@ -145,48 +59,6 @@ body {
   color: var(--text-secondary);
 }
 
-.cp-muted {
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs, 0.75rem);
-}
-
-.cp-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 0.75rem);
-}
-
-.cp-form--grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: var(--space-3, 0.75rem);
-  align-items: end;
-}
-
-.cp-form--filter {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: var(--space-3, 0.75rem);
-  align-items: end;
-}
-
-.cp-form--filter .cp-span-full {
-  grid-column: 1 / -1;
-}
-
-.cp-form--inline {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.cp-filter-actions {
-  display: flex;
-  gap: var(--space-2, 0.5rem);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
 .cp-status-row {
   display: flex;
   align-items: center;
@@ -195,38 +67,25 @@ body {
   margin-top: var(--space-3, 0.75rem);
 }
 
-.cp-alert {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2, 0.5rem);
-  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--font-size-sm, 0.875rem);
-  background: var(--surface-1);
-  border: 1px solid var(--border-color);
-}
-
-.cp-alert--danger {
-  border-color: color-mix(in srgb, var(--error-color) 35%, var(--border-color));
-  background: color-mix(in srgb, var(--error-color) 8%, var(--surface-1));
-  color: var(--error-color);
-}
-
-.cp-alert--warning {
-  border-color: color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
-  background: color-mix(in srgb, var(--warning-color) 8%, var(--surface-1));
-}
-
-.cp-alert--info {
-  border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-color));
-  background: color-mix(in srgb, var(--accent-color) 8%, var(--surface-1));
-}
-
 .cp-data-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border-subtle, var(--border-color));
   border-radius: var(--radius-lg, 12px);
   background: var(--surface-1);
+}
+
+.cp-page--fill > .cp-table-surface {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cp-page--fill .cp-data-table-wrap--fill,
+.nb-page--fill .cp-data-table-wrap--fill {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .cp-data-table {
@@ -265,58 +124,6 @@ body {
   gap: var(--space-2, 0.5rem);
   justify-content: flex-end;
   flex-wrap: wrap;
-}
-
-.cp-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8em;
-  padding: 0.1em 0.35em;
-  border-radius: var(--radius-sm, 4px);
-  background: var(--surface-2, #eef1f7);
-}
-
-.cp-inline-actions {
-  display: flex;
-  gap: var(--space-2, 0.5rem);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.cp-form-actions {
-  display: flex;
-  gap: var(--space-2, 0.5rem);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.cp-description-list {
-  display: grid;
-  gap: var(--space-2, 0.5rem);
-}
-
-.cp-description-list__row {
-  display: grid;
-  grid-template-columns: 10rem 1fr;
-  gap: var(--space-2, 0.5rem);
-  align-items: baseline;
-}
-
-.cp-description-list dt {
-  margin: 0;
-  font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.cp-description-list dd {
-  margin: 0;
-  font-size: var(--font-size-sm, 0.875rem);
-}
-
-.cp-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4, 1rem);
 }
 
 .cp-card-header {
@@ -550,15 +357,4 @@ body {
   overflow-x: auto;
   flex-wrap: nowrap;
   scrollbar-width: thin;
-}
-
-@media (max-width: 960px) {
-  .cp-grid--2,
-  .cp-grid--3 {
-    grid-template-columns: 1fr;
-  }
-
-  .cp-page-header {
-    flex-direction: column;
-  }
 }
