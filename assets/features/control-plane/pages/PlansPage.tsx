@@ -1,7 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Badge, Button, Card, Chip, FormField, TextField, Toggle } from '@nubitio/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  Chip,
+  Cluster,
+  DescriptionList,
+  Drawer,
+  FormField,
+  Row,
+  Text,
+  TextField,
+  Toggle,
+} from '@nubitio/ui';
 import {
   controlPlaneClient,
   type PlanLimits,
@@ -16,7 +29,6 @@ import {
   CpPageHeader,
   CpPageSkeleton,
   CpSection,
-  Col,
   Grid,
   Stack,
 } from '../components/layout';
@@ -54,6 +66,19 @@ const STARTER_LIMITS: PlanLimits = {
 
 const emptyLimits = (): PlanLimits => ({ ...UNLIMITED_LIMITS });
 
+const limitItems = (limits: PlanLimits) =>
+  LIMIT_KEYS.map((key) => ({
+    term: formatLimitLabel(key),
+    value: formatLimitValue(limits[key] ?? -1),
+  }));
+
+const PlanPresets = ({ onSelect }: { onSelect: (preset: PlanLimits) => void }) => (
+  <Cluster>
+    <Chip label={CP_STRINGS.plans.presetUnlimited} onClick={() => onSelect({ ...UNLIMITED_LIMITS })} />
+    <Chip label={CP_STRINGS.plans.presetStarter} onClick={() => onSelect({ ...STARTER_LIMITS })} />
+  </Cluster>
+);
+
 interface PlanEditorProps {
   plan: PlanRecord;
   isAdmin: boolean;
@@ -69,41 +94,30 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
   const [limits, setLimits] = useState<PlanLimits>({ ...plan.limits });
   const [isDefault, setIsDefault] = useState(plan.is_default);
 
-  const applyPreset = (preset: PlanLimits) => setLimits({ ...preset });
+  const cardClass = plan.is_default ? 'cp-plan-card--default' : undefined;
 
   if (!isAdmin) {
     return (
-      <div className={`cp-plan-card${plan.is_default ? ' cp-plan-card--default' : ''}`}>
-        <div className="cp-plan-card__header">
-          <strong>{plan.name}</strong>
-          {plan.is_default && (
-            <Badge variant="info" pill>
-              {CP_STRINGS.default}
-            </Badge>
-          )}
-        </div>
-        <div className="cp-plan-card__limits">
-          {LIMIT_KEYS.map((key) => (
-            <div key={key} className="cp-plan-card__limit">
-              <span className="cp-muted">{formatLimitLabel(key)}</span>
-              <span>{formatLimitValue(plan.limits[key] ?? -1)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Card variant="panel" className={cardClass} title={plan.name}>
+        {plan.is_default && (
+          <Badge variant="info" pill>
+            {CP_STRINGS.default}
+          </Badge>
+        )}
+        <DescriptionList items={limitItems(plan.limits)} />
+      </Card>
     );
   }
 
   return (
-    <CpForm
-      className={`cp-plan-card${plan.is_default ? ' cp-plan-card--default' : ''}`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave({ name, limits, isDefault });
-      }}
-    >
-      <div className="cp-plan-card__header">
-        <div className="cp-plan-card__title">
+    <Card variant="panel" className={cardClass}>
+      <CpForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSave({ name, limits, isDefault });
+        }}
+      >
+        <Row justify="space-between" align="start" wrap gap={3}>
           <FormField label={CP_STRINGS.plans.name}>
             <TextField value={name} onChange={(e) => setName(e.target.value)} required />
           </FormField>
@@ -112,68 +126,60 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
               {CP_STRINGS.default}
             </Badge>
           )}
-        </div>
-        <div className="cp-plan-card__presets">
-          <Chip
-            label={CP_STRINGS.plans.presetUnlimited}
-            onClick={() => applyPreset(UNLIMITED_LIMITS)}
-          />
-          <Chip
-            label={CP_STRINGS.plans.presetStarter}
-            onClick={() => applyPreset(STARTER_LIMITS)}
-          />
-        </div>
-      </div>
+          <PlanPresets onSelect={setLimits} />
+        </Row>
 
-      <Grid cols="auto" minColWidth="8rem">
-        {LIMIT_KEYS.map((key) => (
-          <FormField key={key} label={formatLimitLabel(key)}>
-            <TextField
-              type="number"
-              value={limits[key]}
-              onChange={(e) =>
-                setLimits((prev) => ({ ...prev, [key]: Number(e.target.value) }))
+        <Grid cols="auto" minColWidth="8rem">
+          {LIMIT_KEYS.map((key) => (
+            <FormField key={key} label={formatLimitLabel(key)}>
+              <TextField
+                type="number"
+                value={limits[key]}
+                onChange={(e) =>
+                  setLimits((prev) => ({ ...prev, [key]: Number(e.target.value) }))
+                }
+              />
+            </FormField>
+          ))}
+        </Grid>
+
+        <Row justify="space-between" align="center" wrap gap={3}>
+          <Toggle
+            checked={isDefault}
+            onChange={setIsDefault}
+            label={CP_STRINGS.plans.setDefault}
+          />
+          <CpFormActions>
+            <Button type="submit" loading={saving}>
+              {CP_STRINGS.save}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              loading={deleting}
+              onClick={() =>
+                ask({
+                  title: CP_STRINGS.plans.deleteConfirmTitle,
+                  message: CP_STRINGS.plans.deleteConfirm(plan.name),
+                  variant: 'danger',
+                  onConfirm: onDelete,
+                })
               }
-            />
-          </FormField>
-        ))}
-      </Grid>
-
-      <div className="cp-plan-card__footer">
-        <Toggle
-          checked={isDefault}
-          onChange={setIsDefault}
-          label={CP_STRINGS.plans.setDefault}
-        />
-        <CpFormActions>
-          <Button type="submit" loading={saving}>
-            {CP_STRINGS.save}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            loading={deleting}
-            onClick={() =>
-              ask({
-                title: CP_STRINGS.plans.deleteConfirmTitle,
-                message: CP_STRINGS.plans.deleteConfirm(plan.name),
-                variant: 'danger',
-                onConfirm: onDelete,
-              })
-            }
-          >
-            {CP_STRINGS.delete}
-          </Button>
-        </CpFormActions>
-      </div>
+            >
+              {CP_STRINGS.delete}
+            </Button>
+          </CpFormActions>
+        </Row>
+      </CpForm>
       <ConfirmHost />
-    </CpForm>
+    </Card>
   );
 };
 
 export const PlansPage = () => {
   const queryClient = useQueryClient();
   const { isAdmin } = useControlPlaneRoles();
+  const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createLimits, setCreateLimits] = useState<PlanLimits>(emptyLimits());
   const [createDefault, setCreateDefault] = useState(false);
@@ -187,6 +193,11 @@ export const PlansPage = () => {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ['control-plane', 'plans'] });
 
+  const closeCreate = () => {
+    setCreateOpen(false);
+    setError(null);
+  };
+
   const create = useMutation({
     mutationFn: () =>
       controlPlaneClient.createPlan({
@@ -199,6 +210,7 @@ export const PlansPage = () => {
       setCreateLimits(emptyLimits());
       setCreateDefault(false);
       setError(null);
+      setCreateOpen(false);
       invalidate();
       cpNotify.success(CP_STRINGS.saved);
     },
@@ -249,16 +261,20 @@ export const PlansPage = () => {
         title={CP_STRINGS.plans.title}
         subtitle={CP_STRINGS.plans.subtitle}
         actions={
-          <Link to="/plan-features">
-            <Button variant="ghost">{CP_STRINGS.plans.manageFeatures}</Button>
-          </Link>
+          <Cluster>
+            {isAdmin && (
+              <Button onClick={() => setCreateOpen(true)}>{CP_STRINGS.plans.createTitle}</Button>
+            )}
+            <Link to="/plan-features">
+              <Button variant="ghost">{CP_STRINGS.plans.manageFeatures}</Button>
+            </Link>
+          </Cluster>
         }
       />
 
       <CpMetricGrid
         layout="strip"
         density="compact"
-        className="cp-section"
         items={[
           { label: CP_STRINGS.plans.totalPlans, value: data.plans.length, icon: 'package' },
           { label: CP_STRINGS.plans.defaultPlans, value: defaultCount, icon: 'star' },
@@ -266,87 +282,85 @@ export const PlansPage = () => {
         ]}
       />
 
-      {error && <CpAlert tone="danger">{error}</CpAlert>}
+      {error && !createOpen && <CpAlert tone="danger">{error}</CpAlert>}
 
-      <Grid cols={12} gap={4}>
-        {isAdmin && (
-          <Col spanMd={4}>
-          <Card variant="panel" title={CP_STRINGS.plans.createTitle}>
-            <CpForm
-              onSubmit={(e) => {
-                e.preventDefault();
-                create.mutate();
-              }}
-            >
-              <FormField label={CP_STRINGS.plans.name}>
+      <CpSection title={CP_STRINGS.plans.existingTitle}>
+        {data.plans.length === 0 ? (
+          <Text tone="muted">{CP_STRINGS.plans.empty}</Text>
+        ) : (
+          <Stack>
+            {data.plans.map((plan) => (
+              <PlanEditor
+                key={plan.id}
+                plan={plan}
+                isAdmin={isAdmin}
+                saving={update.isPending}
+                deleting={remove.isPending}
+                onSave={(payload) => update.mutate({ id: plan.id, payload })}
+                onDelete={() => remove.mutate(plan.id)}
+              />
+            ))}
+          </Stack>
+        )}
+      </CpSection>
+
+      <Drawer
+        isOpen={createOpen}
+        onClose={closeCreate}
+        title={CP_STRINGS.plans.createTitle}
+        width={480}
+        scrim="overlay"
+        closeLabel={CP_STRINGS.cancel}
+        footer={
+          <Button
+            loading={create.isPending}
+            fullWidth
+            disabled={!createName.trim()}
+            onClick={() => create.mutate()}
+          >
+            {CP_STRINGS.plans.createSubmit}
+          </Button>
+        }
+      >
+        {error && <CpAlert tone="danger">{error}</CpAlert>}
+        <CpForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            create.mutate();
+          }}
+        >
+          <FormField label={CP_STRINGS.plans.name}>
+            <TextField
+              value={createName}
+              onChange={(e) => setCreateName(e.target.value)}
+              placeholder={CP_STRINGS.plans.namePlaceholder}
+              required
+            />
+          </FormField>
+          <PlanPresets onSelect={setCreateLimits} />
+          <Grid cols="auto" minColWidth="8rem">
+            {LIMIT_KEYS.map((key) => (
+              <FormField key={key} label={formatLimitLabel(key)}>
                 <TextField
-                  value={createName}
-                  onChange={(e) => setCreateName(e.target.value)}
-                  placeholder={CP_STRINGS.plans.namePlaceholder}
-                  required
+                  type="number"
+                  value={createLimits[key]}
+                  onChange={(e) =>
+                    setCreateLimits((prev) => ({
+                      ...prev,
+                      [key]: Number(e.target.value),
+                    }))
+                  }
                 />
               </FormField>
-              <div className="cp-plan-card__presets">
-                <Chip
-                  label={CP_STRINGS.plans.presetUnlimited}
-                  onClick={() => setCreateLimits({ ...UNLIMITED_LIMITS })}
-                />
-                <Chip
-                  label={CP_STRINGS.plans.presetStarter}
-                  onClick={() => setCreateLimits({ ...STARTER_LIMITS })}
-                />
-              </div>
-              <Grid cols="auto" minColWidth="8rem">
-                {LIMIT_KEYS.map((key) => (
-                  <FormField key={key} label={formatLimitLabel(key)}>
-                    <TextField
-                      type="number"
-                      value={createLimits[key]}
-                      onChange={(e) =>
-                        setCreateLimits((prev) => ({
-                          ...prev,
-                          [key]: Number(e.target.value),
-                        }))
-                      }
-                    />
-                  </FormField>
-                ))}
-              </Grid>
-              <Toggle
-                checked={createDefault}
-                onChange={setCreateDefault}
-                label={CP_STRINGS.plans.setDefault}
-              />
-              <Button type="submit" loading={create.isPending} fullWidth>
-                {CP_STRINGS.plans.createSubmit}
-              </Button>
-            </CpForm>
-          </Card>
-          </Col>
-        )}
-
-        <Col spanMd={isAdmin ? 8 : 12}>
-        <CpSection title={CP_STRINGS.plans.existingTitle}>
-          {data.plans.length === 0 ? (
-            <p className="cp-muted">{CP_STRINGS.plans.empty}</p>
-          ) : (
-            <Stack>
-              {data.plans.map((plan) => (
-                <PlanEditor
-                  key={plan.id}
-                  plan={plan}
-                  isAdmin={isAdmin}
-                  saving={update.isPending}
-                  deleting={remove.isPending}
-                  onSave={(payload) => update.mutate({ id: plan.id, payload })}
-                  onDelete={() => remove.mutate(plan.id)}
-                />
-              ))}
-            </Stack>
-          )}
-        </CpSection>
-        </Col>
-      </Grid>
+            ))}
+          </Grid>
+          <Toggle
+            checked={createDefault}
+            onChange={setCreateDefault}
+            label={CP_STRINGS.plans.setDefault}
+          />
+        </CpForm>
+      </Drawer>
     </CpPage>
   );
 };

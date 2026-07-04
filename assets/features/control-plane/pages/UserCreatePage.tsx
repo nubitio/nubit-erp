@@ -40,13 +40,12 @@ export const UserCreatePage = () => {
   }
 
   return (
-    <CpPage>
+    <CpPage narrow>
       <CpPageHeader
         title={CP_STRINGS.users.createTitle}
         breadcrumb={{ label: CP_STRINGS.users.title, to: '/users' }}
       />
 
-      <div className="cp-narrow">
       <Card variant="panel">
         {error && <CpAlert tone="danger">{error}</CpAlert>}
         <CpForm
@@ -97,7 +96,6 @@ export const UserCreatePage = () => {
           </CpFormActions>
         </CpForm>
       </Card>
-      </div>
     </CpPage>
   );
 };

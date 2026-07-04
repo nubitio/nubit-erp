@@ -1,4 +1,4 @@
-import { Card } from '@nubitio/ui';
+import { Stack, Text, Toggle } from '@nubitio/ui';
 import { CP_STRINGS } from '../../i18n/es';
 
 const ROLE_OPTIONS = [
@@ -26,32 +26,36 @@ interface RoleCheckboxesProps {
 }
 
 export const RoleCheckboxes = ({ selected, onChange }: RoleCheckboxesProps) => (
-  <div className="cp-role-list">
+  <Stack gap={3}>
     {ROLE_OPTIONS.map((role) => {
       const checked = selected.includes(role.value);
       return (
-        <Card variant="panel" key={role.value}>
-          <label className="cp-check cp-check--block">
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onChange([...selected, role.value]);
-                } else {
-                  onChange(selected.filter((r) => r !== role.value));
+        <Toggle
+          key={role.value}
+          checked={checked}
+          onChange={(next) => {
+            if (next) {
+              onChange([...selected, role.value]);
+            } else {
+              onChange(selected.filter((r) => r !== role.value));
+            }
+          }}
+          label={
+            <>
+              <strong
+                style={
+                  'danger' in role && role.danger
+                    ? { color: 'var(--error-color)' }
+                    : undefined
                 }
-              }}
-            />
-            <span>
-              <strong className={'danger' in role && role.danger ? 'cp-text-danger' : ''}>
+              >
                 {role.label}
               </strong>
-              <span className="cp-muted"> — {role.description}</span>
-            </span>
-          </label>
-        </Card>
+              <Text tone="muted"> — {role.description}</Text>
+            </>
+          }
+        />
       );
     })}
-  </div>
+  </Stack>
 );

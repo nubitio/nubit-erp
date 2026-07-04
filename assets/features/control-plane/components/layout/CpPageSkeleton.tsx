@@ -46,7 +46,7 @@ export const CpPageSkeleton = ({ variant = 'table' }: CpPageSkeletonProps) => (
       </>
     )}
 
-    {variant === 'form' && <Skeleton variant="rect" height={360} className="cp-narrow" />}
+    {variant === 'form' && <Skeleton variant="rect" height={360} />}
 
     {variant === 'matrix' && <Skeleton variant="rect" height={420} />}
   </Page>

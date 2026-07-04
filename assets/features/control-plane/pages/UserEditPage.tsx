@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { Button, Card, FormField, TextField } from '@nubitio/ui';
+import { Button, Card, FormField, Text, TextField, Toggle } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import { RoleCheckboxes } from '../components/admin/RoleCheckboxes';
 import {
@@ -12,6 +12,7 @@ import {
   CpPage,
   CpPageHeader,
   CpPageSkeleton,
+  Stack,
 } from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
 import { useConfirm } from '@nubitio/ui';
@@ -117,7 +118,7 @@ export const UserEditPage = () => {
   };
 
   return (
-    <CpPage>
+    <CpPage narrow>
       <CpPageHeader
         title={user.username}
         subtitle={CP_STRINGS.users.editSubtitle}
@@ -135,11 +136,10 @@ export const UserEditPage = () => {
         ariaLabel={CP_STRINGS.users.title}
       />
 
-      <div className="cp-tab-panel">
+      <Stack>
         {error && <CpAlert tone="danger">{error}</CpAlert>}
 
         {activeTab === 'general' && (
-          <div className="cp-narrow">
           <Card variant="panel">
             <CpForm
               onSubmit={(e) => {
@@ -156,15 +156,12 @@ export const UserEditPage = () => {
               <FormField label={CP_STRINGS.users.roles}>
                 <RoleCheckboxes selected={selectedRoles} onChange={setRoles} />
               </FormField>
-              <label className="cp-check cp-check--block">
-                <input
-                  type="checkbox"
-                  checked={activeStatus}
-                  disabled={isSelf}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                />
-                <span>{CP_STRINGS.active}</span>
-              </label>
+              <Toggle
+                checked={activeStatus}
+                disabled={isSelf}
+                onChange={setIsActive}
+                label={CP_STRINGS.active}
+              />
               {isSelf && (
                 <CpAlert tone="warning">{CP_STRINGS.users.cannotDeactivateSelf}</CpAlert>
               )}
@@ -178,13 +175,13 @@ export const UserEditPage = () => {
               </CpFormActions>
             </CpForm>
           </Card>
-          </div>
         )}
 
         {activeTab === 'password' && (
-          <div className="cp-narrow">
           <Card variant="panel">
-            <p className="cp-muted">{CP_STRINGS.users.passwordHint(user.username)}</p>
+            <Text tone="muted" as="p">
+              {CP_STRINGS.users.passwordHint(user.username)}
+            </Text>
             <CpForm
               onSubmit={(e) => {
                 e.preventDefault();
@@ -216,14 +213,15 @@ export const UserEditPage = () => {
                   autoComplete="new-password"
                 />
               </FormField>
-              <Button type="submit" variant="ghost" loading={resetPassword.isPending}>
-                {CP_STRINGS.users.changePassword}
-              </Button>
+              <CpFormActions>
+                <Button type="submit" variant="ghost" loading={resetPassword.isPending}>
+                  {CP_STRINGS.users.changePassword}
+                </Button>
+              </CpFormActions>
             </CpForm>
           </Card>
-          </div>
         )}
-      </div>
+      </Stack>
       <ConfirmHost />
     </CpPage>
   );
