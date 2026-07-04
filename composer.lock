@@ -3598,16 +3598,16 @@
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.11.2",
+            "version": "v0.11.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/platform.git",
-                "reference": "912107c07a69e5dfb3e5b6763810d5f76a731c02"
+                "reference": "191a9b091297fd345217fcd4410e9ec12e5367b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/platform/zipball/912107c07a69e5dfb3e5b6763810d5f76a731c02",
-                "reference": "912107c07a69e5dfb3e5b6763810d5f76a731c02",
+                "url": "https://api.github.com/repos/nubitio/platform/zipball/191a9b091297fd345217fcd4410e9ec12e5367b6",
+                "reference": "191a9b091297fd345217fcd4410e9ec12e5367b6",
                 "shasum": ""
             },
             "require": {
@@ -3615,6 +3615,7 @@
                 "psr/cache": "^3.0",
                 "psr/log": "^3.0",
                 "psr/simple-cache": "^3.0",
+                "symfony/clock": "^7.4 || ^8.0",
                 "symfony/console": "^7.4 || ^8.0",
                 "symfony/dependency-injection": "^7.4 || ^8.0",
                 "symfony/http-foundation": "^7.4 || ^8.0",
@@ -3665,7 +3666,7 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-07-04T10:50:34+00:00"
+            "time": "2026-07-04T11:17:36+00:00"
         },
         {
             "name": "nyholm/psr7-server",
