@@ -3598,16 +3598,16 @@
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.11.0",
+            "version": "v0.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/platform.git",
-                "reference": "06b7e0ab43de72980f09f44c5b811223f723f7de"
+                "reference": "32bfa888e0c56841e3d3f2786be8482e3261571c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/platform/zipball/06b7e0ab43de72980f09f44c5b811223f723f7de",
-                "reference": "06b7e0ab43de72980f09f44c5b811223f723f7de",
+                "url": "https://api.github.com/repos/nubitio/platform/zipball/32bfa888e0c56841e3d3f2786be8482e3261571c",
+                "reference": "32bfa888e0c56841e3d3f2786be8482e3261571c",
                 "shasum": ""
             },
             "require": {
@@ -3663,7 +3663,7 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-07-04T09:01:45+00:00"
+            "time": "2026-07-04T10:00:23+00:00"
         },
         {
             "name": "nyholm/psr7-server",
