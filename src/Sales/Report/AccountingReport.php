@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use Nubit\Platform\Export\XlsColumnSpec;
 use Nubit\Platform\Report\ExportableReportInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -71,10 +72,10 @@ final class AccountingReport implements ExportableReportInterface
             'document' => 'Comprobante',
             'customer_ruc' => 'RUC/DNI',
             'customer_name' => 'Cliente',
-            'taxable_amount' => 'Op. gravada',
-            'igv' => 'IGV',
-            'service_charge' => 'R.C.',
-            'total' => 'Total',
+            'taxable_amount' => XlsColumnSpec::number('Op. gravada', '#,##0.00'),
+            'igv' => XlsColumnSpec::number('IGV', '#,##0.00'),
+            'service_charge' => XlsColumnSpec::number('R.C.', '#,##0.00'),
+            'total' => XlsColumnSpec::number('Total', '#,##0.00'),
             'status' => 'Estado',
         ];
     }

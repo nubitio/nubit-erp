@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use Nubit\Platform\Export\XlsColumnSpec;
 use Nubit\Platform\Report\ExportableReportInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -62,7 +63,7 @@ final class CreditNotesReport implements ExportableReportInterface
             'reason_code' => 'Código motivo',
             'reason' => 'Motivo',
             'affected_document' => 'Doc. afectado',
-            'total' => 'Total',
+            'total' => XlsColumnSpec::number('Total', '#,##0.00'),
             'customer_name' => 'Cliente',
             'customer_ruc' => 'RUC/DNI',
         ];

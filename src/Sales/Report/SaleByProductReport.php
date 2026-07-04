@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use Nubit\Platform\Export\XlsColumn;
+use Nubit\Platform\Export\XlsColumnSpec;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('app.sale_report')]
@@ -55,9 +57,9 @@ final class SaleByProductReport extends AbstractSaleReport
             'product_code' => 'Código',
             'product_name' => 'Producto',
             'category' => 'Categoría',
-            'quantity' => 'Cantidad',
-            'average_unit_price' => 'Precio unit. prom.',
-            'total' => 'Total',
+            'quantity' => XlsColumnSpec::number('Cantidad', '#,##0.###'),
+            'average_unit_price' => XlsColumnSpec::number('Precio unit. prom.', '#,##0.00', XlsColumn::SUMMARY_NONE),
+            'total' => XlsColumnSpec::number('Total', '#,##0.00'),
         ];
     }
 

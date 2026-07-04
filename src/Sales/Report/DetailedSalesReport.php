@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use Nubit\Platform\Export\XlsColumnSpec;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('app.sale_report')]
@@ -85,10 +86,10 @@ final class DetailedSalesReport extends AbstractSaleReport
             'customer_name' => 'Cliente',
             'customer_ruc' => 'RUC/DNI',
             'payment_method' => 'Método de pago',
-            'subtotal' => 'Subtotal',
-            'tax' => 'IGV',
-            'total' => 'Total',
-            'discount' => 'Descuento',
+            'subtotal' => XlsColumnSpec::number('Subtotal', '#,##0.00'),
+            'tax' => XlsColumnSpec::number('IGV', '#,##0.00'),
+            'total' => XlsColumnSpec::number('Total', '#,##0.00'),
+            'discount' => XlsColumnSpec::number('Descuento', '#,##0.00'),
             'status' => 'Estado',
         ];
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use Nubit\Platform\Export\XlsColumnSpec;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('app.sale_report')]
@@ -63,7 +64,7 @@ final class VoidedSalesReport extends AbstractSaleReport
             'voucher_type' => 'Tipo',
             'customer_name' => 'Cliente',
             'customer_ruc' => 'RUC/DNI',
-            'total' => 'Total',
+            'total' => XlsColumnSpec::number('Total', '#,##0.00'),
             'status' => 'Estado',
         ];
     }
