@@ -12,7 +12,7 @@ const S = CP_STRINGS.tenantTabs.subscription;
 
 export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTabProps) => (
   <div className="cp-stack">
-    <Card title={S.title}>
+    <Card variant="panel" title={S.title}>
       {!subscription ? (
         <EmptyState icon="credit-card" title={S.empty} size="sm" />
       ) : (
@@ -46,7 +46,7 @@ export const SubscriptionTab = ({ subscription, paymentEvents }: SubscriptionTab
     </Card>
 
     {paymentEvents.length > 0 && (
-      <Card title={S.paymentsTitle}>
+      <Card variant="panel" title={S.paymentsTitle}>
         <div className="cp-data-table-wrap">
           <table className="cp-data-table">
             <thead>

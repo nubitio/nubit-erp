@@ -43,6 +43,8 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:control-plane": "playwright test e2e/control-plane-visual.spec.ts",
+    "test:e2e:control-plane:update": "playwright test e2e/control-plane-visual.spec.ts --update-snapshots",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",

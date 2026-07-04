@@ -268,7 +268,7 @@ export const PlansPage = () => {
 
       <CpGrid>
         {isAdmin && (
-          <Card title={CP_STRINGS.plans.createTitle}>
+          <Card variant="panel" title={CP_STRINGS.plans.createTitle}>
             <CpForm
               onSubmit={(e) => {
                 e.preventDefault();

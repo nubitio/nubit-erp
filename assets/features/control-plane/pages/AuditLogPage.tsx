@@ -104,7 +104,7 @@ export const AuditLogPage = () => {
         subtitle={CP_STRINGS.audit.subtitle(data.total)}
       />
 
-      <Card>
+      <Card variant="panel">
         <CpForm
           variant="filter"
           onSubmit={(e) => {
@@ -143,9 +143,10 @@ export const AuditLogPage = () => {
         </CpForm>
       </Card>
 
-      <Card className="nb-table-surface">
+      <Card variant="panel" className="nb-table-surface">
         <DataTable
           fill
+          variant="flush"
           rows={data.logs}
           getRowKey={(log) => log.id}
           emptyMessage={CP_STRINGS.audit.empty}

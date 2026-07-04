@@ -64,7 +64,7 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
         </CpAlert>
       )}
 
-      <Card title={S.detailsTitle}>
+      <Card variant="panel" title={S.detailsTitle}>
         {isAdmin ? (
           <CpForm
             onSubmit={(e) => {
@@ -95,7 +95,7 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
         )}
       </Card>
 
-      <Card title={S.planTitle}>
+      <Card variant="panel" title={S.planTitle}>
         {isAdmin ? (
           <CpForm
             variant="inline"

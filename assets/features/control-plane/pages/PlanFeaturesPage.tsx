@@ -69,7 +69,7 @@ export const PlanFeaturesPage = () => {
     return (
       <CpPage>
         <CpPageHeader title={CP_STRINGS.planFeatures.title} />
-        <Card>
+        <Card variant="panel">
           <p className="cp-muted">
             {CP_STRINGS.planFeatures.empty}
             <Link to="/plans">{CP_STRINGS.planFeatures.createPlanFirst}</Link>.
@@ -89,7 +89,7 @@ export const PlanFeaturesPage = () => {
 
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
-      <Card>
+      <Card variant="panel">
         <div className="cp-matrix-wrap">
           <table className="cp-data-table cp-table--matrix">
             <thead>

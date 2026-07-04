@@ -64,9 +64,10 @@ export const UsersListPage = () => {
         }
       />
 
-      <Card className="nb-table-surface">
+      <Card variant="panel" className="nb-table-surface">
         <DataTable
           fill
+          variant="flush"
           rows={data.users}
           getRowKey={(user) => user.id}
           emptyMessage={CP_STRINGS.users.empty}

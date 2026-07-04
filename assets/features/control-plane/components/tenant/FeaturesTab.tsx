@@ -147,7 +147,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
       )}
 
       {(showForm || editingKey) && isAdmin && (
-        <Card title={editingKey ? S.editOverride(editingKey) : S.newOverride}>
+        <Card variant="panel" title={editingKey ? S.editOverride(editingKey) : S.newOverride}>
           <form
             className="cp-form"
             onSubmit={(e) => {
@@ -218,7 +218,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
         </Card>
       )}
 
-      <Card>
+      <Card variant="panel">
         {features.data.overrides.length === 0 ? (
           <EmptyState icon="toggle-right" title={S.empty} size="sm" />
         ) : (

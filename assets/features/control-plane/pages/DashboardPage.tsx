@@ -118,7 +118,7 @@ export const DashboardPage = () => {
 
       <CpSection title={CP_STRINGS.dashboard.sections.audit}>
         {auditSummary.length === 0 ? (
-          <Card title={CP_STRINGS.dashboard.auditEmpty}>{CP_STRINGS.dashboard.auditEmptyHint}</Card>
+          <Card variant="panel" title={CP_STRINGS.dashboard.auditEmpty}>{CP_STRINGS.dashboard.auditEmptyHint}</Card>
         ) : (
           <DataTable
             rows={auditSummary}

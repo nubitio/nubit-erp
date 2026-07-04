@@ -30,7 +30,7 @@ export const RoleCheckboxes = ({ selected, onChange }: RoleCheckboxesProps) => (
     {ROLE_OPTIONS.map((role) => {
       const checked = selected.includes(role.value);
       return (
-        <Card key={role.value}>
+        <Card variant="panel" key={role.value}>
           <label className="cp-check cp-check--block">
             <input
               type="checkbox"

@@ -139,7 +139,7 @@ export const UserEditPage = () => {
 
         {activeTab === 'general' && (
           <div className="cp-narrow">
-          <Card>
+          <Card variant="panel">
             <form
               className="cp-form"
               onSubmit={(e) => {
@@ -183,7 +183,7 @@ export const UserEditPage = () => {
 
         {activeTab === 'password' && (
           <div className="cp-narrow">
-          <Card>
+          <Card variant="panel">
             <p className="cp-muted">{CP_STRINGS.users.passwordHint(user.username)}</p>
             <form
               className="cp-form"

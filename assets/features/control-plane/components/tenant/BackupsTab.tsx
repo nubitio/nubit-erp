@@ -77,7 +77,7 @@ export const BackupsTab = ({
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
-        <Card title={S.scheduleTitle}>
+        <Card variant="panel" title={S.scheduleTitle}>
           <CpForm
             variant="grid"
             onSubmit={(e) => {
@@ -117,7 +117,7 @@ export const BackupsTab = ({
       )}
 
       {binlogSummary.total_count !== undefined && (
-        <Card title={S.binlogTitle}>
+        <Card variant="panel" title={S.binlogTitle}>
           <CpMetricGrid
             layout="strip"
             density="compact"
@@ -133,7 +133,7 @@ export const BackupsTab = ({
         </Card>
       )}
 
-      <Card title={S.listTitle}>
+      <Card variant="panel" title={S.listTitle}>
         {isSuperAdmin && (
           <CpFormActions>
             <Button loading={queue.isPending} onClick={() => queue.mutate()}>

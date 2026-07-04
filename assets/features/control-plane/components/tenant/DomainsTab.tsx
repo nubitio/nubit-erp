@@ -54,7 +54,7 @@ export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTab
       )}
 
       {isAdmin && (
-        <Card title={S.addTitle}>
+        <Card variant="panel" title={S.addTitle}>
           <CpForm
             onSubmit={(e) => {
               e.preventDefault();
@@ -82,7 +82,7 @@ export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTab
       )}
 
       <div className={isAdmin ? undefined : 'cp-span-full'}>
-        <Card title={S.listTitle}>
+        <Card variant="panel" title={S.listTitle}>
           {domains.length === 0 ? (
             <EmptyState icon="globe" title={S.empty} size="sm" />
           ) : (

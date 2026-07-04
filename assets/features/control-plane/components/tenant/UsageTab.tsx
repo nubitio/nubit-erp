@@ -32,7 +32,7 @@ export const UsageTab = ({ quotaSummary, usageLatest, quotaAlerts }: UsageTabPro
       </CpAlert>
     )}
 
-    <Card title={S.metricsTitle}>
+    <Card variant="panel" title={S.metricsTitle}>
       <CpMetricGrid
         layout="strip"
         density="compact"
@@ -43,7 +43,7 @@ export const UsageTab = ({ quotaSummary, usageLatest, quotaAlerts }: UsageTabPro
       />
     </Card>
 
-    <Card title={S.quotaTitle}>
+    <Card variant="panel" title={S.quotaTitle}>
       {Object.keys(quotaSummary).length === 0 ? (
         <EmptyState icon="chart-line-up" title={S.quotaEmpty} size="sm" />
       ) : (

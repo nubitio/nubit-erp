@@ -256,7 +256,7 @@ export const CertificatesTab = ({
       )}
 
       {isAdmin && (
-        <Card title={S.uploadTitle}>
+        <Card variant="panel" title={S.uploadTitle}>
           <CpForm
             onSubmit={(e) => {
               e.preventDefault();
@@ -304,7 +304,7 @@ export const CertificatesTab = ({
       )}
 
       <div className={isAdmin ? undefined : 'cp-span-full'}>
-        <Card title={S.listTitle}>
+        <Card variant="panel" title={S.listTitle}>
           {certificates.length === 0 ? (
             <EmptyState icon="shield-check" title={S.empty} size="sm" />
           ) : (

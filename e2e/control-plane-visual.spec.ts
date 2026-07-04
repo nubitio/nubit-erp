@@ -51,6 +51,7 @@ test.describe('Control Plane — regresión visual', () => {
       { path: '/admin', shot: 'control-plane-dashboard.png', ready: /Panel|Dashboard/i },
       { path: '/admin/tenants', shot: 'control-plane-tenants.png', ready: /Tenants/i },
       { path: '/admin/audit-log', shot: 'control-plane-audit.png', ready: /Auditoría|Audit/i },
+      { path: '/admin/users', shot: 'control-plane-users.png', ready: /Usuarios|Users/i },
     ];
 
     for (const route of routes) {

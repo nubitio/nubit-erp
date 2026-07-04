@@ -96,7 +96,7 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
       {testMessage && <CpAlert tone="info">{testMessage}</CpAlert>}
 
       {Object.entries(eventDefinitions).map(([eventKey, def]) => (
-        <Card key={eventKey} title={def.label}>
+        <Card variant="panel" key={eventKey} title={def.label}>
           <div className="cp-card-header">
             <code className="cp-code">{eventKey}</code>
             <Badge variant={severityVariant(def.severity)} pill>

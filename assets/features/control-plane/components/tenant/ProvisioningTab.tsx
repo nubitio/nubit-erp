@@ -51,7 +51,7 @@ export const ProvisioningTab = ({
       {error && <CpAlert tone="danger">{error}</CpAlert>}
 
       {isAdmin && (
-        <Card title={S.dispatchTitle}>
+        <Card variant="panel" title={S.dispatchTitle}>
           <CpForm
             variant="grid"
             onSubmit={(e) => {
@@ -80,7 +80,7 @@ export const ProvisioningTab = ({
         </Card>
       )}
 
-      <Card title={S.historyTitle}>
+      <Card variant="panel" title={S.historyTitle}>
         {provisions.length === 0 ? (
           <EmptyState icon="rocket-launch" title={S.empty} size="sm" />
         ) : (

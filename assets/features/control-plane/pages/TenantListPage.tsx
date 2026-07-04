@@ -6,11 +6,12 @@ import { controlPlaneClient } from '../api/controlPlaneClient';
 import {
   CpAlert,
   CpForm,
-  CpGrid,
   CpPage,
   CpPageHeader,
   CpPageSkeleton,
   CpSection,
+  Col,
+  Grid,
 } from '../components/layout';
 import { TenantStatusBadge } from '../components/TenantStatusBadge';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
@@ -100,48 +101,55 @@ export const TenantListPage = () => {
         badge={{ label: CP_STRINGS.tenants.activeCount(data.tenants.length) }}
       />
 
-      <CpGrid>
-        {formError && <CpAlert tone="danger" className="cp-span-full">{formError}</CpAlert>}
-
-        {isAdmin && (
-          <Card title={CP_STRINGS.tenants.addTitle}>
-            <CpForm
-              onSubmit={(e) => {
-                e.preventDefault();
-                create.mutate();
-              }}
-            >
-              <FormField label={CP_STRINGS.tenants.addName} helpText={CP_STRINGS.tenants.addNameHint}>
-                <TextField
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={CP_STRINGS.tenants.addNamePlaceholder}
-                  required
-                />
-              </FormField>
-              <FormField
-                label={CP_STRINGS.tenants.addConnection}
-                helpText={CP_STRINGS.tenants.addConnectionHint}
-              >
-                <TextField
-                  value={connection}
-                  onChange={(e) => setConnection(e.target.value)}
-                  placeholder={CP_STRINGS.tenants.addConnectionPlaceholder}
-                  required
-                />
-              </FormField>
-              <Button type="submit" loading={create.isPending} fullWidth>
-                {CP_STRINGS.tenants.addSubmit}
-              </Button>
-            </CpForm>
-          </Card>
+      <Grid cols={12} gap={4}>
+        {formError && (
+          <Col fullWidth>
+            <CpAlert tone="danger">{formError}</CpAlert>
+          </Col>
         )}
 
-        <div className={isAdmin ? undefined : 'cp-span-full'}>
-        <Card title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="nb-table-surface">
-          <DataTable
-            fill
-            rows={data.tenants}
+        {isAdmin && (
+          <Col spanMd={4}>
+            <Card variant="panel" title={CP_STRINGS.tenants.addTitle}>
+              <CpForm
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  create.mutate();
+                }}
+              >
+                <FormField label={CP_STRINGS.tenants.addName} helpText={CP_STRINGS.tenants.addNameHint}>
+                  <TextField
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={CP_STRINGS.tenants.addNamePlaceholder}
+                    required
+                  />
+                </FormField>
+                <FormField
+                  label={CP_STRINGS.tenants.addConnection}
+                  helpText={CP_STRINGS.tenants.addConnectionHint}
+                >
+                  <TextField
+                    value={connection}
+                    onChange={(e) => setConnection(e.target.value)}
+                    placeholder={CP_STRINGS.tenants.addConnectionPlaceholder}
+                    required
+                  />
+                </FormField>
+                <Button type="submit" loading={create.isPending} fullWidth>
+                  {CP_STRINGS.tenants.addSubmit}
+                </Button>
+              </CpForm>
+            </Card>
+          </Col>
+        )}
+
+        <Col spanMd={isAdmin ? 8 : 12}>
+          <Card variant="panel" title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="nb-table-surface">
+            <DataTable
+              fill
+              variant="flush"
+              rows={data.tenants}
             getRowKey={(tenant) => tenant.id}
             emptyMessage={CP_STRINGS.tenants.listEmpty}
             columns={[
@@ -211,12 +219,13 @@ export const TenantListPage = () => {
             ]}
           />
         </Card>
-        </div>
-      </CpGrid>
+        </Col>
+      </Grid>
 
       {data.deletedTenants.length > 0 && (
         <CpSection title={CP_STRINGS.tenants.deletedTitle(data.deletedTenants.length)}>
           <DataTable
+            variant="flush"
             rows={data.deletedTenants}
             getRowKey={(tenant) => tenant.id}
             columns={[

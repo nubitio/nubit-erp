@@ -47,7 +47,7 @@ export const UserCreatePage = () => {
       />
 
       <div className="cp-narrow">
-      <Card>
+      <Card variant="panel">
         {error && <CpAlert tone="danger">{error}</CpAlert>}
         <CpForm
           onSubmit={(e) => {
