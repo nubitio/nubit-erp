@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Settings\Command;
 
 use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Settings\Command\ImportUbigeoCommand;
 use App\Settings\Service\UbigeoImportService;
 use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -84,14 +84,17 @@ final class ImportUbigeoCommandTest extends TestCase
 
     private function newCommand(UbigeoImportService $importService): ImportUbigeoCommand
     {
-        $tenantManager = $this->createStub(TenantManager::class);
-        $tenantManager
+        $tenantRegistry = $this->createStub(TenantRegistryInterface::class);
+        $tenantRegistry
             ->method('getTenants')
             ->willReturn([['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']]);
+        $tenantRegistry
+            ->method('getTenantByName')
+            ->willReturn(['id' => 1, 'name' => 'test', 'primary_domain' => 'test.localhost']);
 
         $command = new ImportUbigeoCommand($importService);
         $command->initDependencies(
-            $tenantManager,
+            $tenantRegistry,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
             $this->createMock(LoggerInterface::class),

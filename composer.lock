@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5466899eeffba539da431552a48666f2",
+    "content-hash": "6141812161b74885fc7b06e4121c9df5",
     "packages": [
         {
             "name": "api-platform/core",
@@ -3598,22 +3598,23 @@
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.10.13",
+            "version": "v0.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/platform.git",
-                "reference": "dd1582b1057b4398cbaa39176a104d074869bad0"
+                "reference": "06b7e0ab43de72980f09f44c5b811223f723f7de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/platform/zipball/dd1582b1057b4398cbaa39176a104d074869bad0",
-                "reference": "dd1582b1057b4398cbaa39176a104d074869bad0",
+                "url": "https://api.github.com/repos/nubitio/platform/zipball/06b7e0ab43de72980f09f44c5b811223f723f7de",
+                "reference": "06b7e0ab43de72980f09f44c5b811223f723f7de",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.3",
                 "psr/cache": "^3.0",
                 "psr/log": "^3.0",
+                "psr/simple-cache": "^3.0",
                 "symfony/console": "^7.4 || ^8.0",
                 "symfony/dependency-injection": "^7.4 || ^8.0",
                 "symfony/http-foundation": "^7.4 || ^8.0",
@@ -3662,7 +3663,7 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-06-29T12:44:29+00:00"
+            "time": "2026-07-04T09:01:45+00:00"
         },
         {
             "name": "nyholm/psr7-server",

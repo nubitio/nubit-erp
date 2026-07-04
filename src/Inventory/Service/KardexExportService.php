@@ -7,6 +7,7 @@ namespace App\Inventory\Service;
 use App\Inventory\ApiResource\StockMovement;
 use App\Inventory\Repository\StockMovementRepository;
 use Doctrine\DBAL\Exception;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -146,29 +147,44 @@ final readonly class KardexExportService
 
         $dataRow = $headerRow + 1;
         foreach ($rows as $row) {
-            $sheet->fromArray(
-                [
-                    $row['occurredAt'],
-                    $row['movementType'],
-                    $row['reference'],
-                    $row['qtyIn'],
-                    $row['unitCostIn'],
-                    $row['lineValueIn'],
-                    $row['qtyOut'],
-                    $row['unitCostOut'],
-                    $row['lineValueOut'],
-                    $row['runningBalance'],
-                    $row['runningValue'],
-                ],
-                null,
-                'A' . $dataRow,
-            );
+            $sheet->setCellValueExplicit('A' . $dataRow, $row['occurredAt'], DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('B' . $dataRow, $row['movementType'], DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('C' . $dataRow, $row['reference'], DataType::TYPE_STRING);
+
+            foreach ([
+                'D' => $row['qtyIn'],
+                'E' => $row['unitCostIn'],
+                'F' => $row['lineValueIn'],
+                'G' => $row['qtyOut'],
+                'H' => $row['unitCostOut'],
+                'I' => $row['lineValueOut'],
+                'J' => $row['runningBalance'],
+                'K' => $row['runningValue'],
+            ] as $column => $value) {
+                $number = $this->numericCellValue($value);
+                if ($number === null) {
+                    $sheet->setCellValueExplicit($column . $dataRow, '', DataType::TYPE_STRING);
+                    continue;
+                }
+
+                $sheet->setCellValueExplicit($column . $dataRow, $number, DataType::TYPE_NUMERIC);
+            }
+
             ++$dataRow;
         }
 
         $lastRow = max($headerRow, $dataRow - 1);
+        $totalsRow = $lastRow + 1;
+        if ($lastRow >= $headerRow + 1) {
+            $sheet->setCellValueExplicit('C' . $totalsRow, 'TOTALES', DataType::TYPE_STRING);
+            foreach (['D', 'F', 'G', 'I'] as $column) {
+                $sheet->setCellValue($column . $totalsRow, sprintf('=SUM(%s%d:%s%d)', $column, $headerRow + 1, $column, $lastRow));
+            }
+        }
+
+        $styledLastRow = $lastRow >= $headerRow + 1 ? $totalsRow : $lastRow;
         $sheet
-            ->getStyle('A' . $groupRow . ':K' . $lastRow)
+            ->getStyle('A' . $groupRow . ':K' . $styledLastRow)
             ->getBorders()
             ->getBottom()
             ->setBorderStyle(Border::BORDER_THIN)
@@ -182,7 +198,7 @@ final readonly class KardexExportService
 
         foreach (['C', 'F', 'I'] as $dividerCol) {
             $sheet
-                ->getStyle($dividerCol . $groupRow . ':' . $dividerCol . $lastRow)
+                ->getStyle($dividerCol . $groupRow . ':' . $dividerCol . $styledLastRow)
                 ->getBorders()
                 ->getRight()
                 ->setBorderStyle(Border::BORDER_MEDIUM)
@@ -206,9 +222,35 @@ final readonly class KardexExportService
 
         foreach (range('D', 'K') as $column) {
             $sheet
-                ->getStyle($column . ($headerRow + 1) . ':' . $column . $lastRow)
+                ->getStyle($column . ($headerRow + 1) . ':' . $column . $styledLastRow)
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        }
+
+        foreach (['D', 'G', 'J'] as $quantityColumn) {
+            $sheet
+                ->getStyle($quantityColumn . ($headerRow + 1) . ':' . $quantityColumn . $styledLastRow)
+                ->getNumberFormat()
+                ->setFormatCode('#,##0.###');
+        }
+
+        foreach (['E', 'F', 'H', 'I', 'K'] as $moneyColumn) {
+            $sheet
+                ->getStyle($moneyColumn . ($headerRow + 1) . ':' . $moneyColumn . $styledLastRow)
+                ->getNumberFormat()
+                ->setFormatCode('#,##0.00');
+        }
+
+        if ($lastRow >= $headerRow + 1) {
+            $sheet
+                ->getStyle('A' . $totalsRow . ':K' . $totalsRow)
+                ->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFEFF6FF']],
+                    'borders' => [
+                        'top' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['argb' => 'FFCBD5E1']],
+                    ],
+                ]);
         }
 
         foreach (range('A', 'K') as $column) {
@@ -281,5 +323,19 @@ final readonly class KardexExportService
         }
 
         return 'S/ ' . number_format($number, 2, '.', ',');
+    }
+
+    private function numericCellValue(?string $value): ?float
+    {
+        if ($value === null || $value === '' || $value === '—') {
+            return null;
+        }
+
+        $normalized = str_replace(['S/', ',', ' '], '', $value);
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        return (float) $normalized;
     }
 }
