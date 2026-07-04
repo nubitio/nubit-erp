@@ -14,7 +14,8 @@ import {
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { CertificateRecord } from '../../types';
-import { CpAlert, CpDescriptionList, CpForm, CpFormActions, CpGrid, CpRowActions } from '../layout';
+import { RowActions } from '@nubitio/ui';
+import { CpAlert, CpDescriptionList, CpForm, CpFormActions, CpGrid } from '../layout';
 
 interface CertificatesTabProps {
   tenantId: number;
@@ -344,7 +345,7 @@ export const CertificatesTab = ({
                           {field(cert, 'lycetSyncStatus', 'sync_status') ?? '—'}
                         </td>
                         <td className="cp-data-table__actions">
-                          <CpRowActions
+                          <RowActions
                             items={[
                               {
                                 label: CP_STRINGS.view,

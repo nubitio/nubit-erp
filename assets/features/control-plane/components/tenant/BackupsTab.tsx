@@ -5,8 +5,8 @@ import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { BackupRecord } from '../../types';
 import { formatBytes } from '../../utils/format';
-import { useCpConfirm } from '../../hooks/useCpConfirm';
-import { CpAlert, CpForm, CpFormActions, CpMetricGrid, CpRowActions } from '../layout';
+import { RowActions, useConfirm } from '@nubitio/ui';
+import { CpAlert, CpForm, CpFormActions, CpMetricGrid } from '../layout';
 
 interface BackupsTabProps {
   tenantId: number;
@@ -36,7 +36,7 @@ export const BackupsTab = ({
   isSuperAdmin,
   onUpdated,
 }: BackupsTabProps) => {
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
   const [frequency, setFrequency] = useState(tenant.backup_frequency ?? 0);
   const [retention, setRetention] = useState(tenant.backup_retention_days ?? 30);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +169,7 @@ export const BackupsTab = ({
                     <td>{backup.status}</td>
                     <td>{backup.created_at}</td>
                     <td className="cp-data-table__actions">
-                      <CpRowActions
+                      <RowActions
                         items={[
                           ...(backup.status === 'completed'
                             ? [

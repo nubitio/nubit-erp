@@ -4,8 +4,8 @@ import { Button, Card, EmptyState, FormField, TextField, Toggle } from '@nubitio
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { TenantDomain } from '../../types';
-import { useCpConfirm } from '../../hooks/useCpConfirm';
-import { CpAlert, CpForm, CpGrid, CpRowActions } from '../layout';
+import { RowActions, useConfirm } from '@nubitio/ui';
+import { CpAlert, CpForm, CpGrid } from '../layout';
 
 interface DomainsTabProps {
   tenantId: number;
@@ -17,7 +17,7 @@ interface DomainsTabProps {
 const S = CP_STRINGS.tenantTabs.domains;
 
 export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTabProps) => {
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
   const [domain, setDomain] = useState('');
   const [isPrimary, setIsPrimary] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTab
                         <td>{primary ? CP_STRINGS.yes : CP_STRINGS.no}</td>
                         {isAdmin && (
                           <td className="cp-data-table__actions">
-                            <CpRowActions
+                            <RowActions
                               items={[
                                 ...(!primary
                                   ? [

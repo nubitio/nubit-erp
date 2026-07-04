@@ -4,7 +4,7 @@ import { AppDropdown, Button, Card, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { PlanOption, TenantRecord } from '../../types';
-import { useCpConfirm } from '../../hooks/useCpConfirm';
+import { useConfirm } from '@nubitio/ui';
 import { CpAlert, CpDescriptionList, CpForm, CpGrid } from '../layout';
 import { TenantStatusBadge } from '../TenantStatusBadge';
 
@@ -18,7 +18,7 @@ interface GeneralTabProps {
 const S = CP_STRINGS.tenantTabs.general;
 
 export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProps) => {
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
   const [name, setName] = useState(tenant.name);
   const [connection, setConnection] = useState(tenant.connection);
   const [plan, setPlan] = useState(tenant.plan ?? 'free');

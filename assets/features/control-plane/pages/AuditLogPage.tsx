@@ -5,6 +5,7 @@ import {
   AppDropdown,
   Button,
   Card,
+  DataTable,
   DateRangePicker,
   Drawer,
   FormField,
@@ -121,7 +122,7 @@ export const AuditLogPage = () => {
               placeholder={CP_STRINGS.audit.allActions}
             />
           </FormField>
-          <FormField label={CP_STRINGS.audit.dateRange} className="cp-span-full">
+          <FormField label={CP_STRINGS.audit.dateRange} className="nb-span-full">
             <DateRangePicker
               startValue={draftFrom || null}
               endValue={draftTo || null}
@@ -142,93 +143,69 @@ export const AuditLogPage = () => {
         </CpForm>
       </Card>
 
-      <Card className="cp-table-surface">
-        {data.logs.length === 0 ? (
-          <p className="cp-muted">{CP_STRINGS.audit.empty}</p>
-        ) : (
-          <div className="cp-data-table-wrap cp-data-table-wrap--fill">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{CP_STRINGS.audit.date}</th>
-                  <th>{CP_STRINGS.audit.action}</th>
-                  <th>{CP_STRINGS.audit.actor}</th>
-                  <th>{CP_STRINGS.audit.channel}</th>
-                  <th>{CP_STRINGS.audit.tenant}</th>
-                  <th>{CP_STRINGS.audit.metadata}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.logs.map((log) => {
-                  const meta = log.metadata ?? '';
-                  return (
-                    <tr key={log.id}>
-                      <td className="cp-nowrap">{log.created_at}</td>
-                      <td>
-                        <code>{log.action}</code>
-                      </td>
-                      <td>{log.actor ?? '—'}</td>
-                      <td>{log.channel ?? '—'}</td>
-                      <td>{log.tenant_name ?? '—'}</td>
-                      <td>
-                        <span className="cp-muted">{truncate(meta)}</span>
-                        {meta.length > 2 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setMetadataPreview(meta)}
-                          >
-                            {CP_STRINGS.view}
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {data.totalPages > 1 && (
-          <nav className="cp-pagination" aria-label={CP_STRINGS.audit.pages}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => goToPage(page - 1)}
-            >
-              ←
-            </Button>
-            {Array.from({ length: Math.min(7, data.totalPages) }, (_, i) => {
-              const start = Math.max(1, Math.min(page - 3, data.totalPages - 6));
-              const p = start + i;
-              if (p > data.totalPages) return null;
-              return (
-                <Button
-                  key={p}
-                  type="button"
-                  variant={p === page ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => goToPage(p)}
-                >
-                  {p}
-                </Button>
-              );
-            })}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={page >= data.totalPages}
-              onClick={() => goToPage(page + 1)}
-            >
-              →
-            </Button>
-          </nav>
-        )}
+      <Card className="nb-table-surface">
+        <DataTable
+          fill
+          rows={data.logs}
+          getRowKey={(log) => log.id}
+          emptyMessage={CP_STRINGS.audit.empty}
+          columns={[
+            {
+              id: 'date',
+              header: CP_STRINGS.audit.date,
+              nowrap: true,
+              accessor: (log) => log.created_at,
+            },
+            {
+              id: 'action',
+              header: CP_STRINGS.audit.action,
+              render: (log) => <code>{log.action}</code>,
+            },
+            {
+              id: 'actor',
+              header: CP_STRINGS.audit.actor,
+              accessor: (log) => log.actor ?? '—',
+            },
+            {
+              id: 'channel',
+              header: CP_STRINGS.audit.channel,
+              accessor: (log) => log.channel ?? '—',
+            },
+            {
+              id: 'tenant',
+              header: CP_STRINGS.audit.tenant,
+              accessor: (log) => log.tenant_name ?? '—',
+            },
+            {
+              id: 'metadata',
+              header: CP_STRINGS.audit.metadata,
+              render: (log) => {
+                const meta = log.metadata ?? '';
+                return (
+                  <>
+                    <span className="nb-text-muted">{truncate(meta)}</span>
+                    {meta.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setMetadataPreview(meta)}
+                      >
+                        {CP_STRINGS.view}
+                      </Button>
+                    )}
+                  </>
+                );
+              },
+            },
+          ]}
+          pagination={{
+            page,
+            totalPages: data.totalPages,
+            onPageChange: goToPage,
+            ariaLabel: CP_STRINGS.audit.pages,
+          }}
+        />
       </Card>
 
       <Drawer

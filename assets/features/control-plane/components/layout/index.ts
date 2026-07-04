@@ -4,6 +4,7 @@ export {
   Cluster,
   Code,
   Col,
+  DataTable,
   DescriptionList,
   DescriptionList as CpDescriptionList,
   FormActions,
@@ -14,17 +15,24 @@ export {
   Grid as CpGrid,
   Page,
   Page as CpPage,
+  Pagination,
   Row,
+  RowActions,
   Section,
   Section as CpSection,
   Stack,
   Text,
+  useConfirm,
   type AlertTone,
   type ColSpan,
+  type ConfirmRequest,
+  type DataTableColumn,
+  type DataTableProps,
   type DescriptionListItem,
   type DescriptionListItem as CpDescriptionItem,
   type FormLayoutVariant,
   type GridCols,
+  type PaginationProps,
   type SpaceScale,
 } from '@nubitio/ui';
 
@@ -32,4 +40,3 @@ export { CpPageHeader } from './CpPageHeader';
 export { CpHubTabs, type CpHubTab } from './CpHubTabs';
 export { CpMetricGrid } from './CpMetricGrid';
 export { CpPageSkeleton } from './CpPageSkeleton';
-export { CpRowActions } from './CpRowActions';

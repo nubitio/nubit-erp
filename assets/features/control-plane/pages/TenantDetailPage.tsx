@@ -14,7 +14,7 @@ import { FeaturesTab } from '../components/tenant/FeaturesTab';
 import { NotificationsTab } from '../components/tenant/NotificationsTab';
 import { UsageTab } from '../components/tenant/UsageTab';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
-import { useCpConfirm } from '../hooks/useCpConfirm';
+import { useConfirm } from '@nubitio/ui';
 import { CP_STRINGS } from '../i18n/es';
 import type { TenantTab } from '../types';
 
@@ -39,7 +39,7 @@ export const TenantDetailPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { isAdmin, isSuperAdmin } = useControlPlaneRoles();
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
 
   const activeTab = isTenantTab(searchParams.get('tab')) ? searchParams.get('tab')! : 'general';
   const certificateParam = Number(searchParams.get('certificate'));

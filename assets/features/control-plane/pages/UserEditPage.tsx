@@ -13,7 +13,7 @@ import {
   CpPageSkeleton,
 } from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
-import { useCpConfirm } from '../hooks/useCpConfirm';
+import { useConfirm } from '@nubitio/ui';
 import { CP_STRINGS } from '../i18n/es';
 import { cpNotify } from '../utils/notify';
 
@@ -30,7 +30,7 @@ export const UserEditPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { isSuperAdmin, user: currentUser } = useControlPlaneRoles();
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
 
   const detail = useQuery({
     queryKey: ['control-plane', 'users', userId],

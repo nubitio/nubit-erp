@@ -14,8 +14,8 @@ import {
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { FeatureOverrideRecord } from '../../types';
-import { useCpConfirm } from '../../hooks/useCpConfirm';
-import { CpAlert, CpFormActions, CpRowActions } from '../layout';
+import { RowActions, useConfirm } from '@nubitio/ui';
+import { CpAlert, CpFormActions } from '../layout';
 
 interface FeaturesTabProps {
   tenantId: number;
@@ -55,7 +55,7 @@ const statusBadge = (override: FeatureOverrideRecord) => {
 };
 
 export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -246,7 +246,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
                     <td className="cp-muted">{override.reason ?? '—'}</td>
                     {isAdmin && (
                       <td className="cp-data-table__actions">
-                        <CpRowActions
+                        <RowActions
                           items={[
                             {
                               label: CP_STRINGS.edit,

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Card } from '@nubitio/ui';
+import { Card, Code, DataTable } from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import {
   CpAlert,
@@ -120,26 +120,23 @@ export const DashboardPage = () => {
         {auditSummary.length === 0 ? (
           <Card title={CP_STRINGS.dashboard.auditEmpty}>{CP_STRINGS.dashboard.auditEmptyHint}</Card>
         ) : (
-          <div className="cp-data-table-wrap">
-            <table className="cp-data-table">
-              <thead>
-                <tr>
-                  <th>{CP_STRINGS.dashboard.auditAction}</th>
-                  <th className="cp-data-table__num">{CP_STRINGS.dashboard.auditCount}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {auditSummary.map((row) => (
-                  <tr key={row.action}>
-                    <td>
-                      <code className="cp-code">{row.action}</code>
-                    </td>
-                    <td className="cp-data-table__num">{row.count}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            rows={auditSummary}
+            getRowKey={(row) => row.action}
+            columns={[
+              {
+                id: 'action',
+                header: CP_STRINGS.dashboard.auditAction,
+                render: (row) => <Code>{row.action}</Code>,
+              },
+              {
+                id: 'count',
+                header: CP_STRINGS.dashboard.auditCount,
+                align: 'right',
+                accessor: (row) => row.count,
+              },
+            ]}
+          />
         )}
       </CpSection>
     </CpPage>

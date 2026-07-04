@@ -19,7 +19,7 @@ import {
   CpSection,
 } from '../components/layout';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
-import { useCpConfirm } from '../hooks/useCpConfirm';
+import { useConfirm } from '@nubitio/ui';
 import { cpNotify } from '../utils/notify';
 import { CP_STRINGS, formatLimitLabel, formatLimitValue } from '../i18n/es';
 
@@ -62,7 +62,7 @@ interface PlanEditorProps {
 }
 
 const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanEditorProps) => {
-  const { ask, ConfirmHost } = useCpConfirm();
+  const { ask, ConfirmHost } = useConfirm();
   const [name, setName] = useState(plan.name);
   const [limits, setLimits] = useState<PlanLimits>({ ...plan.limits });
   const [isDefault, setIsDefault] = useState(plan.is_default);
