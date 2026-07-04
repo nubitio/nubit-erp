@@ -42,17 +42,18 @@ function abbreviateDayLabel(label: string): string {
   return DAY_ABBREV[key] ?? label.slice(0, 3).toLowerCase();
 }
 
-/** Keep the chart readable — backend returns every day of the month. */
+/** Always returns 7 consecutive days — fills missing days with zero total. */
 export function pickLast7SalesDays(salesByDay: SalesByDay[]): Array<{ label: string; total: number }> {
-  const today = DateTime.now().setZone('America/Lima').day;
+  const today = DateTime.now().setZone('America/Lima');
 
-  return salesByDay
-    .filter((row) => row.day <= today)
-    .slice(-7)
-    .map((row) => ({
-      label: abbreviateDayLabel(row.label),
-      total: row.total,
-    }));
+  return Array.from({ length: 7 }, (_, i) => {
+    const dt = today.minus({ days: i });
+    const found = salesByDay.find((row) => row.day === dt.day);
+    return {
+      label: found ? abbreviateDayLabel(found.label) : abbreviateDayLabel(dt.setLocale('es').weekdayLong),
+      total: found ? found.total : 0,
+    };
+  }).reverse();
 }
 
 export type EfactDeclarativeDashboardPayload = {
@@ -61,6 +62,7 @@ export type EfactDeclarativeDashboardPayload = {
     invoicesToday: number;
     avgTicket: number;
     salesThisMonth: number;
+    salesLast12Months: number;
     ytdRevenue: number;
     igvCollected: number;
     customersThisMonth: number;
@@ -85,7 +87,7 @@ function truncateName(name: string, maxLength = 45): string {
   return name.length > maxLength ? name.slice(0, maxLength - 1) + '…' : name;
 }
 
-function resolveYtdRevenue(data: DashboardData): number {
+function resolveSalesLast12Months(data: DashboardData): number {
   if (data.salesByMonth.length > 0) {
     return data.salesByMonth.reduce((sum, month) => sum + month.total, 0);
   }
@@ -94,13 +96,16 @@ function resolveYtdRevenue(data: DashboardData): number {
 }
 
 export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeDashboardPayload {
+  const salesLast12Months = resolveSalesLast12Months(data);
+
   return {
     stats: {
       netSalesToday: data.summary.netSalesToday,
       invoicesToday: data.summary.invoicesToday,
       avgTicket: data.summary.avgTicket,
       salesThisMonth: data.summary.salesThisMonth,
-      ytdRevenue: resolveYtdRevenue(data),
+      salesLast12Months,
+      ytdRevenue: salesLast12Months,
       igvCollected: data.summary.salesThisMonth * (18 / 118),
       customersThisMonth: data.summary.customersThisMonth,
       dailyGrowth: data.summary.dailyGrowth,

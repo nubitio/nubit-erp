@@ -58,13 +58,33 @@ const emptyDashboardData = (): DashboardData => ({
 });
 
 describe('pickLast7SalesDays', () => {
-  it('returns at most seven day labels for the current month', () => {
-    const today = DateTime.now().setZone('America/Lima').day;
+  it('returns exactly 7 days, filling missing days with zero total', () => {
     const rows = pickLast7SalesDays(emptyDashboardData().salesByDay);
 
-    expect(rows.length).toBeLessThanOrEqual(7);
-    expect(rows.length).toBe(Math.min(7, today));
+    expect(rows).toHaveLength(7);
     expect(rows.at(-1)?.label).toMatch(/^(lun|mar|mié|jue|vie|sáb|dom)$/);
+
+    // — if today is early in the month, some leading days fall outside
+    //   the current month's data and should be zero-filled
+    const zeroDays = rows.filter((r) => r.total === 0);
+    const today = DateTime.now().setZone('America/Lima').day;
+    if (today < 7) {
+      expect(zeroDays.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('zero-fills a day with no backend data', () => {
+    const today = DateTime.now().setZone('America/Lima').day;
+
+    // only provide data for today, nothing else
+    const rows = pickLast7SalesDays([
+      { day: today, label: 'Lunes', total: 999 },
+    ]);
+
+    expect(rows).toHaveLength(7);
+    // today's bar has data; the other 6 are zero
+    expect(rows.find((r) => r.total === 999)).toBeDefined();
+    expect(rows.filter((r) => r.total === 0)).toHaveLength(6);
   });
 });
 
@@ -74,10 +94,11 @@ describe('mapEfactDashboardPayload', () => {
 
     expect(payload.stats.netSalesToday).toBe(250);
     expect(payload.stats.invoicesToday).toBe(3);
-    expect(payload.salesByDay.length).toBeLessThanOrEqual(7);
+    expect(payload.salesByDay.length).toBe(7);
     expect(payload.voucherTypes[0]?.name).toBe('Boleta');
     expect(payload.recentSales[0]?.paymentMethod).toBe('Efectivo');
     expect(payload.topProducts[0]?.name).toBe('Arroz');
+    expect(payload.stats.salesLast12Months).toBe(300);
     expect(payload.stats.ytdRevenue).toBe(300);
     expect(payload.stats.igvCollected).toBeCloseTo(1200 * (18 / 118), 2);
     expect(payload.stats.customersThisMonth).toBe(8);
