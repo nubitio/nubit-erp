@@ -27,7 +27,10 @@ export const CpHubTabs = <T extends string>({
   onChange,
   ariaLabel,
 }: CpHubTabsProps<T>) => (
-  <nav className="nb-feature-hub__tabs cp-hub-tabs" aria-label={ariaLabel}>
+  <nav
+    className="nb-feature-hub__tabs nb-feature-hub__tabs--underline cp-hub-tabs"
+    aria-label={ariaLabel}
+  >
     {tabs.map((tab) => (
       <button
         key={tab.id}
