@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Cluster, Code, DataTable, FormField, RowActions, TextField, useConfirm } from '@nubitio/ui';
+import {
+  Button,
+  Card,
+  Cluster,
+  Code,
+  DataTable,
+  Drawer,
+  FormField,
+  RowActions,
+  TextField,
+  useConfirm,
+} from '@nubitio/ui';
 import { controlPlaneClient } from '../api/controlPlaneClient';
 import {
   CpAlert,
@@ -10,8 +21,6 @@ import {
   CpPageHeader,
   CpPageSkeleton,
   CpSection,
-  Col,
-  Grid,
 } from '../components/layout';
 import { TenantStatusBadge } from '../components/TenantStatusBadge';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
@@ -23,6 +32,7 @@ export const TenantListPage = () => {
   const queryClient = useQueryClient();
   const { isAdmin, isSuperAdmin } = useControlPlaneRoles();
   const { ask, ConfirmHost } = useConfirm();
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [connection, setConnection] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -37,12 +47,18 @@ export const TenantListPage = () => {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ['control-plane', 'tenants'] });
 
+  const closeCreate = () => {
+    setCreateOpen(false);
+    setFormError(null);
+  };
+
   const create = useMutation({
     mutationFn: () => controlPlaneClient.createTenant({ name, connection }),
     onSuccess: () => {
       setName('');
       setConnection('');
       setFormError(null);
+      setCreateOpen(false);
       invalidate();
       cpNotify.success(CP_STRINGS.tenants.created);
     },
@@ -94,133 +110,94 @@ export const TenantListPage = () => {
   }
 
   return (
-    <CpPage>
+    <CpPage fill wide>
       <CpPageHeader
         title={CP_STRINGS.tenants.title}
         subtitle={CP_STRINGS.tenants.subtitle}
         badge={{ label: CP_STRINGS.tenants.activeCount(data.tenants.length) }}
+        actions={
+          isAdmin ? (
+            <Button onClick={() => setCreateOpen(true)}>{CP_STRINGS.tenants.addTitle}</Button>
+          ) : undefined
+        }
       />
 
-      <Grid cols={12} gap={4}>
-        {formError && (
-          <Col fullWidth>
-            <CpAlert tone="danger">{formError}</CpAlert>
-          </Col>
-        )}
+      {formError && !createOpen && <CpAlert tone="danger">{formError}</CpAlert>}
 
-        {isAdmin && (
-          <Col spanMd={4}>
-            <Card variant="panel" title={CP_STRINGS.tenants.addTitle}>
-              <CpForm
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  create.mutate();
-                }}
-              >
-                <FormField label={CP_STRINGS.tenants.addName} helpText={CP_STRINGS.tenants.addNameHint}>
-                  <TextField
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={CP_STRINGS.tenants.addNamePlaceholder}
-                    required
-                  />
-                </FormField>
-                <FormField
-                  label={CP_STRINGS.tenants.addConnection}
-                  helpText={CP_STRINGS.tenants.addConnectionHint}
-                >
-                  <TextField
-                    value={connection}
-                    onChange={(e) => setConnection(e.target.value)}
-                    placeholder={CP_STRINGS.tenants.addConnectionPlaceholder}
-                    required
-                  />
-                </FormField>
-                <Button type="submit" loading={create.isPending} fullWidth>
-                  {CP_STRINGS.tenants.addSubmit}
-                </Button>
-              </CpForm>
-            </Card>
-          </Col>
-        )}
-
-        <Col spanMd={isAdmin ? 8 : 12}>
-          <Card variant="panel" title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="nb-table-surface">
-            <DataTable
-              fill
-              variant="flush"
-              rows={data.tenants}
-            getRowKey={(tenant) => tenant.id}
-            emptyMessage={CP_STRINGS.tenants.listEmpty}
-            columns={[
-              { id: 'id', header: CP_STRINGS.tenants.colId, accessor: (tenant) => tenant.id },
-              {
-                id: 'name',
-                header: CP_STRINGS.tenants.colName,
-                render: (tenant) => (
-                  <>
-                    <strong>{tenant.name}</strong>
-                    <div className="nb-text-muted">{tenant.connection}</div>
-                  </>
-                ),
-              },
-              { id: 'plan', header: CP_STRINGS.tenants.colPlan, accessor: (tenant) => tenant.plan ?? '—' },
-              {
-                id: 'domain',
-                header: CP_STRINGS.tenants.colDomain,
-                accessor: (tenant) => tenant.primary_domain ?? '—',
-              },
-              {
-                id: 'status',
-                header: CP_STRINGS.tenants.colStatus,
-                render: (tenant) => <TenantStatusBadge status={tenant.status} />,
-              },
-            ]}
-            rowActions={(tenant) => [
-              {
-                label: CP_STRINGS.tenants.manage,
-                icon: 'gear',
-                onClick: () => navigate(`/tenants/${tenant.id}`),
-              },
-              tenant.status === 'suspended'
-                ? {
-                    label: CP_STRINGS.tenants.unsuspend,
-                    icon: 'play',
-                    onClick: () => unsuspend.mutate(tenant.id),
-                  }
-                : {
-                    label: CP_STRINGS.tenants.suspend,
-                    icon: 'pause',
+      <Card variant="panel" title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="nb-table-surface">
+        <DataTable
+          fill
+          variant="flush"
+          rows={data.tenants}
+          getRowKey={(tenant) => tenant.id}
+          emptyMessage={CP_STRINGS.tenants.listEmpty}
+          columns={[
+            { id: 'id', header: CP_STRINGS.tenants.colId, accessor: (tenant) => tenant.id },
+            {
+              id: 'name',
+              header: CP_STRINGS.tenants.colName,
+              render: (tenant) => (
+                <>
+                  <strong>{tenant.name}</strong>
+                  <div className="nb-text-muted">{tenant.connection}</div>
+                </>
+              ),
+            },
+            { id: 'plan', header: CP_STRINGS.tenants.colPlan, accessor: (tenant) => tenant.plan ?? '—' },
+            {
+              id: 'domain',
+              header: CP_STRINGS.tenants.colDomain,
+              accessor: (tenant) => tenant.primary_domain ?? '—',
+            },
+            {
+              id: 'status',
+              header: CP_STRINGS.tenants.colStatus,
+              render: (tenant) => <TenantStatusBadge status={tenant.status} />,
+            },
+          ]}
+          rowActions={(tenant) => [
+            {
+              label: CP_STRINGS.tenants.manage,
+              icon: 'gear',
+              onClick: () => navigate(`/tenants/${tenant.id}`),
+            },
+            tenant.status === 'suspended'
+              ? {
+                  label: CP_STRINGS.tenants.unsuspend,
+                  icon: 'play',
+                  onClick: () => unsuspend.mutate(tenant.id),
+                }
+              : {
+                  label: CP_STRINGS.tenants.suspend,
+                  icon: 'pause',
+                  onClick: () =>
+                    ask({
+                      title: CP_STRINGS.tenants.suspendConfirmTitle,
+                      message: CP_STRINGS.tenantDetail.suspendConfirm(tenant.name),
+                      variant: 'warning',
+                      onConfirm: () => suspend.mutate(tenant.id),
+                    }),
+                },
+            ...(isSuperAdmin
+              ? [
+                  {
+                    separator: true,
+                    label: CP_STRINGS.delete,
+                    icon: 'trash',
+                    danger: true,
                     onClick: () =>
                       ask({
-                        title: CP_STRINGS.tenants.suspendConfirmTitle,
-                        message: CP_STRINGS.tenantDetail.suspendConfirm(tenant.name),
-                        variant: 'warning',
-                        onConfirm: () => suspend.mutate(tenant.id),
+                        title: CP_STRINGS.tenants.deleteConfirmTitle,
+                        message: CP_STRINGS.tenants.deleteConfirm(tenant.name),
+                        variant: 'danger',
+                        onConfirm: () => remove.mutate(tenant.id),
                       }),
                   },
-              ...(isSuperAdmin
-                ? [
-                    {
-                      separator: true,
-                      label: CP_STRINGS.delete,
-                      icon: 'trash',
-                      danger: true,
-                      onClick: () =>
-                        ask({
-                          title: CP_STRINGS.tenants.deleteConfirmTitle,
-                          message: CP_STRINGS.tenants.deleteConfirm(tenant.name),
-                          variant: 'danger',
-                          onConfirm: () => remove.mutate(tenant.id),
-                        }),
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        </Card>
-        </Col>
-      </Grid>
+                ]
+              : []),
+          ]}
+        />
+      </Card>
 
       {data.deletedTenants.length > 0 && (
         <CpSection title={CP_STRINGS.tenants.deletedTitle(data.deletedTenants.length)}>
@@ -302,6 +279,54 @@ export const TenantListPage = () => {
           />
         </CpSection>
       )}
+
+      <Drawer
+        isOpen={createOpen}
+        onClose={closeCreate}
+        title={CP_STRINGS.tenants.addTitle}
+        width={420}
+        scrim="overlay"
+        closeLabel={CP_STRINGS.cancel}
+        footer={
+          <Button
+            loading={create.isPending}
+            fullWidth
+            onClick={() => create.mutate()}
+            disabled={!name.trim() || !connection.trim()}
+          >
+            {CP_STRINGS.tenants.addSubmit}
+          </Button>
+        }
+      >
+        {formError && <CpAlert tone="danger">{formError}</CpAlert>}
+        <CpForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            create.mutate();
+          }}
+        >
+          <FormField label={CP_STRINGS.tenants.addName} helpText={CP_STRINGS.tenants.addNameHint}>
+            <TextField
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={CP_STRINGS.tenants.addNamePlaceholder}
+              required
+            />
+          </FormField>
+          <FormField
+            label={CP_STRINGS.tenants.addConnection}
+            helpText={CP_STRINGS.tenants.addConnectionHint}
+          >
+            <TextField
+              value={connection}
+              onChange={(e) => setConnection(e.target.value)}
+              placeholder={CP_STRINGS.tenants.addConnectionPlaceholder}
+              required
+            />
+          </FormField>
+        </CpForm>
+      </Drawer>
+
       <ConfirmHost />
     </CpPage>
   );
