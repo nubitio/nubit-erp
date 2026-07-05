@@ -261,5 +261,4 @@ final class TenantUsageServiceTest extends TestCase
 
         return TenantServiceFactory::yaml($path);
     }
-
 }

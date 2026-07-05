@@ -321,5 +321,4 @@ final class TenantServiceTest extends TestCase
 
         return $dir . '/' . $file;
     }
-
 }

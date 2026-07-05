@@ -98,7 +98,6 @@ final class TenantServiceFactory extends TestCase
             {
                 if (!array_key_exists($key, $this->store)) {
                     $item = new class implements ItemInterface {
-
                         public function getKey(): string
                         {
                             return '';

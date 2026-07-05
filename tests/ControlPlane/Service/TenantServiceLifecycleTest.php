@@ -697,5 +697,4 @@ final class TenantServiceLifecycleTest extends TestCase
 
         return $dir . '/' . $file;
     }
-
 }

@@ -142,5 +142,4 @@ final class TenantHealthCheckerTest extends TestCase
 
         return TenantServiceFactory::yaml($path);
     }
-
 }
