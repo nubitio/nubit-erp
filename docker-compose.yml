@@ -47,6 +47,16 @@ services:
       APP_COOKIE_SECURE: 'false'
       DECOLECTA_TOKEN: '${DECOLECTA_TOKEN:-}'
       MAILER_FROM: '${MAILER_FROM:-noreply@efact.app}'
+      ONBOARDING_DOMAIN: '${ONBOARDING_DOMAIN:-localhost}'
+      DEFAULT_URI: '${DEFAULT_URI:-http://localhost:8080}'
+      PAYPAL_CLIENT_ID: '${PAYPAL_CLIENT_ID:-}'
+      PAYPAL_CLIENT_SECRET: '${PAYPAL_CLIENT_SECRET:-}'
+      PAYPAL_WEBHOOK_ID: '${PAYPAL_WEBHOOK_ID:-}'
+      PAYPAL_MODE: '${PAYPAL_MODE:-sandbox}'
+      PAYPAL_PLAN_MAP: '${PAYPAL_PLAN_MAP:-{}}'
+      MERCADOPAGO_ACCESS_TOKEN: '${MERCADOPAGO_ACCESS_TOKEN:-}'
+      MERCADOPAGO_WEBHOOK_SECRET: '${MERCADOPAGO_WEBHOOK_SECRET:-}'
+      MERCADOPAGO_PLAN_MAP: '${MERCADOPAGO_PLAN_MAP:-{}}'
       TZ: UTC
       # Mercure hub — proxy via Caddy (SLICE-014)
       MERCURE_URL: 'http://mercure/.well-known/mercure'

@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { appRoutes } from './app-routes';
 import { EfactAdminShell } from './EfactAdminShell';
 import { userInformation } from '@app/userInformation';
-import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubitio/hydra';
 import { RouteErrorBoundary } from '@shared/components/RouteErrorBoundary';
 import type { AppRouteDefinition } from '@app/router/types';
 
@@ -35,17 +34,11 @@ export const Content = () => {
   const defaultPath = userInformation().currentUserRoleId === 3 ? '/pos' : '/dashboard';
 
   return (
-    <SchemaProvider>
-      <HydraResourceSchemaProvider>
-        <HydraResourceStoreProvider>
-          <EfactAdminShell title={userInformation().currentBranchName}>
-            <Routes>
-              {renderRouteTree(appRoutes)}
-              <Route path="*" element={<Navigate to={defaultPath} />} />
-            </Routes>
-          </EfactAdminShell>
-        </HydraResourceStoreProvider>
-      </HydraResourceSchemaProvider>
-    </SchemaProvider>
+    <EfactAdminShell title={userInformation().currentBranchName}>
+      <Routes>
+        {renderRouteTree(appRoutes)}
+        <Route path="*" element={<Navigate to={defaultPath} />} />
+      </Routes>
+    </EfactAdminShell>
   );
 };

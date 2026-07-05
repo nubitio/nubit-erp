@@ -203,6 +203,7 @@ export default defineConfig({
       input: {
         app: './assets/app.tsx',
         'control-plane': './assets/control-plane.tsx',
+        'account-portal': './assets/account-portal.tsx',
       },
       output: {
         manualChunks(id) {

@@ -21,7 +21,7 @@ readonly class TenantListener
 {
     public function __construct(
         private TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
-        private TenantRegistryInterface $tenantManager,
+        private TenantRegistryInterface $tenantRegistry,
         private TenantContext $tenantContext,
         private LoggerInterface $logger,
     ) {}
@@ -50,6 +50,7 @@ readonly class TenantListener
 
         $excludedPaths = [
             '/admin',
+            '/api/account',
             '/register',
             '/account',
             '/webhook/paypal',
@@ -97,9 +98,9 @@ readonly class TenantListener
         }
 
         try {
-            $tenant = $this->tenantManager->getTenantByDomain($host);
+            $tenant = $this->tenantRegistry->getTenantByDomain($host);
             if ($tenant === null) {
-                $tenant = $this->tenantManager->getTenantByName($subdomain);
+                $tenant = $this->tenantRegistry->getTenantByName($subdomain);
             }
 
             $tenantName = $tenant['name'] ?? $subdomain;

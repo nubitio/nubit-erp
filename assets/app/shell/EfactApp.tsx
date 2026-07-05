@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '@nubitio/admin';
 import { useTheme } from '@nubitio/ui';
+import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubitio/hydra';
 import { Content } from './Content';
 
 import '../../styles.scss';
@@ -50,11 +51,17 @@ function AuthenticatedRoot() {
     return <TenantOnboardingGate />;
   }
 
-  if (isFullScreen) {
-    return <FullScreenContent />;
-  }
+  const page = isFullScreen ? <FullScreenContent /> : <Content />;
 
-  return <Content />;
+  return (
+    <SchemaProvider>
+      <HydraResourceSchemaProvider>
+        <HydraResourceStoreProvider>
+          {page}
+        </HydraResourceStoreProvider>
+      </HydraResourceSchemaProvider>
+    </SchemaProvider>
+  );
 }
 
 function AppShell({ screenSizeClass }: { screenSizeClass: string }) {

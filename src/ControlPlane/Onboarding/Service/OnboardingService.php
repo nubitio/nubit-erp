@@ -15,6 +15,7 @@ use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final readonly class OnboardingService
 {
@@ -32,6 +33,7 @@ final readonly class OnboardingService
         private MessageBusInterface $messageBus,
         private SubscriptionManager $subscriptionManager,
         private SecretCipher $secretCipher,
+        private UrlGeneratorInterface $urlGenerator,
         #[AutowireIterator('app.payment_gateway')]
         iterable $gatewayIterator,
     ) {
@@ -93,8 +95,6 @@ final readonly class OnboardingService
         string $gateway,
         BillingCycle $billingCycle,
         string $adminPassword,
-        string $returnUrl,
-        string $cancelUrl,
     ): array {
         if (!\in_array($plan, self::PAID_PLANS, true)) {
             throw new InvalidArgumentException('Plan invalido para pago: ' . $plan);
@@ -117,6 +117,17 @@ final readonly class OnboardingService
         $provisionId = $this->createProvisionRecord($accountId, $tenantName, $domain, $plan, $token, $adminPassword);
 
         $accountEmail = $this->getAccountEmail($accountId);
+
+        $returnUrl = $this->urlGenerator->generate(
+            'onboarding_payment_return',
+            ['token' => $token],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+        $cancelUrl = $this->urlGenerator->generate(
+            'onboarding_payment_cancel',
+            ['token' => $token],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
 
         $subscriptionResult = $paymentGateway->createSubscription(
             $plan,

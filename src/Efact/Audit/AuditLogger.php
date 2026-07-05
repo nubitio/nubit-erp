@@ -16,7 +16,7 @@ readonly class AuditLogger
     public function __construct(
         private TenantContext $tenantContext,
         private Security $security,
-        private TenantRegistryInterface $tenantManager,
+        private TenantRegistryInterface $tenantRegistry,
         private LoggerInterface $logger,
         private MessageBusInterface $bus,
     ) {}
@@ -91,7 +91,7 @@ readonly class AuditLogger
         }
 
         try {
-            $tenant = $this->tenantManager->getTenantByName($tenantName);
+            $tenant = $this->tenantRegistry->getTenantByName($tenantName);
             if ($tenant === null) {
                 return null;
             }

@@ -16,23 +16,23 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
+#[AllowMockObjectsWithoutExpectations]
 final class TenantListenerTest extends TestCase
 {
     private TenantConnectionSwitcherInterface&MockObject $switcher;
-    private TenantRegistryInterface&MockObject $tenantManager;
+    private TenantRegistryInterface&MockObject $tenantRegistry;
     private TenantContext $tenantContext;
     private TenantListener $listener;
 
     protected function setUp(): void
     {
         $this->switcher = $this->createMock(TenantConnectionSwitcherInterface::class);
-        $this->tenantManager = $this->createMock(TenantRegistryInterface::class);
+        $this->tenantRegistry = $this->createMock(TenantRegistryInterface::class);
         $this->tenantContext = new TenantContext();
 
         $this->listener = new TenantListener(
             $this->switcher,
-            $this->tenantManager,
+            $this->tenantRegistry,
             $this->tenantContext,
             new NullLogger(),
         );
@@ -65,6 +65,13 @@ final class TenantListenerTest extends TestCase
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('app.example.com', '/account/dashboard'));
+    }
+
+    public function testSkipsAccountApiPath(): void
+    {
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('app.example.com', '/api/account/session'));
     }
 
     public function testSkipsLocalhostSubdomain(): void
@@ -106,8 +113,8 @@ final class TenantListenerTest extends TestCase
     {
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme'];
 
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->with('acme')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->with('acme')->willReturn($tenantData);
 
         $this->switcher->expects($this->once())->method('switchConnection')->with('acme');
 
@@ -121,9 +128,9 @@ final class TenantListenerTest extends TestCase
     {
         $tenantData = ['id' => 2, 'name' => 'corp', 'connection' => 'corp'];
 
-        $this->tenantManager->method('getTenantByDomain')->with('custom.corp.com')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->with('custom.corp.com')->willReturn($tenantData);
 
-        $this->tenantManager->expects($this->never())->method('getTenantByName');
+        $this->tenantRegistry->expects($this->never())->method('getTenantByName');
 
         $this->switcher->expects($this->once())->method('switchConnection')->with('corp');
 
@@ -137,8 +144,8 @@ final class TenantListenerTest extends TestCase
     {
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme', 'status' => 'suspended'];
 
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->willReturn($tenantData);
 
         $this->switcher->expects($this->never())->method('switchConnection');
 
@@ -157,8 +164,8 @@ final class TenantListenerTest extends TestCase
     {
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme', 'status' => 'active'];
 
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->willReturn($tenantData);
         $this->switcher->method('switchConnection');
 
         ($this->listener)($this->createEvent('acme.example.com'));
@@ -168,8 +175,8 @@ final class TenantListenerTest extends TestCase
 
     public function testErrorDoesNotLeakTenantName(): void
     {
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willThrowException(new \RuntimeException('Tenant not found'));
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->willThrowException(new \RuntimeException('Tenant not found'));
 
         $event = $this->createEvent('secret-tenant.example.com');
         ($this->listener)($event);
@@ -190,8 +197,8 @@ final class TenantListenerTest extends TestCase
         $event = new RequestEvent($kernel, $request, HttpKernelInterface::MAIN_REQUEST);
 
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme'];
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->willReturn($tenantData);
         $this->switcher->method('switchConnection');
 
         ($this->listener)($event);
@@ -202,8 +209,8 @@ final class TenantListenerTest extends TestCase
     public function testGeneratesRequestIdWhenMissing(): void
     {
         $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme'];
-        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
-        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+        $this->tenantRegistry->method('getTenantByDomain')->willReturn(null);
+        $this->tenantRegistry->method('getTenantByName')->willReturn($tenantData);
         $this->switcher->method('switchConnection');
 
         ($this->listener)($this->createEvent('acme.example.com'));
