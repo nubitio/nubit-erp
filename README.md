@@ -221,12 +221,20 @@ make e2e
 docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e
 ```
 
-Hay **dos** archivos de spec E2E:
+Specs E2E (solo flujos críticos — CI y `make e2e`):
 
 | Archivo | Descripción |
 |---|---|
-| `e2e/happy-path.spec.ts` | Flujo POS completo en 9 pasos: login → producto → precio → caja → cliente → venta → movimiento → edición → cierre. Graba video a `test-results/happy-path-full-run.webm`. |
-| `e2e/auth-invoice-workflow.spec.ts` | Tests a nivel API: rechazo con credenciales vacías, endpoints de factura sin autenticación, workflow autenticado de creación y listado de facturas (usa `E2E_SALE_ID` sembrado). |
+| `e2e/login-shell-mount.spec.ts` | Auth: rechazo de credenciales inválidas y shell post-login. |
+| `e2e/happy-path.spec.ts` | Venta completa: login → producto → caja → cliente → POS → venta módulo → movimiento → cierre. |
+| `e2e/golden-path-fiscal.spec.ts` | **Golden path fiscal:** login → caja → venta POS → factura → envío SUNAT (stub) → CDR → PDF. |
+| `e2e/purchases-stock.spec.ts` | Compras: login → módulo compras → `POST /api/purchases` → stock incrementado. |
+
+Solo el golden path fiscal:
+
+```bash
+docker compose --profile e2e run --rm e2e yarn test:e2e e2e/golden-path-fiscal.spec.ts
+```
 
 ## Calidad de código
 
