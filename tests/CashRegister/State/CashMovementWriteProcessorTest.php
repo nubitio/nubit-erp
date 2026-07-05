@@ -16,6 +16,7 @@ use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -43,25 +44,9 @@ final class CashMovementWriteProcessorTest extends TestCase
         return $movement;
     }
 
-    // ── DELETE ────────────────────────────────────────────────────────────────
+    // ── Append-only guard ─────────────────────────────────────────────────────
 
-    public function testDeleteExecutesSqlAndReturnsNull(): void
-    {
-        $conn = $this->createMock(Connection::class);
-        $conn
-            ->expects(self::once())
-            ->method('executeStatement')
-            ->with(self::stringContains('DELETE FROM cash_movements'), [42]);
-
-        $security = $this->createStub(Security::class);
-        $processor = new CashMovementWriteProcessor($conn, $security);
-
-        $result = $processor->process($this->makeMovement(), new Delete(), ['id' => '42']);
-
-        self::assertNull($result);
-    }
-
-    public function testDeleteWithZeroIdSkipsStatement(): void
+    public function testDeleteIsRejected(): void
     {
         $conn = $this->createMock(Connection::class);
         $conn->expects(self::never())->method('executeStatement');
@@ -69,9 +54,20 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $processor = new CashMovementWriteProcessor($conn, $security);
 
-        $result = $processor->process($this->makeMovement(), new Delete(), ['id' => '0']);
+        $this->expectException(MethodNotAllowedHttpException::class);
+        $processor->process($this->makeMovement(), new Delete(), ['id' => '42']);
+    }
 
-        self::assertNull($result);
+    public function testPatchIsRejected(): void
+    {
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::never())->method('executeStatement');
+
+        $security = $this->createStub(Security::class);
+        $processor = new CashMovementWriteProcessor($conn, $security);
+
+        $this->expectException(MethodNotAllowedHttpException::class);
+        $processor->process($this->makeMovement(), new Patch(), ['id' => '5']);
     }
 
     // ── Unauthenticated ───────────────────────────────────────────────────────
@@ -156,21 +152,5 @@ final class CashMovementWriteProcessorTest extends TestCase
 
         self::assertStringContainsString('INSERT', $capturedSql);
         self::assertSame('CASH_OUT', $capturedParams[1]);
-    }
-
-    // ── PATCH (UPDATE) ────────────────────────────────────────────────────────
-
-    public function testPatchUpdatesExistingRow(): void
-    {
-        $conn = $this->createMock(Connection::class);
-        $conn->expects(self::once())->method('executeStatement')->with(self::stringContains('UPDATE cash_movements'));
-
-        $security = $this->createStub(Security::class);
-        $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
-
-        $processor = new CashMovementWriteProcessor($conn, $security);
-        $result = $processor->process($this->makeMovement(), new Patch(), ['id' => '5']);
-
-        self::assertNotNull($result);
     }
 }
