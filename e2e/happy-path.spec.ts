@@ -997,76 +997,31 @@ test.describe('Happy Path — flujo completo de venta', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // PASO 9 — Editar movimiento de caja
+  // PASO 9 — Movimientos append-only (sin edición)
   // ───────────────────────────────────────────────────────────────────────────
-  test('09 - Editar movimiento de caja', async () => {
-    await test.step('Seleccionar el movimiento en el grid', async () => {
+  test('09 - Movimientos de caja son append-only', async () => {
+    await test.step('El movimiento creado sigue visible con el monto original', async () => {
       const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
       await movementRow.waitFor({ state: 'visible', timeout: 10000 });
-      await movementRow.click();
-      // NativeDataGridView: selection is a synchronous React state update; row gets
-      // .nb-datagrid__row--selected class after the next render.
-      await expect(movementRow).toHaveClass(/nb-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
+      await expect(movementRow).toContainText('50');
     });
 
-    await test.step('Abrir formulario de edición', async () => {
-      // Retry loop: click Editar and wait for popup — retry up to 3 times if it doesn't open.
-      // This guards against the DX focusedRowChanged race condition where the toolbar receives
-      // the click before the component state reflects the newly-selected row.
-      const popup = crudDialog(page, /editar|edit/i);
-      let opened = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-          const rowActionsButton = page
-            .locator('.nb-datagrid__row')
-            .filter({ hasText: createdMovementRowText! })
-            .locator('.nb-datagrid__row-actions button')
-            .first();
-          await rowActionsButton.click();
-          await page
-            .locator('.nb-datagrid__row-actions-popover')
-            .locator('button')
-            .filter({ hasText: /editar|edit/i })
-            .click();
-        try {
-          await popup.waitFor({ state: 'visible', timeout: 4000 });
-          opened = true;
-          break;
-        } catch {
-          // Dialog didn't open — possibly DX showed a "no row selected" alert instead.
-          // Dismiss any stale overlay, re-select the row, then retry.
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(300);
-          const movementRow = page
-            .locator('.nb-datagrid__row')
-            .filter({ hasText: createdMovementRowText! });
-          await movementRow.click();
-          await expect(movementRow).toHaveClass(/nb-datagrid__row--selected/, { timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      }
-      if (!opened) {
-        await popup.waitFor({ state: 'visible', timeout: 5000 }); // final assertion (will fail with clear message)
-      }
-    });
-
-    await test.step('Modificar el monto y guardar', async () => {
-      // Cambiar el monto de 50 a 75
-      const montoInput = crudDialogBody(page, /editar|edit/i).locator('#nb-form-amount, input[aria-label="Monto"]').first();
-      await montoInput.waitFor({ state: 'visible', timeout: 6000 });
-      await montoInput.click({ clickCount: 3 });
-      await montoInput.fill('75');
-      await page.keyboard.press('Tab');
-
-      await clickDialogButton(page, 'Guardar');
-      await expect(crudDialog(page, /editar|edit/i)).toBeHidden({ timeout: 15000 });
-      await waitForGridLoad(page);
-    });
-
-    await test.step('Verificar que el monto actualizado aparece en el grid', async () => {
+    await test.step('No hay acción Editar en el menú de fila', async () => {
       const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
-      await expect(movementRow).toBeVisible({ timeout: 10000 });
-      // El formatter de amount muestra en formato moneda; "75" debe aparecer en la fila
-      await expect(movementRow).toContainText('75');
+      await movementRow.click();
+
+      const rowActionsButton = movementRow.locator('.nb-datagrid__row-actions button').first();
+      const hasActions = await rowActionsButton.isVisible({ timeout: 3000 }).catch(() => false);
+      if (!hasActions) {
+        return;
+      }
+
+      await rowActionsButton.click();
+      const editBtn = page
+        .locator('.nb-datagrid__row-actions-popover button')
+        .filter({ hasText: /editar|edit/i });
+      await expect(editBtn).toHaveCount(0);
+      await page.keyboard.press('Escape');
     });
   });
 
