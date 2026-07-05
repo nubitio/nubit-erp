@@ -1,3 +1,5 @@
+import { exceptionalFetch } from '@shared/api/network';
+
 export interface AccountSession {
   authenticated: boolean;
   account?: { id: number; email: string };
@@ -54,7 +56,7 @@ export interface ProvisionStatus {
 }
 
 async function apFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await exceptionalFetch(path, {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
@@ -62,7 +64,7 @@ async function apFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
     ...init,
-  });
+  }, 'api-documentation');
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string };

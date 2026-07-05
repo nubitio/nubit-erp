@@ -27,40 +27,29 @@ final class AccountTenantApiController extends AbstractController
     #[Route('/{tenantId}', name: 'api_account_tenant_detail', methods: ['GET'], requirements: ['tenantId' => '\d+'])]
     public function detail(int $tenantId, Request $request): JsonResponse
     {
-        $accountId = $this->requireAccountId($request);
-        if ($accountId instanceof JsonResponse) {
-            return $accountId;
-        }
-
-        $tenant = $this->findOwnedTenant($accountId, $tenantId);
-        if ($tenant === null) {
-            return $this->json(['error' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
+        $tenant = $this->requireOwnedTenant($request, $tenantId);
+        if ($tenant instanceof JsonResponse) {
+            return $tenant;
         }
 
         return $this->json([
             'tenant' => $tenant,
-            'subscription' => $this->subscriptionService->getSubscriptionForTenant($tenantId, $accountId),
+            'subscription' => $this->subscriptionService->getSubscriptionForTenant(
+                $tenantId,
+                $this->getSessionAccountId($request),
+            ),
         ]);
     }
 
     #[Route('/{tenantId}/change-plan', name: 'api_account_change_plan', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
     public function changePlan(int $tenantId, Request $request): JsonResponse
     {
-        $accountId = $this->requireAccountId($request);
-        if ($accountId instanceof JsonResponse) {
-            return $accountId;
+        $tenant = $this->requireOwnedTenant($request, $tenantId);
+        if ($tenant instanceof JsonResponse) {
+            return $tenant;
         }
 
-        $tenant = $this->findOwnedTenant($accountId, $tenantId);
-        if ($tenant === null) {
-            return $this->json(['error' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
-        }
-
-        $payload = json_decode($request->getContent(), true);
-        if (!\is_array($payload)) {
-            return $this->json(['error' => 'Payload invalido.'], Response::HTTP_BAD_REQUEST);
-        }
-
+        $payload = $this->decodeJson($request);
         $newPlan = mb_strtolower(trim((string) ($payload['plan'] ?? '')));
         $gateway = mb_strtolower(trim((string) ($payload['gateway'] ?? 'paypal')));
         $billingCycleRaw = mb_strtolower(trim((string) ($payload['billingCycle'] ?? 'monthly')));
@@ -75,7 +64,7 @@ final class AccountTenantApiController extends AbstractController
         try {
             $result = $this->subscriptionService->changePlan(
                 $tenantId,
-                $accountId,
+                $this->getSessionAccountId($request),
                 $newPlan,
                 $billingCycle,
                 $gateway,
@@ -100,27 +89,18 @@ final class AccountTenantApiController extends AbstractController
     #[Route('/{tenantId}/change-gateway', name: 'api_account_change_gateway', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
     public function changeGateway(int $tenantId, Request $request): JsonResponse
     {
-        $accountId = $this->requireAccountId($request);
-        if ($accountId instanceof JsonResponse) {
-            return $accountId;
+        $tenant = $this->requireOwnedTenant($request, $tenantId);
+        if ($tenant instanceof JsonResponse) {
+            return $tenant;
         }
 
-        $tenant = $this->findOwnedTenant($accountId, $tenantId);
-        if ($tenant === null) {
-            return $this->json(['error' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
-        }
-
-        $payload = json_decode($request->getContent(), true);
-        if (!\is_array($payload)) {
-            return $this->json(['error' => 'Payload invalido.'], Response::HTTP_BAD_REQUEST);
-        }
-
+        $payload = $this->decodeJson($request);
         $newGateway = mb_strtolower(trim((string) ($payload['gateway'] ?? '')));
 
         try {
             $result = $this->subscriptionService->changeGateway(
                 $tenantId,
-                $accountId,
+                $this->getSessionAccountId($request),
                 $newGateway,
                 $this->generateUrl(
                     'onboarding_subscription_return',
@@ -143,6 +123,24 @@ final class AccountTenantApiController extends AbstractController
     #[Route('/{tenantId}/cancel-subscription', name: 'api_account_cancel_subscription', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
     public function cancelSubscription(int $tenantId, Request $request): JsonResponse
     {
+        $tenant = $this->requireOwnedTenant($request, $tenantId);
+        if ($tenant instanceof JsonResponse) {
+            return $tenant;
+        }
+
+        $this->subscriptionService->cancelSubscription($tenantId);
+
+        return $this->json([
+            'ok' => true,
+            'message' => 'Suscripcion cancelada. Tu plan cambiara a Free al final del periodo.',
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>|JsonResponse
+     */
+    private function requireOwnedTenant(Request $request, int $tenantId): array|JsonResponse
+    {
         $accountId = $this->requireAccountId($request);
         if ($accountId instanceof JsonResponse) {
             return $accountId;
@@ -153,12 +151,7 @@ final class AccountTenantApiController extends AbstractController
             return $this->json(['error' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
         }
 
-        $this->subscriptionService->cancelSubscription($tenantId);
-
-        return $this->json([
-            'ok' => true,
-            'message' => 'Suscripcion cancelada. Tu plan cambiara a Free al final del periodo.',
-        ]);
+        return $tenant;
     }
 
     /**

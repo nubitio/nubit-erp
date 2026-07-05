@@ -10,6 +10,32 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait AccountSessionTrait
 {
+    /**
+     * @return array<string, mixed>
+     */
+    protected function decodeJson(Request $request): array
+    {
+        $data = json_decode($request->getContent(), associative: true);
+
+        return \is_array($data) ? $data : [];
+    }
+
+    protected function onboardingDomainSuffix(): string
+    {
+        $root = trim(
+            (string) (
+                $_ENV['ONBOARDING_DOMAIN'] ?? $_SERVER['ONBOARDING_DOMAIN'] ?? getenv('ONBOARDING_DOMAIN')
+                ?: 'localhost'
+            ),
+        );
+
+        if ($root === '') {
+            $root = 'localhost';
+        }
+
+        return '.' . $root;
+    }
+
     protected function getSessionAccountId(Request $request): int
     {
         return (int) $request->getSession()->get('onboarding_account_id', 0);

@@ -8,6 +8,7 @@ use App\ControlPlane\Onboarding\Service\OnboardingService;
 use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use App\ControlPlane\Subscription\Payment\BillingCycle;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use SensitiveParameter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -106,7 +107,7 @@ final class AccountProvisioningApiController extends AbstractController
     }
 
     #[Route('/provisions/{token}/status', name: 'api_account_provision_status', methods: ['GET'])]
-    public function provisionStatus(string $token, Request $request): JsonResponse
+    public function provisionStatus(#[SensitiveParameter] string $token, Request $request): JsonResponse
     {
         $accountId = $this->requireAccountId($request);
         if ($accountId instanceof JsonResponse) {

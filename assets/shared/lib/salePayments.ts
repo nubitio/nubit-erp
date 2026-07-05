@@ -216,7 +216,7 @@ export const removePaymentLine = (
 export const buildPaymentPayload = (
   lines: SalePaymentLineDraft[],
   paymentMethods: PaymentMethodOption[],
-  total: number,
+  _total: number,
 ): SalePaymentPayloadLine[] => {
   const methodById = new Map(paymentMethods.map((method) => [method.id, method]));
 

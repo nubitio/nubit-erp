@@ -26,19 +26,8 @@ final class AccountSessionApiController extends AbstractController
     #[Route('/config', name: 'api_account_config', methods: ['GET'])]
     public function config(): JsonResponse
     {
-        $root = trim(
-            (string) (
-                $_ENV['ONBOARDING_DOMAIN'] ?? $_SERVER['ONBOARDING_DOMAIN'] ?? getenv('ONBOARDING_DOMAIN')
-                ?: 'localhost'
-            ),
-        );
-
-        if ($root === '') {
-            $root = 'localhost';
-        }
-
         return $this->json([
-            'domainSuffix' => '.' . $root,
+            'domainSuffix' => $this->onboardingDomainSuffix(),
         ]);
     }
 
@@ -150,13 +139,4 @@ final class AccountSessionApiController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function decodeJson(Request $request): array
-    {
-        $data = json_decode($request->getContent(), true);
-
-        return \is_array($data) ? $data : [];
-    }
 }
