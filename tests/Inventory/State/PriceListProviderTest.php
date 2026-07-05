@@ -24,9 +24,9 @@ final class PriceListProviderTest extends TestCase
     public function testProvideReturnsMappedDtos(): void
     {
         $provider = $this->makeProvider([
-            ['id' => 'prod-1', 'name' => 'Producto A', 'price' => '100.0000', 'price_source' => 'base'],
-            ['id' => 'prod-2', 'name' => 'Producto B', 'price' => '90.0000', 'price_source' => 'multiplier'],
-            ['id' => 'prod-3', 'name' => 'Producto C', 'price' => '75.0000', 'price_source' => 'override'],
+            ['id' => 'prod-1', 'name' => 'Producto A', 'sku' => 'SKU-A', 'code' => 'COD-A', 'price' => '100.0000', 'price_source' => 'base'],
+            ['id' => 'prod-2', 'name' => 'Producto B', 'sku' => null, 'code' => 'COD-B', 'price' => '90.0000', 'price_source' => 'multiplier'],
+            ['id' => 'prod-3', 'name' => 'Producto C', 'sku' => 'SKU-C', 'code' => null, 'price' => '75.0000', 'price_source' => 'override'],
         ]);
 
         $result = $provider->provide(new GetCollection(), ['id' => 1]);
@@ -39,6 +39,8 @@ final class PriceListProviderTest extends TestCase
         self::assertInstanceOf(PriceListDto::class, $first);
         self::assertSame('prod-1', $first->id);
         self::assertSame('Producto A', $first->name);
+        self::assertSame('SKU-A', $first->sku);
+        self::assertSame('COD-A', $first->code);
         self::assertSame('100.0000', $first->price);
         self::assertSame('base', $first->priceSource);
 

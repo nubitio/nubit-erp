@@ -40,6 +40,8 @@ readonly class PriceListProvider implements ProviderInterface
             SELECT
                 p.producto_id                                        AS id,
                 p.descripcion                                        AS name,
+                p.sku                                                AS sku,
+                p.codigo                                             AS code,
                 CASE
                     WHEN pld.price IS NOT NULL
                         THEN pld.price
@@ -67,6 +69,8 @@ readonly class PriceListProvider implements ProviderInterface
             fn(array $item): PriceListDto => new PriceListDto(
                 id: $item['id'],
                 name: $item['name'],
+                sku: $item['sku'],
+                code: $item['code'],
                 price: $item['price'], // kept as string — exact decimal from DB
                 priceSource: $item['price_source'],
             ),

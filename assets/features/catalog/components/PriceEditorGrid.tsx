@@ -8,16 +8,21 @@ import {
   type Field,
   type GridHandle,
 } from '@nubitio/crud';
+import { TextField } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { priceListEndpoints } from '../api/priceListEndpoints';
+import { filterPriceEditorRows } from '../lib/filterPriceEditorRows';
+import './PriceEditorGrid.scss';
 
 export type PriceEditorRow = DataRecord & {
   id: string | number;
   name?: string;
+  sku?: string | null;
+  code?: string | null;
   /** Effective price as decimal string from the API, or number while edited by the grid. */
   price?: string | number;
   priceSource?: 'override' | 'multiplier' | 'base';
@@ -47,6 +52,12 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
   const gridRef = useRef<GridHandle | null>(null);
   const priceListIdRef = useRef<string | number | null>(null);
   const [rows, setRows] = useState<PriceEditorRow[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredRows = useMemo(
+    () => filterPriceEditorRows(rows, searchQuery),
+    [rows, searchQuery],
+  );
 
   const fields = useMemo<Field[]>(
     () => [
@@ -113,33 +124,64 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
     setPriceListId: (id) => {
       priceListIdRef.current = id;
     },
-    setRows: (newRows) => setRows(newRows.map((row) => ({ ...row }))),
+    setRows: (newRows) => {
+      setSearchQuery('');
+      setRows(newRows.map((row) => ({ ...row })));
+    },
     hasChanges: () => gridRef.current?.hasEditData() ?? false,
     saveChanges: () => gridRef.current?.saveChanges() ?? Promise.resolve(false),
   }));
 
+  const resultLabel =
+    searchQuery.trim().length > 0
+      ? `${filteredRows.length} de ${rows.length} productos`
+      : `${rows.length} productos`;
+
   return (
-    <div style={{ height: '55vh', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
-      <DataGridView
-        ref={gridRef}
-        id="price-list-editor"
-        title="Precios"
-        url={priceListEndpoints.list()}
-        data={rows}
-        fields={fields}
-        editMode="cell"
-        inlineEditToolbar={false}
-        inlineRowActions={false}
-        allowAdd={false}
-        allowEdit
-        allowDelete={false}
-        allowExport={false}
-        filterRow={false}
-        paging={false}
-        toolbarVisible={false}
-        onBatchSave={saveRows}
-        zebraRows={false}
-      />
+    <div className="price-editor-grid">
+      <div className="price-editor-grid__toolbar">
+        <TextField
+          className="price-editor-grid__search"
+          type="search"
+          placeholder="Buscar por nombre, SKU o código..."
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          aria-label="Buscar producto"
+          autoComplete="off"
+        />
+        <span className="price-editor-grid__count">{resultLabel}</span>
+      </div>
+
+      <div className="price-editor-grid__body">
+        {filteredRows.length === 0 ? (
+          <div className="price-editor-grid__empty" role="status">
+            {rows.length === 0
+              ? 'No hay productos activos en el catálogo.'
+              : 'Sin resultados para la búsqueda actual.'}
+          </div>
+        ) : (
+          <DataGridView
+            ref={gridRef}
+            id="price-list-editor"
+            title="Precios"
+            url={priceListEndpoints.list()}
+            data={filteredRows}
+            fields={fields}
+            editMode="cell"
+            inlineEditToolbar={false}
+            inlineRowActions={false}
+            allowAdd={false}
+            allowEdit
+            allowDelete={false}
+            allowExport={false}
+            filterRow={false}
+            paging={false}
+            toolbarVisible={false}
+            onBatchSave={saveRows}
+            zebraRows={false}
+          />
+        )}
+      </div>
     </div>
   );
 });

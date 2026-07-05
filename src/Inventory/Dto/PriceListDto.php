@@ -20,6 +20,8 @@ class PriceListDto
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,
+        public ?string $sku = null,
+        public ?string $code = null,
         public ?string $price = null,
         public string $priceSource = 'base',
     ) {}

@@ -5,6 +5,8 @@
 export interface PriceListItemDto {
   id: string;
   name: string;
+  sku?: string | null;
+  code?: string | null;
   /** Effective price as a decimal string to avoid floating-point rounding. */
   price: string;
   /** How the price was derived: 'override' | 'multiplier' | 'base' */
