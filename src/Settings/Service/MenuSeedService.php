@@ -176,6 +176,13 @@ class MenuSeedService
             [$menuIds],
             [ArrayParameterType::INTEGER],
         );
+        // Detach legacy children before deleting: the self-referencing FK on
+        // parent_id rejects removing a parent while any row still points at it.
+        $this->connection->executeStatement(
+            'UPDATE menu SET parent_id = NULL WHERE id NOT IN (?)',
+            [$menuIds],
+            [ArrayParameterType::INTEGER],
+        );
         $this->connection->executeStatement(
             'DELETE FROM menu WHERE id NOT IN (?)',
             [$menuIds],
