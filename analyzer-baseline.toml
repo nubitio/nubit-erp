@@ -128,9 +128,39 @@ count = 1
 
 [[issues]]
 file = "src/AI/Service/SessionContextBuilder.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTManager)`).'
+count = 1
+
+[[issues]]
+file = "src/AI/Service/SessionContextBuilder.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
+
+[[issues]]
+file = "src/AI/Service/SessionContextBuilder.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\AI\Service\SessionContextBuilder::decodeCurrentToken`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/AI/Service/SessionContextBuilder.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManager`.'
+count = 1
+
+[[issues]]
+file = "src/AI/Service/SessionContextBuilder.php"
+code = "non-existent-class-like"
+message = 'Class, Interface, or Trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` does not exist.'
+count = 3
+
+[[issues]]
+file = "src/AI/Service/SessionContextBuilder.php"
+code = "non-existent-method"
+message = 'Method `getcredentials` does not exist on type `Symfony\Component\Security\Core\Authentication\Token\TokenInterface`.'
+count = 1
 
 [[issues]]
 file = "src/AI/State/ApiDocsProvider.php"
@@ -184,6 +214,30 @@ count = 1
 file = "src/AI/State/ReadHydraResourceProcessor.php"
 code = "incompatible-parameter-name"
 message = 'Parameter #4 of `App\AI\State\ReadHydraResourceProcessor::process()` is named `$_context` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$context`'
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ApiReadTool.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ApiReadTool.php"
+code = "mixed-operand"
+message = "Invalid right operand: type `nonnull` cannot be reliably used in string concatenation."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ApiReadTool.php"
+code = "non-existent-class-like"
+message = 'Class, Interface, or Trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` does not exist.'
+count = 3
+
+[[issues]]
+file = "src/AI/Tool/ApiReadTool.php"
+code = "non-existent-method"
+message = 'Method `getcredentials` does not exist on type `Symfony\Component\Security\Core\Authentication\Token\TokenInterface`.'
 count = 1
 
 [[issues]]
@@ -1603,6 +1657,12 @@ message = "Possibly null left operand used in string concatenation (type `null|s
 count = 1
 
 [[issues]]
+file = "src/Catalog/Entity/Product.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Media\Entity\Media`.'
+count = 3
+
+[[issues]]
 file = "src/Catalog/Entity/ProductBomItem.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `bcmul`: expected `numeric-string`, but possibly received `string`."
@@ -1723,36 +1783,6 @@ message = "Casting `mixed` to `bool`."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "mixed-assignment"
-message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "redundant-cast"
-message = "Redundant cast to `(array)`: the expression already has this type."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "redundant-cast"
-message = "Redundant cast to `(bool)`: the expression already has this type."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "redundant-cast"
-message = "Redundant cast to `(string)`: the expression already has this type."
-count = 10
-
-[[issues]]
 file = "src/ControlPlane/Admin/User/AdminUserRepository.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
@@ -1811,18 +1841,6 @@ file = "src/ControlPlane/Billing/Command/CleanExpiredFeatureOverridesCommand.php
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
 count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/PlanFeatureController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid`: expected `null|string`, but possibly received `null|scalar`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid`: expected `null|string`, but possibly received `null|scalar`.'
-count = 3
 
 [[issues]]
 file = "src/ControlPlane/Billing/Feature/FeatureKernelListener.php"
@@ -2032,6 +2050,174 @@ count = 1
 file = "src/ControlPlane/Onboarding/Service/SubdomainValidator.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #2 of `App\ControlPlane\Operator\Application\AdminUserOperatorService::updateUser`: expected `list<string>`, but possibly received `array<array-key, mixed>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #4 of `App\ControlPlane\Operator\Application\AdminUserOperatorService::createUser`: expected `list<string>`, but possibly received `array<array-key, mixed>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanApiController.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanFeatureApiController.php"
+code = "less-specific-return-statement"
+message = 'Returned type `array<array-key, mixed>` is less specific than the declared return type `array<string, mixed>|null` for function `App\ControlPlane\Operator\Api\PlanFeatureApiController::parseConfigJson`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanFeatureApiController.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "less-specific-return-statement"
+message = 'Returned type `array<array-key, mixed>` is less specific than the declared return type `array<string, mixed>|null` for function `App\ControlPlane\Operator\Api\TenantFeatureApiController::parseConfig`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Operator\Application\AdminUserOperatorService::listUsers`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>|list<array<string, mixed>>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "redundant-cast"
+message = "Redundant cast to `(bool)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 8
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadBackups`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadCertificates`: expected `list<array<string, mixed>>`, but found `list<App\ControlPlane\Certificate\TenantCertificate>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadPaymentEvents`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadProvisions`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "less-specific-return-statement"
+message = '''Returned type `array<string, non-empty-array<string, array{'config': array<array-key, mixed>, 'enabled': bool, 'recipients': list<truthy-string>, 'severity': string}>>` is less specific than the declared return type `array<string, array<string, array{'config': array<string, mixed>, 'enabled': bool, 'recipients': list<string>, 'severity': string}>>` for function `App\ControlPlane\Operator\Application\TenantNotificationQueryService::parseTargetsPayload`.'''
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "less-specific-return-statement"
+message = '''Returned type `array{'channels': list<string>, 'eventDefinitions': array<string, array{'label': string, 'severity': string}>, 'matrix': array<string, non-empty-array<string, array{'config': array<array-key, mixed>, 'enabled': bool, 'recipients': array<array-key, mixed>, 'severity': string}>>}` is less specific than the declared return type `array{'channels': list<string>, 'eventDefinitions': array<string, array{'label': string, 'severity': string}>, 'matrix': array<string, array<string, array{'config': array<string, mixed>, 'enabled': bool, 'recipients': list<string>, 'severity': string}>>}` for function `App\ControlPlane\Operator\Application\TenantNotificationQueryService::getMatrix`.'''
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$channelMap`."
 count = 1
 
 [[issues]]
@@ -2317,58 +2503,28 @@ message = "Casting `mixed` to `bool`."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/PlanController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid`: expected `null|string`, but possibly received `null|scalar`.'
-count = 3
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "deprecated-method"
-message = 'Call to deprecated method: `Symfony\Component\HttpFoundation\Request::get`.'
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "less-specific-argument"
-message = '''Argument type mismatch for argument #2 of `App\ControlPlane\Tenant\Service\TenantNotificationService::saveTenantTargets`: expected `array<string, array<string, array{'config': array<string, mixed>, 'enabled': bool, 'recipients': list<string>, 'severity': string}>>`, but provided type `array<string, non-empty-array<string, array{'config': array<array-key, mixed>, 'enabled': bool, 'recipients': array{}|list<truthy-string>, 'severity': string}>>` is less specific.'''
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/ControlPlaneSchemaGuard.php"
+code = "less-specific-return-statement"
+message = 'Returned type `object` is less specific than the declared return type `Doctrine\DBAL\Connection` for function `App\ControlPlane\Tenant\Infrastructure\Persistence\ControlPlaneSchemaGuard::connection`.'
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `file_get_contents`: expected `string`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `method_exists`: expected `class-string|object`, but found `nonnull`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "mixed-operand"
-message = "Casting `mixed` to `bool`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `Symfony\Bundle\FrameworkBundle\Controller\AbstractController::isCsrfTokenValid`: expected `null|string`, but possibly received `null|scalar`.'
-count = 20
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantDomainRepository.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
-count = 2
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `App\ControlPlane\Tenant\Infrastructure\Persistence\DbalTenantRepository::mapRows`: expected `list<App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>`, but found `array<int, App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>|list<App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>`.'
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$clean`."
+count = 1
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/ProvisionCommandRunner.php"
@@ -2441,18 +2597,6 @@ file = "src/ControlPlane/Tenant/Service/TenantHealthChecker.php"
 code = "deprecated-method"
 message = 'Call to deprecated method: `Doctrine\DBAL\Schema\AbstractSchemaManager::listTableNames`.'
 count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "less-specific-return-statement"
-message = 'Returned type `object` is less specific than the declared return type `Doctrine\DBAL\Connection` for function `App\ControlPlane\Tenant\Service\TenantManager::getControlPlaneConnection`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$row`."
-count = 3
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
@@ -2719,6 +2863,30 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
+file = "src/Efact/Filesystem/S3MediaUrlResolver.php"
+code = "non-existent-class-like"
+message = 'Class `App\Efact\Filesystem\S3MediaUrlResolver` cannot implement unknown type `MediaUrlResolverInterface`'
+count = 1
+
+[[issues]]
+file = "src/Efact/Filesystem/S3MediaUrlResolver.php"
+code = "unused-property"
+message = "Property `$mediaDirectory` is never used."
+count = 1
+
+[[issues]]
+file = "src/Efact/Filesystem/S3MediaUrlResolver.php"
+code = "unused-property"
+message = "Property `$s3UrlResolver` is never used."
+count = 1
+
+[[issues]]
+file = "src/Efact/Filesystem/S3MediaUrlResolver.php"
+code = "unused-property"
+message = "Property `$tenantContext` is never used."
+count = 1
+
+[[issues]]
 file = "src/Efact/RateLimit/TenantRateLimiter.php"
 code = "possibly-null-operand"
 message = "Possibly null middle operand used in string concatenation (type `null|string`)."
@@ -2900,26 +3068,164 @@ count = 1
 
 [[issues]]
 file = "src/Identity/Auth/BranchContextService.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTManagerInterface)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/BranchContextService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Identity/Auth/BranchContextService.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManagerInterface`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/BranchContextService.php"
+code = "non-existent-class-like"
+message = 'Class, Interface, or Trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` does not exist.'
+count = 3
+
+[[issues]]
+file = "src/Identity/Auth/BranchContextService.php"
+code = "non-existent-method"
+message = 'Method `getcredentials` does not exist on type `Symfony\Component\Security\Core\Authentication\Token\TokenInterface`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
+code = "non-existent-class-like"
+message = 'Class `App\Identity\Auth\EfactTokenClaimsProvider` cannot implement unknown type `TokenClaimsProviderInterface`'
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
+code = "unused-property"
+message = "Property `$selectedBranch` is never used."
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
+code = "unused-property"
+message = "Property `$tenantContext` is never used."
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/MercureCookieDecorator.php"
+code = "non-existent-class-like"
+message = 'Class `App\Identity\Auth\MercureCookieDecorator` cannot implement unknown type `LoginResponseDecoratorInterface`'
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/MercureCookieDecorator.php"
+code = "unused-property"
+message = "Property `$cookieFactory` is never used."
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/MercureCookieDecorator.php"
+code = "unused-property"
+message = "Property `$mercureTokenService` is never used."
+count = 1
+
+[[issues]]
+file = "src/Identity/Auth/MercureCookieDecorator.php"
+code = "unused-property"
+message = "Property `$tenantContext` is never used."
+count = 1
+
+[[issues]]
+file = "src/Identity/Command/TokenCleanupCommand.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\RefreshTokenStoreInterface)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Command/TokenCleanupCommand.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/Identity/Command/TokenCleanupCommand.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
-file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+file = "src/Identity/Command/TokenCleanupCommand.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\RefreshTokenStoreInterface`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTAuthenticator)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\ResponseModeResolver)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\TokenGenerator)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "mixed-array-assignment"
+message = "Unsafe array assignment on type `mixed`."
 count = 2
 
 [[issues]]
 file = "src/Identity/Controller/AuthSelectBranchController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
+count = 5
 
 [[issues]]
 file = "src/Identity/Controller/AuthSelectBranchController.php"
 code = "mixed-assignment"
 message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 3
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\Identity\Controller\AuthSelectBranchController::__invoke`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTAuthenticator`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\ResponseModeResolver`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthSelectBranchController.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\TokenGenerator`.'
 count = 1
 
 [[issues]]
@@ -2968,6 +3274,42 @@ count = 1
 file = "src/Identity/EventSubscriber/LoginAuditSubscriber.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTManagerInterface)`).'
+count = 1
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `App\Identity\Dto\AuthUserDto::createFromJWTPayload`: expected `array<string, mixed>`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManagerInterface`.'
+count = 1
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "non-existent-class-like"
+message = 'Class, Interface, or Trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` does not exist.'
+count = 3
+
+[[issues]]
+file = "src/Identity/Security/SecurityService.php"
+code = "non-existent-method"
+message = 'Method `getcredentials` does not exist on type `Symfony\Component\Security\Core\Authentication\Token\TokenInterface`.'
 count = 1
 
 [[issues]]
@@ -3321,6 +3663,12 @@ count = 2
 [[issues]]
 file = "src/Inventory/Service/KardexExportService.php"
 code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `App\Inventory\Service\KardexExportService::numericCellValue`: expected `null|string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Inventory/Service/KardexExportService.php"
+code = "mixed-argument"
 message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
 count = 1
 
@@ -3346,7 +3694,7 @@ count = 19
 file = "src/Inventory/Service/KardexExportService.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 4
+count = 5
 
 [[issues]]
 file = "src/Inventory/Service/KardexExportService.php"
@@ -3641,6 +3989,12 @@ file = "src/Organization/Entity/Branch.php"
 code = "invalid-property-assignment-value"
 message = 'Invalid type for property `$company`: expected `App\Organization\Entity\Company`, but got `App\Organization\Entity\Company|null`.'
 count = 1
+
+[[issues]]
+file = "src/Organization/Entity/Company.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Media\Entity\Media`.'
+count = 3
 
 [[issues]]
 file = "src/Purchasing/Command/PurchasesMenuMigrateCommand.php"
@@ -5072,14 +5426,50 @@ count = 1
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTAuthenticationToken)`).'
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManagerStub`."
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTAuthenticationToken`.'
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManager`.'
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `PHPUnit\Framework\MockObject\MockObject`.'
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` not found.'
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTManager` not found.'
 count = 1
 
 [[issues]]
@@ -5276,14 +5666,38 @@ count = 1
 
 [[issues]]
 file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$capturedSession`."
+code = "impossible-assignment"
+message = "Invalid assignment: the right-hand side has type `never` and cannot produce a value."
+count = 1
+
+[[issues]]
+file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
+code = "no-value"
+message = 'Argument #1 passed to method `PHPUnit\Framework\MockObject\InvocationStubber::willReturn` has type `never`, meaning it cannot produce a value.'
+count = 1
+
+[[issues]]
+file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
+code = "non-existent-class"
+message = 'Class `Nubit\AdminBundle\Auth\JWTAuthenticationToken` not found.'
+count = 1
+
+[[issues]]
+file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManager`.'
+count = 1
+
+[[issues]]
+file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTManager` not found.'
 count = 1
 
 [[issues]]
 file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManager`."
+message = "Redundant docblock type for variable `$capturedSession`."
 count = 1
 
 [[issues]]
@@ -5503,6 +5917,72 @@ message = "Cannot perform array access on possibly `null` value."
 count = 3
 
 [[issues]]
+file = "tests/ControlPlane/Operator/Api/AuditLogApiControllerTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 5
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/AuditLogApiControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/DashboardApiControllerTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 9
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/DashboardApiControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "deprecated-method"
+message = 'Call to deprecated method: `PHPUnit\Framework\Assert::isType`.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 4
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/SessionApiControllerTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/SessionApiControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
 file = "tests/ControlPlane/Service/PlanManagerTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
@@ -5517,7 +5997,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Service/TenantHealthCheckerTest.php"
 code = "incompatible-parameter-type"
-message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantHealthCheckerTest.php:154:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantHealthCheckerTest.php:148:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
 count = 1
 
 [[issues]]
@@ -5527,39 +6007,87 @@ message = 'Invalid argument for by-reference parameter #2 in call to method `Sym
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "incompatible-parameter-type"
-message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantManagerLifecycleTest.php:829:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+file = "tests/ControlPlane/Service/TenantHealthCheckerTest.php"
+code = "unused-method"
+message = "Method `inmemorycache()` is never used."
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "incompatible-parameter-type"
+message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantServiceLifecycleTest.php:711:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
 code = "invalid-pass-by-reference"
 message = 'Invalid argument for by-reference parameter #2 in call to method `Symfony\Contracts\Cache\CallbackInterface::__invoke`.'
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "incompatible-parameter-type"
-message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantManagerTest.php:375:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "unused-method"
+message = "Method `dbregistry()` is never used."
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "unused-method"
+message = "Method `inmemorycache()` is never used."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "incompatible-parameter-type"
+message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantServiceTest.php:327:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "invalid-pass-by-reference"
+message = 'Invalid argument for by-reference parameter #2 in call to method `Symfony\Contracts\Cache\CallbackInterface::__invoke`.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "unused-method"
+message = "Method `inmemorycache()` is never used."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
+code = "incompatible-parameter-type"
+message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantUsageServiceTest.php:267:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
 code = "invalid-pass-by-reference"
 message = 'Invalid argument for by-reference parameter #2 in call to method `Symfony\Contracts\Cache\CallbackInterface::__invoke`.'
 count = 1
 
 [[issues]]
 file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
-code = "incompatible-parameter-type"
-message = 'Parameter `$metadata` of `{anonymous-class:tests/ControlPlane/Service/TenantUsageServiceTest.php:273:16}::get()` expects type `array<string, mixed>|null` but parent `Symfony\Contracts\Cache\CacheInterface::get()` expects type `array<array-key, mixed>|null`'
+code = "unused-method"
+message = "Method `inmemorycache()` is never used."
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
-code = "invalid-pass-by-reference"
-message = 'Invalid argument for by-reference parameter #2 in call to method `Symfony\Contracts\Cache\CallbackInterface::__invoke`.'
+file = "tests/ControlPlane/Support/TenantServiceFactory.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$registry`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Support/TenantServiceFactory.php"
+code = "too-few-arguments"
+message = "Too few arguments provided for callable `callable`."
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Support/TenantServiceFactory.php"
+code = "too-few-arguments"
+message = 'Too few arguments provided for method `Symfony\Contracts\Cache\CallbackInterface::__invoke`.'
 count = 1
 
 [[issues]]
@@ -5636,8 +6164,50 @@ count = 4
 
 [[issues]]
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "impossible-assignment"
+message = "Invalid assignment: the right-hand side has type `never` and cannot produce a value."
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "no-value"
+message = 'Argument #5 passed to method `App\Identity\Controller\AuthSelectBranchController::__construct` has type `never`, meaning it cannot produce a value.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "non-existent-class"
+message = 'Class `Nubit\AdminBundle\Auth\ResponseModeResolver` not found.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTAuthenticator` not found.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\TokenGenerator` not found.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
 code = "possibly-false-argument"
 message = 'Argument #7 of method `Symfony\Component\HttpFoundation\Request::create` is possibly `false`, but parameter type `null|resource|string` does not accept it.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #3 of `App\Identity\Controller\AuthSelectBranchController::__construct`: expected `unknown-ref(Nubit\AdminBundle\Auth\TokenGenerator)`, but possibly received `Nubit\AdminBundle\Auth\TokenGenerator`.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #6 of `App\Identity\Controller\AuthSelectBranchController::__construct`: expected `unknown-ref(Nubit\AdminBundle\Auth\JWTAuthenticator)`, but possibly received `Nubit\AdminBundle\Auth\JWTAuthenticator`.'
 count = 2
 
 [[issues]]
@@ -5675,6 +6245,84 @@ file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
 count = 1
+
+[[issues]]
+file = "tests/Identity/Security/AccessControlTest.php"
+code = "impossible-assignment"
+message = "Invalid assignment: the right-hand side has type `never` and cannot produce a value."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/AccessControlTest.php"
+code = "no-value"
+message = 'Argument #2 passed to method `PHPUnit\Framework\Assert::assertInstanceOf` has type `never`, meaning it cannot produce a value.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/AccessControlTest.php"
+code = "non-existent-class"
+message = 'Class `Nubit\AdminBundle\Auth\JWTManager` not found.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Security/AccessControlTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTManager` not found.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "never-return"
+message = "Cannot return value with type 'never' from this function."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "non-existent-class"
+message = 'Class `Nubit\AdminBundle\Auth\JWTAuthenticationToken` not found.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTAuthenticationToken`.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "non-existent-class-like"
+message = 'Class, Interface, or Trait `Nubit\AdminBundle\Auth\JWTManagerInterface` does not exist.'
+count = 2
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTManagerInterface` not found.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "non-existent-method"
+message = 'Method `method` does not exist on type `Nubit\AdminBundle\Auth\JWTManagerInterface`.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #2 of `App\Identity\Security\SecurityService::__construct`: expected `unknown-ref(Nubit\AdminBundle\Auth\JWTManagerInterface)`, but possibly received `Nubit\AdminBundle\Auth\JWTManagerInterface&PHPUnit\Framework\MockObject\Stub`.'
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/SecurityServiceTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #2 of `App\Tests\Identity\Security\SecurityServiceTest::makeService`: expected `Symfony\Component\Security\Core\Authentication\Token\TokenInterface|null`, but possibly received `unknown-ref(Nubit\AdminBundle\Auth\JWTAuthenticationToken)`.'
+count = 2
 
 [[issues]]
 file = "tests/Identity/State/UserPasswordHasherTest.php"
@@ -5803,6 +6451,24 @@ message = "Possible argument type mismatch for argument #2 of `bccomp`: expected
 count = 1
 
 [[issues]]
+file = "tests/Organization/Entity/CompanyTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `App\Organization\Entity\Company::setLogo`: expected `null|unknown-ref(Nubit\AdminBundle\Media\Entity\Media)`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "tests/Organization/Entity/CompanyTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/Organization/Entity/CompanyTest.php"
+code = "non-existent-class"
+message = 'Class `Nubit\AdminBundle\Media\Entity\Media` not found.'
+count = 1
+
+[[issues]]
 file = "tests/Purchasing/Entity/PurchaseItemEntityTest.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
@@ -5860,6 +6526,36 @@ count = 1
 file = "tests/Sales/Controller/Api/VoidSaleControllerTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 1
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "invalid-type-cast"
+message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 1
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #1 of `App\Tests\Sales\Report\SalesReportSpreadsheetColumnsTest::newReport`: expected `class-string<Nubit\Platform\Report\ExportableReportInterface>`, but possibly received `string`.'
+count = 2
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "unsafe-instantiation"
+message = 'Potentially unsafe instantiation: `class-string<Nubit\Platform\Report\ExportableReportInterface>` may contain the interface `Nubit\Platform\Report\ExportableReportInterface` itself, which cannot be instantiated.'
+count = 1
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "unsafe-instantiation"
+message = 'Unsafe `new $class_name`: constructor of `App\Sales\Report\AbstractSaleReport` is not final and its signature might change in child classes, potentially leading to runtime errors.'
 count = 1
 
 [[issues]]
@@ -5930,6 +6626,12 @@ count = 1
 
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
+code = "invalid-method-access"
+message = 'Attempting to access a method on a non-object type (`unknown-ref(Nubit\AdminBundle\Auth\JWTManager)`).'
+count = 1
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
 code = "less-specific-nested-argument-type"
 message = '''Argument type mismatch for argument #4 of `App\Sales\State\SaleProcessor::process`: expected `array{'original_data'?: mixed, 'previous_data'?: mixed, 'request'?: Symfony\Component\HttpFoundation\Request, 'resource_class'?: null|string, ...<string, mixed>}`, but provided type `array<string, mixed>` is less specific.'''
 count = 1
@@ -5938,12 +6640,42 @@ count = 1
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 8
+count = 9
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTAuthenticationToken`.'
+count = 1
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Cannot find class, interface, enum, or type alias `Nubit\AdminBundle\Auth\JWTManager`.'
+count = 1
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTAuthenticationToken` not found.'
+count = 1
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
+code = "non-existent-class-like"
+message = 'Class, interface, enum, or trait `Nubit\AdminBundle\Auth\JWTManager` not found.'
+count = 1
 
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `ReflectionClass::__construct`: expected `('T.reflectionclass extends object)|class-string<'T.reflectionclass extends object>`, but possibly received `string`."
+count = 1
+
+[[issues]]
+file = "tests/Sales/State/SaleProcessorTest.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #2 of `App\Tests\Sales\State\SaleProcessorTest::initStubProperties`: expected `object`, but possibly received `unknown-ref(Nubit\AdminBundle\Auth\JWTAuthenticationToken)`.'
 count = 1
 
 [[issues]]
@@ -5962,18 +6694,6 @@ count = 2
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$item`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManager`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtToken`."
 count = 1
 
 [[issues]]
