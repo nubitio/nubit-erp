@@ -8,6 +8,7 @@ use App\ControlPlane\Backup\BinlogBackupService;
 use App\ControlPlane\Billing\Service\PlanManager;
 use App\ControlPlane\Billing\Service\TenantQuotaService;
 use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
+use App\ControlPlane\Certificate\TenantCertificate;
 use App\ControlPlane\Subscription\Payment\SubscriptionManager;
 use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Repository\TenantPaymentEventRepository;
@@ -183,7 +184,7 @@ final readonly class TenantDetailQueryService
     }
 
     /**
-     * @return list<array<string, mixed>>
+     * @return list<TenantCertificate>
      */
     private function loadCertificates(string $tenantName): array
     {

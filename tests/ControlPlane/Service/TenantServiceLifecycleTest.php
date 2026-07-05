@@ -674,14 +674,6 @@ final class TenantServiceLifecycleTest extends TestCase
         return TenantServiceFactory::database($connection, $this->tempPath('tenants-lifecycle.yml'));
     }
 
-    private function dbRegistry(Connection $connection): ConnectionRegistry
-    {
-        $registry = $this->createMock(ConnectionRegistry::class);
-        $registry->method('getConnection')->with('control_plane')->willReturn($connection);
-
-        return $registry;
-    }
-
     /**
      * @return MockObject&Connection
      */
@@ -706,74 +698,4 @@ final class TenantServiceLifecycleTest extends TestCase
         return $dir . '/' . $file;
     }
 
-    private function inMemoryCache(): CacheInterface
-    {
-        return new class() implements CacheInterface {
-            /** @var array<string, mixed> */
-            private array $store = [];
-
-            /**
-             * @param array<string, mixed>|null $metadata
-             */
-            public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
-            {
-                if (!array_key_exists($key, $this->store)) {
-                    $item = new class() implements ItemInterface {
-                        public function getKey(): string
-                        {
-                            return 'cache-item';
-                        }
-
-                        public function get(): mixed
-                        {
-                            return null;
-                        }
-
-                        public function isHit(): bool
-                        {
-                            return false;
-                        }
-
-                        public function set(mixed $value): static
-                        {
-                            return $this;
-                        }
-
-                        public function expiresAt(?\DateTimeInterface $expiration): static
-                        {
-                            return $this;
-                        }
-
-                        public function expiresAfter(int|\DateInterval|null $time): static
-                        {
-                            return $this;
-                        }
-
-                        public function tag(string|iterable $tags): static
-                        {
-                            return $this;
-                        }
-
-                        /**
-                         * @return array<string, mixed>
-                         */
-                        public function getMetadata(): array
-                        {
-                            return [];
-                        }
-                    };
-                    $this->store[$key] = $callback($item, true);
-                }
-
-                return $this->store[$key];
-            }
-
-            public function delete(string $key): bool
-            {
-                unset($this->store[$key]);
-
-                return true;
-            }
-        };
-    }
 }

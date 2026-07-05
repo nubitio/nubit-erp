@@ -84,15 +84,20 @@ final class TenantServiceFactory extends TestCase
         $store = [];
 
         return new class($store) implements CacheInterface {
+            /**
+             * @param array<string, mixed> $store
+             */
             public function __construct(
                 private array &$store,
             ) {}
 
+            /**
+             * @param array<array-key, mixed>|null $metadata
+             */
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
                     $item = new class implements ItemInterface {
-                        private int $expiry = 0;
 
                         public function getKey(): string
                         {
@@ -129,13 +134,17 @@ final class TenantServiceFactory extends TestCase
                             return $this;
                         }
 
+                        /**
+                         * @return array<string, mixed>
+                         */
                         public function getMetadata(): array
                         {
                             return [];
                         }
                     };
 
-                    $this->store[$key] = $callback($item);
+                    $save = true;
+                    $this->store[$key] = $callback($item, $save);
                 }
 
                 return $this->store[$key];

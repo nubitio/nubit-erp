@@ -16,7 +16,7 @@ trait AccountSessionTrait
     protected function decodeJson(Request $request): array
     {
         $raw = $request->getContent();
-        if (!\is_string($raw) || trim($raw) === '') {
+        if (trim($raw) === '') {
             return [];
         }
 

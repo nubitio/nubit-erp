@@ -104,7 +104,7 @@ final class YamlTenantStore
             throw new InvalidArgumentException('Tenant not found');
         }
 
-        $this->writeRaw(array_values($data));
+        $this->writeRaw($data);
     }
 
     public function delete(int $id): void

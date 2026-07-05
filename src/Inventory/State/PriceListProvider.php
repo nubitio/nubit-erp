@@ -66,14 +66,17 @@ readonly class PriceListProvider implements ProviderInterface
         $data = $this->connection->fetchAllAssociative($sql, ['id' => $id]);
 
         return array_map(static function (array $item): PriceListDto {
-            return new PriceListDto(
-                id: (string) $item['id'],
-                name: (string) $item['name'],
-                sku: isset($item['sku']) && $item['sku'] !== null ? (string) $item['sku'] : null,
-                code: isset($item['code']) && $item['code'] !== null ? (string) $item['code'] : null,
-                price: (string) $item['price'],
-                priceSource: (string) $item['price_source'],
-            );
+                $sku = $item['sku'] ?? null;
+                $code = $item['code'] ?? null;
+
+                return new PriceListDto(
+                    id: (string) $item['id'],
+                    name: (string) $item['name'],
+                    sku: \is_string($sku) ? $sku : null,
+                    code: \is_string($code) ? $code : null,
+                    price: (string) $item['price'],
+                    priceSource: (string) $item['price_source'],
+                );
         }, $data);
     }
 }

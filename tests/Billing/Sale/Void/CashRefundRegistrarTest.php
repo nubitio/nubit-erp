@@ -287,7 +287,10 @@ final class CashRefundRegistrarTest extends TestCase
         return $connection;
     }
 
-    private function createConnectionMockWithExistingCashMovement(): Connection
+    /**
+     * @return Connection&MockObject
+     */
+    private function createConnectionMockWithExistingCashMovement(): Connection&MockObject
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(123);
