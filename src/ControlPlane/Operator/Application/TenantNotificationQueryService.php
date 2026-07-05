@@ -98,10 +98,9 @@ final readonly class TenantNotificationQueryService
                             preg_split('/[\n,;]+/', $recipientsRaw) ?: [],
                         )));
                 } elseif (is_array($recipientsRaw)) {
-                    $recipients = array_values(array_filter(array_map(
-                        static fn(mixed $value): string => trim((string) $value),
-                        $recipientsRaw,
-                    )));
+                    $recipients = array_values(array_filter(array_map(static fn(mixed $value): string => trim(
+                        (string) $value,
+                    ), $recipientsRaw)));
                 } else {
                     $recipients = [];
                 }
@@ -110,7 +109,11 @@ final readonly class TenantNotificationQueryService
                 if (is_string($config)) {
                     $decoded = json_decode($config, true);
                     if (!is_array($decoded)) {
-                        throw new \InvalidArgumentException(sprintf('Invalid JSON config for %s / %s.', $eventKey, $channel));
+                        throw new \InvalidArgumentException(sprintf(
+                            'Invalid JSON config for %s / %s.',
+                            $eventKey,
+                            $channel,
+                        ));
                     }
                     $config = $decoded;
                 }

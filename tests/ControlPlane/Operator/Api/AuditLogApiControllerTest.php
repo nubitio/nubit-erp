@@ -20,17 +20,19 @@ final class AuditLogApiControllerTest extends OperatorApiTestCase
 
         $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
-        $connection->method('fetchAllAssociative')->willReturn([
-            [
-                'id' => 10,
-                'action' => 'tenant.create',
-                'actor' => 'admin',
-                'channel' => 'control_plane',
-                'metadata' => '{}',
-                'created_at' => '2026-07-01 12:00:00',
-                'tenant_name' => 'acme',
-            ],
-        ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                [
+                    'id' => 10,
+                    'action' => 'tenant.create',
+                    'actor' => 'admin',
+                    'channel' => 'control_plane',
+                    'metadata' => '{}',
+                    'created_at' => '2026-07-01 12:00:00',
+                    'tenant_name' => 'acme',
+                ],
+            ]);
         $connection->method('fetchFirstColumn')->willReturn(['tenant.create']);
         $connection->method('createSchemaManager')->willReturn($schema);
 

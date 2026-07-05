@@ -52,7 +52,12 @@ final class PlanFeatureApiController extends AbstractController
         ]);
     }
 
-    #[Route('/{planName}/{featureKey}', name: 'api_control_plane_plan_features_update', requirements: ['planName' => '[a-z0-9_-]+', 'featureKey' => '[a-z_]+'], methods: ['PATCH'])]
+    #[Route(
+        '/{planName}/{featureKey}',
+        name: 'api_control_plane_plan_features_update',
+        requirements: ['planName' => '[a-z0-9_-]+', 'featureKey' => '[a-z_]+'],
+        methods: ['PATCH'],
+    )]
     public function update(string $planName, string $featureKey, Request $request): JsonResponse
     {
         if (!$this->planManager->planExists($planName)) {

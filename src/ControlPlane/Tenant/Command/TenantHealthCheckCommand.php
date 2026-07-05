@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Tenant\Command;
 
-use App\ControlPlane\Tenant\Service\TenantHealthChecker;
 use App\ControlPlane\Tenant\Application\TenantService;
+use App\ControlPlane\Tenant\Service\TenantHealthChecker;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

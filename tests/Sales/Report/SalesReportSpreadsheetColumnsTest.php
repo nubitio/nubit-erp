@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Report;
 
-use App\Sales\Report\AccountingReport;
 use App\Sales\Report\AbstractSaleReport;
+use App\Sales\Report\AccountingReport;
 use App\Sales\Report\CreditNotesReport;
 use App\Sales\Report\DailySummaryReport;
 use App\Sales\Report\DetailedSalesReport;
@@ -55,7 +55,7 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
             $row[$field] = $numericValues[$field] ?? 'texto';
         }
 
-        $spreadsheet = (new XlsExporter())->makeSpreadsheet([$row], $columns);
+        $spreadsheet = new XlsExporter()->makeSpreadsheet([$row], $columns);
         $sheet = $spreadsheet->getActiveSheet();
         $fieldIndexes = array_flip(array_keys($columns));
 
@@ -69,7 +69,10 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
         foreach ($summedFields as $field) {
             $columnIndex = $fieldIndexes[$field] + 1;
             $columnLetter = $sheet->getCell([$columnIndex, 1])->getColumn();
-            self::assertSame(sprintf('=SUM(%s2:%s2)', $columnLetter, $columnLetter), $sheet->getCell([$columnIndex, 3])->getValue());
+            self::assertSame(
+                sprintf('=SUM(%s2:%s2)', $columnLetter, $columnLetter),
+                $sheet->getCell([$columnIndex, 3])->getValue(),
+            );
         }
     }
 
@@ -78,45 +81,69 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
      */
     public static function reportColumnsProvider(): iterable
     {
-        yield 'sales-by-line' => [SalesByLineReport::class, [
-            'quantity' => ['Cantidad', '#,##0.###', XlsColumn::SUMMARY_SUM],
-            'unit_price' => ['Precio unit.', '#,##0.0000', XlsColumn::SUMMARY_NONE],
-            'discount' => ['Descuento', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'detailed-sales' => [DetailedSalesReport::class, [
-            'subtotal' => ['Subtotal', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'tax' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'discount' => ['Descuento', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'sale-by-product' => [SaleByProductReport::class, [
-            'quantity' => ['Cantidad', '#,##0.###', XlsColumn::SUMMARY_SUM],
-            'average_unit_price' => ['Precio unit. prom.', '#,##0.00', XlsColumn::SUMMARY_NONE],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'accounting-report' => [AccountingReport::class, [
-            'taxable_amount' => ['Op. gravada', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'igv' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'service_charge' => ['R.C.', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'credit-notes' => [CreditNotesReport::class, [
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'payment-method-daily' => [PaymentMethodDailyReport::class, [
-            'transactions' => ['Transacciones', '#,##0', XlsColumn::SUMMARY_SUM],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'daily-summary' => [DailySummaryReport::class, [
-            'sales' => ['Ventas', '#,##0', XlsColumn::SUMMARY_SUM],
-            'subtotal' => ['Subtotal', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'tax' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
-        yield 'voided-sales' => [VoidedSalesReport::class, [
-            'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
-        ]];
+        yield 'sales-by-line' => [
+            SalesByLineReport::class,
+            [
+                'quantity' => ['Cantidad', '#,##0.###', XlsColumn::SUMMARY_SUM],
+                'unit_price' => ['Precio unit.', '#,##0.0000', XlsColumn::SUMMARY_NONE],
+                'discount' => ['Descuento', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'detailed-sales' => [
+            DetailedSalesReport::class,
+            [
+                'subtotal' => ['Subtotal', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'tax' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'discount' => ['Descuento', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'sale-by-product' => [
+            SaleByProductReport::class,
+            [
+                'quantity' => ['Cantidad', '#,##0.###', XlsColumn::SUMMARY_SUM],
+                'average_unit_price' => ['Precio unit. prom.', '#,##0.00', XlsColumn::SUMMARY_NONE],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'accounting-report' => [
+            AccountingReport::class,
+            [
+                'taxable_amount' => ['Op. gravada', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'igv' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'service_charge' => ['R.C.', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'credit-notes' => [
+            CreditNotesReport::class,
+            [
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'payment-method-daily' => [
+            PaymentMethodDailyReport::class,
+            [
+                'transactions' => ['Transacciones', '#,##0', XlsColumn::SUMMARY_SUM],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'daily-summary' => [
+            DailySummaryReport::class,
+            [
+                'sales' => ['Ventas', '#,##0', XlsColumn::SUMMARY_SUM],
+                'subtotal' => ['Subtotal', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'tax' => ['IGV', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
+        yield 'voided-sales' => [
+            VoidedSalesReport::class,
+            [
+                'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
     }
 
     /**
@@ -124,45 +151,77 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
      */
     public static function reportExporterProvider(): iterable
     {
-        yield 'sales-by-line' => [SalesByLineReport::class, [
-            'quantity' => '1.100',
-            'unit_price' => '14.0000',
-            'discount' => '0.00',
-            'total' => '15.40',
-        ], ['quantity', 'discount', 'total']];
-        yield 'detailed-sales' => [DetailedSalesReport::class, [
-            'subtotal' => '100.00',
-            'tax' => '18.00',
-            'total' => '118.00',
-            'discount' => '0.00',
-        ], ['subtotal', 'tax', 'total', 'discount']];
-        yield 'sale-by-product' => [SaleByProductReport::class, [
-            'quantity' => '2.500',
-            'average_unit_price' => '14.00',
-            'total' => '35.00',
-        ], ['quantity', 'total']];
-        yield 'accounting-report' => [AccountingReport::class, [
-            'taxable_amount' => '100.00',
-            'igv' => '18.00',
-            'service_charge' => '0.00',
-            'total' => '118.00',
-        ], ['taxable_amount', 'igv', 'service_charge', 'total']];
-        yield 'credit-notes' => [CreditNotesReport::class, [
-            'total' => '10.00',
-        ], ['total']];
-        yield 'payment-method-daily' => [PaymentMethodDailyReport::class, [
-            'transactions' => '2',
-            'total' => '50.00',
-        ], ['transactions', 'total']];
-        yield 'daily-summary' => [DailySummaryReport::class, [
-            'sales' => '3',
-            'subtotal' => '100.00',
-            'tax' => '18.00',
-            'total' => '118.00',
-        ], ['sales', 'subtotal', 'tax', 'total']];
-        yield 'voided-sales' => [VoidedSalesReport::class, [
-            'total' => '20.00',
-        ], ['total']];
+        yield 'sales-by-line' => [
+            SalesByLineReport::class,
+            [
+                'quantity' => '1.100',
+                'unit_price' => '14.0000',
+                'discount' => '0.00',
+                'total' => '15.40',
+            ],
+            ['quantity', 'discount', 'total'],
+        ];
+        yield 'detailed-sales' => [
+            DetailedSalesReport::class,
+            [
+                'subtotal' => '100.00',
+                'tax' => '18.00',
+                'total' => '118.00',
+                'discount' => '0.00',
+            ],
+            ['subtotal', 'tax', 'total', 'discount'],
+        ];
+        yield 'sale-by-product' => [
+            SaleByProductReport::class,
+            [
+                'quantity' => '2.500',
+                'average_unit_price' => '14.00',
+                'total' => '35.00',
+            ],
+            ['quantity', 'total'],
+        ];
+        yield 'accounting-report' => [
+            AccountingReport::class,
+            [
+                'taxable_amount' => '100.00',
+                'igv' => '18.00',
+                'service_charge' => '0.00',
+                'total' => '118.00',
+            ],
+            ['taxable_amount', 'igv', 'service_charge', 'total'],
+        ];
+        yield 'credit-notes' => [
+            CreditNotesReport::class,
+            [
+                'total' => '10.00',
+            ],
+            ['total'],
+        ];
+        yield 'payment-method-daily' => [
+            PaymentMethodDailyReport::class,
+            [
+                'transactions' => '2',
+                'total' => '50.00',
+            ],
+            ['transactions', 'total'],
+        ];
+        yield 'daily-summary' => [
+            DailySummaryReport::class,
+            [
+                'sales' => '3',
+                'subtotal' => '100.00',
+                'tax' => '18.00',
+                'total' => '118.00',
+            ],
+            ['sales', 'subtotal', 'tax', 'total'],
+        ];
+        yield 'voided-sales' => [
+            VoidedSalesReport::class,
+            [
+                'total' => '20.00',
+            ],
+            ['total'],
+        ];
     }
 
     /**
@@ -177,12 +236,8 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
         return new $reportClass();
     }
 
-    private static function assertNumericColumn(
-        mixed $column,
-        string $label,
-        string $format,
-        string $summary,
-    ): void {
+    private static function assertNumericColumn(mixed $column, string $label, string $format, string $summary): void
+    {
         self::assertInstanceOf(XlsColumnSpec::class, $column);
         self::assertSame($label, $column->label);
         self::assertContains($column->type, [XlsColumn::TYPE_NUMBER, XlsColumn::TYPE_INTEGER]);

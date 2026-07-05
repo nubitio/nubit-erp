@@ -20,9 +20,11 @@ final class DashboardApiControllerTest extends OperatorApiTestCase
 
         $connection = $this->createStub(Connection::class);
         $connection->method('fetchOne')->willReturn(3, 2, 1, 0, 2, 0, 5, '2026-07-01 10:00:00', 1024, 1);
-        $connection->method('fetchAllAssociative')->willReturn([
-            ['action' => 'tenant.create', 'count' => 2],
-        ]);
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturn([
+                ['action' => 'tenant.create', 'count' => 2],
+            ]);
         $connection->method('createSchemaManager')->willReturn($schema);
 
         $service = new DashboardService($this->connectionRegistry($connection), new NullLogger());

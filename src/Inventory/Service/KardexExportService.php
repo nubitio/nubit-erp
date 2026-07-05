@@ -175,14 +175,20 @@ final readonly class KardexExportService
 
         $lastRow = max($headerRow, $dataRow - 1);
         $totalsRow = $lastRow + 1;
-        if ($lastRow >= $headerRow + 1) {
+        if ($lastRow >= ($headerRow + 1)) {
             $sheet->setCellValueExplicit('C' . $totalsRow, 'TOTALES', DataType::TYPE_STRING);
             foreach (['D', 'F', 'G', 'I'] as $column) {
-                $sheet->setCellValue($column . $totalsRow, sprintf('=SUM(%s%d:%s%d)', $column, $headerRow + 1, $column, $lastRow));
+                $sheet->setCellValue($column . $totalsRow, sprintf(
+                    '=SUM(%s%d:%s%d)',
+                    $column,
+                    $headerRow + 1,
+                    $column,
+                    $lastRow,
+                ));
             }
         }
 
-        $styledLastRow = $lastRow >= $headerRow + 1 ? $totalsRow : $lastRow;
+        $styledLastRow = $lastRow >= ($headerRow + 1) ? $totalsRow : $lastRow;
         $sheet
             ->getStyle('A' . $groupRow . ':K' . $styledLastRow)
             ->getBorders()
@@ -241,7 +247,7 @@ final readonly class KardexExportService
                 ->setFormatCode('#,##0.00');
         }
 
-        if ($lastRow >= $headerRow + 1) {
+        if ($lastRow >= ($headerRow + 1)) {
             $sheet
                 ->getStyle('A' . $totalsRow . ':K' . $totalsRow)
                 ->applyFromArray([

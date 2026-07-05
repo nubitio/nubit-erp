@@ -67,12 +67,8 @@ final readonly class TenantOperatorCommandService
     /**
      * @return array{ok: bool, provisionId: int|null, output?: string}
      */
-    public function provision(
-        int $id,
-        string $adminUser,
-        string $adminPassword,
-        string $domain,
-    ): array {
+    public function provision(int $id, string $adminUser, string $adminPassword, string $domain): array
+    {
         $tenant = $this->tenantService->getTenant($id);
         if ($tenant === null) {
             throw new InvalidArgumentException('Tenant not found');
@@ -82,12 +78,7 @@ final readonly class TenantOperatorCommandService
             $domain = $this->tenantService->getPrimaryDomain($id) ?? '';
         }
 
-        $provisionId = $this->provisionRepository->recordDispatch(
-            $id,
-            (string) $tenant['name'],
-            $domain,
-            $adminUser,
-        );
+        $provisionId = $this->provisionRepository->recordDispatch($id, (string) $tenant['name'], $domain, $adminUser);
 
         $result = $this->commandRunner->run(new ProvisionCommandRequest(
             tenant: (string) $tenant['name'],
@@ -142,10 +133,7 @@ final readonly class TenantOperatorCommandService
             throw new InvalidArgumentException('Tenant not found');
         }
 
-        $this->messageBus->dispatch(new TenantBackupMessage(
-            tenantId: $id,
-            tenantName: (string) $tenant['name'],
-        ));
+        $this->messageBus->dispatch(new TenantBackupMessage(tenantId: $id, tenantName: (string) $tenant['name']));
     }
 
     public function restoreBackup(int $tenantId, int $backupId): void

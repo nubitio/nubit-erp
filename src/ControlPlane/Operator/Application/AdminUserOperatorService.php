@@ -54,8 +54,13 @@ final readonly class AdminUserOperatorService
      *
      * @throws Exception
      */
-    public function createUser(string $username, string $password, string $confirmPassword, array $roles, string $actor): array
-    {
+    public function createUser(
+        string $username,
+        string $password,
+        string $confirmPassword,
+        array $roles,
+        string $actor,
+    ): array {
         $username = strtolower(trim($username));
         $errors = $this->validateUsername($username);
         $errors = array_merge($errors, $this->validatePassword($password));

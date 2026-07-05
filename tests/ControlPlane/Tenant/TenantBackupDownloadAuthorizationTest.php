@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\ControlPlane\Tenant;
 
 use App\ControlPlane\Operator\Api\TenantApiController;
-use App\ControlPlane\Tenant\Service\TenantBackupService;
 use App\ControlPlane\Tenant\Application\TenantService;
+use App\ControlPlane\Tenant\Service\TenantBackupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -31,7 +31,7 @@ final class TenantBackupDownloadAuthorizationTest extends TestCase
     public function testDownloadActionChecksTenantOwnershipBeforeDownloadingOrOpeningBackup(): void
     {
         $source = (string) file_get_contents(__DIR__
-            . '/../../../src/ControlPlane/Operator/Api/TenantApiController.php');
+        . '/../../../src/ControlPlane/Operator/Api/TenantApiController.php');
         $methodStart = strpos($source, 'public function downloadBackup');
         self::assertIsInt($methodStart);
 

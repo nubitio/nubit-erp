@@ -23,7 +23,7 @@ final class TenantServiceFactory extends TestCase
 {
     public static function yaml(string $configPath, string $source = 'yaml'): TenantService
     {
-        return (new self(__METHOD__))->build(
+        return new self(__METHOD__)->build(
             connection: null,
             configPath: $configPath,
             source: $source,
@@ -37,9 +37,11 @@ final class TenantServiceFactory extends TestCase
         string $source = 'db',
         ?LoggerInterface $logger = null,
     ): TenantService {
-        return (new self(__METHOD__))->build(
+        return new self(__METHOD__)->build(
             connection: $connection,
-            configPath: $configPath !== '' ? $configPath : sys_get_temp_dir() . '/tenants-fallback-' . bin2hex(random_bytes(4)) . '.yml',
+            configPath: $configPath !== ''
+                ? $configPath
+                : sys_get_temp_dir() . '/tenants-fallback-' . bin2hex(random_bytes(4)) . '.yml',
             source: $source,
             logger: $logger,
         );
@@ -82,7 +84,9 @@ final class TenantServiceFactory extends TestCase
         $store = [];
 
         return new class($store) implements CacheInterface {
-            public function __construct(private array &$store) {}
+            public function __construct(
+                private array &$store,
+            ) {}
 
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {

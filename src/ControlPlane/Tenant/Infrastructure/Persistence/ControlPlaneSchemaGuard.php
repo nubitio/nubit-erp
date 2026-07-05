@@ -43,9 +43,6 @@ final readonly class ControlPlaneSchemaGuard
             return;
         }
 
-        throw new RuntimeException(sprintf(
-            'Control plane database not ready while attempting to %s.',
-            $operation,
-        ));
+        throw new RuntimeException(sprintf('Control plane database not ready while attempting to %s.', $operation));
     }
 }

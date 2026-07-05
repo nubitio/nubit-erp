@@ -202,14 +202,11 @@ readonly class TenantService
      */
     public function getTenantDomains(int $tenantId): array
     {
-        return array_map(
-            static fn(array $domain): array => [
-                'id' => $domain['id'],
-                'domain' => $domain['domain'],
-                'is_primary' => $domain['is_primary'] ? 1 : 0,
-            ],
-            $this->domainRepository->listByTenantId($tenantId),
-        );
+        return array_map(static fn(array $domain): array => [
+            'id' => $domain['id'],
+            'domain' => $domain['domain'],
+            'is_primary' => $domain['is_primary'] ? 1 : 0,
+        ], $this->domainRepository->listByTenantId($tenantId));
     }
 
     public function getPrimaryDomain(int $tenantId): ?string
@@ -257,10 +254,7 @@ readonly class TenantService
      */
     private function mapSnapshots(array $snapshots): array
     {
-        return array_map(
-            static fn(TenantSnapshot $snapshot): array => $snapshot->toArray(),
-            $snapshots,
-        );
+        return array_map(static fn(TenantSnapshot $snapshot): array => $snapshot->toArray(), $snapshots);
     }
 
     private function sourceMode(): TenantSourceMode

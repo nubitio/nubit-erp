@@ -120,7 +120,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/suspend', name: 'api_control_plane_tenants_suspend', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/suspend',
+        name: 'api_control_plane_tenants_suspend',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function suspend(int $id): JsonResponse
     {
         try {
@@ -134,7 +139,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/unsuspend', name: 'api_control_plane_tenants_unsuspend', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/unsuspend',
+        name: 'api_control_plane_tenants_unsuspend',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function unsuspend(int $id): JsonResponse
     {
         try {
@@ -170,7 +180,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/restore', name: 'api_control_plane_tenants_restore', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/restore',
+        name: 'api_control_plane_tenants_restore',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function restore(int $id): JsonResponse
     {
         try {
@@ -183,7 +198,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/domains', name: 'api_control_plane_tenants_domains_create', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/domains',
+        name: 'api_control_plane_tenants_domains_create',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function addDomain(int $id, Request $request): JsonResponse
     {
         /** @var array<string, mixed> $payload */
@@ -203,7 +223,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{tenantId}/domains/{domainId}/primary', name: 'api_control_plane_tenants_domains_primary', requirements: ['tenantId' => '\d+', 'domainId' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{tenantId}/domains/{domainId}/primary',
+        name: 'api_control_plane_tenants_domains_primary',
+        requirements: ['tenantId' => '\d+', 'domainId' => '\d+'],
+        methods: ['POST'],
+    )]
     public function setPrimaryDomain(int $tenantId, int $domainId): JsonResponse
     {
         try {
@@ -216,7 +241,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{tenantId}/domains/{domainId}', name: 'api_control_plane_tenants_domains_delete', requirements: ['tenantId' => '\d+', 'domainId' => '\d+'], methods: ['DELETE'])]
+    #[Route(
+        '/{tenantId}/domains/{domainId}',
+        name: 'api_control_plane_tenants_domains_delete',
+        requirements: ['tenantId' => '\d+', 'domainId' => '\d+'],
+        methods: ['DELETE'],
+    )]
     public function deleteDomain(int $tenantId, int $domainId): JsonResponse
     {
         $this->commands->deleteDomain($tenantId, $domainId);
@@ -225,7 +255,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/provision', name: 'api_control_plane_tenants_provision', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/provision',
+        name: 'api_control_plane_tenants_provision',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function provision(int $id, Request $request): JsonResponse
     {
         /** @var array<string, mixed> $payload */
@@ -254,7 +289,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/backup-schedule', name: 'api_control_plane_tenants_backup_schedule', requirements: ['id' => '\d+'], methods: ['PATCH'])]
+    #[Route(
+        '/{id}/backup-schedule',
+        name: 'api_control_plane_tenants_backup_schedule',
+        requirements: ['id' => '\d+'],
+        methods: ['PATCH'],
+    )]
     public function updateBackupSchedule(int $id, Request $request): JsonResponse
     {
         /** @var array<string, mixed> $payload */
@@ -274,7 +314,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_SUPER_ADMIN')]
-    #[Route('/{id}/backups', name: 'api_control_plane_tenants_backups_create', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/backups',
+        name: 'api_control_plane_tenants_backups_create',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function createBackup(int $id): JsonResponse
     {
         try {
@@ -289,7 +334,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_SUPER_ADMIN')]
-    #[Route('/{id}/backups/{backupId}/restore', name: 'api_control_plane_tenants_backups_restore', requirements: ['id' => '\d+', 'backupId' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/backups/{backupId}/restore',
+        name: 'api_control_plane_tenants_backups_restore',
+        requirements: ['id' => '\d+', 'backupId' => '\d+'],
+        methods: ['POST'],
+    )]
     public function restoreBackup(int $id, int $backupId): JsonResponse
     {
         try {
@@ -302,7 +352,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_SUPER_ADMIN')]
-    #[Route('/{id}/backups/{backupId}', name: 'api_control_plane_tenants_backups_delete', requirements: ['id' => '\d+', 'backupId' => '\d+'], methods: ['DELETE'])]
+    #[Route(
+        '/{id}/backups/{backupId}',
+        name: 'api_control_plane_tenants_backups_delete',
+        requirements: ['id' => '\d+', 'backupId' => '\d+'],
+        methods: ['DELETE'],
+    )]
     public function deleteBackup(int $id, int $backupId): JsonResponse
     {
         try {
@@ -315,7 +370,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_CP_VIEWER')]
-    #[Route('/{id}/backups/{backupId}/download', name: 'api_control_plane_tenants_backups_download', requirements: ['id' => '\d+', 'backupId' => '\d+'], methods: ['GET'])]
+    #[Route(
+        '/{id}/backups/{backupId}/download',
+        name: 'api_control_plane_tenants_backups_download',
+        requirements: ['id' => '\d+', 'backupId' => '\d+'],
+        methods: ['GET'],
+    )]
     public function downloadBackup(int $id, int $backupId): StreamedResponse
     {
         $tenant = $this->tenantService->getTenant($id);
@@ -349,7 +409,12 @@ final class TenantApiController extends AbstractController
         return $response;
     }
 
-    #[Route('/{id}/certificates/{certificateId}', name: 'api_control_plane_tenants_certificates_show', requirements: ['id' => '\d+', 'certificateId' => '\d+'], methods: ['GET'])]
+    #[Route(
+        '/{id}/certificates/{certificateId}',
+        name: 'api_control_plane_tenants_certificates_show',
+        requirements: ['id' => '\d+', 'certificateId' => '\d+'],
+        methods: ['GET'],
+    )]
     public function showCertificate(int $id, int $certificateId): JsonResponse
     {
         $tenant = $this->tenantService->getTenant($id);
@@ -367,7 +432,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/certificates', name: 'api_control_plane_tenants_certificates_upload', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/certificates',
+        name: 'api_control_plane_tenants_certificates_upload',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function uploadCertificate(int $id, Request $request): JsonResponse
     {
         $tenant = $this->tenantService->getTenant($id);
@@ -402,7 +472,12 @@ final class TenantApiController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/{id}/certificates/{ruc}/revoke', name: 'api_control_plane_tenants_certificates_revoke', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/certificates/{ruc}/revoke',
+        name: 'api_control_plane_tenants_certificates_revoke',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function revokeCertificate(int $id, string $ruc, Request $request): JsonResponse
     {
         $tenant = $this->tenantService->getTenant($id);

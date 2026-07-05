@@ -84,10 +84,9 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
             return $this->fallbackYaml('get tenant', fn(): ?TenantSnapshot => $this->yamlStore->findById($id));
         }
 
-        $row = $this->schemaGuard->connection()->fetchAssociative(
-            'SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days FROM tenants WHERE id = ?',
-            [$id],
-        );
+        $row = $this->schemaGuard->connection()->fetchAssociative('SELECT id, name, connection, status, plan, backup_frequency, backup_retention_days FROM tenants WHERE id = ?', [
+            $id,
+        ]);
 
         return $row === false ? null : TenantSnapshot::fromArray($row);
     }
@@ -99,7 +98,9 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
         }
 
         if (!$this->schemaGuard->isReady()) {
-            return $this->fallbackYaml('get tenant by name', fn(): ?TenantSnapshot => $this->yamlStore->findByName($name));
+            return $this->fallbackYaml('get tenant by name', fn(): ?TenantSnapshot => $this->yamlStore->findByName(
+                $name,
+            ));
         }
 
         $row = $this->schemaGuard->connection()->fetchAssociative(
@@ -188,11 +189,15 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
             throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
         }
 
-        $affected = $conn->update('tenants', [
-            'name' => $name,
-            'connection' => $connection,
-            'updated_at' => $this->now(),
-        ], ['id' => $id]);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'name' => $name,
+                'connection' => $connection,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Tenant not found');
@@ -216,22 +221,30 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
         }
 
         $now = $this->now();
-        $this->schemaGuard->connection()->update('tenants', [
-            'status' => TenantStatus::Deleted->value,
-            'deleted_at' => $now,
-            'updated_at' => $now,
-        ], ['id' => $id]);
+        $this->schemaGuard->connection()->update(
+            'tenants',
+            [
+                'status' => TenantStatus::Deleted->value,
+                'deleted_at' => $now,
+                'updated_at' => $now,
+            ],
+            ['id' => $id],
+        );
     }
 
     public function restore(int $id): void
     {
         $this->schemaGuard->requireReady('restore tenant');
 
-        $affected = $this->schemaGuard->connection()->update('tenants', [
-            'status' => TenantStatus::Active->value,
-            'deleted_at' => null,
-            'updated_at' => $this->now(),
-        ], ['id' => $id, 'status' => TenantStatus::Deleted->value]);
+        $affected = $this->schemaGuard->connection()->update(
+            'tenants',
+            [
+                'status' => TenantStatus::Active->value,
+                'deleted_at' => null,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id, 'status' => TenantStatus::Deleted->value],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Deleted tenant not found');
@@ -260,10 +273,14 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
     {
         $this->schemaGuard->requireReady('suspend tenant');
 
-        $affected = $this->schemaGuard->connection()->update('tenants', [
-            'status' => TenantStatus::Suspended->value,
-            'updated_at' => $this->now(),
-        ], ['id' => $id, 'status' => TenantStatus::Active->value]);
+        $affected = $this->schemaGuard->connection()->update(
+            'tenants',
+            [
+                'status' => TenantStatus::Suspended->value,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id, 'status' => TenantStatus::Active->value],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Active tenant not found');
@@ -274,10 +291,14 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
     {
         $this->schemaGuard->requireReady('unsuspend tenant');
 
-        $affected = $this->schemaGuard->connection()->update('tenants', [
-            'status' => TenantStatus::Active->value,
-            'updated_at' => $this->now(),
-        ], ['id' => $id, 'status' => TenantStatus::Suspended->value]);
+        $affected = $this->schemaGuard->connection()->update(
+            'tenants',
+            [
+                'status' => TenantStatus::Active->value,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id, 'status' => TenantStatus::Suspended->value],
+        );
 
         if ($affected === 0) {
             throw new InvalidArgumentException('Suspended tenant not found');
@@ -293,10 +314,14 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
         }
 
         $conn = $this->schemaGuard->connection();
-        $affected = $conn->update('tenants', [
-            'plan' => $plan,
-            'updated_at' => $this->now(),
-        ], ['id' => $id]);
+        $affected = $conn->update(
+            'tenants',
+            [
+                'plan' => $plan,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0 && $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]) === false) {
             throw new InvalidArgumentException('Tenant not found');
@@ -333,10 +358,14 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
     private function updateBackupField(int $id, string $field, int $value): void
     {
         $conn = $this->schemaGuard->connection();
-        $affected = $conn->update('tenants', [
-            $field => $value,
-            'updated_at' => $this->now(),
-        ], ['id' => $id]);
+        $affected = $conn->update(
+            'tenants',
+            [
+                $field => $value,
+                'updated_at' => $this->now(),
+            ],
+            ['id' => $id],
+        );
 
         if ($affected === 0 && $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]) === false) {
             throw new InvalidArgumentException('Tenant not found');
@@ -349,10 +378,7 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
      */
     private function mapRows(array $rows): array
     {
-        return array_map(
-            static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row),
-            $rows,
-        );
+        return array_map(static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row), $rows);
     }
 
     /**

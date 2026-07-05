@@ -96,7 +96,11 @@ final class TenantNotificationApiController extends AbstractController
                 'sent' => $sent,
                 'message' => $sent
                     ? sprintf('Test notification sent for "%s" via "%s".', $eventKey, $channel)
-                    : sprintf('No test notification sent for "%s" via "%s" (check enable flag and recipients).', $eventKey, $channel),
+                    : sprintf(
+                        'No test notification sent for "%s" via "%s" (check enable flag and recipients).',
+                        $eventKey,
+                        $channel,
+                    ),
             ]);
         } catch (\Throwable $exception) {
             return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);

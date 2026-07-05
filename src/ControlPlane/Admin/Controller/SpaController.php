@@ -16,7 +16,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class SpaController extends AbstractController
 {
     #[Route('/admin/tenants', name: 'admin_tenant_index', methods: ['GET'])]
-    #[Route('/admin/tenants/{path}', name: 'admin_spa_tenants_nested', requirements: ['path' => '.+'], methods: ['GET'])]
+    #[Route(
+        '/admin/tenants/{path}',
+        name: 'admin_spa_tenants_nested',
+        requirements: ['path' => '.+'],
+        methods: ['GET'],
+    )]
     #[Route('/admin/plans', name: 'admin_spa_plans', methods: ['GET'])]
     #[Route('/admin/plans', name: 'admin_plan_index', methods: ['GET'])]
     #[Route('/admin/plan-features', name: 'admin_spa_plan_features', methods: ['GET'])]

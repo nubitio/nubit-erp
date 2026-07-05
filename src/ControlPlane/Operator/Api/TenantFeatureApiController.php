@@ -36,10 +36,7 @@ final class TenantFeatureApiController extends AbstractController
             return $this->json(['error' => 'Tenant not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $overrides = array_map(
-            $this->serializeOverride(...),
-            $this->overrideRepository->findAllByTenant($id),
-        );
+        $overrides = array_map($this->serializeOverride(...), $this->overrideRepository->findAllByTenant($id));
 
         return $this->json([
             'overrides' => $overrides,
@@ -87,7 +84,12 @@ final class TenantFeatureApiController extends AbstractController
         return $this->json(['ok' => true], Response::HTTP_CREATED);
     }
 
-    #[Route('/{key}', name: 'api_control_plane_tenants_features_update', requirements: ['key' => '[a-z_]+'], methods: ['PATCH'])]
+    #[Route(
+        '/{key}',
+        name: 'api_control_plane_tenants_features_update',
+        requirements: ['key' => '[a-z_]+'],
+        methods: ['PATCH'],
+    )]
     public function update(int $id, string $key, Request $request): JsonResponse
     {
         $tenant = $this->tenantService->getTenant($id);
@@ -114,7 +116,9 @@ final class TenantFeatureApiController extends AbstractController
                 'feature_key' => $key,
             ]);
         } catch (\JsonException $exception) {
-            return $this->json(['error' => 'Config JSON is invalid: ' . $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json([
+                'error' => 'Config JSON is invalid: ' . $exception->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $exception) {
             return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
         }
@@ -122,7 +126,12 @@ final class TenantFeatureApiController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    #[Route('/{key}', name: 'api_control_plane_tenants_features_delete', requirements: ['key' => '[a-z_]+'], methods: ['DELETE'])]
+    #[Route(
+        '/{key}',
+        name: 'api_control_plane_tenants_features_delete',
+        requirements: ['key' => '[a-z_]+'],
+        methods: ['DELETE'],
+    )]
     public function delete(int $id, string $key): JsonResponse
     {
         $tenant = $this->tenantService->getTenant($id);

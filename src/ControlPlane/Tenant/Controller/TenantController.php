@@ -23,7 +23,12 @@ final class TenantController extends AbstractController
         return $this->redirect("/admin/tenants/{$id}?tab=certificates");
     }
 
-    #[Route('/{id}/certificates/{certificateId}', name: 'admin_tenant_certificate_detail', methods: ['GET'], requirements: ['certificateId' => '\d+'])]
+    #[Route(
+        '/{id}/certificates/{certificateId}',
+        name: 'admin_tenant_certificate_detail',
+        methods: ['GET'],
+        requirements: ['certificateId' => '\d+'],
+    )]
     public function certificateDetailRedirect(int $id, int $certificateId): Response
     {
         return $this->redirect("/admin/tenants/{$id}?tab=certificates&certificate={$certificateId}");

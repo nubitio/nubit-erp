@@ -12,7 +12,7 @@ final class KardexExportServiceSpreadsheetTest extends TestCase
 {
     public function testSpreadsheetUsesNumericCellsAndMovementTotals(): void
     {
-        $service = (new \ReflectionClass(KardexExportService::class))->newInstanceWithoutConstructor();
+        $service = new \ReflectionClass(KardexExportService::class)->newInstanceWithoutConstructor();
 
         $spreadsheet = $service->buildSpreadsheet([
             'summary' => [

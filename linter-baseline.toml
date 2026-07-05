@@ -1927,66 +1927,6 @@ message = "Literal argument `true` should be passed as a named argument for clar
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "cyclomatic-complexity"
-message = "Class has high complexity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "halstead"
-message = "Method has a high halstead effort"
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "kan-defect"
-message = "Class has a high kan defect score."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "no-else-clause"
-message = "Avoid `else` clauses."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "no-else-clause"
-message = "Avoid `elseif` clauses."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "no-insecure-comparison"
-message = "Insecure comparison of sensitive data."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "no-redundant-use"
-message = "Unused import: `JsonResponse`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "prefer-early-continue"
-message = "Consider using early continue pattern to reduce nesting."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Admin/User/AdminUserController.php"
-code = "sensitive-parameter"
-message = "Parameters that may contain sensitive information should be marked with the `#[SensitiveParameter]` attribute."
-count = 2
-
-[[issues]]
 file = "src/ControlPlane/Admin/User/AdminUserRepository.php"
 code = "inline-variable-return"
 message = "Variable assignment can be inlined into the return statement."
@@ -2117,54 +2057,6 @@ file = "src/ControlPlane/Billing/Controller/EntitlementsController.php"
 code = "prefer-early-continue"
 message = "Consider using early continue pattern to reduce nesting."
 count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/PlanFeatureController.php"
-code = "inline-variable-return"
-message = "Variable assignment can be inlined into the return statement."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/PlanFeatureController.php"
-code = "literal-named-argument"
-message = "Literal argument `512` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/PlanFeatureController.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "cyclomatic-complexity"
-message = "Class has high complexity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "halstead"
-message = "Method has a high halstead effort"
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "inline-variable-return"
-message = "Variable assignment can be inlined into the return statement."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "literal-named-argument"
-message = "Literal argument `512` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Controller/TenantFeatureOverrideController.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 2
 
 [[issues]]
 file = "src/ControlPlane/Billing/DTO/EntitlementsResponse.php"
@@ -2319,7 +2211,7 @@ count = 1
 [[issues]]
 file = "src/ControlPlane/Billing/Service/PlanManager.php"
 code = "no-redundant-use"
-message = "Unused import: `TenantManager`."
+message = "Unused import: `TenantService`."
 count = 1
 
 [[issues]]
@@ -2677,6 +2569,228 @@ message = "Parameters that may contain sensitive information should be marked wi
 count = 2
 
 [[issues]]
+file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 3
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanFeatureApiController.php"
+code = "inline-variable-return"
+message = "Variable assignment can be inlined into the return statement."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanFeatureApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `512` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/PlanFeatureApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `'r'` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 7
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "no-error-control-operator"
+message = "Unsafe use of error control operator `@`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "prefer-static-closure"
+message = "This closure does not use `$this` and should be declared static."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantApiController.php"
+code = "too-many-methods"
+message = "Class has too many methods."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "inline-variable-return"
+message = "Variable assignment can be inlined into the return statement."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `512` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantFeatureApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 4
+
+[[issues]]
+file = "src/ControlPlane/Operator/Api/TenantNotificationApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "no-boolean-flag-parameter"
+message = "Avoid boolean flag parameters."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "no-else-clause"
+message = "Avoid `else` clauses."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "no-else-clause"
+message = "Avoid `elseif` clauses."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "no-insecure-comparison"
+message = "Insecure comparison of sensitive data."
+count = 2
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "prefer-early-continue"
+message = "Consider using early continue pattern to reduce nesting."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
+code = "sensitive-parameter"
+message = "Parameters that may contain sensitive information should be marked with the `#[SensitiveParameter]` attribute."
+count = 6
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
+code = "literal-named-argument"
+message = "Literal argument `2` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "no-else-clause"
+message = "Avoid `else` clauses."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "no-else-clause"
+message = "Avoid `elseif` clauses."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "no-isset"
+message = "Use of the `isset` construct."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
+code = "no-shorthand-ternary"
+message = "Use of the shorthand ternary operator."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantOperatorCommandService.php"
+code = "literal-named-argument"
+message = "Literal argument `0` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantOperatorCommandService.php"
+code = "literal-named-argument"
+message = "Literal argument `2000` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantOperatorCommandService.php"
+code = "no-empty-catch-clause"
+message = "Do not use empty `catch` blocks."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Operator/Application/TenantOperatorCommandService.php"
+code = "sensitive-parameter"
+message = "Parameters that may contain sensitive information should be marked with the `#[SensitiveParameter]` attribute."
+count = 1
+
+[[issues]]
 file = "src/ControlPlane/Subscription/Command/SubscriptionCheckGraceCommand.php"
 code = "inline-variable-return"
 message = "Variable assignment can be inlined into the return statement."
@@ -2866,6 +2980,12 @@ count = 2
 file = "src/ControlPlane/Tenant/Adapter/LycetElectronicBillingCompanyAdapter.php"
 code = "sensitive-parameter"
 message = "Parameters that may contain sensitive information should be marked with the `#[SensitiveParameter]` attribute."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Application/TenantService.php"
+code = "too-many-methods"
+message = "Class has too many methods."
 count = 1
 
 [[issues]]
@@ -3145,99 +3265,105 @@ message = "Avoid `else` clauses."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "cyclomatic-complexity"
-message = "Class has high complexity."
+file = "src/ControlPlane/Tenant/Domain/Model/TenantSnapshot.php"
+code = "no-isset"
+message = "Use of the `isset` construct."
+count = 5
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Domain/Repository/TenantDomainRepositoryInterface.php"
+code = "no-boolean-flag-parameter"
+message = "Avoid boolean flag parameters."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "final-controller"
-message = "Controller classes should be declared as `final`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "halstead"
-message = "Method has a high halstead effort"
-count = 3
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "kan-defect"
-message = "Class has a high kan defect score."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "literal-named-argument"
-message = "Literal argument `'r'` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "literal-named-argument"
-message = "Literal argument `0` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "literal-named-argument"
-message = "Literal argument `2000` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "literal-named-argument"
-message = "Literal argument `2` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "no-else-clause"
-message = "Avoid `else` clauses."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
+file = "src/ControlPlane/Tenant/Infrastructure/Cache/TenantCacheInvalidator.php"
 code = "no-empty-catch-clause"
 message = "Do not use empty `catch` blocks."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "no-error-control-operator"
-message = "Unsafe use of error control operator `@`."
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantDomainRepository.php"
+code = "no-boolean-flag-parameter"
+message = "Avoid boolean flag parameters."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "no-isset"
-message = "Use of the `isset` construct."
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "no-redundant-use"
+message = "Unused import: `DbalException`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "prefer-first-class-callable"
+message = "Use first-class callable syntax `...` instead of a arrow function."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
+code = "too-many-methods"
+message = "Class has too many methods."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "explicit-octal"
+message = "Use explicit octal numeral notation."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "inline-variable-return"
+message = "Variable assignment can be inlined into the return statement."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "literal-named-argument"
+message = "Literal argument `0777` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
 code = "no-shorthand-ternary"
 message = "Use of the shorthand ternary operator."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "prefer-static-closure"
-message = "This closure does not use `$this` and should be declared static."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Controller/TenantController.php"
-code = "too-many-methods"
-message = "Class has too many methods."
+file = "src/ControlPlane/Tenant/Infrastructure/Persistence/YamlTenantStore.php"
+code = "prefer-first-class-callable"
+message = "Use first-class callable syntax `...` instead of a arrow function."
 count = 1
 
 [[issues]]
@@ -3400,78 +3526,6 @@ count = 1
 file = "src/ControlPlane/Tenant/Service/TenantHealthChecker.php"
 code = "no-boolean-flag-parameter"
 message = "Avoid boolean flag parameters."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "cyclomatic-complexity"
-message = "Class has high complexity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "explicit-octal"
-message = "Use explicit octal numeral notation."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "inline-variable-return"
-message = "Variable assignment can be inlined into the return statement."
-count = 3
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "kan-defect"
-message = "Class has a high kan defect score."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "literal-named-argument"
-message = "Literal argument `0777` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "no-boolean-flag-parameter"
-message = "Avoid boolean flag parameters."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "no-else-clause"
-message = "Avoid `else` clauses."
-count = 2
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "no-empty-catch-clause"
-message = "Do not use empty `catch` blocks."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "no-shorthand-ternary"
-message = "Use of the shorthand ternary operator."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "prefer-static-closure"
-message = "This arrow function does not use `$this` and should be declared static."
-count = 4
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantManager.php"
-code = "too-many-methods"
-message = "Class has too many methods."
 count = 1
 
 [[issues]]
@@ -4432,6 +4486,12 @@ count = 1
 file = "src/Inventory/Service/KardexExportService.php"
 code = "kan-defect"
 message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
+file = "src/Inventory/Service/KardexExportService.php"
+code = "literal-named-argument"
+message = "Literal argument `''` should be passed as a named argument for clarity."
 count = 1
 
 [[issues]]
@@ -7135,6 +7195,18 @@ message = "Literal argument `null` should be passed as a named argument for clar
 count = 1
 
 [[issues]]
+file = "tests/ControlPlane/Certificate/CertificatePresenterTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 6
+
+[[issues]]
+file = "tests/ControlPlane/Certificate/CertificatePresenterTest.php"
+code = "literal-named-argument"
+message = "Literal argument `64` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
 file = "tests/ControlPlane/Certificate/CertificateStatusPolicyTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -7405,6 +7477,54 @@ message = "Inconsistent assertions style."
 count = 8
 
 [[issues]]
+file = "tests/ControlPlane/Operator/Api/AuditLogApiControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 4
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/AuditLogApiControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/DashboardApiControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 5
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/DashboardApiControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 6
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/SessionApiControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 3
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/SessionApiControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
 file = "tests/ControlPlane/Service/PlanManagerTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -7441,130 +7561,10 @@ message = "Literal argument `true` should be passed as a named argument for clar
 count = 1
 
 [[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "assertion-style"
-message = "Inconsistent assertions style."
-count = 30
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "explicit-octal"
-message = "Use explicit octal numeral notation."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 1, name: acme, connection: c1 }\n"` should be passed as a named argument for clarity.'
-count = 2
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n"` should be passed as a named argument for clarity.'
-count = 2
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 1, name: acme, connection: default }\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 10, name: fallback-tenant, connection: default }\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 3, name: acme, connection: c1 }\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 5, name: globex, connection: c1 }\n"` should be passed as a named argument for clarity.'
-count = 2
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"[]\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"just a string\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = "Literal argument `'   '` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = "Literal argument `0777` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 2
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
+file = "tests/ControlPlane/Service/TenantHealthCheckerTest.php"
 code = "no-redundant-use"
-message = "Unused import: `QueryBuilder`."
+message = "Unused import: `TagAwareCacheInterface`."
 count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerLifecycleTest.php"
-code = "too-many-methods"
-message = "Class has too many methods."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "assertion-style"
-message = "Inconsistent assertions style."
-count = 35
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "explicit-octal"
-message = "Use explicit octal numeral notation."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"- { id: 1, name: acme, connection: default }\n"` should be passed as a named argument for clarity.'
-count = 3
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "literal-named-argument"
-message = 'Literal argument `"[]\n"` should be passed as a named argument for clarity.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "literal-named-argument"
-message = "Literal argument `0777` should be passed as a named argument for clarity."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Service/TenantManagerTest.php"
-code = "literal-named-argument"
-message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 2
 
 [[issues]]
 file = "tests/ControlPlane/Service/TenantNotificationServiceTest.php"
@@ -7609,6 +7609,156 @@ message = "Inconsistent assertions style."
 count = 7
 
 [[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 30
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "explicit-octal"
+message = "Use explicit octal numeral notation."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 1, name: acme, connection: c1 }\n"` should be passed as a named argument for clarity.'
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 1, name: acme, connection: c1 }\n- { id: 2, name: globex, connection: c2 }\n"` should be passed as a named argument for clarity.'
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 1, name: acme, connection: default }\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 10, name: fallback-tenant, connection: default }\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 3, name: acme, connection: c1 }\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 5, name: globex, connection: c1 }\n"` should be passed as a named argument for clarity.'
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"[]\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"just a string\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = "Literal argument `'   '` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = "Literal argument `0777` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "no-redundant-use"
+message = "Unused import: `QueryBuilder`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "no-redundant-use"
+message = "Unused import: `TagAwareCacheInterface`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceLifecycleTest.php"
+code = "too-many-methods"
+message = "Class has too many methods."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 35
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "explicit-octal"
+message = "Use explicit octal numeral notation."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"- { id: 1, name: acme, connection: default }\n"` should be passed as a named argument for clarity.'
+count = 3
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "literal-named-argument"
+message = 'Literal argument `"[]\n"` should be passed as a named argument for clarity.'
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "literal-named-argument"
+message = "Literal argument `0777` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "no-redundant-use"
+message = "Unused import: `ConnectionRegistry`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "no-redundant-use"
+message = "Unused import: `LoggerInterface`."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantServiceTest.php"
+code = "no-redundant-use"
+message = "Unused import: `TagAwareCacheInterface`."
+count = 1
+
+[[issues]]
 file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -7618,6 +7768,12 @@ count = 5
 file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
 code = "literal-named-argument"
 message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Service/TenantUsageServiceTest.php"
+code = "no-redundant-use"
+message = "Unused import: `TagAwareCacheInterface`."
 count = 1
 
 [[issues]]
@@ -7683,7 +7839,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Tenant/TenantBackupDownloadAuthorizationTest.php"
 code = "literal-named-argument"
-message = "Literal argument `'$this->tenantManager->getTenant($id)'` should be passed as a named argument for clarity."
+message = "Literal argument `'$this->tenantService->getTenant($id)'` should be passed as a named argument for clarity."
 count = 1
 
 [[issues]]
@@ -7701,7 +7857,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Tenant/TenantBackupDownloadAuthorizationTest.php"
 code = "literal-named-argument"
-message = '''Literal argument `'throw $this->createNotFoundException(\'Backup not found.\')'` should be passed as a named argument for clarity.'''
+message = '''Literal argument `'throw $this->createNotFoundException(\'Backup not found\')'` should be passed as a named argument for clarity.'''
 count = 1
 
 [[issues]]
@@ -8185,6 +8341,12 @@ message = "Inconsistent assertions style."
 count = 12
 
 [[issues]]
+file = "tests/Inventory/Service/KardexExportServiceSpreadsheetTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 10
+
+[[issues]]
 file = "tests/Inventory/Service/KardexReferenceResolverTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -8459,6 +8621,12 @@ file = "tests/Sales/Entity/SaleEntityTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 24
+
+[[issues]]
+file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 4
 
 [[issues]]
 file = "tests/Sales/Repository/DashboardRepositoryTest.php"

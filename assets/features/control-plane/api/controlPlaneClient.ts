@@ -1,3 +1,4 @@
+import { exceptionalFetch } from '@shared/api/network';
 import type {
   CertificateRecord,
   TenantDetailPayload,
@@ -99,7 +100,7 @@ export interface PlanFeatureMatrixPayload {
 
 async function cpFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
-  const response = await fetch(path, {
+  const response = await exceptionalFetch(path, {
     credentials: 'include',
     headers: {
       Accept: 'application/json',
@@ -107,7 +108,7 @@ async function cpFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
     ...init,
-  });
+  }, 'api-documentation');
 
   if (response.status === 401 || response.status === 403) {
     window.location.href = '/admin/login';

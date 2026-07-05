@@ -84,11 +84,7 @@ final class AdminUserApiController extends AbstractController
     public function toggle(int $id): JsonResponse
     {
         try {
-            $result = $this->adminUsers->toggleUser(
-                $id,
-                $this->actor(),
-                $this->getUser()?->getUserIdentifier() ?? '',
-            );
+            $result = $this->adminUsers->toggleUser($id, $this->actor(), $this->getUser()?->getUserIdentifier() ?? '');
         } catch (InvalidArgumentException $exception) {
             $status = str_contains($exception->getMessage(), 'not found')
                 ? Response::HTTP_NOT_FOUND
@@ -100,7 +96,12 @@ final class AdminUserApiController extends AbstractController
         return $this->json(['ok' => true, 'is_active' => $result['is_active']]);
     }
 
-    #[Route('/{id}/reset-password', name: 'api_control_plane_users_reset_password', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route(
+        '/{id}/reset-password',
+        name: 'api_control_plane_users_reset_password',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'],
+    )]
     public function resetPassword(int $id, Request $request): JsonResponse
     {
         /** @var array<string, mixed> $payload */

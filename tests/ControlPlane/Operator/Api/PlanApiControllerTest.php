@@ -46,10 +46,7 @@ final class PlanApiControllerTest extends TestCase
         $conn->method('fetchOne')->willReturn(false);
         $conn->expects($this->once())->method('insert');
 
-        $this->auditLogger
-            ->expects($this->once())
-            ->method('log')
-            ->with('plan.create', $this->isType('array'));
+        $this->auditLogger->expects($this->once())->method('log')->with('plan.create', $this->isType('array'));
 
         $request = Request::create(
             '/api/control-plane/plans',

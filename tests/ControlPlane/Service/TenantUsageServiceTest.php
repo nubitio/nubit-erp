@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\ControlPlane\Service;
 
 use App\ControlPlane\Tenant\Application\TenantService;
-use App\Tests\ControlPlane\Support\TenantServiceFactory;
 use App\ControlPlane\Tenant\Service\TenantResourceCatalog;
 use App\ControlPlane\Tenant\Service\TenantUsageService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
+use App\Tests\ControlPlane\Support\TenantServiceFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;

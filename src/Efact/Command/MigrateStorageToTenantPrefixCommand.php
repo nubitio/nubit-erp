@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Efact\Command;
 
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\ControlPlane\Tenant\Application\TenantService;
+use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

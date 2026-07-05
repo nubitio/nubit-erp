@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Command;
 
+use App\ControlPlane\Tenant\Application\TenantService;
 use App\ControlPlane\Tenant\Command\TenantHealthCheckCommand;
 use App\ControlPlane\Tenant\Service\TenantHealthChecker;
-use App\ControlPlane\Tenant\Application\TenantService;
 use App\Efact\Doctrine\DBAL\TenantConnection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;

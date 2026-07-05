@@ -18,29 +18,24 @@ final readonly class DbalTenantDomainRepository implements TenantDomainRepositor
         $this->schemaGuard->requireReady('list tenant domains');
 
         /** @var list<array{id: int|string, domain: string, is_primary: int|string}> $rows */
-        $rows = $this->schemaGuard->connection()->fetchAllAssociative(
-            'SELECT id, domain, is_primary FROM tenant_domains WHERE tenant_id = ? ORDER BY is_primary DESC, id ASC',
-            [$tenantId],
-        );
+        $rows = $this->schemaGuard->connection()->fetchAllAssociative('SELECT id, domain, is_primary FROM tenant_domains WHERE tenant_id = ? ORDER BY is_primary DESC, id ASC', [
+            $tenantId,
+        ]);
 
-        return array_map(
-            static fn(array $row): array => [
-                'id' => (int) $row['id'],
-                'domain' => (string) $row['domain'],
-                'is_primary' => (bool) $row['is_primary'],
-            ],
-            $rows,
-        );
+        return array_map(static fn(array $row): array => [
+            'id' => (int) $row['id'],
+            'domain' => (string) $row['domain'],
+            'is_primary' => (bool) $row['is_primary'],
+        ], $rows);
     }
 
     public function findPrimaryDomain(int $tenantId): ?string
     {
         $this->schemaGuard->requireReady('get primary tenant domain');
 
-        $domain = $this->schemaGuard->connection()->fetchOne(
-            'SELECT domain FROM tenant_domains WHERE tenant_id = ? AND is_primary = 1 ORDER BY id ASC LIMIT 1',
-            [$tenantId],
-        );
+        $domain = $this->schemaGuard->connection()->fetchOne('SELECT domain FROM tenant_domains WHERE tenant_id = ? AND is_primary = 1 ORDER BY id ASC LIMIT 1', [
+            $tenantId,
+        ]);
 
         return $domain === false ? null : (string) $domain;
     }

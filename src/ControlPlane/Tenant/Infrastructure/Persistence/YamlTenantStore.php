@@ -34,10 +34,7 @@ final class YamlTenantStore
      */
     public function listAll(): array
     {
-        return array_map(
-            static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row),
-            $this->readRaw(),
-        );
+        return array_map(static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row), $this->readRaw());
     }
 
     public function findById(int $id): ?TenantSnapshot
