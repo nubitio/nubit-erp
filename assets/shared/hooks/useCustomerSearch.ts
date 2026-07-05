@@ -41,6 +41,8 @@ export interface UseCustomerSearchResult {
   setQuery: (value: string) => void;
   /** Current page of results (reset to 1 on each new query). */
   customers: CustomerSearchOption[];
+  /** Current loaded page number. */
+  page: number;
   /** Whether more pages are available. */
   hasMore: boolean;
   /** Whether a fetch is in flight. */
@@ -111,7 +113,8 @@ export function useCustomerSearch(
   const extraParams = options.extraParams;
 
   const [query, setQuery] = useState('');
-  const deferredQuery = useDeferredValue(query);
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const deferredQuery = useDeferredValue(debouncedQuery);
 
   const [customers, setCustomers] = useState<CustomerSearchOption[]>([]);
   const [page, setPage] = useState(1);
@@ -119,6 +122,11 @@ export function useCustomerSearch(
   const [isLoading, setIsLoading] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 250);
+    return () => window.clearTimeout(timer);
+  }, [query]);
 
   const fetchPage = useCallback(
     (searchQuery: string, pageNum: number, append: boolean) => {
@@ -187,6 +195,7 @@ export function useCustomerSearch(
     query,
     setQuery,
     customers,
+    page,
     hasMore,
     isLoading,
     loadMore,

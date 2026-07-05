@@ -14,7 +14,7 @@ import { productService } from '@features/product/services/productService';
 import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
-import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
+import { normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubitio/ui';
@@ -62,8 +62,6 @@ const POSPage = () => {
     usingOfflineCatalog,
     lastUpdatedAt,
     paymentMethods,
-    selectedPaymentMethodId,
-    setSelectedPaymentMethodId,
     warehouses,
     selectedWarehouseId,
     setSelectedWarehouseId,
@@ -80,10 +78,7 @@ const POSPage = () => {
   const [priceListOverrides, setPriceListOverrides] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
-    const selectedCustomer = customersState.customerOptions.find(
-      (c) => c.id === customersState.selectedCustomerId,
-    );
-    const priceListId = selectedCustomer?.priceListId;
+    const priceListId = customersState.priceListId;
 
     if (!priceListId) {
       setPriceListOverrides(new Map());
@@ -118,7 +113,7 @@ const POSPage = () => {
       cancelled = true;
       controller.abort();
     };
-  }, [customersState.selectedCustomerId, customersState.customerOptions]);
+  }, [customersState.selectedCustomerId, customersState.priceListId]);
 
   const filteredMenu = menuData
     .filter((item) => {
@@ -134,17 +129,14 @@ const POSPage = () => {
       return override !== undefined ? { ...item, salePrice: override } : item;
     });
 
-  const selectedPaymentMethod =
-    paymentMethods.find((method) => method.id === selectedPaymentMethodId) ?? null;
-  const isCashPaymentSelected = isCashPaymentMethod(selectedPaymentMethod);
   const { isOnline } = useConnectivity();
   const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } =
     useOutboxSync();
 
   const {
     cart,
-    amountReceived,
-    setAmountReceived,
+    paymentLines,
+    setPaymentLines,
     discountPercent,
     setDiscountPercent,
     note,
@@ -169,24 +161,20 @@ const POSPage = () => {
     discountAmount,
     total,
     includedTax,
-    amountReceivedNumber,
     changeAmount,
-    amountMissing,
-    quickCashActions,
     checkoutDisabled,
     handleCheckout,
     getEffectiveStock,
     igvRate,
     readScaleForLine,
     scaleReady,
+    syncCartPricesFromCatalog,
   } = usePosCheckout({
     tenantId: window.location.hostname || 'default-tenant',
     storeId: branchId || 'default-store',
     selectedWarehouseId,
     selectedCustomerId: customersState.selectedCustomerId,
-    selectedPaymentMethodId,
-    selectedPaymentMethodName: selectedPaymentMethod?.name,
-    isCashPaymentSelected,
+    paymentMethods,
     enforceStockCheck,
     warnOnNegativeStock: stockPolicy === 'WARNING_ONLY',
     visibleProducts: filteredMenu,
@@ -202,6 +190,10 @@ const POSPage = () => {
       setActivePanel('cart');
     },
   });
+
+  useEffect(() => {
+    syncCartPricesFromCatalog();
+  }, [priceListOverrides, syncCartPricesFromCatalog]);
 
   const formatMoney = (value: number) =>
     NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)), currency);
@@ -472,8 +464,8 @@ const POSPage = () => {
         selectedWarehouseName={selectedWarehouse?.name ?? ''}
         cajaAbierta={cajaAbierta}
         quickMode={quickMode}
-        customerSearch={customersState.customerSearch}
-        setCustomerSearch={customersState.setCustomerSearch}
+        selectedCustomer={customersState.selectedCustomer}
+        onCustomerChange={customersState.selectCustomer}
         clearSelectedCustomer={clearSelectedCustomer}
         focusCustomerTrigger={focusCustomerTrigger}
         lastSaleCode={lastSaleCode}
@@ -483,13 +475,6 @@ const POSPage = () => {
           }
         }}
         selectedCustomerId={customersState.selectedCustomerId}
-        setSelectedCustomerId={customersState.setSelectedCustomerId}
-        customerOptions={customersState.customerOptions}
-        customersLoading={customersState.customersLoading}
-        customersHasMore={customersState.customersHasMore}
-        customersPage={customersState.customersPage}
-        deferredCustomerSearch={customersState.deferredCustomerSearch}
-        loadCustomers={customersState.loadCustomers}
         note={note}
         setNote={setNote}
         updateQuantity={updateQuantity}
@@ -499,8 +484,8 @@ const POSPage = () => {
         removeFromCart={removeFromCart}
         formatMoney={formatMoney}
         paymentMethods={paymentMethods}
-        selectedPaymentMethodId={selectedPaymentMethodId}
-        setSelectedPaymentMethodId={(id) => setSelectedPaymentMethodId(id)}
+        paymentLines={paymentLines}
+        setPaymentLines={setPaymentLines}
         emitInvoice={emitInvoice}
         setEmitInvoice={setEmitInvoice}
         currency={currency}
@@ -509,17 +494,11 @@ const POSPage = () => {
         setExchangeRate={setExchangeRate}
         discountPercent={discountPercent}
         setDiscountPercent={setDiscountPercent}
-        isCashPaymentSelected={isCashPaymentSelected}
-        amountReceived={amountReceived}
-        setAmountReceived={setAmountReceived}
-        quickCashActions={quickCashActions}
         subtotal={subtotal}
         discountAmount={discountAmount}
         includedTax={includedTax}
         total={total}
         igvRate={igvRate}
-        amountReceivedNumber={amountReceivedNumber}
-        amountMissing={amountMissing}
         changeAmount={changeAmount}
         checkoutDisabled={checkoutDisabled}
         handleCheckout={handleCheckout}
