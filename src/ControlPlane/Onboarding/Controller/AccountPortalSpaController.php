@@ -19,7 +19,12 @@ final class AccountPortalSpaController extends AbstractController
     #[Route('/register/status/{token}', name: 'onboarding_status_page', methods: ['GET'])]
     #[Route('/account/login', name: 'onboarding_account_login', methods: ['GET'])]
     #[Route('/account/dashboard', name: 'onboarding_account_dashboard', methods: ['GET'])]
-    #[Route('/account/tenant/{tenantId}', name: 'onboarding_tenant_detail', methods: ['GET'], requirements: ['tenantId' => '\d+'])]
+    #[Route(
+        '/account/tenant/{tenantId}',
+        name: 'onboarding_tenant_detail',
+        methods: ['GET'],
+        requirements: ['tenantId' => '\d+'],
+    )]
     public function spa(): Response
     {
         return $this->render('account-portal/spa.html.twig');

@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PriceListProviderTest extends TestCase
 {
-    /** @param list<array<string,string>> $rows */
+    /** @param list<array<string, string|null>> $rows */
     private function makeProvider(array $rows): PriceListProvider
     {
         $conn = $this->createStub(Connection::class);
@@ -24,9 +24,30 @@ final class PriceListProviderTest extends TestCase
     public function testProvideReturnsMappedDtos(): void
     {
         $provider = $this->makeProvider([
-            ['id' => 'prod-1', 'name' => 'Producto A', 'sku' => 'SKU-A', 'code' => 'COD-A', 'price' => '100.0000', 'price_source' => 'base'],
-            ['id' => 'prod-2', 'name' => 'Producto B', 'sku' => null, 'code' => 'COD-B', 'price' => '90.0000', 'price_source' => 'multiplier'],
-            ['id' => 'prod-3', 'name' => 'Producto C', 'sku' => 'SKU-C', 'code' => null, 'price' => '75.0000', 'price_source' => 'override'],
+            [
+                'id' => 'prod-1',
+                'name' => 'Producto A',
+                'sku' => 'SKU-A',
+                'code' => 'COD-A',
+                'price' => '100.0000',
+                'price_source' => 'base',
+            ],
+            [
+                'id' => 'prod-2',
+                'name' => 'Producto B',
+                'sku' => null,
+                'code' => 'COD-B',
+                'price' => '90.0000',
+                'price_source' => 'multiplier',
+            ],
+            [
+                'id' => 'prod-3',
+                'name' => 'Producto C',
+                'sku' => 'SKU-C',
+                'code' => null,
+                'price' => '75.0000',
+                'price_source' => 'override',
+            ],
         ]);
 
         $result = $provider->provide(new GetCollection(), ['id' => 1]);

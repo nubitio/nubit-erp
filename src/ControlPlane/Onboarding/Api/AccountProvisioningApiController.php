@@ -7,8 +7,8 @@ namespace App\ControlPlane\Onboarding\Api;
 use App\ControlPlane\Onboarding\Service\OnboardingService;
 use App\ControlPlane\Onboarding\Service\SubdomainValidator;
 use App\ControlPlane\Subscription\Payment\BillingCycle;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use SensitiveParameter;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,10 +44,9 @@ final class AccountProvisioningApiController extends AbstractController
 
         $limiter = $this->onboardingTenantCreationLimiter->create('account_' . $accountId);
         if (!$limiter->consume()->isAccepted()) {
-            return $this->json(
-                ['error' => 'Has alcanzado el limite de creacion de tenants por hoy. Intenta manana.'],
-                Response::HTTP_TOO_MANY_REQUESTS,
-            );
+            return $this->json([
+                'error' => 'Has alcanzado el limite de creacion de tenants por hoy. Intenta manana.',
+            ], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
         $payload = json_decode($request->getContent(), true);

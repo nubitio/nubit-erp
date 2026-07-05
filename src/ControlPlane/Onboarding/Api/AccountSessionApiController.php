@@ -69,10 +69,9 @@ final class AccountSessionApiController extends AbstractController
 
         $limiter = $this->onboardingRegistrationLimiter->create($request->getClientIp() ?? 'unknown');
         if (!$limiter->consume()->isAccepted()) {
-            return $this->json(
-                ['error' => 'Demasiados intentos de registro. Intenta mas tarde.'],
-                Response::HTTP_TOO_MANY_REQUESTS,
-            );
+            return $this->json([
+                'error' => 'Demasiados intentos de registro. Intenta mas tarde.',
+            ], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
         try {
@@ -94,10 +93,9 @@ final class AccountSessionApiController extends AbstractController
 
         $limiter = $this->onboardingVerificationLimiter->create('verify_' . mb_strtolower(trim($email)));
         if (!$limiter->consume()->isAccepted()) {
-            return $this->json(
-                ['error' => 'Demasiados intentos de verificacion. Intenta mas tarde.'],
-                Response::HTTP_TOO_MANY_REQUESTS,
-            );
+            return $this->json([
+                'error' => 'Demasiados intentos de verificacion. Intenta mas tarde.',
+            ], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
         try {
@@ -127,7 +125,10 @@ final class AccountSessionApiController extends AbstractController
 
             return $this->json(['ok' => true]);
         } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage(), 'requiresVerification' => true], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json([
+                'error' => $e->getMessage(),
+                'requiresVerification' => true,
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -138,5 +139,4 @@ final class AccountSessionApiController extends AbstractController
 
         return $this->json(['ok' => true]);
     }
-
 }

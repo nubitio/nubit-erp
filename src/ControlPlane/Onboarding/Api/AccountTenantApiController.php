@@ -41,7 +41,12 @@ final class AccountTenantApiController extends AbstractController
         ]);
     }
 
-    #[Route('/{tenantId}/change-plan', name: 'api_account_change_plan', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
+    #[Route(
+        '/{tenantId}/change-plan',
+        name: 'api_account_change_plan',
+        methods: ['POST'],
+        requirements: ['tenantId' => '\d+'],
+    )]
     public function changePlan(int $tenantId, Request $request): JsonResponse
     {
         $tenant = $this->requireOwnedTenant($request, $tenantId);
@@ -86,7 +91,12 @@ final class AccountTenantApiController extends AbstractController
         }
     }
 
-    #[Route('/{tenantId}/change-gateway', name: 'api_account_change_gateway', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
+    #[Route(
+        '/{tenantId}/change-gateway',
+        name: 'api_account_change_gateway',
+        methods: ['POST'],
+        requirements: ['tenantId' => '\d+'],
+    )]
     public function changeGateway(int $tenantId, Request $request): JsonResponse
     {
         $tenant = $this->requireOwnedTenant($request, $tenantId);
@@ -120,7 +130,12 @@ final class AccountTenantApiController extends AbstractController
         }
     }
 
-    #[Route('/{tenantId}/cancel-subscription', name: 'api_account_cancel_subscription', methods: ['POST'], requirements: ['tenantId' => '\d+'])]
+    #[Route(
+        '/{tenantId}/cancel-subscription',
+        name: 'api_account_cancel_subscription',
+        methods: ['POST'],
+        requirements: ['tenantId' => '\d+'],
+    )]
     public function cancelSubscription(int $tenantId, Request $request): JsonResponse
     {
         $tenant = $this->requireOwnedTenant($request, $tenantId);

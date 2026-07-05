@@ -15,9 +15,17 @@ trait AccountSessionTrait
      */
     protected function decodeJson(Request $request): array
     {
-        $data = json_decode($request->getContent(), associative: true);
+        $raw = $request->getContent();
+        if (!\is_string($raw) || trim($raw) === '') {
+            return [];
+        }
 
-        return \is_array($data) ? $data : [];
+        $decoded = json_decode($raw, associative: true);
+        if (!\is_array($decoded)) {
+            return [];
+        }
+
+        return $decoded;
     }
 
     protected function onboardingDomainSuffix(): string
