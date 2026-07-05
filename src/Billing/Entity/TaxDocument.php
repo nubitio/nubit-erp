@@ -6,11 +6,9 @@ namespace App\Billing\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Billing\Controller\Api\ConsultInvoice;
 use App\Billing\Controller\Api\SendInvoiceEmail;
@@ -49,12 +47,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
             'id',
         ])], provider: TaxDocumentProvider::class),
-        new Patch(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
-            'id',
-        ])], processor: TaxDocumentProcessor::class),
-        new Delete(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
-            'id',
-        ])], processor: TaxDocumentProcessor::class),
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
             uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],

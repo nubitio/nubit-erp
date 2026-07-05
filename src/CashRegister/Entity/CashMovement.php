@@ -6,10 +6,8 @@ namespace App\CashRegister\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
@@ -33,8 +31,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new GetCollection(),
         new Get(provider: CashMovementItemProvider::class),
         new Post(processor: CashMovementWriteProcessor::class),
-        new Patch(provider: CashMovementItemProvider::class, processor: CashMovementWriteProcessor::class),
-        new Delete(provider: CashMovementItemProvider::class, processor: CashMovementWriteProcessor::class),
     ],
     mercure: true,
 )]

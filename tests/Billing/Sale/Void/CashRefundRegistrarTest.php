@@ -230,32 +230,22 @@ final class CashRefundRegistrarTest extends TestCase
     }
 
     // ---------------------------------------------------------------------------
-    // Idempotency: ON DUPLICATE KEY UPDATE present in SQL
+    // Idempotency: duplicate cash refund is a no-op, not an in-place update
     // ---------------------------------------------------------------------------
 
-    public function testInsertSqlContainsOnDuplicateKeyUpdate(): void
+    public function testDuplicateRefundDoesNotMutateExistingCashMovement(): void
     {
         $sale = $this->makeSale(id: 'sale-idem', total: '30.00');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock();
+        $connection = $this->createConnectionMockWithExistingCashMovement();
         $resolver = $this->createResolverMock(sessionId: 9);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 1]);
-
-        $capturedSql = '';
-        $connection
-            ->method('executeStatement')
-            ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
-                $capturedSql = $sql;
-
-                return 1;
-            });
+        $connection->expects(self::never())->method('executeStatement');
 
         $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
-
-        self::assertStringContainsString('ON DUPLICATE KEY UPDATE', $capturedSql);
     }
 
     // ---------------------------------------------------------------------------
@@ -291,7 +281,18 @@ final class CashRefundRegistrarTest extends TestCase
      */
     private function createConnectionMock(): Connection
     {
-        return $this->createMock(Connection::class);
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(false);
+
+        return $connection;
+    }
+
+    private function createConnectionMockWithExistingCashMovement(): Connection
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(123);
+
+        return $connection;
     }
 
     /**

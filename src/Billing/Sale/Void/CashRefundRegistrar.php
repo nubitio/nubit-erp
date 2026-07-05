@@ -77,6 +77,10 @@ final readonly class CashRefundRegistrar
         );
         $nowSql = $now->format('Y-m-d H:i:s');
 
+        if ($this->cashMovementExists($idemKey)) {
+            return;
+        }
+
         $this->connection->executeStatement(
             <<<'SQL'
                 INSERT INTO cash_movements (
@@ -116,12 +120,6 @@ final readonly class CashRefundRegistrar
                     1,
                     :last_modified_at
                 )
-                ON DUPLICATE KEY UPDATE
-                    amount           = VALUES(amount),
-                    description      = VALUES(description),
-                    synced_at        = VALUES(synced_at),
-                    version_no       = version_no + 1,
-                    last_modified_at = VALUES(last_modified_at)
                 SQL,
             [
                 'cash_session_id' => $cashSessionId,
@@ -138,5 +136,14 @@ final readonly class CashRefundRegistrar
                 'last_modified_at' => $nowSql,
             ],
         );
+    }
+
+    private function cashMovementExists(string $idempotencyKey): bool
+    {
+        $existingCashMovementId = $this->connection->fetchOne('SELECT id FROM cash_movements WHERE idempotency_key = :idempotency_key', [
+            'idempotency_key' => $idempotencyKey,
+        ]);
+
+        return $existingCashMovementId !== false && $existingCashMovementId !== null;
     }
 }
