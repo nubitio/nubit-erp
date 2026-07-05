@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { CartItem, PosItem } from './types';
-import { isWeightUnitCode, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import type { CartItem, PaymentMethodOption, PosItem } from './types';
+import { isCashPaymentMethod, isWeightUnitCode, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import {
+  buildPaymentPayload,
+  createSinglePaymentLine,
+  rebalancePaymentLines,
+  totalCashChangeAmount,
+  type SalePaymentLineDraft,
+  validatePaymentLines,
+} from '@shared/lib/salePayments';
 import {
   fetchScaleStatus,
   LocalAgentNotAvailableError,
@@ -30,9 +38,7 @@ type UsePosCheckoutParams = {
   storeId: string;
   selectedWarehouseId: string;
   selectedCustomerId: number | null;
-  selectedPaymentMethodId: number | null;
-  selectedPaymentMethodName?: string;
-  isCashPaymentSelected: boolean;
+  paymentMethods: PaymentMethodOption[];
   enforceStockCheck: boolean;
   warnOnNegativeStock?: boolean;
   visibleProducts: PosItem[];
@@ -48,9 +54,7 @@ export const usePosCheckout = ({
   storeId,
   selectedWarehouseId,
   selectedCustomerId,
-  selectedPaymentMethodId,
-  selectedPaymentMethodName,
-  isCashPaymentSelected,
+  paymentMethods,
   enforceStockCheck,
   warnOnNegativeStock = false,
   visibleProducts,
@@ -76,7 +80,7 @@ export const usePosCheckout = ({
   const draft = readDraft();
 
   const [cart, setCart] = useState<CartItem[]>(() => draft?.cart ?? []);
-  const [amountReceived, setAmountReceived] = useState('');
+  const [paymentLines, setPaymentLines] = useState<SalePaymentLineDraft[]>([]);
   const [discountPercent, setDiscountPercent] = useState(() => draft?.discountPercent ?? 0);
   const [note, setNote] = useState(() => draft?.note ?? '');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
@@ -149,6 +153,35 @@ export const usePosCheckout = ({
       return null;
     }
   };
+
+  const syncCartPricesFromCatalog = useCallback(() => {
+    setCart((previousCart) => {
+      if (previousCart.length === 0) {
+        return previousCart;
+      }
+
+      let changed = false;
+      const nextCart = previousCart.map((cartItem) => {
+        const catalogItem = visibleProducts.find((product) => product.id === cartItem.id);
+        if (!catalogItem) {
+          return cartItem;
+        }
+
+        const nextPrice = toNumber(catalogItem.salePrice);
+        if (toNumber(cartItem.salePrice) === nextPrice) {
+          return cartItem;
+        }
+
+        changed = true;
+        return {
+          ...cartItem,
+          salePrice: nextPrice,
+        };
+      });
+
+      return changed ? nextCart : previousCart;
+    });
+  }, [visibleProducts]);
 
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
@@ -333,7 +366,6 @@ export const usePosCheckout = ({
 
   const clearCart = () => {
     setCart([]);
-    setAmountReceived('');
     setDiscountPercent(0);
     setNote('');
     localStorage.removeItem(storageKey);
@@ -350,24 +382,37 @@ export const usePosCheckout = ({
       discountPercent,
       igvRate,
     );
-  const amountReceivedNumber = isCashPaymentSelected
-    ? Number.parseFloat(amountReceived || '0') || 0
-    : total;
-  const changeAmount = isCashPaymentSelected ? Math.max(0, amountReceivedNumber - total) : 0;
-  const amountMissing = isCashPaymentSelected ? Math.max(0, total - amountReceivedNumber) : 0;
-  const quickCashActions = [
-    { label: 'Exacto', value: total },
-    { label: '+ 5', value: total + 5 },
-    { label: '+ 10', value: total + 10 },
-    { label: '+ 20', value: total + 20 },
-  ];
+  useEffect(() => {
+    if (paymentMethods.length === 0 || total <= 0) {
+      return;
+    }
+
+    setPaymentLines((previousLines) => {
+      if (previousLines.length === 0) {
+        const defaultMethod =
+          paymentMethods.find((method) => isCashPaymentMethod(method)) ?? paymentMethods[0];
+        return [createSinglePaymentLine(defaultMethod.id, total)];
+      }
+
+      if (previousLines.length === 1) {
+        return [createSinglePaymentLine(previousLines[0].methodId, total)];
+      }
+
+      return rebalancePaymentLines(previousLines, total);
+    });
+  }, [paymentMethods, total]);
+
+  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, total);
+  const resolvedPayments = buildPaymentPayload(paymentLines, paymentMethods, total);
+  const primaryPaymentMethodId = paymentLines[0]?.methodId ?? null;
+  const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, total);
 
   const checkoutDisabled =
     cart.length === 0 ||
     isProcessingSale ||
     !selectedWarehouseId ||
-    !selectedPaymentMethodId ||
-    (isCashPaymentSelected && amountReceivedNumber < total);
+    total <= 0 ||
+    !paymentValidation.valid;
 
   const handleCheckout = async () => {
     if (checkoutDisabled) {
@@ -379,12 +424,8 @@ export const usePosCheckout = ({
         toast('Selecciona un almacén', 'warning');
         return;
       }
-      if (!selectedPaymentMethodId) {
-        toast('Selecciona un método de pago', 'warning');
-        return;
-      }
-      if (isCashPaymentSelected && amountReceivedNumber < total) {
-        toast('El monto recibido es menor al total', 'warning');
+      if (!paymentValidation.valid) {
+        toast(paymentValidation.message, 'warning');
       }
       return;
     }
@@ -398,15 +439,10 @@ export const usePosCheckout = ({
         issuedDate: todayBusinessDate(),
         warehouse: getIRI(`${API}warehouses`, selectedWarehouseId),
         customer: selectedCustomerId ? getIRI(`${API}customers`, String(selectedCustomerId)) : null,
-        paymentMethod: getIRI(`${API}payment-methods`, String(selectedPaymentMethodId)),
-        payments: [
-          {
-            payment_method_id: Number(selectedPaymentMethodId),
-            amount: total,
-            tendered_amount: isCashPaymentSelected ? amountReceivedNumber : total,
-            change_amount: isCashPaymentSelected ? changeAmount : 0,
-          },
-        ],
+        paymentMethod: primaryPaymentMethodId
+          ? getIRI(`${API}payment-methods`, String(primaryPaymentMethodId))
+          : null,
+        payments: resolvedPayments,
         note: note.trim() || null,
         discountPercent: discountPercent.toFixed(2),
         emitInvoice,
@@ -436,15 +472,20 @@ export const usePosCheckout = ({
           unitPrice: toNumber(item.salePrice),
           lineTotal: toNumber(item.salePrice) * item.quantity,
         })),
-        payments: [
-          {
-            methodId: Number(selectedPaymentMethodId),
-            methodName: selectedPaymentMethodName,
-            amount: total,
-            amountReceived: isCashPaymentSelected ? amountReceivedNumber : total,
-            changeAmount: isCashPaymentSelected ? changeAmount : 0,
-          },
-        ],
+        payments: resolvedPayments.map((payment) => {
+          const method = paymentMethods.find((item) => item.id === payment.payment_method_id);
+          return {
+            methodId: payment.payment_method_id,
+            methodName: method?.name,
+            amount: Number.parseFloat(payment.amount),
+            amountReceived: payment.tendered_amount
+              ? Number.parseFloat(payment.tendered_amount)
+              : Number.parseFloat(payment.amount),
+            changeAmount: payment.change_amount
+              ? Number.parseFloat(payment.change_amount)
+              : 0,
+          };
+        }),
         totals: {
           subtotal,
           igv: includedTax,
@@ -507,8 +548,8 @@ export const usePosCheckout = ({
 
   return {
     cart,
-    amountReceived,
-    setAmountReceived,
+    paymentLines,
+    setPaymentLines,
     discountPercent,
     setDiscountPercent,
     note,
@@ -537,15 +578,13 @@ export const usePosCheckout = ({
     inafectoBase,
     /** Active IGV rate (decimal fraction) used for display. */
     igvRate,
-    amountReceivedNumber,
     changeAmount,
-    amountMissing,
-    quickCashActions,
     checkoutDisabled,
     handleCheckout,
     lastCheckoutSucceeded,
     getEffectiveStock,
     readScaleForLine,
     scaleReady,
+    syncCartPricesFromCatalog,
   };
 };

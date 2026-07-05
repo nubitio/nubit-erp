@@ -69,7 +69,11 @@ const SALE_FORM_LAYOUT = {
   sections: [
     {
       label: 'Datos principales',
-      fields: ['emitInvoice', 'issuedDate', 'warehouse', 'customer', 'paymentMethod', 'note'],
+      fields: ['emitInvoice', 'issuedDate', 'warehouse', 'customer', 'note'],
+    },
+    {
+      label: 'Pagos',
+      fields: ['salePayments'],
     },
     {
       label: 'Comercial',

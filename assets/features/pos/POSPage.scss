@@ -1014,6 +1014,26 @@
   border-bottom: 1px solid var(--pos-border);
   flex-shrink: 0;
   background: var(--pos-card);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+
+.pos-customer-section__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.pos-customer-section__field .nb-form__lookup {
+  width: 100%;
+}
+
+.pos-customer-section__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary, var(--pos-muted));
 }
 
 // Customer row — sticky above scroll body
@@ -1168,7 +1188,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 180px;
+  max-height: 240px;
   overflow-y: auto;
   padding: 0.3rem;
   border: 1px solid var(--pos-border);

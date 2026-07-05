@@ -435,6 +435,13 @@ readonly class SalesWriteGateway
         $seed = sprintf('cash-sale:%s:%d', $saleId, $cashSessionId);
         $offline = $this->buildOfflineMeta($seed, $at, 1);
 
+        $existingCashMovementId = $this->connection->fetchOne('SELECT id FROM cash_movements WHERE idempotency_key = :idempotency_key', [
+            'idempotency_key' => $offline['idempotency_key'],
+        ]);
+        if ($existingCashMovementId !== false && $existingCashMovementId !== null) {
+            return;
+        }
+
         $this->connection->executeStatement(
             <<<'SQL'
                 INSERT INTO cash_movements (
@@ -474,12 +481,6 @@ readonly class SalesWriteGateway
                     :version_no,
                     :last_modified_at
                 )
-                ON DUPLICATE KEY UPDATE
-                    amount = VALUES(amount),
-                    description = VALUES(description),
-                    synced_at = VALUES(synced_at),
-                    version_no = version_no + 1,
-                    last_modified_at = VALUES(last_modified_at)
                 SQL,
             [
                 'cash_session_id' => $cashSessionId,

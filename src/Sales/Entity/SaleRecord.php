@@ -326,9 +326,13 @@ class SaleRecord
     private ?string $note = null;
 
     /**
+     * On write: payment lines from the client. On read: resolved from
+     * sale_payments by the provider (payment_method_id, method_name, amount).
+     *
      * @var array<int, array<string, mixed>>
      */
-    #[Groups(['sale_record:write'])]
+    #[Groups(['sale_record:read', 'sale_record:write'])]
+    #[ApiProperty(description: 'sale_record.payments.label')]
     private array $payments = [];
 
     /**

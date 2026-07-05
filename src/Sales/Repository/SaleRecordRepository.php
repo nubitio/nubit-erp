@@ -127,7 +127,8 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Enrich a list of SaleRecord entities with their primary payment method.
+     * Enrich a list of SaleRecord entities with their primary payment method
+     * and the full payments breakdown (method + amount per line).
      * Single DBAL query to avoid N+1.
      *
      * @param SaleRecord[] $records
@@ -156,7 +157,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->getEntityManager()
             ->getConnection()
             ->fetchAllAssociative(sprintf(<<<'SQL'
-                SELECT sp.sale_id, sp.payment_method_id
+                SELECT sp.sale_id, sp.payment_method_id, sp.amount
                 FROM sale_payments sp
                 WHERE sp.sale_id IN (%s)
                 ORDER BY sp.sale_id, sp.id ASC
@@ -170,17 +171,33 @@ class SaleRecordRepository extends ServiceEntityRepository
             }
         }
 
-        // Assign first payment method per sale
+        // First method per sale becomes the primary paymentMethod; every row
+        // is collected into the payments breakdown.
         $assigned = [];
+        $paymentsBySale = [];
         foreach ($rows as $row) {
             $saleId = (string) $row['sale_id'];
+            $pmId = (int) $row['payment_method_id'];
+            $method = $paymentMethods[$pmId] ?? null;
+
+            $paymentsBySale[$saleId][] = [
+                'payment_method_id' => $pmId,
+                'method_name' => $method?->getName(),
+                'amount' => (string) $row['amount'],
+            ];
+
             if (isset($assigned[$saleId])) {
                 continue;
             }
-            $pmId = (int) $row['payment_method_id'];
-            if (isset($paymentMethods[$pmId], $indexById[$saleId])) {
-                $indexById[$saleId]->setPaymentMethod($paymentMethods[$pmId]);
+            if ($method !== null && isset($indexById[$saleId])) {
+                $indexById[$saleId]->setPaymentMethod($method);
                 $assigned[$saleId] = true;
+            }
+        }
+
+        foreach ($paymentsBySale as $saleId => $payments) {
+            if (isset($indexById[$saleId])) {
+                $indexById[$saleId]->setPayments($payments);
             }
         }
     }

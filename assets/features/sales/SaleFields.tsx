@@ -1,8 +1,9 @@
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { MutableRefObject } from 'react';
+import React, { type MutableRefObject } from 'react';
 import type { FormHandle } from '@nubitio/crud';
+import { SalePaymentsField } from './components/SalePaymentsField';
 import { Field } from '@nubitio/crud';
 import {
   identityField,
@@ -21,6 +22,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import { productService } from '@features/product';
 import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
+import { mapPosCustomer } from '@features/pos/lib/mapPosCustomer';
 import { ProductDto } from '@features/product/types/product.dto';
 import { PriceListApplyDto } from '@features/catalog/types/PriceListItemDto';
 import { priceListEndpoints } from '@features/catalog/api/priceListEndpoints';
@@ -42,9 +44,7 @@ type SaleDetailRow = DataRecord & {
 };
 
 type CustomerSelectEvent = {
-  itemData?: {
-    price_list?: { id?: string | number };
-  };
+  itemData?: unknown;
 };
 
 type PriceListChangeEvent = {
@@ -89,6 +89,57 @@ interface SaleDetailFieldCallbacks {
   /** Shared mutable state between header and detail field factories. See SaleFieldStateRef. */
   stateRef?: MutableRefObject<SaleFieldStateRef>;
 }
+
+const applyPriceListToSaleDetail = async (
+  form: FormHandle | null,
+  priceListId: string | number,
+  stateRef?: MutableRefObject<SaleFieldStateRef>,
+) => {
+  const fetchedPriceList = await httpRequestData<PriceListApplyDto[]>(
+    httpClient.get<PriceListApplyDto[]>(priceListEndpoints.apply(priceListId)),
+  );
+
+  if (stateRef) {
+    stateRef.current.priceList = fetchedPriceList;
+  }
+
+  const detailData = form?.getDetailData() ?? [];
+  let changed = false;
+  detailData.forEach((item: SaleDetailRow) => {
+    const actualPrice = item.unitPrice;
+    const priceItem = fetchedPriceList.find((price) => price.id === item.product?.id);
+    const newPrice = Number(priceItem?.price ?? 0);
+    if (priceItem && newPrice !== actualPrice) {
+      item.unitPrice = newPrice;
+      item.netAmount = Number(item.qty ?? 0) * newPrice;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    form?.reloadDetailData();
+    setTotal(form);
+  }
+};
+
+/** Restore base product prices on detail rows (customer without price list). */
+const restoreBasePricesInSaleDetail = (form: FormHandle | null) => {
+  const detailData = form?.getDetailData() ?? [];
+  let changed = false;
+  detailData.forEach((item: SaleDetailRow) => {
+    const basePrice = Number(item.product?.salePrice ?? Number.NaN);
+    if (Number.isFinite(basePrice) && basePrice !== item.unitPrice) {
+      item.unitPrice = basePrice;
+      item.netAmount = Number(item.qty ?? 0) * basePrice;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    form?.reloadDetailData();
+    setTotal(form);
+  }
+};
 
 const isStockTrackedProduct = (product: ProductDto | DataRecord | null | undefined) => {
   if (!product) return false;
@@ -158,9 +209,20 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
       .onSelect((e: unknown) => {
         const event = e as CustomerSelectEvent;
-        if (event.itemData?.price_list) {
-          form?.setFieldValue('price_list', event.itemData.price_list.id);
+        // Same extraction as POS (mapPosCustomer): the API serializes the
+        // customer's price list as an IRI string under `priceList`.
+        const priceListId = mapPosCustomer(event.itemData)?.priceListId;
+        if (priceListId != null) {
+          form?.setFieldValue('price_list', priceListId);
+          void applyPriceListToSaleDetail(form, priceListId, callbacks?.stateRef);
+          return;
         }
+
+        form?.setFieldValue('price_list', null);
+        if (callbacks?.stateRef) {
+          callbacks.stateRef.current.priceList = [];
+        }
+        restoreBasePricesInSaleDetail(form);
       })
       .buttons([
         {
@@ -184,24 +246,14 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .valueType('number')
       .visible(false)
       .onChange(async (event: PriceListChangeEvent) => {
-        const fetchedPriceList = await httpRequestData<PriceListApplyDto[]>(
-          httpClient.get<PriceListApplyDto[]>(priceListEndpoints.apply(event.value as string | number)),
-        );
-        // Write fetched price list into shared state so detail fields can apply it on product select.
-        if (callbacks?.stateRef) {
-          callbacks.stateRef.current.priceList = fetchedPriceList;
-        }
-        const detailData = form?.getDetailData() ?? [];
-        detailData.forEach((item: SaleDetailRow) => {
-          const actualPrice = item.unitPrice;
-          const priceItem = fetchedPriceList.find((p) => p.id === item.product?.id);
-          const newPrice = Number(priceItem?.price ?? 0);
-          if (priceItem && newPrice !== actualPrice) {
-            item.unitPrice = newPrice;
-            item.netAmount = Number(item.qty ?? 0) * newPrice;
-            form?.reloadDetailData();
+        if (event.value == null || event.value === '') {
+          if (callbacks?.stateRef) {
+            callbacks.stateRef.current.priceList = [];
           }
-        });
+          return;
+        }
+
+        await applyPriceListToSaleDetail(form, event.value, callbacks?.stateRef);
       })
       .build(),
   );
@@ -212,7 +264,49 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .valueType('number')
       .defaultValue(1)
       .required(true)
-      .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
+      .visibleOnForm(false)
+      .formatter((cell: GridCellContext) => {
+        const payments = (cell.data.payments ?? []) as {
+          method_name?: string | null;
+          amount?: string;
+        }[];
+        if (payments.length > 1) {
+          const currency = (cell.data.currency as string) ?? 'PEN';
+          const label = payments
+            .map((payment) => payment.method_name)
+            .filter(Boolean)
+            .join(' + ');
+          const detail = payments
+            .map(
+              (payment) =>
+                `${payment.method_name ?? '—'} ${NumberUtils.formatCurrency(Number(payment.amount ?? 0), currency)}`,
+            )
+            .join(' · ');
+          return <span title={detail}>{label}</span>;
+        }
+        return (cell.value as { name?: string } | undefined)?.name;
+      })
+      .build(),
+  );
+  fields.push(
+    noneField()
+      .name('payments')
+      .label('Pagos')
+      .visible(false)
+      .visibleOnForm(false)
+      .defaultValue([])
+      .build(),
+  );
+  fields.push(
+    noneField()
+      .name('salePayments')
+      .label('')
+      .forceFullWidth(true)
+      .contentRender(() => {
+        const total = Number(form?.getFieldValue('grandTotal') ?? 0);
+        const currency = String(form?.getFieldValue('currency') ?? 'PEN');
+        return <SalePaymentsField form={form} total={total} currency={currency} />;
+      })
       .build(),
   );
   fields.push(
