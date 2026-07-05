@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Efact\EventListener;
 
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
-use App\ControlPlane\Tenant\Service\TenantManager;
 use App\Efact\EventListener\TenantListener;
 use Nubit\Platform\Tenant\Context\TenantContext;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -19,15 +19,15 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class TenantListenerTest extends TestCase
 {
-    private TenantConnectionSwitcher&MockObject $switcher;
-    private TenantManager&MockObject $tenantManager;
+    private TenantConnectionSwitcherInterface&MockObject $switcher;
+    private TenantRegistryInterface&MockObject $tenantManager;
     private TenantContext $tenantContext;
     private TenantListener $listener;
 
     protected function setUp(): void
     {
-        $this->switcher = $this->createMock(TenantConnectionSwitcher::class);
-        $this->tenantManager = $this->createMock(TenantManager::class);
+        $this->switcher = $this->createMock(TenantConnectionSwitcherInterface::class);
+        $this->tenantManager = $this->createMock(TenantRegistryInterface::class);
         $this->tenantContext = new TenantContext();
 
         $this->listener = new TenantListener(

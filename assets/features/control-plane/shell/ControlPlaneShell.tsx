@@ -15,7 +15,7 @@ const ControlPlaneUserMenu = ({
 }) => (
   <div className="cp-user-menu">
     <div className="cp-user-menu__profile">
-      <Avatar name={user ?? 'admin'} size="sm" />
+      <Avatar owner={user ?? 'admin'} size={32} />
       <span className="cp-user-menu__name">{user ?? '…'}</span>
     </div>
     <a href="/admin/logout" className="cp-user-menu__logout" onClick={close}>

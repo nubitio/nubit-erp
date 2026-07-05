@@ -117,7 +117,7 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
           onSave({ name, limits, isDefault });
         }}
       >
-        <Row justify="space-between" align="start" wrap gap={3}>
+        <Row justify="between" align="start" wrap gap={3}>
           <FormField label={CP_STRINGS.plans.name}>
             <TextField value={name} onChange={(e) => setName(e.target.value)} required />
           </FormField>
@@ -143,7 +143,7 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
           ))}
         </Grid>
 
-        <Row justify="space-between" align="center" wrap gap={3}>
+        <Row justify="between" align="center" wrap gap={3}>
           <Toggle
             checked={isDefault}
             onChange={setIsDefault}
