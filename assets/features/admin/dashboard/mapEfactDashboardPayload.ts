@@ -50,7 +50,9 @@ export function pickLast7SalesDays(salesByDay: SalesByDay[]): Array<{ label: str
     const dt = today.minus({ days: i });
     const found = salesByDay.find((row) => row.day === dt.day);
     return {
-      label: found ? abbreviateDayLabel(found.label) : abbreviateDayLabel(dt.setLocale('es').weekdayLong),
+      label: found
+        ? abbreviateDayLabel(found.label)
+        : abbreviateDayLabel(dt.setLocale('es').weekdayLong ?? dt.toFormat('ccc')),
       total: found ? found.total : 0,
     };
   }).reverse();

@@ -294,7 +294,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .label('Pagos')
       .visible(false)
       .visibleOnForm(false)
-      .defaultValue([])
+      .defaultValue(() => [])
       .build(),
   );
   fields.push(
