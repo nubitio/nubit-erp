@@ -16,28 +16,21 @@ final class Version20260228235000_normalize_unidad_code extends AbstractMigratio
 
     public function up(Schema $schema): void
     {
-        if (!$this->tableExists('unidad')) {
-            return;
+        $this->skipIf(!$this->tableExists('unidad'), 'Table unidad does not exist.');
+        $this->skipIf($this->columnExists('unidad', 'code'), 'Column unidad.code already exists.');
+
+        $this->addSql('ALTER TABLE unidad ADD code VARCHAR(255) DEFAULT NULL');
+
+        if ($this->columnExists('unidad', 'codigo')) {
+            $this->addSql("UPDATE unidad SET code = NULLIF(TRIM(codigo), '') WHERE code IS NULL");
         }
 
-        $hasCode = $this->columnExists('unidad', 'code');
-        $hasCodigo = $this->columnExists('unidad', 'codigo');
-        $hasName = $this->columnExists('unidad', 'name');
-
-        if (!$hasCode) {
-            $this->addSql('ALTER TABLE unidad ADD code VARCHAR(255) DEFAULT NULL');
-
-            if ($hasCodigo) {
-                $this->addSql("UPDATE unidad SET code = NULLIF(TRIM(codigo), '') WHERE code IS NULL");
-            }
-
-            if ($hasName) {
-                $this->addSql("UPDATE unidad SET code = NULLIF(TRIM(name), '') WHERE code IS NULL");
-            }
-
-            $this->addSql("UPDATE unidad SET code = 'NIU' WHERE code IS NULL");
-            $this->addSql('ALTER TABLE unidad MODIFY code VARCHAR(255) NOT NULL');
+        if ($this->columnExists('unidad', 'name')) {
+            $this->addSql("UPDATE unidad SET code = NULLIF(TRIM(name), '') WHERE code IS NULL");
         }
+
+        $this->addSql("UPDATE unidad SET code = 'NIU' WHERE code IS NULL");
+        $this->addSql('ALTER TABLE unidad MODIFY code VARCHAR(255) NOT NULL');
     }
 
     public function down(Schema $schema): void

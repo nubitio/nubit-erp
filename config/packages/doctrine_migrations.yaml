@@ -5,3 +5,6 @@ doctrine_migrations:
         'DoctrineMigrations': '%kernel.project_dir%/migrations'
     connection: tenant
     enable_profiler: false
+    # MySQL DDL causes implicit commits, so wrapping migrations in a
+    # transaction is a no-op that doctrine/migrations now deprecates.
+    transactional: false
