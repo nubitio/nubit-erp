@@ -38,7 +38,9 @@ use App\Setup\Dto\SetupStatusDto;
 use App\Setup\InitialSetupService;
 use App\Setup\Service\E2eTestSeedService;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ConnectionRegistry;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -50,6 +52,9 @@ final class E2eTestSeedServiceTest extends TestCase
     {
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $connection = $this->createStub(Connection::class);
+        $connectionRegistry = $this->createStub(ConnectionRegistry::class);
+        $controlPlaneConnection = $this->createStub(Connection::class);
+        $controlPlaneSchemaManager = $this->createStub(AbstractSchemaManager::class);
         $passwordHasher = $this->createStub(UserPasswordHasherInterface::class);
         $initialSetupService = $this->createStub(InitialSetupService::class);
         $companyRepository = $this->createStub(CompanyRepository::class);
@@ -144,6 +149,9 @@ final class E2eTestSeedServiceTest extends TestCase
         $paymentMethodRepository->method('find')->with(1)->willReturn($paymentMethod);
 
         $connection->method('fetchFirstColumn')->willReturn([]);
+        $controlPlaneSchemaManager->method('tablesExist')->with(['control_plane_admin_users'])->willReturn(false);
+        $controlPlaneConnection->method('createSchemaManager')->willReturn($controlPlaneSchemaManager);
+        $connectionRegistry->method('getConnection')->with('control_plane')->willReturn($controlPlaneConnection);
 
         $entityManager
             ->method('persist')
@@ -160,6 +168,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $service = new E2eTestSeedService(
             $entityManager,
             $connection,
+            $connectionRegistry,
             $passwordHasher,
             $initialSetupService,
             $tenantSettingsService,
@@ -191,6 +200,8 @@ final class E2eTestSeedServiceTest extends TestCase
     {
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $connection = $this->createMock(Connection::class);
+        $connectionRegistry = $this->createStub(ConnectionRegistry::class);
+        $schemaManager = $this->createStub(AbstractSchemaManager::class);
         $passwordHasher = $this->createStub(UserPasswordHasherInterface::class);
         $initialSetupService = $this->createStub(InitialSetupService::class);
         $companyRepository = $this->createStub(CompanyRepository::class);
@@ -218,17 +229,24 @@ final class E2eTestSeedServiceTest extends TestCase
             ->setBranch($branch);
         $this->setEntityId($cashRegister, 'id', 1);
 
-        $fetchCalls = 0;
         $connection
             ->method('fetchFirstColumn')
-            ->willReturnCallback(static function () use (&$fetchCalls): array {
-                ++$fetchCalls;
+            ->willReturnCallback(static function (string $sql): array {
+                if (str_contains($sql, 'goods_receipts')) {
+                    return ['purchase-e2e-1'];
+                }
 
-                return $fetchCalls === 2 ? ['purchase-e2e-1'] : [];
+                if (str_contains($sql, 'stock_entries')) {
+                    return ['stock-entry-e2e-1'];
+                }
+
+                return [];
             });
         $executeCalls = [];
+        $schemaManager->method('tablesExist')->with(['nubit_refresh_token'])->willReturn(true);
+        $connection->method('createSchemaManager')->willReturn($schemaManager);
         $connection
-            ->expects($this->exactly(5))
+            ->expects($this->exactly(7))
             ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$executeCalls): int {
                 $executeCalls[] = [$sql, $params];
@@ -248,6 +266,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $service = new E2eTestSeedService(
             $entityManager,
             $connection,
+            $connectionRegistry,
             $passwordHasher,
             $initialSetupService,
             $tenantSettingsService,
@@ -279,7 +298,12 @@ final class E2eTestSeedServiceTest extends TestCase
                 ['DELETE FROM goods_receipt_items WHERE goods_receipt_id IN (?)', [['purchase-e2e-1']]],
                 ['DELETE FROM goods_receipts WHERE id IN (?)', [['purchase-e2e-1']]],
                 ['DELETE FROM cash_sessions WHERE cash_register_id = :register_id', ['register_id' => 1]],
-                ['DELETE FROM refresh_token WHERE user_id = :user_id', ['user_id' => 9]],
+                [
+                    "DELETE FROM stock_movements\n             WHERE source_type = 'STOCK_ENTRY'\n             AND SUBSTRING_INDEX(source_id, ':', 1) IN (?)",
+                    [['stock-entry-e2e-1']],
+                ],
+                ['DELETE FROM stock_entries WHERE id IN (?)', [['stock-entry-e2e-1']]],
+                ['DELETE FROM nubit_refresh_token WHERE user_identifier = :username', ['username' => 'ci_e2e_user']],
             ],
             $executeCalls,
         );

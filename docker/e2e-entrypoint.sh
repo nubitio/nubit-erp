@@ -9,7 +9,7 @@ export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 corepack enable
 
 # ── 2. Install dependencies if needed ────────────────────────────────────────
-if [ ! -d node_modules ] || [ package.json -nt node_modules/.yarn-integrity 2>/dev/null ]; then
+if [ ! -d node_modules ] || [ ! -f node_modules/.yarn-state.yml ] || [ package.json -nt node_modules/.yarn-state.yml ] || [ yarn.lock -nt node_modules/.yarn-state.yml ]; then
   echo "[e2e-entrypoint] Installing dependencies..."
   yarn install --immutable
 fi
@@ -104,7 +104,7 @@ if ! curl -sf "$VITE_CHECK_URL" > /dev/null 2>&1; then
   echo "[e2e-entrypoint] Starting Vite dev server on :5174..."
   # Use port 5174 to match VITE_DEV_SERVER_ORIGIN set in docker-compose for the web container.
   # Also set VITE_DEV_SERVER_ORIGIN so vite.config.js generates correct asset URLs.
-  VITE_DEV_SERVER_ORIGIN="http://localhost:5174" npx vite --host 0.0.0.0 --port 5174 > /tmp/vite.log 2>&1 &
+  VITE_DEV_SERVER_ORIGIN="http://localhost:5174" npx vite --force --host 0.0.0.0 --port 5174 > /tmp/vite.log 2>&1 &
   VITE_PID=$!
   echo "[e2e-entrypoint] Vite PID=$VITE_PID — waiting for it to be ready..."
   # Wait up to 120s for Vite to serve the client script

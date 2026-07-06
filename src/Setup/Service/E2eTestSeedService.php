@@ -42,6 +42,7 @@ use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ConnectionRegistry;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class E2eTestSeedService implements E2eTestSeedServiceInterface
@@ -57,10 +58,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_PRODUCT_2_NAME = 'Producto CI E2E 2';
     private const string E2E_SUPPLIER_RUC = '20100000999';
     private const string E2E_SUPPLIER_NAME = 'Proveedor CI E2E';
+    private const string CONTROL_PLANE_ADMIN_USER = 'admin';
+    private const string CONTROL_PLANE_ADMIN_PASSWORD = 'Admin.Control.123';
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly Connection $connection,
+        private readonly ConnectionRegistry $connectionRegistry,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly InitialSetupService $initialSetupService,
         private readonly TenantSettingsService $tenantSettingsService,
@@ -88,6 +92,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     {
         $this->ensureInitialSetup();
         $this->ensureOnboardingCompleted();
+        $this->ensureControlPlaneAdminUser();
 
         $user = $this->upsertE2eUser(self::E2E_PASSWORD);
 
@@ -138,12 +143,36 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         $user = $this->userRepository->findOneBy(['username' => self::E2E_USERNAME]);
         if ($user instanceof User && $user->getId() !== null) {
-            $this->connection->executeStatement('DELETE FROM refresh_token WHERE user_id = :user_id', [
-                'user_id' => $user->getId(),
-            ]);
+            $this->purgeE2eStockEntries((int) $user->getId());
+            if ($this->connection->createSchemaManager()->tablesExist(['nubit_refresh_token'])) {
+                $this->connection->executeStatement('DELETE FROM nubit_refresh_token WHERE user_identifier = :username', [
+                    'username' => self::E2E_USERNAME,
+                ]);
+            }
             $this->entityManager->remove($user);
             $this->entityManager->flush();
         }
+    }
+
+    private function purgeE2eStockEntries(int $userId): void
+    {
+        $entryIds = $this->connection->fetchFirstColumn('SELECT id FROM stock_entries WHERE created_by = :user_id', [
+            'user_id' => $userId,
+        ]);
+
+        if ($entryIds === []) {
+            return;
+        }
+
+        $this->connection->executeStatement(
+            "DELETE FROM stock_movements
+             WHERE source_type = 'STOCK_ENTRY'
+             AND SUBSTRING_INDEX(source_id, ':', 1) IN (?)",
+            [$entryIds],
+            [ArrayParameterType::STRING],
+        );
+
+        $this->connection->executeStatement('DELETE FROM stock_entries WHERE id IN (?)', [$entryIds], [ArrayParameterType::STRING]);
     }
 
     private function purgeE2ePurchases(): void
@@ -207,6 +236,32 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $input->branchPhone = '999999999';
 
         $this->initialSetupService->configure($input);
+    }
+
+    private function ensureControlPlaneAdminUser(): void
+    {
+        $conn = $this->connectionRegistry->getConnection('control_plane');
+        if (!$conn->createSchemaManager()->tablesExist(['control_plane_admin_users'])) {
+            return;
+        }
+
+        $conn->executeStatement(
+            <<<'SQL'
+                INSERT INTO control_plane_admin_users
+                    (username, password_hash, roles, is_active, created_at, updated_at)
+                VALUES (?, ?, ?, 1, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    password_hash = VALUES(password_hash),
+                    roles = VALUES(roles),
+                    is_active = 1,
+                    updated_at = NOW()
+                SQL,
+            [
+                self::CONTROL_PLANE_ADMIN_USER,
+                password_hash(self::CONTROL_PLANE_ADMIN_PASSWORD, PASSWORD_BCRYPT),
+                json_encode(['ROLE_ADMIN', 'ROLE_SUPER_ADMIN'], JSON_THROW_ON_ERROR),
+            ],
+        );
     }
 
     private function upsertE2eUser(string $password): User
