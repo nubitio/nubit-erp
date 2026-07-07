@@ -38,7 +38,8 @@ export async function selectPosCustomer(page: Page, opts: SelectPosCustomerOptio
   await expect(option).toBeVisible({ timeout: 15000 });
   await option.click();
 
-  await expect(customerSection).toContainText(opts.name, { timeout: 8000 });
+  const expectedName = opts.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  await expect(searchInput).toHaveValue(new RegExp(expectedName, 'i'), { timeout: 8000 });
 }
 
 /**

@@ -48,8 +48,8 @@ export const CashMovements = () => {
         toolbar={toolbar}
         url={API + 'cash-sessions/' + id + '/movements'}
         allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowEdit={false}
+        allowDelete={false}
         fields={fields}
         events={EVENTS}
         summaryFields={[
