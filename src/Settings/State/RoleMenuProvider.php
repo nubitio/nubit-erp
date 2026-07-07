@@ -59,7 +59,12 @@ readonly class RoleMenuProvider implements ProviderInterface
                     }
                 }
 
-                $data[$i] = new RoleMenuDto(id: intval($menu['menu_id']), text: $menu['descripcion'], items: $submenu);
+                $data[$i] = new RoleMenuDto(
+                    id: intval($menu['menu_id']),
+                    text: $menu['descripcion'],
+                    items: $submenu,
+                    selected: $menu['checked'] === true || $menu['checked'] === 1 || $menu['checked'] === '1',
+                );
                 ++$i;
             }
         }

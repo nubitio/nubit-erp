@@ -14,6 +14,7 @@ import { StorageUtils } from '@shared/lib/StorageUtils';
 interface BranchOption {
   id: string;
   name: string;
+  isActive?: boolean;
 }
 
 /** Extract a user-facing message from an API error response. */
@@ -110,7 +111,9 @@ export const LoginForm = () => {
         try {
           const branchesResponse = await branchService.getAll();
           const rawBranches = branchesResponse?.data;
-          const branches: BranchOption[] = Array.isArray(rawBranches) ? (rawBranches as BranchOption[]) : [];
+          const allBranches: BranchOption[] = Array.isArray(rawBranches) ? (rawBranches as BranchOption[]) : [];
+          // Disabled branches stay available for historical reports but cannot start a session.
+          const branches = allBranches.filter((branch) => branch.isActive !== false);
 
           if (branches.length === 0) {
             setSubmitError('No hay locales disponibles para este usuario.');

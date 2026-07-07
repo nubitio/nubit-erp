@@ -98,6 +98,10 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $user = $this->security->connectedUser();
+        if ($user === null) {
+            throw new ServiceException('Usuario no autenticado.');
+        }
+
         $isOperationalSale = $data->getTipoId() === 2;
         $resolvedCashSessionId = null;
         $requireOpenSession = false;
@@ -118,6 +122,22 @@ readonly class SaleProcessor implements ProcessorInterface
                 'idempotency_key' => $idempotencyKey ?: '(empty)',
                 'remote_addr' => $request->getClientIp(),
             ]);
+        }
+
+        // Disabled branches stay readable for reports but must not accept new sales,
+        // even from sessions whose token was issued before the branch was disabled.
+        if ($isNew) {
+            $contextBranchId = $this->branchContextService->getCurrentBranchId();
+            $contextBranch = $contextBranchId !== null ? $this->branchRepository->find($contextBranchId) : null;
+            if ($contextBranch !== null && !$contextBranch->getIsActive()) {
+                $this->logger->warning('Sale rejected: branch is disabled', [
+                    'user_id' => $user->userId,
+                    'branch_id' => $contextBranchId,
+                ]);
+                throw ValidationException::withErrors([
+                    'branch' => ['La sucursal está deshabilitada; no se pueden registrar nuevas ventas.'],
+                ]);
+            }
         }
 
         // Convert writeItems array to SaleItemRecord objects

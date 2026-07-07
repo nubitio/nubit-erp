@@ -1,5 +1,10 @@
 import { useMemo, useRef } from 'react';
-import { SchemaCrudPage, DialogView, defineResource, type ResourceToolbarContext } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  DialogView,
+  defineResource,
+  type ResourceToolbarContext,
+} from '@nubitio/crud';
 import { permissionEvents } from '@app/domainEvents';
 import { httpClient } from '@shared/api/HttpClient';
 import { roleEndpoints } from './api/roleEndpoints';
@@ -7,11 +12,9 @@ import { RoleFields } from './RoleFields';
 import toast from '@shared/lib/SharedUtils';
 import { useRoleObservers } from './model/useRoleObservers';
 import { useEvents } from '@nubitio/core';
-import {
-  PermissionTreeView,
-  type PermissionTreeHandle,
-  type RoleMenu,
-} from './components/PermissionTreeView';
+import type { PermissionTreeHandle, RoleMenu } from './components/PermissionTreeView';
+import type { PermissionMatrixHandle, PermissionModule } from './components/PermissionMatrix';
+import { RolePermissionsPanel } from './components/RolePermissionsPanel';
 
 type SelectedRole = {
   id: string | number;
@@ -44,6 +47,7 @@ const baseResource = defineResource(roleEndpoints.list(), {
 export const RolePage = () => {
   const [on, emit] = useEvents();
   const treeRef = useRef<PermissionTreeHandle>(null);
+  const matrixRef = useRef<PermissionMatrixHandle>(null);
 
   const resource = useMemo(
     () => ({
@@ -62,6 +66,11 @@ export const RolePage = () => {
                 httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).then((response) => {
                   treeRef.current?.setItems(response.data);
                 });
+                httpClient
+                  .get<PermissionModule[]>(roleEndpoints.permissions(row.id))
+                  .then((response) => {
+                    matrixRef.current?.setModules(response.data);
+                  });
               } else {
                 toast('Debe seleccionar un rol', 'error');
               }
@@ -73,13 +82,13 @@ export const RolePage = () => {
     [emit],
   );
 
-  useRoleObservers({ on, emit, permissionEvents, treeRef });
+  useRoleObservers({ on, emit, permissionEvents, treeRef, matrixRef });
 
   return (
     <>
       <SchemaCrudPage resource={resource} />
       <DialogView events={permissionEvents}>
-        <PermissionTreeView ref={treeRef} />
+        <RolePermissionsPanel treeRef={treeRef} matrixRef={matrixRef} />
       </DialogView>
     </>
   );

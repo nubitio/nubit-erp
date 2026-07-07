@@ -37,6 +37,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Exception\ValidationException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -778,6 +779,29 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($branch, $sale->getBranch());
+    }
+
+    // -------------------------------------------------------------------------
+    // TC-34b: New sale on a disabled branch is rejected before any write
+    // -------------------------------------------------------------------------
+
+    public function testNewSaleOnDisabledBranchThrowsValidationException(): void
+    {
+        $sale = $this->buildNewSale(tipoId: 2);
+        $branch = new Branch()->setIsActive(false);
+        new ReflectionClass(Branch::class)
+            ->getProperty('id')
+            ->setValue($branch, 'branch-42');
+
+        $this->branchContextService = $this->buildBranchContextStubWithRealToken('branch-42');
+        $this->branchRepository->method('find')->with('branch-42')->willReturn($branch);
+
+        $this->salesWriteGateway->expects($this->never())->method('write');
+        $this->persistProcessor->expects($this->never())->method('process');
+
+        $this->expectException(ValidationException::class);
+
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------

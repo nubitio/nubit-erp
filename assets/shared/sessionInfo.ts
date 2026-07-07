@@ -3,6 +3,7 @@ interface StoredUser {
   username?: string;
   role?: number;
   roles?: string[];
+  permissions?: string[];
 }
 
 function getStoredItem<T>(key: string): T | null {

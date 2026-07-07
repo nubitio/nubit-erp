@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 export type RoleMenu = {
   id: number;
   text: string;
+  selected?: boolean;
   items: { id: number; text: string; selected: boolean }[];
 };
 
@@ -48,7 +49,9 @@ export const PermissionTreeView = forwardRef<PermissionTreeHandle>((_props, ref)
       setSelectedIds(
         new Set(
           nextItems.flatMap((menu) => [
-            ...(menu.items.some((permission) => permission.selected) ? [menu.id] : []),
+            ...(menu.selected || menu.items.some((permission) => permission.selected)
+              ? [menu.id]
+              : []),
             ...menu.items
               .filter((permission) => permission.selected)
               .map((permission) => permission.id),
@@ -72,7 +75,12 @@ export const PermissionTreeView = forwardRef<PermissionTreeHandle>((_props, ref)
   }));
 
   const toggleMenu = (menu: RoleMenu) => {
-    const allChildrenSelected = menu.items.every((permission) => selectedIds.has(permission.id));
+    // items.every() is vacuously true for menus without children, so a
+    // childless menu must be judged by its own selection state instead.
+    const allChildrenSelected =
+      menu.items.length > 0
+        ? menu.items.every((permission) => selectedIds.has(permission.id))
+        : selectedIds.has(menu.id);
     const nextSelectedIds = new Set(selectedIds);
 
     if (allChildrenSelected) {

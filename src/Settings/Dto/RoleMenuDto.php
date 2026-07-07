@@ -13,5 +13,6 @@ class RoleMenuDto
          * @var RoleMenuItemDto[]
          */
         public array $items,
+        public bool $selected = false,
     ) {}
 }

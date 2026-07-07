@@ -146,7 +146,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     public function getRoles(): array
     {
         $roles = match ($this->getRole()?->getId()) {
-            1 => ['ROLE_SUPER_ADMIN'],
+            // 0 is the legacy root superuser (see MenuProvider::getMenuForRole)
+            0, 1 => ['ROLE_SUPER_ADMIN'],
             2 => ['ROLE_ADMIN'],
             3 => ['ROLE_CASHIER'],
             default => [],

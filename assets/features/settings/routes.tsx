@@ -10,6 +10,7 @@ import { useTenantRuntimeConfig } from '@shared/hooks';
 
 const VoucherSeriesPage = lazyNamed(() => import('@features/catalog/VoucherSeriesPage'), 'VoucherSeriesPage');
 const UserPage = lazyNamed(() => import('@features/admin/UserPage'), 'UserPage');
+const RolePage = lazyNamed(() => import('@features/admin/RolePage'), 'RolePage');
 const BranchPage = lazyNamed(() => import('@features/admin/BranchPage'), 'BranchPage');
 
 const SettingsSeriesTab = () => (
@@ -21,6 +22,12 @@ const SettingsSeriesTab = () => (
 const SettingsUsersTab = () => (
   <SettingsCrudPanel>
     <UserPage />
+  </SettingsCrudPanel>
+);
+
+const SettingsRolesTab = () => (
+  <SettingsCrudPanel>
+    <RolePage />
   </SettingsCrudPanel>
 );
 
@@ -40,6 +47,7 @@ const WarehousesRedirect = () => {
 
 export const settingsRoutes: AppRouteDefinition[] = [
   { path: '/user', element: () => <Navigate to="/config/users" replace /> },
+  { path: '/role', element: () => <Navigate to="/config/roles" replace /> },
   { path: '/branch', element: () => <Navigate to="/config/branches" replace /> },
   { path: '/config/warehouses', element: WarehousesRedirect },
   { path: '/voucher-series', element: () => <Navigate to="/config/series" replace /> },
@@ -51,6 +59,7 @@ export const settingsRoutes: AppRouteDefinition[] = [
       { path: 'sunat', element: SettingsSunatTab },
       { path: 'series', element: SettingsSeriesTab },
       { path: 'users', element: SettingsUsersTab },
+      { path: 'roles', element: SettingsRolesTab },
       { path: 'branches', element: SettingsBranchesTab },
       { path: 'general', element: SettingsGeneralTab },
     ],

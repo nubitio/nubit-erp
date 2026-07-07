@@ -53,6 +53,11 @@ class Branch
     private ?string $phone = null;
 
     #[Groups(['branch:read'])]
+    #[ApiProperty(description: 'branch.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
+
+    #[Groups(['branch:read'])]
     #[ApiProperty(description: 'branch.company.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'empresa_id', referencedColumnName: 'empresa_id', nullable: false)]
@@ -106,6 +111,18 @@ class Branch
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

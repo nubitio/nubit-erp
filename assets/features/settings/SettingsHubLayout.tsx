@@ -20,6 +20,7 @@ export const SettingsHubLayout = () => {
         { key: 'sunat', label: 'SUNAT', path: '/config/sunat', icon: 'ph-seal-check', visible: true },
         { key: 'series', label: 'Series', path: '/config/series', icon: 'ph-hash', visible: true },
         { key: 'users', label: 'Usuarios', path: '/config/users', icon: 'ph-users', visible: showAdminTabs },
+        { key: 'roles', label: 'Roles', path: '/config/roles', icon: 'ph-user-gear', visible: showAdminTabs },
         { key: 'branches', label: 'Sucursales', path: '/config/branches', icon: 'ph-map-pin', visible: showAdminTabs },
         {
           key: 'general',

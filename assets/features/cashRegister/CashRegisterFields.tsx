@@ -13,6 +13,7 @@ export const CashRegisterFields = () => {
     entityField(API + 'branches', 'id', 'name')
       .name('branch')
       .label('Sucursal')
+      .filters([{ field: 'isActive', operator: '=', value: 1 }])
       .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .required(true)
       .build(),

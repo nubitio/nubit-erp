@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Identity\Auth;
 
 use App\Identity\Entity\User;
+use App\Identity\Security\PermissionCheckerInterface;
 use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -19,6 +20,7 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
     public function __construct(
         private SelectedBranchContext $selectedBranch,
         private TenantContext $tenantContext,
+        private PermissionCheckerInterface $permissionChecker,
     ) {}
 
     public function claims(UserInterface $user, array $previousClaims = []): array
@@ -48,6 +50,7 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
             'userId' => $user instanceof User ? $user->getId() : null,
             'role' => $user instanceof User ? $user->getRole()?->getId() : null,
             'roles' => $user->getRoles(),
+            'permissions' => $user instanceof User ? $this->permissionChecker->permissionsFor($user) : [],
         ];
     }
 }

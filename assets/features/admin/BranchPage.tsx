@@ -1,4 +1,4 @@
-import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
 import { branchEndpoints } from './api/adminEndpoints';
 
 interface BranchRecord extends DataRecord {
@@ -6,6 +6,7 @@ interface BranchRecord extends DataRecord {
   name: string;
   address: string;
   phone: string;
+  isActive: boolean;
   company: unknown;
 }
 
@@ -13,12 +14,12 @@ const BRANCH_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['name', 'phone', 'address'],
+    columns: ['name', 'phone', 'address', 'isActive'],
   },
   {
     key: 'full',
     label: 'Completo',
-    columns: ['name', 'phone', 'address', 'company'],
+    columns: ['name', 'phone', 'address', 'isActive', 'company'],
   },
 ];
 
@@ -27,7 +28,7 @@ const BRANCH_FORM_LAYOUT = {
   sections: [
     {
       label: 'General',
-      fields: ['name', 'address', 'phone'],
+      fields: ['name', 'address', 'phone', 'isActive'],
     },
     {
       label: 'Empresa',
@@ -50,7 +51,12 @@ const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
       { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'medium', label: 'Nombre' } },
       { kind: 'override', key: 'phone', patch: { order: 1, layoutHint: 'short', label: 'Teléfono' } },
       { kind: 'override', key: 'address', patch: { order: 2, layoutHint: 'long', label: 'Dirección' } },
-      { kind: 'override', key: 'company', patch: { order: 3, layoutHint: 'lookup', label: 'Empresa' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 3, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+      },
+      { kind: 'override', key: 'company', patch: { order: 4, layoutHint: 'lookup', label: 'Empresa' } },
     ],
   }),
 });

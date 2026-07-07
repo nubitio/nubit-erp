@@ -56,6 +56,12 @@ class AuthSelectBranchController extends AbstractController
             return new JsonResponse(['message' => 'Sucursal no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
+        if (!$branch->getIsActive()) {
+            return new JsonResponse([
+                'message' => 'La sucursal está deshabilitada. Solo está disponible para consultas históricas.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $this->selectedBranch->set($branch);
             $tokenPair = $this->tokenGenerator->generateTokenPair($user);

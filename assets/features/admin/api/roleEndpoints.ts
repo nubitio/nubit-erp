@@ -6,4 +6,6 @@ export const roleEndpoints = {
   ...roles,
   menu: (roleId: string | number) => `/api/role-menu/${roleId}`,
   saveMenu: () => '/api/role-menu',
+  permissions: (roleId: string | number) => `/api/role-permissions/${roleId}`,
+  savePermissions: () => '/api/role-permissions',
 };

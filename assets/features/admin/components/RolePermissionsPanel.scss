@@ -1,0 +1,38 @@
+// Tabs — mismo patrón que HardwareAgentDialog hasta que exista AppTabs en @nubitio/ui
+.role-permissions-panel__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.role-permissions-panel__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    color: var(--base-text-color);
+  }
+
+  &.is-active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+  }
+}

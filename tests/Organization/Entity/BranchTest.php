@@ -59,6 +59,22 @@ final class BranchTest extends TestCase
         self::assertNull($branch->getPhone());
     }
 
+    public function testIsActiveDefaultsToTrue(): void
+    {
+        $branch = new Branch()->setName('B');
+        self::assertTrue($branch->getIsActive());
+    }
+
+    public function testSetIsActive(): void
+    {
+        $branch = new Branch()
+            ->setName('B')
+            ->setIsActive(false);
+
+        self::assertFalse($branch->getIsActive());
+        self::assertTrue($branch->setIsActive(true)->getIsActive()); // fluent
+    }
+
     public function testWarehousesCollectionIsEmptyByDefault(): void
     {
         $branch = new Branch()->setName('B');

@@ -79,4 +79,50 @@ final class AuthSelectBranchControllerTest extends TestCase
 
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
+
+    public function testReturnsForbiddenWhenBranchIsDisabled(): void
+    {
+        $security = $this->createStub(Security::class);
+        $security
+            ->method('getUser')
+            ->willReturn(
+                new User()
+                    ->setUsername('tester')
+                    ->setPassword('hash'),
+            );
+
+        $branch = new Branch()
+            ->setName('Sucursal cerrada')
+            ->setIsActive(false);
+
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+
+        $tokenGenerator = new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor();
+        $clientDetector = new SelectedBranchContext();
+        $cookieFactory = new ResponseModeResolver();
+
+        $controller = new AuthSelectBranchController(
+            $security,
+            $branchRepository,
+            $tokenGenerator,
+            $clientDetector,
+            $cookieFactory,
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        $request = Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'b-1']),
+        );
+        $response = $controller($request);
+
+        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
 }
