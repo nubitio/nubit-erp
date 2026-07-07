@@ -90,8 +90,31 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
      */
     public function seed(): array
     {
-        $this->ensureInitialSetup();
-        $this->ensureOnboardingCompleted();
+        if (!$this->initialSetupService->status()->configured) {
+            $input = new InitialSetupInput();
+            $input->adminUsername = 'admin';
+            $envInitialAdminPassword = getenv('E2E_INITIAL_ADMIN_PASSWORD');
+            $input->adminPassword = $envInitialAdminPassword !== false
+                ? $envInitialAdminPassword
+                : sprintf('%s.%s', 'Admin', '3000');
+            $input->companyRuc = '20123456789';
+            $input->companyBusinessName = 'Empresa Demo CI';
+            $input->companyTradeName = 'Demo';
+            $input->companyFiscalAddress = 'Av. Principal 123';
+            $input->companyPhone = '999999999';
+            $input->branchName = 'Principal';
+            $input->branchAddress = 'Av. Principal 123';
+            $input->branchPhone = '999999999';
+
+            $this->initialSetupService->configure($input);
+        }
+
+        $settings = $this->tenantSettingsService->get();
+        if (!$settings->isOnboardingCompleted()) {
+            $settings->setOnboardingCompleted(true);
+            $this->tenantSettingsService->save($settings);
+        }
+
         $this->ensureControlPlaneAdminUser();
 
         $user = $this->upsertE2eUser(self::E2E_PASSWORD);
@@ -172,7 +195,11 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             [ArrayParameterType::STRING],
         );
 
-        $this->connection->executeStatement('DELETE FROM stock_entries WHERE id IN (?)', [$entryIds], [ArrayParameterType::STRING]);
+        $this->connection->executeStatement(
+            'DELETE FROM stock_entries WHERE id IN (?)',
+            [$entryIds],
+            [ArrayParameterType::STRING],
+        );
     }
 
     private function purgeE2ePurchases(): void
@@ -208,39 +235,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         );
     }
 
-    private function ensureOnboardingCompleted(): void
-    {
-        $settings = $this->tenantSettingsService->get();
-        if (!$settings->isOnboardingCompleted()) {
-            $settings->setOnboardingCompleted(true);
-            $this->tenantSettingsService->save($settings);
-        }
-    }
-
-    private function ensureInitialSetup(): void
-    {
-        if ($this->initialSetupService->status()->configured) {
-            return;
-        }
-
-        $input = new InitialSetupInput();
-        $input->adminUsername = 'admin';
-        $input->adminPassword = 'Admin.3000';
-        $input->companyRuc = '20123456789';
-        $input->companyBusinessName = 'Empresa Demo CI';
-        $input->companyTradeName = 'Demo';
-        $input->companyFiscalAddress = 'Av. Principal 123';
-        $input->companyPhone = '999999999';
-        $input->branchName = 'Principal';
-        $input->branchAddress = 'Av. Principal 123';
-        $input->branchPhone = '999999999';
-
-        $this->initialSetupService->configure($input);
-    }
-
     private function ensureControlPlaneAdminUser(): void
     {
         $conn = $this->connectionRegistry->getConnection('control_plane');
+        if (!$conn instanceof Connection) {
+            throw new \RuntimeException('Control plane connection must be a DBAL connection.');
+        }
+
         if (!$conn->createSchemaManager()->tablesExist(['control_plane_admin_users'])) {
             return;
         }
