@@ -38,6 +38,7 @@ const PriceListRedirect = () => <Navigate to="/catalog/prices" replace />;
 const SupplierRedirect = () => <Navigate to="/catalog/suppliers" replace />;
 const UnitOfMeasureRedirect = () => <Navigate to="/catalog/units" replace />;
 const VoucherSeriesRedirect = () => <Navigate to="/config/series" replace />;
+const PaymentMethodRedirect = () => <Navigate to="/catalog/payment-methods" replace />;
 
 export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/product', element: ProductRedirect },
@@ -55,6 +56,7 @@ export const catalogRoutes: AppRouteDefinition[] = [
       { path: 'units', element: UnitOfMeasurePage },
       { path: 'prices', element: PriceListPage },
       { path: 'suppliers', element: SupplierPage },
+      { path: 'payment-methods', element: PaymentMethodPage },
     ],
   },
   { path: '/stock', element: StockRedirect },
@@ -66,7 +68,7 @@ export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/warehouse', element: WarehouseRedirect },
   { path: '/sunat-catalog', element: SunatCatalogPage },
   { path: '/voucher-type', element: VoucherTypePage },
-  { path: '/payment-method', element: PaymentMethodPage },
+  { path: '/payment-method', element: PaymentMethodRedirect },
   { path: '/operation', element: OperationPage },
   { path: '/despatch-guide', element: DespatchGuidePage },
 ];

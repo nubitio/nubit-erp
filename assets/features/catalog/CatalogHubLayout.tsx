@@ -44,6 +44,13 @@ export const CatalogHubLayout = () => {
           icon: 'ph-truck',
           visible: showConfigurationTabs,
         },
+        {
+          key: 'payment-methods',
+          label: 'Métodos de pago',
+          path: '/catalog/payment-methods',
+          icon: 'ph-credit-card',
+          visible: showConfigurationTabs,
+        },
       ]}
     />
   );
