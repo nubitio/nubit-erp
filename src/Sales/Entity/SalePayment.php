@@ -23,7 +23,7 @@ class SalePayment
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: SaleRecord::class, inversedBy: 'salePayments')]
-    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private SaleRecord $saleRecord;
 
     #[ORM\ManyToOne(targetEntity: PaymentMethod::class)]

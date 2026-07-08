@@ -36,6 +36,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SaleRecordRepository::class)]
 #[ORM\Table(name: 'sales')]
+#[ORM\Index(name: 'idx_sales_branch_issued', columns: ['branch_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_sales_warehouse_issued', columns: ['warehouse_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_sales_cash_session_issued', columns: ['cash_session_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_sales_customer_issued', columns: ['customer_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_sales_status_created', columns: ['status', 'created_at'])]
+#[ORM\Index(name: 'idx_sales_sync_status_synced', columns: ['sync_status', 'synced_at'])]
+#[ORM\Index(name: 'idx_sales_device_synced', columns: ['device_id', 'synced_at'])]
+#[ORM\Index(name: 'idx_sales_serie_numero', columns: ['series', 'number'])]
+#[ORM\Index(name: 'idx_sales_issued_date_branch', columns: ['issued_date', 'branch_id', 'status'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     shortName: 'Sale',

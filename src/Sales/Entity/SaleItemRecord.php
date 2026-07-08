@@ -37,7 +37,7 @@ class SaleItemRecord
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: SaleRecord::class, inversedBy: 'saleItemRecords')]
-    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?SaleRecord $saleRecord = null;
 
     #[Groups(['sale_item_record:read'])]

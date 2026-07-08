@@ -47,7 +47,7 @@ class PurchaseItem
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Purchase::class, inversedBy: 'items')]
-    #[ORM\JoinColumn(name: 'goods_receipt_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\JoinColumn(name: 'goods_receipt_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?Purchase $purchase = null;
 
     #[Groups(['purchase_item:read'])]

@@ -21,12 +21,12 @@ class SaleTax
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: SaleRecord::class, inversedBy: 'saleTaxes')]
-    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private SaleRecord $saleRecord;
 
     /** Nullable FK — null means the tax applies at sale level; non-null means item-level. */
     #[ORM\ManyToOne(targetEntity: SaleItemRecord::class)]
-    #[ORM\JoinColumn(name: 'sale_item_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\JoinColumn(name: 'sale_item_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?SaleItemRecord $saleItem = null;
 
     #[ORM\Column(name: 'tax_code', type: 'string', length: 20)]

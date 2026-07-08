@@ -24,7 +24,7 @@ class DespatchGuideItem
     private ?string $id = null;
 
     #[ORM\ManyToOne(targetEntity: DespatchGuide::class, inversedBy: 'lines')]
-    #[ORM\JoinColumn(name: 'despatch_guide_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'despatch_guide_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private DespatchGuide $despatchGuide;
 
     #[ORM\Column(name: 'product_code', type: Types::STRING, length: 50, nullable: true)]

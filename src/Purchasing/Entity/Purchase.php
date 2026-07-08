@@ -33,6 +33,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[SoftDeletable]
 #[ORM\Entity(repositoryClass: PurchaseRepository::class)]
 #[ORM\Table(name: 'goods_receipts')]
+#[ORM\Index(name: 'idx_goods_receipts_branch_issued', columns: ['branch_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_goods_receipts_warehouse_issued', columns: ['warehouse_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_goods_receipts_supplier_issued', columns: ['supplier_id', 'issued_at'])]
+#[ORM\Index(name: 'idx_goods_receipts_status_created', columns: ['status', 'created_at'])]
+#[ORM\Index(name: 'idx_goods_receipts_sync_status_synced', columns: ['sync_status', 'synced_at'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     shortName: 'Purchase',

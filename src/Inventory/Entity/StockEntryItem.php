@@ -44,7 +44,7 @@ class StockEntryItem
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'items')]
-    #[ORM\JoinColumn(name: 'entry_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'entry_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     /** @phpstan-ignore-next-line doctrine.associationType */
     private ?StockEntry $entry = null;
 
