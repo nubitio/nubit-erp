@@ -20,6 +20,7 @@ use App\Inventory\Entity\LogisticOperation;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\LogisticOperationRepository;
 use App\Inventory\Repository\WarehouseRepository;
+use App\Settings\Service\TenantSettingsService;
 use App\Setup\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -261,6 +262,7 @@ final class TestDataSeederTest extends TestCase
             $supplierRepository ?? $this->createMock(SupplierRepository::class),
             $customerRepository ?? $this->createMock(CustomerRepository::class),
             $productRepository ?? $this->createMock(ProductRepository::class),
+            $this->createMock(TenantSettingsService::class),
         );
     }
 

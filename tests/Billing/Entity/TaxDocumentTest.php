@@ -41,10 +41,10 @@ final class TaxDocumentTest extends TestCase
             ->setDiscountAmount('0.00')
             ->setOperationType('0101')
             ->setDetractionCode('001')
-            ->setDetractionPercent(4.0)
-            ->setDetractionAmount(10.0)
+            ->setDetractionPercent('4.00')
+            ->setDetractionAmount('10.00')
             ->setDetractionPaymentMethod('001')
-            ->setDetractionValueRef(250.0)
+            ->setDetractionValueRef('250.00')
             ->setAffectedDocument('F001-100')
             ->setReasonCode('01')
             ->setReasonDescription('Correccion')
@@ -83,10 +83,10 @@ final class TaxDocumentTest extends TestCase
         self::assertSame('0.00', $entity->getDiscountAmount());
         self::assertSame('0101', $entity->getOperationType());
         self::assertSame('001', $entity->getDetractionCode());
-        self::assertSame(4.0, $entity->getDetractionPercent());
-        self::assertSame(10.0, $entity->getDetractionAmount());
+        self::assertSame('4.00', $entity->getDetractionPercent());
+        self::assertSame('10.00', $entity->getDetractionAmount());
         self::assertSame('001', $entity->getDetractionPaymentMethod());
-        self::assertSame(250.0, $entity->getDetractionValueRef());
+        self::assertSame('250.00', $entity->getDetractionValueRef());
         self::assertSame('F001-100', $entity->getAffectedDocument());
         self::assertSame('01', $entity->getReasonCode());
         self::assertSame('Correccion', $entity->getReasonDescription());

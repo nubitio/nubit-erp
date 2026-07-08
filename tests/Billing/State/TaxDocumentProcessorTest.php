@@ -15,6 +15,7 @@ use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Service\TenantSettingsService;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\Platform\Exception\ServiceException;
@@ -319,6 +320,9 @@ final class TaxDocumentProcessorTest extends TestCase
             $processor,
             $this->createMock(CreditNoteStockReverserInterface::class),
         );
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('getIgv')->willReturn(18.0);
+        $reflection->getProperty('tenantSettingsService')->setValue($processor, $tenantSettings);
 
         return $processor;
     }

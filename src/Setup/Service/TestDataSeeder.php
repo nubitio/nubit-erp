@@ -26,6 +26,7 @@ use App\Inventory\Repository\LogisticOperationRepository;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -215,6 +216,7 @@ final readonly class TestDataSeeder
         private SupplierRepository $supplierRepository,
         private CustomerRepository $customerRepository,
         private ProductRepository $productRepository,
+        private TenantSettingsService $tenantSettingsService,
     ) {}
 
     /**
@@ -570,6 +572,7 @@ final readonly class TestDataSeeder
 
             $daysAgo = random_int(1, 30);
             $saleDate = new \DateTimeImmutable("-$daysAgo days");
+            $saleDateMutable = \DateTime::createFromImmutable($saleDate);
 
             // Reload entities from database to avoid detached entities
             $customer = $this->customerRepository->find($customerIds[array_rand($customerIds)]);
@@ -586,9 +589,10 @@ final readonly class TestDataSeeder
 
             $sale = new SaleRecord();
             $sale->setAlmacen($warehouse);
+            $sale->setBranch($warehouse->getBranch());
             $sale->setCliente($customer);
             $sale->setTipoId(2);
-            $sale->setFecha($saleDate);
+            $sale->setFecha($saleDateMutable);
             $sale->setProveedor($supplier);
             $sale->setFormaPago(random_int(1, 2));
             $sale->setTipoPago($paymentMethod);
@@ -602,9 +606,10 @@ final readonly class TestDataSeeder
             $sale->setEstado(1);
             $sale->setDateCreated($saleDate);
             $sale->setCreatedBy(1);
-            $sale->setLastModifiedAt($saleDate);
-            $sale->setSyncedAt($saleDate);
-            $sale->setIgv('18');
+            $sale->setSellerUserId(1);
+            $sale->setLastModifiedAt($saleDateMutable);
+            $sale->setSyncedAt($saleDateMutable);
+            $sale->setIgv((string) $this->tenantSettingsService->getIgv());
             $sale->setRecargoConsumo(0);
 
             $subtotal = 0.0;
@@ -629,8 +634,8 @@ final readonly class TestDataSeeder
                 $saleItem->setNameSnapshot($product->getName());
                 $saleItem->setSkuSnapshot($product->getCode());
                 $saleItem->setUomSnapshot($product->getUnitOfMeasure()->getCode());
-                $saleItem->setLastModifiedAt($saleDate);
-                $saleItem->setSyncedAt($saleDate);
+                $saleItem->setLastModifiedAt($saleDateMutable);
+                $saleItem->setSyncedAt($saleDateMutable);
 
                 $this->entityManager->persist($saleItem);
                 $sale->addSaleItemRecord($saleItem);
@@ -672,13 +677,19 @@ final readonly class TestDataSeeder
             $taxDocument->setDiscountAmount($invoiceAmounts->getDiscountAmount());
             $taxDocument->setOperationType($sale->getTipoOperacion());
             $taxDocument->setDetractionCode($sale->getDetraccionCodigo());
-            $taxDocument->setDetractionPercent($sale->getDetraccionPorcentaje());
-            $taxDocument->setDetractionAmount($sale->getDetraccionMonto());
+            $taxDocument->setDetractionPercent(
+                $sale->getDetraccionPorcentaje() !== null ? (string) $sale->getDetraccionPorcentaje() : null,
+            );
+            $taxDocument->setDetractionAmount(
+                $sale->getDetraccionMonto() !== null ? (string) $sale->getDetraccionMonto() : null,
+            );
             $taxDocument->setDetractionPaymentMethod($sale->getDetraccionMedioPago());
-            $taxDocument->setDetractionValueRef($sale->getDetraccionValorReferencial());
+            $taxDocument->setDetractionValueRef(
+                $sale->getDetraccionValorReferencial() !== null ? (string) $sale->getDetraccionValorReferencial() : null,
+            );
             $taxDocument->setTotal($invoiceAmounts->getTotal());
-            $taxDocument->setCreatedAt($saleDate);
-            $taxDocument->setUpdatedAt($saleDate);
+            $taxDocument->setCreatedAt($saleDateMutable);
+            $taxDocument->setUpdatedAt($saleDateMutable);
 
             $this->entityManager->persist($taxDocument);
             ++$created;

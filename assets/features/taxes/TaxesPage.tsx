@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
+import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import type { IgvSummaryResponse } from './api/taxesEndpoints';
 import { useIgvSummary, useDetracciones, useRetencionesPercepciones } from './useTaxes';
 import './TaxesPage.scss';
@@ -24,6 +25,10 @@ function fmt(amount: number): string {
 
 function fmtMoney(amount: number): string {
   return `S/ ${fmt(amount)}`;
+}
+
+function fmtRatePercent(rate: number): string {
+  return `${(rate * 100).toFixed(1).replace(/\.0$/, '')}%`;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,11 +73,12 @@ interface FiscalCardProps {
   icon: string;
   iconTone: 'up' | 'down';
   baseImponible: number;
-  igv18: number;
+  igv: number;
+  igvLabel: string;
   loading?: boolean;
 }
 
-function FiscalCard({ title, icon, iconTone, baseImponible, igv18, loading }: FiscalCardProps) {
+function FiscalCard({ title, icon, iconTone, baseImponible, igv, igvLabel, loading }: FiscalCardProps) {
   return (
     <div className="taxes-card">
       <div className="taxes-card__header">
@@ -87,9 +93,9 @@ function FiscalCard({ title, icon, iconTone, baseImponible, igv18, loading }: Fi
           <span className="taxes-card__row-value">{loading ? '—' : fmtMoney(baseImponible)}</span>
         </div>
         <div className="taxes-card__row">
-          <span className="taxes-card__row-label">IGV 18%</span>
+          <span className="taxes-card__row-label">{igvLabel}</span>
           <span className={`taxes-card__row-value taxes-card__row-value--accent`}>
-            {loading ? '—' : fmtMoney(igv18)}
+            {loading ? '—' : fmtMoney(igv)}
           </span>
         </div>
       </div>
@@ -202,6 +208,8 @@ function LiquidacionPanel({ data, loading }: { data: IgvSummaryResponse | undefi
 
 function IgvTab({ period }: { period?: string }) {
   const { data, isLoading } = useIgvSummary(period);
+  const { igvRate } = useTenantIgvRate();
+  const igvLabel = `IGV ${fmtRatePercent(igvRate)}`;
 
   return (
     <div className="taxes-igv-layout">
@@ -212,7 +220,8 @@ function IgvTab({ period }: { period?: string }) {
             icon="ph-arrow-fat-up"
             iconTone="up"
             baseImponible={data?.igvMensual.debitoFiscal.baseImponible ?? 0}
-            igv18={data?.igvMensual.debitoFiscal.igv ?? 0}
+            igv={data?.igvMensual.debitoFiscal.igv ?? 0}
+            igvLabel={igvLabel}
             loading={isLoading}
           />
           <FiscalCard
@@ -220,7 +229,8 @@ function IgvTab({ period }: { period?: string }) {
             icon="ph-arrow-fat-down"
             iconTone="down"
             baseImponible={data?.igvMensual.creditoFiscal.baseImponible ?? 0}
-            igv18={data?.igvMensual.creditoFiscal.igv ?? 0}
+            igv={data?.igvMensual.creditoFiscal.igv ?? 0}
+            igvLabel={igvLabel}
             loading={isLoading}
           />
         </div>
@@ -385,7 +395,7 @@ export function TaxesPage() {
         {/* KPI summary strip */}
         <div className="taxes-kpi-grid">
           <KpiCard
-            label="IGV POR PAGAR — JUNIO"
+            label={`IGV POR PAGAR${igvData?.periodLabel ? ` — ${igvData.periodLabel.toUpperCase()}` : ''}`}
             value={fmtMoney(igvData?.kpi.igvPorPagar ?? 0)}
             icon="ph-percent"
             tone="danger"

@@ -17,6 +17,7 @@ use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\State\SalesWriteGateway;
+use App\Settings\Service\TenantSettingsService;
 use Brick\Math\Exception\MathException;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,6 +45,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private SalesWriteGateway $salesWriteGateway,
         private EntityManagerInterface $entityManager,
         private CreditNoteStockReverserInterface $creditNoteStockReverser,
+        private TenantSettingsService $tenantSettingsService,
     ) {}
 
     /**
@@ -201,7 +203,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         // Source percentages from related TaxDocument (v2-authoritative path)
         $discountPercent = $related->getDiscountPercent() ?? '0';
         $firstLine = $related->getLines()->first();
-        $taxPercent = ($firstLine !== false ? $firstLine->getTaxPercentage() : null) ?? '18';
+        $taxPercent = ($firstLine !== false ? $firstLine->getTaxPercentage() : null)
+            ?? (string) $this->tenantSettingsService->getIgv();
         $chargesPercent = '0';
 
         $lineInputs = array_map(

@@ -476,7 +476,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setSellerUserId((int) $user->getId())
             ->setCreatedBy((int) $user->getId())
             ->setCreatedAt(new \DateTime())
-            ->setIgv('18')
+            ->setIgv((string) $this->tenantSettingsService->getIgv())
             ->setRecargoConsumo(0)
             ->setTipoOperacion('0101')
             ->setSubtotal('10.00')

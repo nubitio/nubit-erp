@@ -32,6 +32,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
 #[ORM\Table(name: 'tax_document')]
+#[ORM\UniqueConstraint(name: 'uq_tax_document_number_branch', columns: ['document_type', 'branch_id', 'series', 'number'])]
+#[ORM\Index(name: 'IDX_TAX_DOCUMENT_BRANCH', columns: ['branch_id'])]
+#[ORM\Index(name: 'IDX_TAX_DOCUMENT_CUSTOMER', columns: ['customer_id'])]
+#[ORM\Index(name: 'IDX_TAX_DOCUMENT_SALE_ID', columns: ['sale_id'])]
+#[ORM\Index(name: 'idx_tax_document_sunat_status', columns: ['sunat_status'])]
 #[ApiResource(
     operations: [
         new GetCollection(provider: TaxDocumentProvider::class),
@@ -164,17 +169,17 @@ class TaxDocument
     #[ORM\Column(name: 'detraction_code', type: Types::STRING, length: 10, nullable: true)]
     private ?string $detractionCode = null;
 
-    #[ORM\Column(name: 'detraction_percent', type: Types::FLOAT, nullable: true)]
-    private ?float $detractionPercent = null;
+    #[ORM\Column(name: 'detraction_percent', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $detractionPercent = null;
 
-    #[ORM\Column(name: 'detraction_amount', type: Types::FLOAT, nullable: true)]
-    private ?float $detractionAmount = null;
+    #[ORM\Column(name: 'detraction_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $detractionAmount = null;
 
     #[ORM\Column(name: 'detraction_payment_method', type: Types::STRING, length: 10, nullable: true)]
     private ?string $detractionPaymentMethod = null;
 
-    #[ORM\Column(name: 'detraction_value_ref', type: Types::FLOAT, nullable: true)]
-    private ?float $detractionValueRef = null;
+    #[ORM\Column(name: 'detraction_value_ref', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $detractionValueRef = null;
 
     #[ORM\Column(name: 'affected_document', type: Types::STRING, length: 50, nullable: true)]
     #[Groups(['creditnote:read'])]
@@ -515,24 +520,24 @@ class TaxDocument
         return $this;
     }
 
-    public function getDetractionPercent(): ?float
+    public function getDetractionPercent(): ?string
     {
         return $this->detractionPercent;
     }
 
-    public function setDetractionPercent(?float $detractionPercent): self
+    public function setDetractionPercent(?string $detractionPercent): self
     {
         $this->detractionPercent = $detractionPercent;
 
         return $this;
     }
 
-    public function getDetractionAmount(): ?float
+    public function getDetractionAmount(): ?string
     {
         return $this->detractionAmount;
     }
 
-    public function setDetractionAmount(?float $detractionAmount): self
+    public function setDetractionAmount(?string $detractionAmount): self
     {
         $this->detractionAmount = $detractionAmount;
 
@@ -551,12 +556,12 @@ class TaxDocument
         return $this;
     }
 
-    public function getDetractionValueRef(): ?float
+    public function getDetractionValueRef(): ?string
     {
         return $this->detractionValueRef;
     }
 
-    public function setDetractionValueRef(?float $detractionValueRef): self
+    public function setDetractionValueRef(?string $detractionValueRef): self
     {
         $this->detractionValueRef = $detractionValueRef;
 
