@@ -7,6 +7,7 @@ namespace App\Contacts\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Contacts\Repository\SupplierRepository;
+use App\Efact\Domain\ActivatableInterface;
 use App\Efact\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Auditable;
@@ -20,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'proveedor')]
 #[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un proveedor con este RUC.')]
-class Supplier
+class Supplier implements ActivatableInterface
 {
     #[Groups(['inbound:read', 'outbound:read', 'purchase:read'])]
     #[ORM\Id]
@@ -49,6 +50,10 @@ class Supplier
     #[ApiProperty(description: 'supplier.phone.label')]
     #[ORM\Column(name: 'telefono', length: 14, nullable: true)]
     private ?string $phone = null;
+
+    #[ApiProperty(description: 'supplier.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function getId(): ?string
     {
@@ -99,6 +104,18 @@ class Supplier
     public function setPhone(?string $phone): static
     {
         $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

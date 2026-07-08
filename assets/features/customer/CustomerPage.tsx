@@ -22,6 +22,7 @@ interface CustomerRecord extends DataRecord {
   phone: string;
   email: string;
   priceList: unknown;
+  isActive: boolean;
 }
 
 type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
@@ -30,12 +31,12 @@ const CUSTOMER_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['ruc', 'businessName', 'phone', 'email'],
+    columns: ['ruc', 'businessName', 'phone', 'email', 'isActive'],
   },
   {
     key: 'full',
     label: 'Completo',
-    columns: ['ruc', 'businessName', 'fiscalAddress', 'phone', 'email', 'priceList'],
+    columns: ['ruc', 'businessName', 'fiscalAddress', 'phone', 'email', 'priceList', 'isActive'],
   },
 ];
 
@@ -59,6 +60,11 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
       },
       { kind: 'override', key: 'phone', patch: { order: 3, layoutHint: 'short', label: 'Teléfono' } },
       { kind: 'override', key: 'email', patch: { order: 4, layoutHint: 'short', label: 'Correo' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 5, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+      },
       {
         kind: 'override',
         key: 'ruc',

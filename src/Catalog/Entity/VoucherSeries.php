@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\VoucherSeriesRepository;
+use App\Efact\Domain\ActivatableInterface;
 use App\Organization\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -21,7 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DataGridFilter::class],
     mercure: true,
 )]
-class VoucherSeries
+class VoucherSeries implements ActivatableInterface
 {
     #[Groups(['voucher_series:read'])]
     #[ORM\Id]
@@ -50,6 +51,11 @@ class VoucherSeries
     #[ApiProperty(description: 'voucher_series.associated_series.label')]
     #[ORM\Column(name: 'serie_asociada', length: 6, nullable: true)]
     private ?string $associatedSeries = null;
+
+    #[Groups(['voucher_series:read'])]
+    #[ApiProperty(description: 'voucher_series.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function getId(): ?int
     {
@@ -100,6 +106,18 @@ class VoucherSeries
     public function setAssociatedSeries(?string $associated_series): static
     {
         $this->associatedSeries = $associated_series;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

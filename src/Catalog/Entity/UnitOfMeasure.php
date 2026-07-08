@@ -7,6 +7,7 @@ namespace App\Catalog\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Catalog\Repository\UnitOfMeasureRepository;
+use App\Efact\Domain\ActivatableInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -23,7 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     filters: [DataGridFilter::class],
     mercure: true,
 )]
-class UnitOfMeasure
+class UnitOfMeasure implements ActivatableInterface
 {
     #[Groups(['unit-of-measure:read', 'product:read', 'stock_item:read'])]
     #[ORM\Id]
@@ -57,6 +58,11 @@ class UnitOfMeasure
     #[ApiProperty(description: 'unit_of_measure.reference.label')]
     #[ORM\Column(name: 'is_reference')]
     private bool $reference = false;
+
+    #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
+    #[ApiProperty(description: 'unit_of_measure.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function getId(): ?int
     {
@@ -119,6 +125,18 @@ class UnitOfMeasure
     public function setReference(bool $reference): static
     {
         $this->reference = $reference;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

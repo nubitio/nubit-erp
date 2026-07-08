@@ -6,9 +6,10 @@ import type { SalePaymentLineDraft } from '@shared/lib/salePayments';
 import { SplitPaymentsField } from '@shared/ui/split-payments/SplitPaymentsField';
 import { formatPosCustomerLabel } from './lib/mapPosCustomer';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
+import { activeOnlyFilter } from '@shared/lib/activeEntityField';
 
 const API = getCoreApiBaseUrl();
-const ENTITY_DROPDOWN_FILTERS: never[] = [];
+const ENTITY_DROPDOWN_FILTERS = activeOnlyFilter();
 import {
   formatPosQuantity,
   isWeightUnitCode,
@@ -99,6 +100,7 @@ export function POSCheckoutPanel({
   subtotal,
   discountAmount,
   includedTax,
+  igvRate,
   total,
   changeAmount,
   checkoutDisabled,
@@ -494,7 +496,11 @@ export function POSCheckoutPanel({
             </div>
           )}
           <div className="pos-summary__row">
-            <span>IGV (18%)</span>
+            <span>
+              {typeof igvRate === 'number'
+                ? `IGV (${(igvRate * 100).toFixed(1).replace(/\.0$/, '')}%)`
+                : 'IGV'}
+            </span>
             <span>{formatMoney(includedTax)}</span>
           </div>
         </div>

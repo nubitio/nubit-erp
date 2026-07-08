@@ -398,6 +398,7 @@ final class StockEntryProcessorTest extends TestCase
             $this->security,
             $policy,
             $persistProcessor,
+            new \App\Efact\Domain\ActiveReferenceGuard(),
         );
     }
 

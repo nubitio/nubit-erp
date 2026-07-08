@@ -20,6 +20,7 @@ import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
+import { activeEntityField, activeOnlyFilter } from '@shared/lib/activeEntityField';
 import { productService } from '@features/product';
 import { GetStockUseCase } from '@features/pos/lib/GetStockUseCase';
 import { mapPosCustomer } from '@features/pos/lib/mapPosCustomer';
@@ -187,6 +188,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           operator: '=',
           value: callbacks?.branchId ?? '',
         },
+        ...activeOnlyFilter(),
       ])
       .autoSelectIfSingle(true)
       .onChange((e: unknown) => {
@@ -200,7 +202,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    entityField(API + 'customers', 'id', 'businessName')
+    activeEntityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .width(240)

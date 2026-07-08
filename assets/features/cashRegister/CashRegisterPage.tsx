@@ -10,7 +10,7 @@ const CASH_REGISTER_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['name', 'branch'],
+    columns: ['name', 'branch', 'isActive'],
   },
 ];
 

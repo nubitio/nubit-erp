@@ -15,6 +15,7 @@ import {
 import { productService } from '@features/product';
 import { ProductDto } from '@features/product/types/product.dto';
 import type { TenantRuntimeConfig } from '@shared/hooks';
+import { activeEntityField, activeOnlyFilter } from '@shared/lib/activeEntityField';
 
 type InboundDetailRow = DataRecord & {
   product?: ProductDto;
@@ -65,6 +66,7 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
         operator: '=',
         value: branchId,
       },
+      ...activeOnlyFilter(),
     ])
     .required(true);
 
@@ -78,7 +80,7 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
 
   fields.push(warehouseField.build());
   fields.push(
-    entityField(API + 'suppliers', 'id', 'businessName')
+    activeEntityField(API + 'suppliers', 'id', 'businessName')
       .name('supplier')
       .label('Proveedor')
       .width(240)

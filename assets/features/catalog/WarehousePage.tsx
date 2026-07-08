@@ -1,4 +1,4 @@
-import { SchemaCrudPage, defineResource, defineFieldContract } from '@nubitio/crud';
+import { SchemaCrudPage, defineResource, defineFieldContract, FieldType } from '@nubitio/crud';
 import { warehouseEndpoints } from './api/catalogEndpoints';
 
 const resource = defineResource(warehouseEndpoints.list(), {
@@ -17,6 +17,11 @@ const resource = defineResource(warehouseEndpoints.list(), {
       { kind: 'remove', key: 'productStocks' },
       { kind: 'override', key: 'name', patch: { order: 0, width: 260, label: 'Nombre' } },
       { kind: 'override', key: 'branch', patch: { order: 1, width: 220, label: 'Local' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 2, width: 100, label: 'Activo', type: FieldType.SWITCH },
+      },
     ],
   }),
 });

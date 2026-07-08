@@ -6,6 +6,7 @@ namespace App\Purchasing\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Efact\Domain\ActiveReferenceGuard;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
@@ -36,6 +37,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private PurchaseInventoryService $purchaseInventoryService,
         private PurchaseReceiptSequenceService $purchaseReceiptSequenceService,
         private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
+        private ActiveReferenceGuard $activeReferenceGuard,
     ) {}
 
     #[Override]
@@ -58,6 +60,8 @@ readonly class PurchaseProcessor implements ProcessorInterface
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
                 $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
+                $this->activeReferenceGuard->assertActiveOnCreate($data->getSupplier(), 'supplier', 'El proveedor');
+                $this->activeReferenceGuard->assertActiveOnCreate($data->getWarehouse(), 'warehouse', 'El almacén');
             }
             // 1. Set buyerUser from the authenticated user
             if ($data->getBuyerUser() === null) {

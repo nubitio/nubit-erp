@@ -16,6 +16,7 @@ interface SupplierRecord extends DataRecord {
   businessName: string;
   fiscalAddress: string;
   phone: string;
+  isActive: boolean;
 }
 
 type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
@@ -24,12 +25,12 @@ const SUPPLIER_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['ruc', 'businessName', 'phone'],
+    columns: ['ruc', 'businessName', 'phone', 'isActive'],
   },
   {
     key: 'full',
     label: 'Completo',
-    columns: ['ruc', 'businessName', 'fiscalAddress', 'phone'],
+    columns: ['ruc', 'businessName', 'fiscalAddress', 'phone', 'isActive'],
   },
 ];
 
@@ -60,7 +61,7 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
       },
       {
         label: 'Contacto',
-        fields: ['phone'],
+        fields: ['phone', 'isActive'],
       },
     ],
   },
@@ -70,6 +71,11 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
     directives: [
       { kind: 'override', key: 'businessName', patch: { order: 1, layoutHint: 'fullWidth', label: 'Razón social' } },
       { kind: 'override', key: 'phone', patch: { order: 3, layoutHint: 'short', label: 'Teléfono' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 4, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+      },
       {
         kind: 'override',
         key: 'ruc',

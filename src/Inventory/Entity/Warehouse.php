@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Catalog\Entity\Product;
+use App\Efact\Domain\ActivatableInterface;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\State\WarehouseCreateProcessor;
 use App\Inventory\State\WarehousesByBranchProvider;
@@ -45,7 +46,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DataGridFilter::class],
     mercure: true,
 )]
-class Warehouse
+class Warehouse implements ActivatableInterface
 {
     #[Groups([
         'warehouse:read',
@@ -76,6 +77,11 @@ class Warehouse
     #[ORM\ManyToOne(inversedBy: 'warehouses')]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
     private ?Branch $branch = null;
+
+    #[Groups(['warehouse:read'])]
+    #[ApiProperty(description: 'warehouse.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     /**
      * @var Collection<int, ProductStock>
@@ -117,6 +123,18 @@ class Warehouse
     public function setBranch(?Branch $branch): static
     {
         $this->branch = $branch;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

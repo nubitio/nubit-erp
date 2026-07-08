@@ -558,7 +558,7 @@ final class SaleProcessorTest extends TestCase
     public function testEnsureCustomerSkipsWhenCustomerAlreadySet(): void
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
-        $sale->setCliente($this->createMock(Customer::class));
+        $sale->setCliente($this->buildActiveCustomerMock());
         // Resolver throws if branch is null — inject a branch so it can proceed
         $branch = new Branch();
         new ReflectionClass(Branch::class)
@@ -574,6 +574,22 @@ final class SaleProcessorTest extends TestCase
         $this->entityManager->expects($this->never())->method('find');
 
         $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
+
+        $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
+    }
+
+    // -------------------------------------------------------------------------
+    // A disabled customer must reject a new sale (ActiveReferenceGuard).
+    // -------------------------------------------------------------------------
+
+    public function testNewSaleWithDisabledCustomerIsRejected(): void
+    {
+        $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
+        $inactiveCustomer = $this->createMock(Customer::class);
+        $inactiveCustomer->method('getIsActive')->willReturn(false);
+        $sale->setCliente($inactiveCustomer);
+
+        $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
 
         $this->buildAndRunProcessor($sale, new Post(), requireCashRegister: 'false');
     }
@@ -677,7 +693,7 @@ final class SaleProcessorTest extends TestCase
             ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
-        $sale->setCliente($this->createMock(Customer::class));
+        $sale->setCliente($this->buildActiveCustomerMock());
 
         $cashShift = $this->buildCashShift();
 
@@ -839,7 +855,7 @@ final class SaleProcessorTest extends TestCase
             ->setValue($branch, 'branch-1');
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
-        $sale->setCliente($this->createMock(Customer::class));
+        $sale->setCliente($this->buildActiveCustomerMock());
 
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
@@ -1019,6 +1035,7 @@ final class SaleProcessorTest extends TestCase
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
         $inj('saleRecordRepository', $this->createMock(\App\Sales\Repository\SaleRecordRepository::class));
         $inj('customerRepository', $this->customerRepository);
+        $inj('activeReferenceGuard', new \App\Efact\Domain\ActiveReferenceGuard());
 
         return $processor;
     }
@@ -1026,6 +1043,14 @@ final class SaleProcessorTest extends TestCase
     // =========================================================================
     // Domain-object factory helpers
     // =========================================================================
+
+    private function buildActiveCustomerMock(): Customer&MockObject
+    {
+        $customer = $this->createMock(Customer::class);
+        $customer->method('getIsActive')->willReturn(true);
+
+        return $customer;
+    }
 
     private function buildNewSale(int $tipoId): SaleRecord
     {

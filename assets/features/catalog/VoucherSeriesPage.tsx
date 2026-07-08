@@ -1,4 +1,4 @@
-import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -7,6 +7,7 @@ interface VoucherSeriesRecord extends DataRecord {
   id: string;
   series: string;
   voucherType: unknown;
+  isActive: boolean;
 }
 
 const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
@@ -24,6 +25,11 @@ const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
     directives: [
       { kind: 'override', key: 'series', patch: { order: 0, width: 140, label: 'Serie' } },
       { kind: 'override', key: 'voucherType', patch: { order: 1, width: 220, label: 'Tipo de comprobante' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 2, width: 100, label: 'Activo', type: FieldType.SWITCH },
+      },
     ],
   }),
 });

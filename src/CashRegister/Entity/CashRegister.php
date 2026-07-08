@@ -22,6 +22,7 @@ use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashRegisterOpenProcessor;
 use App\CashRegister\State\CashRegistersByBranchProvider;
 use App\CashRegister\State\CashRegisterShiftsProvider;
+use App\Efact\Domain\ActivatableInterface;
 use App\Organization\Entity\Branch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -75,7 +76,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     filters: [DataGridFilter::class],
     mercure: true,
 )]
-class CashRegister
+class CashRegister implements ActivatableInterface
 {
     #[Groups(['cash_register:read'])]
     #[ORM\Id]
@@ -93,6 +94,11 @@ class CashRegister
     #[ORM\Column(length: 255)]
     #[ApiProperty(description: 'cash_register.name.label')]
     private string $name;
+
+    #[Groups(['cash_register:read'])]
+    #[ApiProperty(description: 'cash_register.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     /**
      * All cash sessions (shifts) that belong to this register.
@@ -145,6 +151,18 @@ class CashRegister
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

@@ -13,6 +13,7 @@ import {
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
 import type { TenantRuntimeConfig } from '@shared/hooks';
+import { activeOnlyFilter } from '@shared/lib/activeEntityField';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ export const StockEntryFields = (
   const warehouseField = entityField(API + 'warehouses', 'id', 'name')
     .name('warehouse')
     .label(mode === 'transfer' ? 'Almacén origen' : 'Almacén')
-    .filters([{ field: 'branch', operator: '=', value: branchId }])
+    .filters([{ field: 'branch', operator: '=', value: branchId }, ...activeOnlyFilter()])
     .required(true);
 
   if (!showWarehouseSelector && defaultWarehouseId) {
@@ -96,7 +97,7 @@ export const StockEntryFields = (
       entityField(API + 'warehouses', 'id', 'name')
         .name('targetWarehouse')
         .label('Almacén destino')
-        .filters([{ field: 'branch', operator: '=', value: branchId }])
+        .filters([{ field: 'branch', operator: '=', value: branchId }, ...activeOnlyFilter()])
         .required(true)
         .build(),
     );

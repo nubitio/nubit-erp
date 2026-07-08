@@ -197,6 +197,10 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         /** @var SaleRecordRepository&MockObject $saleRecordRepoMock */
         $saleRecordRepoMock = $this->createStub(SaleRecordRepository::class);
         $processorReflection->getProperty('saleRecordRepository')->setValue($processor, $saleRecordRepoMock);
+        $processorReflection->getProperty('activeReferenceGuard')->setValue(
+            $processor,
+            new \App\Efact\Domain\ActiveReferenceGuard(),
+        );
 
         return $processor;
     }

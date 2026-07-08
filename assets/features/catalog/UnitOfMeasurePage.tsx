@@ -19,6 +19,7 @@ interface UnitOfMeasureRecord extends DataRecord {
   type: number;
   ratio: string;
   reference: boolean;
+  isActive: boolean;
 }
 
 function toPatch(field: Field): SmartCrudFieldPatch<UnitOfMeasureRecord> {
@@ -141,6 +142,16 @@ const referencePatch = toPatch(
     .build(),
 );
 
+const isActivePatch = toPatch(
+  switchField()
+    .name('isActive')
+    .label('Activo')
+    .align('center')
+    .defaultValue(true)
+    .formatter((cell) => SharedUtils.booleanFormatter(cell.value as boolean))
+    .build(),
+);
+
 const UNIT_OF_MEASURE_COLUMN_PRESETS = [
   {
     key: 'basic',
@@ -150,7 +161,7 @@ const UNIT_OF_MEASURE_COLUMN_PRESETS = [
   {
     key: 'full',
     label: 'Completo',
-    columns: ['name', 'code', 'type', 'ratio', 'reference'],
+    columns: ['name', 'code', 'type', 'ratio', 'reference', 'isActive'],
   },
 ];
 
@@ -186,6 +197,7 @@ const resource = defineResource<UnitOfMeasureRecord>(unitOfMeasureEndpoints.list
         },
       },
       { kind: 'override', key: 'reference', patch: referencePatch },
+      { kind: 'override', key: 'isActive', patch: isActivePatch },
     ],
   }),
 });

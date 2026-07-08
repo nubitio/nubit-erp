@@ -11,6 +11,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
+use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Security\Security;
@@ -64,6 +65,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
         private CustomerRepository $customerRepository,
+        private ActiveReferenceGuard $activeReferenceGuard,
     ) {}
 
     /**
@@ -138,6 +140,13 @@ readonly class SaleProcessor implements ProcessorInterface
                     'branch' => ['La sucursal está deshabilitada; no se pueden registrar nuevas ventas.'],
                 ]);
             }
+        }
+
+        // Disabled customers/warehouses stay readable for reports but must not be
+        // wired into new sales; editing an existing sale is unaffected.
+        if ($isNew) {
+            $this->activeReferenceGuard->assertActiveOnCreate($data->getCustomer(), 'customer', 'El cliente');
+            $this->activeReferenceGuard->assertActiveOnCreate($data->getWarehouse(), 'warehouse', 'El almacén');
         }
 
         // Convert writeItems array to SaleItemRecord objects

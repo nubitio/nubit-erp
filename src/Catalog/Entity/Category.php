@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Catalog\Repository\CategoryRepository;
+use App\Efact\Domain\ActivatableInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -29,7 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     filters: [DataGridFilter::class],
     mercure: true,
 )]
-class Category
+class Category implements ActivatableInterface
 {
     #[Groups([
         'category:read',
@@ -76,6 +77,11 @@ class Category
      */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
     private Collection $children;
+
+    #[Groups(['category:read', 'category:write'])]
+    #[ApiProperty(description: 'category.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function __construct()
     {
@@ -134,6 +140,18 @@ class Category
         if ($this->children->removeElement($child) && $child->getParent() === $this) {
             $child->setParent(null);
         }
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

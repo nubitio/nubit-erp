@@ -7,6 +7,7 @@ namespace App\Contacts\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Contacts\Repository\CustomerRepository;
+use App\Efact\Domain\ActivatableInterface;
 use App\Efact\Validator as AppAssert;
 use App\Inventory\Entity\PriceList;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'cliente')]
 #[ApiResource(filters: [DataGridFilter::class], mercure: true)]
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
-class Customer
+class Customer implements ActivatableInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
@@ -56,6 +57,10 @@ class Customer
     #[ApiProperty(description: 'customer.price_list.label')]
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
     private ?PriceList $priceList = null;
+
+    #[ApiProperty(description: 'customer.is_active.label')]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     public function getId(): ?int
     {
@@ -130,6 +135,18 @@ class Customer
     public function setPriceList(?PriceList $priceList): static
     {
         $this->priceList = $priceList;
+
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

@@ -6,6 +6,7 @@ namespace App\Inventory\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Efact\Domain\ActiveReferenceGuard;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Contract\UnitConversionServiceInterface;
@@ -47,6 +48,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         private StockValidationPolicyInterface $stockValidationPolicy,
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
+        private ActiveReferenceGuard $activeReferenceGuard,
     ) {}
 
     #[Override]
@@ -232,6 +234,9 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('warehouse is required.');
         }
 
+        // POST is the only write operation on this resource, so every call here is a create.
+        $this->activeReferenceGuard->assertActiveOnCreate($warehouse, 'warehouse', 'El almacén');
+
         if ($entry->getItems()->isEmpty()) {
             throw new UnprocessableEntityHttpException('At least one item is required.');
         }
@@ -244,6 +249,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             if ($target->getId() === $warehouse->getId()) {
                 throw new UnprocessableEntityHttpException('sourceWarehouse and targetWarehouse must be different.');
             }
+            $this->activeReferenceGuard->assertActiveOnCreate($target, 'targetWarehouse', 'El almacén destino');
         }
 
         if ($type->requiresReason() && empty($entry->getReason())) {

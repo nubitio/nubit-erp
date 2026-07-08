@@ -4,7 +4,6 @@ const API = getCoreApiBaseUrl();
 import { Field } from '@nubitio/crud';
 import {
   identityField,
-  entityField,
   currencyField,
   dateField,
   enumField,
@@ -17,6 +16,7 @@ import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { GridCellContext } from '@nubitio/crud';
 import { Badge } from '@nubitio/ui';
+import { activeEntityField } from '@shared/lib/activeEntityField';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -42,7 +42,7 @@ export const InvoiceFields = () => {
       .build(),
   );
   fields.push(
-    entityField(API + 'customers', 'id', 'businessName')
+    activeEntityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
       .width(200)

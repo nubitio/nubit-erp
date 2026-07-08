@@ -1,9 +1,10 @@
-import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
 import { categoryEndpoints } from './api/catalogEndpoints';
 
 interface CategoryRecord extends DataRecord {
   id: string;
   name: string;
+  isActive: boolean;
 }
 
 const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
@@ -20,6 +21,11 @@ const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
     strategy: 'augment',
     directives: [
       { kind: 'override', key: 'name', patch: { order: 0, width: 320, label: 'Nombre' } },
+      {
+        kind: 'override',
+        key: 'isActive',
+        patch: { order: 1, width: 100, label: 'Activo', type: FieldType.SWITCH },
+      },
     ],
   }),
 });

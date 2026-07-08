@@ -6,6 +6,7 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use App\Efact\Domain\ActivatableInterface;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,7 +19,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: BranchRepository::class)]
 #[ORM\Table(name: 'local')]
 #[ApiResource(normalizationContext: ['groups' => ['branch:read']], filters: [DataGridFilter::class], mercure: true)]
-class Branch
+class Branch implements ActivatableInterface
 {
     #[Groups([
         'branch:read',
