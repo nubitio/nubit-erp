@@ -29,6 +29,19 @@ use Throwable;
 
 readonly class InitialDataSeeder
 {
+    /** Basic units of measure for the retail vertical, seeded alongside the reference "Unidad" (NIU). */
+    private const array BASIC_UNITS_OF_MEASURE = [
+        ['code' => 'KGM', 'name' => 'Kilogramo', 'type' => 2],
+        ['code' => 'GRM', 'name' => 'Gramo', 'type' => 2],
+        ['code' => 'MTR', 'name' => 'Metro', 'type' => 3],
+        ['code' => 'LTR', 'name' => 'Litro', 'type' => 4],
+        ['code' => 'MLT', 'name' => 'Mililitro', 'type' => 4],
+        ['code' => 'DZN', 'name' => 'Docena', 'type' => 1],
+        ['code' => 'SET', 'name' => 'Conjunto', 'type' => 1],
+        ['code' => 'BX', 'name' => 'Caja', 'type' => 1],
+        ['code' => 'PK', 'name' => 'Paquete', 'type' => 1],
+    ];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TenantSettingsService $tenantSettingsService,
@@ -79,6 +92,9 @@ readonly class InitialDataSeeder
     private function seedReferenceData(): void
     {
         $this->getOrCreateUnitOfMeasure('NIU', 'Unidad', 1, 1.0, true);
+        foreach (self::BASIC_UNITS_OF_MEASURE as $unit) {
+            $this->getOrCreateUnitOfMeasure($unit['code'], $unit['name'], $unit['type'], 1.0, false);
+        }
 
         $operations = [
             ['Venta',                        2],

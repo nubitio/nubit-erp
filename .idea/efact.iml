@@ -55,7 +55,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/console" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/config" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/asset" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/serializable-closure" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/egulias/email-validator" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/mike42/escpos-php" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/twig/twig" />
@@ -156,31 +155,13 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php83" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/security-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/greenter/consulta-cpe" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/amp" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/byte-stream" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/cache" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/dns" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/parallel" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/parser" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/pipeline" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/process" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/serialization" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/socket" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/amphp/sync" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/clue/ndjson-react" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/daverandom/libdns" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/evenement/evenement" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/fidry/cpu-core-counter" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/gitonomy/gitlib" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/kelunik/certificate" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/league/uri" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/league/uri-interfaces" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/ondram/ci-detector" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/pdepend/pdepend" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpmd/phpmd" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpoffice/math" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpoffice/phpword" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/phpro/grumphp" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/pontedilana/php-weasyprint" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/cache" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/child-process" />
@@ -189,8 +170,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/promise" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/socket" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/react/stream" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/revolt/event-loop" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/seld/jsonlint" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/squizlabs/php_codesniffer" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/notifier" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/scheduler" />
@@ -240,6 +219,9 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/lcobucci/jwt" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/mercure" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/mercure-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/nubitio/admin-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/nubitio/api-platform" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/nubitio/platform" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

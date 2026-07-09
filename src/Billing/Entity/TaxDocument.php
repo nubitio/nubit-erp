@@ -32,7 +32,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
 #[ORM\Table(name: 'tax_document')]
-#[ORM\UniqueConstraint(name: 'uq_tax_document_number_branch', columns: ['document_type', 'branch_id', 'series', 'number'])]
+#[ORM\UniqueConstraint(name: 'uq_tax_document_number_branch', columns: [
+    'document_type',
+    'branch_id',
+    'series',
+    'number',
+])]
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_BRANCH', columns: ['branch_id'])]
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_CUSTOMER', columns: ['customer_id'])]
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_SALE_ID', columns: ['sale_id'])]

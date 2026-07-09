@@ -581,6 +581,14 @@ final readonly class TestDataSeeder
             $warehouse = $this->warehouseRepository->find($warehouseId);
             $logisticOperation = $this->logisticOperationRepository->find($logisticOperationId);
 
+            if (!$customer instanceof Customer) {
+                throw new \RuntimeException('Customer not found. Run initial setup first.');
+            }
+
+            if (!$warehouse instanceof Warehouse) {
+                throw new \RuntimeException('Warehouse not found. Run initial setup first.');
+            }
+
             if ($customer->getRuc()[0] === '1') {
                 $series = 'B001';
             } else {
@@ -685,7 +693,9 @@ final readonly class TestDataSeeder
             );
             $taxDocument->setDetractionPaymentMethod($sale->getDetraccionMedioPago());
             $taxDocument->setDetractionValueRef(
-                $sale->getDetraccionValorReferencial() !== null ? (string) $sale->getDetraccionValorReferencial() : null,
+                $sale->getDetraccionValorReferencial() !== null
+                    ? (string) $sale->getDetraccionValorReferencial()
+                    : null,
             );
             $taxDocument->setTotal($invoiceAmounts->getTotal());
             $taxDocument->setCreatedAt($saleDateMutable);

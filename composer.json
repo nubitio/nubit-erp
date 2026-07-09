@@ -142,12 +142,6 @@
       "cache:clear": "symfony-cmd",
       "assets:install %PUBLIC_DIR%": "symfony-cmd"
     },
-    "git-init": [
-      "php -r \"file_exists('.git') && copy('scripts/pre-commit.sh', '.git/hooks/pre-commit');\"",
-      "chmod +x .git/hooks/pre-commit",
-      "php -r \"file_exists('.git') && copy('scripts/commit-msg.sh', '.git/hooks/commit-msg');\"",
-      "chmod +x .git/hooks/commit-msg"
-    ],
     "check:platform-boundary": "php scripts/architecture/check-platform-boundary.php",
     "test:platform-boundary-guard": "php scripts/architecture/check-platform-boundary.php --self-test",
     "post-install-cmd": [

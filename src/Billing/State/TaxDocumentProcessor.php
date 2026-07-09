@@ -203,7 +203,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         // Source percentages from related TaxDocument (v2-authoritative path)
         $discountPercent = $related->getDiscountPercent() ?? '0';
         $firstLine = $related->getLines()->first();
-        $taxPercent = ($firstLine !== false ? $firstLine->getTaxPercentage() : null)
+        $taxPercent =
+            ($firstLine !== false ? $firstLine->getTaxPercentage() : null)
             ?? (string) $this->tenantSettingsService->getIgv();
         $chargesPercent = '0';
 
