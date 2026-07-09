@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
-import { Badge, Chip, EmptyState, IconButton, TextField } from '@nubitio/ui';
+import { Badge, Chip, EmptyState, IconButton, TextField, Toggle } from '@nubitio/ui';
 import type { SalePaymentLineDraft } from '@shared/lib/salePayments';
 import { SplitPaymentsField } from '@shared/ui/split-payments/SplitPaymentsField';
 import { formatPosCustomerLabel } from './lib/mapPosCustomer';
@@ -89,8 +89,8 @@ export function POSCheckoutPanel({
   paymentMethods,
   paymentLines,
   setPaymentLines,
-  emitInvoice: _emitInvoice,
-  setEmitInvoice: _setEmitInvoice,
+  emitInvoice,
+  setEmitInvoice,
   currency,
   setCurrency: _setCurrency,
   exchangeRate,
@@ -115,6 +115,9 @@ export function POSCheckoutPanel({
   scaleReady = false,
 }: POSCheckoutPanelProps) {
   const customerDropdownRef = useRef<HTMLDivElement>(null);
+  // Collapsed by default to save vertical space — auto-opens when a discount is
+  // already active so an in-progress sale never hides its own state.
+  const [optionsOpen, setOptionsOpen] = useState(discountPercent > 0);
   // Inline quantity editing
   const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
   const [editingQtyVal, setEditingQtyVal] = useState<string>('');
@@ -170,6 +173,12 @@ export function POSCheckoutPanel({
     }
     prevTotal.current = total;
   }, [total]);
+
+  // Keep the options section open if a discount becomes active while collapsed
+  // (e.g. restored from a pending sale) — never hide state the cashier set.
+  useEffect(() => {
+    if (discountPercent > 0) setOptionsOpen(true);
+  }, [discountPercent]);
 
   useEffect(() => {
     if (!focusCustomerTrigger) return;
@@ -446,42 +455,74 @@ export function POSCheckoutPanel({
 
       {/* ── Fixed footer: everything non-scrolling ── */}
       <div className="pos-checkout-footer">
-        {/* Discount — single compact inline row */}
-        <div className="pos-footer-option-row">
-          <span className="pos-discount-label">Descuento</span>
-          <div className="pos-discount-presets" role="group" aria-label="Descuento">
-            <Chip
-              label="Ninguno"
-              active={discountPercent === 0}
-              size="sm"
-              onClick={() => setDiscountPercent(0)}
-            />
-            {[5, 10, 15, 20].map((pct) => (
-              <Chip
-                key={pct}
-                label={`${pct}%`}
-                active={discountPercent === pct}
-                size="sm"
-                onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
-              />
-            ))}
-          </div>
+        {/* Opciones — collapsed by default to save space; discount/invoice/FX are
+            per-shift or occasional settings, not per-sale taps like payment method. */}
+        <div className="pos-footer-options">
+          <button
+            type="button"
+            className="pos-footer-options__toggle"
+            onClick={() => setOptionsOpen((open) => !open)}
+            aria-expanded={optionsOpen}
+          >
+            <span>Opciones</span>
+            {!optionsOpen && (discountPercent > 0 || !emitInvoice) && (
+              <span className="pos-footer-options__badge">
+                {discountPercent > 0 ? `-${discountPercent}%` : 'Sin comprobante'}
+              </span>
+            )}
+            <i className={`ph ph-caret-${optionsOpen ? 'up' : 'down'}`} aria-hidden="true" />
+          </button>
+
+          {optionsOpen && (
+            <div className="pos-footer-options__body">
+              <div className="pos-footer-option-row">
+                <span className="pos-discount-label">Emitir comprobante</span>
+                <Toggle
+                  checked={emitInvoice}
+                  onChange={setEmitInvoice}
+                  aria-label="Emitir comprobante"
+                />
+              </div>
+
+              <div className="pos-footer-option-row">
+                <span className="pos-discount-label">Descuento</span>
+                <div className="pos-discount-presets" role="group" aria-label="Descuento">
+                  <Chip
+                    label="Ninguno"
+                    active={discountPercent === 0}
+                    size="sm"
+                    onClick={() => setDiscountPercent(0)}
+                  />
+                  {[5, 10, 15, 20].map((pct) => (
+                    <Chip
+                      key={pct}
+                      label={`${pct}%`}
+                      active={discountPercent === pct}
+                      size="sm"
+                      onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {currency === 'USD' && (
+                <div className="pos-footer-option-row">
+                  <span className="pos-discount-label">T.C. USD/PEN</span>
+                  <TextField
+                    id="pos-exchange-rate"
+                    type="number"
+                    min={0.01}
+                    step="0.01"
+                    value={exchangeRate}
+                    onChange={(e) => setExchangeRate(e.target.value)}
+                    style={{ width: '72px' }}
+                    aria-label="Tipo de cambio"
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        {currency === 'USD' && (
-          <div className="pos-footer-option-row">
-            <span className="pos-discount-label">T.C. USD/PEN</span>
-            <TextField
-              id="pos-exchange-rate"
-              type="number"
-              min={0.01}
-              step="0.01"
-              value={exchangeRate}
-              onChange={(e) => setExchangeRate(e.target.value)}
-              style={{ width: '72px' }}
-              aria-label="Tipo de cambio"
-            />
-          </div>
-        )}
 
         {/* Summary rows */}
         <div className="pos-summary">

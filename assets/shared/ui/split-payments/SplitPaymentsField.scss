@@ -238,24 +238,24 @@
 // ── POS variant (inherits --pos-* from .pos-shell) ────────────────────────────
 
 .split-payments-field--pos {
-  gap: 0.35rem;
+  gap: 0.3rem;
 
   .split-payments-field__methods {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
   .split-payments-field__method {
     justify-content: center;
-    min-height: var(--control-height-form, 2.25rem);
-    border-radius: var(--pos-radius, 0.75rem);
+    min-height: var(--control-height, 1.75rem);
+    border-radius: var(--pos-radius-sm, 0.55rem);
     border-color: var(--pos-border, var(--border-color, #d7dce3));
     background: var(--pos-card-alt, var(--surface-2, #f8fafc));
     color: var(--pos-text-soft, var(--text-primary, #1f2937));
-    font-size: var(--font-size-sm, 0.78rem);
+    font-size: var(--font-size-xs, 0.72rem);
     font-weight: 500;
-    padding: 0 0.45rem;
+    padding: 0 0.4rem;
 
     &:hover:not(.is-active) {
       border-color: color-mix(in srgb, var(--pos-primary, var(--primary, #2563eb)) 35%, var(--pos-border, #d7dce3));
@@ -272,6 +272,7 @@
   }
 
   .split-payments-field__trigger {
+    padding: 0.4rem 0.6rem;
     border-color: var(--pos-border, var(--border-color, #d7dce3));
     background: var(--pos-card-alt, var(--surface-2, #f8fafc));
     border-radius: var(--pos-radius-sm, 0.55rem);
@@ -288,6 +289,9 @@
   }
 
   .split-payments-field__trigger-leading {
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 0.85rem;
     background: var(--pos-primary-soft, color-mix(in srgb, var(--primary, #2563eb) 10%, transparent));
     color: var(--pos-primary, var(--primary, #2563eb));
     border-radius: var(--pos-radius-sm, 0.55rem);
