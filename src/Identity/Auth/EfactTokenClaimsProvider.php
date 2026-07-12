@@ -32,6 +32,12 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
         $branchId = $branch?->getId() ?? $previousClaims['branchId'] ?? null;
         $branchName = $branch?->getName() ?? $previousClaims['branchName'] ?? null;
 
+        // Support impersonation (see ImpersonationApiController) stamps the
+        // acting control-plane admin here at mint time; carried forward on
+        // refresh the same way branch claims are, since the signed JWT is
+        // the source of truth.
+        $impersonatedBy = $previousClaims['impersonatedBy'] ?? null;
+
         return [
             'userId' => $user instanceof User ? $user->getId() : null,
             'role' => $user instanceof User ? $user->getRole()?->getId() : null,
@@ -40,6 +46,7 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
             'branchName' => $branchName,
             'tenantId' => $this->tenantContext->getTenantId(),
             'tenantName' => $this->tenantContext->getTenantName(),
+            'impersonatedBy' => $impersonatedBy,
         ];
     }
 
