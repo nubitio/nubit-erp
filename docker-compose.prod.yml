@@ -1,9 +1,82 @@
 services:
+  # One-shot migration runner. Executes control-plane + tenant migrations
+  # exactly once per deploy, before web/workers start. Kept out of the
+  # web/worker entrypoints so scaling replicas or rolling restarts can never
+  # race concurrent migration runs against the same database.
+  migrate:
+    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
+    restart: 'no'
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Migrations touch the Symfony container, which eagerly resolves every
+      # env(...) referenced in config/*.yaml (mailer, mercure, messenger,
+      # openai, ...) even for a console command — so this mirrors web's full
+      # environment rather than a DB-only subset, to avoid compile-time
+      # EnvNotFoundException failures.
+      RUN_MIGRATIONS: 'true'
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1, ::1}
+      TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
+      TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
+      ONBOARDING_DOMAIN: ${ONBOARDING_DOMAIN:-efact.app}
+      DEFAULT_URI: ${DEFAULT_URI:-https://efact.app}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_WEBHOOK_ID: ${PAYPAL_WEBHOOK_ID:-}
+      PAYPAL_MODE: ${PAYPAL_MODE:-live}
+      PAYPAL_PLAN_MAP: ${PAYPAL_PLAN_MAP:-{}}
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN:-}
+      MERCADOPAGO_WEBHOOK_SECRET: ${MERCADOPAGO_WEBHOOK_SECRET:-}
+      MERCADOPAGO_PLAN_MAP: ${MERCADOPAGO_PLAN_MAP:-{}}
+      DATABASE_URL: ${DATABASE_URL}
+      CONTROL_PLANE_DATABASE_URL: ${CONTROL_PLANE_DATABASE_URL}
+      PROVISIONING_DATABASE_URL: ${PROVISIONING_DATABASE_URL}
+      BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM:-noreply@efact.app}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
+      OTEL_PHP_AUTOLOAD_ENABLED: false
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
+      S3_BUCKET_REGION: ${S3_BUCKET_REGION}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      QZ_CERT_PATH: ${QZ_CERT_PATH:-/app/var/qz/qz_cert.pem}
+      QZ_PRIVATE_KEY_PATH: ${QZ_PRIVATE_KEY_PATH:-/app/var/qz/qz_private.key}
+      QZ_PRIVATE_KEY_PASSPHRASE: ${QZ_PRIVATE_KEY_PASSPHRASE}
+      DECOLECTA_TOKEN: ${DECOLECTA_TOKEN:-}
+      BILL_API_BASE_URL: ${BILL_API_BASE_URL}
+      BILL_API_TOKEN: ${BILL_API_TOKEN}
+      MERCURE_URL: 'http://mercure/.well-known/mercure'
+      MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
+    volumes:
+      - app-var:/app/var
+      - app-public-uploads:/app/public/uploads
+    networks:
+      - default
+    command: ['php', '-r', 'exit(0);']
+    mem_limit: 512m
+    cpus: 1
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
   web:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     container_name: ${CONTAINER_NAME:-efact}
     restart: unless-stopped
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       database:
         condition: service_healthy
       redis:
@@ -12,6 +85,9 @@ services:
         condition: service_healthy
     expose:
       - '80'
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: 2
     environment:
       # Application settings
       APP_ENV: ${APP_ENV}
@@ -106,6 +182,8 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       web:
         condition: service_healthy
       database:
@@ -113,7 +191,6 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SKIP_MIGRATIONS: 'true'
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
@@ -161,6 +238,14 @@ services:
       --time-limit=3600
       --memory-limit=256M
       --no-interaction
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
     healthcheck:
       test:
         [
@@ -178,6 +263,8 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       web:
         condition: service_healthy
       database:
@@ -185,7 +272,6 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SKIP_MIGRATIONS: 'true'
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
@@ -232,6 +318,14 @@ services:
       --time-limit=3600
       --memory-limit=256M
       --no-interaction
+    mem_limit: 512m
+    mem_reservation: 128m
+    cpus: 1
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
     healthcheck:
       test:
         [
@@ -255,6 +349,8 @@ services:
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins *
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
+    mem_limit: 256m
+    cpus: 0.5
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost/healthz']
       interval: 10s
@@ -289,6 +385,8 @@ services:
       SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-https://ingest.nubit.io}
       SIGNOZ_TLS_INSECURE: ${SIGNOZ_TLS_INSECURE:-false}
       DEPLOYMENT_ENV: ${APP_ENV}
+    mem_limit: 512m
+    cpus: 1
     depends_on:
       database:
         condition: service_healthy
@@ -329,6 +427,9 @@ services:
       --long-query-time=1
       --log-queries-not-using-indexes=0
       --performance-schema=ON
+    mem_limit: 2g
+    mem_reservation: 1g
+    cpus: 2
     volumes:
       - mariadb-data:/var/lib/mysql
     networks:
@@ -353,6 +454,8 @@ services:
       --appendonly yes
       --maxmemory 512mb
       --maxmemory-policy allkeys-lru
+    mem_limit: 768m
+    cpus: 1
     volumes:
       - redis-data:/data
     networks:

@@ -13,11 +13,10 @@ if command -v git >/dev/null 2>&1; then
     git config --global --add safe.directory /app || true
 fi
 
-# Run database migrations automatically (only in prod/staging, not dev)
-# Workers should set SKIP_MIGRATIONS=true to avoid race conditions
-if [ "${SKIP_MIGRATIONS}" = "true" ]; then
-    echo "Skipping migrations (SKIP_MIGRATIONS=true)"
-elif [ "${APP_ENV}" = "prod" ] || [ "${APP_ENV}" = "staging" ]; then
+# Run database migrations. Opt-in only: a single dedicated one-shot "migrate"
+# service runs this (RUN_MIGRATIONS=true); web/worker containers never do,
+# so scaling replicas or rolling restarts can't race concurrent migrations.
+if [ "${RUN_MIGRATIONS}" = "true" ]; then
     echo "Running database migrations..."
 
     # Wait for database to be ready (max 30 seconds)
