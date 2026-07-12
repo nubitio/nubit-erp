@@ -5,7 +5,21 @@ import {
   statWidget,
   tableWidget,
   type DashboardConfig,
+  type TableColumnConfig,
 } from '@nubitio/react-admin';
+
+const PAYMENT_METHOD_BADGES: TableColumnConfig['badge'] = {
+  Efectivo: 'success',
+  Credito: 'warning',
+  'Tarjeta débito': 'info',
+  'Tarjeta crédito': 'info',
+  Transferencia: 'primary',
+  Yape: 'primary',
+  Plin: 'primary',
+  'Link de pago': 'secondary',
+  Depósito: 'secondary',
+  'Sin método': 'light',
+};
 
 export function buildEfactDashboardConfig(title: string): DashboardConfig {
   return defineDashboard({
@@ -24,6 +38,7 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             icon: 'ph-currency-dollar',
             iconTone: 'success',
             trend: { valuePath: 'stats.dailyGrowth', label: 'vs ayer' },
+            menuVisible: false,
           }),
           statWidget({
             id: 'sales-month',
@@ -33,6 +48,7 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             icon: 'ph-trend-up',
             iconTone: 'warning',
             trend: { valuePath: 'stats.monthGrowth', label: 'vs mes ant.' },
+            menuVisible: false,
           }),
           statWidget({
             id: 'avg-ticket',
@@ -40,7 +56,8 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             valuePath: 'stats.avgTicket',
             format: 'currency',
             icon: 'ph-chart-line-up',
-            iconTone: 'accent',
+            iconTone: 'info',
+            menuVisible: false,
           }),
           statWidget({
             id: 'igv-month',
@@ -48,7 +65,8 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             valuePath: 'stats.igvCollected',
             format: 'currency',
             icon: 'ph-receipt',
-            iconTone: 'success',
+            iconTone: 'accent',
+            menuVisible: false,
           }),
         ],
       },
@@ -63,7 +81,9 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             dataPath: 'salesByDay',
             xKey: 'label',
             yKey: 'total',
+            valueFormat: 'currency',
             height: 200,
+            menuVisible: false,
           }),
           donutChartWidget({
             id: 'sales-by-payment-method',
@@ -74,6 +94,8 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             valueKey: 'total',
             valueFormat: 'currency',
             showLegend: true,
+            centerLabel: 'Total',
+            menuVisible: false,
           }),
         ],
       },
@@ -88,14 +110,51 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             dataPath: 'salesByMonth',
             xKey: 'label',
             yKey: 'total',
+            valueFormat: 'currency',
             height: 200,
+            menuVisible: false,
+          }),
+        ],
+      },
+      {
+        id: 'breakdown',
+        layout: 'grid',
+        columns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        widgets: [
+          donutChartWidget({
+            id: 'sales-by-voucher-type',
+            title: 'Ventas por comprobante',
+            subtitle: 'Últimos 30 días',
+            dataPath: 'voucherTypes',
+            labelKey: 'name',
+            valueKey: 'total',
+            valueFormat: 'currency',
+            colors: ['#2f6feb', '#7c3aed', '#e8590c', '#0f9d6e'],
+            centerLabel: 'Ventas mes',
+            centerValuePath: 'stats.salesThisMonth',
+            showLegend: true,
+            menuVisible: false,
+          }),
+          tableWidget({
+            id: 'top-customers',
+            title: 'Top clientes',
+            subtitle: 'Últimos 30 días',
+            dataPath: 'topCustomers',
+            emptyTitle: 'Sin clientes',
+            emptyDescription: 'Sin ventas facturadas a clientes en el período.',
+            columns: [
+              { key: 'name', label: 'Cliente' },
+              { key: 'invoices', label: 'Comprobantes', format: 'number', align: 'right' },
+              { key: 'total', label: 'Total', format: 'currency', align: 'right' },
+            ],
+            menuVisible: false,
           }),
         ],
       },
       {
         id: 'tables',
         layout: 'grid',
-        columns: 2,
+        columns: 'repeat(auto-fit, minmax(320px, 1fr))',
         widgets: [
           tableWidget({
             id: 'recent-sales',
@@ -107,9 +166,14 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
             emptyDescription: 'Abre el POS para registrar la primera.',
             columns: [
               { key: 'issuedAt', label: 'Hora' },
-              { key: 'paymentMethod', label: 'Método' },
+              {
+                key: 'paymentMethod',
+                label: 'Método',
+                badge: PAYMENT_METHOD_BADGES,
+              },
               { key: 'total', label: 'Total', format: 'currency', align: 'right' },
             ],
+            menuVisible: false,
           }),
           tableWidget({
             id: 'top-products',
@@ -123,6 +187,7 @@ export function buildEfactDashboardConfig(title: string): DashboardConfig {
               { key: 'quantity', label: 'Cant.', format: 'number', align: 'right' },
               { key: 'total', label: 'Total', format: 'currency', align: 'right' },
             ],
+            menuVisible: false,
           }),
         ],
       },
