@@ -6,6 +6,8 @@ namespace App\Tests\AI\Tool;
 
 use App\AI\Context\BranchContextInterface;
 use App\AI\Tool\CustomerIntelligenceTool;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +18,7 @@ final class CustomerIntelligenceToolTest extends TestCase
 {
     private Connection&MockObject $connection;
     private BranchContextInterface&MockObject $branchContextService;
+    private CustomerRepository&MockObject $customerRepository;
     private CustomerIntelligenceTool $tool;
 
     protected function setUp(): void
@@ -23,8 +26,9 @@ final class CustomerIntelligenceToolTest extends TestCase
         $this->connection = $this->createMock(Connection::class);
         $this->branchContextService = $this->createMock(BranchContextInterface::class);
         $this->branchContextService->method('getCurrentBranchId')->willReturn(null);
+        $this->customerRepository = $this->createMock(CustomerRepository::class);
 
-        $this->tool = new CustomerIntelligenceTool($this->connection, $this->branchContextService);
+        $this->tool = new CustomerIntelligenceTool($this->connection, $this->branchContextService, $this->customerRepository);
     }
 
     /**
@@ -32,8 +36,7 @@ final class CustomerIntelligenceToolTest extends TestCase
      */
     public function testNotFoundReturnsError(): void
     {
-        // fetchAssociative for customer lookup returns false
-        $this->connection->method('fetchAssociative')->willReturn(false);
+        $this->customerRepository->method('findOneBy')->willReturn(null);
 
         $result = $this->tool->customerIntelligence('12345678'); // 8-digit DNI not found
 
@@ -46,8 +49,8 @@ final class CustomerIntelligenceToolTest extends TestCase
      */
     public function testNonNumericIdentifierReturnsError(): void
     {
-        // Should not call DB at all for non-numeric input
-        $this->connection->expects(self::never())->method('fetchAssociative');
+        $this->customerRepository->expects(self::never())->method('findOneBy');
+        $this->customerRepository->expects(self::never())->method('find');
 
         $result = $this->tool->customerIntelligence('INVALID-ABC');
 
@@ -188,17 +191,13 @@ final class CustomerIntelligenceToolTest extends TestCase
      */
     private function setupSuccessfulCustomer(string $ruc, string $businessName): void
     {
-        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-            // First call: customer lookup
-            ['id' => 1, 'ruc' => $ruc, 'razon_social' => $businessName],
-            // Second call: stats (one purchase so we don't hit the "not found" early return)
-            [
-                'total_purchases' => 1,
-                'total_spent' => '100.00',
-                'first_purchase_date' => '2025-01-01 00:00:00',
-                'last_purchase_date' => '2025-01-01 00:00:00',
-            ],
-        );
+        $this->customerRepository->method('findOneBy')->willReturn($this->customer($ruc, $businessName));
+        $this->connection->method('fetchAssociative')->willReturn([
+            'total_purchases' => 1,
+            'total_spent' => '100.00',
+            'first_purchase_date' => '2025-01-01 00:00:00',
+            'last_purchase_date' => '2025-01-01 00:00:00',
+        ]);
 
         $this->connection->method('fetchAllAssociative')->willReturn([]);
     }
@@ -214,19 +213,23 @@ final class CustomerIntelligenceToolTest extends TestCase
         string $firstDate,
         string $lastDate,
     ): void {
-        $this->connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-            // First call: customer lookup
-            ['id' => 1, 'ruc' => $ruc, 'razon_social' => $businessName],
-            // Second call: stats
-            [
-                'total_purchases' => $totalPurchases,
-                'total_spent' => $totalSpent,
-                'first_purchase_date' => $firstDate,
-                'last_purchase_date' => $lastDate,
-            ],
-        );
+        $this->customerRepository->method('findOneBy')->willReturn($this->customer($ruc, $businessName));
+        $this->connection->method('fetchAssociative')->willReturn([
+            'total_purchases' => $totalPurchases,
+            'total_spent' => $totalSpent,
+            'first_purchase_date' => $firstDate,
+            'last_purchase_date' => $lastDate,
+        ]);
 
         // Third call: top products
         $this->connection->method('fetchAllAssociative')->willReturn([]);
+    }
+
+    private function customer(string $ruc, string $businessName): Customer
+    {
+        $customer = (new Customer())->setRuc($ruc)->setBusinessName($businessName);
+        (new \ReflectionProperty(Customer::class, 'id'))->setValue($customer, 1);
+
+        return $customer;
     }
 }

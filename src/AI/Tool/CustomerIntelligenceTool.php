@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use App\AI\Context\BranchContextInterface;
+use App\Contacts\Entity\Customer;
+use App\Contacts\Repository\CustomerRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
@@ -22,6 +24,7 @@ final readonly class CustomerIntelligenceTool
     public function __construct(
         private Connection $connection,
         private BranchContextInterface $branchContextService,
+        private CustomerRepository $customerRepository,
     ) {}
 
     /**
@@ -52,7 +55,7 @@ final readonly class CustomerIntelligenceTool
             return ['error' => 'Cliente no encontrado'];
         }
 
-        $customerId = (int) $customer['id'];
+        $customerId = (int) $customer->getId();
         $branchId = $this->branchContextService->getCurrentBranchId();
 
         // Build branch filter
@@ -131,12 +134,12 @@ final readonly class CustomerIntelligenceTool
         $frequency = $this->classifyFrequency($totalPurchases, $firstPurchaseDate, $lastPurchaseDate);
 
         // Document type detection
-        $ruc = (string) $customer['ruc'];
+        $ruc = $customer->getRuc();
         $documentType = $this->detectDocumentType($ruc);
 
         return [
             'customer_id' => $customerId,
-            'name' => (string) $customer['razon_social'],
+            'name' => $customer->getBusinessName(),
             'document_type' => $documentType,
             'document_number' => $ruc,
             'total_purchases' => $totalPurchases,
@@ -150,10 +153,7 @@ final readonly class CustomerIntelligenceTool
         ];
     }
 
-    /**
-     * @return array{id: string|int, ruc: string, razon_social: string}|null
-     */
-    private function resolveCustomer(string $identifier): ?array
+    private function resolveCustomer(string $identifier): ?Customer
     {
         // Numeric-only identifier
         if (!preg_match('/^\d+$/', $identifier)) {
@@ -164,25 +164,14 @@ final readonly class CustomerIntelligenceTool
 
         if ($len === 11) {
             // RUC
-            /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1', [
-                'ruc' => $identifier,
-            ]);
+            return $this->customerRepository->findOneBy(['ruc' => $identifier]);
         } elseif ($len === 8) {
             // DNI
-            /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE ruc = :ruc LIMIT 1', [
-                'ruc' => $identifier,
-            ]);
+            return $this->customerRepository->findOneBy(['ruc' => $identifier]);
         } else {
             // Numeric ID
-            /** @var array{id: string|int, ruc: string, razon_social: string}|false $row */
-            $row = $this->connection->fetchAssociative('SELECT id, ruc, razon_social FROM cliente WHERE id = :id LIMIT 1', [
-                'id' => (int) $identifier,
-            ]);
+            return $this->customerRepository->find((int) $identifier);
         }
-
-        return $row !== false ? $row : null;
     }
 
     private function detectDocumentType(string $ruc): string

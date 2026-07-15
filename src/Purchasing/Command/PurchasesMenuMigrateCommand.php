@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Purchasing\Command;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class PurchasesMenuMigrateCommand extends PerTenantCommand
 {
     public function __construct(
-        private readonly Connection $connection,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -40,7 +40,10 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
 
-        $count = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM menu WHERE route = 'inbound'");
+        $count = (int) $this->entityManager
+            ->createQuery('SELECT COUNT(m.id) FROM App\\Settings\\Entity\\Menu m WHERE m.route = :route')
+            ->setParameter('route', 'inbound')
+            ->getSingleScalarResult();
 
         if ($dryRun) {
             $io->note(sprintf('Rows to update: %d', $count));
@@ -54,12 +57,18 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
             return Command::SUCCESS;
         }
 
-        $updated = $this->connection->executeStatement(<<<'SQL'
-            UPDATE menu
-            SET route = 'purchases',
-                key_name = CASE WHEN key_name = 'Ingresos' THEN 'Compras' ELSE key_name END
-            WHERE route = 'inbound'
-            SQL);
+        $updated = $this->entityManager
+            ->createQuery(<<<'DQL'
+                UPDATE App\Settings\Entity\Menu m
+                SET m.route = :targetRoute,
+                    m.keyName = CASE WHEN m.keyName = :legacyName THEN :targetName ELSE m.keyName END
+                WHERE m.route = :legacyRoute
+                DQL)
+            ->setParameter('targetRoute', 'purchases')
+            ->setParameter('legacyName', 'Ingresos')
+            ->setParameter('targetName', 'Compras')
+            ->setParameter('legacyRoute', 'inbound')
+            ->execute();
 
         $io->success(sprintf('Menu migration completed (updated=%d).', $updated));
 

@@ -7,37 +7,37 @@ namespace App\Tests\Identity\Repository;
 use App\Identity\Entity\UserNotification;
 use App\Identity\Repository\UserNotificationRepository;
 use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for UserNotificationRepository::existsUnreadForUserAndType.
  *
- * The method uses DBAL fetchOne under the hood, so we stub the DBAL
- * Connection only — no ORM QueryBuilder / AbstractQuery involved.
+ * The method uses DQL and returns a scalar count.
  */
 final class UserNotificationRepositoryTest extends TestCase
 {
     // ── helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Build a repository wired to a Connection that returns $fetchOneResult
-     * from fetchOne().
+     * Build a repository wired to a DQL query that returns $count.
      */
-    private function buildRepository(int|string $fetchOneResult): UserNotificationRepository
+    private function buildRepository(int|string $count): UserNotificationRepository
     {
         $classMetadata = $this->createStub(ClassMetadata::class);
         $classMetadata->name = UserNotification::class;
 
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn($fetchOneResult);
+        $query = $this->createStub(Query::class);
+        $query->method('getSingleScalarResult')->willReturn($count);
+
+        $query->method('setParameter')->willReturnSelf();
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getClassMetadata')->willReturn($classMetadata);
-        $entityManager->method('getConnection')->willReturn($connection);
+        $entityManager->method('createQuery')->willReturn($query);
 
         $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getManagerForClass')->with(UserNotification::class)->willReturn($entityManager);
@@ -107,7 +107,7 @@ final class UserNotificationRepositoryTest extends TestCase
         ));
     }
 
-    public function testFetchOneReceivesCorrectParameters(): void
+    public function testDqlQueryReceivesCorrectParameters(): void
     {
         $classMetadata = $this->createStub(ClassMetadata::class);
         $classMetadata->name = UserNotification::class;
@@ -116,30 +116,64 @@ final class UserNotificationRepositoryTest extends TestCase
         $type = 'stock_low';
         $since = new DateTimeImmutable('-24 hours');
 
-        $connection = $this->createMock(Connection::class);
-        $connection
-            ->expects(self::once())
-            ->method('fetchOne')
-            ->with(
-                self::stringContains('user_notification'),
-                self::callback(static function (array $params) use ($userId, $type, $since): bool {
-                    return (
-                        $params[0] === $userId
-                        && $params[1] === $type
-                        && $params[2] === $since->format('Y-m-d H:i:s')
-                    );
-                }),
-            )
-            ->willReturn(0);
+        $query = $this->createMock(Query::class);
+        $query->method('getSingleScalarResult')->willReturn('0');
+
+        $query
+            ->expects(self::exactly(3))
+            ->method('setParameter')
+            ->willReturnCallback(static function (string $name, mixed $value) use ($query, $userId, $type, $since): Query {
+                self::assertSame(match ($name) {
+                    'userId' => $userId,
+                    'type' => $type,
+                    'since' => $since,
+                }, $value);
+
+                return $query;
+            });
 
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getClassMetadata')->willReturn($classMetadata);
-        $entityManager->method('getConnection')->willReturn($connection);
+        $entityManager->method('createQuery')->willReturn($query);
 
         $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getManagerForClass')->with(UserNotification::class)->willReturn($entityManager);
 
         $repo = new UserNotificationRepository($registry);
         $repo->existsUnreadForUserAndType($userId, $type, $since);
+    }
+
+    public function testMarkAllUnreadAsReadExecutesBulkDqlUpdate(): void
+    {
+        $classMetadata = $this->createStub(ClassMetadata::class);
+        $classMetadata->name = UserNotification::class;
+        $readAt = new DateTimeImmutable();
+
+        $query = $this->createMock(Query::class);
+        $query
+            ->expects(self::exactly(2))
+            ->method('setParameter')
+            ->willReturnCallback(static function (string $name, mixed $value) use ($query, $readAt): Query {
+                self::assertSame(match ($name) {
+                    'readAt' => $readAt,
+                    'userId' => 42,
+                }, $value);
+
+                return $query;
+            });
+        $query->expects(self::once())->method('execute');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getClassMetadata')->willReturn($classMetadata);
+        $entityManager
+            ->expects(self::once())
+            ->method('createQuery')
+            ->with(self::stringContains('UPDATE App\\Identity\\Entity\\UserNotification'))
+            ->willReturn($query);
+
+        $registry = $this->createMock(ManagerRegistry::class);
+        $registry->method('getManagerForClass')->with(UserNotification::class)->willReturn($entityManager);
+
+        (new UserNotificationRepository($registry))->markAllUnreadAsRead(42, $readAt);
     }
 }

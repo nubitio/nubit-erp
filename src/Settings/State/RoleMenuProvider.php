@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Settings\Dto\RoleMenuDto;
 use App\Settings\Dto\RoleMenuItemDto;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use App\Settings\Entity\Menu;
+use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
 /**
@@ -18,54 +18,52 @@ use Override;
 readonly class RoleMenuProvider implements ProviderInterface
 {
     public function __construct(
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     /**
      * @inheritdoc
-     * @throws Exception
      */
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $roleId = $uriVariables['role_id'];
+        $roleId = (int) $uriVariables['role_id'];
 
-        $result = $this->connection->fetchAllAssociative('SELECT
-                m.id as menu_id,
-                m.key_name AS descripcion,
-                m.parent_id,
-                IFNULL(mr.menu_id, 0) AS checked
-            FROM
-                menu m
-                LEFT JOIN menu_rol mr ON m.id = mr.menu_id AND mr.role_id = ?
-            ORDER BY
-                m.id,
-                m.order_index', [$roleId]);
+        /** @var list<Menu> $menus */
+        $menus = $this->entityManager
+            ->createQuery('SELECT m FROM App\\Settings\\Entity\\Menu m ORDER BY m.id, m.orderIndex')
+            ->getResult();
+        $assignedMenuIds = $this->entityManager
+            ->createQuery('SELECT IDENTITY(mr.menu) FROM App\\Settings\\Entity\\MenuRol mr WHERE mr.role = :roleId')
+            ->setParameter('roleId', $roleId)
+            ->getSingleColumnResult();
+        $assigned = array_flip(array_map(intval(...), $assignedMenuIds));
 
         $data = [];
-        $i = 0;
-        foreach ($result as $menu) {
-            if (0 == $menu['parent_id']) {
+        foreach ($menus as $menu) {
+            if ($menu->getParent() === null) {
                 $submenu = [];
-                $j = 0;
-                foreach ($result as $option) {
-                    if ($menu['menu_id'] == $option['parent_id']) {
-                        $submenu[$j] = new RoleMenuItemDto(
-                            id: intval($option['menu_id']),
-                            text: $option['descripcion'],
-                            selected: (bool) $option['checked'],
+                $menuId = $menu->getId();
+                if ($menuId === null) {
+                    continue;
+                }
+
+                foreach ($menus as $option) {
+                    if ($option->getParent()?->getId() === $menuId && $option->getId() !== null) {
+                        $submenu[] = new RoleMenuItemDto(
+                            id: $option->getId(),
+                            text: $option->getKeyName(),
+                            selected: array_key_exists($option->getId(), $assigned),
                         );
-                        ++$j;
                     }
                 }
 
-                $data[$i] = new RoleMenuDto(
-                    id: intval($menu['menu_id']),
-                    text: $menu['descripcion'],
+                $data[] = new RoleMenuDto(
+                    id: $menuId,
+                    text: $menu->getKeyName(),
                     items: $submenu,
-                    selected: $menu['checked'] === true || $menu['checked'] === 1 || $menu['checked'] === '1',
+                    selected: array_key_exists($menuId, $assigned),
                 );
-                ++$i;
             }
         }
 

@@ -6,14 +6,14 @@ namespace App\Efact\Service;
 
 use App\Efact\Config\EfactConstants;
 use App\Efact\Filesystem\S3UrlResolver;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use App\Organization\Entity\Company;
+use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 
 readonly class LogoProvider
 {
     public function __construct(
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
         private S3UrlResolver $s3UrlResolver,
         private TenantContext $tenantContext,
     ) {}
@@ -25,28 +25,23 @@ readonly class LogoProvider
         }
 
         try {
-            $company = $this->connection->fetchAssociative('SELECT logo FROM empresa LIMIT 1');
-        } catch (Exception) {
+            $company = $this->entityManager
+                ->createQuery(<<<'DQL'
+                    SELECT c, logo
+                    FROM App\Organization\Entity\Company c
+                    LEFT JOIN FETCH c.logo logo
+                    DQL)
+                ->setMaxResults(1)
+                ->getOneOrNullResult();
+        } catch (\Throwable) {
             return '';
         }
 
-        if (!$company) {
+        if (!$company instanceof Company || $company->getLogo() === null) {
             return '';
         }
 
-        try {
-            $media = $this->connection->fetchAssociative('SELECT path FROM media WHERE id = :id', [
-                'id' => $company['logo'],
-            ]);
-        } catch (Exception) {
-            return '';
-        }
-
-        if (!$media) {
-            return '';
-        }
-
-        $path = $this->tenantContext->getTenantName() . '/' . EfactConstants::IMAGE_DIR . '/' . $media['path'];
+        $path = $this->tenantContext->getTenantName() . '/' . EfactConstants::IMAGE_DIR . '/' . $company->getLogo()->getPath();
 
         return $this->s3UrlResolver->resolve($path);
     }

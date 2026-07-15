@@ -7,7 +7,8 @@ namespace App\AI\Service;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Doctrine\DBAL\Connection;
+use App\CashRegister\Entity\CashSession;
+use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\Platform\Tenant\Context\TenantContext;
@@ -30,7 +31,7 @@ final readonly class SessionContextBuilder
         private Security $security,
         private JWTManager $jwtManager,
         private TenantContext $tenantContext,
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     public function build(): string
@@ -98,29 +99,27 @@ final readonly class SessionContextBuilder
         }
 
         try {
-            $row = $this->connection->fetchAssociative(
-                <<<'SQL'
-                    SELECT cash_register_id, status
-                    FROM cash_sessions
-                    WHERE branch_id = :branch_id
-                    ORDER BY
-                        CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-                        opened_at DESC
-                    LIMIT 1
-                    SQL,
-                ['branch_id' => $branchId],
-            );
+            $session = $this->entityManager
+                ->createQuery(<<<'DQL'
+                    SELECT cs
+                    FROM App\CashRegister\Entity\CashSession cs
+                    WHERE cs.branch = :branchId
+                    ORDER BY CASE WHEN cs.status = 'OPEN' THEN 0 ELSE 1 END, cs.openedAt DESC
+                    DQL)
+                ->setParameter('branchId', $branchId)
+                ->setMaxResults(1)
+                ->getOneOrNullResult();
         } catch (Throwable) {
             return [null, 'NONE'];
         }
 
-        if ($row === false) {
+        if (!$session instanceof CashSession) {
             return [null, 'NONE'];
         }
 
-        $cashRegisterId = $row['cash_register_id'] !== null ? (string) $row['cash_register_id'] : null;
-        $status = (string) ($row['status'] ?? 'CLOSED');
+        $cashRegisterId = $session->getCashRegister()->getId();
+        $status = $session->getStatus();
 
-        return [$cashRegisterId, $status];
+        return [$cashRegisterId !== null ? (string) $cashRegisterId : null, $status];
     }
 }

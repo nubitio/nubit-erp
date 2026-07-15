@@ -172,12 +172,17 @@ readonly class SaleProcessor implements ProcessorInterface
             // cash_shift row here would let the sale proceed past this guard and then fail later
             // with a cryptic "Sales V2 write failed" error when the resolver can't find a session.
             if ($requireOpenSession) {
-                $conn = $this->entityManager->getConnection();
-
                 $hasOpenSession =
-                    (bool) $conn->fetchOne("SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1", [
-                        $user->userId,
-                    ]);
+                    (int) $this->entityManager
+                        ->createQuery(<<<'DQL'
+                            SELECT COUNT(cs.id)
+                            FROM App\CashRegister\Entity\CashSession cs
+                            WHERE cs.openedBy = :userId
+                              AND cs.status = :status
+                            DQL)
+                        ->setParameter('userId', $user->userId)
+                        ->setParameter('status', 'OPEN')
+                        ->getSingleScalarResult() > 0;
 
                 if (!$hasOpenSession) {
                     $this->logger->warning('Sale processing failed: No open cash session found', [

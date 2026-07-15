@@ -7,9 +7,10 @@ namespace App\Identity\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Identity\ApiResource\RolePermissionResource;
+use App\Identity\Entity\Role;
+use App\Identity\Entity\RolePermission;
 use App\Identity\Security\PermissionCatalog;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Nubit\Platform\Http\ApiResponse;
 use Override;
@@ -24,13 +25,12 @@ use Override;
 readonly class RolePermissionProcessor implements ProcessorInterface
 {
     public function __construct(
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     /**
      * @inheritdoc
      *
-     * @throws Exception
      */
     #[Override]
     public function process(
@@ -46,24 +46,29 @@ readonly class RolePermissionProcessor implements ProcessorInterface
         $roleId = $data->roleId;
         $permissions = array_values(array_unique(array_filter($data->permissions, PermissionCatalog::isValid(...))));
 
-        $this->connection->beginTransaction();
+        $connection = $this->entityManager->getConnection();
+        $connection->beginTransaction();
         try {
-            $this->connection->executeStatement('DELETE FROM role_permission WHERE role_id = :roleId', [
-                'roleId' => $roleId,
-            ]);
+            $this->entityManager
+                ->createQuery('DELETE FROM App\\Identity\\Entity\\RolePermission rp WHERE rp.role = :roleId')
+                ->setParameter('roleId', $roleId)
+                ->execute();
 
+            $role = $this->entityManager->getReference(Role::class, $roleId);
             foreach ($permissions as $permission) {
-                $this->connection->executeStatement('INSERT INTO role_permission (role_id, permission) VALUES (:roleId, :permission)', [
-                    'roleId' => $roleId,
-                    'permission' => $permission,
-                ]);
+                $this->entityManager->persist(
+                    (new RolePermission())
+                        ->setRole($role)
+                        ->setPermission($permission),
+                );
             }
 
-            $this->connection->commit();
+            $this->entityManager->flush();
+            $connection->commit();
 
             return new ApiResponse(success: true, message: 'Permisos asignados correctamente');
-        } catch (Exception) {
-            $this->connection->rollBack();
+        } catch (\Throwable) {
+            $connection->rollBack();
 
             return new ApiResponse(success: false, message: 'Error al asignar permisos');
         }

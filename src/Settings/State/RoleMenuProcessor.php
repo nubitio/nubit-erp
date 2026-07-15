@@ -6,9 +6,11 @@ namespace App\Settings\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Identity\Entity\Role;
 use App\Settings\ApiResource\RoleMenuResource;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use App\Settings\Entity\Menu;
+use App\Settings\Entity\MenuRol;
+use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Http\ApiResponse;
 use Override;
 
@@ -18,7 +20,7 @@ use Override;
 readonly class RoleMenuProcessor implements ProcessorInterface
 {
     public function __construct(
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     /**
@@ -26,7 +28,6 @@ readonly class RoleMenuProcessor implements ProcessorInterface
      *
      * @param RoleMenuResource $data
      *
-     * @throws Exception
      */
     #[Override]
     public function process(
@@ -37,22 +38,29 @@ readonly class RoleMenuProcessor implements ProcessorInterface
     ): ApiResponse {
         $roleId = $data->roleId;
 
-        $this->connection->beginTransaction();
+        $connection = $this->entityManager->getConnection();
+        $connection->beginTransaction();
         try {
-            $this->connection->executeStatement('DELETE FROM menu_rol WHERE role_id = :roleId', ['roleId' => $roleId]);
+            $this->entityManager
+                ->createQuery('DELETE FROM App\\Settings\\Entity\\MenuRol mr WHERE mr.role = :roleId')
+                ->setParameter('roleId', $roleId)
+                ->execute();
 
+            $role = $this->entityManager->getReference(Role::class, $roleId);
             foreach ($data->permissions as $menuId) {
-                $this->connection->executeStatement('INSERT INTO menu_rol (menu_id, role_id) VALUES (:menuId, :roleId)', [
-                    'menuId' => $menuId,
-                    'roleId' => $roleId,
-                ]);
+                $this->entityManager->persist(
+                    (new MenuRol())
+                        ->setMenu($this->entityManager->getReference(Menu::class, $menuId))
+                        ->setRole($role),
+                );
             }
 
-            $this->connection->commit();
+            $this->entityManager->flush();
+            $connection->commit();
 
             return new ApiResponse(success: true, message: 'Permisos asignados correctamente');
-        } catch (Exception) {
-            $this->connection->rollBack();
+        } catch (\Throwable) {
+            $connection->rollBack();
 
             return new ApiResponse(success: false, message: 'Error al asignar permisos');
         }

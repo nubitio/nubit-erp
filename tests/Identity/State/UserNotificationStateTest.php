@@ -6,10 +6,13 @@ namespace App\Tests\Identity\State;
 
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\UserNotification;
+use App\Identity\Repository\UserNotificationRepository;
 use App\Identity\Security\Security;
 use App\Identity\State\UserNotificationProvider;
+use App\Identity\State\UserNotificationReadAllProcessor;
 use App\Identity\State\UserNotificationReadProcessor;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
@@ -115,6 +118,36 @@ final class UserNotificationStateTest extends TestCase
         $result = $processor->process($notification, new Patch(), ['id' => 1]);
 
         self::assertTrue($result->isRead());
+    }
+
+    public function testReadAllProcessorDelegatesBulkUpdateToRepository(): void
+    {
+        $security = $this->createStub(Security::class);
+        $security->method('connectedUser')->willReturn(new AuthUserDto(userId: 7, username: 'admin'));
+
+        $notifications = $this->createMock(UserNotificationRepository::class);
+        $notifications
+            ->expects(self::once())
+            ->method('markAllUnreadAsRead')
+            ->with(7, self::isInstanceOf(\DateTimeImmutable::class));
+
+        $processor = new UserNotificationReadAllProcessor($notifications, $security);
+
+        self::assertNull($processor->process(null, new Post()));
+    }
+
+    public function testReadAllProcessorThrowsWhenUnauthenticated(): void
+    {
+        $security = $this->createStub(Security::class);
+        $security->method('connectedUser')->willReturn(null);
+
+        $notifications = $this->createMock(UserNotificationRepository::class);
+        $notifications->expects(self::never())->method('markAllUnreadAsRead');
+
+        $processor = new UserNotificationReadAllProcessor($notifications, $security);
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $processor->process(null, new Post());
     }
 
     // ── UserNotificationProvider ──────────────────────────────────────────────

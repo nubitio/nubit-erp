@@ -7,7 +7,6 @@ namespace App\Identity\Repository;
 use App\Identity\Entity\UserNotification;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -29,26 +28,37 @@ class UserNotificationRepository extends ServiceEntityRepository
      * Returns true when an unread notification of the given type already exists
      * for the given user, created at or after $since.
      *
-     * Uses raw DBAL (not ORM) so the query can be tested with a simple
-     * Connection mock and is consistent with UserNotificationService's pattern.
-     *
      * Used by GenerateStockNotificationsCommand to deduplicate stock_low
      * notifications within a 24-hour sliding window.
-     *
-     * @throws DbalException
      */
     public function existsUnreadForUserAndType(int $userId, string $type, DateTimeImmutable $since): bool
     {
-        $count = (int) $this
-            ->getEntityManager()
-            ->getConnection()
-            ->fetchOne('SELECT COUNT(*) FROM user_notification
-                  WHERE user_id = ? AND type = ? AND read_at IS NULL AND created_at >= ?', [
-                $userId,
-                $type,
-                $since->format('Y-m-d H:i:s'),
-            ]);
+        return (int) $this->getEntityManager()
+            ->createQuery(<<<'DQL'
+                SELECT COUNT(n.id)
+                FROM App\Identity\Entity\UserNotification n
+                WHERE n.userId = :userId
+                  AND n.type = :type
+                  AND n.readAt IS NULL
+                  AND n.createdAt >= :since
+                DQL)
+            ->setParameter('userId', $userId)
+            ->setParameter('type', $type)
+            ->setParameter('since', $since)
+            ->getSingleScalarResult() > 0;
+    }
 
-        return $count > 0;
+    public function markAllUnreadAsRead(int $userId, DateTimeImmutable $readAt): void
+    {
+        $this->getEntityManager()
+            ->createQuery(<<<'DQL'
+                UPDATE App\Identity\Entity\UserNotification n
+                SET n.readAt = :readAt
+                WHERE n.userId = :userId
+                  AND n.readAt IS NULL
+                DQL)
+            ->setParameter('readAt', $readAt)
+            ->setParameter('userId', $userId)
+            ->execute();
     }
 }

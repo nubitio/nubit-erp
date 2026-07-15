@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Settings\Dto\MenuDto;
 use App\Settings\Dto\SubMenuDto;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use App\Settings\Entity\Menu;
+use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
 /**
@@ -18,12 +18,11 @@ use Override;
 readonly class MenuProvider implements ProviderInterface
 {
     public function __construct(
-        private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     /**
      * @inheritdoc
-     * @throws Exception
      */
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
@@ -34,61 +33,61 @@ readonly class MenuProvider implements ProviderInterface
     /**
      * @return iterable<MenuDTO>
      *
-     * @throws Exception
      */
     public function buildMenuForRole(int $roleId): iterable
     {
-        $data = $this->getMenuForRole($roleId);
+        $menus = $this->getMenuForRole($roleId);
 
-        foreach ($data as $parent) {
-            if (0 == $parent['parent_id'] && empty($parent['route'])) {
+        foreach ($menus as $parent) {
+            if ($parent->getParent() === null && $parent->getRoute() === null) {
                 $items = [];
 
-                foreach ($data as $child) {
-                    if ($child['parent_id'] == $parent['id']) {
-                        $items[] = new SubMenuDto($child['key_name'], $child['route']);
+                foreach ($menus as $child) {
+                    if ($child->getParent()?->getId() === $parent->getId()) {
+                        $items[] = new SubMenuDto($child->getKeyName(), $child->getRoute() ?? '');
                     }
                 }
 
-                yield new MenuDto($parent['key_name'], $parent['icon'], '', $items);
-            } elseif (0 == $parent['parent_id'] && !empty($parent['route'])) {
-                yield new MenuDTO($parent['key_name'], $parent['icon'], $parent['route']);
+                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', '', $items);
+            } elseif ($parent->getParent() === null && $parent->getRoute() !== null) {
+                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $parent->getRoute());
             }
         }
     }
 
     /**
-     * @return array<int, array<string, mixed>>
-     *
-     * @throws Exception
+     * @return list<Menu>
      */
     public function getMenuForRole(int $roleId): array
     {
         // Sort by: parent group order → parent before children → child order_index.
-        // COALESCE(p.order_index, m.order_index) places each child under its parent's
-        // group slot; m.parent_id IS NOT NULL puts headings before their children.
+        // The CASE expression places each child under its parent's
+        // group slot; the CASE expression puts headings before their children.
         if (0 === $roleId) {
-            return $this->connection->fetchAllAssociative('
-                    SELECT m.*
-                    FROM menu m
-                    LEFT JOIN menu p ON p.id = m.parent_id
-                    ORDER BY
-                        COALESCE(p.order_index, m.order_index),
-                        m.parent_id IS NOT NULL,
-                        m.order_index
-                ');
+            /** @var list<Menu> */
+            return $this->entityManager
+                ->createQuery(<<<'DQL'
+                    SELECT m
+                    FROM App\Settings\Entity\Menu m
+                    LEFT JOIN m.parent p
+                    ORDER BY CASE WHEN p.id IS NULL THEN m.orderIndex ELSE p.orderIndex END, CASE WHEN m.parent IS NULL THEN 0 ELSE 1 END, m.orderIndex
+                    DQL)
+                ->getResult();
+
         }
 
-        return $this->connection->fetchAllAssociative('
-                    SELECT m.*
-                    FROM menu m
-                    LEFT JOIN menu p ON p.id = m.parent_id
-                        INNER JOIN menu_rol mr ON mr.menu_id = m.id
-                    WHERE mr.role_id = ?
-                    ORDER BY
-                        COALESCE(p.order_index, m.order_index),
-                        m.parent_id IS NOT NULL,
-                        m.order_index
-                ', [$roleId]);
+        /** @var list<Menu> */
+        return $this->entityManager
+            ->createQuery(<<<'DQL'
+                SELECT m
+                FROM App\Settings\Entity\Menu m
+                LEFT JOIN m.parent p
+                INNER JOIN App\Settings\Entity\MenuRol mr WITH mr.menu = m
+                WHERE mr.role = :roleId
+                ORDER BY CASE WHEN p.id IS NULL THEN m.orderIndex ELSE p.orderIndex END, CASE WHEN m.parent IS NULL THEN 0 ELSE 1 END, m.orderIndex
+                DQL)
+            ->setParameter('roleId', $roleId)
+            ->getResult();
+
     }
 }
