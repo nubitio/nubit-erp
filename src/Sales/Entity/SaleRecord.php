@@ -420,8 +420,8 @@ class SaleRecord
     #[ORM\PostLoad]
     public function computeDiscountPercentOnLoad(): void
     {
-        $discountTotal = (float) ($this->discountTotal ?? '0');
-        $subtotal = (float) ($this->subtotal ?? '0');
+        $discountTotal = (float) $this->discountTotal;
+        $subtotal = (float) $this->subtotal;
         $base = $subtotal + $discountTotal;
         if ($base > 0 && $discountTotal > 0) {
             $this->discountPercent = (string) round(($discountTotal / $base) * 100, 4);

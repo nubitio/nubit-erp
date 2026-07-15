@@ -44,7 +44,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): CashRegisterCloseResponseDto {
-        $closureItems = $data->closureItems ?? [];
+        $closureItems = $data->closureItems;
         $notes = [];
 
         if (!empty($closureItems)) {

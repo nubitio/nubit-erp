@@ -80,7 +80,7 @@ final class FeatureKernelListener
 
             return [
                 \is_object($classOrObject) ? $classOrObject::class : $classOrObject,
-                \is_string($method) ? $method : null,
+                $method,
             ];
         }
 

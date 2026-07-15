@@ -133,7 +133,7 @@ final class UserNotificationStateTest extends TestCase
 
         $processor = new UserNotificationReadAllProcessor($notifications, $security);
 
-        self::assertNull($processor->process(null, new Post()));
+        $processor->process(null, new Post());
     }
 
     public function testReadAllProcessorThrowsWhenUnauthenticated(): void
