@@ -66,15 +66,12 @@ readonly class MenuProvider implements ProviderInterface
         // group slot; the CASE expression puts headings before their children.
         if (0 === $roleId) {
             /** @var list<Menu> */
-            return $this->entityManager
-                ->createQuery(<<<'DQL'
-                    SELECT m
-                    FROM App\Settings\Entity\Menu m
-                    LEFT JOIN m.parent p
-                    ORDER BY CASE WHEN p.id IS NULL THEN m.orderIndex ELSE p.orderIndex END, CASE WHEN m.parent IS NULL THEN 0 ELSE 1 END, m.orderIndex
-                    DQL)
-                ->getResult();
-
+            return $this->entityManager->createQuery(<<<'DQL'
+                SELECT m
+                FROM App\Settings\Entity\Menu m
+                LEFT JOIN m.parent p
+                ORDER BY CASE WHEN p.id IS NULL THEN m.orderIndex ELSE p.orderIndex END, CASE WHEN m.parent IS NULL THEN 0 ELSE 1 END, m.orderIndex
+                DQL)->getResult();
         }
 
         /** @var list<Menu> */
@@ -89,6 +86,5 @@ readonly class MenuProvider implements ProviderInterface
                 DQL)
             ->setParameter('roleId', $roleId)
             ->getResult();
-
     }
 }

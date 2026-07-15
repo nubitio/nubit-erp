@@ -34,7 +34,7 @@ final class RoleMenuProviderTest extends TestCase
             ->method('createQuery')
             ->willReturnOnConsecutiveCalls($menus, $assignments);
 
-        $result = (new RoleMenuProvider($entityManager))->provide(new GetCollection(), ['role_id' => '3']);
+        $result = new RoleMenuProvider($entityManager)->provide(new GetCollection(), ['role_id' => '3']);
 
         static::assertIsArray($result);
         static::assertCount(2, $result);
@@ -54,8 +54,11 @@ final class RoleMenuProviderTest extends TestCase
 
     private function menu(int $id, string $name, ?Menu $parent = null): Menu
     {
-        $menu = (new Menu())->setKeyName($name)->setType('menu')->setParent($parent);
-        (new \ReflectionProperty(Menu::class, 'id'))->setValue($menu, $id);
+        $menu = new Menu()
+            ->setKeyName($name)
+            ->setType('menu')
+            ->setParent($parent);
+        new \ReflectionProperty(Menu::class, 'id')->setValue($menu, $id);
 
         return $menu;
     }

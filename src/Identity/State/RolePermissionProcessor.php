@@ -61,7 +61,7 @@ readonly class RolePermissionProcessor implements ProcessorInterface
 
             foreach ($permissions as $permission) {
                 $this->entityManager->persist(
-                    (new RolePermission())
+                    new RolePermission()
                         ->setRole($role)
                         ->setPermission($permission),
                 );

@@ -69,10 +69,7 @@ final class ImpersonationApiController extends AbstractController
                         'impersonatedBy' => $admin,
                     ]);
                 },
-                new TenantRuntimeActor(
-                    actorIdentifier: $admin,
-                    channel: 'control_plane_impersonation',
-                ),
+                new TenantRuntimeActor(actorIdentifier: $admin, channel: 'control_plane_impersonation'),
             );
         } catch (UserNotFoundException) {
             return $this->json(['error' => 'User not found in tenant'], Response::HTTP_NOT_FOUND);
@@ -80,11 +77,16 @@ final class ImpersonationApiController extends AbstractController
             return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
-        $this->auditLogger->log('user.impersonate', [
-            'tenant_id' => $id,
-            'tenant_name' => (string) $tenant['name'],
-            'target_username' => $username,
-        ], $id, $admin);
+        $this->auditLogger->log(
+            'user.impersonate',
+            [
+                'tenant_id' => $id,
+                'tenant_name' => (string) $tenant['name'],
+                'target_username' => $username,
+            ],
+            $id,
+            $admin,
+        );
 
         return $this->json([
             'ok' => true,

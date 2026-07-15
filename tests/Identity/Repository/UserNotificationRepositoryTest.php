@@ -122,13 +122,21 @@ final class UserNotificationRepositoryTest extends TestCase
         $query
             ->expects(self::exactly(3))
             ->method('setParameter')
-            ->willReturnCallback(static function (string $name, mixed $value) use ($query, $userId, $type, $since): Query {
-                self::assertSame(match ($name) {
-                    'userId' => $userId,
-                    'type' => $type,
-                    'since' => $since,
-                    default => throw new \LogicException('Unexpected query parameter.'),
-                }, $value);
+            ->willReturnCallback(static function (string $name, mixed $value) use (
+                $query,
+                $userId,
+                $type,
+                $since,
+            ): Query {
+                self::assertSame(
+                    match ($name) {
+                        'userId' => $userId,
+                        'type' => $type,
+                        'since' => $since,
+                        default => throw new \LogicException('Unexpected query parameter.'),
+                    },
+                    $value,
+                );
 
                 return $query;
             });
@@ -155,11 +163,14 @@ final class UserNotificationRepositoryTest extends TestCase
             ->expects(self::exactly(2))
             ->method('setParameter')
             ->willReturnCallback(static function (string $name, mixed $value) use ($query, $readAt): Query {
-                self::assertSame(match ($name) {
-                    'readAt' => $readAt,
-                    'userId' => 42,
-                    default => throw new \LogicException('Unexpected query parameter.'),
-                }, $value);
+                self::assertSame(
+                    match ($name) {
+                        'readAt' => $readAt,
+                        'userId' => 42,
+                        default => throw new \LogicException('Unexpected query parameter.'),
+                    },
+                    $value,
+                );
 
                 return $query;
             });
@@ -176,6 +187,6 @@ final class UserNotificationRepositoryTest extends TestCase
         $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getManagerForClass')->with(UserNotification::class)->willReturn($entityManager);
 
-        (new UserNotificationRepository($registry))->markAllUnreadAsRead(42, $readAt);
+        new UserNotificationRepository($registry)->markAllUnreadAsRead(42, $readAt);
     }
 }

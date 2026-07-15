@@ -28,7 +28,11 @@ final class CustomerIntelligenceToolTest extends TestCase
         $this->branchContextService->method('getCurrentBranchId')->willReturn(null);
         $this->customerRepository = $this->createMock(CustomerRepository::class);
 
-        $this->tool = new CustomerIntelligenceTool($this->connection, $this->branchContextService, $this->customerRepository);
+        $this->tool = new CustomerIntelligenceTool(
+            $this->connection,
+            $this->branchContextService,
+            $this->customerRepository,
+        );
     }
 
     /**
@@ -192,12 +196,14 @@ final class CustomerIntelligenceToolTest extends TestCase
     private function setupSuccessfulCustomer(string $ruc, string $businessName): void
     {
         $this->customerRepository->method('findOneBy')->willReturn($this->customer($ruc, $businessName));
-        $this->connection->method('fetchAssociative')->willReturn([
-            'total_purchases' => 1,
-            'total_spent' => '100.00',
-            'first_purchase_date' => '2025-01-01 00:00:00',
-            'last_purchase_date' => '2025-01-01 00:00:00',
-        ]);
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'total_purchases' => 1,
+                'total_spent' => '100.00',
+                'first_purchase_date' => '2025-01-01 00:00:00',
+                'last_purchase_date' => '2025-01-01 00:00:00',
+            ]);
 
         $this->connection->method('fetchAllAssociative')->willReturn([]);
     }
@@ -214,12 +220,14 @@ final class CustomerIntelligenceToolTest extends TestCase
         string $lastDate,
     ): void {
         $this->customerRepository->method('findOneBy')->willReturn($this->customer($ruc, $businessName));
-        $this->connection->method('fetchAssociative')->willReturn([
-            'total_purchases' => $totalPurchases,
-            'total_spent' => $totalSpent,
-            'first_purchase_date' => $firstDate,
-            'last_purchase_date' => $lastDate,
-        ]);
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn([
+                'total_purchases' => $totalPurchases,
+                'total_spent' => $totalSpent,
+                'first_purchase_date' => $firstDate,
+                'last_purchase_date' => $lastDate,
+            ]);
 
         // Third call: top products
         $this->connection->method('fetchAllAssociative')->willReturn([]);
@@ -227,8 +235,10 @@ final class CustomerIntelligenceToolTest extends TestCase
 
     private function customer(string $ruc, string $businessName): Customer
     {
-        $customer = (new Customer())->setRuc($ruc)->setBusinessName($businessName);
-        (new \ReflectionProperty(Customer::class, 'id'))->setValue($customer, 1);
+        $customer = new Customer()
+            ->setRuc($ruc)
+            ->setBusinessName($businessName);
+        new \ReflectionProperty(Customer::class, 'id')->setValue($customer, 1);
 
         return $customer;
     }

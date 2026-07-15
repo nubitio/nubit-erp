@@ -28,7 +28,7 @@ final class MenuProviderTest extends TestCase
             ->with(static::stringContains('LEFT JOIN m.parent p'))
             ->willReturn($query);
 
-        $result = iterator_to_array((new MenuProvider($entityManager))->buildMenuForRole(0));
+        $result = iterator_to_array(new MenuProvider($entityManager)->buildMenuForRole(0));
 
         static::assertCount(2, $result);
         static::assertSame('Ventas', $result[0]->text);
@@ -49,17 +49,17 @@ final class MenuProviderTest extends TestCase
             ->with(static::stringContains('INNER JOIN App\\Settings\\Entity\\MenuRol mr WITH mr.menu = m'))
             ->willReturn($query);
 
-        static::assertSame([], (new MenuProvider($entityManager))->getMenuForRole(4));
+        static::assertSame([], new MenuProvider($entityManager)->getMenuForRole(4));
     }
 
     private function menu(int $id, string $name, ?string $route, ?Menu $parent): Menu
     {
-        $menu = (new Menu())
+        $menu = new Menu()
             ->setKeyName($name)
             ->setType('menu')
             ->setRoute($route)
             ->setParent($parent);
-        (new \ReflectionProperty(Menu::class, 'id'))->setValue($menu, $id);
+        new \ReflectionProperty(Menu::class, 'id')->setValue($menu, $id);
 
         return $menu;
     }

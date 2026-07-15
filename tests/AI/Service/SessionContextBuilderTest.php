@@ -30,7 +30,7 @@ final class SessionContextBuilderTest extends TestCase
 
         $builder = new SessionContextBuilder(
             $this->createStub(Security::class),
-            (new \ReflectionClass(JWTManager::class))->newInstanceWithoutConstructor(),
+            new \ReflectionClass(JWTManager::class)->newInstanceWithoutConstructor(),
             $this->createStub(TenantContext::class),
             $entityManager,
         );

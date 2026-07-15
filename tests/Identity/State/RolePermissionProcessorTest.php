@@ -24,11 +24,7 @@ final class RolePermissionProcessorTest extends TestCase
         $connection->expects(self::never())->method('rollBack');
 
         $delete = $this->createMock(Query::class);
-        $delete
-            ->expects(self::once())
-            ->method('setParameter')
-            ->with('roleId', 5)
-            ->willReturnSelf();
+        $delete->expects(self::once())->method('setParameter')->with('roleId', 5)->willReturnSelf();
         $delete->expects(self::once())->method('execute');
 
         $role = new Role();
@@ -43,14 +39,16 @@ final class RolePermissionProcessorTest extends TestCase
         $entityManager
             ->expects(self::exactly(2))
             ->method('persist')
-            ->with(static::callback(static fn (RolePermission $permission): bool => $permission->getRole() === $role));
+            ->with(static::callback(static fn(RolePermission $permission): bool => $permission->getRole() === $role));
         $entityManager->expects(self::once())->method('flush');
 
         $processor = new RolePermissionProcessor($entityManager);
-        $response = $processor->process(
-            new RolePermissionResource(5, ['sales.view', 'sales.view', 'not.allowed', 'cash.open']),
-            new Post(),
-        );
+        $response = $processor->process(new RolePermissionResource(5, [
+            'sales.view',
+            'sales.view',
+            'not.allowed',
+            'cash.open',
+        ]), new Post());
 
         static::assertTrue($response->success);
     }

@@ -40,17 +40,16 @@ final class RoleMenuProcessorTest extends TestCase
         $entityManager
             ->expects(static::exactly(3))
             ->method('getReference')
-            ->willReturnCallback(static fn (string $class): Role|Menu => $class === Role::class ? $role : $menu);
+            ->willReturnCallback(static fn(string $class): Role|Menu => $class === Role::class ? $role : $menu);
         $entityManager
             ->expects(static::exactly(2))
             ->method('persist')
-            ->with(static::callback(static fn (MenuRol $menuRole): bool => $menuRole->getRole() === $role && $menuRole->getMenu() === $menu));
+            ->with(static::callback(
+                static fn(MenuRol $menuRole): bool => $menuRole->getRole() === $role && $menuRole->getMenu() === $menu,
+            ));
         $entityManager->expects(static::once())->method('flush');
 
-        $response = (new RoleMenuProcessor($entityManager))->process(
-            new RoleMenuResource(5, [10, 20]),
-            new Post(),
-        );
+        $response = new RoleMenuProcessor($entityManager)->process(new RoleMenuResource(5, [10, 20]), new Post());
 
         static::assertTrue($response->success);
     }
@@ -71,7 +70,7 @@ final class RoleMenuProcessorTest extends TestCase
         $entityManager->method('createQuery')->willReturn($delete);
         $entityManager->expects(static::never())->method('persist');
 
-        $response = (new RoleMenuProcessor($entityManager))->process(new RoleMenuResource(5, [10]), new Post());
+        $response = new RoleMenuProcessor($entityManager)->process(new RoleMenuResource(5, [10]), new Post());
 
         static::assertFalse($response->success);
     }

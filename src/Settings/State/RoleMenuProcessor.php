@@ -58,7 +58,7 @@ readonly class RoleMenuProcessor implements ProcessorInterface
                 }
 
                 $this->entityManager->persist(
-                    (new MenuRol())
+                    new MenuRol()
                         ->setMenu($menu)
                         ->setRole($role),
                 );

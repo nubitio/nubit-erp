@@ -33,24 +33,28 @@ class UserNotificationRepository extends ServiceEntityRepository
      */
     public function existsUnreadForUserAndType(int $userId, string $type, DateTimeImmutable $since): bool
     {
-        return (int) $this->getEntityManager()
-            ->createQuery(<<<'DQL'
-                SELECT COUNT(n.id)
-                FROM App\Identity\Entity\UserNotification n
-                WHERE n.userId = :userId
-                  AND n.type = :type
-                  AND n.readAt IS NULL
-                  AND n.createdAt >= :since
-                DQL)
-            ->setParameter('userId', $userId)
-            ->setParameter('type', $type)
-            ->setParameter('since', $since)
-            ->getSingleScalarResult() > 0;
+        return (
+            (int) $this
+                ->getEntityManager()
+                ->createQuery(<<<'DQL'
+                    SELECT COUNT(n.id)
+                    FROM App\Identity\Entity\UserNotification n
+                    WHERE n.userId = :userId
+                      AND n.type = :type
+                      AND n.readAt IS NULL
+                      AND n.createdAt >= :since
+                    DQL)
+                ->setParameter('userId', $userId)
+                ->setParameter('type', $type)
+                ->setParameter('since', $since)
+                ->getSingleScalarResult() > 0
+        );
     }
 
     public function markAllUnreadAsRead(int $userId, DateTimeImmutable $readAt): void
     {
-        $this->getEntityManager()
+        $this
+            ->getEntityManager()
             ->createQuery(<<<'DQL'
                 UPDATE App\Identity\Entity\UserNotification n
                 SET n.readAt = :readAt

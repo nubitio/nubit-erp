@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\AI\Service;
 
+use App\CashRegister\Entity\CashSession;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use App\CashRegister\Entity\CashSession;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;

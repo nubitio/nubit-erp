@@ -52,7 +52,8 @@ final class ImpersonationApiControllerTest extends OperatorApiTestCase
         $tokenGenerator = new TokenGenerator($jwtManager, $claimsProvider, $refreshTokenStore, 900, 604800);
 
         $auditLogger = $this->createMock(AuditLogger::class);
-        $auditLogger->expects($this->once())
+        $auditLogger
+            ->expects($this->once())
             ->method('log')
             ->with('user.impersonate', $this->arrayHasKey('target_username'), 5, 'root');
 
@@ -66,11 +67,9 @@ final class ImpersonationApiControllerTest extends OperatorApiTestCase
         $this->setControllerContainer($controller);
         $this->authenticateAs('root');
 
-        $request = Request::create(
-            '/api/control-plane/tenants/5/impersonate',
-            'POST',
-            content: json_encode(['username' => 'jdoe'], JSON_THROW_ON_ERROR),
-        );
+        $request = Request::create('/api/control-plane/tenants/5/impersonate', 'POST', content: json_encode([
+            'username' => 'jdoe',
+        ], JSON_THROW_ON_ERROR));
 
         $response = $controller->__invoke(5, $request);
 
@@ -113,11 +112,9 @@ final class ImpersonationApiControllerTest extends OperatorApiTestCase
         $this->setControllerContainer($controller);
         $this->authenticateAs('root');
 
-        $request = Request::create(
-            '/api/control-plane/tenants/5/impersonate',
-            'POST',
-            content: json_encode(['username' => 'ghost'], JSON_THROW_ON_ERROR),
-        );
+        $request = Request::create('/api/control-plane/tenants/5/impersonate', 'POST', content: json_encode([
+            'username' => 'ghost',
+        ], JSON_THROW_ON_ERROR));
 
         $response = $controller->__invoke(5, $request);
 
