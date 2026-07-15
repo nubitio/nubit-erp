@@ -47,10 +47,19 @@ readonly class RoleMenuProcessor implements ProcessorInterface
                 ->execute();
 
             $role = $this->entityManager->getReference(Role::class, $roleId);
+            if (!$role instanceof Role) {
+                throw new \LogicException('Role reference could not be resolved.');
+            }
+
             foreach ($data->permissions as $menuId) {
+                $menu = $this->entityManager->getReference(Menu::class, $menuId);
+                if (!$menu instanceof Menu) {
+                    throw new \LogicException('Menu reference could not be resolved.');
+                }
+
                 $this->entityManager->persist(
                     (new MenuRol())
-                        ->setMenu($this->entityManager->getReference(Menu::class, $menuId))
+                        ->setMenu($menu)
                         ->setRole($role),
                 );
             }

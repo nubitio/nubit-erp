@@ -49,11 +49,12 @@ readonly class RoleMenuProvider implements ProviderInterface
                 }
 
                 foreach ($menus as $option) {
-                    if ($option->getParent()?->getId() === $menuId && $option->getId() !== null) {
+                    $optionId = $option->getId();
+                    if ($option->getParent()?->getId() === $menuId && $optionId !== null) {
                         $submenu[] = new RoleMenuItemDto(
-                            id: $option->getId(),
+                            id: $optionId,
                             text: $option->getKeyName(),
-                            selected: array_key_exists($option->getId(), $assigned),
+                            selected: array_key_exists($optionId, $assigned),
                         );
                     }
                 }

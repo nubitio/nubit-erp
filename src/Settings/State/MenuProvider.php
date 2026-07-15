@@ -39,7 +39,8 @@ readonly class MenuProvider implements ProviderInterface
         $menus = $this->getMenuForRole($roleId);
 
         foreach ($menus as $parent) {
-            if ($parent->getParent() === null && $parent->getRoute() === null) {
+            $route = $parent->getRoute();
+            if ($parent->getParent() === null && $route === null) {
                 $items = [];
 
                 foreach ($menus as $child) {
@@ -49,8 +50,8 @@ readonly class MenuProvider implements ProviderInterface
                 }
 
                 yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', '', $items);
-            } elseif ($parent->getParent() === null && $parent->getRoute() !== null) {
-                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $parent->getRoute());
+            } elseif ($parent->getParent() === null && is_string($route)) {
+                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $route);
             }
         }
     }

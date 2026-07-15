@@ -20,7 +20,8 @@ readonly class LogoProvider
 
     public function __invoke(): string
     {
-        if ($this->tenantContext->getTenantName() === null) {
+        $tenantName = $this->tenantContext->getTenantName();
+        if ($tenantName === null) {
             return '';
         }
 
@@ -37,11 +38,16 @@ readonly class LogoProvider
             return '';
         }
 
-        if (!$company instanceof Company || $company->getLogo() === null) {
+        if (!$company instanceof Company) {
             return '';
         }
 
-        $path = $this->tenantContext->getTenantName() . '/' . EfactConstants::IMAGE_DIR . '/' . $company->getLogo()->getPath();
+        $logo = $company->getLogo();
+        if ($logo === null) {
+            return '';
+        }
+
+        $path = $tenantName . '/' . EfactConstants::IMAGE_DIR . '/' . $logo->getPath();
 
         return $this->s3UrlResolver->resolve($path);
     }

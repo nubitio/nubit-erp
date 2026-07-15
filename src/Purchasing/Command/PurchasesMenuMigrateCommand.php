@@ -57,7 +57,7 @@ final class PurchasesMenuMigrateCommand extends PerTenantCommand
             return Command::SUCCESS;
         }
 
-        $updated = $this->entityManager
+        $updated = (int) $this->entityManager
             ->createQuery(<<<'DQL'
                 UPDATE App\Settings\Entity\Menu m
                 SET m.route = :targetRoute,

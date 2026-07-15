@@ -76,6 +76,7 @@ final class ImpersonationApiControllerTest extends OperatorApiTestCase
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $payload = json_decode((string) $response->getContent(), true);
+        $this->assertIsArray($payload);
         $this->assertSame('signed.jwt.token', $payload['token']);
         $this->assertArrayNotHasKey('refreshToken', $payload);
         $this->assertSame(['username' => 'jdoe'], $payload['user']);

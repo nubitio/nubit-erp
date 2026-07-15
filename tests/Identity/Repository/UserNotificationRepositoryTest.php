@@ -127,6 +127,7 @@ final class UserNotificationRepositoryTest extends TestCase
                     'userId' => $userId,
                     'type' => $type,
                     'since' => $since,
+                    default => throw new \LogicException('Unexpected query parameter.'),
                 }, $value);
 
                 return $query;
@@ -157,6 +158,7 @@ final class UserNotificationRepositoryTest extends TestCase
                 self::assertSame(match ($name) {
                     'readAt' => $readAt,
                     'userId' => 42,
+                    default => throw new \LogicException('Unexpected query parameter.'),
                 }, $value);
 
                 return $query;

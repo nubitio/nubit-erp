@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Settings\State;
 
 use ApiPlatform\Metadata\GetCollection;
+use App\Settings\Dto\RoleMenuDto;
+use App\Settings\Dto\RoleMenuItemDto;
 use App\Settings\Entity\Menu;
 use App\Settings\State\RoleMenuProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,13 +36,20 @@ final class RoleMenuProviderTest extends TestCase
 
         $result = (new RoleMenuProvider($entityManager))->provide(new GetCollection(), ['role_id' => '3']);
 
+        static::assertIsArray($result);
         static::assertCount(2, $result);
-        static::assertSame('Ventas', $result[0]->text);
-        static::assertTrue($result[0]->selected);
-        static::assertCount(1, $result[0]->items);
-        static::assertSame('Comprobantes', $result[0]->items[0]->text);
-        static::assertTrue($result[0]->items[0]->selected);
-        static::assertFalse($result[1]->selected);
+        static::assertInstanceOf(RoleMenuDto::class, $result[0]);
+        static::assertInstanceOf(RoleMenuDto::class, $result[1]);
+
+        $ventas = $result[0];
+        $configuracion = $result[1];
+        static::assertSame('Ventas', $ventas->text);
+        static::assertTrue($ventas->selected);
+        static::assertCount(1, $ventas->items);
+        static::assertInstanceOf(RoleMenuItemDto::class, $ventas->items[0]);
+        static::assertSame('Comprobantes', $ventas->items[0]->text);
+        static::assertTrue($ventas->items[0]->selected);
+        static::assertFalse($configuracion->selected);
     }
 
     private function menu(int $id, string $name, ?Menu $parent = null): Menu

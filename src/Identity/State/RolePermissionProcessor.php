@@ -55,6 +55,10 @@ readonly class RolePermissionProcessor implements ProcessorInterface
                 ->execute();
 
             $role = $this->entityManager->getReference(Role::class, $roleId);
+            if (!$role instanceof Role) {
+                throw new \LogicException('Role reference could not be resolved.');
+            }
+
             foreach ($permissions as $permission) {
                 $this->entityManager->persist(
                     (new RolePermission())
