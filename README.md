@@ -86,7 +86,7 @@ make logs
 
 ```bash
 make help          # lista comandos disponibles
-make up            # levanta database, redis, otel-collector, web y vite
+make up            # levanta database, redis, otel-collector, web, vite y mercure
 make down          # baja el stack
 make restart       # reinicia contenedores
 make reset         # baja, borra volúmenes y reconstruye entorno dev
@@ -96,11 +96,20 @@ make migrate       # migraciones control plane + tenant
 make cache-clear   # limpia cache Symfony
 make dev           # levanta Vite dentro de Docker
 make lint          # eslint
+make lint-php      # mago lint + mago analyze
 make format        # prettier
+make format-php    # mago fmt
 make test          # phpunit + vitest
+make e2e           # playwright end-to-end
+make ps            # estado de los contenedores
+make logs          # logs del stack
 make shell-web     # shell en web
 make shell-vite    # shell en vite
 ```
+
+Mercure es crítico: los recursos con `mercure: true` publican tras cada flush, así que un hub caído convierte cualquier `create` en un 500.
+
+El linting de PHP usa [Mago](https://mago.carlosgraca.com/) (`mago.toml` en la raíz), no GrumPHP.
 
 Los flujos largos viven en `scripts/dev/bootstrap.sh`, `scripts/dev/reset.sh` y `scripts/dev/migrate.sh`. Así mantienes `Makefile` simple y los procesos reutilizables.
 
@@ -225,7 +234,6 @@ Specs E2E (solo flujos críticos — CI y `make e2e`):
 
 | Archivo | Descripción |
 |---|---|
-| `e2e/login-shell-mount.spec.ts` | Auth: rechazo de credenciales inválidas y shell post-login. |
 | `e2e/happy-path.spec.ts` | Venta completa: login → producto → caja → cliente → POS → venta módulo → movimiento → cierre. |
 | `e2e/golden-path-fiscal.spec.ts` | **Golden path fiscal:** login → caja → venta POS → factura → envío SUNAT (stub) → CDR → PDF. |
 | `e2e/purchases-stock.spec.ts` | Compras: login → módulo compras → `POST /api/purchases` → stock incrementado. |
@@ -239,8 +247,9 @@ docker compose --profile e2e run --rm e2e yarn test:e2e e2e/golden-path-fiscal.s
 ## Calidad de código
 
 ```bash
-docker compose exec -T web ./vendor/bin/grumphp run --no-interaction
-make lint
+make lint-php      # mago lint + mago analyze
+make format-php    # mago fmt --check
+make lint          # eslint (frontend)
 ```
 
 ## Docker comandos útiles
