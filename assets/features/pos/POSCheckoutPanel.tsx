@@ -97,7 +97,6 @@ export function POSCheckoutPanel({
   setExchangeRate,
   discountPercent,
   setDiscountPercent,
-  subtotal,
   discountAmount,
   includedTax,
   igvRate,
@@ -528,7 +527,7 @@ export function POSCheckoutPanel({
         <div className="pos-summary">
           <div className="pos-summary__row">
             <span>Base imponible</span>
-            <span>{formatMoney(subtotal)}</span>
+            <span>{formatMoney(total - includedTax)}</span>
           </div>
           {discountAmount > 0 && (
             <div className="pos-summary__row">
