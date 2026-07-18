@@ -56,7 +56,7 @@ const cashMovementsFields = (cashSessionId: string | undefined) => {
       .defaultValue('income')
       .build(),
   );
-  fields.push(textareaField().name('description').label('Descripcion').required(true).build());
+  fields.push(textareaField().name('description').label('Descripción').required(true).build());
   fields.push(
     currencyField()
       .name('amount')

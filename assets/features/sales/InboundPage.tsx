@@ -41,6 +41,7 @@ export const PurchasesPage = () => {
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: {
         propertyName: 'items',
+        fields: detailFields,
         allowAdding: true,
         allowDeleting: true,
         allowUpdating: true,

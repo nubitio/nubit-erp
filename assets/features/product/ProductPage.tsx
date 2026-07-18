@@ -241,10 +241,14 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'fullWidth' } },
-      { kind: 'override', key: 'code', patch: { order: 1, layoutHint: 'short' } },
-      { kind: 'override', key: 'category', patch: { order: 2, layoutHint: 'lookup' } },
-      { kind: 'override', key: 'salePrice', patch: { order: 3, layoutHint: 'money', align: 'right' } },
+      { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre' } },
+      { kind: 'override', key: 'code', patch: { order: 1, layoutHint: 'short', label: 'Código' } },
+      { kind: 'override', key: 'category', patch: { order: 2, layoutHint: 'lookup', label: 'Categoría' } },
+      {
+        kind: 'override',
+        key: 'salePrice',
+        patch: { order: 3, layoutHint: 'money', align: 'right', label: 'Precio de venta' },
+      },
       {
         kind: 'override',
         key: 'type',
@@ -280,14 +284,15 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
           visibleWhen: (formData) => formData.productKind === 'GOOD',
         },
       },
-      { kind: 'override', key: 'sku', patch: { order: 11, layoutHint: 'short' } },
-      { kind: 'override', key: 'barcode', patch: { order: 12, layoutHint: 'short' } },
+      { kind: 'override', key: 'sku', patch: { order: 11, layoutHint: 'short', label: 'SKU' } },
+      { kind: 'override', key: 'barcode', patch: { order: 12, layoutHint: 'short', label: 'Código de barras' } },
       {
         kind: 'override',
         key: 'unitOfMeasure',
         patch: {
           order: 13,
           layoutHint: 'lookup',
+          label: 'Unidad de medida',
           defaultValue: '/api/unit-of-measures/1',
           filterable: false,
         },

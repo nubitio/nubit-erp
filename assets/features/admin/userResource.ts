@@ -33,6 +33,8 @@ export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
     source: 'hydra',
     strategy: 'augment',
     directives: [
+      { kind: 'override', key: 'username', patch: { label: 'Usuario' } },
+      { kind: 'override', key: 'role', patch: { label: 'Rol' } },
       {
         kind: 'append',
         field: {

@@ -29,6 +29,7 @@ const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
     strategy: 'augment',
     directives: [
       { kind: 'override', key: 'name', patch: { order: 0, width: 320, label: 'Nombre' } },
+      { kind: 'override', key: 'parent', patch: { order: 0.5, label: 'Categoría padre' } },
       {
         kind: 'override',
         key: 'isActive',
