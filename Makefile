@@ -10,7 +10,7 @@ PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev lint lint-php format format-php test test-back test-front e2e logs ps shell-web shell-vite
+.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev build-front lint lint-php format format-php test test-back test-front e2e logs ps shell-web shell-vite
 
 help:
 	@printf "\n"
@@ -24,7 +24,8 @@ help:
 	@printf "  make install          Install backend and frontend dependencies\n"
 	@printf "  make migrate          Run control plane and tenant migrations\n"
 	@printf "  make cache-clear      Clear Symfony cache\n"
-	@printf "  make dev              Start Vite dev server\n"
+	@printf "  make dev              (Re)start Vite dev server so the app hot-reloads through :8080\n"
+	@printf "  make build-front      Production frontend build for local testing (auto-restores dev mode after)\n"
 	@printf "  make lint             Run frontend lint\n"
 	@printf "  make lint-php         Run Mago lint + analyze + format check\n"
 	@printf "  make format           Run frontend formatter\n"
@@ -69,9 +70,27 @@ migrate-tenants:
 cache-clear:
 	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console cache:clear'
 
+# Always restart (not `up -d`, which no-ops if the container is already
+# running): `vite dev` only writes the dev-mode public/build/.vite/entrypoints.json
+# (with a live `viteServer` URL) once, at startup. If a `yarn build` ever ran
+# afterward — e.g. `make build-front`, or by hand inside the container — it
+# overwrites that file with a static production manifest, and :8080 silently
+# starts serving frozen prod assets with no hot reload until vite is restarted.
+# Restarting here means `make dev` always self-heals that, whatever state
+# things were left in.
 dev:
-	$(DC) up -d vite
+	$(DC) restart vite
 	$(DC) logs -f vite
+
+# One-off production build for local testing (e.g. checking a PWA/offline
+# behavior that only exists in the built bundle). Restarts vite immediately
+# after so :8080 goes back to live dev mode instead of being left stuck
+# serving the static build — see the comment on `dev` above for why that
+# matters.
+build-front:
+	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn build'
+	$(DC) restart vite
+	@printf "\nProduction build done, dev server restarted — :8080 is back to hot-reload mode.\n"
 
 lint:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn lint'
